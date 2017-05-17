@@ -83,6 +83,7 @@ void ProcessAttributes::Copy(const ProcessAttributes &obj)
     hosts = obj.hosts;
     isParallel = obj.isParallel;
     memory = obj.memory;
+    times = obj.times;
 
     ProcessAttributes::SelectAll();
 }
@@ -244,7 +245,8 @@ ProcessAttributes::operator == (const ProcessAttributes &obj) const
             (ppids == obj.ppids) &&
             (hosts == obj.hosts) &&
             (isParallel == obj.isParallel) &&
-            (memory == obj.memory));
+            (memory == obj.memory) &&
+            (times == obj.times));
 }
 
 // ****************************************************************************
@@ -393,6 +395,7 @@ ProcessAttributes::SelectAll()
     Select(ID_hosts,      (void *)&hosts);
     Select(ID_isParallel, (void *)&isParallel);
     Select(ID_memory,     (void *)&memory);
+    Select(ID_times,      (void *)&times);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -432,6 +435,13 @@ ProcessAttributes::SetMemory(const intVector &memory_)
 {
     memory = memory_;
     Select(ID_memory, (void *)&memory);
+}
+
+void
+ProcessAttributes::SetTimes(const doubleVector &times_)
+{
+    times = times_;
+    Select(ID_times, (void *)&times);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -492,6 +502,18 @@ ProcessAttributes::GetMemory()
     return memory;
 }
 
+const doubleVector &
+ProcessAttributes::GetTimes() const
+{
+    return times;
+}
+
+doubleVector &
+ProcessAttributes::GetTimes()
+{
+    return times;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -518,6 +540,12 @@ void
 ProcessAttributes::SelectMemory()
 {
     Select(ID_memory, (void *)&memory);
+}
+
+void
+ProcessAttributes::SelectTimes()
+{
+    Select(ID_times, (void *)&times);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -549,6 +577,7 @@ ProcessAttributes::GetFieldName(int index) const
     case ID_hosts:      return "hosts";
     case ID_isParallel: return "isParallel";
     case ID_memory:     return "memory";
+    case ID_times:      return "times";
     default:  return "invalid index";
     }
 }
@@ -578,6 +607,7 @@ ProcessAttributes::GetFieldType(int index) const
     case ID_hosts:      return FieldType_stringVector;
     case ID_isParallel: return FieldType_bool;
     case ID_memory:     return FieldType_intVector;
+    case ID_times:      return FieldType_doubleVector;
     default:  return FieldType_unknown;
     }
 }
@@ -607,6 +637,7 @@ ProcessAttributes::GetFieldTypeName(int index) const
     case ID_hosts:      return "stringVector";
     case ID_isParallel: return "bool";
     case ID_memory:     return "intVector";
+    case ID_times:      return "doubleVector";
     default:  return "invalid index";
     }
 }
@@ -656,6 +687,11 @@ ProcessAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_memory:
         {  // new scope
         retval = (memory == obj.memory);
+        }
+        break;
+    case ID_times:
+        {  // new scope
+        retval = (times == obj.times);
         }
         break;
     default: retval = false;

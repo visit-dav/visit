@@ -301,7 +301,13 @@ avtHDFSFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeSta
             md->Add(cmd);
         }
         else
+        {
             AddMeshToMetaData(md, mname, AVT_UNSTRUCTURED_MESH, NULL, nblocks, 0, sdims, tdims);
+            avtLabelMetaData *lmdz = new avtLabelMetaData("zoneKeys", mname, AVT_ZONECENT);
+            md->Add(lmdz);
+            avtLabelMetaData *lmdn = new avtLabelMetaData("nodeKeys", mname, AVT_NODECENT);
+            md->Add(lmdn);
+        }
 
         // Use block 0 to determine variables
         SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/000000/variables.txt.gz", filename, timeState, mname);
@@ -560,11 +566,20 @@ avtHDFSFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 vtkDataArray *
 avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
 {
-    string varKey = metadata->MeshForVar(varname) + ":" + string(varname);
-    if (varInfoMap.find(varKey) == varInfoMap.end())
-        return 0;
+    int varInfo = 0x0;
 
-    int varInfo = varInfoMap[varKey];
+    if (string(varname) == "zoneKeys")
+        varInfo = AVT_ZONECENT<<16 | VTK_CHAR<<8 | 18;
+    else if (string(varname) == "nodeKeys")
+        varInfo = AVT_NODECENT<<16 | VTK_CHAR<<8 | 18;
+    else
+    {
+        string varKey = metadata->MeshForVar(varname) + ":" + string(varname);
+        if (varInfoMap.find(varKey) == varInfoMap.end())
+            return 0;
+        varInfo = varInfoMap[varKey];
+    }
+
     int cent = (varInfo&0x00FF0000)>>16;
     int dtyp = (varInfo&0x0000FF00)>>8;
     int ncomps = (varInfo&0x000000FF);
@@ -594,6 +609,18 @@ avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
     vtkDataArray *darr = vtkDataArray::CreateDataArray(dtyp);
     darr->SetNumberOfComponents(ncomps);
     darr->SetNumberOfTuples(nents);
+
+    if (string(varname) == "zoneKeys" || string(varname) == "nodeKeys")
+    {
+        for (map<string, int>::const_iterator it = eKeyMap.begin(); it != eKeyMap.end(); it++)
+        {
+            int eIdx = it->second;
+            for (int i = 0; i < ncomps; i++)
+                darr->SetComponent(eIdx, i, it->first[i]);
+        }
+        return darr;
+    }
+
     SNPRINTF(tmp, sizeof(tmp), "%s/%06d/%s/%06d/%s.txt.gz",
         filename, timestate, metadata->MeshForVar(varname).c_str(), domain, varname);
     visit_ifstream vfile(tmp);
