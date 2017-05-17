@@ -3955,6 +3955,8 @@ Engine::GetProcessAttributes()
         intVector ppids;
         intVector memusage;
         stringVector hosts;
+        doubleVector times;
+        double myTime = TOA_THIS_LINE;
   
 #if defined(_WIN32)
         int myPid = _getpid();
@@ -3982,12 +3984,14 @@ Engine::GetProcessAttributes()
         int *allPpids = NULL;
         char *allHosts = NULL;
         int *allMemusage = NULL;
+        double *allTimes = NULL;
         if (PAR_Rank() == 0)
         {
             allPids = new int[PAR_Size()];
             allPpids = new int[PAR_Size()];
             allHosts = new char[PAR_Size() * sizeof(myHost)];
             allMemusage = new int [PAR_Size()];
+            allTimes = new double [PAR_Size()];
         }
 
         MPI_Gather(&myPid, 1, MPI_INT,
@@ -3999,6 +4003,8 @@ Engine::GetProcessAttributes()
         int m_size_mb_tmp = (int)m_size_mb;
         MPI_Gather(&m_size_mb_tmp, 1, MPI_INT,
                    allMemusage, 1, MPI_INT, 0, VISIT_MPI_COMM);
+        MPI_Gather(&myTime, 1, MPI_DOUBLE,
+                   allTimes, 1, MPI_DOUBLE, 0, VISIT_MPI_COMM);
 
         if (PAR_Rank() == 0)
         {
@@ -4008,12 +4014,14 @@ Engine::GetProcessAttributes()
                 ppids.push_back(allPpids[i]);
                 hosts.push_back(&allHosts[i*sizeof(myHost)]);
                 memusage.push_back(allMemusage[i]);
+                times.push_back(allTimes[i]);    
             }
 
             delete [] allPids;
             delete [] allPpids;
             delete [] allHosts;
             delete [] allMemusage;
+            delete [] allTimes;
         }
 
 #else
@@ -4031,6 +4039,7 @@ Engine::GetProcessAttributes()
         m_size_mb = ( (double)m_size / 1048576.0);
         memusage.push_back(m_size_mb);
         bool isParallel = false;
+        times.push_back(myTime);
 #endif
 
         procAtts->SetPids(pids);
@@ -4038,6 +4047,7 @@ Engine::GetProcessAttributes()
         procAtts->SetHosts(hosts);
         procAtts->SetMemory(memusage);
         procAtts->SetIsParallel(isParallel);
+        procAtts->SetTimes(times);
 
     }
 

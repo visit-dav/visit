@@ -11,4 +11,6 @@
     </Field>
     <Field name="memory" label="Memory usage" type="intVector">
     </Field>
+    <Field name="times" label="Time of day" type="doubleVector">
+    </Field>
   </Attribute>

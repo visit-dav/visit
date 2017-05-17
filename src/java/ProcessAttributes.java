@@ -40,6 +40,7 @@ package llnl.visit;
 
 import java.lang.Integer;
 import java.util.Vector;
+import java.lang.Double;
 
 // ****************************************************************************
 // Class: ProcessAttributes
@@ -58,7 +59,7 @@ import java.util.Vector;
 
 public class ProcessAttributes extends AttributeSubject
 {
-    private static int ProcessAttributes_numAdditionalAtts = 5;
+    private static int ProcessAttributes_numAdditionalAtts = 6;
 
     public ProcessAttributes()
     {
@@ -69,6 +70,7 @@ public class ProcessAttributes extends AttributeSubject
         hosts = new Vector();
         isParallel = false;
         memory = new Vector();
+        times = new Vector();
     }
 
     public ProcessAttributes(int nMoreFields)
@@ -80,6 +82,7 @@ public class ProcessAttributes extends AttributeSubject
         hosts = new Vector();
         isParallel = false;
         memory = new Vector();
+        times = new Vector();
     }
 
     public ProcessAttributes(ProcessAttributes obj)
@@ -111,6 +114,13 @@ public class ProcessAttributes extends AttributeSubject
             Integer iv = (Integer)obj.memory.elementAt(i);
             memory.addElement(new Integer(iv.intValue()));
         }
+        times = new Vector(obj.times.size());
+        for(i = 0; i < obj.times.size(); ++i)
+        {
+            Double dv = (Double)obj.times.elementAt(i);
+            times.addElement(new Double(dv.doubleValue()));
+        }
+
 
         SelectAll();
     }
@@ -165,12 +175,22 @@ public class ProcessAttributes extends AttributeSubject
             Integer memory2 = (Integer)obj.memory.elementAt(i);
             memory_equal = memory1.equals(memory2);
         }
+        // Compare the elements in the times vector.
+        boolean times_equal = (obj.times.size() == times.size());
+        for(i = 0; (i < times.size()) && times_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double times1 = (Double)times.elementAt(i);
+            Double times2 = (Double)obj.times.elementAt(i);
+            times_equal = times1.equals(times2);
+        }
         // Create the return value
         return (pids_equal &&
                 ppids_equal &&
                 hosts_equal &&
                 (isParallel == obj.isParallel) &&
-                memory_equal);
+                memory_equal &&
+                times_equal);
     }
 
     // Property setting methods
@@ -204,12 +224,19 @@ public class ProcessAttributes extends AttributeSubject
         Select(4);
     }
 
+    public void SetTimes(Vector times_)
+    {
+        times = times_;
+        Select(5);
+    }
+
     // Property getting methods
     public Vector  GetPids() { return pids; }
     public Vector  GetPpids() { return ppids; }
     public Vector  GetHosts() { return hosts; }
     public boolean GetIsParallel() { return isParallel; }
     public Vector  GetMemory() { return memory; }
+    public Vector  GetTimes() { return times; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -224,6 +251,8 @@ public class ProcessAttributes extends AttributeSubject
             buf.WriteBool(isParallel);
         if(WriteSelect(4, buf))
             buf.WriteIntVector(memory);
+        if(WriteSelect(5, buf))
+            buf.WriteDoubleVector(times);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -245,6 +274,9 @@ public class ProcessAttributes extends AttributeSubject
         case 4:
             SetMemory(buf.ReadIntVector());
             break;
+        case 5:
+            SetTimes(buf.ReadDoubleVector());
+            break;
         }
     }
 
@@ -256,6 +288,7 @@ public class ProcessAttributes extends AttributeSubject
         str = str + stringVectorToString("hosts", hosts, indent) + "\n";
         str = str + boolToString("isParallel", isParallel, indent) + "\n";
         str = str + intVectorToString("memory", memory, indent) + "\n";
+        str = str + doubleVectorToString("times", times, indent) + "\n";
         return str;
     }
 
@@ -266,5 +299,6 @@ public class ProcessAttributes extends AttributeSubject
     private Vector  hosts; // vector of String objects
     private boolean isParallel;
     private Vector  memory; // vector of Integer objects
+    private Vector  times; // vector of Double objects
 }
 

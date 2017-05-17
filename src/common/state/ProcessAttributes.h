@@ -90,6 +90,7 @@ public:
     void SelectPpids();
     void SelectHosts();
     void SelectMemory();
+    void SelectTimes();
 
     // Property setting methods
     void SetPids(const intVector &pids_);
@@ -97,6 +98,7 @@ public:
     void SetHosts(const stringVector &hosts_);
     void SetIsParallel(bool isParallel_);
     void SetMemory(const intVector &memory_);
+    void SetTimes(const doubleVector &times_);
 
     // Property getting methods
     const intVector    &GetPids() const;
@@ -108,6 +110,8 @@ public:
     bool               GetIsParallel() const;
     const intVector    &GetMemory() const;
           intVector    &GetMemory();
+    const doubleVector &GetTimes() const;
+          doubleVector &GetTimes();
 
 
     // Keyframing methods
@@ -124,6 +128,7 @@ public:
         ID_hosts,
         ID_isParallel,
         ID_memory,
+        ID_times,
         ID__LAST
     };
 
@@ -133,11 +138,12 @@ private:
     stringVector hosts;
     bool         isParallel;
     intVector    memory;
+    doubleVector times;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PROCESSATTRIBUTES_TMFS "i*i*s*bi*"
+#define PROCESSATTRIBUTES_TMFS "i*i*s*bi*d*"
 
 #endif

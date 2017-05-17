@@ -145,6 +145,22 @@ PyProcessAttributes_ToString(const ProcessAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const doubleVector &times = atts->GetTimes();
+        SNPRINTF(tmpStr, 1000, "%stimes = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < times.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", times[i]);
+            str += tmpStr;
+            if(i < times.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -419,6 +435,69 @@ ProcessAttributes_GetMemory(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ProcessAttributes_SetTimes(PyObject *self, PyObject *args)
+{
+    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+
+    doubleVector  &vec = obj->data->GetTimes();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the times in the object as modified.
+    obj->data->SelectTimes();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ProcessAttributes_GetTimes(PyObject *self, PyObject *args)
+{
+    ProcessAttributesObject *obj = (ProcessAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the times.
+    const doubleVector &times = obj->data->GetTimes();
+    PyObject *retval = PyTuple_New(times.size());
+    for(size_t i = 0; i < times.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(times[i]));
+    return retval;
+}
+
 
 
 PyMethodDef PyProcessAttributes_methods[PROCESSATTRIBUTES_NMETH] = {
@@ -433,6 +512,8 @@ PyMethodDef PyProcessAttributes_methods[PROCESSATTRIBUTES_NMETH] = {
     {"GetIsParallel", ProcessAttributes_GetIsParallel, METH_VARARGS},
     {"SetMemory", ProcessAttributes_SetMemory, METH_VARARGS},
     {"GetMemory", ProcessAttributes_GetMemory, METH_VARARGS},
+    {"SetTimes", ProcessAttributes_SetTimes, METH_VARARGS},
+    {"GetTimes", ProcessAttributes_GetTimes, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -471,6 +552,8 @@ PyProcessAttributes_getattr(PyObject *self, char *name)
         return ProcessAttributes_GetIsParallel(self, NULL);
     if(strcmp(name, "memory") == 0)
         return ProcessAttributes_GetMemory(self, NULL);
+    if(strcmp(name, "times") == 0)
+        return ProcessAttributes_GetTimes(self, NULL);
 
     return Py_FindMethod(PyProcessAttributes_methods, self, name);
 }
@@ -495,6 +578,8 @@ PyProcessAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ProcessAttributes_SetIsParallel(self, tuple);
     else if(strcmp(name, "memory") == 0)
         obj = ProcessAttributes_SetMemory(self, tuple);
+    else if(strcmp(name, "times") == 0)
+        obj = ProcessAttributes_SetTimes(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
