@@ -26,8 +26,25 @@ class CellExportQuery(SimplePythonQuery):
 
         nvars = len(self.input_var_names)
         self.active_domains.append(domain_id)
-        var_arrays = [ (vname,"zonal",ds_in.GetCellData().GetArray(vname)) for vname in self.input_var_names]
-        var_arrays.extend([ (vname,"nodal",ds_in.GetPointData().GetArray(vname)) for vname in self.input_var_names])
+        var_arrays = []
+        for vname in self.input_var_names:
+            try:
+                arr = ds_in.GetCellData().GetArray(vname)
+                if not arr:
+                    continue
+                var_arrays += [(vname, "zonal", arr)]
+            except:
+                continue
+        for vname in self.input_var_names:
+            try:
+                arr = ds_in.GetPointData().GetArray(vname)
+                if not arr:
+                    continue
+                var_arrays += [(vname, "nodal", arr)]
+            except:
+                continue
+#        var_arrays = [ (vname,"zonal",ds_in.GetCellData().GetArray(vname)) for vname in self.input_var_names]
+#        var_arrays.extend([ (vname,"nodal",ds_in.GetPointData().GetArray(vname)) for vname in self.input_var_names])
         var_arrays = [ v for v in var_arrays if not v[2] is None ]
         nodals = [ v for v in var_arrays if v[1] == "nodal"]
         zonals = [ v for v in var_arrays if v[1] == "zonal"]
@@ -130,24 +147,6 @@ class CellExportQuery(SimplePythonQuery):
                     linebuf += ",%g"%zarr[2].GetComponent(i,j)
                 f.write("%s\n"%linebuf)
             f.close()
-
-        # do materials, if any
-#        matarr = ds_in.GetCellData().GetArray("materials")
-#        if matarr:
-#            nmats = matarr.GetNumberOfComponents()
-#            vf.write("materials,3,11,%d\n"%nmats)
-#            fname = "%s/materials.txt.%s"%(outpath,zExt)
-#            f = os.popen("%s > %s"%(zCmd,fname),"w")
-#            for i in xrange(ncells):
-#                ghost = False
-#                if ghostZones:
-#                    ghost = ghostZones.GetTuple1(i) != 0
-#                type = ds_in.GetCell(i).GetCellType()
-#                linebuf = "%s"%EntityTypeIDKey(type,keybase,i,ghost)
-#                for j in xrange(nmats):
-#                    linebuf += ",%g"%matarr.GetComponent(i,j)
-#                f.write("%s\n"%linebuf)
-#            f.close()
 
         vf.close()
         ascendOutDir(outDir,keyBase)

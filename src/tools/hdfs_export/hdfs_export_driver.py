@@ -105,6 +105,11 @@ def main():
             # num blocks, spatial dim, topo dim, extents?
             descendOutDir(outDir,keyBase,mesh.replace('/','~'),mdata)
             var_list = ["__foo__"] # work-around mesh name overwriting first var
+            # add vars for global nodes and zones, handle if missing in vpq
+            DefineScalarExpression("%s_global_nodeids"%mesh.replace('/','~'), "global_nodeid(<%s>)"%mesh)
+            DefineScalarExpression("%s_global_zoneids"%mesh.replace('/','~'), "global_zoneid(<%s>)"%mesh)
+            var_list.append("%s_global_nodeids"%mesh.replace('/','~'))
+            var_list.append("%s_global_zoneids"%mesh.replace('/','~'))
             for i in range(md.GetNumScalars()):
                 if md.GetScalars(i).validVariable == 0:
                     continue
