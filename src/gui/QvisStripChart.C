@@ -262,7 +262,7 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
 
     // Set up the StripChartCurve.
     Qt::GlobalColor colors[MAX_STRIP_CHART_VARS] =
-      { Qt::red, Qt::blue, Qt::black, Qt::darkCyan };
+      { Qt::red, Qt::blue, Qt::black, Qt::darkCyan, Qt::green };
 
     for( unsigned int c=0; c<MAX_STRIP_CHART_VARS; ++c )
     {
@@ -301,7 +301,8 @@ QvisStripChart::QvisStripChart( QWidget *parent ):
 //
 //****************************************************************************
 void
-QvisStripChart::setCurveTitle( unsigned int index, const QString &newTitle)
+QvisStripChart::setCurveTitle( const unsigned int index,
+                               const QString &newTitle)
 {
     bool clearData = false;
   
@@ -572,7 +573,8 @@ void QvisStripChart::advanceDataCount( double time )
 // Modifications:
 //
 //****************************************************************************
-void QvisStripChart::addDataPoint( unsigned int index, double x, double y)
+void QvisStripChart::addDataPoint( const unsigned int index,
+                                   const double x, const double y)
 {
     // If a new time advance the data count which also sets
     // the new time.

@@ -39,6 +39,8 @@
 #include "QvisStripChartMgr.h"
 #include "QvisStripChartTabWidget.h"
 
+#include <QvisSimulationWindow.h>
+
 #include <EngineList.h>
 #include <StatusAttributes.h>
 #include <ViewerProxy.h>
@@ -46,9 +48,10 @@
 #include <QGroupBox>
 #include <QLayout>
 #include <QPushButton>
+#include <QMenu>
 
 // ****************************************************************************
-// Method: VisItSimStripChart::QvisStripChartMgr
+// Method: QvisStripChartMgr::QvisStripChartMgr
 //
 // Purpose: 
 //   This is the constructor for the QvisStripChartMgr and initializes the 
@@ -69,6 +72,7 @@ QvisStripChartMgr::QvisStripChartMgr(QWidget *parent, ViewerProxy *theViewer,
      EngineList *engineList, int index, QvisNotepadArea *notepad2):
      QvisPostableWindow(tr("Strip charts"), tr("Strip charts"), notepad2)
 {
+    simulationWindow = (QvisSimulationWindow*) parent;
     viewer = theViewer;
     simIndex = index;
     engines = engineList;
@@ -76,10 +80,11 @@ QvisStripChartMgr::QvisStripChartMgr(QWidget *parent, ViewerProxy *theViewer,
     CreateEntireWindow();
     isPosted = false;
     postEnabled = true;
+    // activeVar = 0;
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::~QvisStripChartMgr
+// Method: QvisStripChartMgr::~QvisStripChartMgr
 //
 // Purpose: 
 //   This is the destructor for QvisStripChartMgr
@@ -95,7 +100,7 @@ QvisStripChartMgr::~QvisStripChartMgr()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::CreateEntireWindow
+// Method: QvisStripChartMgr::CreateEntireWindow
 //
 // Purpose: 
 //   This creates the base window
@@ -114,7 +119,7 @@ QvisStripChartMgr::CreateEntireWindow()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::CreateWindowContents
+// Method: QvisStripChartMgr::CreateWindowContents
 //
 // Purpose: 
 //   This is called to actually create the window.
@@ -165,11 +170,267 @@ QvisStripChartMgr::CreateWindowContents()
     zoomLayout->addWidget(clearButton,0,3);
     connect(clearButton,SIGNAL(clicked()),this,SLOT(clear()));
 
+    // Variable buttons
+    // Create the group box and generic buttons.
+    QGridLayout *menuLayout = new QGridLayout(0);
+    chartLayout->addLayout(menuLayout, 5, 0, 1, 6);
+        
+    stripChartVar0Button = new QPushButton(tr("Var0"));
+    stripChartVar0Button->setEnabled(true);
+    connect(stripChartVar0Button,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVar0()));
+    menuLayout->addWidget(stripChartVar0Button,0,0);
+
+    stripChartVar1Button = new QPushButton(tr("Var1"));
+    stripChartVar1Button->setEnabled(true);
+    connect(stripChartVar1Button,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVar1()));
+    menuLayout->addWidget(stripChartVar1Button,0,1);
+
+    stripChartVar2Button = new QPushButton(tr("Var2"));
+    stripChartVar2Button->setEnabled(true);
+    connect(stripChartVar2Button,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVar2()));
+    menuLayout->addWidget(stripChartVar2Button,0,2);
+
+    stripChartVar3Button = new QPushButton(tr("Var3"));
+    stripChartVar3Button->setEnabled(true);
+    connect(stripChartVar3Button,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVar3()));
+    menuLayout->addWidget(stripChartVar3Button,0,3);
+
+    stripChartVar4Button = new QPushButton(tr("Var4"));
+    stripChartVar4Button->setEnabled(true);
+    connect(stripChartVar4Button,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVar4()));
+    menuLayout->addWidget(stripChartVar4Button,0,4);
+
+    stripChartVarMenu = new QMenu(this);
+    
+    connect(stripChartVarMenu, SIGNAL(triggered(QAction*)),
+            this, SLOT(stripChartVarMenuTriggered(QAction*)));
+
+    clearMenu();
+
+    stripChartVar0Button->setMenu(stripChartVarMenu);
+    stripChartVar1Button->setMenu(stripChartVarMenu);
+    stripChartVar2Button->setMenu(stripChartVarMenu);
+    stripChartVar3Button->setMenu(stripChartVarMenu);
+    stripChartVar4Button->setMenu(stripChartVarMenu);
+    
     stripChartGroup->adjustSize();
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::updateCurrentTabData
+// Method: QvisStripChartMgr::clearAll
+//
+// Purpose: 
+//   This is called to clear the strip charts
+//
+// Programmer: Allen Sanderson
+// Creation:   16 May 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisStripChartMgr::clearAll()
+{
+  clearMenu();
+            
+  for( unsigned int j=0; j<MAX_STRIP_CHARTS; ++j )
+    stripChartTabWidget->clearAll( j );
+}
+
+// ****************************************************************************
+// Method: QvisStripChartMgr::clearMenu
+//
+// Purpose: 
+//   This is called to clear the strip chart menus
+//
+// Programmer: Allen Sanderson
+// Creation:   16 May 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisStripChartMgr::clearMenu()
+{
+    stripChartMenuMap.clear();
+    stripChartActionMap.clear();
+
+    stripChartVarMenu->clear();
+    addMenuItem("None");
+}
+
+// ****************************************************************************
+// Method: QvisStripChartMgr::addMenuItem
+//
+// Purpose: 
+//   This is called to add an item to the strip chart menus
+//
+// Programmer: Allen Sanderson
+// Creation:   16 May 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisStripChartMgr::addMenuItem( std::string str )
+{
+    QAction *action;
+    
+    std::size_t pos = str.find_last_of("/");
+
+    if( pos != std::string::npos )
+    {
+      std::string prefix = str.substr(0,pos);
+      std::string var    = str.substr(pos+1);
+
+      std::map< std::string, QMenu* >::iterator iter =
+        stripChartMenuMap.find(prefix);
+
+      QMenu *menu;
+      
+      if (iter != stripChartMenuMap.end())
+        menu = iter->second;
+      else
+        menu = addSubMenu( prefix );
+
+      action = menu->addAction(var.c_str());
+    }
+    else
+    {
+      action = stripChartVarMenu->addAction(str.c_str());
+    }
+
+    stripChartActionMap[action] = str;
+}
+
+// ****************************************************************************
+// Method: QvisStripChartMgr::addSubMenu
+//
+// Purpose: 
+//   This is called to add a sub menu to the strip chart menus
+//
+// Programmer: Allen Sanderson
+// Creation:   16 May 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+QMenu *
+QvisStripChartMgr::addSubMenu( std::string str )
+{
+  QMenu *menu;
+
+  std::size_t pos = str.find_last_of("/");
+  
+  if( pos != std::string::npos )
+  {
+    std::string prefix = str.substr(0,pos);
+    std::string var    = str.substr(pos+1);
+    
+    std::map< std::string, QMenu* >::iterator iter =
+      stripChartMenuMap.find(prefix);
+
+    QMenu *baseMenu;
+    
+    if (iter != stripChartMenuMap.end())
+      baseMenu = iter->second;
+    else
+      baseMenu = addSubMenu( prefix );
+
+    menu = baseMenu->addMenu(var.c_str());
+  }
+  else
+  {
+    menu = stripChartVarMenu->addMenu(str.c_str());
+  }
+
+  stripChartMenuMap[str] = menu;
+
+  return menu;
+}
+
+
+// ****************************************************************************
+// Method: QvisStripChartMgr::stripChartVarMenuTriggered
+//
+// Purpose: 
+//   This is called when a menu item is triggered and communicates
+//   back to the app the name of the menu item selcted.
+//
+// Programmer: Allen Sanderson
+// Creation:   16 May 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisStripChartMgr::stripChartVarMenuTriggered(QAction *action)
+{
+  QString newTitle = action->text();
+
+  if( QString::compare("None", newTitle ) == 0 )
+    newTitle.clear();
+  
+  stripChartTabWidget->setCurveTitle(activeVar, newTitle);
+
+  std::stringstream tmpstr;
+  tmpstr << stripChartTabWidget->getCurrentStripChart() << " | "
+         << activeVar << " | "
+         << stripChartActionMap[action].c_str();
+  
+  simulationWindow->setStripChartVar( tmpstr.str().c_str() );
+}
+
+// ****************************************************************************
+// Method: QvisStripChartMgr::clickedStripChartVar0
+//
+// Purpose: 
+//   This is called when a buttom menu item is pressed and is used with
+//   stripChartVarMenuTriggered to communicate the variable.
+//
+// Programmer: Allen Sanderson
+// Creation:   16 May 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisStripChartMgr::clickedStripChartVar0()
+{
+  activeVar = 0;
+}
+
+void
+QvisStripChartMgr::clickedStripChartVar1()
+{
+  activeVar = 1;
+}
+
+void
+QvisStripChartMgr::clickedStripChartVar2()
+{
+  activeVar = 2;
+}
+
+void
+QvisStripChartMgr::clickedStripChartVar3()
+{
+  activeVar = 3;
+}
+
+void
+QvisStripChartMgr::clickedStripChartVar4()
+{
+  activeVar = 4;
+}
+
+// ****************************************************************************
+// Method: QvisStripChartMgr::updateCurrentTabData
 //
 // Purpose: 
 //   This is called to update the Mgr widgets in the window.
@@ -187,7 +448,7 @@ QvisStripChartMgr::updateCurrentTabData()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::pick
+// Method: QvisStripChartMgr::pick
 //
 // Purpose: 
 //   This is a pass through method that call the function with the
@@ -206,7 +467,7 @@ QvisStripChartMgr::pick()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::zoom()
+// Method: QvisStripChartMgr::zoom()
 //
 // Purpose: 
 //   This is a pass through method that call the function with the
@@ -225,7 +486,7 @@ QvisStripChartMgr::zoom()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::reset()
+// Method: QvisStripChartMgr::reset()
 //
 // Purpose: 
 //   This is a pass through method that call the function with the
@@ -244,7 +505,7 @@ QvisStripChartMgr::reset()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::clear()
+// Method: QvisStripChartMgr::clear()
 //
 // Purpose: 
 //   This is a pass through method that call the function with the
@@ -263,7 +524,7 @@ QvisStripChartMgr::clear()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::clear
+// Method: QvisStripChartMgr::clear
 //
 // Purpose: 
 //   This is a pass through method that call the function with the
@@ -285,7 +546,7 @@ QvisStripChartMgr::clear( const unsigned int index )
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::setTabLabel
+// Method: QvisStripChartMgr::setTabLabel
 //
 // Purpose: 
 //   This is called to change the name displayed on the tab widget for 
@@ -299,7 +560,7 @@ QvisStripChartMgr::clear( const unsigned int index )
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//   
+// 
 // ****************************************************************************
 void
 QvisStripChartMgr::setTabLabel( const unsigned int index, QString newLabel )
@@ -308,7 +569,7 @@ QvisStripChartMgr::setTabLabel( const unsigned int index, QString newLabel )
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::setTabLabel
+// Method: QvisStripChartMgr::setTabLabel
 //
 // Purpose: 
 //   This is called to change the name displayed on the tab widget for 
@@ -334,7 +595,7 @@ QvisStripChartMgr::setCurveTitle( const unsigned int tabIndex,
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::addDataPoint
+// Method: QvisStripChartMgr::addDataPoint
 //
 // Purpose: 
 //   This is a pass through method that call the function with the
@@ -349,7 +610,7 @@ QvisStripChartMgr::setCurveTitle( const unsigned int tabIndex,
 // Creation:   Wed Sep 26 16:16:23 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 void
 QvisStripChartMgr::addDataPoint( const unsigned int tabIndex,
@@ -359,7 +620,7 @@ QvisStripChartMgr::addDataPoint( const unsigned int tabIndex,
     stripChartTabWidget->addDataPoint(tabIndex, curveIndex, x, y);
 }
 // ****************************************************************************
-// Method: VisItSimStripChart::unpost()
+// Method: QvisStripChartMgr::unpost()
 //
 // Purpose: 
 //   This method unpost this window.
@@ -377,7 +638,7 @@ QvisStripChartMgr::unpost()
 }
 
 // ****************************************************************************
-// Method: VisItSimStripChart::post()
+// Method: QvisStripChartMgr::post()
 //
 // Purpose: 
 //   This method will post this window back into the simulation window.

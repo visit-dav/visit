@@ -122,14 +122,17 @@ public:
     // void setEnableLogScale( bool enable );
     // bool getEnableLogScale();
 
-    void setCurveTitle(int unsigned cruveIndex, const QString &newTitle);
+    void setCurveTitle(const int unsigned curveIndex, const QString &newTitle);
     
-    void setTabLabel(unsigned int tabIndex, const QString &newLabel);
-    void setCurveTitle(int unsigned tabIndex, int unsigned cruveIndex,
+    void clearAll     (const unsigned int tabIndex);
+    void setTabLabel  (const unsigned int tabIndex, const QString &newLabel);
+    void setCurveTitle(const unsigned int tabIndex,
+                       const unsigned int curveIndex,
                        const QString &newTitle);
     
-    void addDataPoint(int unsigned tabIndex, int unsigned cruveIndex,
-                      double x, double y);
+    void addDataPoint(const unsigned int tabIndex,
+                      const unsigned int curveIndex,
+                      const double x, const double y);
 
     unsigned int getCurrentStripChart() { return currentStripChart; };
                                                                         
