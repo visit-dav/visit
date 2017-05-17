@@ -42,7 +42,7 @@
 #include <qwt_plot_curve.h>
 
 #define HISTORY 50
-#define MAX_STRIP_CHART_VARS 4
+#define MAX_STRIP_CHART_VARS 5
 
 class Background;
 
@@ -113,8 +113,9 @@ public:
     void reset();
     void clear();
 
-    void setCurveTitle( unsigned int index, const QString &newTitle);
-    void addDataPoint( unsigned int index, double x, double y);
+    void setCurveTitle( const unsigned int index, const QString &newTitle);
+    void addDataPoint ( const unsigned int index,
+                        const double x, const double y);
 
 private Q_SLOTS:
     void legendChecked( const QVariant &, bool on );

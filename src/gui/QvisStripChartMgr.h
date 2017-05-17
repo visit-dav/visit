@@ -41,22 +41,27 @@
 #include <QWidget>
 #include <QvisPostableWindow.h>
 
+class QvisSimulationWindow;
 class QvisStripChartTabWidget;
+
 class QLabel;
 class QPushButton;
 class QString;
 class QCheckBox;
 class QGridLayout;
 class QScrollArea;
+class QMenu;
 
 class EngineList;
 class ViewerProxy;
 
+#include <map>
+
 // ****************************************************************************
-// Class: QvisStripChartTabWidget
+// Class: QvisStripChartMgr
 //
 // Purpose:
-//    Implements a container widget to hold a set of QvisStripChartTabWidget
+//    Implements a container widget to hold a set of QvisStripChartMgr
 //
 // Notes:      
 //
@@ -82,6 +87,11 @@ public:
     void setCurveTitle( const unsigned int tabIndex,
                         const unsigned int curveIndex, QString newTitle );
 
+    void clearAll();
+    void clearMenu();
+    void addMenuItem( std::string str );
+    QMenu *addSubMenu( std::string str );
+
     void addDataPoint( const unsigned int tabIndex,
                        const unsigned int curveIndex,
                        double x, double y );
@@ -100,10 +110,18 @@ public slots:
         
     void updateCurrentTabData();
 
+    void clickedStripChartVar0();
+    void clickedStripChartVar1();
+    void clickedStripChartVar2();
+    void clickedStripChartVar3();
+    void clickedStripChartVar4();
+    void stripChartVarMenuTriggered(QAction *action);
+  
 protected:
     virtual void CreateWindowContents();
 
 private:
+    QvisSimulationWindow    *simulationWindow;
     QvisStripChartTabWidget *stripChartTabWidget;
 
     QGridLayout        *chartLayout;
@@ -111,6 +129,13 @@ private:
     QPushButton        *zoomButton;
     QPushButton        *resetButton;
     QPushButton        *clearButton;
+
+    QMenu              *stripChartVarMenu;
+    QPushButton        *stripChartVar0Button;
+    QPushButton        *stripChartVar1Button;
+    QPushButton        *stripChartVar2Button;
+    QPushButton        *stripChartVar3Button;
+    QPushButton        *stripChartVar4Button;
 
     QScrollArea        *sc;
     QCheckBox          *enableLogScale;
@@ -120,5 +145,10 @@ private:
     EngineList         *engines;
     ViewerProxy        *viewer;
     int                simIndex;
+
+    int                activeVar;
+
+    std::map< std::string, QMenu* > stripChartMenuMap;
+    std::map< QAction*, std::string > stripChartActionMap;
 };
 #endif /* QVIS_STRIPCHART_MGR */

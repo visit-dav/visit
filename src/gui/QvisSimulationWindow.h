@@ -139,11 +139,12 @@ private:
     void UpdateUIComponent(QWidget *window,
                            const QString &name, const QString &value, bool e);
 
-    void parseCompositeCMD( const char *cmd, unsigned int &index, char *name );
-    void parseCompositeCMD( const char *cmd,
+    void parseCompositeCMD( const std::string cmd, unsigned int &index,
+                            std::string &text );
+    void parseCompositeCMD( const std::string cmd,
                             unsigned int &row, unsigned int &column,
-                            char *name );
-    void parseCompositeCMD( const char *cmd,
+                            std::string &text );
+    void parseCompositeCMD( const std::string cmd,
                             unsigned int &row, unsigned int &column,
                             double &x, double &y );
     std::string getNextString( std::string &cmd, const std::string delimiter );
