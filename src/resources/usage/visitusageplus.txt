@@ -298,11 +298,23 @@
                              Dump html pages only. 
                              Takes an optional argument that specifies the 
                              directory for -info-dump output files.
-        -gdb <args> <comp>   Run gdb with <args> on component <comp>.
-                             Default <args> is whitespace.
         -break <funcname>    Add the specified breakpoint in gdb.
         -xterm               With -gdb-something, run gdb in an xterm window.
         -newconsole          Run any VisIt component in a new console window.
+        -gdb <args> <comp>   Run gdb with <args> on component <comp>.
+                             Default <args> is whitespace.
+        -lldb <args> <comp>  Run lldb with <args> on component <comp>.
+                             Default <args> is whitespace.
+        -ddt <args> <comp>   Run ddt with <args> on component <comp>.
+                             Default <args> is whitespace.
+        -nvprof <args> <comp> Run Cuda nvprof with <args> on component <comp>.
+                             Default <args> is --output-profile timeline_%h_%p.nvprof
+        -cuda-memcheck <args> <comp>
+                             Run Cuda Memcheck with <args> on component <comp>.
+                             Default <args> is whitespace.
+        -vtune <args> <comp> Run VTune (amplxe-cl) with <args> on component <comp>.
+                             Default <args> is -collect hotspot -quiet 
+                             -result-dir vtune_<comp>_<pid>.dir
         -totalview <args> <comp>
                              Run totalview with <args> on component <comp>.
                              Default <args> is whitespace.
@@ -310,6 +322,9 @@
                              Run valgrind with <args> on component <comp>.
                              Default <args> is --tool=memcheck --error-limit=no
                              --num-callers=50.
+        -callgrind <args> <comp>
+                             Run valgrind with <args> on component <comp>.
+                             Default <args> is --tool=callgrind
         -strace <args> <comp>
                              Run strace with <args> on component <comp>.
                              Default <args> is -ttt -T.
@@ -317,7 +332,6 @@
                              In the above, all arguments between the tool name
                              and the VisIt component name are treated as args
                              to the tool.
-
         -apitrace <args> <comp>
                              Run apitrace with <args> on component <comp>.
                              Default <args> is trace --api gl.
@@ -325,7 +339,6 @@
                              In the above, all arguments between the tool name
                              and the VisIt component name are treated as args
                              to the tool.
-
         -debug-malloc <args> <comp>
                              Run the component with the libMallocDebug library
                              on MacOS X systems. The libMallocDebug library
@@ -352,7 +365,6 @@
                              >>> OpenGUI('-debug-malloc', 'MallocDebug', 'gui')
                              Connect to the gui with MallocDebug and do your
                              sampling.
-
         -numrestarts <#>     Number of attempts to restart a failed engine.
         -quiet               Don't print the Running message.
         -protocol            Print the definitions of the state objects that
