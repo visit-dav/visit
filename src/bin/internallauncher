@@ -1325,6 +1325,45 @@ class CudaDebugger(Debugger):
             vgargs = ["--output-profile", "timeline_%h_%p.nvprof"]
         return launcherargs + self.Executable() + vgargs + visitargs
 
+
+###############################################################################
+# Class: VTuneProfiler
+#
+# Purpose:    Launch a VisIt component under vtune
+#
+# Programmer: Mark C. Miller
+# Date:       Tue May 16 16:30:02 PDT 2017
+#
+###############################################################################
+
+class VTuneProfiler(Debugger):
+    def __init__(self, launcher):
+        super(VTuneProfiler, self).__init__(launcher)
+
+    def Executable(self):
+        return ["amplxe-cl"]
+
+    def CreateCommand(self, args):
+
+        launcherargs, visitargs = self.SeparateArguments(args)
+
+        vtargs = self.DebuggerArguments()
+
+        if len(vtargs) == 0:
+            vtargs = ["-collect", "hotspots",
+                      "-result-dir", "./vtune_%s_hotspots.dir/"%(visitargs[0].split('/')[-1]),
+                      "-trace-mpi", "-quiet"]
+
+        if len(launcherargs) > 0:
+            # parallel launch
+            args = launcherargs + xterm_args \
+                + self.Executable() + vtargs + visitargs
+        else:
+            # serial launch
+            args = self.Executable() + vtargs + visitargs
+
+        return args
+
 ###############################################################################
 # Class: CudaMemcheck
 #
@@ -1387,7 +1426,7 @@ class ValgrindDebugger(Debugger):
 
         if len(vgargs) == 0:
             vgargs = ["--tool=memcheck", "--error-limit=no", "--num-callers=50", \
-                    "--db-attach=no", "--leak-check=full", "--track-origins=yes", \
+                    "--leak-check=full", "--track-origins=yes", \
                     "--show-reachable=yes"] #, "--vgdb=full", "--vgdb-error=0"]
             if not have_xterm:
                 # if you're not in an xterm then you probably want to send the output
@@ -2969,7 +3008,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "ddt",
                 "lldb",
                 "nvprof",
-                "cuda-memcheck"]
+                "cuda-memcheck",
+                "vtune"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -3020,6 +3060,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return CudaDebugger(self)
         elif debugger == "cuda-memcheck":
             return CudaMemcheck(self)
+        elif debugger == "vtune":
+            return VTuneProfiler(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 
