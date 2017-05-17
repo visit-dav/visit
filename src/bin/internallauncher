@@ -1350,14 +1350,18 @@ class VTuneProfiler(Debugger):
         vtargs = self.DebuggerArguments()
 
         if len(vtargs) == 0:
-            vtargs = ["-collect", "hotspots",
-                      "-result-dir", "./vtune_%s_hotspots.dir/"%(visitargs[0].split('/')[-1]),
-                      "-trace-mpi", "-quiet"]
+            try:
+                os.mkdir("./vtune_%s"%self.launcher.generalArgs.exe_name)
+            except OSError:
+                pass
+            vtargs = ["-collect", "hotspots", "-quiet", "-user-data-dir",
+                "./vtune_%s"%self.launcher.generalArgs.exe_name]
+            if self.launcher.generalArgs.exe_name == "engine_par":
+                vtargs += ["-trace-mpi", "-r", "%d"%os.getpid()]
 
         if len(launcherargs) > 0:
             # parallel launch
-            args = launcherargs + xterm_args \
-                + self.Executable() + vtargs + visitargs
+            args = launcherargs + self.Executable() + vtargs + visitargs
         else:
             # serial launch
             args = self.Executable() + vtargs + visitargs
