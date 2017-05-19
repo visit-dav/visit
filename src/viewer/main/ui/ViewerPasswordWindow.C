@@ -210,19 +210,36 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password, c
             result += write(fd, "yes\n", 4);
             pbuf = buffer;
         }
-        else if (strstr(buffer, "assword") ||
-                 strstr(buffer, "ASSWORD") ||
-                 strstr(buffer, "asscode") ||
-                 strstr(buffer, "ASSCODE") ||
-                 strstr(buffer, "Token_Response:"))
+        else if (strstr(buffer, "assword") || strstr(buffer, "ASSWORD") ||
+                 strstr(buffer, "asscode") || strstr(buffer, "ASSCODE") ||
+                 strstr(buffer, "assphrase") || strstr(buffer, "ASSPHRASE") ||
+                 strstr(buffer, "Token_Response:") ||
+                 strstr(buffer, "Token Code:"))
         {
+            std::string phrase;
+            if (strstr(buffer, "assword") || strstr(buffer, "ASSWORD") )
+              phrase = std::string("Password");
+            
+            else if (strstr(buffer, "asscode") || strstr(buffer, "ASSCODE") )
+              phrase = std::string("Passcode");
+            
+            else if (strstr(buffer, "assphrase") || strstr(buffer, "ASSPHRASE") )
+              phrase = std::string("Passphrase");
+            
+            else if (strstr(buffer, "Token Code:") )
+              phrase = std::string("Token Code");
+            
+            else if (strstr(buffer, "Token_Response:") )
+              phrase = std::string("Token Response");
+            
             // Password needed. Prompt for it and write it to the FD.
-            VisItPasswordWindow::ReturnCode ret = VisItPasswordWindow::PW_Accepted;
+            VisItPasswordWindow::ReturnCode ret =
+              VisItPasswordWindow::PW_Accepted;
 
             //Start with password that was supplied by machine profile
             std::string passwd = password;
             if (passwd.empty()) {
-                passwd = instance->password(username, host, false, ret);
+              passwd = instance->password(username, host, phrase.c_str(), ret);
             }
 
             if (passwd.empty())
@@ -239,33 +256,6 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password, c
             }
 
             result += write(fd, passwd.c_str(), passwd.size());
-            result += write(fd, "\n", 1);
-            pbuf = buffer;
-
-            // We put up the password window, have zero timeout for
-            // the connection progress dialog.
-            timeout = 0;
-        }
-        else if (strstr(buffer, "assphrase"))
-        {
-            // Passphrase needed. Prompt for it and write it to the FD.
-            VisItPasswordWindow::ReturnCode ret = VisItPasswordWindow::PW_Accepted;
-            std::string passphr = instance->password(username, host, true, ret);
-
-            if (passphr.empty())
-            {
-                if (ret == VisItPasswordWindow::PW_ChangedUsername)
-                {
-                    EXCEPTION0(ChangeUsernameException);
-                }
-                else
-                {
-                    // User closed the window or hit cancel
-                    EXCEPTION0(CancelledConnectException);
-                }
-            }
-
-            result += write(fd, passphr.c_str(), passphr.size());
             result += write(fd, "\n", 1);
             pbuf = buffer;
 
@@ -400,7 +390,8 @@ ViewerPasswordWindow::GetFailedPortForwards()
 
 std::string
 ViewerPasswordWindow::password(const char *username, const char *host,
-    bool passphrase, VisItPasswordWindow::ReturnCode &ret)
+                               const char *phrase,
+                               VisItPasswordWindow::ReturnCode &ret)
 {
     if(!instance)
         instance = new ViewerPasswordWindow();
@@ -414,7 +405,8 @@ ViewerPasswordWindow::password(const char *username, const char *host,
 #endif
 
         ret = VisItPasswordWindow::PW_Rejected;
-        pw = instance->getPassword(QString(username), QString(host), passphrase, ret);
+        pw = instance->getPassword(QString(username), QString(host),
+                                   QString(phrase), ret);
 
 #if !defined(_WIN32)
         ViewerBase::GetViewerMessaging()->BlockClientInput(false);

@@ -100,7 +100,8 @@ public:
     static std::set<int> GetFailedPortForwards();
 private:
     std::string password(const char *username, const char *host,
-                         bool passphrase, VisItPasswordWindow::ReturnCode &ret);
+                         const char *phrase,
+                         VisItPasswordWindow::ReturnCode &ret);
 
     static ViewerPasswordWindow           *instance;
     static ViewerConnectionProgressDialog *dialog;
