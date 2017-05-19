@@ -21,6 +21,32 @@ class JobSubmitter_ibrun_TACC(JobSubmitter_ibrun):
         return ["ibrun", "tacc_xrun", "tacc_affinity"]
 
 ###############################################################################
+# Class: JobSubmitter_sbatch_TACC
+#
+# Purpose:    Custom "sbatch" job submitter for TACC.
+#
+# Programmer: Brad Whitlock
+# Date:       Thu May 18 16:53:04 PDT 2017
+#
+# Modifications:
+#
+###############################################################################
+
+class JobSubmitter_sbatch_TACC(JobSubmitter_sbatch):
+    def __init__(self, launcher):
+        super(JobSubmitter_sbatch_TACC, self).__init__(launcher)
+
+    def CreateFilename(self):
+        tdate = string.replace(time.asctime()[11:19], ":", "_")
+        tuser = self.launcher.username()
+        return os.path.join("/tmp", "visit.%s.%s" % (tuser, tdate))
+
+    def TFileSetup(self, tfile):
+        super(JobSubmitter_sbatch_TACC, self).TFileSetup(tfile)
+        tfile.write("module load intel/15.0.2\nmodule load mvapich2/2.1\n")
+
+
+###############################################################################
 # Class: JobSubmitter_qsub_TACC
 #
 # Purpose:    Custom "qsub" job submitter for TACC.
@@ -128,6 +154,8 @@ For more information about TACC resources and configurations, see:";
             return JobSubmitter_ibrun_TACC(self)
         elif launch[:4] == "qsub":
             return JobSubmitter_qsub_TACC(self)
+        elif launch[:6] == "sbatch":
+            return JobSubmitter_sbatch_TACC(self)
         return super(TACCLauncher, self).JobSubmitterFactory(launch)
 
 # Launcher creation function
