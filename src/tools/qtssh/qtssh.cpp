@@ -216,7 +216,7 @@ qtssh_handle_new_username(const char *host)
 //   p : The prompts for which we're gathering input.
 //   in : The default input values.
 //   inlen : The length of the default input values.
-//   passphrase : True if we want passphrase instead of password.
+//   phrase : Phrase to use in the prompt
 //
 // Returns:    
 //
@@ -234,7 +234,7 @@ qtssh_handle_new_username(const char *host)
 // ****************************************************************************
 
 static int
-qtssh_handle_password(prompts_t *p, int i, unsigned char *in, int inlen, bool passphrase)
+qtssh_handle_password(prompts_t *p, int i, unsigned char *in, int inlen, std::string phrase)
 {
     VisItPasswordWindow win;
     
@@ -243,7 +243,7 @@ getpassword:
     VisItPasswordWindow::ReturnCode status = VisItPasswordWindow::PW_Rejected;
     QString password = win.getPassword(QString(conf_get_str(qtssh_config, CONF_username)),
                                        QString(conf_get_str(qtssh_config, CONF_host)),
-                                       passphrase,
+                                       QString(phrase.c_str()),
                                        status);
     
     int ret = -1;
@@ -312,9 +312,11 @@ int qtssh_get_userpass_input(prompts_t *p, unsigned char *in, int inlen)
     for(size_t i = 0; i < p->n_prompts; ++i)
     {
         if (strstr(p->prompts[i]->prompt, "assword") != NULL)
-            ret = qtssh_handle_password(p, i, in, inlen, false);
+            ret = qtssh_handle_password(p, i, in, inlen, "Password");
+        else if (strstr(p->prompts[i]->prompt, "asscode") != NULL)
+            ret = qtssh_handle_password(p, i, in, inlen, "Passcode");
         else if (strstr(p->prompts[i]->prompt, "assphrase") != NULL)
-            ret = qtssh_handle_password(p, i, in, inlen, true);
+            ret = qtssh_handle_password(p, i, in, inlen, "Passphrase");
         else
             ret = qtssh_handle_prompt(p, i, in, inlen);
     }

@@ -145,28 +145,26 @@ VisItPasswordWindow::~VisItPasswordWindow()
 // ****************************************************************************
 
 QString
-VisItPasswordWindow::getPassword(const QString &username, const QString &host,
-    bool passphrase, VisItPasswordWindow::ReturnCode &ret)
+VisItPasswordWindow::getPassword(const QString &username,
+                                 const QString &host,
+                                 QString phrase,
+                                 VisItPasswordWindow::ReturnCode &ret)
 {
     this->changedUserName = false;
 
-    const char *queryType = passphrase ? "Passphrase" : "Password";
-    if (passphrase)
-        this->setWindowTitle(tr("Enter passphrase"));
-    else
-        this->setWindowTitle(tr("Enter password"));
+    this->setWindowTitle(QString("Enter %1").arg(phrase));
 
     // Set the password prompt.
     QString labelText;
     this->label->setTextFormat(Qt::RichText);
     if(username.isEmpty() || username == QString("notset"))
-        labelText = QString("%1 for %2: ").arg(queryType).arg(host);
+        labelText = QString("%1 for %2: ").arg(phrase).arg(host);
     else
     {
         // "nobr" means no line breaks, which is how it worked when we weren't
         // using rich text.
         labelText = QString("<nobr>%1 for <font color=\"red\">%2</font>@%3: </nobr>").
-                           arg(queryType).arg(username).arg(host);
+                           arg(phrase).arg(username).arg(host);
     }
     this->label->setText(labelText);
 

@@ -71,7 +71,7 @@ public:
     } ReturnCode;
 
     QString getPassword(const QString &host, const QString &username,
-                        bool passPhrase, ReturnCode &ret);
+                        QString phrase, ReturnCode &ret);
 
 private slots:
     void changeUserName();
