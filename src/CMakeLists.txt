@@ -415,6 +415,9 @@
 #    Move setting of HAVE_LIBxxx to SetUpThirdParty or FindXXX in the case
 #    where a special HAVE_XXX is neeeded.
 #
+#    Eric Brugger, Wed May 17 16:53:48 PDT 2017
+#    I added support for the LLVM and OpenSWR packages.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
@@ -828,6 +831,7 @@ VISIT_3RDPARTY_VAR(HDF5_MPI_DIR  "Path containing the parallel HDF5 library's in
 VISIT_3RDPARTY_DEP(HDF5_MPI_LIBDEP "HDF5 parallel library dependencies")
 VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include and lib")
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
+VISIT_3RDPARTY_VAR(LLVM_DIR      "Path containing the LLVM library's include and lib")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
@@ -835,6 +839,7 @@ VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
 VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
+VISIT_3RDPARTY_VAR(OPENSWR_DIR   "Path containing the OpenSWR library's include and lib")
 VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
 VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
@@ -1114,9 +1119,9 @@ CHECK_INCLUDE_FILES (zlib.h      HAVE_ZLIB_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
 
 # Configure Mesa support.
-IF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
+IF(NOT WIN32 AND (VISIT_MESA_DIR OR VISIT_OPENSWR_DIR) AND NOT VISIT_DBIO_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
-ENDIF(NOT WIN32 AND VISIT_MESA_DIR AND NOT VISIT_DBIO_ONLY)
+ENDIF(NOT WIN32 AND (VISIT_MESA_DIR OR VISIT_OPENSWR_DIR) AND NOT VISIT_DBIO_ONLY)
 
 # Configure OpenGL support.
 IF(NOT VISIT_DBIO_ONLY)
