@@ -210,11 +210,17 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password, c
             result += write(fd, "yes\n", 4);
             pbuf = buffer;
         }
+        else if(strstr(buffer, "please enter your TACC password") &&
+                !strstr(buffer, "Password:"))
+        {
+            // Skip this message. We'll get a "Password:" prompt soon.
+        }
         else if (strstr(buffer, "assword") ||
                  strstr(buffer, "ASSWORD") ||
                  strstr(buffer, "asscode") ||
                  strstr(buffer, "ASSCODE") ||
-                 strstr(buffer, "Token_Response:"))
+                 strstr(buffer, "Token_Response:") ||
+                 strstr(buffer, "Token Code:"))
         {
             // Password needed. Prompt for it and write it to the FD.
             VisItPasswordWindow::ReturnCode ret = VisItPasswordWindow::PW_Accepted;
