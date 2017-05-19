@@ -55,6 +55,9 @@
 #   Kathleen Biagas, Fri Mar 17 09:14:34 PDT 2017
 #   Set HAVE_OSMESA flag when MESA_FOUND.
 #
+#   Eric Brugger, Thu May 18 15:51:13 PDT 2017
+#   I added support for the LLVM and OpenSWR packages.
+#
 #****************************************************************************/
 
 # Use the VTK_DIR hint from the config-site .cmake file 
@@ -63,6 +66,11 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 IF (WIN32)
     SET_UP_THIRD_PARTY(MESA lib include MesaGL32 osmesa32)
 ELSE (WIN32)
+    SET_UP_THIRD_PARTY(LLVM lib include LLVM-4.0 LTO)
+    SET_UP_THIRD_PARTY(OPENSWR lib include swrAVX swrAVX2)
+    IF(OPENSWR_FOUND)
+        SET(MESA_DIR ${OPENSWR_DIR})
+    ENDIF(OPENSWR_FOUND)
     SET_UP_THIRD_PARTY(MESA lib include OSMesa)
 
     # If we're on Apple, set up MesaGLU too. This is mostly to ensure that it gets installed.

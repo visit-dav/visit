@@ -40,6 +40,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 2.12.3</font></b></p>
 <ul>
   <li>Build_visit was modified to no longer apply a patch to Python when using the Intel compiler since the patch is now included in the version of Python we are using.</li>
+  <li>Build_visit has been enhanced to support OpenSWR. OpenSWR is an Intel software renderer that is now part of Mesa. OpenSWR should not be enabled with mesa. To enable OpenSWR add the following flags "--llvm --openswr" to the command line. When you build visit with OpenSWR support it will use the Mesa llvmpipe renderer by default. To enable the OpenSWR renderer you will need to set the GALLIUM_DRIVER environment variable to swr (e.g. "setenv GALLIUM_DRIVER swr"). When VisIt runs with OpenSWR it will print AVX or AVX2 to the terminal depending on the type of Intel CPU you are running on.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
