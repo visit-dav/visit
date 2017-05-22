@@ -151,7 +151,7 @@ class TestWindow(unittest.TestCase):
     @visit_test
     def test_bad_file_save(self):
         sw = SimpleWindow()
-        self.assertRaises(VisItException,sw.render,"/bad/path/to/a/file.png",[200,200])
+        self.assertRaises(VisItException,sw.render,"/bad/path/to/a/file",[200,200])
         self.cleanup_windows()
 
 if __name__ == "__main__":

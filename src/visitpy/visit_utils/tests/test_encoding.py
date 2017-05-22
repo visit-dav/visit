@@ -123,7 +123,7 @@ class TestEncoding(unittest.TestCase):
                                                                 stereo=True)
     def test_extract(self):
         if "mpg" in encoding.encoders():
-            eframes = pjoin(output_dir,"extract_out_%0m4d.png")
+            eframes = pjoin(output_dir,"extract_out_%04d.png")
             encoding.encode(iframes,pjoin(output_dir,"wave.movie.mpg"))
             encoding.extract(pjoin(output_dir,"wave.movie.mpg"),eframes)
             ofile = pjoin(output_dir,"wave.movie.extract.and.reencode.mpg")
@@ -163,7 +163,17 @@ class TestEncoding(unittest.TestCase):
                 encoding.encode(iframes,ofile,input_frame_rate=5,output_frame_rate=30)
                 self.assertEqual(0,len(lst_slnks()))
                 self.assertTrue(check_encoded_file(ofile))
-
+    def test_ffmpeg_reencode_new_format(self):
+        encoders =  encoding.encoders() 
+        if "mpg" in encoders and "wmv" in encoders:
+            clean_slnks()
+            ofile_src = pjoin(output_dir,"wave.movie.reencode.src.mpg")
+            ofile_des = pjoin(output_dir,"wave.movie.reencode.src.wmv")
+            encoding.encode(iframes,ofile_src)
+            encoding.encode(ofile_src,ofile_des)
+            self.assertEqual(0,len(lst_slnks()))
+            self.assertTrue(check_encoded_file(ofile_src))
+            self.assertTrue(check_encoded_file(ofile_des))
 
 
 if __name__ == '__main__':
