@@ -315,6 +315,10 @@
         -vtune <args> <comp> Run VTune (amplxe-cl) with <args> on component <comp>.
                              Default <args> is -collect hotspot -quiet 
                              -result-dir vtune_<comp>_<pid>.dir
+        -instruments <args> <comp>
+                             Run instruments with <args> on component <comp>.
+                             Default <args> is -t "Time Profiler"
+                             -D ./instruments_<comp>
         -totalview <args> <comp>
                              Run totalview with <args> on component <comp>.
                              Default <args> is whitespace.
