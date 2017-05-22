@@ -1369,6 +1369,41 @@ class VTuneProfiler(Debugger):
         return args
 
 ###############################################################################
+# Class: InstrumentsProfiler
+#
+# Purpose:    Launch a VisIt component under the instruments (osx) profiler
+#
+# Programmer: Mark C. Miller
+# Date:       Tue May 21 16:30:02 PDT 2017
+#
+###############################################################################
+
+class InstrumentsProfiler(Debugger):
+    def __init__(self, launcher):
+        super(InstrumentsProfiler, self).__init__(launcher)
+
+    def Executable(self):
+        return ["instruments"]
+
+    def CreateCommand(self, args):
+        launcherargs, visitargs = self.SeparateArguments(args)
+        instargs = self.DebuggerArguments()
+
+        if len(instargs) == 0:
+
+            instargs = ["-t", "Time Profiler", "-D",
+                "./instruments_%s"%self.launcher.generalArgs.exe_name]
+
+        if len(launcherargs) > 0:
+            # parallel launch
+            args = launcherargs + self.Executable() + instargs + visitargs
+        else:
+            # serial launch
+            args = self.Executable() + instargs + visitargs
+
+        return args
+
+###############################################################################
 # Class: CudaMemcheck
 #
 # Purpose:  Launch a CUDA-enabled VisIt component under NVIDIA's cuda-memcheck
@@ -3013,7 +3048,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
                 "lldb",
                 "nvprof",
                 "cuda-memcheck",
-                "vtune"]
+                "vtune",
+                "instruments"]
 
     ############################################################################
     # Method: DebuggerFactory
@@ -3066,6 +3102,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return CudaMemcheck(self)
         elif debugger == "vtune":
             return VTuneProfiler(self)
+        elif debugger == "instruments":
+            return InstrumentsProfiler(self)
         # Return a debugger that does not do anything.
         return Debugger(self)
 
