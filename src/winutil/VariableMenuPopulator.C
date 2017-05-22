@@ -578,7 +578,7 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             //
             if (role == SIL_MATERIAL)
                 materialVars.AddVariable(varName, validVariable);
-            else
+            else if (maps.size() > 1)
                 subsetVars.AddVariable(varName, validVariable);
         }
     }
