@@ -153,12 +153,14 @@ class Window(object):
         odir, ofile = os.path.split(obase)
         if ts is None:
             print "[rendering %s/%s.png]" % (odir,ofile)
+            tmp_ofile = "%s___.tmp" % ofile
         else:
             print "[rendering %s/%s%04d.png]" % (odir,ofile,ts)
+            tmp_ofile = "%s.%04d___.tmp" % (ofile,ts)
         sa = visit.SaveWindowAttributes()
         sa.outputToCurrentDirectory = 0
         sa.outputDirectory = odir
-        sa.fileName = ofile + "___.tmp"
+        sa.fileName = tmp_ofile
         sa.format = sa.PNG
         sa.width, sa.height = res
         sa.screenCapture = 0
@@ -169,11 +171,9 @@ class Window(object):
         a.userInfoFlag = 0
         visit.SetAnnotationAttributes(a)
         fname = visit.SaveWindow()
-        if fname == "/dev/null/SaveWindow_Error.txt":
+        if fname == "/dev/null/SaveWindow_Error.txt" or not os.path.isfile(fname):
             raise VisItException("Error saving window.")
         des = fname[:fname.find("___.tmp")]
-        if not ts is None:
-            des += "%04d" % ts
         des += ".png"
         shutil.move(fname,des)
         if ores[0] != res[0] or ores[1] != res[1]:

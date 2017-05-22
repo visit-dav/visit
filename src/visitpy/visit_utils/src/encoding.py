@@ -49,6 +49,7 @@
     encode("input.%04d.png","output.sm")
     encode("input.%04d.png","output.sm",stereo=True)
     extract("movie.mpg","output%04d.png")
+    encode("input.mpg","output.wmv")
 
 """
 
@@ -213,10 +214,10 @@ def encode_sm(ipattern,ofile,stereo=False):
     """
     enc_bin = img2sm_bin()
     if not enc_bin is None:
-        cmd = "%s -rle" % enc_bin
+        cmd = "%s -c rle %s " % (enc_bin,ipattern)
         if stereo:
-            cmd += " -stereo"
-        cmd += " %s %s " % (ipattern,ofile)
+            cmd += " -S "
+        cmd += ofile
         return sexe(cmd,echo=True)
     else:
         raise VisItException("img2sm not found: Unable to encode streaming movie.")
@@ -238,7 +239,8 @@ def encode_mpeg1(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
             cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
             cmd += "-b:v 18000000 -r %s %s"
@@ -253,7 +255,8 @@ def encode_mpeg1(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -qmin 1 -qmax 2 -an -vcodec mpeg1video "
             cmd += "-trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-b 18000000 -r %s %s"
             cmd =  cmd % (enc_bin,ipattern,mpeg1_ofps,ofile)
@@ -282,7 +285,8 @@ def encode_wmv(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
             cmd += "-flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
             cmd += "-b:v 18000000 -r %s %s"
@@ -297,7 +301,8 @@ def encode_wmv(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec msmpeg4v2 "
             cmd += "-mbd -rd -flags +aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-b 18000000 -r %s %s"
             cmd =  cmd % (enc_bin,ipattern,wmv_ofps,ofile)
@@ -326,7 +331,8 @@ def encode_swf(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd +=  "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd +=  "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
             cmd += "-b:v 18000000 -r %s -f swf %s"
@@ -341,7 +347,8 @@ def encode_swf(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += "-framerate %s" % input_frame_rate
-            cmd =  "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd =  "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec flv "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-b 18000000 -r %s -f swf %s"
             cmd =  cmd % (enc_bin,ipattern,swf_ofps,ofile)
@@ -367,7 +374,8 @@ def encode_avi(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -vcodec mjpeg -q:v 1 -an "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -vcodec mjpeg -q:v 1 -an "
             if not output_frame_rate is None:
                 cmd += " -r %s " % output_frame_rate
             cmd += " %s "
@@ -375,7 +383,8 @@ def encode_avi(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -vcodec mjpeg -qscale 1 -an "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -vcodec mjpeg -qscale 1 -an "
             if not output_frame_rate is None:
                 cmd += " -r %s " % output_frame_rate
             cmd += " %s "
@@ -399,7 +408,8 @@ def encode_divx(ipattern,
             cmd  = "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -vcodec mpeg4 -q:v 1 -f avi "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -vcodec mpeg4 -q:v 1 -f avi "
             if not output_frame_rate is None:
                 cmd += " -r %s " % output_frame_rate
             cmd += "-vtag DX50 -an %s "
@@ -407,7 +417,8 @@ def encode_divx(ipattern,
             cmd  = "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd +="-f image2 -i %s -vcodec mpeg4 -qscale 1 -f avi "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd +="-i %s -vcodec mpeg4 -qscale 1 -f avi "
             if not output_frame_rate is None:
                 cmd += " -r %s " % output_frame_rate
             cmd += "-vtag DX50 -an %s "
@@ -434,7 +445,8 @@ def encode_mov(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd +=  "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd +=  "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
             cmd += "-an -b:v 18000000 -f mov -r %s %s"
@@ -450,7 +462,8 @@ def encode_mov(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-an -b 18000000 -f mov -r %s %s"
             cmd =  cmd % (enc_bin,ipattern,mov_ofps,ofile)
@@ -476,7 +489,8 @@ def encode_mp4(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass %d "
             cmd += "-passlogfile %s " % ffmpeg_log_file_prefix(ofile)
             cmd += "-an -b:v 18000000 -f mp4 "
@@ -494,7 +508,8 @@ def encode_mp4(ipattern,
             cmd =  "echo y | %s "
             if not input_frame_rate is None:
                 cmd += " -framerate %s " % input_frame_rate
-            cmd += "-f image2 -i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
+            cmd += ffmpeg_input_type(ipattern)
+            cmd += "-i %s -qmin 1 -qmax 2 -g 100 -an -vcodec mpeg4 "
             cmd += "-mbd -rd -flags +mv4+aic -trellis 2 -cmp 2 -subcmp 2 -pass 1/2 "
             cmd += "-an -b 18000000 -f mp4"
             if not output_frame_rate is None:
@@ -613,7 +628,24 @@ def ffmpeg_log_file_for_pass(ofile,pass_number=0):
     """
     return ffmpeg_log_file_prefix(ofile) + ("-%d.log" % pass_number)
 
-    
+
+def ffmpeg_input_type(ipattern):
+    """
+    Helper that selects proper ffmpeg input type.
+    Specifies raw images as input if the input is not a known
+    movie format.
+    """
+    # assume image based input
+    res = "-f image2 "
+    # drop image spec option if the input is actually
+    # a known encoded movie type
+    base, ext = os.path.splitext(ipattern)
+    for enc in encoders():
+        if enc != "sm" and ext.endswith(enc):
+            res = " "
+    return res
+
+
 #
 # Helpers to find encoding binaries
 #
