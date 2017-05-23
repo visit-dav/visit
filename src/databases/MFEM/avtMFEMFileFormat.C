@@ -786,6 +786,11 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
 //
+// Modifications:
+//   Cyrus Harrison, Tue May 23 10:12:52 PDT 2017
+//   Seed rng with domain id for predictable coloring results
+//   (See: http://visitbugs.ornl.gov/issues/2747)
+//
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
@@ -822,13 +827,12 @@ avtMFEMFileFormat::GetRefinedElementColoring(const std::string &mesh_name,
     //
     // Use mfem's mesh coloring alog
     //
-    
-    //srandom(time(0)); don't seed, may have side effects for other parts of visit
-#ifdef _WIN32
+
+    // seed using domain id for predictable results
+    srand(domain);
+
     double a = double(rand()) / (double(RAND_MAX) + 1.);
-#else
-    double a = double(random()) / (double(RAND_MAX) + 1.);
-#endif
+
     int el0 = (int)floor(a * mesh->GetNE());
     mesh->GetElementColoring(coloring, el0);
     int ref_idx=0;
