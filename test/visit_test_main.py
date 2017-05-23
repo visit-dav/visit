@@ -2147,6 +2147,10 @@ def TestBatchSimulation(sim):
 #    Burlen Loring, Fri Oct  2 12:31:12 PDT 2015
 #    Added gdb support for serial
 #
+#    Eric Brugger, Tue May 23 08:34:06 PDT 2017
+#    I changed the parallel job launching logic to use srun on both surface
+#    and cab instead of just surface.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1, batch=False):
@@ -2186,7 +2190,8 @@ class Simulation(object):
 
             # For now...
             import socket
-            if "surface" in socket.gethostname():
+            if "surface" in socket.gethostname() or \
+               "cab" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
                     msubscript = os.path.join(os.path.abspath(os.curdir), string.replace(self.sim2, "sim2", "msub"))
