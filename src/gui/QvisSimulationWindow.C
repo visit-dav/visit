@@ -2198,6 +2198,8 @@ QvisSimulationWindow::executePushButtonCommand(const QString &btncmd)
                                QMessageBox::Ok | QMessageBox::Cancel) ==
           QMessageBox::Cancel)
         return;
+      else
+        stripChartMgr->clearAll();
     }
 
     QString cmd(btncmd);
