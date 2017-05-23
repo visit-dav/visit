@@ -133,6 +133,11 @@ avtResradExpression::PreExecute(void)
 //    Brad Whitlock, Thu Feb 24 16:17:28 PST 2005
 //    Fixed i redefinition for win32.
 //
+//    Eric Brugger, Tue May 23 12:22:57 PDT 2017
+//    I seeded the random number generator to get reproducible results. I
+//    just used zero instead of the domain id, since this expression only
+//    works on single block rectilinear meshes.
+//
 // ****************************************************************************
 
 void
@@ -205,6 +210,11 @@ avtResradExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
         nX--;
         nY--;
     }
+
+    //
+    // Seed the random number generator for reproducibility.
+    //
+    srand(0);
 
     double radius = in2->GetTuple1(0);  // Assuming constant.
     bool good = false;
