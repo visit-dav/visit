@@ -110,6 +110,7 @@ public slots:
         
     void updateCurrentTabData();
 
+    void clickedStripChartVar( int button );  
     void clickedStripChartVar0();
     void clickedStripChartVar1();
     void clickedStripChartVar2();

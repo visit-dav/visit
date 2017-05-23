@@ -205,6 +205,13 @@ QvisStripChartMgr::CreateWindowContents()
             SLOT(clickedStripChartVar4()));
     menuLayout->addWidget(stripChartVar4Button,0,4);
 
+    // With Qt 5 and a C++11 compiler, the idiomatic to pass a value:    
+    // connect(stripChartVar0Button, &QAction::triggered, this, [this]{ clickedStripChartVar(0); });
+    // connect(stripChartVar1Button, &QAction::triggered, this, [this]{ clickedStripChartVar(1); });
+    // connect(stripChartVar2Button, &QAction::triggered, this, [this]{ clickedStripChartVar(2); });
+    // connect(stripChartVar3Button, &QAction::triggered, this, [this]{ clickedStripChartVar(3); });
+    // connect(stripChartVar4Button, &QAction::triggered, this, [this]{ clickedStripChartVar(4); });
+
     stripChartVarMenu = new QMenu(this);
     
     connect(stripChartVarMenu, SIGNAL(triggered(QAction*)),
@@ -212,6 +219,9 @@ QvisStripChartMgr::CreateWindowContents()
 
     clearMenu();
 
+    // Use the same menu for each button. When a button is pressed its
+    // id is recorded then matched up the current chart and variable
+    // name.
     stripChartVar0Button->setMenu(stripChartVarMenu);
     stripChartVar1Button->setMenu(stripChartVarMenu);
     stripChartVar2Button->setMenu(stripChartVarMenu);
@@ -283,28 +293,35 @@ QvisStripChartMgr::addMenuItem( std::string str )
     
     std::size_t pos = str.find_last_of("/");
 
+    // Found a forward slash so a sub menu is needed.
     if( pos != std::string::npos )
     {
       std::string prefix = str.substr(0,pos);
       std::string var    = str.substr(pos+1);
 
+      // Search for an existing sub menu.
       std::map< std::string, QMenu* >::iterator iter =
         stripChartMenuMap.find(prefix);
 
       QMenu *menu;
-      
+
+      // Found a sub menu so use it.
       if (iter != stripChartMenuMap.end())
         menu = iter->second;
+      // No existing sub menu so add a sub menu
       else
         menu = addSubMenu( prefix );
 
+      // Now add the menu item to the sub menu.
       action = menu->addAction(var.c_str());
     }
+    // No forward slash so add the menu item directly.
     else
     {
       action = stripChartVarMenu->addAction(str.c_str());
     }
 
+    // Store the menu action and the full string for later lookup.
     stripChartActionMap[action] = str;
 }
 
@@ -327,28 +344,35 @@ QvisStripChartMgr::addSubMenu( std::string str )
 
   std::size_t pos = str.find_last_of("/");
   
+  // Found a forward slash so a sub menu is needed.
   if( pos != std::string::npos )
   {
     std::string prefix = str.substr(0,pos);
     std::string var    = str.substr(pos+1);
     
+    // Search for an existing sub menu.
     std::map< std::string, QMenu* >::iterator iter =
       stripChartMenuMap.find(prefix);
 
     QMenu *baseMenu;
     
+    // Found a sub menu so use it.
     if (iter != stripChartMenuMap.end())
       baseMenu = iter->second;
+    // No existing sub menu so add a sub menu
     else
       baseMenu = addSubMenu( prefix );
 
+    // Now add the menu to the sub menu.
     menu = baseMenu->addMenu(var.c_str());
   }
+  // No forward slash so add the menu directly.
   else
   {
     menu = stripChartVarMenu->addMenu(str.c_str());
   }
 
+  // Store the string and the menu for later lookup.
   stripChartMenuMap[str] = menu;
 
   return menu;
@@ -371,17 +395,21 @@ QvisStripChartMgr::addSubMenu( std::string str )
 void
 QvisStripChartMgr::stripChartVarMenuTriggered(QAction *action)
 {
-  QString newTitle = action->text();
+  // Get the complete variable name for the curve name
+  QString varName;
 
-  if( QString::compare("None", newTitle ) == 0 )
-    newTitle.clear();
+  if( QString::compare(action->text(), "None" ) == 0 )
+    varName.clear();  // Sending a nul string resets the curve name.
+  else
+    varName = QString( tr(stripChartActionMap[action].c_str()) );
   
-  stripChartTabWidget->setCurveTitle(activeVar, newTitle);
+  stripChartTabWidget->setCurveTitle(activeVar, varName);
 
+  // Send a callback to the simulation with the chart, curve, and varName.
   std::stringstream tmpstr;
   tmpstr << stripChartTabWidget->getCurrentStripChart() << " | "
          << activeVar << " | "
-         << stripChartActionMap[action].c_str();
+         << stripChartActionMap[action];
   
   simulationWindow->setStripChartVar( tmpstr.str().c_str() );
 }
@@ -399,6 +427,12 @@ QvisStripChartMgr::stripChartVarMenuTriggered(QAction *action)
 // Modifications:
 //
 // ****************************************************************************
+void
+QvisStripChartMgr::clickedStripChartVar( int button )
+{
+  activeVar = button;
+}
+
 void
 QvisStripChartMgr::clickedStripChartVar0()
 {
