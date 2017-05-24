@@ -166,8 +166,8 @@ ViewerPasswordWindow::~ViewerPasswordWindow()
 // ****************************************************************************
 
 void
-ViewerPasswordWindow::authenticate(const char *username, const char* password, const char *host,
-                                   int fd)
+ViewerPasswordWindow::authenticate(const char *username, const char* password,
+                                   const char *host, int fd)
 {
 #if !defined(_WIN32)
     int  timeout = 3000;
@@ -200,14 +200,15 @@ ViewerPasswordWindow::authenticate(const char *username, const char* password, c
         pbuf += nread;
         *pbuf = '\0';
 
-        if (strstr(buffer, "continue connecting (yes/no)?"))
+        if (strstr(buffer, "continue connecting (yes/no)?") ||
+            strstr(buffer, "continue connecting(yes/no)?"))
         {
             result += write(fd, "yes\n", 4);
             pbuf = buffer;
         }
-        else if (strstr(buffer, "continue connecting(yes/no)?"))
+        else if (strstr(buffer, "To access the system:"))
         {
-            result += write(fd, "yes\n", 4);
+            result += write(fd, "\n", 1);
             pbuf = buffer;
         }
         else if(strstr(buffer, "please enter your TACC password") &&
