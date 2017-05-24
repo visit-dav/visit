@@ -5246,6 +5246,18 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         // s[3] = value
         // s[4] = enabled
 
+        if( s.size() != 5 )
+        {
+          std::stringstream msg;
+
+          msg << "SetUI command expected 5 values but recieved " << s.size()
+              << " values. The original command is '"  << command << "'";
+            
+          GetViewerMessaging()->Warning(msg.str());
+
+          return;
+        }
+        
         // Send the new values to the client so they can be used to update
         // the custom sim window there.
         GetViewerState()->GetSimulationUIValues()->SetHost(key.OriginalHostName());
@@ -5259,7 +5271,7 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         }
         else
 #endif
-            GetViewerState()->GetSimulationUIValues()->SetSvalue(s[3]);
+        GetViewerState()->GetSimulationUIValues()->SetSvalue(s[3]);
         GetViewerState()->GetSimulationUIValues()->SetEnabled(s[4] == "1");
         GetViewerState()->GetSimulationUIValues()->Notify();
     }
