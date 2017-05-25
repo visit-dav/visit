@@ -321,7 +321,8 @@ QvisStripChartMgr::addMenuItem( std::string str )
       action = stripChartVarMenu->addAction(str.c_str());
     }
 
-    // Store the menu action and the full string for later lookup.
+    // Store the menu action and the full string for later lookup when
+    // the menu item is selected.
     stripChartActionMap[action] = str;
 }
 
@@ -372,7 +373,8 @@ QvisStripChartMgr::addSubMenu( std::string str )
     menu = stripChartVarMenu->addMenu(str.c_str());
   }
 
-  // Store the string and the menu for later lookup.
+  // Store the string and the menu for later lookup when other menu
+  // items are added.
   stripChartMenuMap[str] = menu;
 
   return menu;
@@ -395,11 +397,12 @@ QvisStripChartMgr::addSubMenu( std::string str )
 void
 QvisStripChartMgr::stripChartVarMenuTriggered(QAction *action)
 {
-  // Get the complete variable name for the curve name
   QString varName;
 
+  // Sending a null string resets the curve name.
   if( QString::compare(action->text(), "None" ) == 0 )
-    varName.clear();  // Sending a nul string resets the curve name.
+    varName.clear();
+  // Get the complete variable name for the curve name
   else
     varName = QString( tr(stripChartActionMap[action].c_str()) );
   

@@ -149,7 +149,9 @@ private:
 
     int                activeVar;
 
+    // A map associating sub menu names with Qt menus
     std::map< std::string, QMenu* > stripChartMenuMap;
+    // A map associating menu actions with the complete variable name
     std::map< QAction*, std::string > stripChartActionMap;
 };
 #endif /* QVIS_STRIPCHART_MGR */
