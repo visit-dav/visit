@@ -796,6 +796,12 @@ avtFunctionExpr::CreateFilters(string functionName)
 //      Jeremy Meredith, Tue Feb 19 16:19:24 EST 2008
 //      Fixed the ordering of naming for internal variable names.
 //
+//      Kevin Griffin, Wed May 24 18:02:20 PDT 2017
+//      Added all arguments to the filter output name to ensure that it
+//      is unique. Only using variable names can result in a name collision
+//      which happens with the matvf function when the material names are
+//      the same. Fixes Bug #2825.
+//
 // ****************************************************************************
 void
 avtFunctionExpr::CreateFilters(ExprPipelineState *state)
@@ -847,6 +853,17 @@ avtFunctionExpr::CreateFilters(ExprPipelineState *state)
         else
             argsText = inputName + "," + argsText;
     }
+
+    std::vector<ArgExpr*> *arguments = args->GetArgs();
+    if(arguments->size() > nvars)
+    {
+        for(i=nvars; i<arguments->size(); i++)
+        {
+            ArgExpr *otherarg = (*arguments)[i];
+            argsText = argsText + "," + otherarg->GetText();
+        }
+    }
+
     string outputName = functionName + "(" + argsText + ")";
 
     // Take the stack of variable names and feed them to the function in
