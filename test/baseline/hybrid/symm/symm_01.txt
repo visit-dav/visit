@@ -1,2 +1,2 @@
 Pseudocolor:  ()
-viewer: The 'eval_plane(d,d)' expression failed because The plane has a degenerate normal.
+viewer: The 'eval_plane(d,d,[0, 0, 0, 1, 0, 0])' expression failed because The plane has a degenerate normal.
