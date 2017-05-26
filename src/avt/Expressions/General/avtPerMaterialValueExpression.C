@@ -103,6 +103,41 @@ avtPerMaterialValueExpression::~avtPerMaterialValueExpression()
 }
 
 
+// ****************************************************************************
+//  Method: avtPerMaterialValueExpression::PreExecute
+//
+//  Purpose:
+//      Check pre condition of pipeline w/o MIR.
+//
+//  Programmer: Cyrus Harrison
+//  Creation:   Thu May 25 09:59:20 PDT 2017
+//
+// ****************************************************************************
+
+void
+avtPerMaterialValueExpression::PreExecute(void)
+{
+    avtSingleInputExpressionFilter::PreExecute();
+
+    // Issue error if MIR has occurred b/c materials info is invlaid after MIR.
+
+    avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
+
+    if(datts.MIROccurred())
+    {
+        EXCEPTION2(ExpressionException,
+                   outputVariableName,
+                   "avtPerMaterialValueExpression: "
+                   "The 'value_for_material' expression "
+                   "cannot be used with Material Interface Reconstruction "
+                   "(MIR).\n"
+                   "To use 'value_for_material', "
+                   "turn on all materials and verify that \"Force interface "
+                   "reconstruction\" in the Material Options is disabled.");
+    }
+
+}
+
 
 // ****************************************************************************
 //  Method: avtPerMaterialValueExpression::DeriveVariable
@@ -160,7 +195,7 @@ avtPerMaterialValueExpression::DeriveVariable(vtkDataSet *in_ds, int currentDoma
         ostringstream oss;
         oss << "could not find zonal variable named: " << activeVariable 
             << "." << endl
-            << "The value_for_material expression requires a varaible with" 
+            << "The value_for_material expression requires a variable with" 
             << " zonal centering." << endl;
 
         EXCEPTION2(ExpressionException, outputVariableName, oss.str().c_str());
