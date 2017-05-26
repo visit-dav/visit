@@ -81,7 +81,7 @@ class     ConstExpr;
 //    Ensure that the output is always scalar (added GetVariableDimension)
 //
 //    Cyrus Harrison, Tue Feb 19 13:20:50 PST 2008
-//    Added doPostGhost memeber. 
+//    Added doPostGhost member. 
 //
 // ****************************************************************************
 
