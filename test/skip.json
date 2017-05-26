@@ -32,6 +32,7 @@
                     {"category":"unit","file":"namescheme.py","platform":"win"},
                     {"category":"unit","file":"stringhelpers.py","platform":"win"},
                     {"category":"unit","file":"utility.py","platform":"win"},
+                    {"category":"hybrid","file":"field_operators.py","platform":"win","cases":["field_op_04"]},
                     {"category":"hybrid","file":"movie.py","platform":"win"},
                     {"category":"hybrid","file":"selection_pp.py","platform":"win"},
                     {"category":"operators" ,"file": "ic_pathlines.py","platform":"win"},
