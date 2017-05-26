@@ -43,6 +43,9 @@
 #    Fixed some file path issues and checked for "from" file before
 #    assuming a symlink return error implied a different error message.
 #
+#    Kathleen Biagas, Fri May 26 08:31:00 MST 2017
+#    Fixed reopen_04_01 for windows to use the same file as for non-windows.
+#
 # ----------------------------------------------------------------------------
 
 import os, string, sys, time, shutil
@@ -370,7 +373,7 @@ def test4():
     if not sys.platform.startswith("win"):
         os.link(silo_data_path("rect2d.silo") , db)
     else: 
-        shutil.copyfile(silo_data_path("curv2d.silo") , db)
+        shutil.copyfile(silo_data_path("rect2d.silo") , db)
 
     ReOpenDatabase(db)
     ResetView()
