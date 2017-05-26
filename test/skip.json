@@ -63,6 +63,7 @@
                     {"category":"operators","file":"ic_pathlines.py"},
                     {"category":"operators","file":"ic_geometry.py"},
                     {"category":"operators","file":"ic_pics.py"},
+                    {"category":"hybrid","file":"hybrid/ddf_vs_dbinning.py"},
                     {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
                     {"category":"rendering","file":"view.py","cases":["view_16","view_17"]},
                     {"category":"queries","file":"surface_area_over_time.py"}
@@ -113,6 +114,7 @@
                     {"category":"operators","file":"ic_geometry.py"},
                     {"category":"operators","file":"ic_pics.py"},
                     {"category":"operators","file":"lcs_operator.py"},
+                    {"category":"hybrid","file":"hybrid/ddf_vs_dbinning.py"},
                     {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
                     {"category":"rendering","file":"view.py","cases":["view_16","view_17"]},
                     {"category":"queries","file":"surface_area_over_time.py"}
@@ -154,6 +156,7 @@
                     {"category":"operators","file":"ic_geometry.py"},
                     {"category":"operators","file":"ic_pics.py"},
                     {"category":"operators","file":"lcs_operator.py"},
+                    {"category":"hybrid","file":"hybrid/ddf_vs_dbinning.py"},
                     {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
                     {"category":"rendering","file":"view.py","cases":["view_16","view_17"]},
                     {"category":"queries","file":"surface_area_over_time.py"}

@@ -631,7 +631,7 @@ def HTMLTextTestResult(case_name,status,nchanges,nlines,failed,skip):
 #  Programmer: Cyrus Harrison
 #  Date:       Fri Nov 22 2013
 # ----------------------------------------------------------------------------
-def LogAssertTestResult(case_name,assert_check,result,details):
+def LogAssertTestResult(case_name,assert_check,result,details,skip):
     """
     Log the result of an assert based test.
     """
@@ -647,8 +647,8 @@ def LogAssertTestResult(case_name,assert_check,result,details):
     Log("    Test case '%s' (Assert: %s) %s" % (case_name,
                                                 assert_check,
                                                 status.upper()))
-    JSONAssertTestResult(case_name,status,assert_check,result,details)
-    HTMLAssertTestResult(case_name,status,assert_check,result,details)
+    JSONAssertTestResult(case_name,status,assert_check,result,details,skip)
+    HTMLAssertTestResult(case_name,status,assert_check,result,details,skip)
 
 # ----------------------------------------------------------------------------
 #  Method: JSONAssertTestResult
@@ -656,8 +656,17 @@ def LogAssertTestResult(case_name,assert_check,result,details):
 #  Programmer: Cyrus Harrison
 #  Date:       Fri Nov 22 2013
 # ----------------------------------------------------------------------------
-def JSONAssertTestResult(case_name,status,assert_check,result,details):
+def JSONAssertTestResult(case_name,status,assert_check,result,details,skip):
     res = json_results_load()
+    
+    if not result:
+        if skip:
+            status = "skipped"
+        else:
+            status = "failed"
+    else:
+        status = "passed"
+    
     t_res = {'name':         case_name,
              'status':       status,
              'assert_check': assert_check,
@@ -672,7 +681,7 @@ def JSONAssertTestResult(case_name,status,assert_check,result,details):
 #  Programmer: Cyrus Harrison
 #  Date:       Fri Nov 22 2013
 # ----------------------------------------------------------------------------
-def HTMLAssertTestResult(case_name,status,assert_check,result,details):
+def HTMLAssertTestResult(case_name,status,assert_check,result,details,skip):
     """
     Creates html entry for the result of an assert based test.
     """
@@ -1804,7 +1813,8 @@ def TestText(case_name, inText):
 def AssertTrue(case_name,val):
     CheckInteractive(case_name)
     result = val == True
-    LogAssertTestResult(case_name,"True",result,val)
+    LogAssertTestResult(case_name,"True",result,val,
+                        TestEnv.check_skip(case_name))
 
 # ----------------------------------------------------------------------------
 # Function: AssertTrue
@@ -1816,7 +1826,8 @@ def AssertTrue(case_name,val):
 def AssertFalse(case_name,val):
     CheckInteractive(case_name)
     result = val == False
-    LogAssertTestResult(case_name,"False",result,val)
+    LogAssertTestResult(case_name,"False",result,val,
+                        TestEnv.check_skip(case_name))
 
 # ----------------------------------------------------------------------------
 # Function: AssertEqual
@@ -1828,8 +1839,10 @@ def AssertFalse(case_name,val):
 def AssertEqual(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a == val_b
+    skip   =  TestEnv.check_skip(case_name)
     LogAssertTestResult(case_name,"Equal",result,
-                        "%s == %s" % (str(val_a),str(val_b)))
+                        "%s == %s" % (str(val_a),str(val_b)),
+                         TestEnv.check_skip(case_name))
 
 # ----------------------------------------------------------------------------
 # Function: AssertGT
@@ -1842,7 +1855,8 @@ def AssertGT(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a > val_b
     LogAssertTestResult(case_name,"Greater than",
-                        result,"%s > %s" % (str(val_a),str(val_b)))
+                        result,"%s > %s" % (str(val_a),str(val_b)),
+                        TestEnv.check_skip(case_name))
 
 # ----------------------------------------------------------------------------
 # Function: AssertGTE
@@ -1855,7 +1869,8 @@ def AssertGTE(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a >= val_b
     LogAssertTestResult(case_name,"Greater than or Equal",
-                       result,"%s >= %s" % (str(val_a),str(val_b)))
+                        result,"%s >= %s" % (str(val_a),str(val_b)),
+                        TestEnv.check_skip(case_name))
 
 # ----------------------------------------------------------------------------
 # Function: AssertLT
@@ -1868,7 +1883,8 @@ def AssertLT(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a < val_b
     LogAssertTestResult(case_name,"Less than",
-                        result,"%s < %s" % (str(val_a),str(val_b)))
+                        result,"%s < %s" % (str(val_a),str(val_b)),
+                        TestEnv.check_skip(case_name))
 
 # ----------------------------------------------------------------------------
 # Function: AssertLTE
@@ -1881,7 +1897,8 @@ def AssertLTE(case_name,val_a,val_b):
     CheckInteractive(case_name)
     result = val_a <= val_b
     LogAssertTestResult(case_name,"Less than or Equal",
-                        result,"%s <= %s" % (str(val_a),str(val_b)))
+                        result,"%s <= %s" % (str(val_a),str(val_b)),
+                        TestEnv.check_skip(case_name))
 
 # ----------------------------------------------------------------------------
 # Function: TestSection
