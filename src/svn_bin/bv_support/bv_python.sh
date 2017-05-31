@@ -326,21 +326,19 @@ function build_python
     PYTHON_PREFIX_DIR="$VISITDIR/python/$PYTHON_VERSION/$VISITARCH"
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
         PYTHON_SHARED="--enable-shared"
-        if [[ "$C_COMPILER" == "gcc" ]]; then
-            #
-            # python's --enable-shared configure flag doesn't link
-            # the exes it builds correclty when installed to a non standard
-            # prefix. To resolve this we need to add a rpath linker flags.
-            #
-            mkdir -p ${PYTHON_PREFIX_DIR}/lib/
-            if [[ $? != 0 ]] ; then
-                warn "Python configure failed.  Giving up"
-                return 1
-            fi
+        #
+        # python's --enable-shared configure flag doesn't link
+        # the exes it builds correclty when installed to a non standard
+        # prefix. To resolve this we need to add a rpath linker flags.
+        #
+        mkdir -p ${PYTHON_PREFIX_DIR}/lib/
+        if [[ $? != 0 ]] ; then
+            warn "Python configure failed.  Giving up"
+            return 1
+        fi
 
-            if [[ "$OPSYS" != "Darwin" || ${VER%%.*} -ge 9 ]]; then
-                PYTHON_LDFLAGS="-Wl,-rpath,${PYTHON_PREFIX_DIR}/lib/ -pthread"
-            fi
+        if [[ "$OPSYS" != "Darwin" || ${VER%%.*} -ge 9 ]]; then
+            PYTHON_LDFLAGS="-Wl,-rpath,${PYTHON_PREFIX_DIR}/lib/ -pthread"
         fi
     fi
 
