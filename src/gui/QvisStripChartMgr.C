@@ -175,35 +175,35 @@ QvisStripChartMgr::CreateWindowContents()
     QGridLayout *menuLayout = new QGridLayout(0);
     chartLayout->addLayout(menuLayout, 5, 0, 1, 6);
         
-    stripChartVar0Button = new QPushButton(tr("Var0"));
-    stripChartVar0Button->setEnabled(true);
-    connect(stripChartVar0Button,SIGNAL(pressed()), this,
-            SLOT(clickedStripChartVar0()));
-    menuLayout->addWidget(stripChartVar0Button,0,0);
+    stripChartVarButton0 = new QPushButton(tr("Var0"));
+    stripChartVarButton0->setEnabled(true);
+    connect(stripChartVarButton0,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVarButton0()));
+    menuLayout->addWidget(stripChartVarButton0,0,0);
 
-    stripChartVar1Button = new QPushButton(tr("Var1"));
-    stripChartVar1Button->setEnabled(true);
-    connect(stripChartVar1Button,SIGNAL(pressed()), this,
-            SLOT(clickedStripChartVar1()));
-    menuLayout->addWidget(stripChartVar1Button,0,1);
+    stripChartVarButton1 = new QPushButton(tr("Var1"));
+    stripChartVarButton1->setEnabled(true);
+    connect(stripChartVarButton1,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVarButton1()));
+    menuLayout->addWidget(stripChartVarButton1,0,1);
 
-    stripChartVar2Button = new QPushButton(tr("Var2"));
-    stripChartVar2Button->setEnabled(true);
-    connect(stripChartVar2Button,SIGNAL(pressed()), this,
-            SLOT(clickedStripChartVar2()));
-    menuLayout->addWidget(stripChartVar2Button,0,2);
+    stripChartVarButton2 = new QPushButton(tr("Var2"));
+    stripChartVarButton2->setEnabled(true);
+    connect(stripChartVarButton2,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVarButton2()));
+    menuLayout->addWidget(stripChartVarButton2,0,2);
 
-    stripChartVar3Button = new QPushButton(tr("Var3"));
-    stripChartVar3Button->setEnabled(true);
-    connect(stripChartVar3Button,SIGNAL(pressed()), this,
-            SLOT(clickedStripChartVar3()));
-    menuLayout->addWidget(stripChartVar3Button,0,3);
+    stripChartVarButton3 = new QPushButton(tr("Var3"));
+    stripChartVarButton3->setEnabled(true);
+    connect(stripChartVarButton3,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVarButton3()));
+    menuLayout->addWidget(stripChartVarButton3,0,3);
 
-    stripChartVar4Button = new QPushButton(tr("Var4"));
-    stripChartVar4Button->setEnabled(true);
-    connect(stripChartVar4Button,SIGNAL(pressed()), this,
-            SLOT(clickedStripChartVar4()));
-    menuLayout->addWidget(stripChartVar4Button,0,4);
+    stripChartVarButton4 = new QPushButton(tr("Var4"));
+    stripChartVarButton4->setEnabled(true);
+    connect(stripChartVarButton4,SIGNAL(pressed()), this,
+            SLOT(clickedStripChartVarButton4()));
+    menuLayout->addWidget(stripChartVarButton4,0,4);
 
     // With Qt 5 and a C++11 compiler, the idiomatic to pass a value:    
     // connect(stripChartVar0Button, &QAction::triggered, this, [this]{ clickedStripChartVar(0); });
@@ -222,11 +222,11 @@ QvisStripChartMgr::CreateWindowContents()
     // Use the same menu for each button. When a button is pressed its
     // id is recorded then matched up the current chart and variable
     // name.
-    stripChartVar0Button->setMenu(stripChartVarMenu);
-    stripChartVar1Button->setMenu(stripChartVarMenu);
-    stripChartVar2Button->setMenu(stripChartVarMenu);
-    stripChartVar3Button->setMenu(stripChartVarMenu);
-    stripChartVar4Button->setMenu(stripChartVarMenu);
+    stripChartVarButton0->setMenu(stripChartVarMenu);
+    stripChartVarButton1->setMenu(stripChartVarMenu);
+    stripChartVarButton2->setMenu(stripChartVarMenu);
+    stripChartVarButton3->setMenu(stripChartVarMenu);
+    stripChartVarButton4->setMenu(stripChartVarMenu);
     
     stripChartGroup->adjustSize();
 }
@@ -431,37 +431,37 @@ QvisStripChartMgr::stripChartVarMenuTriggered(QAction *action)
 //
 // ****************************************************************************
 void
-QvisStripChartMgr::clickedStripChartVar( int button )
+QvisStripChartMgr::clickedStripChartVarButton( int button )
 {
   activeVar = button;
 }
 
 void
-QvisStripChartMgr::clickedStripChartVar0()
+QvisStripChartMgr::clickedStripChartVarButton0()
 {
   activeVar = 0;
 }
 
 void
-QvisStripChartMgr::clickedStripChartVar1()
+QvisStripChartMgr::clickedStripChartVarButton1()
 {
   activeVar = 1;
 }
 
 void
-QvisStripChartMgr::clickedStripChartVar2()
+QvisStripChartMgr::clickedStripChartVarButton2()
 {
   activeVar = 2;
 }
 
 void
-QvisStripChartMgr::clickedStripChartVar3()
+QvisStripChartMgr::clickedStripChartVarButton3()
 {
   activeVar = 3;
 }
 
 void
-QvisStripChartMgr::clickedStripChartVar4()
+QvisStripChartMgr::clickedStripChartVarButton4()
 {
   activeVar = 4;
 }

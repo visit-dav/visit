@@ -110,12 +110,12 @@ public slots:
         
     void updateCurrentTabData();
 
-    void clickedStripChartVar( int button );  
-    void clickedStripChartVar0();
-    void clickedStripChartVar1();
-    void clickedStripChartVar2();
-    void clickedStripChartVar3();
-    void clickedStripChartVar4();
+    void clickedStripChartVarButton( int button );  
+    void clickedStripChartVarButton0();
+    void clickedStripChartVarButton1();
+    void clickedStripChartVarButton2();
+    void clickedStripChartVarButton3();
+    void clickedStripChartVarButton4();
     void stripChartVarMenuTriggered(QAction *action);
   
 protected:
@@ -132,11 +132,11 @@ private:
     QPushButton        *clearButton;
 
     QMenu              *stripChartVarMenu;
-    QPushButton        *stripChartVar0Button;
-    QPushButton        *stripChartVar1Button;
-    QPushButton        *stripChartVar2Button;
-    QPushButton        *stripChartVar3Button;
-    QPushButton        *stripChartVar4Button;
+    QPushButton        *stripChartVarButton0;
+    QPushButton        *stripChartVarButton1;
+    QPushButton        *stripChartVarButton2;
+    QPushButton        *stripChartVarButton3;
+    QPushButton        *stripChartVarButton4;
 
     QScrollArea        *sc;
     QCheckBox          *enableLogScale;
