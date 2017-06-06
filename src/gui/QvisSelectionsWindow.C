@@ -1689,9 +1689,19 @@ QvisSelectionsWindow::deleteSelection()
 void
 QvisSelectionsWindow::updateQuery()
 {
+    if( selectionProps.GetHistogramType() ==
+        SelectionProperties::HistogramVariable &&
+        selectionProps.GetHistogramVariable().empty() )
+    {
+      Warning(tr("No histogram variable has been selected for the display axis."));
+    }
     // Force an update of the selection but do not update the plots that use it.
-    bool updatePlots = false;
-    Apply(true, updatePlots, DONT_ALLOW_CACHING);
+    else
+    {
+      bool updatePlots = false;
+
+      Apply(true, updatePlots, DONT_ALLOW_CACHING);
+    }
 }
 
 // ****************************************************************************
@@ -1712,8 +1722,17 @@ QvisSelectionsWindow::updateQuery()
 void
 QvisSelectionsWindow::updateSelection()
 {
+    if( selectionProps.GetHistogramType() ==
+        SelectionProperties::HistogramVariable &&
+        selectionProps.GetHistogramVariable().empty() )
+    {
+      Warning(tr("No histogram variable has been selected for the display axis."));
+    }
     // Force an update of the selection and update the plots that use it.
-    Apply(true, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
+    else
+    {
+      Apply(true, DEFAULT_UPDATE_PLOTS, ALLOW_CACHING);
+    }
 }
 
 // ****************************************************************************
@@ -2278,7 +2297,7 @@ QvisSelectionsWindow::idVariableChanged(const QString &var)
 // Arguments:
 //   val : The new id variable type.
 //
-// Note:       We say no caching because we probably need to reexecute the pipeline.
+// Note: We say no caching because we probably need to reexecute the pipeline.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Nov  7 14:20:13 PST 2011
