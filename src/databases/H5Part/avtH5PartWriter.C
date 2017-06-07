@@ -66,16 +66,20 @@
 #ifdef HAVE_LIBFASTBIT
   #include <fastbit-config.h>
 
-  #if FASTBIT_IBIS_INT_VERSION < 1020000
-    #error "The H5Part plugin requires FastBit 1.2.0 or newer."
+  #if FASTBIT_IBIS_INT_VERSION < 2000304
+    #error "The H5Part plugin requires FastBit version 2.0.3.4 or newer."
   #endif
+#endif
 
-  #include "hdf5_fastquery.h"
-  #include "HistogramCache.h"
+// FastQuery
+#ifdef HAVE_LIBFASTQUERY
+  #include <fastquery-config.h>
 
-  #include <avtDataRangeSelection.h>
-  #include <avtHistogramSpecification.h>
-  #include <avtIdentifierSelection.h>
+  // #if FASTQUERY_VERSION != "0.8.4.10"
+  //   #error "The H5Part plugin requires FastQuery version 0.8.4.10 or newer."
+  // #endif
+
+  #include "indexBuilder.h"
 #endif
 
 // VTK
@@ -119,19 +123,31 @@ double avtH5PartWriter::INVALID_TIME = -DBL_MAX;
 avtH5PartWriter::avtH5PartWriter(DBOptionsAttributes *writeOpts)
 {
     // Defaults
+    variablePathPrefix = std::string("Step#");
+
+#ifdef HAVE_LIBFASTQUERY
     addFastBitIndexing = true;
+    fastBitIndexPathPrefix = std::string("__H5PartIndex__");
     sortedKey = std::string("unsorted");
     createParentFile = false;
-    
     parentFilename = std::string("visit_ex_db_parent");
+#endif
     
     // Check options
     if (writeOpts != NULL)
     {
         for (int i = 0; i < writeOpts->GetNumberOfOptions(); ++i)
         {
-            if (writeOpts->GetName(i) == "Add FastBit indexing")
+            if (writeOpts->GetName(i) == "Variable path prefix")
+                variablePathPrefix =
+                  writeOpts->GetString("Variable path prefix");
+#ifdef HAVE_LIBFASTQUERY
+            else if (writeOpts->GetName(i) == "Add FastBit indexing")
                 addFastBitIndexing = writeOpts->GetBool("Add FastBit indexing");
+
+            else if (writeOpts->GetName(i) == "FastBit index path prefix")
+                fastBitIndexPathPrefix =
+                  writeOpts->GetString("FastBit index path prefix");
 
             else if (writeOpts->GetName(i) == "Sort variable")
                 sortedKey = writeOpts->GetString("Sort variable");
@@ -141,7 +157,7 @@ avtH5PartWriter::avtH5PartWriter(DBOptionsAttributes *writeOpts)
 
             else if (writeOpts->GetName(i) == "Parent file name")
                 parentFilename = writeOpts->GetString("Parent file name");
-
+#endif
         }
     }
     
@@ -240,7 +256,8 @@ avtH5PartWriter::WriteHeaders(const avtDatabaseMetaData *md,
     {
       if (cycle != INVALID_CYCLE)
       {
-        if( H5PartWriteStepAttrib ( file, "Cycle", H5PART_INT32, &cycle, 1 ) != H5PART_SUCCESS)
+        if( H5PartWriteStepAttrib( file, "Cycle",
+                                   H5PART_INT32, &cycle, 1 ) != H5PART_SUCCESS)
           {
             debug1 << "avtH5PartWriter::OpenFile: "
                    << "H5PartWriteStepAttrib failed" << std::endl;
@@ -252,7 +269,8 @@ avtH5PartWriter::WriteHeaders(const avtDatabaseMetaData *md,
 
       if (time != INVALID_TIME )
       {
-        if( H5PartWriteStepAttrib ( file, "Time", H5PART_FLOAT64, &time, 1 ) != H5PART_SUCCESS)
+        if( H5PartWriteStepAttrib( file, "Time",
+                                   H5PART_FLOAT64, &time, 1 ) != H5PART_SUCCESS)
           {
             debug1 << "avtH5PartWriter::OpenFile: "
                    << "H5PartWriteStepAttrib failed" << std::endl;
@@ -267,6 +285,7 @@ avtH5PartWriter::WriteHeaders(const avtDatabaseMetaData *md,
     
     variableList = scalars;
 
+#ifdef HAVE_LIBFASTQUERY
     if( addFastBitIndexing )
     {
         bool foundSortedKey = false;
@@ -288,6 +307,7 @@ avtH5PartWriter::WriteHeaders(const avtDatabaseMetaData *md,
                        "Can not find the specified sortedKey variable");
         }
     }
+#endif    
 }
 
 
@@ -336,16 +356,27 @@ avtH5PartWriter::CloseFile(void)
     // The output is serial so if the last rank ...
     if( writeContext.Rank() == writeContext.Size()-1 )
     {
-#ifdef HAVE_LIBFASTBIT
+#ifdef HAVE_LIBFASTQUERY
         // Add in the FastBit indexing
         if( addFastBitIndexing )
         {
-          // Build the indexes for this time step only which is always
-          // step#0. It like the data will be externally linked.
-          HDF5_FQ fqReader;
-          fqReader.openFile(filename.c_str(), H5PART_APPEND, true);
-          fqReader.buildSpecificTimeIndex(0);
-          fqReader.closeFile();
+          // Build the indexes for this time step only, which is
+          // always step#0. It, like the data will be externally
+          // linked.
+          FastQuery::IndexBuilder ib  =
+            FastQuery::IndexBuilder( filename, FastQuery::FQ_H5Part,
+                                     filename, 99 );
+
+          // For the basic writting everything is at Step#0
+          ib.setVariablePathPrefix( getVariablePathPrefix(0).c_str() );
+          ib.setIndexPathPrefix( getFastBitIndexPathPrefix(0).c_str() );
+
+          ib.buildIndexes( nullptr, "" );
+          
+          // HDF5_FQ fqReader;
+          // fqReader.openFile(filename.c_str(), H5PART_APPEND, true);
+          // fqReader.buildSpecificTimeIndex(0);
+          // fqReader.closeFile();
         }
 #endif
 
@@ -487,7 +518,8 @@ avtH5PartWriter::WritePolyData(vtkPolyData *pd, int chunk)
     int nlines  = pd->GetLines()->GetNumberOfCells();
 
     H5PartSetChunkSize( file, nPoints );
-    H5PartDefineStepName( file, "Step#0", 0 );
+    // For the basic writting everything is at Step#0
+    H5PartDefineStepName( file, getVariablePathPrefix(0).c_str(), 0 );
 
     vtkPoints *vtk_pts = pd->GetPoints();
 
@@ -698,7 +730,6 @@ avtH5PartWriter::WriteParentFile()
     int timestep = GetInput()->GetInfo().GetAttributes().GetTimeIndex();
 
     herr_t status;
-    hid_t index_id = 0;
     
     // Try to open the parent file initally.
     hid_t file_id = H5Fopen(parentFilename.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
@@ -706,10 +737,11 @@ avtH5PartWriter::WriteParentFile()
     // File opened ...
     if( file_id >= 0 )
     {      
+#ifdef HAVE_LIBFASTQUERY
         // If indexing get the indexing group.
         if( addFastBitIndexing )
         {
-            index_id = H5Gopen(file_id, "__H5PartIndex__", H5P_DEFAULT);
+            hid_t index_id = H5Gopen(file_id, "__H5PartIndex__", H5P_DEFAULT);
 
             if (index_id < 0)
             {
@@ -718,7 +750,10 @@ avtH5PartWriter::WriteParentFile()
                 EXCEPTION2(NonCompliantFileException, "H5Part WriteParentFile",
                            "H5Gopen (index group) failed");
             }
+            else
+              H5Gclose(index_id);
         }
+#endif  
     }
     // Could not open the parent file so try to create it.    
     else
@@ -732,11 +767,12 @@ avtH5PartWriter::WriteParentFile()
             EXCEPTION1(InvalidFilesException, parentFilename.c_str());
         }
 
+#ifdef HAVE_LIBFASTQUERY
         // If indexing add the indexing group and the sortedKey attribute.
         if( addFastBitIndexing )
         {
-            index_id = H5Gcreate(file_id, "__H5PartIndex__",
-                                 H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            hid_t index_id = H5Gcreate(file_id, "__H5PartIndex__",
+                                       H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
         
             if (index_id < 0)
             {
@@ -745,6 +781,8 @@ avtH5PartWriter::WriteParentFile()
                 EXCEPTION2(NonCompliantFileException, "H5Part WriteParentFile",
                            "H5Gcreate (index group) failed");
             }
+            else
+              H5Gclose(index_id);
 
             // There is zero gaurantee that the data was sorted
             // initally so set the attribute to unsorted.
@@ -837,41 +875,85 @@ avtH5PartWriter::WriteParentFile()
                            "H5Tclose failed");
             }
         }
+#endif  
     }
   
     // Create an external like to the data.
-    const int buffSize = 1024;
-    char stepName[buffSize];
-    SNPRINTF(stepName, buffSize, "Step#%d", timestep);
-    
-    if( (status = H5Lcreate_external(filename.c_str(), "Step#0", file_id,
-                                     stepName, H5P_DEFAULT, H5P_DEFAULT)) < 0 )
+    if( (status = H5Lcreate_external(filename.c_str(),
+                                     getVariablePathPrefix(0).c_str(),
+                                     file_id,
+                                     getVariablePathPrefix(timestep).c_str(),
+                                     H5P_DEFAULT, H5P_DEFAULT)) < 0 )
     {
-        H5Fclose(file_id);
-
-        EXCEPTION2(NonCompliantFileException, "H5Part WriteParentFile",
-                   "H5Lcreate_external (steps) failed");
+      H5Fclose(file_id);
+      
+      EXCEPTION2(NonCompliantFileException, "H5Part WriteParentFile",
+                 "H5Lcreate_external (steps) failed");
     }
 
+#ifdef HAVE_LIBFASTQUERY
     // Create an external like to the index data.
     if( addFastBitIndexing )
     {
-        if( (status = H5Lcreate_external(filename.c_str(),
-                                         "__H5PartIndex__/Step#0",
-                                         index_id, stepName,
-                                         H5P_DEFAULT, H5P_DEFAULT)) < 0 )
-        {
-            H5Gclose(index_id);
-            H5Fclose(file_id);
-
-            EXCEPTION2(NonCompliantFileException, "H5Part WriteParentFile",
-                       "H5Lcreate_external (indexing) failed");
-        }
+      if( (status = H5Lcreate_external(filename.c_str(),
+                                       getFastBitIndexPathPrefix(0).c_str(),
+                                       file_id,
+                                       getFastBitIndexPathPrefix(timestep).c_str(),
+                                       H5P_DEFAULT, H5P_DEFAULT)) < 0 )
+      {
+        H5Fclose(file_id);
+        
+        EXCEPTION2(NonCompliantFileException, "H5Part WriteParentFile",
+                   "H5Lcreate_external (indexing) failed");
+      }
     }    
 
-    if( addFastBitIndexing )
-      H5Gclose(index_id);
+#endif
     
     H5Fclose(file_id);
 }
 
+// ****************************************************************************
+// Method: avtH5PartWriter::getVariablePathPrefix
+//
+// Purpose: 
+//   Get the variablePathPrefix
+//
+// Programmer: Allen Sanderson
+// Creation:   31 May 2017
+//
+// ****************************************************************************
+
+const std::string
+avtH5PartWriter::getVariablePathPrefix( int timestep )
+{
+  std::ostringstream prefix;
+
+  prefix << variablePathPrefix << timestep;
+
+  return prefix.str();
+}
+
+// ****************************************************************************
+// Method: avtH5PartWriter::getFastBitIndexPathPrefix
+//
+// Purpose: 
+//   Get the FastBitIndexPathPrefix
+//
+// Programmer: Allen Sanderson
+// Creation:   31 may 2017
+//
+// ****************************************************************************
+
+#ifdef HAVE_LIBFASTQUERY
+const std::string
+avtH5PartWriter::getFastBitIndexPathPrefix( int timestep )
+{
+  std::ostringstream prefix;
+
+  prefix << fastBitIndexPathPrefix << "/"
+         << getVariablePathPrefix( timestep );
+
+  return prefix.str();
+}
+#endif

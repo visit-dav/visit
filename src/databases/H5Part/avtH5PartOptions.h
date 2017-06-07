@@ -45,9 +45,6 @@
 
 class DBOptionsAttributes;
 
-#include <string>
-
-
 // ****************************************************************************
 //  Functions: avtH5PartOptions
 //

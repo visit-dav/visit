@@ -105,20 +105,29 @@ private:
 
     void   WriteParentFile();
 
-  
+    const std::string getVariablePathPrefix( int timestep );
+
     static int            INVALID_CYCLE;
     static double         INVALID_TIME;
 
-    bool addFastBitIndexing;
-    std::string sortedKey;
-    bool createParentFile;
-    std::string parentFilename;
   
     std::vector<std::string>    variableList;
     std::string    filename;
     std::string    meshname;
     double         time;
     int            cycle;
+
+    std::string variablePathPrefix;
+
+#ifdef HAVE_LIBFASTQUERY
+    const std::string getFastBitIndexPathPrefix( int timestep );
+  
+    bool        addFastBitIndexing;
+    std::string fastBitIndexPathPrefix;
+    std::string sortedKey;
+    bool        createParentFile;
+    std::string parentFilename;
+#endif  
 };
 
 #endif
