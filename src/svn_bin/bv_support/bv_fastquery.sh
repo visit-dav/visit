@@ -39,7 +39,7 @@ function bv_fastquery_depends_on
 
 function bv_fastquery_info
 {
-    export FASTQUERY_VERSION=${FASTQUERY_VERSION:-"0.8.4.3"}
+    export FASTQUERY_VERSION=${FASTQUERY_VERSION:-"0.8.4.10"}
     export FASTQUERY_FILE=${FASTQUERY_FILE:-"fastquery-${FASTQUERY_VERSION}.tar.gz"}
     # Note: last 3-digit field in URL changes with version.
     export FASTQUERY_URL=${FASTQUERY_URL:-"https://code.lbl.gov/frs/download.php/file/428"}

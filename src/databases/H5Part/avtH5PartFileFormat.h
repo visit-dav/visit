@@ -53,15 +53,15 @@
 #include <H5BlockTypes.h>
 
 // FastBit
-#ifdef HAVE_LIBFASTBIT
+#ifdef HAVE_LIBFASTQUERY
   #include <fastbit-config.h>
 
   #if FASTBIT_IBIS_INT_VERSION < 1020000
     #error "The H5Part plugin requires FastBit 1.2.0 or newer."
   #endif
 
-  #include "hdf5_fastquery.h"
   #include "HistogramCache.h"
+  // #include "hdf5_fastquery.h"
 #endif
 
 // STL
@@ -71,7 +71,7 @@
 
 class DBOptionsAttributes;
 
-#ifdef HAVE_LIBFASTBIT
+#ifdef HAVE_LIBFASTQUERY
 class avtIdentifierSelection;
 class avtHistogramSpecification;
 #endif
@@ -109,7 +109,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
                        avtH5PartFileFormat(const char *, DBOptionsAttributes *);
     virtual           ~avtH5PartFileFormat();
 
-#ifdef HAVE_LIBFASTBIT
+#ifdef HAVE_LIBFASTQUERY
     //
     // This is used to return unconvention data -- ranging from material
     // information to information about block connectivity.
@@ -131,7 +131,7 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     virtual const char    *GetType(void) { return "H5Part"; };
     virtual void           FreeUpResources(void); 
 
-#ifdef HAVE_LIBFASTBIT 
+#ifdef HAVE_LIBFASTQUERY 
     virtual bool           CanCacheVariable(const char *) { return !useFastBitIndex; /* FIXME: Field variables can be cached */ };
     virtual void           RegisterDataSelections(const std::vector<avtDataSelection_p>&,
                                std::vector<bool> *);
@@ -149,9 +149,11 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     static const int       maxVarNameLen = 256; // Maximum variable name length used in H5Part calls
 
     // ... Reader options
-    bool                   useFastBitIndex;
-    bool                   disableDomainDecomposition;
-    // ... File information
+    bool                   enableDomainDecomposition;
+
+    std::string            variablePathPrefix;
+    
+// ... File information
     H5PartFile            *file;
     enum { cartesianCoordSystem, cylindricalCoordSystem, sphericalCoordSystem }
                            coordType;
@@ -193,7 +195,10 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
                     h5part_int64_t &lastIndex,
                     h5part_int64_t &total );
 
-#ifdef HAVE_LIBFASTBIT
+    const std::string getVariablePathPrefix( int timestep );
+
+#ifdef HAVE_LIBFASTQUERY
+
     void                   ConstructHistogram(avtHistogramSpecification *spec);
 
     avtIdentifierSelection
@@ -202,13 +207,18 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     void                   ConstructIdQueryString(const std::vector<double>&,
                                   const std::string &, std::string& );
     void                   PerformQuery();
-    
+
+    const std::string getFastBitIndexPathPrefix( int timestep );
+  
     // Is there an active query? If value is stringQuery,
     // "queryString" contains the current query that needs to be run
     // to get the data selection (queryResults).  If value is
     // idListQuery, "queryIdList" contains a list of particle ids
     // (likely from a named selection).
     enum { noQuery = 0, stringQuery, idListQuery } querySpecified;
+
+    bool                   useFastBitIndex;
+    std::string            fastBitIndexPathPrefix;
   
     // Are the query results (queryResults) valid? This variable is
     // set to false by RegisterDataSelection to indicate that there is
@@ -224,10 +234,12 @@ class avtH5PartFileFormat : public avtMTSDFileFormat
     // List of ids (values if "idVariableName") for a named selection query
     std::vector<double>    queryIdList;
     // Result from a current query
-    std::vector<hsize_t>   queryResults;
+    std::vector<uint64_t>   queryResults;
+
     // The HDF5_FastQuery reader. Used mainly to read index
     // information from file.
-    HDF5_FQ                fqReader;
+    // HDF5_FQ                fqReader;
+
     // Histogram cache for already computed histograms
     HistogramCache         histoCache;
 #endif

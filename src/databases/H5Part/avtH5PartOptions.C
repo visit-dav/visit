@@ -44,6 +44,8 @@
 
 #include <DBOptionsAttributes.h>
 
+#include <visit-config.h>
+
 #include <string>
 
 
@@ -71,8 +73,12 @@ DBOptionsAttributes *
 GetH5PartReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    rv->SetBool("Enable domain decomposition", true);
+    rv->SetString("Variable path prefix", "Step#");
+#ifdef HAVE_LIBFASTQUERY
     rv->SetBool("Use FastBit index", true);
-    rv->SetBool("Disable domain decomposition", false);
+    rv->SetString("FastBit index path prefix", "__H5PartIndex__");
+#endif    
     return rv;
 }
 
@@ -97,9 +103,13 @@ DBOptionsAttributes *
 GetH5PartWriteOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
+    rv->SetString("Variable path prefix", "Step#");
+#ifdef HAVE_LIBFASTQUERY
     rv->SetBool("Add FastBit indexing", true);
+    rv->SetString("FastBit index path prefix", "__H5PartIndex__");
     // rv->SetBool("Sort variable", "unsorted");
     rv->SetBool("Create a parent file", false);
     rv->SetString("Parent file name", "visit_ex_db_parent");
+#endif    
     return rv;
 }
