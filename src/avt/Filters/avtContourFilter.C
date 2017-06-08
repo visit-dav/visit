@@ -357,10 +357,15 @@ avtContourFilter::ModifyContract(avtContract_p in_contract)
     // in case it can limit its reads to only the domains/elements that
     // cross the isolevel.
     //
-    avtIsolevelsSelection *sel = new avtIsolevelsSelection;
-    sel->SetVariable(varname);
-    sel->SetIsolevels(isoValues);
-    contract->GetDataRequest()->AddDataSelection(sel);
+
+    if (!isoValues.empty())
+    {
+       avtIsolevelsSelection *sel = new avtIsolevelsSelection;
+       sel->SetVariable(varname);
+       sel->SetIsolevels(isoValues);
+       contract->GetDataRequest()->AddDataSelection(sel);
+    }
+
 
     if (it == NULL)
     {
@@ -1244,6 +1249,10 @@ avtContourFilter::UpdateDataObjectInfo(void)
 //    Hank Childs, Sun Jun 24 19:48:46 PDT 2001
 //    When there is an error, clear the isoValues if they are *not* empty.
 //
+//    Kathleen Biagas, Wed May 24 17:15:11 PDT 2017
+//    Clear out isoValues when ContourMethod is Level.  Ensures the values
+//    are correct for this min and max.
+
 // ****************************************************************************
 
 void
@@ -1260,6 +1269,13 @@ avtContourFilter::SetIsoValues(double min, double max)
         if (!isoValues.empty())
             isoValues.clear();
         return;
+    }
+
+    if (atts.GetContourMethod() == ContourOpAttributes::Level)
+    {
+        // Make sure the iso values are in sync with this min/max
+        // by clearing them out and recreating.
+        isoValues.clear();
     }
 
     if (isoValues.empty())

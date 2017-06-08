@@ -462,3 +462,25 @@ avtDataObject::DebugDump(avtWebpage *webpage, const char *prefix)
 }
 
 
+// ****************************************************************************
+//  Method: avtDataObject::ResetAllExtents
+//
+//  Purpose:
+//      Propagates a ResetAllExtents up the pipeline.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 5, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtDataObject::ResetAllExtents()
+{
+    info.GetAttributes().ResetAllExtents();
+    if (source != NULL)
+    {
+        source->ResetAllExtents();
+    }
+}

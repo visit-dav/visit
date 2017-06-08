@@ -1030,11 +1030,16 @@ ViewerQueryManager::DisableTool(ViewerWindow *oWin, avtToolInterface &ti)
 //    Kathleen Biagas, Tue Mar 25 07:56:00 PDT 2014
 //    Check if 'vars' is a single string.
 //
+//    Kathleen Biagas, Thu May 25 15:08:23 PDT 2017
+//    Copy in the input params, need to add 'use_actual_data' whether it is
+//    provided or not.
+//
 // ****************************************************************************
 
 void
-ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
+ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
 {
+    MapNode queryParams(in_queryParams);
     string qName = queryParams.GetEntry("query_name")->AsString();
     int doTimeQuery = 0;
     if (queryParams.HasNumericEntry("do_time"))
@@ -1117,9 +1122,22 @@ ViewerQueryManager::DatabaseQuery(const MapNode &queryParams)
         }
     }
 
-    int useActualData = 0;
+    int useActualData = 1;
+    
     if (queryParams.HasNumericEntry("use_actual_data"))
+    {
         useActualData = queryParams.GetEntry("use_actual_data")->ToInt();
+    }
+    else
+    {
+        int winType = GetViewerState()->GetQueryList()->GetWindowType(qName);
+        if (winType == QueryList::ActualData || winType == QueryList::ActualDataVars)
+            useActualData = 0; // the default for actual/original supported queries
+        else 
+            useActualData = 1; // the default for actual-data-only queries
+    }
+    // ensure we are all on the same page
+    queryParams["use_actual_data"] = useActualData;
 
     if (qName == "SpatialExtents")
     {

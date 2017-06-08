@@ -79,6 +79,9 @@
 //    Tom Fogal, Tue Jun 23 19:54:03 MDT 2009
 //    Added a const version of GetInput.
 //
+//    Kathleen Biagas, Mon Jun  5 16:27:45 PDT 2017
+//    Added ResetAllExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSink
@@ -97,6 +100,7 @@ class PIPELINE_API avtDataObjectSink
     virtual void                  SetTypedInput(avtDataObject_p) = 0;
     virtual void                  ChangedInput(void);
     virtual bool                  UpdateInput(avtContract_p);
+    virtual void                  ResetAllExtents(void);
 
   private:
     // These methods are defined to prevent accidental use of bitwise copy

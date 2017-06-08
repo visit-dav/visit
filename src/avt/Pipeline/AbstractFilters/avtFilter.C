@@ -916,7 +916,7 @@ avtFilter::GetDataExtents(double *outexts, const char *varname)
     avtExtents *e = NULL;
     TRY
     {
-        e = GetInput()->GetInfo().GetAttributes().GetOriginalDataExtents(varname);
+        e = atts.GetOriginalDataExtents(varname);
     }
     CATCH(ImproperUseException)
     {
@@ -1825,4 +1825,23 @@ avtFilter::CanCacheConnectivityItem(void)
     return true;
 }
 
+
+// ****************************************************************************
+//  Method: avtFilter::ResetAllExtents
+//
+//  Purpose:
+//      Walks up a pipeline resetting extents.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 5, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtFilter::ResetAllExtents()
+{
+    avtDataObjectSink::ResetAllExtents();
+}
 

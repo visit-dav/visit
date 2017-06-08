@@ -449,13 +449,28 @@ avtBoundaryPlot::NeedZBufferToCompositeEvenIn2D(void)
 //  Creation:   June 12, 2003
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Jun  6 16:14:47 PDT 2017
+//    Moved smooth and subset filters from 'ApplyReneringTransformation',
+//    so that Query over time will have the correct inputs.
 //
 // ****************************************************************************
 
 avtDataObject_p
 avtBoundaryPlot::ApplyOperators(avtDataObject_p input)
 {
-    return input;
+    // Set the amount of smoothing required
+    smooth->SetSmoothingLevel(atts.GetSmoothingLevel());
+    
+    if (atts.GetSmoothingLevel() > 0)
+    {
+        smooth->SetInput(input);
+        sub->SetInput(smooth->GetOutput());
+    }
+    else
+    {
+        sub->SetInput(input);
+    }
+    return sub->GetOutput();
 }
 
 // ****************************************************************************
@@ -474,33 +489,23 @@ avtBoundaryPlot::ApplyOperators(avtDataObject_p input)
 //  Creation:   June 12, 2003
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Jun  6 16:14:47 PDT 2017
+//    Move smooth and subset filters into 'ApplyOperators', so that
+//    Query over time will have the correct inputs.
 //
 // ****************************************************************************
 
 avtDataObject_p
 avtBoundaryPlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    // Set the amount of smoothing required
-    smooth->SetSmoothingLevel(atts.GetSmoothingLevel());
-    
-    if (atts.GetSmoothingLevel() > 0)
-    {
-        smooth->SetInput(input);
-        sub->SetInput(smooth->GetOutput());
-    }
-    else
-    {
-        sub->SetInput(input);
-    }
-
     if (atts.GetWireframe())
     {
-        wf->SetInput(sub->GetOutput());
+        wf->SetInput(input);
         gz->SetInput(wf->GetOutput());
     }
     else
     {
-        gz->SetInput(sub->GetOutput());
+        gz->SetInput(input);
     }
 
     return gz->GetOutput();

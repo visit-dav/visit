@@ -92,6 +92,9 @@ class     avtQueryableSource;
 //    Hank Childs, Mon Feb  9 15:09:29 PST 2009
 //    Added method CreateNamedSelection. 
 //
+//    Kathleen Biagas, Mon Jun  5 16:29:43 PDT 2017
+//    Added ResetAllExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObjectSource
@@ -101,6 +104,7 @@ class PIPELINE_API avtDataObjectSource
     virtual                        ~avtDataObjectSource();
 
     virtual bool                    Update(avtContract_p) = 0;
+    virtual void                    ResetAllExtents(void) = 0;
 
     virtual avtOriginatingSource   *GetOriginatingSource(void) = 0;
     virtual avtQueryableSource     *GetQueryableSource(void) = 0;

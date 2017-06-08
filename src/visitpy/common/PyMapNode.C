@@ -120,6 +120,9 @@ PyMapNode_Wrap(const MapNode &node)
 //   Kathleen Biagas, Mon Mar 24 17:00:11 PDT 2014
 //   Parse Dict.
 //
+//   Kathleen Biagas, Mon Jun  5 17:25:15 PDT 2017
+//   Allow for PyLong.
+//
 // ****************************************************************************
 
 bool
@@ -166,7 +169,7 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                  }
                  mn[mkey] = mval;
             }
-            else if (PyInt_Check(item))
+            else if (PyLong_Check(item) || PyInt_Check(item))
             {
                  int ni = 1, nd = 0, no = 0;
                  for (Py_ssize_t i = 1; i < PySequence_Size(value); ++i)
@@ -174,6 +177,8 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                      item = PySequence_GetItem(value, i);
                      if (PyFloat_Check(item))
                          nd++;
+                     else if (PyLong_Check(item))
+                         ni++;
                      else if (PyInt_Check(item))
                          ni++;
                      else
@@ -194,6 +199,8 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                          item = PySequence_GetItem(value, i);
                          if (PyFloat_Check(item))
                              mval.push_back(PyFloat_AS_DOUBLE(item));
+                         else if (PyLong_Check(item))
+                             mval.push_back((double)PyLong_AsLong(item));
                          else if (PyInt_Check(item))
                              mval.push_back((double)PyInt_AS_LONG(item));
                      }
@@ -205,7 +212,10 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
                      for (Py_ssize_t i = 0; i < PySequence_Size(value); ++i)
                      {
                          item = PySequence_GetItem(value, i);
-                         mval.push_back(PyInt_AS_LONG(item));
+                         if (PyLong_Check(item))
+                             mval.push_back((double)PyLong_AsLong(item));
+                         else if (PyInt_Check(item))
+                             mval.push_back((double)PyInt_AS_LONG(item));
                      }
                      mn[mkey] = mval;
                 }
@@ -238,6 +248,10 @@ PyDict_To_MapNode(PyObject *obj, MapNode &mn)
         else if (PyFloat_Check(value))
         {
             mn[mkey] = (double) PyFloat_AS_DOUBLE(value);
+        }
+        else if (PyLong_Check(value))
+        {
+            mn[mkey] = (int) PyLong_AsLong(value);
         }
         else if (PyInt_Check(value))
         {
