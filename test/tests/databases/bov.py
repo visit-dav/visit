@@ -58,7 +58,7 @@ def TestBOVDivide(prefix, db, doSubset):
     Test(prefix + "00")
 
     # Make sure there are the right number of zones.
-    Query("NumZones")
+    Query("NumZones",use_actual_data=0)
     TestText(prefix + "01", GetQueryOutputString())
 
     # Let's slice a few times to make sure that crucial areas have the

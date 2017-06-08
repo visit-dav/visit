@@ -115,7 +115,7 @@ def QueryRect2d():
     Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -130,7 +130,7 @@ def QueryRect2d():
     s = s + GetQueryOutputString()
     s = s + "\n"
 
-    Query("SpatialExtents")
+    Query("SpatialExtents", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
 
@@ -167,7 +167,7 @@ def QueryMultiUcd3d():
     Query("Volume")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("SpatialExtents")
+    Query("SpatialExtents", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("SpatialExtents", use_actual_data=1)
@@ -176,13 +176,13 @@ def QueryMultiUcd3d():
     v = GetQueryOutputValue()
     estr = "Exts from vector are [%f-%f, %f-%f, %f-%f]\n" %(v[0], v[1], v[2], v[3], v[4], v[5])
     s = s + estr
-    Query("NumNodes")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumZones", use_actual_data=1)
@@ -247,13 +247,13 @@ def QueryContours():
     Query("MinMax", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumZones", use_actual_data=1)
@@ -271,13 +271,13 @@ def QueryContours():
     Query("MinMax", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumZones", use_actual_data=1)
@@ -297,13 +297,13 @@ def QueryContours():
     Query("3D surface area")
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumNodes")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumNodes", use_actual_data=1)
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumZones", use_actual_data=1)
@@ -321,7 +321,7 @@ def QueryContours():
     Query("NumNodes", use_actual_data=1) 
     s = s + GetQueryOutputString()
     s = s + "\n"
-    Query("NumZones")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString()
     s = s + "\n"
     Query("NumZones", use_actual_data=1)
