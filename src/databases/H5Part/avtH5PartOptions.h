@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                             avtH5PartOptions.h                              //
+//                             avtH5PartOptions.h                            //
 // ************************************************************************* //
 
 #ifndef AVT_H5Part_OPTIONS_H
@@ -58,6 +58,5 @@ class DBOptionsAttributes;
 
 DBOptionsAttributes *GetH5PartReadOptions(void);
 DBOptionsAttributes *GetH5PartWriteOptions(void);
-
 
 #endif

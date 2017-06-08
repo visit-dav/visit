@@ -130,8 +130,9 @@ avtH5PartWriter::avtH5PartWriter(DBOptionsAttributes *writeOpts)
     fastBitIndexPathPrefix = std::string("__H5PartIndex__");
     sortedKey = std::string("unsorted");
     createParentFile = false;
-    parentFilename = std::string("visit_ex_db_parent");
 #endif
+
+    parentFilename = std::string("visit_ex_db_parent");
     
     // Check options
     if (writeOpts != NULL)
@@ -151,13 +152,12 @@ avtH5PartWriter::avtH5PartWriter(DBOptionsAttributes *writeOpts)
 
             else if (writeOpts->GetName(i) == "Sort variable")
                 sortedKey = writeOpts->GetString("Sort variable");
-
+#endif
             else if (writeOpts->GetName(i) == "Create a parent file")
                 createParentFile = writeOpts->GetBool("Create a parent file");
 
             else if (writeOpts->GetName(i) == "Parent file name")
                 parentFilename = writeOpts->GetString("Parent file name");
-#endif
         }
     }
     

@@ -118,6 +118,7 @@ private:
     int            cycle;
 
     std::string variablePathPrefix;
+    std::string parentFilename;
 
 #ifdef HAVE_LIBFASTQUERY
     const std::string getFastBitIndexPathPrefix( int timestep );
@@ -126,7 +127,6 @@ private:
     std::string fastBitIndexPathPrefix;
     std::string sortedKey;
     bool        createParentFile;
-    std::string parentFilename;
 #endif  
 };
 
