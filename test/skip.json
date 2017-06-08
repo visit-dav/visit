@@ -66,8 +66,7 @@
                     {"category":"operators","file":"ic_pics.py"},
                     {"category":"hybrid","file":"hybrid/ddf_vs_dbinning.py"},
                     {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
-                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]},
-                    {"category":"queries","file":"surface_area_over_time.py"}
+                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]}
                   ]},
  {"mode":"parallel","tests":[
                     {"category":"simulation","file":"zerocopy.py","cases":["zerocopy02"]},
@@ -118,8 +117,7 @@
                     {"category":"operators","file":"lcs_operator.py"},
                     {"category":"hybrid","file":"hybrid/ddf_vs_dbinning.py"},
                     {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
-                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]},
-                    {"category":"queries","file":"surface_area_over_time.py"}
+                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]}
                     ]},
  {"mode":"scalable,parallel,icet","tests":[
                     {"category":"simulation","file":"zerocopy.py","cases":["zerocopy02"]},
@@ -161,7 +159,6 @@
                     {"category":"operators","file":"lcs_operator.py"},
                     {"category":"hybrid","file":"hybrid/ddf_vs_dbinning.py"},
                     {"category":"hybrid","file":"merge_tree.py","cases":["rect2d_mtree","rect2d_localt_mt"]},
-                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]},
-                    {"category":"queries","file":"surface_area_over_time.py"}
+                    {"category":"rendering","file":"view.py","cases":["view_16","view_17"]}
                     ]}
 ]}
