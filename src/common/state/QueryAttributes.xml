@@ -13,10 +13,6 @@
       Curve
       Unknown
     </Enum>
-    <Enum name="DataType">
-      ActualData
-      OriginalData
-    </Enum>
     <Field name="resultsMessage" label="resultsMessage" type="string">
     </Field>
     <Field name="resultsValue" label="resultsValue" type="doubleVector">
@@ -57,8 +53,6 @@
     <Function name="GetVariables" user="true" member="true">
     </Function>
     <Function name="GetVariables2" user="true" member="true">
-    </Function>
-    <Function name="GetDataType" user="true" member="true">
     </Function>
     <Function name="Reset" user="true" member="true">
     </Function>

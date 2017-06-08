@@ -4942,6 +4942,11 @@ NetworkManager::CloneNetwork(const int id)
 //    Use the expression node without assuming where it exists in the working
 //    net node list.
 //
+//    Kathleen Biagas, Fri May 26 12:35:43 PDT 2017
+//    Default useActualData to true, retrieve the value from QueryInputParams
+//    if available.  Use it as a value to help determine where input is
+//    gathered from.
+//
 // ****************************************************************************
 
 void
@@ -4954,25 +4959,28 @@ NetworkManager::AddQueryOverTimeFilter(QueryOverTimeAttributes *qA,
         EXCEPTION1(ImproperUseException, error);
     }
 
+    bool useActualData = true;
+    if (qA->GetQueryAtts().GetQueryInputParams().HasNumericEntry("use_actual_data"))
+    {
+        useActualData = qA->GetQueryAtts().GetQueryInputParams().GetEntry("use_actual_data")->ToBool();
+    }
+
     //
     // Determine which input the filter should use.
     //
     avtDataObject_p input;
-    if (qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
-        qA->GetQueryAtts().GetName() == "Locate and Pick Node" )
+    if (useActualData ||
+        qA->GetQueryAtts().GetName() == "Locate and Pick Zone" ||
+        qA->GetQueryAtts().GetName() == "Locate and Pick Node")
     {
         input = networkCache[clonedFromId]->GetPlot()->
                 GetIntermediateDataObject();
-    }
-    else if (qA->GetQueryAtts().GetDataType() == QueryAttributes::OriginalData)
-    {
-        input = workingNet->GetExpressionNode()->GetOutput();
     }
     else
     {
-        input = networkCache[clonedFromId]->GetPlot()->
-                GetIntermediateDataObject();
+        input = workingNet->GetExpressionNode()->GetOutput();
     }
+
     qA->GetQueryAtts().SetPipeIndex(networkCache[clonedFromId]->
         GetContract()->GetPipelineIndex());
 

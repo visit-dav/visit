@@ -1125,18 +1125,9 @@ ViewerQueryManager::DatabaseQuery(const MapNode &in_queryParams)
     }
 
     int useActualData = 1;
-    
     if (queryParams.HasNumericEntry("use_actual_data"))
     {
         useActualData = queryParams.GetEntry("use_actual_data")->ToInt();
-    }
-    else
-    {
-        int winType = GetViewerState()->GetQueryList()->GetWindowType(qName);
-        if (winType == QueryList::ActualData || winType == QueryList::ActualDataVars)
-            useActualData = 0; // the default for actual/original supported queries
-        else 
-            useActualData = 1; // the default for actual-data-only queries
     }
     // ensure we are all on the same page
     queryParams["use_actual_data"] = useActualData;
@@ -3281,6 +3272,7 @@ ViewerQueryManager::HandlePickCache()
     handlingCache = false;
 }
 
+
 // ****************************************************************************
 //  Method: ViewerQueryManager::PointQuery
 //
@@ -3390,7 +3382,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             win->EnableUpdates();
         }
     }
-    
+
     if (!vars.empty())
         pickAtts->SetVariables(vars);
 
@@ -3399,6 +3391,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     if (queryParams.HasNumericEntry("do_time"))
         timeCurve = queryParams.GetEntry("do_time")->ToInt();
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
+
     // A query with time options should override what is set from PickWindow,
     // but then PickAtts should be reset, so save what PickAtts currently has
     // to reset it later.
@@ -3486,7 +3479,6 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     }
     else if (pType == "DomainZone"  || pType == "DomainNode")
     {
-      
         int domain = 0, element = -1;
         if (queryParams.HasNumericEntry("use_global_id"))
         {
@@ -3509,7 +3501,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
           preserveCoord = queryParams.GetEntry("preserve_coord")->ToBool();
         else
           preserveCoord = pickAtts->GetTimePreserveCoord();
-        
+
         if (timeCurve && preserveCoord)
         {
             // need to determine the coordinate to use, and change
@@ -5020,7 +5012,6 @@ ViewerQueryManager::PickThroughTime(PICK_POINT_INFO *ppi,
         params["domain"] = pickAtts->GetDomain() >= 0 ?
                            pickAtts->GetDomain() : 0;
         params["element"] = pickAtts->GetElementNumber();
-        params["data_type"] = QueryAttributes::OriginalData;
         stringVector pvars = pickAtts->GetVariables();
         for (size_t i = 0; i < pvars.size(); ++i)
             if (pvars[i] == "default")
@@ -5706,6 +5697,7 @@ ViewerQueryManager::Query(const MapNode &queryParams)
         GetViewerState()->GetQueryAttributes()->Notify();
         return;
     }
+
     string qName = queryParams.GetEntry("query_name")->AsString();
     if (qName.empty())
     {
@@ -5752,7 +5744,7 @@ ViewerQueryManager::Query(const MapNode &queryParams)
       DatabaseQuery(queryParams);
     }
     else if (qtype == QueryList::PointQuery)
-    {  
+    {
       PointQuery(queryParams);
     }
     else if (qtype == QueryList::LineQuery)
@@ -5798,7 +5790,7 @@ ViewerQueryManager::GetQueryParameters(const string &qName)
     {
         // this query does not exist on engine
         MapNode params;
-        params["use_actual_data"] = 0;
+        params["use_actual_data"] = 1;
         string sparams = params.ToXML();
         GetViewerState()->GetQueryAttributes()->SetXmlResult(sparams);
         GetViewerState()->GetQueryAttributes()->Notify();
