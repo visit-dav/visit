@@ -49,11 +49,11 @@ function bv_pidx_initialize_vars
 
 function bv_pidx_info
 {
-    export PIDX_VERSION=${PIDX_VERSION:-"1.0beta"}
-    export PIDX_FILE=${PIDX_FILE:-"PIDX-${PIDX_VERSION}.tgz"}
+    export PIDX_VERSION=${PIDX_VERSION:-"0.9.1"}
+    export PIDX_FILE=${PIDX_FILE:-"PIDX-${PIDX_VERSION}.tar.gz"}
     export PIDX_COMPATIBILITY_VERSION=${PIDX_COMPATIBILITY_VERSION:-"1.8"}
     export PIDX_BUILD_DIR=${PIDX_BUILD_DIR:-"PIDX-${PIDX_VERSION}"}
-#    export PIDX_URL=${PIDX_URL:-"http://www.pidx.info/downloads/PIDX-${PIDX_VERSION}/src"}
+    export PIDX_URL=${PIDX_URL:-"https://github.com/sci-visus/PIDX/archive/v$PIDX_VERSION"}
     export PIDX_MD5_CHECKSUM=""
     export PIDX_SHA256_CHECKSUM=""
 }
