@@ -30,6 +30,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>A bug was corrected in the Silo database reader where it would invalidate all the objects in the database when it encountered multi-block objects for which no block-level sub-objects exist. Although this problem is corrected, attempts to open any such poorly constructed Silo file can lead to <b>unacceptable</b> performance issues simply opening a file. Such Silo files are considered <b>invalid</b>.</li>
   <li>A bug was corrected in the Silo database reader where fuzzy logic to match multi-vars to multi-meshes was getting inadvertently triggered even for multi-var objects that correctly specified their multi-mesh via the DBOPT_MMESH option.</li>
   <li>The Silo database reader was modified to remove logic to skip empty single-block mesh and variable objects from getting added to database metadata to ensure the existence of such objects does not vary with time.</li>
+  <li>A bug was corrected with the ddcMD database reader, which resulted in particle data not being colored by the Pseudocolor plot when the point style was anything other than Point or Sphere.</li> 
 </ul>
 
 <a name="Enhancements"></a>
