@@ -962,15 +962,15 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             //
             if (smd->hasDataExtents)
             {
-                double extents[6]; // 6 is probably too much, but better to be safe
+                double extents[2];
                 extents[0] = smd->minDataExtents;
                 extents[1] = smd->maxDataExtents;
-    
+
                 atts.GetOriginalDataExtents(var_list[i])->Set(extents);
             }
             else
             {
-                double extents[6]; // 6 is probably too much, but better to be safe
+                double extents[2];
                 if (GetExtentsFromAuxiliaryData(spec, var_list[i],
                         AUXILIARY_DATA_DATA_EXTENTS, extents))
                 {
@@ -978,7 +978,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
                 }
             }
         }
-    
+
         const avtVectorMetaData *vmd = GetMetaData(ts)->GetVector(var_list[i]);
         if (vmd != NULL)
         {
@@ -989,7 +989,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.SetVariableDimension(vmd->varDim, var_list[i]);
             atts.SetCentering(vmd->centering, var_list[i]);
             atts.SetVariableType(AVT_VECTOR_VAR, var_list[i]);
-    
+
             //
             // Note that we are using the spatial extents as both the spatial 
             // extents and as the global spatial extents (the spatial extents 
@@ -997,14 +997,14 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             //
             if (vmd->hasDataExtents)
             {
-                double extents[6]; // 6 is probably too much, but better to be safe
+                double extents[2];
                 extents[0] = vmd->minDataExtents;
                 extents[1] = vmd->maxDataExtents;
                 atts.GetOriginalDataExtents(var_list[i])->Set(extents);
             }
             else
             {
-                double extents[6]; // 6 is probably too much, but better to be safe
+                double extents[2];
                 if (GetExtentsFromAuxiliaryData(spec, var_list[i],
                         AUXILIARY_DATA_DATA_EXTENTS, extents))
                 {
@@ -1024,7 +1024,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.SetCentering(tmd->centering, var_list[i]);
             atts.SetVariableType(AVT_TENSOR_VAR, var_list[i]);
         }
-    
+
         const avtSymmetricTensorMetaData *stmd = 
                                    GetMetaData(ts)->GetSymmTensor(var_list[i]);
         if (stmd != NULL)
@@ -1080,7 +1080,7 @@ avtDatabase::PopulateDataObjectInformation(avtDataObject_p &dob,
             atts.SetYLabel(cmd->yLabel);
             if (cmd->hasDataExtents)
             {
-                double extents[6]; // 6 is probably too much, but better to be safe
+                double extents[2];
                 extents[0] = cmd->minDataExtents;
                 extents[1] = cmd->maxDataExtents;
                 atts.GetOriginalDataExtents(var_list[i])->Set(extents);

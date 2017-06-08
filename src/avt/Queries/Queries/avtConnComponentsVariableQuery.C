@@ -46,7 +46,7 @@
 #include <avtCallback.h>
 #include <avtConnComponentsExpression.h>
 #include <avtParallel.h>
-#include <avtSourceFromAVTDataset.h>
+#include <avtOriginatingSource.h>
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
@@ -59,7 +59,6 @@
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
-#include <InvalidDimensionsException.h>
 #include <snprintf.h>
 
 #include <string>

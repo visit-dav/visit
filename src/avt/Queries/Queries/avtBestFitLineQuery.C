@@ -53,7 +53,6 @@
 #include <avtParallel.h>
 
 #include <DebugStream.h>
-#include <InvalidVariableException.h>
 #include <snprintf.h>
 
 using     std::string;

@@ -92,13 +92,15 @@ public:
 //    Jeremy Meredith, Wed Aug 25 11:54:18 PDT 2004
 //    Added method to return the raw database.
 //
+//    Kathleen Biagas, Wed May 24 17:16:49 PDT 2017
+//    Removed duplicate method for returning the database.
+//
 // ****************************************************************************
 class ENGINE_MAIN_API NetnodeDB: public Netnode
 {
 public:
     NetnodeDB(avtDatabase *);
     NetnodeDB(ref_ptr<avtDatabase>);
-    ref_ptr<avtDatabase>    GetDatabase(void) { return db; };
     virtual ~NetnodeDB(void) {FreeUpResources();};
     void SetDBInfo(std::string _filename, std::string _var, int _time);
     virtual avtDataObject_p GetOutput(void);

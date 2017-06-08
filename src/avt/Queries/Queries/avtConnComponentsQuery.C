@@ -56,7 +56,6 @@
 #include <vtkPointData.h>
 
 #include <DebugStream.h>
-#include <InvalidVariableException.h>
 #include <snprintf.h>
 
 

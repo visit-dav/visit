@@ -50,7 +50,7 @@
 #include <vtkPointData.h>
 #include <avtResampleFilter.h>
 #include <InternalResampleAttributes.h>
-#include <avtSourceFromAVTDataset.h>
+#include <avtOriginatingSource.h>
 #include <avtExprNode.h>
 #include <avtDatasetExaminer.h>
 
