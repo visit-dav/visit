@@ -104,11 +104,11 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 // ****************************************************************************
 //  Method: avtTimeLoopFilter::Update
 //
-//  Purpose: 
+//  Purpose:
 //    Loops through specified timesteps:  retrieves correct SILRestriction,
 //    creates appropriate avtDataRequest and avtContract
-//    for each timestep and calls avtFilter::Update to initiate a new 
-//    pipeline execution for each timestep. 
+//    for each timestep and calls avtFilter::Update to initiate a new
+//    pipeline execution for each timestep.
 //
 //  Arguments:
 //      spec    The pipeline specification.
@@ -160,6 +160,9 @@ avtTimeLoopFilter::~avtTimeLoopFilter()
 //   Dave Pugmire, Tue Aug 13 11:55:59 EDT 2013
 //   Fix error in determing which slice is owned by a rank.
 //
+//   Kathleen Biagas, Mon Jun  5 16:39:32 PDT 2017
+//   Call ResetAllExtents prior to changing timestates.
+//
 // ****************************************************************************
 
 bool
@@ -201,19 +204,21 @@ avtTimeLoopFilter::Update(avtContract_p spec)
             bool shouldDoThisTimeSlice = true;
             if (parallelizingOverTime)
                 shouldDoThisTimeSlice = RankOwnsTimeSlice(currentTime);
-         
+
             if (!shouldDoThisTimeSlice)
                 continue;
-            
+
             // Depending on the stride the last frame may be before
             // the end.
             if (currentTime > endTime)
               currentTime = endTime;
-            
+
             if (!NeedCurrentTimeSlice())
                 continue;
-            
-            debug4 << "Time loop filter updating with time slice #" 
+
+            avtFilter::ResetAllExtents();
+
+            debug4 << "Time loop filter updating with time slice #"
                    << currentTime << endl;
 
             avtSIL *sil = GetInput()->GetOriginatingSource()->GetSIL(currentTime);
@@ -222,7 +227,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
                 debug4 << "Could not read the SIL at state " << currentTime << endl;
                 currentSILR = orig_SILR;
             }
-            else 
+            else
             {
                 currentSILR = new avtSILRestriction(sil);
                 currentSILR->SetTopSet(orig_SILR->GetTopSet());
@@ -235,7 +240,7 @@ avtTimeLoopFilter::Update(avtContract_p spec)
             avtDataRequest_p newDS = new avtDataRequest(orig_DS, currentSILR);
             newDS->SetTimestep(currentTime);
 
-            avtContract_p contract = 
+            avtContract_p contract =
                 new avtContract(newDS, spec->GetPipelineIndex());
             if (parallelizingOverTime)
             {
@@ -244,22 +249,24 @@ avtTimeLoopFilter::Update(avtContract_p spec)
             }
             else
                 contract->NoStreaming();
-        
+
             modified |= avtFilter::Update(contract);
-        
+
             if (ExecutionSuccessful())
             {
                 validTimes.push_back(currentTime);
             }
-            else 
+            else
             {
                 skippedTimes.push_back(currentTime);
             }
             avtCallback::ResetTimeout(5*60);
         }
     }
-    
+
     visitTimer->StopTimer(t0, "avtTimeLoopFilter Read time slices");
+
+    avtFilter::ResetAllExtents();
 
     int t1 = visitTimer->StartTimer();
     //
@@ -281,8 +288,8 @@ avtTimeLoopFilter::Update(avtContract_p spec)
     //
     GetInput()->Update(spec);
     visitTimer->StopTimer(t1, "avtTimeLoopFilter CreateFinalOutput");
-    
-    // 
+
+    //
     // Set the time information to be the time from the input, not from the
     // last execution.  This is particularly important when we parallelize
     // over time, since each MPI task will have a different cycle/time and then

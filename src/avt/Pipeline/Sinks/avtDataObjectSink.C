@@ -158,3 +158,22 @@ avtDataObjectSink::UpdateInput(avtContract_p spec)
 }
 
 
+// ****************************************************************************
+//  Method: avtDataObjectSink::ResetAllExtents
+//
+//  Purpose:
+//      Resets the extents.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   June 5, 2017
+//
+// ****************************************************************************
+void
+avtDataObjectSink::ResetAllExtents()
+{
+    avtDataObject_p input = GetInput();
+    if (*input != NULL)
+        input->ResetAllExtents(); 
+}
+
+

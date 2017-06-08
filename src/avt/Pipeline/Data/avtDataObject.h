@@ -93,6 +93,9 @@ class     avtWebpage;
 //    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
 //    Changed the return type of GetNumberOfCells to long long
 //
+//    Kathleen Biagas, Mon Jun  5 16:21:30 PDT 2017
+//    Add ResetAllExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataObject
@@ -105,6 +108,7 @@ class PIPELINE_API avtDataObject
     avtQueryableSource              *GetQueryableSource(void);
 
     bool                             Update(avtContract_p);
+    void                             ResetAllExtents(void);
     void                             SetSource(avtDataObjectSource *);
     avtDataObjectSource             *GetSource(void) { return source; };
 
