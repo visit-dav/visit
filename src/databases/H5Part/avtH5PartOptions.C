@@ -48,7 +48,6 @@
 
 #include <string>
 
-
 // ****************************************************************************
 //  Function: GetH5PartReadOptions
 //
@@ -109,7 +108,7 @@ GetH5PartWriteOptions(void)
     rv->SetString("FastBit index path prefix", "__H5PartIndex__");
     // rv->SetBool("Sort variable", "unsorted");
     rv->SetBool("Create a parent file", false);
+#endif
     rv->SetString("Parent file name", "visit_ex_db_parent");
-#endif    
     return rv;
 }
