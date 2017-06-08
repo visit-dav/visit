@@ -53,9 +53,6 @@
 #include <avtParallel.h>
 
 #include <DebugStream.h>
-#include <InvalidVariableException.h>
-#include <InvalidDimensionsException.h>
-#include <NonQueryableInputException.h>
 
 #include <snprintf.h>
 #include <float.h>

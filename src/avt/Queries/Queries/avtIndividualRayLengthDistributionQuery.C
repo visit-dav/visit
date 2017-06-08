@@ -52,7 +52,6 @@
 
 #include <avtLineScanFilter.h>
 #include <avtParallel.h>
-#include <avtSourceFromAVTDataset.h>
 #include <avtOriginatingSource.h>
 #include <avtWeightedVariableSummationQuery.h>
 

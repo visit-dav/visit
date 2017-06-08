@@ -47,7 +47,6 @@
 #include <avtShapeletDecompose.h>
 #include <avtShapeletReconstruct.h>
 #include <avtParallel.h>
-#include <avtSourceFromAVTDataset.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>

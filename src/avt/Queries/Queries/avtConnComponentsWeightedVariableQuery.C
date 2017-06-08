@@ -62,7 +62,6 @@
 
 #include <DebugStream.h>
 #include <InvalidVariableException.h>
-#include <InvalidDimensionsException.h>
 #include <snprintf.h>
 
 #include <string>

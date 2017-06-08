@@ -43,7 +43,6 @@
 #include <avtAverageValueQuery.h>
 
 #include <DebugStream.h>
-#include <NonQueryableInputException.h>
 
 
 using     std::string;

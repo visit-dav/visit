@@ -44,7 +44,6 @@
 
 #include <avtCondenseDatasetFilter.h>
 #include <avtOriginatingSource.h>
-#include <BadIndexException.h>
 
 using     std::string;
 

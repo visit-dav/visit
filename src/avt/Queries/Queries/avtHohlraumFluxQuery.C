@@ -45,7 +45,6 @@
 #include <avtLineScanFilter.h>
 #include <avtOriginatingSource.h>
 #include <avtParallel.h>
-#include <avtSourceFromAVTDataset.h>
 #include <QueryArgumentException.h>
 
 #include <vectortypes.h>

@@ -45,7 +45,6 @@
 #include <avtCallback.h>
 #include <avtConnComponentsExpression.h>
 #include <avtParallel.h>
-#include <avtSourceFromAVTDataset.h>
 
 
 #include <vtkCell.h>

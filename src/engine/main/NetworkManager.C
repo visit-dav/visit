@@ -4731,7 +4731,7 @@ NetworkManager::ExportSingleDatabase(int id, const ExportDBAttributes &atts)
     {
         std::string plotName(networkCache[id]->GetPlot()->GetName());
         int time = networkCache[id]->GetTime();
-        ref_ptr<avtDatabase> db = networkCache[id]->GetNetDB()->GetDatabase();
+        ref_ptr<avtDatabase> db = networkCache[id]->GetNetDB()->GetDB();
 
         // Set the contract to use for the export. Give the plot a chance to
         // enhance the contract as would be the case in a normal execute.

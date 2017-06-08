@@ -47,7 +47,6 @@
 #include <mpi.h>
 #endif
 
-#include <avtSourceFromAVTDataset.h>
 #include <avtDataObjectString.h>
 #include <avtDataObjectReader.h>
 #include <avtDataObjectWriter.h>

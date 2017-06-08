@@ -187,11 +187,9 @@ avtTotalSurfaceAreaQuery::ApplyFilters(avtDataObject_p inData)
 
     if (timeVarying) 
     { 
-        avtDataRequest_p oldSpec = inData->GetOriginatingSource()->
-            GetGeneralContract()->GetDataRequest();
+        avtDataRequest_p oldSpec = contract->GetDataRequest();
 
-        avtDataRequest_p newDS = new 
-            avtDataRequest(oldSpec, querySILR);
+        avtDataRequest_p newDS = new avtDataRequest(oldSpec, querySILR);
         newDS->SetTimestep(queryAtts.GetTimeStep());
 
         contract = new avtContract(newDS, contract->GetPipelineIndex());

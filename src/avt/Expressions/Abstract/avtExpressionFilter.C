@@ -357,7 +357,7 @@ avtExpressionFilter::UpdateExtents(avtDataTree_p tree)
             compexts[d*2+1] = -DBL_MAX;
         }
 
-        double exts[6];
+        double exts[2];
         unsigned char *ghosts = NULL;
         if (isPoint)
         {

@@ -63,9 +63,6 @@
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
-#include <InvalidVariableException.h>
-#include <InvalidDimensionsException.h>
-#include <NonQueryableInputException.h>
 
 #include <snprintf.h>
 #include <float.h>
