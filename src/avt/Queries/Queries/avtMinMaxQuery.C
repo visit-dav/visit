@@ -1169,11 +1169,13 @@ avtMinMaxQuery::FindElement(MinMaxInfo &info)
 //  Creation:   July 26, 2011
 //
 //  Modifications:
+//    Kathleen Biagas, Thu Jun  8 12:36:29 PDT 2017
+//    Change the default to 1, for consistency with other queries.
 //
 // ****************************************************************************
 
 void
 avtMinMaxQuery::GetDefaultInputParams(MapNode &params)
 {
-    params["use_actual_data"] = 0;
+    params["use_actual_data"] = 1;
 }

@@ -282,6 +282,9 @@ QvisQueryWindow::CreateWindowContents()
 //   Added pickQueryWidget, xRayImageQueryWidget, lineoutQueryWidget,
 //   hohlraumFluxQueryWidget, timeQueryOptions.
 //
+//   Kathleen Biagas, Thu Jun  8 12:50:13 PDT 2017
+//   Made the default for dataOpts be 'actual data'.
+//
 // ****************************************************************************
 
 void
@@ -383,7 +386,7 @@ QvisQueryWindow::CreateStandardQueryWidget()
     dataOpts->addButton(actualData,1);
     sLayout->addWidget(actualData, 10, 0);
 
-    dataOpts->button(0)->setChecked(true);
+    dataOpts->button(1)->setChecked(true);
 
     // Add the dump check box options to the argument panel.
     dumpIndex = new QCheckBox(tr("Dump Index"), argPanel);
@@ -959,6 +962,9 @@ QvisQueryWindow::UpdateResults(bool)
 //   Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
 //   Added GUI case for CompactnessVar queries.
 //
+//   Kathleen Biagas, Thu Jun  8 12:49:35 PDT 2017
+//   Made the default for dataOpts be 'actual data'.
+//
 // ****************************************************************************
 
 void
@@ -979,7 +985,7 @@ QvisQueryWindow::UpdateArgumentPanel(const QString &qname)
         }
     }
     // reset a few defaults
-    dataOpts->button(0)->setChecked(true);
+    dataOpts->button(1)->setChecked(true);
     useGlobal->setChecked(0);
     dumpIndex->setChecked(0);
     dumpCoordinates->setChecked(0);

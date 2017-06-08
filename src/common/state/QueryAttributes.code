@@ -54,18 +54,6 @@ QueryAttributes::GetVariables()
     return defaultVars;
 }
 
-Function: GetDataType
-Declaration: DataType GetDataType() const;
-Definition:
-QueryAttributes::DataType
-QueryAttributes::GetDataType() const
-{
-    if (queryInputParams.HasNumericEntry("data_type"))
-        return (QueryAttributes::DataType)queryInputParams.GetEntry("data_type")->ToInt();
-    else
-        return QueryAttributes::ActualData;
-}
-
 Function: Reset
 Declaration: void Reset();
 Definition:

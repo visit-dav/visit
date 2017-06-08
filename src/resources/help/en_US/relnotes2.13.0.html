@@ -82,7 +82,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Query_changes"></a>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.13</font></b></p>
 <ul>
-  <li>Query Change 1</li>
+  <li>The default for Queries that operate on either <i>Original</i> or <i>Actual</i> data has been changed from <i>Original</i> to <i>Actual</i>.  This makes them consistent with all the other queries that only operate on <i>Actual</i> data. Affected Queries include <i>Min</i>, <i>Max</i>, <i>MinMax</i>, <i>NumNodes</i>, <i>NumZones</i> and <i>Spatial Extents</i>. In the GUI, you will notice that the <i>Actual Data</i> button is the one activated by default for these queries, and from the cli, the <i>use_actual_data</i> parameter defaults to 1 if not set explicitly.  This will also affect QueryOverTime for any of these queries.</li>
   <li>Query Change 2</li>
 </ul>
 
