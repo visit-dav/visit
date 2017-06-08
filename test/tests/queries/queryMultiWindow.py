@@ -58,9 +58,9 @@ def QueryMultiWindow():
     s = s + GetQueryOutputString() + "\n"
     Query("Weighted Variable Sum") 
     s = s + GetQueryOutputString() + "\n"
-    Query("NumNodes")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString() + "\n"
-    Query("NumZones")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString() + "\n"
 
 
@@ -80,9 +80,9 @@ def QueryMultiWindow():
     s = s + GetQueryOutputString() + "\n"
     Query("Weighted Variable Sum") 
     s = s + GetQueryOutputString() + "\n"
-    Query("NumNodes")
+    Query("NumNodes", use_actual_data=0)
     s = s + GetQueryOutputString() + "\n"
-    Query("NumZones")
+    Query("NumZones", use_actual_data=0)
     s = s + GetQueryOutputString() + "\n"
     
     #Delete window 2
