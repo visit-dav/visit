@@ -12,8 +12,8 @@
  **                                                **
  ****************************************************/
 
-#ifndef _idx_io_h
-#define _idx_io_h
+#ifndef _visit_idx_io_h
+#define _visit_idx_io_h
 
 #include <string>
 #include <vector>
