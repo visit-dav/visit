@@ -394,7 +394,7 @@ public:
     void  RegisterWarningCallback(void (*)(const char *));
     static void (*WarningCallback)(const char *);
     static bool haveWarningCallback;
-    void IssueWarning(const char *msg);
+    void IssueWarning(const char *msg) const;
     bool VarIsCompound(const std::string &inVar) const;
     void ParseCompoundForVar(const std::string &inVar, std::string &outVar) const;
     void ParseCompoundForMesh(const std::string &inVar, std::string &meshName) const;
@@ -410,6 +410,11 @@ public:
     int GetGhostZoneTypesPresent(std::string name) const;
     void ClearGhostTypesPresent(std::string name);
     void AddGhostZoneTypePresent(std::string name, avtGhostsZonesPresent v);
+    int GetTotalVarCount(void) const;
+    char const * GetSEGEnvVarName() const;
+    char const * GetSEGWarningString() const;
+    void IssueSEGWarningMessage() const;
+    bool ShouldDisableSEG(bool envOverride=false) const;
 
     // IDs that can be used to identify fields in case statements
     enum {

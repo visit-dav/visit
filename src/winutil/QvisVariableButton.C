@@ -229,19 +229,31 @@ QvisBaseVariableButton::VariablePopupInfo::DeleteMenu(int i)
 //   I made it delete and recreate the menus when updating them so we really
 //   free up the menus that get created.
 //
+//   Mark C. Miller, Thu Jun  8 15:12:30 PDT 2017
+//   Add logic to conditionally destroy menus instead of just clearing them. 
+//   Add logic to skip some menus when possible.
 // ****************************************************************************
 
 void
-QvisBaseVariableButton::VariablePopupInfo::UpdateMenus(VariableMenuPopulator *pop)
+QvisBaseVariableButton::VariablePopupInfo::UpdateMenus(VariableMenuPopulator *pop,
+    bool destroyMenuItems)
 {
     Initialize();
 
     // Insert the real list of variables.
     for(int i = 0; i < N_VAR_CATEGORIES; ++i)
     {
+        if (pop->IsSingleVariableMenuUpToDate(categoryMasks[i], varMenus[i]))
+            continue;
+
 #ifdef DELETE_MENU_TO_FREE_POPUPS
-        DeleteMenu(i);
-        CreateMenu(i);
+        if (destroyMenuItems)
+        {
+            DeleteMenu(i);
+            CreateMenu(i);
+        }
+        else
+            varMenus[i]->clear();
 #else
         varMenus[i]->clear();
 #endif
@@ -983,14 +995,15 @@ QvisBaseVariableButton::setAddDefault(bool val)
 // ****************************************************************************
 
 void
-QvisVariableButton::UpdateActiveSourceButtons(VariableMenuPopulator *pop)
+QvisVariableButton::UpdateActiveSourceButtons(VariableMenuPopulator *pop,
+    bool destroyMenuItems)
 {
     // Create the menus if they have not been created yet.
     activeSourceInfo->Initialize();
 
     // Update the menus.
     if(pop)
-        activeSourceInfo->UpdateMenus(pop);
+        activeSourceInfo->UpdateMenus(pop, destroyMenuItems);
  
     //
     // Iterate over the variable buttons and create any missing populators.
@@ -1025,14 +1038,15 @@ QvisVariableButton::UpdateActiveSourceButtons(VariableMenuPopulator *pop)
 // ****************************************************************************
 
 void
-QvisVariableButton::UpdatePlotSourceButtons(VariableMenuPopulator *pop)
+QvisVariableButton::UpdatePlotSourceButtons(VariableMenuPopulator *pop,
+    bool skipUpdateMenus, bool destroyMenuItems)
 {
     // Create the menus if they have not been created yet.
     plotSourceInfo->Initialize();
 
     // Update the menus.
-    if(pop)
-        plotSourceInfo->UpdateMenus(pop);
+    if(pop && !skipUpdateMenus)
+        plotSourceInfo->UpdateMenus(pop, destroyMenuItems);
  
     //
     // Iterate over the variable buttons and create any missing populators.

@@ -70,6 +70,7 @@
 #include <DBPluginInfoAttributes.h>
 #include <EngineKey.h>
 #include <EngineList.h>
+#include <Environment.h>
 #include <ExportDBAttributes.h>
 #include <FileOpenOptions.h>
 #include <FileFunctions.h>
@@ -201,6 +202,12 @@ static int nConfigArgs = 1;
 #include <visit-config.h>
 #ifdef HAVE_OSMESA
 #include <vtkVisItOSMesaRenderingFactory.h>
+#endif
+
+// We do this so that the strings command on the .o file
+// can tell us whether or not DEBUG_MEMORY_LEAKS was turned on
+#ifdef DEBUG_MEMORY_LEAKS
+static const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
 #endif
 
 // ****************************************************************************
@@ -373,6 +380,11 @@ ViewerSubject::ViewerSubject() : ViewerBaseUI(),
     interpretCommands(), xfer(), clients(),
     unknownArguments(), clientArguments()
 {
+#ifdef DEBUG_MEMORY_LEAKS
+    // ensure dummy_string1 cannot optimized away
+    char const *dummy = dummy_string1; dummy++;
+#endif
+
     //
     // Initialize pointers to some Qt objects that don't get created
     // until later.
@@ -2866,6 +2878,9 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
 //    Brad Whitlock, Thu Aug 14 09:57:29 PDT 2008
 //    Use qApp.
 //
+//    Mark C. Miller, Thu Jun  8 15:05:50 PDT 2017
+//    Just exit(0) and don't try to exit nicely. This can impact valgrind
+//    analysis so compile with DEBUG_MEMORY_LEAKS to disable.
 // ****************************************************************************
 
 void
@@ -2899,7 +2914,11 @@ ViewerSubject::Close()
     //
     // Break out of the application loop.
     //
+#ifdef DEBUG_MEMORY_LEAKS
     qApp->exit(0);
+#else
+    exit(0); // HOOKS_IGNORE
+#endif
 }
 
 // ****************************************************************************
@@ -3467,14 +3486,24 @@ ViewerSubject::SimConnect(EngineKey &ek)
 //
 // Modifications:
 //
+//    Mark C. Miller, Thu Jun  8 15:07:19 PDT 2017
+//    Do nothing if SEG is disabled. Since GetOperatorCreatedExpressions
+//    already updates the global expression list, don't pass it in here. 
+//    Just pass in a dummy, empty list.
 // ****************************************************************************
 
 void
 ViewerSubject::UpdateExpressionCallback(const avtDatabaseMetaData *md, void *)
 {
-    ExpressionList *adder = ParsingExprList::Instance()->GetList();
-    VariableMenuPopulator::GetOperatorCreatedExpressions(*adder, md, 
-                                                         ViewerBase::GetOperatorPluginManager());
+    if (md->ShouldDisableSEG(Environment::exists(md->GetSEGEnvVarName())))
+        return;
+
+    ExpressionList dummyList;
+    // A side effect of calling GetOperatorCreatedExpression is that
+    // global expression list is updated.
+    VariableMenuPopulator::GetOperatorCreatedExpressions(dummyList, md,
+        ViewerBase::GetOperatorPluginManager(),
+        VariableMenuPopulator::GlobalOnly);
 }
 
 // ****************************************************************************

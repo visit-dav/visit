@@ -282,7 +282,7 @@ avtExpressionEvaluatorFilter::VerifyVariableTypes(void)
     {
         const std::string &varname = atts.GetVariableName(i);
         avtVarType vt = atts.GetVariableType(varname.c_str());
-        Expression *exp = ParsingExprList::GetExpression(varname.c_str());
+        Expression const *exp = ParsingExprList::GetExpression(varname.c_str());
         if (exp == NULL)
             continue;
         Expression::ExprType et = exp->GetType();
@@ -498,7 +498,7 @@ avtExpressionEvaluatorFilter::ModifyContract(avtContract_p spec)
         }
 
         // Check if this is an expression, a real variable, or a data binning.
-        Expression *exp = ParsingExprList::GetExpression(var);
+        Expression const *exp = ParsingExprList::GetExpression(var);
         avtDataBinning *db = NULL;
         if (getDataBinningCallback != NULL)
             db = getDataBinningCallback(getDataBinningCallbackArgs, var.c_str());

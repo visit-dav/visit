@@ -54,6 +54,7 @@
 #include <DatabaseCorrelationList.h>
 #include <DataNode.h>
 #include <DebugStream.h>
+#include <Environment.h>
 #include <avtDatabaseMetaData.h>
 #include <PlotPluginManager.h>
 
@@ -233,6 +234,9 @@ DatabaseActionBase::SetUpdateExpressionCallback(
 //    side-effect of invalidating it, causing a crash when we use -o from the
 //    command line.
 //
+//    Mark C. Miller, Thu Jun  8 15:04:49 PDT 2017
+//    Issue warning message regarding disablement of speculative expression
+//    generation (SEG).
 // ****************************************************************************
 
 int
@@ -274,6 +278,11 @@ DatabaseActionBase::OpenDatabaseHelper(const std::string &entireDBName,
                                                                forcedFileType);
     if (mdptr != NULL)
     {
+        if (mdptr->ShouldDisableSEG(Environment::exists(mdptr->GetSEGEnvVarName())))
+        {
+            GetViewerMessaging()->Warning(mdptr->GetSEGWarningString());
+        }
+
         avtDatabaseMetaData md(*mdptr);
 
         // set the active host database name now that we have valid metadata.

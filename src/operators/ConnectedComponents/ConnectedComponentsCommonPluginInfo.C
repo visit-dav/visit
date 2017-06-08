@@ -111,7 +111,7 @@ ConnectedComponentsCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 // ****************************************************************************
 
 ExpressionList * 
-ConnectedComponentsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+ConnectedComponentsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     int i;
     char name[1024], defn[1024];
@@ -120,6 +120,8 @@ ConnectedComponentsCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMeta
     for (i = 0 ; i < numMeshes ; i++)
     {
         const avtMeshMetaData *mmd = md->GetMesh(i);
+        if (mmd->hideFromGUI || !mmd->validVariable)
+            continue;
         {
             Expression e2;
             sprintf(name, "operators/ConnectedComponents/%s", mmd->name.c_str());

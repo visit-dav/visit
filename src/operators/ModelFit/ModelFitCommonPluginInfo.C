@@ -119,7 +119,7 @@ ModelFitCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 #include <string.h>
 
 ExpressionList *
-ModelFitCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+ModelFitCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     int numMeshes = md->GetNumMeshes();
     if (numMeshes == 0)

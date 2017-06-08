@@ -75,4 +75,6 @@ namespace DebugStream
 #define debug4 if (!DebugStream::Level4()) ; else (DebugStream::Stream4())
 #define debug5 if (!DebugStream::Level5()) ; else (DebugStream::Stream5())
 
+#define vcerr(c) if (VisItInit::IsComponent(#c)) std::cerr << #c ": "
+
 #endif

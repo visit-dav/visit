@@ -42,8 +42,8 @@
 #include <winutil_exports.h>
 
 #include <ExpressionList.h>
-#include<OperatorPluginInfo.h>
-#include<OperatorPluginManager.h>
+#include <OperatorPluginInfo.h>
+#include <OperatorPluginManager.h>
 #include <string>
 #include <map>
 #include <vectortypes.h>
@@ -139,17 +139,25 @@ public:
                                OperatorPluginManager *,
                                bool);
 
+    bool IsSingleVariableMenuUpToDate(int varTypes, QvisVariablePopupMenu *menu,
+             avtDatabaseMetaData const *md=0) const;
+
     int UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
                                  int varTypes,
                                  QObject *receiver = 0,
                                  const char *slot = 0);
 
+    enum OpCreatedExprMode { GlobalAndNew, GlobalOnly };
     static void GetOperatorCreatedExpressions(ExpressionList &newExpressionList,
-                                       const avtDatabaseMetaData *md,
-                                       OperatorPluginManager *oPm);
+                    const avtDatabaseMetaData *md, OperatorPluginManager *oPm,
+                    OpCreatedExprMode exprMode = GlobalAndNew);
 
     bool ItemEnabled(int varType) const;
-    void ClearDatabaseName();
+    void ClearCachedInfo();
+
+    bool CanSkipPopulateVariableLists(std::string const &dbKey,
+        ExpressionList const *exprList, bool treatAllDBsAsTV,
+        bool mustRePopMD, bool isSim);
 
 private:
     typedef std::map<std::string, bool> StringBoolMap;
@@ -172,6 +180,8 @@ private:
         bool IsGroupingRequired(StringStringMap& origNameToGroupedName);
         bool operator == (const VariableList &) const;
         bool operator != (const VariableList &) const;
+        unsigned int GetHashVal() const { return myHashVal; };
+        void SetHashVal(unsigned int hv) { myHashVal = hv; };
     private:
         bool                    sorted;
         StringBoolMap           sortedVariables;
@@ -179,6 +189,7 @@ private:
         stringVector            unsortedVariableNames;
         boolVector              unsortedVariableValid;
         int                     unsortedVariableIndex;
+        unsigned int            myHashVal;
     };
 
     class GroupingInfo
@@ -204,10 +215,11 @@ private:
                                 const ExpressionList &exprList);
     void ClearGroupingInfo();
 
-    // Keep track of the name of the database for which we have variables.
-    std::string    cachedDBName;
-    // Keep track of the expression list too.
+    // Cached info to track changes to avoid re-comutes
+    std::string    cachedDBKey;
+    ExpressionList cachedExprList;
     ExpressionList cachedExpressionList;
+    
     // Create some lists to keep track of the variable names.
     VariableList   meshVars, scalarVars, materialVars, vectorVars, subsetVars,
                    speciesVars, curveVars, tensorVars, symmTensorVars,

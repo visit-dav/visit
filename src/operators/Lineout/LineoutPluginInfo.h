@@ -78,7 +78,7 @@ class LineoutCommonPluginInfo : public virtual CommonOperatorPluginInfo, public 
     virtual bool GetUserSelectable() const;
     virtual int GetVariableTypes() const;
     virtual int GetVariableMask() const;
-    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) const;
 };
 
 class LineoutGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual LineoutCommonPluginInfo
