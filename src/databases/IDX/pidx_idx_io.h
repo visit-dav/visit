@@ -12,8 +12,8 @@
  **                                                **
  ****************************************************/
 
-#ifndef _visus_idx_io_h
-#define _visus_idx_io_h
+#ifndef _pidx_idx_io_h
+#define _pidx_idx_io_h
 
 #include <string>
 #include <vector>
@@ -21,9 +21,13 @@
 #include <PIDX.h>
 #include "visit_idx_io.h"
 #include "visit_idx_io_types.h"
+typedef std::string String;
+
+//class DatasetImpl;
+//class AccessImpl;
 
 class PIDXIO : public IDX_IO{
-    
+
 public:
     
     PIDXIO(){use_raw = false;}
@@ -32,7 +36,7 @@ public:
     
     bool openDataset(const std::string filename);
     
-    unsigned char* getData(const VisitIDXIO::Box box, const int timestate, const char* varname);
+    unsigned char* getData(const Box box, const int timestate, const char* varname);
     
     virtual ~PIDXIO();
 

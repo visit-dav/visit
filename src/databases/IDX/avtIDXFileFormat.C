@@ -272,7 +272,109 @@ void avtIDXFileFormat::loadBalance(){
     }
     
     //std::cout << "max dir " << maxdir << " max extent " << maxextent << " box " << maxbox;
-    
+#if 1
+    std::vector<PatchInfo> newboxes;
+    int n = nprocs;
+    int b = level_info.patchInfo.size();
+    int c = n/b;
+    int d = n%b;
+
+    int h[b];
+
+    if(d == 0){
+      for(int i=0; i<b; i++){
+        PatchInfo& box = level_info.patchInfo[i];
+        int box_low[3];
+        int box_high[3];
+
+        box.getBounds(box_low, box_high, "CC");
+
+        int extent = box_high[maxdir]-box_low[maxdir];
+
+        h[i] = extent/c;
+
+        printf("H[%d] = %d\n", i, h[i]);
+
+      }
+    }
+    else{
+
+      // TODO sort boxes by height
+
+      for(int i=0; i<b; i++){
+        PatchInfo& box = level_info.patchInfo[i];
+        int box_low[3];
+        int box_high[3];
+
+        box.getBounds(box_low, box_high, "CC");
+
+        int extent = box_high[maxdir]-box_low[maxdir];
+
+        if(i <= d){
+          h[i] = extent/c;
+        }
+        else{
+          h[i] = extent/(c+1);
+        }
+
+        printf("H[%d] = %d\n", i, h[i]);
+      }
+
+    }
+
+    for(int i=0; i < b; i++){
+      PatchInfo& box = level_info.patchInfo[i];
+      int box_low[3];
+      int box_high[3];
+
+      int low[3];
+      int high[3];
+      int eCells[6];
+
+      box.getBounds(box_low,box_high,eCells,"CC");
+
+      memcpy(low, box_low, 3*sizeof(int));
+      memcpy(high, box_high, 3*sizeof(int));
+
+      int n_slabs = box_high[maxdir] / h[i];
+      int residual = box_high[maxdir] % h[i];
+
+      int part_p1 = box_low[maxdir];
+      int part_p2 = box_low[maxdir] + h[i];
+
+      int boxes_added = 0;
+      while(part_p2 <= box_high[maxdir] && boxes_added < n_slabs){
+            
+        low[maxdir] = part_p1;
+        high[maxdir] = (part_p2 < box_high[maxdir]) ? part_p2+1 : part_p2;
+           
+        PatchInfo newbox;
+
+        newbox.setBounds(low,high,eCells,"CC");
+        newboxes.push_back(newbox);
+        boxes_added++;
+
+        part_p1 = high[maxdir];
+        part_p2 = part_p1 + h[i] -1;
+
+      }
+
+      if(residual > 0){
+        int lowr[3];
+        int highr[3];
+
+        PatchInfo& last = newboxes.back();
+        last.getBounds(lowr,highr,eCells,"CC");
+
+        highr[maxdir] = box_high[maxdir];//residual;
+
+        last.setBounds(lowr,highr,eCells,"CC");
+
+      }
+
+    }
+
+#else
     int total_extent = 0;
     int avg_ext = 0;
     
@@ -316,7 +418,7 @@ void avtIDXFileFormat::loadBalance(){
         int part_p1 = box_low[maxdir];
         int part_p2 = box_low[maxdir] + loc_avg_ext;
         
-        int low[3]; 
+        int low[3];
         int high[3];
         int eCells[6];
         box.getBounds(low,high,eCells,"CC");
@@ -385,6 +487,8 @@ void avtIDXFileFormat::loadBalance(){
 
     }
     
+#endif 
+
     level_info.patchInfo.swap(newboxes);
     // phyboxes.swap(newphyboxes);
   
@@ -1000,7 +1104,6 @@ avtIDXFileFormat::avtIDXFileFormat(const char *filename, DBOptionsAttributes* at
        loadBalance();
     // else
     //    pidx_decomposition(nprocs);
-    fprintf(stderr,"NO PARALLEL YET\n");
 #endif
 
     if(level_info.patchInfo.size()>old_size)
