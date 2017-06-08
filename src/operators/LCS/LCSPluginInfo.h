@@ -75,7 +75,7 @@ class LCSCommonPluginInfo : public virtual CommonOperatorPluginInfo, public virt
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
-    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) const;
 };
 
 class LCSGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual LCSCommonPluginInfo

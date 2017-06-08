@@ -61,9 +61,11 @@ using std::vector;
 #include <netinet/in.h>
 #endif
 
-#if !defined(_WIN32) && !defined(__APPLE__) && !defined(_AIX)
+#if !defined(_WIN32) && !defined(_AIX)
 #include <execinfo.h>
+#if defined(__GNUC__) && defined(__cplusplus)
 #include <cxxabi.h>
+#endif
 #endif
 
 // ****************************************************************************
@@ -213,13 +215,15 @@ LongestCommonSuffixLength(const char * const *list, int listN)
 //
 //  Modifications:
 //
+//    Mark C. Miller, Thu Jun  8 14:51:18 PDT 2017
+//    Adjust conditional compilation logic to build ok on OSX
 // ****************************************************************************
 
 void
 PrintCallStack(ostream &out, const char *file, int line)
 {
-#if !defined(_WIN32) && !defined(__APPLE__) && !defined(_AIX)
-    const int N = 100;
+#if !defined(_WIN32) && !defined(_AIX)
+    const int N = 1000;
     void *stackAddrs[N];
 
     int nfuncs = backtrace(stackAddrs, N);
@@ -232,7 +236,8 @@ PrintCallStack(ostream &out, const char *file, int line)
         size_t i0 = symbol.find("(");
         size_t i1 = symbol.rfind("+");
 
-        std::string outStr;
+        std::string outStr = stackStrings[i];
+#if defined(__GNUC__) && defined(__cplusplus)
         if (i0 == std::string::npos || i1 == std::string::npos)
             outStr = symbol;
         else
@@ -250,7 +255,7 @@ PrintCallStack(ostream &out, const char *file, int line)
             else
                 outStr = funcSymbol;
         }
-        
+#endif
         out<<i<<":  "<<outStr<<endl;
     }
     

@@ -130,7 +130,7 @@ using std::vector;
 // We do this so that the strings command on the .o file
 // can tell us whether or not DEBUG_MEMORY_LEAKS was turned on
 #ifdef DEBUG_MEMORY_LEAKS
-const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
+static const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
 #endif
 
 #ifdef PARALLEL
@@ -570,6 +570,11 @@ Engine::~Engine()
 void
 Engine::Initialize(int *argc, char **argv[], bool sigs)
 {
+#ifdef DEBUG_MEMORY_LEAKS
+    // ensure dummy_string1 cannot optimized away
+    char const *dummy = dummy_string1; dummy++;
+#endif
+
     int initTimer = visitTimer->StartTimer();
 
     int nthreads = 0;

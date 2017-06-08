@@ -180,7 +180,10 @@ class MRUCacheBase {
           {
               mpos = find(keys[i]);
               if (mpos != end())
+              {
+                  age[keys[i]] = ageCounter++;
                   return mpos;
+              }
           }
           return mpos;
       }

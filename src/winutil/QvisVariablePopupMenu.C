@@ -66,6 +66,7 @@ QvisVariablePopupMenu::QvisVariablePopupMenu(int plotType_, QWidget *parent) :
     QMenu(parent), varPath("")
 {
     plotType = plotType_;
+    myHashVal = 0;
 
     actions = new QActionGroup(this);
     connect(actions, SIGNAL(triggered(QAction*)),

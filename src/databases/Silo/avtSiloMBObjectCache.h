@@ -81,6 +81,7 @@ public:
     virtual     ~avtSiloMBNameGenerator();
     std::string  Name(int idx) const;
     int          NumberOfBlocks() const { return nblocks;}
+    bool         IsExplicit() const { return namesLst!=0; }
 
 private:
       int             nblocks;
@@ -126,6 +127,8 @@ public:
                                 { return nameGen->NumberOfBlocks();}
     std::string             GenerateName(int idx) const
                                 { return nameGen->Name(idx);}
+    bool                    IsExplicit() const
+                                { return nameGen->IsExplicit(); }
 private:
     avtSiloMBNameGenerator *nameGen;
 };

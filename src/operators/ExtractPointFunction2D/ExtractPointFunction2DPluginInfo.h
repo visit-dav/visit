@@ -75,7 +75,7 @@ class ExtractPointFunction2DCommonPluginInfo : public virtual CommonOperatorPlug
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
-    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) const;
 };
 
 class ExtractPointFunction2DGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual ExtractPointFunction2DCommonPluginInfo

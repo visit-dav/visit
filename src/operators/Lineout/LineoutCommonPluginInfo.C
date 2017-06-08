@@ -115,7 +115,7 @@ LineoutCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 // ****************************************************************************
 
 ExpressionList * 
-LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     std::string opLineout("operators/Lineout/"),
                 exPrefix("cell_constant("), exSuffix(", 0.)"),
@@ -125,6 +125,9 @@ LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
     for (int i = 0 ; i < numScalars ; i++)
     {
         const avtScalarMetaData *mmd = md->GetScalar(i);
+        if (mmd->hideFromGUI || !mmd->validVariable)
+            continue;
+       
         {
             Expression e2;
             e2.SetName(opLineout + mmd->name);
@@ -139,6 +142,8 @@ LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
     for (int i = 0 ; i < oldEL.GetNumExpressions() ; i++)
     {
         const Expression &e = oldEL.GetExpressions(i);
+        if (e.GetFromOperator() || e.GetAutoExpression())
+            continue;
         if (e.GetType() == Expression::ScalarMeshVar)
         {
             {

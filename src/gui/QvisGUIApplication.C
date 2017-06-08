@@ -239,6 +239,12 @@
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
 #define HASSPACE(A) (strstr(A, " ") != NULL)
 
+// We do this so that the strings command on the .o file
+// can tell us whether or not DEBUG_MEMORY_LEAKS was turned on
+#ifdef DEBUG_MEMORY_LEAKS
+static const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
+#endif
+
 // Some internal prototypes.
 static void QPrinterToPrinterAttributes(QPrinter *, PrinterAttributes *);
 static void PrinterAttributesToQPrinter(PrinterAttributes *, QPrinter *);
@@ -675,6 +681,11 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     applicationStyle(), applicationLocale("default"), loadFile(), sessionFile(), 
     sessionDir(), movieArguments()
 {
+#ifdef DEBUG_MEMORY_LEAKS
+    // ensure dummy_string1 cannot optimized away
+    char const *dummy = dummy_string1; dummy++;
+#endif
+
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
 
@@ -2040,6 +2051,10 @@ QvisGUIApplication::Exec()
 //    David Camp, Thu Aug  8 08:50:06 PDT 2013
 //    Added the restore from last session feature. 
 //
+//    Mark C. Miller, Thu Jun  8 14:54:25 PDT 2017
+//    Just immediately exit(0) instead of trying to cleanup nicely. This
+//    can impact valgrind analysis so compile with DEBUG_MEMORY_LEAKS to
+//    turn off this behavior.
 // ****************************************************************************
 
 void
@@ -2105,7 +2120,11 @@ QvisGUIApplication::Quit()
         SaveSessionFile(restoreFile, host);
     }
 
+#ifdef DEBUG_MEMORY_LEAKS
     mainApp->quit();
+#else
+    exit(0); // HOOKS_IGNORE
+#endif
 }
 
 // ****************************************************************************

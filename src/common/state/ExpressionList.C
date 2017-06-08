@@ -36,9 +36,13 @@
 *
 *****************************************************************************/
 
+#include <BJHash.h>
 #include <ExpressionList.h>
 #include <DataNode.h>
 #include <Expression.h>
+
+#include <algorithm>
+#include <vector>
 
 // ****************************************************************************
 // Method: ExpressionList::ExpressionList
@@ -57,7 +61,8 @@
 
 void ExpressionList::Init()
 {
-
+    sortedNameHashNeedsSorting = true;
+    myHashVal = 0;
     ExpressionList::SelectAll();
 }
 
@@ -94,7 +99,8 @@ void ExpressionList::Copy(const ExpressionList &obj)
         Expression *newExpression = new Expression(*oldExpression);
         expressions.push_back(newExpression);
     }
-
+    sortedNameHashNeedsSorting = true;
+    myHashVal = 0;
 
     ExpressionList::SelectAll();
 }
@@ -255,17 +261,7 @@ ExpressionList::operator = (const ExpressionList &obj)
 bool
 ExpressionList::operator == (const ExpressionList &obj) const
 {
-    bool expressions_equal = (obj.expressions.size() == expressions.size());
-    for(size_t i = 0; (i < expressions.size()) && expressions_equal; ++i)
-    {
-        // Make references to Expression from AttributeGroup *.
-        const Expression &expressions1 = *((const Expression *)(expressions[i]));
-        const Expression &expressions2 = *((const Expression *)(obj.expressions[i]));
-        expressions_equal = (expressions1 == expressions2);
-    }
-
-    // Create the return value
-    return (expressions_equal);
+    return GetHashVal() == obj.GetHashVal();
 }
 
 // ****************************************************************************
@@ -592,6 +588,8 @@ ExpressionList::AddExpressions(const Expression &obj)
 {
     Expression *newExpression = new Expression(obj);
     expressions.push_back(newExpression);
+    myHashVal = 0;
+    sortedNameHashNeedsSorting = true;
 
     // Indicate that things have changed by selecting it.
     Select(ID_expressions, (void *)&expressions);
@@ -620,6 +618,9 @@ ExpressionList::ClearExpressions()
     for(pos = expressions.begin(); pos != expressions.end(); ++pos)
         delete *pos;
     expressions.clear();
+    sortedNameHash.clear();
+    sortedNameHashNeedsSorting = true;
+    myHashVal = 0;
 
     // Indicate that things have changed by selecting the list.
     Select(ID_expressions, (void *)&expressions);
@@ -643,17 +644,23 @@ ExpressionList::ClearExpressions()
 void
 ExpressionList::RemoveExpressions(int index)
 {
-    AttributeGroupVector::iterator pos = expressions.begin();
+    AttributeGroupVector::iterator pos = expressions.begin() + index;
 
-    // Iterate through the vector "index" times. 
-    for(int i = 0; i < index; ++i)
-        if(pos != expressions.end()) ++pos;
-
-    // If pos is still a valid iterator, remove that element.
-    if(pos != expressions.end())
+    if ((size_t) index < expressions.size() && pos != expressions.end())
     {
         delete *pos;
         expressions.erase(pos);
+        for (std::vector<std::pair<unsigned int,size_t> >::iterator i =
+             sortedNameHash.begin(); i != sortedNameHash.end(); ++i)
+        {
+            if (i->second == index)
+            {
+                sortedNameHash.erase(i);
+                break;
+            }
+        }
+        myHashVal = 0;
+        sortedNameHashNeedsSorting = true;
     }
 
     // Indicate that things have changed by selecting the list.
@@ -699,6 +706,8 @@ ExpressionList::GetNumExpressions() const
 Expression &
 ExpressionList::GetExpressions(int i)
 {
+    myHashVal = 0;
+    sortedNameHashNeedsSorting = true;
     return *((Expression *)expressions[i]);
 }
 
@@ -741,6 +750,8 @@ ExpressionList::GetExpressions(int i) const
 Expression &
 ExpressionList::operator [] (int i)
 {
+    myHashVal = 0;
+    sortedNameHashNeedsSorting = true;
     return *((Expression *)expressions[i]);
 }
 
@@ -889,19 +900,89 @@ ExpressionList::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
+static bool compNameHashPairs(std::pair<unsigned int, size_t> const &a,
+                              std::pair<unsigned int, size_t> const &b)
+{
+    return a.first < b.first;
+}
+
+
+void ExpressionList::SortNameHash(void)
+{
+    sortedNameHash.resize(expressions.size());
+    for (size_t i = 0; i < expressions.size(); i++)
+    {
+        Expression const *e = (Expression *) expressions[i];
+        unsigned int hashval = BJHash::Hash(e->GetName());
+        sortedNameHash[i] = std::pair<unsigned int, size_t>(hashval, i);
+    }
+
+    std::sort(sortedNameHash.begin(), sortedNameHash.end(), compNameHashPairs);
+    sortedNameHashNeedsSorting = false;
+}
 
 // Modifications:
 //   Brad Whitlock, Thu Aug 28 15:29:59 PST 2003
 //   Simplified and removed dynamic_cast so it works on Windows.
 //
-Expression*
+Expression *
 ExpressionList::operator[](const char *varname)
 {   
-    // Check to see if there is an expression of this name.
     std::string var(varname);
-    for (int i = 0; i < GetNumExpressions(); ++i)
+    unsigned int hashval = BJHash::Hash(var);
+
+    if (expressions.size() != sortedNameHash.size() || sortedNameHashNeedsSorting)
+        SortNameHash();
+
+    // Binary search to match hash, then linear over entries with same hash val
+    std::pair< std::vector<std::pair<unsigned int, size_t> >::iterator,
+               std::vector<std::pair<unsigned int, size_t> >::iterator > p =
+    std::equal_range(sortedNameHash.begin(), sortedNameHash.end(),
+        std::pair<unsigned int, size_t>(hashval, 0), compNameHashPairs); 
+    for (std::vector<std::pair<unsigned int, size_t> >::iterator i = p.first;
+         i != p.second; ++i)
     {
-        Expression *e = (Expression*)expressions[i];
+        int eidx = i->second;
+        Expression *e = (Expression *) expressions[eidx];
+        if (e->GetName() == var)
+        {
+            myHashVal = 0;
+            return e;
+        }
+    }
+
+    return 0;
+}
+
+Expression const *
+ExpressionList::operator[](const char *varname) const
+{   
+    std::string var(varname);
+
+    if (expressions.size() != sortedNameHash.size() || sortedNameHashNeedsSorting)
+    {
+        // Can't use hash sort and we can't re-sort here 'cause
+        // we're in a const method. So, Do it the hard way
+        for (size_t i = 0; i < expressions.size(); i++)
+        {
+            Expression const *e = (Expression const *) expressions[i];
+            if (e->GetName() == var)
+                return e;
+        }
+        return 0;
+    }
+
+    unsigned int hashval = BJHash::Hash(var);
+    // Binary search to match hash, then linear over entries with same hash val
+    std::pair< std::vector<std::pair<unsigned int, size_t> >::const_iterator,
+               std::vector<std::pair<unsigned int, size_t> >::const_iterator > p =
+    std::equal_range(sortedNameHash.begin(), sortedNameHash.end(),
+        std::pair<unsigned int, size_t>(hashval, 0), compNameHashPairs); 
+    for (std::vector<std::pair<unsigned int, size_t> >::const_iterator i = p.first;
+         i != p.second; ++i)
+    {
+        int eidx = i->second;
+        Expression *e = (Expression *) expressions[eidx];
         if (e->GetName() == var)
             return e;
     }
@@ -942,3 +1023,28 @@ ExpressionList::GetAllVarNames(const std::string &dbN) const
     return vars;
 }
 
+unsigned int
+ExpressionList::GetHashVal() const
+{
+    if (myHashVal != 0) return myHashVal;
+
+    for (int i = 0; i < GetNumExpressions(); i++)
+    {
+        Expression *e = (Expression*)expressions[i];
+
+        myHashVal = BJHash::Hash(e->GetName(), myHashVal);
+        myHashVal = BJHash::Hash(e->GetDefinition(), myHashVal);
+        myHashVal = BJHash::Hash(e->GetDbName(), myHashVal);
+        myHashVal = BJHash::Hash(e->GetMeshName(), myHashVal);
+        myHashVal = BJHash::Hash(e->GetOperatorName(), myHashVal);
+        struct {Expression::ExprType et; bool Bools[4];} expstuff = {
+            e->GetType(),
+            e->GetHidden(),
+            e->GetFromDB(), 
+            e->GetFromOperator(), 
+            e->GetAutoExpression()};
+        myHashVal = BJHash::Hash((void*)&expstuff, sizeof(expstuff), myHashVal);
+    }
+
+    return myHashVal;
+}

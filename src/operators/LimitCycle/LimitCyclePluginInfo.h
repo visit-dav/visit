@@ -75,7 +75,7 @@ class LimitCycleCommonPluginInfo : public virtual CommonOperatorPluginInfo, publ
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
-    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) const;
 };
 
 class LimitCycleGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual LimitCycleCommonPluginInfo

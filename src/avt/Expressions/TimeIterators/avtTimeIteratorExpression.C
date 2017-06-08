@@ -346,8 +346,8 @@ avtTimeIteratorExpression::Execute(void)
 void
 avtTimeIteratorExpression::UpdateExpressions(int ts)
 {
-    ParsingExprList *pel = ParsingExprList::Instance();
-    ExpressionList new_list = *(pel->GetList());
+    ExpressionList const *curExprList = ParsingExprList::Instance()->GetList();
+    ExpressionList addExprs;
 
     int nvars = (int)varnames.size();
     if (cmfeType == POS_CMFE)
@@ -376,26 +376,19 @@ avtTimeIteratorExpression::UpdateExpressions(int ts)
 
         std::string exp_name = GetInternalVarname(i);
         
-        bool alreadyInList = false;
-        for (int j = 0 ; j < new_list.GetNumExpressions() ; j++)
-        {
-            if (new_list[j].GetName() == exp_name)
-            {
-                alreadyInList = true;
-                new_list[j].SetDefinition(expr_defn);
-            }
-        }
+        bool alreadyInList = curExprList->operator[](exp_name.c_str());
         if (!alreadyInList)
         {
             Expression exp;
             exp.SetName(exp_name);
             exp.SetDefinition(expr_defn);
             exp.SetType(Expression::Unknown);
-            new_list.AddExpressions(exp);
+            addExprs.AddExpressions(exp);
         }
     }
 
-    *(pel->GetList()) = new_list;
+    for (int i = 0; i < addExprs.GetNumExpressions(); i++)
+        ParsingExprList::Instance()->GetList()->AddExpressions(addExprs.GetExpressions(i));
 }
 
 

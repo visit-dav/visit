@@ -387,6 +387,8 @@ RemoveAllOperatorsActionUI::Enabled() const
 //   Brad Whitlock, Fri Sep 12 12:20:02 PDT 2014
 //   Do the menu name translation here instead of in the plugin.
 //
+//   Mark C. Miller, Thu Jun  8 15:08:33 PDT 2017
+//   Add member addPlotMenuHasBeenShown
 // ****************************************************************************
 
 AddPlotActionUI::AddPlotActionUI(ViewerActionLogic *L) : ViewerActionUIMultiple(L),
@@ -396,6 +398,7 @@ AddPlotActionUI::AddPlotActionUI(ViewerActionLogic *L) : ViewerActionUIMultiple(
     SetExclusive(false);
 
     maxPixmapWidth = maxPixmapHeight = 0;
+    addPlotMenuHasBeenShown = false;
 
     //
     // Iterate through all of the loaded plot plugins and add a
@@ -520,12 +523,23 @@ AddPlotActionUI::~AddPlotActionUI()
 //   I changed the code so it deletes and recreates the menu since clearing
 //   it did not free memory.
 //
+//   Mark C. Miller, Thu Jun  8 15:08:54 PDT 2017
+//   If addPlotMenyHasBeenShown is false, only set menu's enabled state
+//   but do nothing else regarding menus or variable lists for the menus.
+//   As the effect of ensuring viewer creates Qt widgets for variable
+//   menus only if user has ever once descended into them in a session.
 // ****************************************************************************
 
 void
 AddPlotActionUI::Update()
 {
-    if(pluginEntries.size() > 0)
+    if (!addPlotMenuHasBeenShown)
+    {
+        bool dbIsOpen = (GetLogic()->GetWindow()->GetPlotList()->GetHostDatabaseName().length() > 0);
+        for(int i = 0; i < (int)pluginEntries.size(); ++i)
+            pluginEntries[i].varMenu->setEnabled(dbIsOpen);
+    }
+    else if(pluginEntries.size() > 0)
     {
         ViewerPlotList *plotList = GetLogic()->GetWindow()->GetPlotList();
         const std::string &host = plotList->GetHostName();
@@ -546,6 +560,8 @@ AddPlotActionUI::Update()
             OperatorPluginManager *oPM = GetOperatorPluginManager();
             bool treatAllDBsAsTimeVarying =
                 GetViewerState()->GetGlobalAttributes()->GetTreatAllDBsAsTimeVarying();
+
+
             if(menuPopulator.PopulateVariableLists(plotList->GetHostDatabaseName(),
                                                    md, sil, exprList,
                                                    oPM,
@@ -560,9 +576,12 @@ AddPlotActionUI::Update()
                 //
                 // Update the variable menus for the actions.
                 //
-                bool menuEnabled = false;
                 for(int i = 0; i < (int)pluginEntries.size(); ++i)
                 {
+                    if (menuPopulator.IsSingleVariableMenuUpToDate(
+                            pluginEntries[i].varTypes, pluginEntries[i].varMenu))
+                        continue;
+
                     DeletePlotMenu(i);
                     CreatePlotMenu(i);
 
@@ -575,7 +594,6 @@ AddPlotActionUI::Update()
                     // Set the new menu's enabled state based on the variable type.
                     if(hasEntries != pluginEntries[i].varMenu->isEnabled())
                         pluginEntries[i].varMenu->setEnabled(hasEntries);
-                    menuEnabled |= hasEntries;
                 }
             }
         }
@@ -606,6 +624,7 @@ bool
 AddPlotActionUI::Enabled() const
 {
     bool dbIsOpen = (GetLogic()->GetWindow()->GetPlotList()->GetHostDatabaseName().length() > 0);
+    if (!addPlotMenuHasBeenShown) return dbIsOpen;
     return ViewerActionUIMultiple::Enabled() && dbIsOpen;
 }
 
@@ -704,6 +723,9 @@ AddPlotActionUI::DeletePlotMenu(int i)
 //   Brad Whitlock, Wed May 28 16:50:13 PDT 2008
 //   Qt 4.
 //
+//   Mark C. Miller, Thu Jun  8 15:10:46 PDT 2017
+//   Add logic to catch the aboutToShow() signal indicating the menu is 
+//   about to be shown.
 // ****************************************************************************
 
 void
@@ -711,6 +733,8 @@ AddPlotActionUI::ConstructMenu(QMenu *menu)
 {
     // Create a new menu and add all of the actions to it.
     actionMenu = new QMenu("Add plot", menu);
+    connect(actionMenu, SIGNAL(aboutToShow()),
+            this, SLOT(addPlotAboutToShow()));
 
     for(int i = 0; i < (int)pluginEntries.size(); ++i)
     {
@@ -725,6 +749,7 @@ AddPlotActionUI::ConstructMenu(QMenu *menu)
     if(iconSpecified)
         actionMenu->setIcon(icon);
     actionMenu->setTitle(menuText);
+
     menu->addMenu(actionMenu);
 }
 
@@ -748,6 +773,32 @@ void
 AddPlotActionUI::RemoveFromMenu(QMenu *menu)
 {
     // NOT IMPLEMENTED. Remove the action from the menu.
+}
+
+// ****************************************************************************
+// Method: AddPlotActionUI::addPlotAboutToShow
+//
+// Purpose: Record knowledge that user has indeed navigated to addPlot menu at
+//     some point and set boolean accordingly. This boolean effects whether
+//     viewer will bother to populate variable lists and plot variable menus
+//     which if they consist of large numbers of entries can bog performance.
+//
+// Mark C. Miller, Thu Jun  1 12:15:41 PDT 2017
+//
+// ****************************************************************************
+
+void
+AddPlotActionUI::addPlotAboutToShow()
+{
+    // Only need to catch this one time
+    disconnect(actionMenu, SIGNAL(aboutToShow()),
+            this, SLOT(addPlotAboutToShow()));
+
+    if (!addPlotMenuHasBeenShown)
+    {
+        addPlotMenuHasBeenShown = true;
+        Update();
+    }
 }
 
 // ****************************************************************************

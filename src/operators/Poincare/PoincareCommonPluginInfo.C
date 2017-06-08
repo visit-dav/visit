@@ -111,7 +111,7 @@ PoincareCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 // ****************************************************************************
 
 ExpressionList * 
-PoincareCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+PoincareCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     int i;
     char name[1024], defn[1024];
@@ -120,6 +120,9 @@ PoincareCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
     for (i = 0 ; i < numVectors ; i++)
     {
         const avtVectorMetaData *mmd = md->GetVector(i);
+        if (mmd->hideFromGUI || !mmd->validVariable)
+            continue;
+
         {
             Expression e2;
             sprintf(name, "operators/Poincare/%s", mmd->name.c_str());
@@ -139,7 +142,7 @@ PoincareCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
         if (e.GetType() == Expression::VectorMeshVar)
         {
             {
-                if (e.GetFromOperator())
+                if (e.GetFromOperator() || e.GetAutoExpression())
                     continue; // weird ordering behavior otherwise
                 Expression e2;
                 sprintf(name, "operators/Poincare/%s", e.GetName().c_str());
