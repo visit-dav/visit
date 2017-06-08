@@ -157,7 +157,7 @@ class PLUGIN_API CommonOperatorPluginInfo : public virtual GeneralOperatorPlugin
     virtual AttributeSubject *AllocAttributes() = 0;
     virtual void CopyAttributes(AttributeSubject *to,
                                 AttributeSubject *from) = 0;
-    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) {return NULL;}
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) const {return NULL;}
     virtual bool GetUserSelectable() const { return true; }
     virtual int GetVariableTypes() const { return 0; }
     virtual int GetVariableMask() const { return ~0; }

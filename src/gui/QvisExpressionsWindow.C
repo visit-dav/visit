@@ -911,7 +911,7 @@ QvisExpressionsWindow::UpdateWindowSingleItem()
     }
     else
     {
-        Expression &e = (*exprList)[indexMap[index]];
+        Expression const &e = (*exprList)[indexMap[index]];
 
         nameEdit->setText(e.GetName().c_str());
 

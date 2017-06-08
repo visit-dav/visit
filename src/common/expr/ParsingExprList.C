@@ -182,7 +182,7 @@ ParsingExprList::Update(Subject *)
 // Modifications:
 //   
 // ****************************************************************************
-Expression*
+Expression const *
 ParsingExprList::GetExpression(const char *varname)
 {
     return Instance()->GetList()->operator[](varname);
@@ -218,7 +218,7 @@ ParsingExprList::GetExpressionTree(const char *varname)
 
     // Get the expression tree for the expression.
     //Expression *exp = const_cast<ExpressionList&>(exprList)[varname];
-    Expression *exp = GetExpression(varname);
+    Expression const *exp = GetExpression(varname);
     if (exp != NULL)
     {
         ParseTreeNode *t=Instance()->GetParser()->Parse(exp->GetDefinition());
@@ -252,7 +252,7 @@ ParsingExprList::GetExpressionTree(const char *varname)
 //   
 // ****************************************************************************
 ExprNode *
-ParsingExprList::GetExpressionTree(Expression *expr)
+ParsingExprList::GetExpressionTree(Expression const *expr)
 {
     if (!expr)
         return NULL;
@@ -304,7 +304,7 @@ GetRealVariableHelper(const string &var, set<string> expandedVars)
     expandedVars.insert(var);
 
     // If this variable is not an expression, then it is real
-    Expression *expr = ParsingExprList::GetExpression(var);
+    Expression const *expr = ParsingExprList::GetExpression(var);
     if (!expr)
     {
         // Found the real variable

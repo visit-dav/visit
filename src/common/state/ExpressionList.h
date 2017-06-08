@@ -40,6 +40,7 @@
 #define EXPRESSIONLIST_H
 #include <state_exports.h>
 #include <AttributeSubject.h>
+#include <vector>
 
 class Expression;
 
@@ -105,10 +106,10 @@ public:
     void RemoveExpressions(int i);
     int  GetNumExpressions() const;
     Expression &GetExpressions(int i);
-    const Expression &GetExpressions(int i) const;
+    Expression const &GetExpressions(int i) const;
 
     Expression &operator [] (int i);
-    const Expression &operator [] (int i) const;
+    Expression const &operator [] (int i) const;
 
 
     // Keyframing methods
@@ -118,8 +119,10 @@ public:
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
     // User-defined methods
+    Expression const *operator[](const char *) const;
     Expression *operator[](const char *);
     const stringVector GetAllVarNames(const std::string &dbN) const;
+    unsigned int GetHashVal() const;
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -131,6 +134,11 @@ protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
 private:
     AttributeGroupVector expressions;
+
+    void SortNameHash(void);
+    std::vector<std::pair<unsigned int, size_t> > sortedNameHash;
+    bool sortedNameHashNeedsSorting;
+    mutable unsigned int myHashVal;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;

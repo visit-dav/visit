@@ -289,8 +289,8 @@ private:
     void CreateVariableMenu();
     bool PopulateVariableLists(VariableMenuPopulator &,
                                const QualifiedFilename &filename);
-    void UpdatePlotVariableMenu();
-    void UpdateVariableMenu();
+    void UpdatePlotVariableMenu(bool destoryMenuItems=false, bool forceUpdate=false);
+    void UpdateVariableMenu(bool destoryMenuItems=false, bool forceUpdate=false);
     void UpdatePlotAndOperatorMenuEnabledState();
     void UpdateHideDeleteDrawButtonsEnabledState() const;
 

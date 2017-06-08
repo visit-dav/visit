@@ -867,7 +867,7 @@ avtExpressionFilter::DetermineVariableType(std::string &varname)
     // Note: due to the way that the pipeline is constructed by the EEF, 
     // I'm not sure if this case will ever occur.
     //
-    Expression *exp = ParsingExprList::GetExpression(varname.c_str());
+    Expression const *exp = ParsingExprList::GetExpression(varname.c_str());
     if (exp != NULL)
         return ExprType_To_avtVarType(exp->GetType());
 

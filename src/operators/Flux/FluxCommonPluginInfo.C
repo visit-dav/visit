@@ -111,7 +111,7 @@ FluxCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 // ****************************************************************************
 
 ExpressionList * 
-FluxCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+FluxCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     int i;
     char name[1024], defn[1024];
@@ -120,6 +120,9 @@ FluxCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
     for (i = 0 ; i < numMeshes ; i++)
     {
         const avtMeshMetaData *mmd = md->GetMesh(i);
+        if (mmd->hideFromGUI || !mmd->validVariable)
+            continue;
+
         {
             Expression e2;
             sprintf(name, "operators/Flux/%s", mmd->name.c_str());

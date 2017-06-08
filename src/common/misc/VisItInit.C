@@ -452,6 +452,8 @@ VisItInit::Initialize(int &argc, char *argv[], int r, int n, bool strip, bool si
     if(enableTimings)
         visitTimer->Enable();
 
+    atexit(VisItInit::Finalize);
+
 #if !defined(_WIN32)
     std::set_new_handler(NewHandler);
 #endif

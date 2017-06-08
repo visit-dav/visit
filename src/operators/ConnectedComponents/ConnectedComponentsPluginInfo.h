@@ -75,7 +75,7 @@ class ConnectedComponentsCommonPluginInfo : public virtual CommonOperatorPluginI
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
-    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) const;
 };
 
 class ConnectedComponentsGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual ConnectedComponentsCommonPluginInfo

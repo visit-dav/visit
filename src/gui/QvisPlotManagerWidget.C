@@ -815,6 +815,9 @@ QvisPlotManagerWidget::DestroyVariableMenu()
 //   Brad Whitlock, Fri May  7 14:13:46 PDT 2010
 //   I added some code for updating globalAtts.
 //
+//   Mark C. Miller, Thu Jun  8 14:56:07 PDT 2017
+//   Adjust calls to UpdateVariableMenu/UpdatePlotVariableMenu to include
+//   bools indicating whether to destroy or simply clear menu items
 // ****************************************************************************
 
 void
@@ -874,11 +877,14 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
 
                 // We closed the file but we don't want to notify this object
                 // so we need to clear out the menu populators.
-                menuPopulator.ClearDatabaseName();
-                varMenuPopulator.ClearDatabaseName();
+                menuPopulator.ClearCachedInfo();
+                varMenuPopulator.ClearCachedInfo();
 
-                UpdatePlotVariableMenu();
-                UpdateVariableMenu();
+                // since we're closing this file, destroy associated menu items
+                bool const destroyMenuItems = true;
+                bool const forceUpdate = true;
+                UpdatePlotVariableMenu(destroyMenuItems, forceUpdate);
+                UpdateVariableMenu(destroyMenuItems, forceUpdate);
             }
         }
         else if(fileServer->FileChanged())
@@ -889,13 +895,18 @@ QvisPlotManagerWidget::Update(Subject *TheChangedSubject)
             // that the menu populators are asked to populate their variables
             // they will do it instead of returning early.
             //
+            bool destroyMenuItems = false;
+            bool forceUpdate = false;
             if(fileServer->ClosedFile())
             {
-                menuPopulator.ClearDatabaseName();
-                varMenuPopulator.ClearDatabaseName();
+                menuPopulator.ClearCachedInfo();
+                varMenuPopulator.ClearCachedInfo();
+                destroyMenuItems = true;
+                forceUpdate = true;
             }
 
-            UpdatePlotVariableMenu();
+            UpdatePlotVariableMenu(destroyMenuItems, forceUpdate);
+            UpdateVariableMenu(destroyMenuItems, forceUpdate);
         }
     }
     else if(TheChangedSubject == exprList)
@@ -1645,6 +1656,8 @@ QvisPlotManagerWidget::EnablePluginMenus()
 //   Hank Childs, Sun Sep 19 18:48:17 PDT 2010
 //   Catch exception when database meta-data can't be read.
 //
+//   Mark C. Miller, Thu Jun  8 14:57:33 PDT 2017
+//   Include time in dbKey passed to VariableMenuPopulator 
 // ****************************************************************************
 
 bool
@@ -1662,6 +1675,10 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
     
         OperatorPluginManager *oPM = GetViewerProxy()->GetOperatorPluginManager();
     
+        char timeStateStr[32];
+        SNPRINTF(timeStateStr, sizeof(timeStateStr), "%08d", GetStateForSource(filename));
+        string dbKey = filename.FullName() + "@" + string(timeStateStr);
+
         if (fileServer->GetTreatAllDBsAsTimeVarying() ||
             (md && md->GetMustRepopulateOnStateChange()))
         {
@@ -1677,7 +1694,7 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                                   !FileServerList::ANY_STATE,
                                    FileServerList::GET_NEW_MD);
     
-            return populator.PopulateVariableLists(filename.FullName(),
+            return populator.PopulateVariableLists(dbKey,
                                                    md, sil, exprList, oPM,
                              fileServer->GetTreatAllDBsAsTimeVarying());
         }
@@ -1690,7 +1707,7 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
                                    FileServerList::ANY_STATE,
                                   !FileServerList::GET_NEW_MD);
     
-            return populator.PopulateVariableLists(filename.FullName(),
+            return populator.PopulateVariableLists(dbKey,
                                                    md, sil, exprList, oPM,
                              fileServer->GetTreatAllDBsAsTimeVarying());
         }
@@ -1770,10 +1787,15 @@ QvisPlotManagerWidget::PopulateVariableLists(VariableMenuPopulator &populator,
 //   Cyrus Harrison, Thu Feb 25 13:47:45 PST 2010
 //   Change from QPushButtons QToolbar/QToolButtons
 //
+//   Mark C. Miller, Thu Jun  8 14:58:18 PDT 2017
+//   Permit menu items to be destroyed in certain cases (e.g. db close).
+//   Utilize IsSingleVariableMenuUpToDate as a quick check to see if 
+//   further processing is required.
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::UpdatePlotVariableMenu()
+QvisPlotManagerWidget::UpdatePlotVariableMenu(bool destroyMenuItems,
+    bool forceUpdate)
 {
     const char *mName = "QvisPlotManagerWidget::UpdatePlotVariableMenu: ";
     int total = visitTimer->StartTimer();
@@ -1783,7 +1805,7 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
     // Update the menu populator so it uses the current file. If it changed
     // then needsUpdate will be true and we need to update the variable menu.
     //
-    bool needsUpdate = PopulateVariableLists(menuPopulator,
+    bool needsUpdate = forceUpdate || PopulateVariableLists(menuPopulator,
         fileServer->GetOpenFile());
     visitTimer->StopTimer(id, "PopulateVariableLists");
 
@@ -1797,9 +1819,12 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         // Clear out the plot menu and destroy all of the plot menus in it so
         // we can recreate the menu,
 #ifdef DELETE_MENU_TO_FREE_POPUPS
-        plotMenu->clear();
-        for(size_t i = 0; i < plotPlugins.size(); ++i)
-            DestroyPlotMenuItem(i);
+        if (destroyMenuItems)
+        {
+            plotMenu->clear();
+            for(size_t i = 0; i < plotPlugins.size(); ++i)
+                DestroyPlotMenuItem(i);
+        }
 #endif
 
         // Recreate the plot menu and update the menus so they have the right 
@@ -1807,8 +1832,14 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         this->maxVarCount = 0;
         for(size_t i = 0; i < plotPlugins.size(); ++i)
         {
+            if (menuPopulator.IsSingleVariableMenuUpToDate(plotPlugins[i].varTypes,
+                                                           plotPlugins[i].varMenu))
+                continue;
 #ifdef DELETE_MENU_TO_FREE_POPUPS
-            CreatePlotMenuItem(i);
+            if (destroyMenuItems)
+                CreatePlotMenuItem(i);
+            else
+                plotPlugins[i].varMenu->clear();
 #else
             plotPlugins[i].varMenu->clear();
 #endif
@@ -1833,16 +1864,19 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu()
         // Update the variable buttons that use the active source.
         //
         id = visitTimer->StartTimer();
-        QvisVariableButton::UpdateActiveSourceButtons(&menuPopulator);
+        QvisVariableButton::UpdateActiveSourceButtons(&menuPopulator, destroyMenuItems);
         visitTimer->StopTimer(id, "Updating active source buttons");
 
         //
         // If there are no plots then update the variable buttons that
         // use the plot source with the active source.
         //
+        // menus get updated in UpdateActiveSourceButtons, so skip here
+        bool const skipUpdateMenus = true;
         id = visitTimer->StartTimer();
         if(plotList->GetNumPlots() < 1)
-            QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator);
+            QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator,
+                skipUpdateMenus, destroyMenuItems);
         visitTimer->StopTimer(id, "Updating plot source buttons");
     }
 
@@ -2025,70 +2059,81 @@ QvisPlotManagerWidget::UpdatePlotAndOperatorMenuEnabledState()
 //   Only recreate the menu if it is not empty to avoid a weird crash in Qt
 //   under certain conditions.
 //
+//   Mark C. Miller, Thu Jun  8 15:01:14 PDT 2017
+//   Permit menu items to be conditionally destroyed (as opposed to just
+//   cleared) as well as to force menu update.
 // ****************************************************************************
 
 void
-QvisPlotManagerWidget::UpdateVariableMenu()
+QvisPlotManagerWidget::UpdateVariableMenu(bool destroyMenuItems, bool forceUpdate)
 {
     // Update the variable lists using the type of the first plot as the
     // kind of variable that is displayed.
-    for(int i = 0; i < plotList->GetNumPlots(); ++i)
+    int i;
+    for(i = 0; i < plotList->GetNumPlots(); ++i)
     {
         // Create a constant reference to the current plot.
         const Plot &current = plotList->operator[](i);
-
         if(current.GetActiveFlag())
-        {
-            // Set the plot type for the variable menu.
-            varMenu->setPlotType(current.GetPlotType());
-
-            //
-            // Update the variable menu's menu populator and if an update
-            // is needed, update the menu.
-            //
-            bool changeVarLists = PopulateVariableLists(varMenuPopulator,
-                current.GetDatabaseName());
-            int plotVarFlags = plotPlugins[current.GetPlotType()].varTypes;
-            for(size_t j = 0; j < current.GetOperators().size(); ++j)
-            {
-                int opid = current.GetOperators()[j];
-                plotVarFlags &= operatorPlugins[opid].varMask;
-                plotVarFlags |= operatorPlugins[opid].varTypes;
-            }
-            bool flagsDiffer = (plotVarFlags != varMenuFlags);
-            if(changeVarLists || flagsDiffer || varMenu->count() == 0)
-            {
-                // Destroy and recreate the variable menu so we actually
-                // delete menu items when we no longer need them.
-#ifdef DELETE_MENU_TO_FREE_POPUPS
-                if(varMenu->count() > 0)
-                {
-                    DestroyVariableMenu();
-                    CreateVariableMenu();
-                }
-#else
-                varMenu->clear();
-#endif
-                // Set the variable list based on the first active plot.
-                int varCount = varMenuPopulator.UpdateSingleVariableMenu(varMenu,
-                    plotVarFlags, this, SLOT(changeVariable(int, const QString &)));
-                varMenuFlags = plotVarFlags;
-
-                //
-                // Set the flag that indicates that we need to update the
-                // enabled state for the variables menu.
-                //
-                this->updateVariableMenuEnabledState |= (varCount > 0);
-
-                //
-                // Update all variable buttons that use the plot source.
-                //
-                QvisVariableButton::UpdatePlotSourceButtons(&varMenuPopulator);
-            }
-
-            // Get out of the for loop.
             break;
+    }
+    bool haveActivePlot = i < plotList->GetNumPlots();
+
+    int plotVarFlags = 0;
+    if (haveActivePlot)
+    {
+        const Plot &current = plotList->operator[](i);
+
+        varMenu->setPlotType(current.GetPlotType());
+        PopulateVariableLists(varMenuPopulator, current.GetDatabaseName());
+        plotVarFlags = plotPlugins[current.GetPlotType()].varTypes;
+        for(size_t j = 0; j < current.GetOperators().size(); ++j)
+        {
+            int opid = current.GetOperators()[j];
+            plotVarFlags &= operatorPlugins[opid].varMask;
+            plotVarFlags |= operatorPlugins[opid].varTypes;
         }
+    }
+
+    if ((haveActivePlot &&
+        !varMenuPopulator.IsSingleVariableMenuUpToDate(plotVarFlags, varMenu)) ||
+        forceUpdate)
+    {
+        // Destroy and recreate the variable menu so we actually
+        // delete menu items when we no longer need them.
+#ifdef DELETE_MENU_TO_FREE_POPUPS
+        if (destroyMenuItems)
+        {
+            if(varMenu->count() > 0)
+            {
+                DestroyVariableMenu();
+                CreateVariableMenu();
+            }
+        }
+        else
+        {
+            varMenu->clear();
+        }
+#else
+        varMenu->clear();
+#endif
+        // Set the variable list based on the first active plot.
+        int varCount = varMenuPopulator.UpdateSingleVariableMenu(varMenu,
+            plotVarFlags, this, SLOT(changeVariable(int, const QString &)));
+        varMenuFlags = plotVarFlags;
+
+        //
+        // Set the flag that indicates that we need to update the
+        // enabled state for the variables menu.
+        //
+        this->updateVariableMenuEnabledState |= (varCount > 0);
+
+        //
+        // Update all variable buttons that use the plot source.
+        //
+        bool const skipUpdateMenus = false;
+        QvisVariableButton::UpdatePlotSourceButtons(&varMenuPopulator,
+            skipUpdateMenus, destroyMenuItems);
     }
 }
 

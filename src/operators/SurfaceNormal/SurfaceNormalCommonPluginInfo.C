@@ -111,7 +111,7 @@ SurfaceNormalCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 // ****************************************************************************
 
 ExpressionList * 
-SurfaceNormalCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+SurfaceNormalCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     int i;
     char name[1024], defn[1024];
@@ -120,6 +120,9 @@ SurfaceNormalCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *
     for (i = 0 ; i < numMeshes ; i++)
     {
         const avtMeshMetaData *mmd = md->GetMesh(i);
+        if (mmd->hideFromGUI || !mmd->validVariable)
+            continue;
+
         {
             Expression e2;
             sprintf(name, "operators/SurfaceNormal/%s", mmd->name.c_str());

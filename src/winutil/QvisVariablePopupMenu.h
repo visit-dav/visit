@@ -72,9 +72,12 @@ class WINUTIL_API QvisVariablePopupMenu : public QMenu
 public:
     QvisVariablePopupMenu(int plotType_, QWidget *parent);
     virtual ~QvisVariablePopupMenu();
-    int getPlotType() const { return plotType; };
     void setPlotType(int p) { plotType = p; };
+    int getPlotType() const { return plotType; };
     void setVarPath(const QString &str) { varPath = str; };
+    QString getVarPath() const { return varPath; };
+    unsigned int getHashVal() const { return myHashVal; };
+    void setHashVal(unsigned int hv) { myHashVal = hv; };
 
     QAction *addVar(const QString &, bool valid = true);
     int count() const;
@@ -86,6 +89,7 @@ private:
     QActionGroup *actions;
     QString       varPath;
     int           plotType;
+    unsigned int  myHashVal;
 };
 
 #endif

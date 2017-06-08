@@ -523,6 +523,9 @@ avtSiloFileFormat::GetFile(int f)
 //
 //    Mark C. Miller, Thu Jan  6 17:17:25 PST 2011
 //    Set driver type for unknown case by asking file what its type was.
+//
+//    Mark C. Miller, Tue May 23 10:28:07 PDT 2017
+//    Add logic to use siloDriver to open if its not DB_UNKNOWN.
 // ****************************************************************************
 
 DBfile *
@@ -549,9 +552,19 @@ avtSiloFileFormat::OpenFile(int f, bool skipGlobalInfo)
 
     //
     // Open the Silo file. Impose priority order on drivers by first
-    // trying then HDF5, then PDB, then fall-back to UNKNOWN
+    // trying HDF5, then PDB, then fall-back to UNKNOWN
     //
-    if ((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) != NULL)
+    if ((siloDriver != DB_UNKNOWN) &&
+        (dbfiles[f] = DBOpen(filenames[f], siloDriver, DB_READ)) != NULL)
+    {
+        if (siloDriver == DB_PDB)
+            debug1 << "Opened with DB_PDB driver; lib=" << DBVersion() << ", file=" << DBFileVersion(dbfiles[f]) <<endl;
+        else if (siloDriver == DB_HDF5)
+            debug1 << "Opened with DB_HDF5 driver; lib=" << DBVersion() << ", file=" << DBFileVersion(dbfiles[f]) <<endl;
+        else
+            debug1 << "Opened with DB_UNKNOWN driver; lib=" << DBVersion() << ", file=" << DBFileVersion(dbfiles[f]) <<endl;
+    }
+    else if ((dbfiles[f] = DBOpen(filenames[f], DB_HDF5, DB_READ)) != NULL)
     {
         debug1 << "Opened with DB_HDF5 driver; lib=" << DBVersion() << ", file=" << DBFileVersion(dbfiles[f]) <<endl;
         siloDriver = DB_HDF5;
@@ -13251,6 +13264,10 @@ avtSiloFileFormat::GetRelativeVarName(const char *initVar, const char *newVar,
 //    Cyrus Harrison, Wed Dec 21 15:22:21 PST 2011
 //    Limited support for Silo nameschemes, use new multi block cache data
 //    structures.
+//
+//    Mark C. Miller, Thu Jun  8 14:52:32 PDT 2017
+//    Fix logic seeking first non-empty block to not make more than 20 attempts
+//    in the namescheme'd (implicit) case.
 // ****************************************************************************
 
 string
@@ -13279,14 +13296,38 @@ avtSiloFileFormat::DetermineMultiMeshForSubVariable(DBfile *dbfile,
     string mb_varname = obj->GenerateName(meshnum);
     int nblocks = obj->NumberOfBlocks();
     
-    while (GetMeshname(dbfile, mb_varname.c_str(), subMesh) != 0)
+    if (obj->IsExplicit())
     {
-        meshnum++;
-        if (meshnum >= nblocks)
+        while (mb_varname == "EMPTY")
         {
-            EXCEPTION1(InvalidVariableException,  name);
+            meshnum++;
+            if (meshnum >= nblocks)
+            {
+                EXCEPTION1(InvalidVariableException,  name);
+            }
+            mb_varname = obj->GenerateName(meshnum);
         }
-        mb_varname = obj->GenerateName(meshnum);
+        GetMeshname(dbfile, mb_varname.c_str(), subMesh);
+    }
+    else
+    {
+        while (GetMeshname(dbfile, mb_varname.c_str(), subMesh) != 0)
+        {
+            meshnum++;
+            if (meshnum >= nblocks)
+            {
+                EXCEPTION1(InvalidVariableException,  name);
+            }
+            else if (meshnum > 20)
+            {
+                char str[1024];
+                SNPRINTF(str, sizeof(str), "Giving up after 20 attempts to find first non-empty submesh "
+                    "of a namescheme'd multivar \"%s\". This typically leads to the variable being invalidated "
+                    "(grayed out) in the GUI.", name);
+                EXCEPTION1(SiloException, str);
+            }
+            mb_varname = obj->GenerateName(meshnum);
+        }
     }
 
     //

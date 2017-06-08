@@ -99,7 +99,7 @@ AxisAlignedSlice4DCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     *((AxisAlignedSlice4DAttributes *) to) = *((AxisAlignedSlice4DAttributes *) from);
 }
 ExpressionList *
-AxisAlignedSlice4DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+AxisAlignedSlice4DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     char name[1024];
     char defn[1024];
@@ -107,8 +107,13 @@ AxisAlignedSlice4DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaD
 
     for (int i = 0 ; i < md->GetNumArrays() ; i++)
     {
-        const char *array = md->GetArrays(i).name.c_str();
-        const char *mesh = md->GetArrays(i).meshName.c_str();
+        avtArrayMetaData const &amd = md->GetArrays(i);
+
+        if (amd.hideFromGUI || !amd.validVariable)
+            continue;
+
+        const char *array = amd.name.c_str();
+        const char *mesh = amd.meshName.c_str();
 
         Expression e;
         sprintf(name, "operators/AxisAlignedSlice4D/%s", array);
@@ -128,7 +133,7 @@ AxisAlignedSlice4DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaD
         if (e.GetType() == Expression::ArrayMeshVar)
         {
             {
-                if (e.GetFromOperator())
+                if (e.GetFromOperator() || e.GetAutoExpression())
                     continue; // weird ordering behavior otherwise
                 Expression e2;
                 sprintf(name, "operators/AxisAlignedSlice4D/%s", e.GetName().c_str());

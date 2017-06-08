@@ -86,15 +86,15 @@ public:
     ~ParsingExprList();
 
     static ParsingExprList *Instance();
-    static Expression* GetExpression(const char *varname);
-    static Expression* GetExpression(std::string varname)
+    static Expression const * GetExpression(const char *varname);
+    static Expression const * GetExpression(std::string varname)
         { return GetExpression(varname.c_str()); }
 
     ExpressionList *GetList() {return &exprList;}
 
     virtual void Update(Subject *);
 
-    static ExprNode *GetExpressionTree(Expression*);
+    static ExprNode *GetExpressionTree(Expression const *);
     static ExprNode *GetExpressionTree(const char *varname);
     static ExprNode *GetExpressionTree(std::string varname)
         { return GetExpressionTree(varname.c_str()); }

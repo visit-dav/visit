@@ -74,7 +74,7 @@ class ChannelCommCommonPluginInfo : public virtual CommonOperatorPluginInfo, pub
   public:
     virtual AttributeSubject *AllocAttributes();
     virtual void CopyAttributes(AttributeSubject *to, AttributeSubject *from);
-    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);
+    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) const;
 };
 
 class ChannelCommGUIPluginInfo : public virtual GUIOperatorPluginInfo, public virtual ChannelCommCommonPluginInfo

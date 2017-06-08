@@ -459,7 +459,7 @@ class InfoGeneratorPlugin : public Plugin
                 h << "    virtual int GetVariableMask() const;" << endl;
             if(createExpression)
             {
-                h << "    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *);" << endl;
+                h << "    virtual ExpressionList *GetCreatedExpressions(const avtDatabaseMetaData *) const;" << endl;
             }
             h << "};" << endl;
             h << endl;
@@ -1016,6 +1016,8 @@ class InfoGeneratorPlugin : public Plugin
         c << "    for (i = 0 ; i < num" << typeToLookForP << " ; i++)" << endl;
         c << "    {" << endl;
         c << "        const avt" << typeToLookForS << "MetaData *mmd = md->Get" << typeToLookForS << "(i);" << endl;
+        c << "        if (mmd->hideFromGUI || !mmd->validVariable)" << endl;
+        c << "            continue;" << endl;
         for (size_t j = 0 ; j < outtypes.size() ; j++)
         {
             c << "        {" << endl;
@@ -1039,7 +1041,7 @@ class InfoGeneratorPlugin : public Plugin
         for (size_t j = 0 ; j < outtypes.size() ; j++)
         {
             c << "            {" << endl;
-            c << "                if (e.GetFromOperator())" << endl;
+            c << "                if (e.GetFromOperator() || e.GetAutoExpression())" << endl;
             c << "                    continue; // weird ordering behavior otherwise" << endl;
             c << "                Expression e2;" << endl;
             c << "                sprintf(name, \"operators/" << opName << "/%s\", e.GetName().c_str());" << endl;
@@ -1364,7 +1366,7 @@ class InfoGeneratorPlugin : public Plugin
                 c << "// ****************************************************************************" << endl;
                 c << endl;
                 c << "ExpressionList * " << endl;
-                c << funcName<<"(const avtDatabaseMetaData *md)" << endl;
+                c << funcName<<"(const avtDatabaseMetaData *md) const" << endl;
                 c << "{" << endl;
                 std::vector<QString> intypes = SplitValues(exprInType);
                 bool doMesh = false, doScalar = false, doVector = false, doTensor = false, doMaterial = false;

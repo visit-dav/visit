@@ -1404,7 +1404,7 @@ QvisCMFEWizard::GetVarType(const std::string &str)
     int numExpressions = exprList->GetNumExpressions();
     for (int i = 0 ; i < numExpressions ; i++)
     {
-        Expression &e = exprList->GetExpressions(i);
+        Expression const &e = exprList->GetExpressions(i);
         if (str == e.GetName())
             return e.GetType();
     }

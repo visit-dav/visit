@@ -52,13 +52,14 @@
 #include <QvisVariablePopupMenu.h>
 #include <QObject>
 
-#include <set>
+#include <BJHash.h>
 #include <DebugStream.h>
-//#define DEBUG_PRINT
-#ifdef DEBUG_PRINT
-#include <DebugStream.h>
-#endif
+#include <Environment.h>
 #include <TimingsManager.h>
+
+#include <map>
+#include <set>
+#include <vector>
 
 using std::map;
 using std::string;
@@ -151,7 +152,7 @@ Split(const std::string &varName, stringVector &pieces)
 // ****************************************************************************
 
 VariableMenuPopulator::VariableMenuPopulator() :
-    cachedDBName(), cachedExpressionList(),
+    cachedDBKey(), cachedExpressionList(),
     meshVars(), scalarVars(), materialVars(), vectorVars(), subsetVars(),
     speciesVars(), curveVars(), tensorVars(), symmTensorVars(), labelVars(),
     arrayVars(), groupingInfo()
@@ -193,9 +194,11 @@ VariableMenuPopulator::~VariableMenuPopulator()
 // ****************************************************************************
 
 void
-VariableMenuPopulator::ClearDatabaseName()
+VariableMenuPopulator::ClearCachedInfo()
 {
-    cachedDBName = "";
+    cachedDBKey = "";
+    cachedExprList.ClearExpressions();
+    cachedExpressionList.ClearExpressions();
 }
 
 // ****************************************************************************
@@ -222,6 +225,70 @@ VariableMenuPopulator::ClearGroupingInfo()
     }
 
     groupingInfo.clear();
+}
+
+// ****************************************************************************
+// Method: CanSkipPopulateVariableLists
+//
+// Purpose: Determine if a call to PopulateVariableLists can be skipped.
+//
+// Programmer Mark C. Miller, Thu Jun  8 15:15:38 PDT 2017
+// ****************************************************************************
+
+bool
+VariableMenuPopulator::CanSkipPopulateVariableLists(std::string const &dbKey,
+    ExpressionList const *exprList, bool treatAllDBsAsTV, bool mustRePopMD,
+    bool isSim)
+{
+    bool retval = true;
+
+    // No need to even bother caching stuff to track changes for these cases 
+    if (treatAllDBsAsTV || isSim)
+        return false;
+
+    // Check for changes in database key (which includes name and timestate)
+    if (dbKey != cachedDBKey)
+        retval = false;
+
+    // Filter out cases that differ only in timestate unless mustRepopMD is true
+    if (!retval && !mustRePopMD)
+    {
+        std::size_t ampIdxA =       dbKey.find_last_of("@");
+        std::size_t ampIdxC = cachedDBKey.find_last_of("@");
+
+        if (ampIdxA != ampIdxC)
+            retval = false;
+
+        if (retval)
+        {
+            if (dbKey.substr(0,ampIdxA) != cachedDBKey.substr(0,ampIdxC))
+                retval = false;
+        }
+
+        if (retval)
+        {
+            long tsA = strtol(&(      dbKey.c_str()[ampIdxA]), 0, 10);
+            long tsC = strtol(&(cachedDBKey.c_str()[ampIdxC]), 0, 10);
+            if (tsA != tsC)
+                retval = false;
+        }
+    }
+
+    // Check for changes in expression list
+    if (retval)
+    {
+        if (exprList->GetHashVal() != cachedExprList.GetHashVal())
+            retval = false;
+    }
+
+    // Update cached values if we've concluded things have changed
+    if (retval == false)
+    {
+        cachedDBKey = dbKey;
+        cachedExprList = *exprList;
+    }
+
+    return retval;
 }
 
 // ****************************************************************************
@@ -343,12 +410,18 @@ VariableMenuPopulator::ClearGroupingInfo()
 //
 //    Mark C. Miller, Thu Dec 18 13:20:17 PST 2014
 //    Allow enum scalars in the Subset plot menu.
+//
+//    Mark C. Miller, Thu Jun  8 15:16:16 PDT 2017
+//    Before doing any work of any kind including even looking at expression
+//    lists, make a determination if we can skip and return quickly with
+//    false.
 // ****************************************************************************
 
 bool
-VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
+VariableMenuPopulator::PopulateVariableLists(const std::string &dbKey,
     const avtDatabaseMetaData *md, const avtSIL *sil,
-    const ExpressionList *exprList, OperatorPluginManager *oPM, bool treatAllDBsAsTimeVarying)
+    const ExpressionList *exprList, OperatorPluginManager *oPM,
+    bool treatAllDBsAsTimeVarying)
 {
     if(md == 0 || sil == 0 || exprList == 0)
         return false;
@@ -356,6 +429,22 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     const char *mName = "VariableMenuPopulator::PopulateVariableLists: ";
     int total = visitTimer->StartTimer();
     int id = visitTimer->StartTimer();
+
+    //
+    // Populating variable lists can be expensive, especially if the input
+    // database contains a large number of variables. So, we want to do 
+    // everything we can to avoid it if at all possible. If the input 
+    // database metadata / sil, exprList, enabled operator plugins are the
+    // same as the last time we were here, we can safely return early with
+    // a value of false.
+    //
+    if (CanSkipPopulateVariableLists(dbKey, exprList, treatAllDBsAsTimeVarying,
+        md->GetMustRepopulateOnStateChange(), md->GetIsSimulation()))
+    {
+        visitTimer->StopTimer(id, "CanSkipPopulateVariableLists");
+        visitTimer->StopTimer(total, mName);
+        return false;
+    }
 
     // The expression list can sometimes contain database expressions for
     // a database that is not the database specified by dbName. To combat
@@ -368,22 +457,9 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     GetOperatorCreatedExpressions(newExpressionList, md, oPM);
     visitTimer->StopTimer(id, "GetRelevantExpressions");
 
-    //
-    // If the database name is the same and the expression list is the
-    // same then return false, indicating that no updates are required.
-    // If this is a simulation, then the variable list might change at
-    // any time, so treat that as equivalent to MustRepopulateOnStateChange.
-    //
-    bool expressionsSame = newExpressionList == cachedExpressionList;
-    bool variableMetaData = md->GetMustRepopulateOnStateChange() ||
-                            md->GetIsSimulation();
-    if(dbName == cachedDBName && expressionsSame && !variableMetaData &&
-       !treatAllDBsAsTimeVarying)
-    {
-        debug5 << "PopulateVariableLists: early return. update required = false" << endl;
-        visitTimer->StopTimer(total, mName);
-        return false;
-    }
+    // Shold be no need to compare cached with current expression lists at
+    // this point because CanSkip... captures all the cases
+    cachedExpressionList = newExpressionList;
 
     //
     // Save the database name and the expression list so we can check them
@@ -391,9 +467,6 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     // same.
     //
     id = visitTimer->StartTimer();
-    cachedDBName = dbName;
-    if(!expressionsSame)
-        cachedExpressionList = newExpressionList;
 
     // Save off the current variable lists so we can compare in the 
     // treatAllDBsAsTimeVarying case.
@@ -574,11 +647,13 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
             //
             // Also add the varName to the material variable map so we can
             // have plots, etc that just use materials instead of any type
-            // of subset variable.
+            // of subset variable. We disable addition of single-block
+            // cases to subsetVars for dbs with more than 20 meshes to avoid
+            // growth in menu sizes on dbs with many mesh objects.
             //
             if (role == SIL_MATERIAL)
                 materialVars.AddVariable(varName, validVariable);
-            else
+            else if (maps.size() > 1 || md->GetNumMeshes() < 20)
                 subsetVars.AddVariable(varName, validVariable);
         }
     }
@@ -591,13 +666,16 @@ VariableMenuPopulator::PopulateVariableLists(const std::string &dbName,
     int nexp = cachedExpressionList.GetNumExpressions();
     for(i = 0; i < nexp; ++i)
     {
-        const Expression &expr = cachedExpressionList[i];
+        const Expression &expr = static_cast<ExpressionList const &>(cachedExpressionList)[i];
+ 
         if(!expr.GetHidden())
             AddExpression(expr);
     }
 
     // Determine the return value.
     bool populationWillCauseUpdate = true;
+    bool variableMetaData = md->GetMustRepopulateOnStateChange() ||
+                            md->GetIsSimulation();
     if(treatAllDBsAsTimeVarying || variableMetaData)
     {
         // This is a last opportunity for us to return false for the case where
@@ -772,48 +850,163 @@ VariableMenuPopulator::GetRelevantExpressions(ExpressionList &newExpressionList,
 //
 //   Mark C. Miller, Tue Jun 24 11:41:03 PDT 2014
 //   Send message for created expression to debug5 instead of debug1.
+//
+//   Mark C. Miller, Thu Jun  8 15:18:02 PDT 2017
+//   Skip if SEG is disabled. Adjust to add new expressions to a separate
+//   list, expressionsToAdd, while searching for existing expressions in
+//   current (global) list. Once all expressions to be added are defined,
+//   then add them to the global list.
 // ****************************************************************************
 
 void
 VariableMenuPopulator::GetOperatorCreatedExpressions(ExpressionList &newExpressionList,
-    const avtDatabaseMetaData *md, OperatorPluginManager *oPM)
+    const avtDatabaseMetaData *md, OperatorPluginManager *oPM,
+    OpCreatedExprMode exprMode)
 {
     if(oPM == NULL || md == NULL)
         return;
+
+    if (md->ShouldDisableSEG(Environment::exists(md->GetSEGEnvVarName())))
+    {
+        md->IssueSEGWarningMessage();
+        return;
+    }
 
     // Iterate over the meshes in the metadata and add operator-created expressions
     // for each relevant mesh.
     avtDatabaseMetaData md2 = *md;
     md2.GetExprList() = newExpressionList;
+    ExpressionList *expressionsToAdd = new ExpressionList;
     for(int j = 0; j < oPM->GetNEnabledPlugins(); j++)
     {
         std::string id(oPM->GetEnabledID(j));
         CommonOperatorPluginInfo *ComInfo = oPM->GetCommonPluginInfo(id);
-        ExpressionList *fromOperators = ComInfo->GetCreatedExpressions(&md2);
+        ExpressionList const *fromOperators = ComInfo->GetCreatedExpressions(&md2);
         if(fromOperators != NULL)
         {
             for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
             {
                 const Expression &opExpr = fromOperators->GetExpressions(k);
-                newExpressionList.AddExpressions(opExpr);
+                if (exprMode == GlobalAndNew)
+                    newExpressionList.AddExpressions(opExpr);
 
                 // Now, since the operator created the expression, it's
                 // entirely possible that the expression has not made it
                 // into the expression list yet. So, as a side effect let's
                 // add the expression into the list if it's not already there.
                 ExpressionList *globalExpr = ParsingExprList::Instance()->GetList();
-                Expression *e = globalExpr->operator[](opExpr.GetName().c_str());
-                if(e == 0)
-                {
-                    debug5 << "GetOperatorCreatedExpressions: Adding "
-                              "operator-created expression " << opExpr.GetName()
-                           << " to the global expression list." << endl;
-                    globalExpr->AddExpressions(opExpr);
-                }
+                Expression const *e = globalExpr->operator[](opExpr.GetName().c_str());
+                if (e == 0)
+                    expressionsToAdd->AddExpressions(opExpr);
             }
             delete fromOperators;
         }
     }
+
+    //
+    // Now, add all the expressions we decided we needed to above
+    //
+    ExpressionList *globalExpr = ParsingExprList::Instance()->GetList();
+    for (int j = 0; j < expressionsToAdd->GetNumExpressions(); j++)
+    {
+        const Expression &opExpr = expressionsToAdd->GetExpressions(j);
+        debug5 << "GetOperatorCreatedExpressions: Adding "
+               "operator-created expression " << opExpr.GetName()
+               << " to the global expression list." << endl;
+        globalExpr->AddExpressions(opExpr);
+    }
+    delete expressionsToAdd;
+}
+
+static int CountSetBits(unsigned int val)
+{
+    int count = 0;
+    while (val > 0)
+    {
+        if (val&0x1) count++;
+        val >>= 1;
+    }
+    return count;
+}
+
+// ****************************************************************************
+// Method: IsSingleVariableMenuUpToDate
+//
+// Purpose: Very quick, hash-based scheme to check to see if exiting menu
+//     agrees with its correponding variable list.
+//
+// A hash of the variable names in the variable list and associated menu is
+// maintained with both. If the hash is zero'd or its different, update is
+// required. We punt on menu cases where multiple variable types are in the
+// same list.
+//
+// Programmer: Mark C. Miller, Thu Jun  8 15:22:41 PDT 2017
+// ****************************************************************************
+
+bool
+VariableMenuPopulator::IsSingleVariableMenuUpToDate(int varTypes,
+QvisVariablePopupMenu *menu, avtDatabaseMetaData const *md) const
+{
+    if (!menu) return false;
+    if (menu->getHashVal() == 0) return false;
+
+    int numVarTypes = CountSetBits(varTypes);
+
+    if (numVarTypes > 1)
+    {
+        if (!md) return false;
+
+        //
+        // We may have a menu that accepts multiple var types, but if
+        // we don't actually have a database (md) with entries of at
+        // least two of the accepted types, its the same as a single
+        // variable case anyways.
+        //
+        int realType = 0;
+        if(varTypes & VAR_CATEGORY_MESH)
+            realType |= md->GetNumMeshes() ? VAR_CATEGORY_MESH : 0;
+        if(varTypes & VAR_CATEGORY_SCALAR)
+            realType |= md->GetNumScalars() ? VAR_CATEGORY_SCALAR : 0;
+        if(varTypes & VAR_CATEGORY_MATERIAL)
+            realType |= md->GetNumMaterials() ? VAR_CATEGORY_MATERIAL : 0;
+        if(varTypes & VAR_CATEGORY_VECTOR)
+            realType |= md->GetNumVectors() ? VAR_CATEGORY_VECTOR : 0;
+        if(varTypes & VAR_CATEGORY_SUBSET)
+            realType |= md->GetNumSubsets() ? VAR_CATEGORY_SUBSET : 0;
+        if(varTypes & VAR_CATEGORY_SPECIES)
+            realType |= md->GetNumSpecies() ? VAR_CATEGORY_SPECIES : 0;
+        if(varTypes & VAR_CATEGORY_CURVE)
+            realType |= md->GetNumCurves() ? VAR_CATEGORY_CURVE : 0;
+        if(varTypes & VAR_CATEGORY_TENSOR)
+            realType |= md->GetNumTensors() ? VAR_CATEGORY_TENSOR : 0;
+        if(varTypes & VAR_CATEGORY_SYMMETRIC_TENSOR)
+            realType |= md->GetNumSymmTensors() ? VAR_CATEGORY_SYMMETRIC_TENSOR : 0;
+        if(varTypes & VAR_CATEGORY_LABEL)
+            realType |= md->GetNumLabels() ? VAR_CATEGORY_LABEL : 0;
+        if(varTypes & VAR_CATEGORY_ARRAY)
+            realType |= md->GetNumArrays() ? VAR_CATEGORY_ARRAY : 0;
+
+        int numRealTypes = CountSetBits(realType);
+        if (numRealTypes > 1) return false; // punt this case for now
+        varTypes = realType;
+    }
+
+    switch(varTypes)
+    {
+        case VAR_CATEGORY_MESH: return meshVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_SCALAR: return scalarVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_VECTOR: return vectorVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_MATERIAL: return materialVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_SUBSET: return subsetVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_SPECIES: return speciesVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_CURVE: return curveVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_TENSOR: return tensorVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_SYMMETRIC_TENSOR: return symmTensorVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_LABEL: return labelVars.GetHashVal() == menu->getHashVal();
+        case VAR_CATEGORY_ARRAY: return arrayVars.GetHashVal() == menu->getHashVal();
+    }
+
+    return false;
 }
 
 // ****************************************************************************
@@ -869,9 +1062,9 @@ int
 VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
     int varTypes, QObject *receiver, const char *slot)
 {
-    int total = visitTimer->StartTimer();
-    int numVarTypes = 0;
     int retval = 0;
+    bool singleVarCase;
+    int total = visitTimer->StartTimer();
 
 #define UPDATE_SINGLE_MENU(V) \
     if(groupingInfo.find(varTypes) == groupingInfo.end())\
@@ -885,31 +1078,7 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
         groupingInfo[varTypes]);\
     retval = V.Size();
 
-    // See if we need to create a variable list that has more than one
-    // category of variable in it.
-    if(varTypes & VAR_CATEGORY_MESH)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_SCALAR)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_MATERIAL)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_VECTOR)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_SUBSET)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_SPECIES)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_CURVE)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_TENSOR)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_SYMMETRIC_TENSOR)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_LABEL)
-       ++numVarTypes;
-    if(varTypes & VAR_CATEGORY_ARRAY)
-       ++numVarTypes;
-
+    int numVarTypes = CountSetBits(varTypes);
     if(numVarTypes > 1)
     {
         VariableList vars;
@@ -941,14 +1110,25 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
         if(varTypes & VAR_CATEGORY_ARRAY)
             realType |= AddVars(vars, arrayVars) ? VAR_CATEGORY_ARRAY : 0;
        
-        // Update the menu with the composite variable list.
-        if(realType > 0)
+        int numRealTypes = CountSetBits(realType);
+        varTypes = realType;
+
+        if (numRealTypes > 1)
         {
-            varTypes = realType;
+            singleVarCase = false;
             UPDATE_SINGLE_MENU(vars)
+        }
+        else
+        {
+            singleVarCase = true;
         }
     }
     else
+    {
+        singleVarCase = true;
+    }
+
+    if (singleVarCase)
     {
         // The menu only contains one type of variable so update the menu
         // based on the variable type.
@@ -1038,7 +1218,7 @@ VariableMenuPopulator::UpdateSingleVariableMenu(QvisVariablePopupMenu *menu,
         retval |= (VEC.Size() > 0);                                     \
         for(i = 0; i < nexp && !retval; ++i)                            \
         {                                                               \
-            const Expression &expr = cachedExpressionList[i];           \
+            const Expression &expr = static_cast<ExpressionList const &>(cachedExpressionList)[i];\
             if(!expr.GetHidden() && expr.GetType() == Expression::EXPR) \
                 retval |= true;                                         \
         }                                                               \
@@ -1114,6 +1294,9 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   Brad Whitlock, Fri May  9 11:13:53 PDT 2008
 //   Qt 4.
 //
+//   Mark C. Miller, Thu Jun  8 15:26:45 PDT 2017
+//   Compute hash of variable names and stuff result into both menu and
+//   variable list. 
 // ****************************************************************************
 
 void
@@ -1132,6 +1315,7 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
     const StringStringMap &originalNameToGroupedName = ginfo->grouping;
     bool shouldUseGrouping = ginfo->required;
     vars.InitTraversal();
+    unsigned int hashVal = 0;
     while(vars.GetNextVariable(var, validVar))
     {
         if (shouldUseGrouping)
@@ -1150,9 +1334,9 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
             continue;
 
         // Add the submenus.
+        hashVal = BJHash::Hash(var, hashVal);
         QvisVariablePopupMenu *parent = menu;
         string path, altpath;
-
         for (j = 0; j < pathvar.size() - 1; ++j)
         {
             // Create the current path.
@@ -1202,6 +1386,9 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
         // Add the variable.
         parent->addVar(pathvar[j].c_str(), validVar);
     }
+
+    vars.SetHashVal(hashVal);
+    menu->setHashVal(hashVal);
 }
 
 // ****************************************************************************
@@ -1270,6 +1457,7 @@ VariableMenuPopulator::VariableList::VariableList() : sortedVariables(),
     sorted = true;
     unsortedVariableIndex = -1;
     sortedVariablesIterator = sortedVariables.end();
+    myHashVal = 0;
 }
 
 VariableMenuPopulator::VariableList::VariableList(const VariableMenuPopulator::VariableList &obj) : 
@@ -1280,6 +1468,7 @@ VariableMenuPopulator::VariableList::VariableList(const VariableMenuPopulator::V
 {
     sorted = obj.sorted;
     unsortedVariableIndex = obj.unsortedVariableIndex;
+    myHashVal = obj.myHashVal;
 }
 
 // ****************************************************************************
@@ -1322,6 +1511,8 @@ VariableMenuPopulator::VariableList::~VariableList()
 bool
 VariableMenuPopulator::VariableList::operator == (const VariableMenuPopulator::VariableList &obj) const
 {
+#warning ARE WE ACCOUNTING FOR VAR VALIDITY IN HASH COMPUTE
+    if (myHashVal != 0) return myHashVal == obj.myHashVal;
     bool equal = false;
     if(sorted == obj.sorted)
     {
@@ -1392,6 +1583,7 @@ VariableMenuPopulator::VariableList::AddVariable(const std::string &var, bool va
         unsortedVariableNames.push_back(var);
         unsortedVariableValid.push_back(validVar);
     }
+    myHashVal = 0;
 }
 
 // ****************************************************************************
@@ -1413,6 +1605,7 @@ VariableMenuPopulator::VariableList::Clear()
     sortedVariables.clear();
     unsortedVariableNames.clear();
     unsortedVariableValid.clear();
+    myHashVal = 0;
 }
 
 // ****************************************************************************

@@ -44,6 +44,7 @@
 #include <avtDatabaseMetaData.h>
 #include <avtExpressionTypeConversions.h>
 #include <DebugStream.h>
+#include <Environment.h>
 #include <ExpressionList.h>
 #include <Expression.h>
 #include <OperatorPluginInfo.h>
@@ -133,7 +134,7 @@ ViewerVariableMethods::DetermineVarType(const std::string &host,
     // Check if the variable is an expression.
     ExpressionList expressionList;
     GetAllExpressions(expressionList, host, db, state);
-    Expression *exp = expressionList[var.c_str()];
+    Expression const *exp = expressionList[var.c_str()];
 
     if (exp != NULL)
     {
@@ -206,7 +207,7 @@ ViewerVariableMethods::DetermineRealVarType(const std::string &host,
     // Check if the variable is an expression.
     ExpressionList expressionList;
     GetAllExpressions(expressionList, host, db, state);
-    Expression *exp = expressionList[var.c_str()];
+    Expression const *exp = expressionList[var.c_str()];
     std::string realVar = var;
     if (exp != NULL)
     {
@@ -271,7 +272,7 @@ ViewerVariableMethods::DetermineRealVarType(const std::string &host,
 void
 ViewerVariableMethods::GetUserExpressions(ExpressionList &newList)
 {
-    ExpressionList *exprList = ParsingExprList::Instance()->GetList();
+    ExpressionList const *exprList = ParsingExprList::Instance()->GetList();
 
     //
     // Create a new expression list that contains all of the expressions
@@ -355,6 +356,8 @@ ViewerVariableMethods::GetDatabaseExpressions(ExpressionList &newList,
 //
 // Modifications:
 //
+//   Mark C. Miller, Thu Jun  8 15:03:27 PDT 2017
+//   Disable if speculative expression generation (SEG) is disabled.
 // ****************************************************************************
 
 void
@@ -370,29 +373,32 @@ ViewerVariableMethods::GetOperatorCreatedExpressions(ExpressionList &newList,
             md = GetViewerFileServer()->GetMetaData(host, db);
         else
             md = GetViewerFileServer()->GetMetaDataForState(host, db, state);
-        if (md != 0)
-        {
-            // Start with the user's expressions and this database's expressions.
-            ExpressionList userAndDB;
-            GetUserExpressions(userAndDB);
-            for (int i = 0 ; i < md->GetNumberOfExpressions(); ++i)
-                userAndDB.AddExpressions(*(md->GetExpression(i)));
 
-            // We'll make operator-created expressions for all user and db expressions.
-            // Note that we only append the operator-created expressions to the return.
-            avtDatabaseMetaData md2 = *md;
-            md2.GetExprList() = userAndDB;
-            for(int j = 0; j < GetOperatorPluginManager()->GetNEnabledPlugins(); j++)
+        if (!md) return;
+
+        if (md->ShouldDisableSEG(Environment::exists(md->GetSEGEnvVarName())))
+            return;
+
+        // Start with the user's expressions and this database's expressions.
+        ExpressionList userAndDB;
+        GetUserExpressions(userAndDB);
+        for (int i = 0 ; i < md->GetNumberOfExpressions(); ++i)
+            userAndDB.AddExpressions(*(md->GetExpression(i)));
+
+        // We'll make operator-created expressions for all user and db expressions.
+        // Note that we only append the operator-created expressions to the return.
+        avtDatabaseMetaData md2 = *md;
+        md2.GetExprList() = userAndDB;
+        for(int j = 0; j < GetOperatorPluginManager()->GetNEnabledPlugins(); j++)
+        {
+            std::string id(GetOperatorPluginManager()->GetEnabledID(j));
+            CommonOperatorPluginInfo *ComInfo = GetOperatorPluginManager()->GetCommonPluginInfo(id);
+            ExpressionList const *fromOperators = ComInfo->GetCreatedExpressions(&md2);
+            if(fromOperators != NULL)
             {
-                std::string id(GetOperatorPluginManager()->GetEnabledID(j));
-                CommonOperatorPluginInfo *ComInfo = GetOperatorPluginManager()->GetCommonPluginInfo(id);
-                ExpressionList *fromOperators = ComInfo->GetCreatedExpressions(&md2);
-                if(fromOperators != NULL)
-                {
-                    for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
-                        newList.AddExpressions(fromOperators->GetExpressions(k));
-                    delete fromOperators;
-                }
+                for(int k = 0; k < fromOperators->GetNumExpressions(); k++)
+                    newList.AddExpressions(fromOperators->GetExpressions(k));
+                delete fromOperators;
             }
         }
     }

@@ -5938,7 +5938,7 @@ avtDatabaseMetaData::DetermineVarType(std::string var_in, bool do_expr) const
     if (do_expr)
     {
         ParsingExprList *pel = ParsingExprList::Instance();
-        Expression *e = pel->GetExpression(var_in);
+        Expression const *e = pel->GetExpression(var_in);
         if (e != NULL)
             return ExprType_To_avtVarType(e->GetType());
     }
@@ -7049,7 +7049,7 @@ bool    avtDatabaseMetaData::haveWarningCallback = false;
 // ****************************************************************************
 
 void
-avtDatabaseMetaData::IssueWarning(const char *msg)
+avtDatabaseMetaData::IssueWarning(const char *msg) const
 {
     if (haveWarningCallback)
     {
@@ -7474,3 +7474,71 @@ avtDatabaseMetaData::AddGhostZoneTypePresent(std::string name,
     }
 }
 
+// ****************************************************************************
+//  Method: avtDatabaseMetaData::GetTotalVarCount
+//
+//  Purpose: Compute the total number of variables this database has
+//
+//  Programmer: Mark C. Miller, Thu May 25 19:52:38 PDT 2017
+//
+// ****************************************************************************
+
+int
+avtDatabaseMetaData::GetTotalVarCount(void) const
+{
+    return GetNumMeshes() +
+           GetNumSubsets() +
+           GetNumScalars() +
+           GetNumVectors() +
+           GetNumTensors() +
+           GetNumSymmTensors() +
+           GetNumArrays() +
+           GetNumMaterials() +
+           GetNumSpecies() +
+           GetNumCurves() +
+           GetNumLabels() +
+           GetNumberOfExpressions();
+}
+
+char const *
+avtDatabaseMetaData::GetSEGEnvVarName() const
+{
+    return "VISIT_FORCE_SPECULATIVE_EXPRESSION_GENERATION"; 
+}
+
+char const *
+avtDatabaseMetaData::GetSEGWarningString() const
+{
+    static char msg[2048];
+    SNPRINTF(msg, sizeof(msg),
+        "Due to the large number of variables, %d, in this database, VisIt has\n"
+        "automatically disabled speculative expression generation of ALL forms\n"
+        "(e.g. vector-magnitude, mesh-quality, time-derivative, operator-created)\n"
+        "because the large number of expressions bogs down GUI performance.\n"
+        "You may override this behavior by exiting VisIt and restarting with the\n"
+        "environment variable...\n"
+        "    \"%s\"\n"
+        "set. Be aware that doing so will likely result in sluggish GUI performance.\n"
+        "If you need one or more of the expressions VisIt's speculative expression\n"
+        "generation process provides and are unwilling or unable to manually create\n"
+        "the expression(s) you need, you have no choice in this version of VisIt\n"
+        "except to override this behavior and suffer any GUI performance issues.\n"
+        "Unfortunately, if you are running in client-server mode, you will have to\n"
+        "take action to set this enviornment variable on both the server and client\n"
+        "machines. This will only be necessary in VisIt version 2.12.3. An entirely\n"
+        "different mechanism for controlling this behavior will be introduced in 2.13.",
+         GetTotalVarCount(), GetSEGEnvVarName());
+    return msg;
+}
+
+void
+avtDatabaseMetaData::IssueSEGWarningMessage() const
+{
+    IssueWarning(GetSEGWarningString());
+}
+
+bool
+avtDatabaseMetaData::ShouldDisableSEG(bool envOverride) const
+{
+    return GetTotalVarCount() > 1000 && !envOverride;
+}

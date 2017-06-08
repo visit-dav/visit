@@ -99,7 +99,7 @@ ExtractPointFunction2DCommonPluginInfo::CopyAttributes(AttributeSubject *to,
     *((ExtractPointFunction2DAttributes *) to) = *((ExtractPointFunction2DAttributes *) from);
 }
 ExpressionList *
-ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
+ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
 {
     char name[1024];
     char defn[1024];
@@ -109,6 +109,9 @@ ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseM
     {
         const char *array = md->GetArrays(i).name.c_str();
         const char *mesh = md->GetArrays(i).meshName.c_str();
+
+        if (md->GetArrays(i).hideFromGUI || !md->GetArrays(i).validVariable)
+            continue;
 
         Expression e;
         sprintf(name, "operators/ExtractPointFunction2D/%s", array);
@@ -128,7 +131,7 @@ ExtractPointFunction2DCommonPluginInfo::GetCreatedExpressions(const avtDatabaseM
         if (e.GetType() == Expression::ArrayMeshVar)
         {
             {
-                if (e.GetFromOperator())
+                if (e.GetFromOperator() || e.GetAutoExpression())
                     continue; // weird ordering behavior otherwise
                 Expression e2;
                 sprintf(name, "operators/ExtractPointFunction2D/%s", e.GetName().c_str());

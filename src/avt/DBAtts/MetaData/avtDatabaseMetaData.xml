@@ -266,6 +266,16 @@
     </Function>
     <Function name="AddGhostZoneTypePresent" user="true" member="true">
     </Function>
+    <Function name="GetTotalVarCount" user="true" member="true">
+    </Function>
+    <Function name="GetSEGEnvVarName" user="true" member="true">
+    </Function>
+    <Function name="GetSEGWarningString" user="true" member="true">
+    </Function>
+    <Function name="IssueSEGWarningMessage" user="true" member="true">
+    </Function>
+    <Function name="ShouldDisableSEG" user="true" member="true">
+    </Function>
     <Include file="header" quoted="false">
       Expression.h
     </Include>

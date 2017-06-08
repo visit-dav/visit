@@ -43,9 +43,18 @@
 #ifndef BJHASH_H
 #define BJHASH_H
 
+#include <cstring>
+#include <string>
+
 namespace BJHash
 {
-    unsigned int Hash(const unsigned char *k, unsigned int length, unsigned int initval);
+    unsigned int Hash(unsigned char const *k, unsigned int length, unsigned int initval=0);
+    unsigned int Hash(void const *k, unsigned int length, unsigned int initval=0);
+
+    // Note: These two canNOT handle embedded nulls in the strings
+    unsigned int Hash(char const *k, unsigned int initval=0);
+    unsigned int Hash(std::string const &str, unsigned int initval=0);
+
     unsigned int Mask(int n);
 }
 
@@ -100,9 +109,10 @@ inline unsigned int BJHash::Mask(int n)
   c -= a; c -= b; c ^= (b>>15); \
 }
 
-inline unsigned int BJHash::Hash(register const unsigned char *k, register unsigned int length, register unsigned int initval)
+
+inline unsigned int BJHash::Hash(const unsigned char *k, unsigned int length, unsigned int initval)
 {
-   register unsigned int a,b,c,len;
+   unsigned int a,b,c,len;
 
    len = length;
    a = b = 0x9e3779b9;
@@ -137,6 +147,21 @@ inline unsigned int BJHash::Hash(register const unsigned char *k, register unsig
    bjhash_mix(a,b,c);
 
    return c;
+}
+
+inline unsigned int BJHash::Hash(char const *k, unsigned int initval)
+{
+    return BJHash::Hash((unsigned char const *) k, strlen(k), initval);
+}
+
+inline unsigned int BJHash::Hash(const std::string& str, unsigned int initval)
+{
+    return BJHash::Hash((unsigned char const *)str.c_str(), (unsigned int) str.size(), initval);
+}
+
+inline unsigned int BJHash::Hash(void const *k, unsigned int length, unsigned int initval)
+{
+    return BJHash::Hash((unsigned char const *) k, length, initval);
 }
 
 // Just to keep this macro from leaking out and polluting the global namespace
