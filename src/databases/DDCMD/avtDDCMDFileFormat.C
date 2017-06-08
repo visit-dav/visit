@@ -2963,6 +2963,10 @@ avtDDCMDFileFormat::ActivateTimestep(void)
 //    Add mesh units, variables on cgrid files, and guard against no species
 //    for cgrid files.
 //
+//    Laura Weber, Thu Jun  8 13:08:34 PDT 2017
+//    I changed the variable centering for particles from zone centering
+//    to node centering.
+//
 // ****************************************************************************
 
 void
@@ -3134,18 +3138,18 @@ avtDDCMDFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         //
         for (unsigned int i = 0; i < nVarsBlock; i++)
         {
-            AddScalarVarToMetaData(md, varNamesBlock[i], meshname, AVT_ZONECENT);
+            AddScalarVarToMetaData(md, varNamesBlock[i], meshname, AVT_NODECENT);
         }
 
         //
         // Set the variables incoded in pinfo.
         //
         if (nSpecies > 1)
-            AddScalarVarToMetaData(md, "species", meshname, AVT_ZONECENT);
+            AddScalarVarToMetaData(md, "species", meshname, AVT_NODECENT);
         if (nGroups > 1)
-            AddScalarVarToMetaData(md, "group", meshname, AVT_ZONECENT);
+            AddScalarVarToMetaData(md, "group", meshname, AVT_NODECENT);
         if (nTypes > 1)
-            AddScalarVarToMetaData(md, "type", meshname, AVT_ZONECENT);
+            AddScalarVarToMetaData(md, "type", meshname, AVT_NODECENT);
     }
 }
 
