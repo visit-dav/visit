@@ -1511,7 +1511,6 @@ VariableMenuPopulator::VariableList::~VariableList()
 bool
 VariableMenuPopulator::VariableList::operator == (const VariableMenuPopulator::VariableList &obj) const
 {
-#warning ARE WE ACCOUNTING FOR VAR VALIDITY IN HASH COMPUTE
     if (myHashVal != 0) return myHashVal == obj.myHashVal;
     bool equal = false;
     if(sorted == obj.sorted)
