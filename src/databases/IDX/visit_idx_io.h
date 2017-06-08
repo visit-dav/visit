@@ -15,10 +15,11 @@
 #ifndef _visit_idx_io_h
 #define _visit_idx_io_h
 
+#include "visit_idx_io_types.h"
+
 #include <string>
 #include <vector>
 #include <cassert>
-#include "visit_idx_io_types.h"
 
 class IDX_IO{
     

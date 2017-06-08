@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2015, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -102,20 +102,16 @@ class avtIDXFileFormat : public avtMTMDFileFormat
     //virtual vtkDataArray  *GetVar(int timestate, const char *varname);
     virtual vtkDataArray  *GetVectorVar(int, int, const char *);
 
-    virtual void GetCycles(std::vector<int> &);
-    virtual void GetTimes(std::vector<double> &);
+    virtual void           GetCycles(std::vector<int> &);
+    virtual void           GetTimes(std::vector<double> &);
     
     virtual void           FreeUpResources(void);
     virtual void           ActivateTimestep(int ts);
 
-    static bool data_query;
-    static int activations;
-    static vtkDataArray * datatoreturn;
-    static const char *curr_varname;
-  protected:
-
     virtual bool     HasInvariantMetaData(void) const { return false; };
     virtual bool     HasInvariantSIL(void) const { return false; };
+
+  protected:
 
     std::string                   dataset_filename;
     std::string                   metadata_filename;
@@ -126,7 +122,6 @@ class avtIDXFileFormat : public avtMTMDFileFormat
     bool use_extracells;
     bool use_raw;
     bool is_gidx;
-    bool parallel_boxes;
     int sfc_offset[3];
     std::vector<gidx_info> gidx_datasets;
     bool uintah_metadata;
@@ -140,80 +135,18 @@ class avtIDXFileFormat : public avtMTMDFileFormat
 
     LevelInfo level_info;
 
+    std::vector<double> timeIndex;
+    std::vector<int> logTimeIndex;
+
     vtkDataArray* queryToVtk(int timestate, int domain, const char *varname);
-    
+
     void createBoxes();
     void createTimeIndex();
     void computeDomainBoundaries(const char* meshname, int timestate);
     void SetUpDomainConnectivity(const char* meshname);
-    
+
     void loadBalance();
-    void pidx_decomposition(int nprocs);
-    void parseVector(vtkXMLDataElement *el, double* vec);
-    void parseVector(vtkXMLDataElement *el, int* vec);
-       
-    std::vector<double> timeIndex;
-    std::vector<int> logTimeIndex;
-    
-    inline int
-    int16_Reverse_Endian(short val, unsigned char *output)
-    {
-        unsigned char *input  = ((unsigned char *)&val);
-        
-        output[0] = input[1];
-        output[1] = input[0];
-        
-        return 2;
-    }
-    
-    template <typename Type>
-    Type* convertComponents(const unsigned char* src, int init_ncomponents, int final_ncomponents, long long totsamples);
-    
-    inline int
-    int32_Reverse_Endian(int val, unsigned char *outbuf)
-    {
-        unsigned char *data = ((unsigned char *)&val) + 3;
-        unsigned char *out = outbuf;
-        
-        *out++ = *data--;
-        *out++ = *data--;
-        *out++ = *data--;
-        *out = *data;
-        
-        return 4;
-    }
-    
-    inline int
-    float32_Reverse_Endian(float val, unsigned char *outbuf)
-    {
-        unsigned char *data = ((unsigned char *)&val) + 3;
-        unsigned char *out = outbuf;
-        
-        *out++ = *data--;
-        *out++ = *data--;
-        *out++ = *data--;
-        *out = *data;
-        
-        return 4;
-    }
-    
-    inline int
-    double64_Reverse_Endian(double val, unsigned char *outbuf)
-    {
-        unsigned char *data = ((unsigned char *)&val) + 7;
-        unsigned char *out = outbuf;
-        
-        *out++ = *data--;
-        *out++ = *data--;
-        *out++ = *data--;
-        *out++ = *data--;
-        *out++ = *data--;
-        *out++ = *data--;
-        *out++ = *data--;
-        *out = *data;
-        
-        return 8;
-    }
+
 
 };
 
