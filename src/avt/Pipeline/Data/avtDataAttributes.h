@@ -274,6 +274,9 @@ class     avtWebpage;
 //    Added logic to support presentGhostZoneTypes, which allows us to
 //    differentiate between ghost zones for boundaries & nesting.
 //
+//    Kathleen Biagas, Thu Jun  1 08:47:13 PDT 2017
+//    Added ResetAllExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataAttributes
@@ -588,6 +591,8 @@ class PIPELINE_API avtDataAttributes
                                { constructMultipleCurves = n; }
     bool                     GetConstructMultipleCurves() const
                                { return constructMultipleCurves; }
+
+    void                     ResetAllExtents();
 
   protected:
     int                      spatialDimension;

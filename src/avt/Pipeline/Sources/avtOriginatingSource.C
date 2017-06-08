@@ -251,10 +251,10 @@ avtOriginatingSource::Update(avtContract_p contract)
         GetOutput()->GetInfo().GetValidity().Reset();
     int t0 = visitTimer->StartTimer();
     avtDataRequest_p data = BalanceLoad(contract);
-    visitTimer->StopTimer(t0, "Calling BalanceLoad in avtTermSrc::Update");
+    visitTimer->StopTimer(t0, "Calling BalanceLoad in avtOrigSrc::Update");
     int t1 = visitTimer->StartTimer();
     bool rv = FetchData(data);
-    visitTimer->StopTimer(t1, "Calling avtTermSrc::FetchData");
+    visitTimer->StopTimer(t1, "Calling avtOrigSrc::FetchData");
 
     return rv;
 }
@@ -881,4 +881,23 @@ avtOriginatingSource::FetchArbitraryRefPtr(const char *name, int domain,
     return vrp;
 }
 
+
+// ****************************************************************************
+//  Method: avtOriginatingSource::ResetAllExtents
+//
+//  Purpose:
+//      This is the termination of a pipeline, nothing to do here.
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    June 5, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtOriginatingSource::ResetAllExtents()
+{
+    ; // nothing to do here
+}
 

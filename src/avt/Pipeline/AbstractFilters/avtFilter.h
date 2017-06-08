@@ -129,6 +129,9 @@ class     avtWebpage;
 //    filter facades can correctly affect the output data object info.
 //    Work partially supported by DOE Grant SC0007548.
 //
+//    Kathleen Biagas, Mon Jun  5 16:46:14 PDT 2017
+//    Added ResetAllExtents.
+//
 // ****************************************************************************
 
 class PIPELINE_API avtFilter
@@ -147,6 +150,7 @@ class PIPELINE_API avtFilter
                                             { return false; };
 
     virtual bool                        Update(avtContract_p);
+    virtual void                        ResetAllExtents(void);
 
     virtual avtOriginatingSource       *GetOriginatingSource(void);
     virtual avtQueryableSource         *GetQueryableSource(void);
