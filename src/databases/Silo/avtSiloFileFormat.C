@@ -1820,11 +1820,12 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                                                   correctFile,
                                                   realvar);
                         DBucdmesh *um = DBGetUcdmesh(correctFile, realvar.c_str());
-                        if (um == NULL && !ignoreMissingBlocks)
+                        if (um == NULL)
                         {
                             debug1 << "Invalidating mesh \"" << multimesh_names[i] 
                                    << "\" since its first non-empty block (" << mb_meshname
                                    << ") is invalid." << endl;
+                            valid_var = false;
                             break;
                         }
                         ndims = um->ndims;
@@ -1869,6 +1870,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                             debug1 << "Invalidating mesh \"" << multimesh_names[i] 
                                    << "\" since its first non-empty block (" << mb_meshname
                                    << ") is invalid." << endl;
+                            valid_var = false;
                             break;
                         }
                         ndims = pm->ndims;
@@ -1904,6 +1906,7 @@ avtSiloFileFormat::ReadMultimeshes(DBfile *dbfile,
                             debug1 << "Invalidating mesh \"" << multimesh_names[i] 
                                    << "\" since its first non-empty block (" << mb_meshname
                                    << ") is invalid." << endl;
+                            valid_var = false;
                             break;
                         }
                         if (silo_mt == DB_QUAD_RECT)
@@ -6981,12 +6984,16 @@ avtSiloFileFormat::GetAnnotIntNodelistsVar(int domain, string listsname)
         DBucdmesh  *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
         DBSetDataReadMask2(oldMask);
 
-        if (um == NULL && !ignoreMissingBlocks)
+        if (um == NULL)
         {
-            char msg[256];
-            SNPRINTF(msg, sizeof(msg), "DBGetUcdmesh() failed for \"%s\" for domain %d to "
-                "paint \"%s\" variable", meshName.c_str(), domain, listsname.c_str());
-            EXCEPTION1(InvalidVariableException, msg);
+            if (!ignoreMissingBlocks)
+            {
+                char msg[256];
+                SNPRINTF(msg, sizeof(msg), "DBGetUcdmesh() failed for \"%s\" for domain %d to "
+                    "paint \"%s\" variable", meshName.c_str(), domain, listsname.c_str());
+                EXCEPTION1(InvalidVariableException, msg);
+            }
+            return 0;
         }
 
         //
@@ -7085,7 +7092,7 @@ avtSiloFileFormat::GetMrgTreeNodelistsVar(int domain, string listsname)
     unsigned long long oldMask = DBSetDataReadMask2(0x0);
     DBucdmesh  *um = DBGetUcdmesh(domain_file, domain_mesh.c_str());
     DBSetDataReadMask2(oldMask);
-    if (!um && !ignoreMissingBlocks)
+    if (!um)
     {
         debug3 << "Unable to get mesh \"" << meshName << "\" for domain " << domain << endl;
         return nlvar;
@@ -7854,9 +7861,13 @@ avtSiloFileFormat::GetUcdVectorVar(DBfile *dbfile, const char *vname,
     // Get the Silo construct.
     //
     DBucdvar  *uv = DBGetUcdvar(dbfile, varname);
-    if (uv == NULL && !ignoreMissingBlocks)
+    if (uv == NULL)
     {
-        EXCEPTION1(InvalidVariableException, varname);
+        if (!ignoreMissingBlocks)
+        {
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+        return 0;
     }
 
     //
@@ -8964,9 +8975,13 @@ avtSiloFileFormat::GetUcdVar(DBfile *dbfile, const char *vname,
     // Get the Silo construct.
     //
     DBucdvar  *uv = DBGetUcdvar(dbfile, varname);
-    if (uv == NULL && !ignoreMissingBlocks)
+    if (uv == NULL)
     {
-        EXCEPTION1(InvalidVariableException, varname);
+        if (!ignoreMissingBlocks)
+        {
+            EXCEPTION1(InvalidVariableException, varname);
+        }
+        return 0;
     }
     else if (DBIsEmptyUcdvar(uv))
     {
@@ -9738,9 +9753,13 @@ avtSiloFileFormat::GetUnstructuredMesh(DBfile *dbfile, const char *mn,
     // Get the Silo construct.
     //
     DBucdmesh  *um = DBGetUcdmesh(dbfile, meshname);
-    if (um == NULL && !ignoreMissingBlocks)
+    if (um == NULL)
     {
-        EXCEPTION1(InvalidVariableException, meshname);
+        if (!ignoreMissingBlocks)
+        {
+            EXCEPTION1(InvalidVariableException, meshname);
+        }
+        return 0;
     }
     if (DBIsEmptyUcdmesh(um))
     {
@@ -14099,8 +14118,14 @@ avtSiloFileFormat::GetGlobalNodeIds(int dom, const char *mesh)
     DBSetDataReadMask2(DBUMGlobNodeNo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
     DBSetDataReadMask2(mask);
-    if (um == NULL && !ignoreMissingBlocks)
-        EXCEPTION1(InvalidVariableException, mesh);
+    if (um == NULL)
+    {
+        if (!ignoreMissingBlocks)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
+        return 0;
+    }
 
     vtkDataArray *rv = NULL;
     if (um->gnodeno != NULL)
@@ -14266,8 +14291,14 @@ avtSiloFileFormat::GetGlobalZoneIds(int dom, const char *mesh)
     DBSetDataReadMask2(DBUMZonelist|DBZonelistGlobZoneNo|DBZonelistInfo);
     DBucdmesh *um = DBGetUcdmesh(domain_file, directory_mesh.c_str());
     DBSetDataReadMask2(mask);
-    if (um == NULL && !ignoreMissingBlocks)
-        EXCEPTION1(InvalidVariableException, mesh);
+    if (um == NULL)
+    {
+        if (!ignoreMissingBlocks)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
+        return 0;
+    }
 
     vtkDataArray *rv = NULL;
     if (um->zones->gzoneno != NULL)
@@ -14813,8 +14844,15 @@ avtSiloFileFormat::CalcExternalFacelist(DBfile *dbfile, const char *mesh)
     DBucdmesh *um = DBGetUcdmesh(correctFile, realvar.c_str());
     DBSetDataReadMask2(mask);
     VisitMutexUnlock("avtSiloFileFormat::CalcExternalFacelist");
-    if (um == NULL && !ignoreMissingBlocks)
-        EXCEPTION1(InvalidVariableException, mesh);
+    if (um == NULL)
+    {
+        if (!ignoreMissingBlocks)
+        {
+            EXCEPTION1(InvalidVariableException, mesh);
+        }
+        return 0;
+    }
+
     DBfacelist *fl = um->faces;
 
     if (fl == NULL)
