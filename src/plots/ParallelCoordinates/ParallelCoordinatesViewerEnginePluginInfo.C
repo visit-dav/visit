@@ -241,7 +241,7 @@ ParallelCoordinatesViewerEnginePluginInfo::InitializePlotAtts(
     }
     else
     {
-        Expression const *exp =
+        Expression *exp =
             ParsingExprList::GetExpression(plot.GetVariableName());
         if (exp == NULL || exp->GetType() != Expression::ArrayMeshVar)
         {

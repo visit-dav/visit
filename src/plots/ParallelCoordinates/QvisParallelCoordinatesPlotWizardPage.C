@@ -194,6 +194,17 @@ QvisParallelCoordinatesPlotWizardPage::InitScalarVarNames(
         }
     }
 
+    for (int i = 0; i < md->GetNumCurves(); ++i)
+    {
+        const avtCurveMetaData &cmd = md->GetCurves(i);
+        if (!cmd.hideFromGUI && cmd.validVariable)
+        {
+            ename = QString(cmd.name.c_str());
+            usedVars[ename] = false;
+            scalarVarNames.append(ename);
+        }
+    }
+
     // Get the user-defined expressions.
     for(int i = 0; i < exprList->GetNumExpressions(); ++i)
     {

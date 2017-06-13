@@ -140,7 +140,7 @@ ParallelCoordinatesGUIPluginInfo::CreatePluginWizard(AttributeSubject *attr,
     const ExpressionList *expList)
 {
     bool showWizard  = true;
-    if (md->GetScalar(varName) == NULL)
+    if (md->GetScalar(varName) == NULL && md->GetCurve(varName) == NULL)
     {
         int expressionCount = expList->GetNumExpressions();
         int expNum;
