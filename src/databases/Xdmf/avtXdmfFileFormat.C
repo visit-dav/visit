@@ -842,59 +842,74 @@ int avtXdmfFileFormat::GetNTimesteps(void)
 //  Method: avtXdmfFileFormat::GetNumberOfCellComponents
 //
 //  Purpose:
-//      Determines the number of components contained in a cell centered XdmfAttribute.
-//      For example, a grid that contains 8 cells and an attribute that contains 16 values would
-//      have two components.  If the number of values is not a multiple of the number of cells,
-//      return 0.
+//      Determines the number of components contained in a cell centered
+//      XdmfAttribute. For example, a grid that contains 8 cells and an
+//      attribute that contains 16 values would have two components.  If the
+//      number of values is not a multiple of the number of cells, return 0.
 //
 //  Arguments:
 //      XdmfGrid * grid --- the grid containing the attribute and the topology.
-//      XdmfAttribute * attribute --- the cell centered attribute used to find the number of components
+//      XdmfAttribute * attribute --- the cell centered attribute used to find
+//      the number of components
 //
 //  Programmer: Kenneth Leiter
 //  Creation:   March 29, 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Jun 13 10:28:40 PDT 2017
+//    Parse 'numCellStrings' consistently.  It may still contain 'Dimensions'
+//    type values even if designated 'NumberOfElements'.
+//
 // ****************************************************************************
 
-long avtXdmfFileFormat::GetNumberOfCellComponents(XdmfGrid* grid, XdmfAttribute* attribute)
+long
+avtXdmfFileFormat::GetNumberOfCellComponents(XdmfGrid* grid,
+                                             XdmfAttribute* attribute)
 {
     long numValues = this->GetNumberOfValues(attribute);
+
     long numCells = 0;
 
-    const char * numCellsString = grid->GetTopology()->GetDOM()->GetAttribute(grid->GetTopology()->GetElement(),
-            "NumberOfElements");
+    const char * numCellsString = grid->GetTopology()->GetDOM()->GetAttribute(
+        grid->GetTopology()->GetElement(), "NumberOfElements");
+    if (numCellsString == NULL)
+    {
+        numCellsString = grid->GetTopology()->GetDOM()->GetAttribute(
+            grid->GetTopology()->GetElement(), "Dimensions");
 
-    if (numCellsString == NULL) {
-        numCellsString = grid->GetTopology()->GetDOM()->GetAttribute(grid->GetTopology()->GetElement(), "Dimensions");
-
-        if (numCellsString == NULL) {
+        if (numCellsString == NULL)
+        {
             return 0;
         }
-        numCells = 1;
+    }
+    numCells = 1;
 
-        std::stringstream stream(numCellsString);
-        std::istream_iterator<std::string> it(stream);
-        std::istream_iterator<std::string> end;
-        std::vector<std::string> tokens(it, end);
-        std::vector<std::string>::const_iterator iter = tokens.begin();
-        for (; iter != tokens.end(); ++iter) {
-            long val = atoi((*iter).c_str());
-            if (grid->GetTopology()->GetClass() == XDMF_STRUCTURED) {
-                if (val - 1 > 0) {
-                    numCells *= (val - 1);
-                }
+    std::stringstream stream(numCellsString);
+    std::istream_iterator<std::string> it(stream);
+    std::istream_iterator<std::string> end;
+    std::vector<std::string> tokens(it, end);
+    std::vector<std::string>::const_iterator iter = tokens.begin();
+    for (; iter != tokens.end(); ++iter)
+    {
+        long val = atoi((*iter).c_str());
+        if (grid->GetTopology()->GetClass() == XDMF_STRUCTURED)
+        {
+            if (val - 1 > 0)
+            {
+                numCells *= (val - 1);
             }
-            else {
-                if (val > 0) {
-                    numCells *= val;
-                }
+        }
+        else
+        {
+            if (val > 0)
+            {
+                numCells *= val;
             }
         }
     }
-    else {
-        numCells = atoi(numCellsString);
-    }
-    if (numCells == 0 || numValues % numCells != 0) {
+
+    if (numCells == 0 || numValues % numCells != 0)
+    {
         return 0;
     }
     return numValues / numCells;
