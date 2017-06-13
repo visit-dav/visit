@@ -177,7 +177,8 @@ QvisParallelCoordinatesPlotWindow::CreateWindowContents()
 
     // axes new/del/up/down buttons
     axisNewButton = new QvisVariableButton(false, true, true,
-                                           QvisVariableButton::Scalars,
+                                           QvisVariableButton::Scalars|
+                                           QvisVariableButton::Curves,
                                            axisGroup);
     axisNewButton->setText(tr("Add axis"));
     axisNewButton->setChangeTextOnVariableChange(false);

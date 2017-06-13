@@ -103,6 +103,6 @@ ParallelCoordinatesCommonPluginInfo::CopyAttributes(AttributeSubject *to,
 int
 ParallelCoordinatesCommonPluginInfo::GetVariableTypes() const
 {
-    return VAR_CATEGORY_SCALAR | VAR_CATEGORY_ARRAY;
+    return VAR_CATEGORY_SCALAR | VAR_CATEGORY_CURVE | VAR_CATEGORY_ARRAY;
 }
 
