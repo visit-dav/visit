@@ -137,8 +137,9 @@ private:
 
     void SortNameHash(void);
     std::vector<std::pair<unsigned int, size_t> > sortedNameHash;
-    bool sortedNameHashNeedsSorting;
+    mutable bool sortedNameHashNeedsSorting;
     mutable unsigned int myHashVal;
+    void resetMe(void) const; 
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
