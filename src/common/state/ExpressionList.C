@@ -59,10 +59,16 @@
 //   
 // ****************************************************************************
 
+void ExpressionList::resetMe(void) const
+{
+    // These members are mutable
+    myHashVal = 0;
+    sortedNameHashNeedsSorting = true; 
+}
+
 void ExpressionList::Init()
 {
-    sortedNameHashNeedsSorting = true;
-    myHashVal = 0;
+    resetMe();
     ExpressionList::SelectAll();
 }
 
@@ -83,6 +89,7 @@ void ExpressionList::Init()
 
 void ExpressionList::Copy(const ExpressionList &obj)
 {
+    resetMe();
     AttributeGroupVector::const_iterator pos;
 
     // *** Copy the expressions field ***
@@ -99,8 +106,6 @@ void ExpressionList::Copy(const ExpressionList &obj)
         Expression *newExpression = new Expression(*oldExpression);
         expressions.push_back(newExpression);
     }
-    sortedNameHashNeedsSorting = true;
-    myHashVal = 0;
 
     ExpressionList::SelectAll();
 }
@@ -405,6 +410,7 @@ ExpressionList::NewInstance(bool copy) const
 void
 ExpressionList::SelectAll()
 {
+    resetMe();
     Select(ID_expressions, (void *)&expressions);
 }
 
@@ -453,6 +459,7 @@ ExpressionList::CreateSubAttributeGroup(int)
 bool
 ExpressionList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
 {
+    resetMe();
     if(parentNode == 0)
         return false;
 
@@ -500,6 +507,7 @@ ExpressionList::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
 void
 ExpressionList::SetFromNode(DataNode *parentNode)
 {
+    resetMe();
     if(parentNode == 0)
         return;
 
@@ -551,6 +559,7 @@ ExpressionList::GetExpressions() const
 AttributeGroupVector &
 ExpressionList::GetExpressions()
 {
+    resetMe();
     return expressions;
 }
 
@@ -586,10 +595,9 @@ ExpressionList::SelectExpressions()
 void
 ExpressionList::AddExpressions(const Expression &obj)
 {
+    resetMe();
     Expression *newExpression = new Expression(obj);
     expressions.push_back(newExpression);
-    myHashVal = 0;
-    sortedNameHashNeedsSorting = true;
 
     // Indicate that things have changed by selecting it.
     Select(ID_expressions, (void *)&expressions);
@@ -613,14 +621,13 @@ ExpressionList::AddExpressions(const Expression &obj)
 void
 ExpressionList::ClearExpressions()
 {
+    resetMe();
     AttributeGroupVector::iterator pos;
 
     for(pos = expressions.begin(); pos != expressions.end(); ++pos)
         delete *pos;
     expressions.clear();
     sortedNameHash.clear();
-    sortedNameHashNeedsSorting = true;
-    myHashVal = 0;
 
     // Indicate that things have changed by selecting the list.
     Select(ID_expressions, (void *)&expressions);
@@ -644,23 +651,15 @@ ExpressionList::ClearExpressions()
 void
 ExpressionList::RemoveExpressions(int index)
 {
-    AttributeGroupVector::iterator pos = expressions.begin() + index;
-
-    if ((size_t) index < expressions.size() && pos != expressions.end())
+    resetMe();
+    if ((size_t) index < expressions.size())
     {
-        delete *pos;
-        expressions.erase(pos);
-        for (std::vector<std::pair<unsigned int,size_t> >::iterator i =
-             sortedNameHash.begin(); i != sortedNameHash.end(); ++i)
+        AttributeGroupVector::iterator pos = expressions.begin() + index;
+        if (pos != expressions.end())
         {
-            if (i->second == index)
-            {
-                sortedNameHash.erase(i);
-                break;
-            }
+            delete *pos;
+            expressions.erase(pos);
         }
-        myHashVal = 0;
-        sortedNameHashNeedsSorting = true;
     }
 
     // Indicate that things have changed by selecting the list.
@@ -706,8 +705,7 @@ ExpressionList::GetNumExpressions() const
 Expression &
 ExpressionList::GetExpressions(int i)
 {
-    myHashVal = 0;
-    sortedNameHashNeedsSorting = true;
+    resetMe();
     return *((Expression *)expressions[i]);
 }
 
@@ -750,8 +748,7 @@ ExpressionList::GetExpressions(int i) const
 Expression &
 ExpressionList::operator [] (int i)
 {
-    myHashVal = 0;
-    sortedNameHashNeedsSorting = true;
+    resetMe();
     return *((Expression *)expressions[i]);
 }
 
@@ -946,7 +943,7 @@ ExpressionList::operator[](const char *varname)
         Expression *e = (Expression *) expressions[eidx];
         if (e->GetName() == var)
         {
-            myHashVal = 0;
+            resetMe(); // only if we actually return something
             return e;
         }
     }
@@ -982,7 +979,7 @@ ExpressionList::operator[](const char *varname) const
          i != p.second; ++i)
     {
         int eidx = i->second;
-        Expression *e = (Expression *) expressions[eidx];
+        Expression const *e = (Expression const *) expressions[eidx];
         if (e->GetName() == var)
             return e;
     }
@@ -1028,7 +1025,7 @@ ExpressionList::GetHashVal() const
 {
     if (myHashVal != 0) return myHashVal;
 
-    for (int i = 0; i < GetNumExpressions(); i++)
+    for (size_t i = 0; i < expressions.size(); i++)
     {
         Expression *e = (Expression*)expressions[i];
 
