@@ -347,7 +347,8 @@ void
 avtTimeIteratorExpression::UpdateExpressions(int ts)
 {
     ExpressionList const *curExprList = ParsingExprList::Instance()->GetList();
-    ExpressionList addExprs;
+    ExpressionList exprsToAdd;
+    std::vector<std::pair<int, std::string> > exprsToRedefine;
 
     int nvars = (int)varnames.size();
     if (cmfeType == POS_CMFE)
@@ -376,19 +377,32 @@ avtTimeIteratorExpression::UpdateExpressions(int ts)
 
         std::string exp_name = GetInternalVarname(i);
         
-        bool alreadyInList = curExprList->operator[](exp_name.c_str());
-        if (!alreadyInList)
+        // These lookups on curExprList will be fast due to const
+        int eidx = curExprList->IndexOf(exp_name.c_str());
+        if (eidx == -1)
         {
             Expression exp;
             exp.SetName(exp_name);
             exp.SetDefinition(expr_defn);
             exp.SetType(Expression::Unknown);
-            addExprs.AddExpressions(exp);
+            exprsToAdd.AddExpressions(exp);
+        }
+        else
+        {
+            exprsToRedefine.push_back(std::pair<int, std::string>(eidx, expr_defn));
         }
     }
 
-    for (int i = 0; i < addExprs.GetNumExpressions(); i++)
-        ParsingExprList::Instance()->GetList()->AddExpressions(addExprs.GetExpressions(i));
+    // Handle the expressions to redefine
+    for (size_t i = 0; i < exprsToRedefine.size(); i++)
+    {
+        Expression &e = ParsingExprList::Instance()->GetList()->GetExpressions(exprsToRedefine[i].first);
+        e.SetDefinition(exprsToRedefine[i].second);
+    }
+
+    // Handle the expressions to add
+    for (int i = 0; i < exprsToAdd.GetNumExpressions(); i++)
+        ParsingExprList::Instance()->GetList()->AddExpressions(exprsToAdd.GetExpressions(i));
 }
 
 
