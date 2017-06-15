@@ -47,6 +47,9 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
 #   I added the MPI library paths to the LD_LIBRARY_PATH for borax, quartz,
 #   rzgenie and rztrona.
 #
+#   Eric Brugger, Thu Jun 15 11:44:37 PDT 2017
+#   I added the MPI library paths to the LD_LIBRARY_PATH for rztopaz.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -87,11 +90,12 @@ class LLNLLauncher(MainLauncher):
 
         #
         # Set the LD_LIBRARY_PATH to include the path to MPI on borax,
-        # quartz, rzgenie and rztrona.
+        # quartz, rzgenie, rztopaz and rztrona.
         #
         if self.sectorname() == "borax" or \
            self.sectorname() == "quartz" or \
            self.sectorname() == "rzgenie" or \
+           self.sectorname() == "rztopaz" or \
            self.sectorname() == "rztrona":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
