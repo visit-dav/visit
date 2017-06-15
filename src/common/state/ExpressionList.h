@@ -123,6 +123,7 @@ public:
     Expression *operator[](const char *);
     const stringVector GetAllVarNames(const std::string &dbN) const;
     unsigned int GetHashVal() const;
+    int IndexOf(const char *) const;
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -135,11 +136,12 @@ protected:
 private:
     AttributeGroupVector expressions;
 
-    void SortNameHash(void);
-    std::vector<std::pair<unsigned int, size_t> > sortedNameHash;
+    void SortNameHash(void) const;
+    void resetMe(void) const; 
+    // Accleration structures can change in const methods
+    mutable std::vector<std::pair<unsigned int, size_t> > sortedNameHash;
     mutable bool sortedNameHashNeedsSorting;
     mutable unsigned int myHashVal;
-    void resetMe(void) const; 
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
