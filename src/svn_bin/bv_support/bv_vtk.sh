@@ -447,7 +447,7 @@ diff -c CMake/vtkCompilerExtras.cmake.orig CMake/vtkCompilerExtras.cmake
       OUTPUT_VARIABLE _gcc_version_info
       ERROR_VARIABLE _gcc_version_info)
 
-!   string (REGEX MATCH "[3456]\\.[0-9]\\.[0-9]"
+!   string (REGEX MATCH "[34567]\\.[0-9]\\.[0-9]"
       _gcc_version "${_gcc_version_info}")
     if(NOT _gcc_version)
       string (REGEX REPLACE ".*\\(GCC\\).* ([34]\\.[0-9]) .*" "\\1.0"
@@ -479,7 +479,7 @@ diff -c CMake/GenerateExportHeader.cmake.orig CMake/GenerateExportHeader.cmake
       execute_process(COMMAND ${CMAKE_C_COMPILER} --version
         OUTPUT_VARIABLE _gcc_version_info
         ERROR_VARIABLE _gcc_version_info)
-!     string(REGEX MATCH "[3456]\\.[0-9]\\.[0-9]"
+!     string(REGEX MATCH "[34567]\\.[0-9]\\.[0-9]"
         _gcc_version "${_gcc_version_info}")
       # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
       # patch level, handle this here:
