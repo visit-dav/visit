@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <Object name="MachineProfile">
     <Field name="host" type="string">syrah.llnl.gov</Field>
-    <Field name="hostAliases" type="string">syrah#.llnl.gov syrah##.llnl.gov syrah###.llnl.gov syrah####.llnl.gov syrah# syrah## syrah### syrah####</Field>
+    <Field name="hostAliases" type="string">syrah#.llnl.gov syrah##.llnl.gov syrah###.llnl.gov syrah# syrah## syrah###</Field>
     <Field name="hostNickname" type="string">LLNL Syrah</Field>
     <Field name="directory" type="string">/usr/gapps/visit</Field>
     <Field name="clientHostDetermination" type="string">ParsedFromSSHCLIENT</Field>
