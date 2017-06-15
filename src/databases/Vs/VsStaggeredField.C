@@ -26,10 +26,13 @@ VsStaggeredField<TYPE>::VsStaggeredField(size_t subRes) {
   this->indexOrder = VsSchema::compMajorCKey;
   this->centering = VsSchema::nodalCenteringKey;
 
+#if 0
+  // There is no clear method under GCC 7. What good would it do here anyway?
   this->oriCellDims.clear();
   this->oriCellDimProd.clear();
   this->newCellDims.clear();
   this->newCellDimProd.clear();
+#endif
 }
 
 template<class TYPE>
@@ -136,7 +139,7 @@ VsStaggeredField<TYPE>::getNewNodalData(TYPE* dataPtr) const
     // iterate over subgrid
     for (size_t subBigIndx = 0; subBigIndx < this->numNeighbors; ++subBigIndx) {
       std::valarray<int> subCellInds = this->getSubCellIndexSet(subBigIndx);
-      std::valarray<int> newCellInds = oriCellInds*this->numNeighbors + subCellInds;
+      std::valarray<int> newCellInds = oriCellInds*static_cast<TYPE>(this->numNeighbors) + subCellInds;
       size_t newBigIndx = this->getNewBigIndex(newCellInds);
       std::valarray<TYPE> xi = std::valarray<TYPE>(subCellInds) / this->twoPowSubRes;
       this->setNewFieldVals(newBigIndx, xi, sigmaVals, neighVals, dataPtr);
@@ -147,7 +150,7 @@ VsStaggeredField<TYPE>::getNewNodalData(TYPE* dataPtr) const
 template <class TYPE>
 std::valarray<int>
 VsStaggeredField<TYPE>::getOriCellIndexSet(size_t bigIndex) const {
-  return (bigIndex / this->oriCellDimProd) % this->oriCellDims;
+  return (bigIndex / static_cast<TYPE>(this->oriCellDimProd)) % this->oriCellDims;
 }
 
 template <class TYPE>
