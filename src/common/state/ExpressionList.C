@@ -904,7 +904,7 @@ static bool compNameHashPairs(std::pair<unsigned int, size_t> const &a,
 }
 
 
-void ExpressionList::SortNameHash(void)
+void ExpressionList::SortNameHash(void) const // only mutables changed
 {
     sortedNameHash.resize(expressions.size());
     for (size_t i = 0; i < expressions.size(); i++)
@@ -955,36 +955,52 @@ Expression const *
 ExpressionList::operator[](const char *varname) const
 {   
     std::string var(varname);
+    unsigned int hashval = BJHash::Hash(var);
 
     if (expressions.size() != sortedNameHash.size() || sortedNameHashNeedsSorting)
-    {
-        // Can't use hash sort and we can't re-sort here 'cause
-        // we're in a const method. So, Do it the hard way
-        for (size_t i = 0; i < expressions.size(); i++)
-        {
-            Expression const *e = (Expression const *) expressions[i];
-            if (e->GetName() == var)
-                return e;
-        }
-        return 0;
-    }
+        SortNameHash();
 
-    unsigned int hashval = BJHash::Hash(var);
     // Binary search to match hash, then linear over entries with same hash val
-    std::pair< std::vector<std::pair<unsigned int, size_t> >::const_iterator,
-               std::vector<std::pair<unsigned int, size_t> >::const_iterator > p =
+    std::pair< std::vector<std::pair<unsigned int, size_t> >::iterator,
+               std::vector<std::pair<unsigned int, size_t> >::iterator > p =
     std::equal_range(sortedNameHash.begin(), sortedNameHash.end(),
         std::pair<unsigned int, size_t>(hashval, 0), compNameHashPairs); 
-    for (std::vector<std::pair<unsigned int, size_t> >::const_iterator i = p.first;
+    for (std::vector<std::pair<unsigned int, size_t> >::iterator i = p.first;
          i != p.second; ++i)
     {
         int eidx = i->second;
-        Expression const *e = (Expression const *) expressions[eidx];
+        Expression *e = (Expression *) expressions[eidx];
         if (e->GetName() == var)
             return e;
     }
 
     return 0;
+}
+
+int
+ExpressionList::IndexOf(char const *varname) const
+{
+    std::string var(varname);
+    unsigned int hashval = BJHash::Hash(var);
+
+    if (expressions.size() != sortedNameHash.size() || sortedNameHashNeedsSorting)
+        SortNameHash();
+
+    // Binary search to match hash, then linear over entries with same hash val
+    std::pair< std::vector<std::pair<unsigned int, size_t> >::iterator,
+               std::vector<std::pair<unsigned int, size_t> >::iterator > p =
+    std::equal_range(sortedNameHash.begin(), sortedNameHash.end(),
+        std::pair<unsigned int, size_t>(hashval, 0), compNameHashPairs); 
+    for (std::vector<std::pair<unsigned int, size_t> >::iterator i = p.first;
+         i != p.second; ++i)
+    {
+        int eidx = i->second;
+        Expression *e = (Expression *) expressions[eidx];
+        if (e->GetName() == var)
+            return eidx;
+    }
+
+    return -1;
 }
 
 // ****************************************************************************
