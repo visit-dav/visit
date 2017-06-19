@@ -122,7 +122,6 @@ LimitCycleCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md)
         const avtVectorMetaData *mmd = md->GetVector(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
             continue;
-
         {
             Expression e2;
             sprintf(name, "operators/LimitCycle/%s", mmd->name.c_str());

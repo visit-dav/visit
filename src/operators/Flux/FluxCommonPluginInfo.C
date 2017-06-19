@@ -122,7 +122,6 @@ FluxCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
         const avtMeshMetaData *mmd = md->GetMesh(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
             continue;
-
         {
             Expression e2;
             sprintf(name, "operators/Flux/%s", mmd->name.c_str());

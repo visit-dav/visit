@@ -122,7 +122,6 @@ LCSCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
         const avtVectorMetaData *mmd = md->GetVector(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
             continue;
-
         {
             Expression e2;
             sprintf(name, "operators/LCS/%s", mmd->name.c_str());
@@ -166,7 +165,7 @@ LCSCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) const
                 el->AddExpressions(e2);
             }
             {
-                if (e.GetFromOperator())
+                if (e.GetFromOperator() || e.GetAutoExpression())
                     continue; // weird ordering behavior otherwise
                 Expression e2;
                 sprintf(name, "operators/LCS/%s", e.GetName().c_str());

@@ -122,7 +122,6 @@ IntegralCurveCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *
         const avtVectorMetaData *mmd = md->GetVector(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
             continue;
-
         {
             Expression e2;
             sprintf(name, "operators/IntegralCurve/%s", mmd->name.c_str());

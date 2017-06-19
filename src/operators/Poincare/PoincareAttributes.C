@@ -4269,3 +4269,4 @@ PoincareAttributes::PoincareAttsRequireRecalculation(const PoincareAttributes &o
            showLines != obj.showLines ||
            showPoints != obj.showPoints;
 }
+
