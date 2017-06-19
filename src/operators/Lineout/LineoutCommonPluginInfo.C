@@ -127,7 +127,6 @@ LineoutCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) co
         const avtScalarMetaData *mmd = md->GetScalar(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
             continue;
-       
         {
             Expression e2;
             e2.SetName(opLineout + mmd->name);
