@@ -122,16 +122,17 @@ ChannelCommCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md
         const avtMeshMetaData *mmd = md->GetMesh(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
             continue;
-
-        Expression e2;
-        sprintf(name, "operators/ChannelComm/%s", mmd->name.c_str());
-        e2.SetName(name);
-        e2.SetType(Expression::ScalarMeshVar);
-        e2.SetFromOperator(true);
-        e2.SetOperatorName("ChannelComm");
-        sprintf(defn, "cell_constant(<%s>, 0.)", mmd->name.c_str());
-        e2.SetDefinition(defn);
-        el->AddExpressions(e2);
+        {
+            Expression e2;
+            sprintf(name, "operators/ChannelComm/%s", mmd->name.c_str());
+            e2.SetName(name);
+            e2.SetType(Expression::ScalarMeshVar);
+            e2.SetFromOperator(true);
+            e2.SetOperatorName("ChannelComm");
+            sprintf(defn, "cell_constant(<%s>, 0.)", mmd->name.c_str());
+            e2.SetDefinition(defn);
+            el->AddExpressions(e2);
+        }
     }
     return el;
 }

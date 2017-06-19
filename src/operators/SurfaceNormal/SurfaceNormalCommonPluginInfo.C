@@ -122,7 +122,6 @@ SurfaceNormalCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *
         const avtMeshMetaData *mmd = md->GetMesh(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
             continue;
-
         {
             Expression e2;
             sprintf(name, "operators/SurfaceNormal/%s", mmd->name.c_str());

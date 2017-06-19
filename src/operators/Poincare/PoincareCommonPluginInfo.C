@@ -122,7 +122,6 @@ PoincareCommonPluginInfo::GetCreatedExpressions(const avtDatabaseMetaData *md) c
         const avtVectorMetaData *mmd = md->GetVector(i);
         if (mmd->hideFromGUI || !mmd->validVariable)
             continue;
-
         {
             Expression e2;
             sprintf(name, "operators/Poincare/%s", mmd->name.c_str());
