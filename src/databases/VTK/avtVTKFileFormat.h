@@ -58,6 +58,12 @@ class DBOptionsAttributes;
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Oct 22 16:11:00 PST 2012
 //
+//  Modifications:
+//    Eric Brugger, Tue Jun 20 13:43:04 PDT 2017
+//    Modified the STSD databases so that they get the database metadata
+//    from the first non empty database for a collection of STSD databases
+//    that have been grouped into a multi data version using a visit file.
+//
 // ****************************************************************************
 
 class avtVTK_STSDFileFormat : public avtSTSDFileFormat
@@ -85,6 +91,8 @@ public:
 
     virtual void          *GetAuxiliaryData(const char *var, 
                               const char *type, void *, DestructorFunction &df);
+
+    virtual bool           IsEmpty();
 
 protected:
     avtVTKFileReader *reader;

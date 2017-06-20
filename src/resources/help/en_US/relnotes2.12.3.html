@@ -31,6 +31,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Silo plugin was adjusted to prevent the plugin from searching for the first non-empty sub-block on namescheme'd multi-block objects for which block-level empty objects were not written. As specified in previous release notes, such Silo files are considered <b>invalid</b>. Now, the Silo plugin will enforce this.</b>
   <li>Fixed an issue with the ignore-missing-blocks logic in the Silo plugin leading to potential mdserver crashes.</li>
   <li>Fixed bug in Xdmf reader that could calculate number of components in cell-centered attributes incorrectly in some instances.
+  <li>Fixed a bug where data from a collection of VTK files grouped together with a visit file could not be clipped when the files contained PolyData and the first file had no cells or points.</li>
 </ul>
 
 <a name="Enhancements"></a>

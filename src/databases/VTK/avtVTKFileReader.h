@@ -113,6 +113,11 @@ class DBOptionsAttributes;
 //    Kathleen Biagas, Thu Aug 13 17:25:03 PDT 2015
 //    Add support for groups and block names.
 //
+//    Eric Brugger, Tue Jun 20 13:44:39 PDT 2017
+//    Modified the STSD databases so that they get the database metadata
+//    from the first non empty database for a collection of STSD databases
+//    that have been grouped into a multi data version using a visit file.
+//
 // ****************************************************************************
 
 class avtVTKFileReader
@@ -130,6 +135,8 @@ class avtVTKFileReader
                                    const char *type, void *, DestructorFunction &df);
 
     void          PopulateDatabaseMetaData(avtDatabaseMetaData *);
+
+    bool          IsEmpty();
 
     void          FreeUpResources(void);
 
