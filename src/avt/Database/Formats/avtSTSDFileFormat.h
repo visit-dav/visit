@@ -99,6 +99,11 @@ class     avtIOInformation;
 //    Brad Whitlock, Thu Jun 19 10:50:25 PDT 2014
 //    Pass mesh name to PopulateIOInformation.
 //
+//    Eric Brugger, Tue Jun 20 13:26:05 PDT 2017
+//    Modified the STSD databases so that they get the database metadata
+//    from the first non empty database for a collection of STSD databases
+//    that have been grouped into a multi data version using a visit file.
+//
 // ****************************************************************************
 
 class DATABASE_API avtSTSDFileFormat : public avtFileFormat
@@ -124,6 +129,8 @@ class DATABASE_API avtSTSDFileFormat : public avtFileFormat
                                                  avtIOInformation& ioInfo) { return false; }
 
     virtual void           SetDatabaseMetaData(avtDatabaseMetaData *md);
+
+    virtual bool           IsEmpty() { return false; }
 
   protected:
     char                  *filename;

@@ -1099,7 +1099,6 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 }
 
 
-
 // ****************************************************************************
 //  Method: avtVTKFileReader::PopulateDatabaseMetaData
 //
@@ -1560,6 +1559,39 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Don't hang on to all the data we've read. We might not even need it
     // if we're in mdserver or of on non-zero mpi-rank.
     FreeUpResources();
+}
+
+
+// ****************************************************************************
+//  Method: avtVTKFileReader::IsEmpty
+//
+//  Purpose:
+//      Returns a flag indicating if the file contains an empty dataset.
+//
+//  Programmer: Eric Brugger
+//  Creation:   June 20, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtVTKFileReader::IsEmpty()
+{
+    if (!readInDataset)
+    {
+        ReadInFile();
+    }
+
+    vtkDataSet *dataset = pieceDatasets[0];
+
+    if (dataset->GetNumberOfCells() == 0 && dataset->GetNumberOfPoints() == 0)
+    {
+        FreeUpResources();
+        return true;
+    }
+
+    return false;
 }
 
 

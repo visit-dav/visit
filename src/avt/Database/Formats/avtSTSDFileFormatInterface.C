@@ -462,6 +462,12 @@ avtSTSDFileFormatInterface::GetFilename(int ts)
 //    Fixed problem where it would only set a cycle value in md when
 //    it was deemed accurate. Now, it will set cycles whenever it has a
 //    "good" one and accuracy flag independently
+//
+//    Eric Brugger, Tue Jun 20 13:31:09 PDT 2017
+//    Modified the STSD databases so that they get the database metadata
+//    from the first non empty database for a collection of STSD databases
+//    that have been grouped into a multi data version using a visit file.
+//
 // ****************************************************************************
 
 void
@@ -487,7 +493,11 @@ avtSTSDFileFormatInterface::SetDatabaseMetaData(avtDatabaseMetaData *md,
     // Let the format plugin fill in whatever in can in avtDatabaseMetaData,
     // first
     //
-    timesteps[timeState][0]->SetDatabaseMetaData(md);
+    int iBlock = 0;
+    while (iBlock < nBlocks && timesteps[timeState][iBlock]->IsEmpty())
+        iBlock++;
+    if (iBlock < nBlocks)
+        timesteps[timeState][iBlock]->SetDatabaseMetaData(md);
 
     //
     // We are going to try and guess at the naming convention.  If we ever get
