@@ -165,6 +165,12 @@ avtVTK_STSDFileFormat::GetAuxiliaryData(const char *var,
     return reader->GetAuxiliaryData(var, 0, type, d, df);
 }
 
+bool
+avtVTK_STSDFileFormat::IsEmpty()
+{
+    return reader->IsEmpty();
+}
+
 // ****************************************************************************
 // ****************************************************************************
 // ****************************************************************************
