@@ -89,6 +89,9 @@
 #   Eric Brugger, Fri Feb 17 12:16:04 PST 2017
 #   I changed the bank for all the LLNL systems from bdivp to wbronze.
 #
+#   Eric Brugger, Wed Jun 21 11:23:41 PDT 2017
+#   I replaced surface with cab.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -132,7 +135,7 @@ esac
 kickit=true
 ubuntu1104_64=false
 ubuntu1404_64=false
-surface=true
+cab=true
 quartz=true
 rztrona=true
 rzzeus=true
@@ -155,7 +158,7 @@ do
          kickit=false
          ubuntu1104_64=false
          ubuntu1404_64=false
-         surface=false
+         cab=false
          quartz=false
          rztrona=false
          rzzeus=false
@@ -187,12 +190,12 @@ do
          ubuntu1404_64=true
          shift
          ;;
-      -surface)
-         surface=false
+      -cab)
+         cab=false
          shift
          ;;
-      +surface)
-         surface=true
+      +cab)
+         cab=true
          shift
          ;;
       -quartz)
@@ -384,20 +387,20 @@ then
 fi
 
 #
-# Install on surface.
+# Install on cab.
 #
-rm -f surface
-cat <<EOF > surface
+rm -f cab
+cat <<EOF > cab
 #!/bin/sh
-./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-surface /usr/gapps/visit > installlog 2>&1
+./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-cab /usr/gapps/visit > installlog 2>&1
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64/lib/libGL.so.1
 chmod 775 /usr/gapps/visit/$ver+/linux-x86_64/lib/*.304.54
 chgrp visit /usr/gapps/visit/$ver+/linux-x86_64/lib/*.304.54
 rm -f resultlog
-echo "        install of visit on surface"         > resultlog 2>&1
-echo "       -----------------------------"        >> resultlog 2>&1
+echo "        install of visit on cab"             > resultlog 2>&1
+echo "       -------------------------"            >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
 df -k /usr/gapps/visit                             >> resultlog 2>&1
 echo ""                                            >> resultlog 2>&1
@@ -409,18 +412,18 @@ echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-x86_64/plugins
 echo ""                                            >> resultlog 2>&1
 echo "The database plugins:"                       >> resultlog 2>&1
 ls /usr/gapps/visit/$ver+/linux-x86_64/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-x86_64\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail -s "VisIt install ($ver): surface" $emailName < resultlog
+mail -s "VisIt install ($ver): cab" $emailName < resultlog
 EOF
 
-if [ $surface = true ]
+if [ $cab = true ]
 then
    if [ $test = no ]
    then
-      scp surface86:/usr/tmp/$user/surface/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-surface.tar.gz
-      scp visit$ver2.linux-surface.tar.gz surface:
-      scp visit-install surface:
-      scp surface surface:surface_install
-      ssh surface "chmod 750 surface_install;./surface_install"
+      scp cab689:/usr/tmp/$user/cab/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-cab.tar.gz
+      scp visit$ver2.linux-cab.tar.gz cab:
+      scp visit-install cab:
+      scp cab cab:cab_install
+      ssh cab "chmod 750 cab_install;./cab_install"
    fi
 fi
 
@@ -706,5 +709,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1104_64 ubuntu1404_64 surface quartz rztrona rzzeus rzuseq carver glory vulcan
+   rm -f kickit ubuntu1104_64 ubuntu1404_64 cab quartz rztrona rzzeus rzuseq carver glory vulcan
 fi
