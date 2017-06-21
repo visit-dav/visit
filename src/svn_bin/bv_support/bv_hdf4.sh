@@ -1329,7 +1329,10 @@ function build_hdf4
     #
     # Set  Fortran compiler
     #
-    if [[ "$FC_COMPILER" == "no" ]] ; then
+    # Disable Fortran on Darwin since it causes HDF4 builds to fail.
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        FORTRANARGS="--disable-fortran"
+    elif [[ "$FC_COMPILER" == "no" ]] ; then
         FORTRANARGS="--disable-fortran"
     else
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"

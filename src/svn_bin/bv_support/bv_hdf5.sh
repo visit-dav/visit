@@ -639,7 +639,10 @@ function build_hdf5
         cf_szip="--with-szlib=${sz_dir}"
     fi
 
-    if [[ "$FC_COMPILER" == "no" ]] ; then
+    # Disable Fortran on Darwin since it causes HDF5 builds to fail.
+    if [[ "$OPSYS" == "Darwin" ]]; then
+        cf_fortranargs=""
+    elif [[ "$FC_COMPILER" == "no" ]] ; then
         cf_fortranargs=""
     else
         cf_fortranargs="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
