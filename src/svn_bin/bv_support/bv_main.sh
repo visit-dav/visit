@@ -82,18 +82,19 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=10.11
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER%%.*} == 16 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.12
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         else
-            export MACOSX_DEPLOYMENT_TARGET=10.11
+            export MACOSX_DEPLOYMENT_TARGET=10.12
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         fi
 
-
         export C_COMPILER=${C_COMPILER:-"gcc"}
         export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-
-        # Disable Fortran on Darwin since it causes HDF5, H5Part, Silo, ADIOS builds to explode.
-        export FC_COMPILER=""
+        export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
