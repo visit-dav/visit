@@ -149,6 +149,9 @@
 #   Eric Brugger, Tue Feb  7 08:58:27 PST 2017
 #   I added rztrona.
 #
+#   Eric Brugger, Wed Jun 21 10:11:10 PDT 2017
+#   I replaced surface with cab.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -192,7 +195,7 @@ esac
 kickit=true
 ubuntu1104_64=false
 ubuntu1404_64=false
-surface=true
+cab=true
 quartz=true
 rztrona=true
 rzzeus=true
@@ -215,7 +218,7 @@ do
          kickit=false
          ubuntu1104_64=false
          ubuntu1404_64=false
-         surface=false
+         cab=false
          quartz=false
          rztrona=false
          rzzeus=false
@@ -249,12 +252,12 @@ do
          ubuntu1404_64=true
          shift
          ;;
-      -surface)
-         surface=false
+      -cab)
+         cab=false
          shift
          ;;
-      +surface)
-         surface=true
+      +cab)
+         cab=true
          shift
          ;;
       -quartz)
@@ -330,7 +333,7 @@ then
    echo "    kickit (B-Div, Linux, x86_64),"
    echo "    ubuntu1104_64(B-Div, Linux, x86_64),"
    echo "    ubuntu1404_64(B-Div, Linux, x86_64),"
-   echo "    surface (LC, Linux, x86_64),"
+   echo "    cab (LC, Linux, x86_64),"
    echo "    quartz (LC, Linux, x86_64),"
    echo "    rztrona (LC, Linux, x86_64),"
    echo "    rzzeus (LC, Linux, x86_64),"
@@ -549,33 +552,33 @@ then
 fi
 
 #
-# Build on surface.
+# Build on cab.
 #
-rm -f surface
-cat <<EOF > surface
+rm -f cab
+cat <<EOF > cab
 #!/bin/sh
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/surface ; then
-   mkdir /usr/tmp/$user/surface
+if test ! -d /usr/tmp/$user/cab ; then
+   mkdir /usr/tmp/$user/cab
 fi
-rm -rf /usr/tmp/$user/surface/visitbuild
-mkdir /usr/tmp/$user/surface/visitbuild
-mv surface_$dist.tar.gz /usr/tmp/$user/surface/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/surface/visitbuild
+rm -rf /usr/tmp/$user/cab/visitbuild
+mkdir /usr/tmp/$user/cab/visitbuild
+mv cab_$dist.tar.gz /usr/tmp/$user/cab/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/cab/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_CONFIG_SITE=config-site/surface86.cmake -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on surface"      > resultlog 2>&1
-echo "       ---------------------------"     >> resultlog 2>&1
+echo "        build of visit on cab"          > resultlog 2>&1
+echo "       -----------------------"         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -585,17 +588,17 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): surface" $emailName < resultlog
+mail  -s "VisIt build ($dist): cab" $emailName < resultlog
 EOF
 
-if [ $surface = true ]
+if [ $cab = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on surface"
-      scp surface surface:surface_buildit
-      scp $dist.tar.gz surface:surface_$dist.tar.gz
-      ssh surface86 "chmod 750 surface_buildit;./surface_buildit" &
+      echo "Building on cab"
+      scp cab cab:cab_buildit
+      scp $dist.tar.gz cab:cab_$dist.tar.gz
+      ssh cab689 "chmod 750 cab_buildit;./cab_buildit" &
    fi
 fi
 
@@ -1002,5 +1005,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1104_64 ubuntu1404_64 surface quartz rztrona rzzeus rzuseq carver glory vulcan
+   rm -f kickit ubuntu1104_64 ubuntu1404_64 cab quartz rztrona rzzeus rzuseq carver glory vulcan
 fi
