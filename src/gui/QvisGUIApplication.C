@@ -1000,6 +1000,105 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 }
 
 // ****************************************************************************
+// Method: QvisGUIApplication::DestructorHelper
+//
+// Purpose: A function to refactor destructor logic and control fast exit
+//     behavior
+//
+// Programmer: Mark C. Miller, Thu Jun 22 14:01:25 PDT 2017
+// ****************************************************************************
+
+void
+QvisGUIApplication::DestructorHelper(bool fastExit)
+{
+#if !defined(_WIN32) && !defined(__APPLE__)
+    if (!fastExit)
+    {
+        // Delete the windows.
+        for(WindowBaseMap::iterator pos = otherWindows.begin();
+            pos != otherWindows.end(); ++pos)
+        {
+            delete pos->second;
+        }
+        for(size_t i = 0; i < plotWindows.size(); ++i)
+        {
+            if(plotWindows[i] != 0)
+                delete plotWindows[i];
+        }
+        for(size_t i = 0; i < operatorWindows.size(); ++i)
+        {
+            if(operatorWindows[i] != 0)
+                delete operatorWindows[i];
+        }
+    }
+#endif
+
+    // Delete the file server
+    if (!fastExit)
+    {
+        delete fileServer;
+        fileServer = 0;
+    }
+
+    // Close down the viewer and delete it.
+    if(viewerIsAlive)
+    {
+        if(viewerInitiatedQuit)
+        {
+            debug1 << "Quitting because viewer told us to." << endl;
+        }
+        else
+        {
+            if(closeAllClients)
+            {
+                debug1 << "Telling viewer to close." << endl;
+                GetViewerProxy()->Close();
+            }
+            else
+            {
+                debug1 << "Telling viewer to detach this GUI." << endl;
+                GetViewerProxy()->Detach();
+            }
+        }
+    }
+
+    if (!fastExit)
+    {
+        delete GetViewerProxy();
+
+        // Delete the status subject that is used for the status bar.
+        delete statusSubject;
+        statusSubject = 0;
+
+        // Delete the socket notifiers.
+        delete fromViewer;
+
+        // Delete the application
+        if(!inheritedGUI)
+            delete mainApp;
+
+        // Delete the args for QT
+        for (size_t i = 0 ; i < (size_t)qt_argc ; i++)
+        {
+            if (qt_argv[i])
+                free(qt_argv[i]);
+        }
+        delete [] qt_argv;
+
+        // Delete the printer object.
+        delete printer;
+        delete printerObserver;
+
+        delete syncObserver;
+        delete systemSettings;
+        delete localSettings;
+    }
+
+    if (fastExit)
+        exit(0); // HOOKS_IGNORE
+}
+
+// ****************************************************************************
 // Method: QvisGUIApplication::~QvisGUIApplication
 //
 // Purpose: 
@@ -1040,78 +1139,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 
 QvisGUIApplication::~QvisGUIApplication()
 {
-#if !defined(_WIN32) && !defined(__APPLE__)
-    // Delete the windows.
-    for(WindowBaseMap::iterator pos = otherWindows.begin();
-        pos != otherWindows.end(); ++pos)
-    {
-        delete pos->second;
-    }
-    for(size_t i = 0; i < plotWindows.size(); ++i)
-    {
-        if(plotWindows[i] != 0)
-            delete plotWindows[i];
-    }
-    for(size_t i = 0; i < operatorWindows.size(); ++i)
-    {
-        if(operatorWindows[i] != 0)
-            delete operatorWindows[i];
-    }
-#endif
-
-    // Delete the file server
-    delete fileServer;
-    fileServer = 0;
-
-    // Close down the viewer and delete it.
-    if(viewerIsAlive)
-    {
-        if(viewerInitiatedQuit)
-        {
-            debug1 << "Quitting because viewer told us to." << endl;
-        }
-        else
-        {
-            if(closeAllClients)
-            {
-                debug1 << "Telling viewer to close." << endl;
-                GetViewerProxy()->Close();
-            }
-            else
-            {
-                debug1 << "Telling viewer to detach this GUI." << endl;
-                GetViewerProxy()->Detach();
-            }
-        }
-    }
-    delete GetViewerProxy();
-
-    // Delete the status subject that is used for the status bar.
-    delete statusSubject;
-    statusSubject = 0;
-
-    // Delete the socket notifiers.
-    delete fromViewer;
-
-    // Delete the application
-    if(!inheritedGUI)
-        delete mainApp;
-
-    // Delete the args for QT
-    for (size_t i = 0 ; i < (size_t)qt_argc ; i++)
-    {
-        if (qt_argv[i])
-            free(qt_argv[i]);
-    }
-    delete [] qt_argv;
-
-    // Delete the printer object.
-    delete printer;
-    delete printerObserver;
-
-    delete syncObserver;
-    delete systemSettings;
-    delete localSettings;
+    DestructorHelper();
 }
 
 // ****************************************************************************
@@ -2123,7 +2151,8 @@ QvisGUIApplication::Quit()
 #ifdef DEBUG_MEMORY_LEAKS
     mainApp->quit();
 #else
-    exit(0); // HOOKS_IGNORE
+    bool const fastExit = true;
+    DestructorHelper(fastExit); 
 #endif
 }
 
