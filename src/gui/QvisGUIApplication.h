@@ -525,6 +525,8 @@ protected slots:
 
     void updateVisIt();
     void updateVisItCompleted(const QString &);
+private:
+    void DestructorHelper(bool fastExit = false);
 protected:
     QStringList                  windowNames;
     int                          completeInit;
