@@ -1179,6 +1179,10 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Kathleen Biagas, Thu Mar 20 14:58:49 PDT 2014
 //    Surround var with '<>' when used in expression. (Log and Skew scaling).
 //
+//    Kathleen Biagas, Fri Jun 23 08:29:29 PDT 2017
+//    Modify how expressions are setup, to prevent multiple expressions
+//    with the same name being added to the ExpressionList.
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1256,28 +1260,20 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     if (setupExpr)
     {
         ExpressionList *elist = ParsingExprList::Instance()->GetList();
-        Expression *e = NULL;
-        for (int i = 0 ; i < elist->GetNumExpressions() ; i++)
+        int eidx = elist->IndexOf(exprName.c_str());
+        if (eidx == -1)
         {
-            if (elist->GetExpressions(i).GetName() == exprName)
-            {
-                e = &(elist->GetExpressions(i));
-                break;
-            }
+            Expression e;
+            e.SetName(exprName.c_str());
+            e.SetDefinition(exprDef);
+            e.SetType(Expression::ScalarMeshVar);
+            elist->AddExpressions(e);
         }
-        bool shouldDelete = false;
-        if (e == NULL)
+        else
         {
-            e = new Expression();
-            shouldDelete = true;
+            Expression &e = elist->GetExpressions(eidx);
+            e.SetDefinition(exprDef);
         }
-
-        e->SetName(exprName.c_str());
-        e->SetDefinition(exprDef);
-        e->SetType(Expression::ScalarMeshVar);
-        elist->AddExpressions(*e);
-        if (shouldDelete)
-            delete e;
     }
 
     newcontract->NoStreaming();
