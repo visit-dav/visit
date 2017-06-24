@@ -977,204 +977,200 @@ function check_more_options
     return 0
 }
 
-        # *************************************************************************** #
-        #                          extract_parallel_ldflags                           #
-        # --------------------------------------------------------------------------- #
-        # VisIt's cmake config wants lib names stripped of "-l"                       #
-        # If PAR_LIBS is used to pass parallel LDFLAGS we need to separate the libs   #
-        # from the linker flags and strip the "-l" prefixes.                          #
-        # This function accomplishes this and creates two new  variables:             #
-        #   PAR_LINKER_FLAGS & PAR_LIBRARY_NAMES                                      #
-        # *************************************************************************** #
-        function process_parallel_ldflags
-        {
-            export PAR_LINKER_FLAGS=""
-            export PAR_LIBRARY_NAMES=""
+# *************************************************************************** #
+#                          extract_parallel_ldflags                           #
+# --------------------------------------------------------------------------- #
+# VisIt's cmake config wants lib names stripped of "-l"                       #
+# If PAR_LIBS is used to pass parallel LDFLAGS we need to separate the libs   #
+# from the linker flags and strip the "-l" prefixes.                          #
+# This function accomplishes this and creates two new  variables:             #
+#   PAR_LINKER_FLAGS & PAR_LIBRARY_NAMES                                      #
+# *************************************************************************** #
+function process_parallel_ldflags
+{
+    export PAR_LINKER_FLAGS=""
+    export PAR_LIBRARY_NAMES=""
 
-            for arg in $1; do
-                pos=`echo "$arg" | awk '{ printf "%d", index($1,"-l"); }'`
-                if [[ "$pos" != "0" ]] ; then
-                    # we have a lib, remove the "-l" prefix & add it to the running
-                    # list
-                    LIB_NAME=${arg#-l}
-                    export PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES$LIB_NAME "
-                else
-                    # we have a linker flag, add it to the running list.
-                    export PAR_LINKER_FLAGS="$PAR_LINKER_FLAGS$arg "
-                fi
-            done
+    for arg in $1; do
+        pos=`echo "$arg" | awk '{ printf "%d", index($1,"-l"); }'`
+        if [[ "$pos" != "0" ]] ; then
+            # we have a lib, remove the "-l" prefix & add it to the running
+            # list
+            LIB_NAME=${arg#-l}
+            export PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES$LIB_NAME "
+        else
+            # we have a linker flag, add it to the running list.
+            export PAR_LINKER_FLAGS="$PAR_LINKER_FLAGS$arg "
+        fi
+    done
+}
 
-        }
+# *************************************************************************** #
+#                         Function 2.1, check_parallel                        #
+# --------------------------------------------------------------------------- #
+# This function will check to make sure that parallel options have been setup #
+# if we're going to build a parallel version of VisIt.                        #
+# *************************************************************************** #
+function check_parallel
+{
+    rv=0
 
+    if [[ "$DO_MPICH" == "yes" && "$parallel" == "no" ]] ; then
+        parallel="yes"
+    fi
 
-        # *************************************************************************** #
-        #                         Function 2.1, check_parallel                        #
-        # --------------------------------------------------------------------------- #
-        # This function will check to make sure that parallel options have been setup #
-        # if we're going to build a parallel version of VisIt.                        #
-        # *************************************************************************** #
+    # if we are using PAR_LIBS, call helper to split this into:
+    # PAR_LIBRARY_NAMES & PAR_LINKER_FLAGS
+    process_parallel_ldflags "$PAR_LIBS"
 
-        function check_parallel
-        {
-            rv=0
+    #
+    # Parallelization
+    #
+    if [[ "$parallel" == "yes" ]] ; then
 
-            if [[ "$DO_MPICH" == "yes" && "$parallel" == "no" ]] ; then
-                parallel="yes"
+        #
+        # VisIt's cmake build can obtain all necessary MPI flags from
+        # a MPI compiler wrapper.
+        # Check if PAR_COMPILER is set & if so use that.
+        #
+        export VISIT_MPI_COMPILER=""
+        export VISIT_MPI_COMPILER_CXX=""
+        if [[ "$PAR_COMPILER" != "" ]] ; then
+            export VISIT_MPI_COMPILER="$PAR_COMPILER"
+            info \
+                "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+            if [[ "$PAR_COMPILER_CXX" != "" ]] ; then
+                export VISIT_MPI_COMPILER_CXX="$PAR_COMPILER_CXX"
+                info \
+                    "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
             fi
+            return 0
+        fi
 
-            # if we are using PAR_LIBS, call helper to split this into:
-            # PAR_LIBRARY_NAMES & PAR_LINKER_FLAGS
-            process_parallel_ldflags "$PAR_LIBS"
+        #
+        # VisIt's build_visit can obtain all necessary MPI flags from
+        # bv_mpich. If we are building mpich and the user
+        # did not set PAR_LIBS or PAR_INCLUDE we are done.
+        #
+        if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
 
-            #
-            # Parallelization
-            #
-            if [[ "$parallel" == "yes" ]] ; then
+            export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
+            export MPICH_COMPILER_CXX="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpic++"
+            export VISIT_MPI_COMPILER="$MPICH_COMPILER"
+            export VISIT_MPI_COMPILER_CXX="$MPICH_COMPILER_CXX"
+            export PAR_COMPILER="$MPICH_COMPILER"
+            export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
+            info  "Configuring parallel with mpich build: "
+            info  "  PAR_COMPILER: $MPICH_COMPILER " 
+            info  "  PAR_COMPILER_CXX: $MPICH_COMPILER_CXX"
+            return 0
+        fi
 
-                #
-                # VisIt's cmake build can obtain all necessary MPI flags from
-                # a MPI compiler wrapper.
-                # Check if PAR_COMPILER is set & if so use that.
-                #
-                export VISIT_MPI_COMPILER=""
-                export VISIT_MPI_COMPILER_CXX=""
-                if [[ "$PAR_COMPILER" != "" ]] ; then
-                    export VISIT_MPI_COMPILER="$PAR_COMPILER"
-                    info \
-                        "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
-                    if [[ "$PAR_COMPILER_CXX" != "" ]] ; then
-                        export VISIT_MPI_COMPILER_CXX="$PAR_COMPILER_CXX"
-			info \
-                            "Configuring with mpi c++ compiler wrapper: $VISIT_MPI_COMPILER_CXX"
-                    fi
-                    return 0
-                fi
+        #
+        # Check the environment that mpicc would set up as a first stab.
+        # Since VisIt currently only ever uses MPI's C interface, we need
+        # only the information to link to MPI's implementation of its C
+        # interface. So, although VisIt is largely a C++ code, it is fine
+        # and correct to utilize an MPI C compiler here.
+        #
+        MPICC_CPPFLAGS=""
+        MPICC_LDFLAGS=""
+        MPIWRAPPER=$(which mpicc)
+        if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
+            MPIWRAPPER=""
+        fi
+        if [[ "$MPIWRAPPER" == "" ]] ; then
+            if [[ "$CRAY_MPICH_DIR" != "" ]] ; then
+                warn "Unable to find mpicc..."
+            fi
+        fi
 
-                #
-                # VisIt's build_visit can obtain all necessary MPI flags from
-                # bv_mpich. If we are building mpich and the user
-                # did not set PAR_LIBS or PAR_INCLUDE we are done.
-                #
-                if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
+        #
+        # VisIt's cmake build can obtain all necessary MPI flags from
+        # a MPI compiler wrapper. If we have found one & the user
+        # did not set PAR_LIBS or PAR_INCLUDE we are done.
+        #
+        if [[ "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" != "" ]] ; then
+            export VISIT_MPI_COMPILER=$MPIWRAPPER
+            export PAR_COMPILER=$MPIWRAPPER
+            info \
+                "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
+            return 0
+        fi
 
-                    export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
-                    export MPICH_COMPILER_CXX="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpic++"
-                    export VISIT_MPI_COMPILER="$MPICH_COMPILER"
-                    export VISIT_MPI_COMPILER_CXX="$MPICH_COMPILER_CXX"
-                    export PAR_COMPILER="$MPICH_COMPILER"
-                    export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
-                    info  "Configuring parallel with mpich build: "
-                    info  "  PAR_COMPILER: $MPICH_COMPILER " 
-                    info  "  PAR_COMPILER_CXX: $MPICH_COMPILER_CXX"
-                    return 0
-                fi
+        #
+        # VisIt's build_visit can obtain all necessary MPI flags from
+        # bv_mpich. If we are building mpich and the user
+        # did not set PAR_LIBS or PAR_INCLUDE we are done.
+        #
+        if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
 
-                #
-                # Check the environment that mpicc would set up as a first stab.
-                # Since VisIt currently only ever uses MPI's C interface, we need
-                # only the information to link to MPI's implementation of its C
-                # interface. So, although VisIt is largely a C++ code, it is fine
-                # and correct to utilize an MPI C compiler here.
-                #
-                MPICC_CPPFLAGS=""
-                MPICC_LDFLAGS=""
-                MPIWRAPPER=$(which mpicc)
-                if [[ "${MPIWRAPPER#no }" != "${MPIWRAPPER}" ]] ; then
-                    MPIWRAPPER=""
-                fi
-                if [[ "$MPIWRAPPER" == "" ]] ; then
-                    warn "Unable to find mpicc..."
-                fi
+            export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
+            export VISIT_MPI_COMPILER="$MPICH_COMPILER"
+            export PAR_COMPILER="$MPICH_COMPILER"
+            info \
+                "Configuring with build mpich: $MPICH_COMPILER"
+            return 0
+        fi
 
-                #
-                # VisIt's cmake build can obtain all necessary MPI flags from
-                # a MPI compiler wrapper. If we have found one & the user
-                # did not set PAR_LIBS or PAR_INCLUDE we are done.
-                #
-                if [[ "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" != "" ]] ; then
-                    export VISIT_MPI_COMPILER=$MPIWRAPPER
-                    export PAR_COMPILER=$MPIWRAPPER
-                    info \
-                        "Configuring with mpi compiler wrapper: $VISIT_MPI_COMPILER"
-                    return 0
-                fi
+        #
+        # Try and use the Cray wrapper compiler to get MPI options.
+        #
+        if [[ "$CRAY_MPICH_DIR" != "" ]] ; then
+             # NOTE: I'm assuming we want the GNU programming environment here.
+             # The compiler used by PrgEnv-gnu might be a somewhat different version
+             # than the installed gcc if we have not previously loaded PrgEnv-gnu.
+             CCOUT=$(module unload PrgEnv-pgi ; module unload PrgEnv-intel; module load PrgEnv-gnu ; CC --cray-print-opts=all)
+             ingroup="no"
+             arg_rpath=""
+             for arg in $CCOUT ; 
+             do
+                 # NOTE: adding the -Wl,-Bstatic/-Wl,-Bdynamic around the group is
+                 # a workaround to linking with the "darshan" libraries that come
+                 # in via CCOUT on cori.nersc.gov
+                 if [[ "$arg" == "-Wl,--start-group" ]] ; then
+                     ingroup="yes"
+                     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+                         PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES $arg"
+                     else
+                         PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES -Wl,-Bstatic $arg"
+                     fi
+                 elif [[ "$arg" == "-Wl,--end-group" ]] ; then
+                     ingroup="no"
+                     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+                         PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES $arg"
+                     else
+                         PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES -Wl,-Bdynamic $arg"
+                     fi
+                 elif [[ "$ingroup" == "yes" ]] ; then
+                     PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES $arg"
+                 else
+                     A2=$(echo $arg | cut -c 1-2)
+                     A3=$(echo $arg | cut -c 1-3)
+                     if [[ "$A2" == "-I" ]] ; then
+                         PAR_INCLUDE="$PAR_INCLUDE $arg"
+                     elif [[ "$A2" == "-L" ]] ; then
+                         arg_rpath="$arg_rpath -Wl,-rpath,$(echo $arg | cut -c 3-)"
+                         PAR_LINKER_FLAGS="$PAR_LINKER_FLAGS $arg"
+                     elif [[ "$A3" == "-Wl" ]] ; then
+                         PAR_LINKER_FLAGS="$PAR_LINKER_FLAGS $arg"
+                     elif [[ "$A2" == "-l" ]] ; then
+                         PAR_LIBRARY_NAMES="$PAR_LIBRARY_NAMES $(echo $arg | cut -c 3-)"
+                     fi
+                 fi
+             done
+             if [[ "$DO_STATIC_BUILD" == "no" ]] ; then
+                 PAR_LINKER_FLAGS="$PAR_LINKER_FLAGS$arg_rpath"
+             fi
+        fi
 
-                #
-                # VisIt's build_visit can obtain all necessary MPI flags from
-                # bv_mpich. If we are building mpich and the user
-                # did not set PAR_LIBS or PAR_INCLUDE we are done.
-                #
-                if [[ "$DO_MPICH" == "yes" && "$PAR_INCLUDE" == "" && "$PAR_LIBS" == "" && "$MPIWRAPPER" == "" ]] ; then
-
-                    export MPICH_COMPILER="${VISITDIR}/mpich/$MPICH_VERSION/${VISITARCH}/bin/mpicc"
-                    export VISIT_MPI_COMPILER="$MPICH_COMPILER"
-                    export PAR_COMPILER="$MPICH_COMPILER"
-                    info \
-                        "Configuring with build mpich: $MPICH_COMPILER"
-                    return 0
-                fi
-
-                #
-                # If we have not found a MPI compiler wrapper. 
-                # Keep trying to discover mpi setttings.
-                #
-                if [[ "$PAR_CPPFLAGS" == "" ]] ; then
-                    warn \
-                        "We have no guesses as to where MPI might reside. Look for it..."
-                    if [[ -e /usr/include/mpi.h ]] ; then
-                        PAR_CPPFLAGS="-I/usr/include"
-                        PAR_LDFLAGS="-L/usr/lib -lmpi"
-                    fi
-                fi
-
-                if [[ "$GRAPHICAL" == "yes" ]] ; then
-                    # We have suggestions from the user or mpicc as to where mpi might
-                    # be located. See what the user thinks of the options.
-                    tryagain=1
-                    while [[ $tryagain == 1 ]]; do
-                        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-                             "The CPPFLAGS for MPI are:\n\n$PAR_CPPFLAGS\n\nDo these look right?" \
-                             15 $DLG_WIDTH 3>1& 1>&2 2>&3
-                        if [[ $? == 1 ]] ; then
-                            tryagain=1
-                            result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                                          --nocancel --inputbox \
-                                          "Enter CPPFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_CPPFLAGS" 3>&1 1>&2 2>&3) 
-                            PAR_CPPFLAGS="$result"
-                        else
-                            tryagain=0
-                        fi
-                    done
-
-                    PAR_INCLUDE=$PAR_CPPFLAGS
-
-                    # We have suggestions from the user or mpicc as to where mpi might
-                    # be located. See what the user thinks of the options.
-                    tryagain=1
-                    while [[ $tryagain == 1 ]]; do
-                        $DLG --backtitle "$DLG_BACKTITLE" --yesno \
-                             "The LDFLAGS for MPI are:\n\n$PAR_LDFLAGS\n\nDo these look right?" 15 $DLG_WIDTH 3>1& 1>&2 2>&3
-                        if [[ $? == 1 ]] ; then
-                            tryagain=1
-                            result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                                          --nocancel --inputbox \
-                                          "Enter LDFLAGS needed for MPI:" 0 $DLG_WIDTH_WIDE "$PAR_LDFLAGS"  3>&1 1>&2 2>&3) 
-                            PAR_LDFLAGS="$result"
-                        else
-                            tryagain=0
-                        fi
-                    done
-
-                    PAR_LIBS=$PAR_LDFLAGS
-                fi
-
-                # The script pretty much assumes that you *must* have some flags 
-                # and libs to do a parallel build.  If that is *not* true, 
-                # i.e. mpi.h is in your include path, then, congratulations, 
-                # you are working on a better configured system than I have 
-                # ever encountered.
-                if [[ "$PAR_INCLUDE" == "" || "$PAR_LIBRARY_NAMES" == "" || "$PAR_LINKER_FLAGS" == "" ]] ; then
-                    warn \
+        # The script pretty much assumes that you *must* have some flags 
+        # and libs to do a parallel build.  If that is *not* true, 
+        # i.e. mpi.h is in your include path, then, congratulations, 
+        # you are working on a better configured system than I have 
+        # ever encountered.
+        if [[ "$PAR_INCLUDE" == "" || "$PAR_LIBRARY_NAMES" == "" || "$PAR_LINKER_FLAGS" == "" ]] ; then
+            warn \
                         "To configure parallel VisIt you must satisfy one of the following conditions:
     The PAR_COMPILER env var provides a path to a mpi compiler wrapper (such as mpicc).
     A mpi compiler wrapper (such as mpicc) to exists in your path.
@@ -1182,70 +1178,70 @@ function check_more_options
 
  To build ICE-T the PAR_INCLUDE env var must provide the include path to your mpi headers.
     "
-                    rv=1
-                fi
+            rv=1
+        fi
 
-                if [[ $rv != 0 ]] ; then
-                    return 1
-                fi
-            fi
+        if [[ $rv != 0 ]] ; then
+            return 1
+        fi
+    fi
 
-            return 0
-        }
+    return 0
+}
 
-        # *************************************************************************** #
-        #                         Function 2.2, check_variables                       #
-        # --------------------------------------------------------------------------- #
-        # This function will display variables and optionally allow changing          #
-        # *************************************************************************** #
+# *************************************************************************** #
+#                         Function 2.2, check_variables                       #
+# --------------------------------------------------------------------------- #
+# This function will display variables and optionally allow changing          #
+# *************************************************************************** #
 
-        function check_variables_dialog
-        {
-            local var="$1"
-            local input="$2"
+function check_variables_dialog
+{
+    local var="$1"
+    local input="$2"
 
+    result=$($DLG --backtitle "$DLG_BACKTITLE" \
+                  --nocancel --inputbox \
+                  "Enter $var value:" 0 $DLG_WIDTH_WIDE "$input"  3>&1 1>&2 2>&3)
+    echo "$result"
+}
+
+function check_variables
+{
+
+    # Override variable settings dialog
+    #
+    if [[ "$verify" == "yes" ]] ; then
+        if [[ "$GRAPHICAL" == "yes" ]] ; then
             result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                          --nocancel --inputbox \
-                          "Enter $var value:" 0 $DLG_WIDTH_WIDE "$input"  3>&1 1>&2 2>&3)
-            echo "$result"
-        }
+                          --title "Variable settings" \
+                          --checklist \
+                          "These variables use these system dependent defaults, but can be overridden "\
+                          "through this interface or using environment variables.\n\n"\
+                          "OPSYS: the default value returned from 'uname -s'\n"\
+                          "ARCH: architecure info (Darwin, linux, aix, irix64, ...)\n"\
+                          "C_COMPILER and CXX_COMPILER: the C and C++ compiler, respectively\n"\
+                          "CFLAGS and CXXFLAGS: the flags to use for all compiles (e.g. -fPIC)\n"\
+                          "C_OPT_FLAGS and CXX_OPT_FLAGS: the optimization flags to use for C and C++\n"\
+                          "VISITARCH: unique architecture info, appended to library path installation\n"\
+                          "REVISION: checkout a cwspecific SVN revision using supplied argument\n\n"\
+                          "Select the variables you wish to modify:" 28 $DLG_WIDTH 8 \
+                          "OPSYS"            "$OPSYS"             "off" \
+                          "ARCH"             "$ARCH"              "off" \
+                          "C_COMPILER"       "$C_COMPILER"        "off" \
+                          "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
+                          "CFLAGS"           "$CFLAGS"       "off" \
+                          "CXXFLAGS"         "$CXXFLAGS"     "off" \
+                          "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
+                          "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
+                          "FC_COMPILER"      "$FC_COMPILER"       "off" \
+                          "FCFLAGS"          "$FCFLAGS"       "off" \
+                          "VISITARCH"        "$VISITARCHTMP"      "off" \
+                          "REVISION"         "$SVNREVISION"       "off"   3>&1 1>&2 2>&3) 
+            retval=$?
 
-        function check_variables
-        {
-
-            # Override variable settings dialog
-            #
-            if [[ "$verify" == "yes" ]] ; then
-                if [[ "$GRAPHICAL" == "yes" ]] ; then
-                    result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                                  --title "Variable settings" \
-                                  --checklist \
-                                  "These variables use these system dependent defaults, but can be overridden "\
-                                  "through this interface or using environment variables.\n\n"\
-                                  "OPSYS: the default value returned from 'uname -s'\n"\
-                                  "ARCH: architecure info (Darwin, linux, aix, irix64, ...)\n"\
-                                  "C_COMPILER and CXX_COMPILER: the C and C++ compiler, respectively\n"\
-                                  "CFLAGS and CXXFLAGS: the flags to use for all compiles (e.g. -fPIC)\n"\
-                                  "C_OPT_FLAGS and CXX_OPT_FLAGS: the optimization flags to use for C and C++\n"\
-                                  "VISITARCH: unique architecture info, appended to library path installation\n"\
-                                  "REVISION: checkout a cwspecific SVN revision using supplied argument\n\n"\
-                                  "Select the variables you wish to modify:" 28 $DLG_WIDTH 8 \
-                                  "OPSYS"            "$OPSYS"             "off" \
-                                  "ARCH"             "$ARCH"              "off" \
-                                  "C_COMPILER"       "$C_COMPILER"        "off" \
-                                  "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
-                                  "CFLAGS"           "$CFLAGS"       "off" \
-                                  "CXXFLAGS"         "$CXXFLAGS"     "off" \
-                                  "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
-                                  "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
-                                  "FC_COMPILER"      "$FC_COMPILER"       "off" \
-                                  "FCFLAGS"          "$FCFLAGS"       "off" \
-                                  "VISITARCH"        "$VISITARCHTMP"      "off" \
-                                  "REVISION"         "$SVNREVISION"       "off"   3>&1 1>&2 2>&3) 
-                    retval=$?
-
-                    # Remove the extra quoting, new dialog has --single-quoted
-                    choice="$(echo $result | sed 's/"//g' )"
+            # Remove the extra quoting, new dialog has --single-quoted
+            choice="$(echo $result | sed 's/"//g' )"
            tmp_var=0
            case $retval in
              0)
@@ -1299,7 +1295,7 @@ function check_more_options
 # *************************************************************************** #
 hostconf_library_success=""
 function hostconf_library
- {
+{
     local build_lib=$1
     local depends_on=""
 
@@ -1321,7 +1317,7 @@ function hostconf_library
     #build ..
     $"bv_${build_lib}_host_profile"
     hostconf_library_success="${hostconf_library_success} ${build_lib}"
- }
+}
 
 
 function build_hostconf
@@ -1392,6 +1388,17 @@ function build_hostconf
         fi
     fi
 
+    if [[ "$VISIT_INSTALL_PREFIX" != "" ]] ; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## VisIt install location." >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(CMAKE_INSTALL_PREFIX $VISIT_INSTALL_PREFIX TYPE FILEPATH)" >> $HOSTCONF
+    fi
+    if [[ "$VISIT_INSTALL_NETWORK" != "" ]] ; then
+        echo "VISIT_OPTION_DEFAULT(VISIT_INSTALL_PROFILES_TO_HOSTS \"$VISIT_INSTALL_NETWORK\" TYPE STRING)" >> $HOSTCONF
+    fi
+
     if [[ "${DO_JAVA}" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -1448,6 +1455,7 @@ function build_hostconf
             # or we just set the flags.
             echo "## (configured w/ user provided CXX (PAR_INCLUDE) & LDFLAGS (PAR_LIBS) flags)" \
              >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   \"$PAR_INCLUDE\" TYPE STRING)"     >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS \"$PAR_INCLUDE\" TYPE STRING)"     >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  \"$PAR_LINKER_FLAGS\" TYPE STRING)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS        $PAR_LIBRARY_NAMES TYPE STRING)" >> $HOSTCONF
@@ -1456,11 +1464,35 @@ function build_hostconf
 
     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
         echo >> $HOSTCONF
-    echo "##" >> $HOSTCONF
-    echo "## Static build" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Static build" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_STATIC ON TYPE BOOL)" >> $HOSTCONF
+    fi
+    if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Server components only" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_SERVER_COMPONENTS_ONLY ON TYPE BOOL)" >> $HOSTCONF
+    fi
+    if [[ "$DO_ENGINE_ONLY" == "yes" ]]; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## Engine components only" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_ENGINE_ONLY ON TYPE BOOL)" >> $HOSTCONF
+    fi
+    if [[ "$DO_XDB" == "yes" ]]; then
+        echo >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo "## XDB" >> $HOSTCONF
+        echo "##" >> $HOSTCONF
+        echo \
+        "VISIT_OPTION_DEFAULT(VISIT_ENABLE_XDB ON TYPE BOOL)" >> $HOSTCONF
     fi
 
     echo >> $HOSTCONF
@@ -1586,6 +1618,7 @@ function usage
     printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
     printf "%-15s %s [%s]\n" "-h" "Display this help message." "false"
     printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
+    printf "%-15s %s [%s]\n" "--install-network" "Install specific network config files." "${VISIT_INSTALL_NETWORK}"
     printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
     printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
     printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
