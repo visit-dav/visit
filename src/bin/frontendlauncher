@@ -60,12 +60,12 @@ fi
 # Come up with a list of versions, starting with current
 versions="current"
 for minor in 9 8 7 6 5 4 3 2 1 0; do
-    for patch in 3 2 1 0; do
+    for patch in 4 3 2 1 0; do
         versions="$versions 3.$minor.$patch"
     done
 done
-for minor in 10 9 8 7 6; do
-    for patch in 3 2 1 0; do
+for minor in 15 14 13 12 11 10 9 8 7 6; do
+    for patch in 4 3 2 1 0; do
         versions="$versions 2.$minor.$patch"
     done
 done
