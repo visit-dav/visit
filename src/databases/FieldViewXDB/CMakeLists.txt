@@ -123,8 +123,14 @@ IF(XDB_PLATFORM)
         # Set XDBLIB_LIB to the name of the installed XDB library so dependencies 
         # will be better for VXDB and the plugin.
         SET(XDBLIB_LIB   ${XDB_LIB_DEST}/${LIBPREFIX}${XDBLIB_NAME}${XDBLIB_EXT})
-        SET(VXDB_LIB_SER ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_SER_NAME}${XDBLIB_EXT})
-        SET(VXDB_LIB_PAR ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_PAR_NAME}${XDBLIB_EXT})
+        IF(VISIT_STATIC)
+            # For static linking, we want the whole path to the .a file
+            SET(VXDB_LIB_SER ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_SER_NAME}${XDBLIB_EXT})
+            SET(VXDB_LIB_PAR ${XDB_LIB_DEST}/${LIBPREFIX}${VXDB_LIB_PAR_NAME}${XDBLIB_EXT})
+        ELSE(VISIT_STATIC)
+            SET(VXDB_LIB_SER ${LIBPREFIX}${VXDB_LIB_SER_NAME}${XDBLIB_EXT})
+            SET(VXDB_LIB_PAR ${LIBPREFIX}${VXDB_LIB_PAR_NAME}${XDBLIB_EXT})
+        ENDIF(VISIT_STATIC)
     ENDIF(WIN32)
 
     # Build the FieldView XDB plugin.
