@@ -1461,12 +1461,17 @@ function run_build_visit()
     fi
 
     if [[ $VISITARCH == "" ]] ; then
-        export VISITARCH=${ARCH}_${C_COMPILER}
-        if [[ "$CXX_COMPILER" == "g++" ]] ; then
-            VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
+        C_COMPILER_BASENAME=$(basename ${C_COMPILER})
+        CXX_COMPILER_BASENAME=$(basename ${CXX_COMPILER})
+        export VISITARCH=${ARCH}_${C_COMPILER_BASENAME}
+        if [[ "$CXX_COMPILER_BASENAME" == "g++" ]] ; then
+            VERSION=$(${CXX_COMPILER} -v 2>&1 | grep "gcc version" | cut -d' ' -f3 | cut -d'.' -f1-2)
             if [[ ${#VERSION} == 3 ]] ; then
                 VISITARCH=${VISITARCH}-${VERSION}
             fi
+        elif [[ "$CXX_COMPILER_BASENAME" == "icpc" ]] ; then
+            VERSION=$(${CXX_COMPILER} -v 2>&1 | cut -d' ' -f3)
+            VISITARCH=${VISITARCH}-${VERSION}
         fi
     fi
 
