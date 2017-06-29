@@ -142,8 +142,11 @@ class avtExpressionEvaluatorFilter;
 //    Fix a couple of warnings
 //
 //    Matt Larsen, Fri Jul 8 08:15:00 PDT 2016
-//    Added method ExtractZonePickHighlights to support 
+//    Added method ExtractZonePickHighlights to support
 //    zone highlights
+//
+//    Kathleen Biagas, Wed Jun 28 15:35:59 PDT 2017
+//    Added invTransform data member.
 //
 // ****************************************************************************
 
@@ -181,6 +184,7 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
     int                             blockOrigin;
     avtGhostType                    ghostType;
     const avtMatrix                *transform;
+    const avtMatrix                *invTransform;
     bool                            singleDomain;
     bool                            needTransform;
     bool                            skippedLocate;
@@ -216,8 +220,8 @@ class QUERY_API avtPickQuery : public avtDatasetQuery
 
     void                            ExtractZonePickHighlights(const int &,
                                                               vtkDataSet *,
-                                                              const int &);                   
-    
+                                                              const int &);
+
     PickAttributes                  pickAtts;
     avtExpressionEvaluatorFilter   *eef;
     avtQueryableSource             *src;
