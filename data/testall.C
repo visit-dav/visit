@@ -72,9 +72,11 @@ static void     fill_rect3d_mat(float x[], float y[], float z[], int matlist[],
 static void     build_rect2d(DBfile * dbfile, int size);
 static void     build_curv2d(DBfile * dbfile, int size, int major_order);
 static void     build_ucd2d(DBfile * dbfile, int size);
+static void     build_ucd2d_lines(DBfile * dbfile, int size);
 static void     build_rect3d(DBfile * dbfile, int size);
 static void     build_curv3d(DBfile * dbfile, int size, int major_order);
 static void     build_ucd3d(DBfile * dbfile, int size);
+static void     build_ucd3d_lines(DBfile * dbfile, int size);
 static void     build_poly3d(DBfile * dbfile, int size);
 static void     MakeFiles(int size, int type);
 
@@ -1293,6 +1295,184 @@ build_ucd2d(DBfile * dbfile, int size)
 }
 
 static void
+build_ucd2d_lines(DBfile * dbfile, int size)
+{
+    int             cycle;
+    float           time;
+    double          dtime;
+    int             tdim;
+    float          *coords[2];
+    int             dims[1];
+    float           x[13], y[13];
+    float           d[13],u[13],v[13];
+    float           p[16];
+    int             nzones, nnodes;
+    int             zonelist[32];
+    int             zonelist_length;
+    int             shapetype[1];
+    int             shapesize[1];
+    int             shapecount[1];
+    DBoptlist      *optlist = NULL;
+
+    int             i;
+
+    //
+    // Create the mesh.
+    //
+    coords[0] = x;
+    coords[1] = y;
+
+    nnodes = 13;
+
+    x[0] = 0.0;     y[0] = 2.0;
+    x[1] = 2.0;     y[1] = 0.0;
+    x[2] = 1.5;     y[2] = 1.5;
+    x[3] = 2.5;     y[3] = 1.5;
+    x[4] = 4.0;     y[4] = 2.0;
+    x[5] = 2.0;     y[5] = 1.5;
+    x[6] = 1.5;     y[6] = 2.0;
+    x[7] = 2.0;     y[7] = 2.0;
+    x[8] = 2.5;     y[8] = 2.0;
+    x[9] = 1.5;     y[9] = 2.5;
+    x[10] = 2.0;     y[10] = 2.5;
+    x[11] = 2.5;     y[11] = 2.5;
+    x[12] = 2.0;     y[12] = 4.0;
+
+    i = 0;
+    // line 0
+    zonelist[i++] = 0;
+    zonelist[i++] = 1;
+    // line 1
+    zonelist[i++] = 1;
+    zonelist[i++] = 2;
+    // line 2
+    zonelist[i++] = 2;
+    zonelist[i++] = 0;
+    // line 3
+    zonelist[i++] = 1;
+    zonelist[i++] = 4;
+    // line 4
+    zonelist[i++] = 4;
+    zonelist[i++] = 3;
+    // line 5
+    zonelist[i++] = 3;
+    zonelist[i++] = 1;
+    // line 6
+    zonelist[i++] = 0;
+    zonelist[i++] = 9;
+    // line 7
+    zonelist[i++] = 9;
+    zonelist[i++] = 12;
+    // line 8
+    zonelist[i++] = 12;
+    zonelist[i++] = 0;
+    // line 9
+    zonelist[i++] = 12;
+    zonelist[i++] = 11;
+    // line 10
+    zonelist[i++] = 11;
+    zonelist[i++] = 4;
+    // line 11
+    zonelist[i++] = 4;
+    zonelist[i++] = 12;
+    // line 12 
+    zonelist[i++] = 9;
+    zonelist[i++] = 11;
+    // line 13 
+    zonelist[i++] = 11;
+    zonelist[i++] = 3;
+    // line 14 
+    zonelist[i++] = 3;
+    zonelist[i++] = 2;
+    // line 15
+    zonelist[i++] = 2;
+    zonelist[i++] = 9;
+
+    zonelist_length = i;
+
+
+    nzones        = 16;
+    shapecount[0] = 16;
+    shapesize[0]  = 2;
+    shapetype[0]  = 10;
+
+    //
+    // Set up data variables
+    //
+    for (i = 0; i < nnodes; i++)
+    {
+        double xl,yl;
+
+        xl= x[i] - 2.0;
+        yl= y[i] - 2.0;
+
+        d[i] = sqrt(xl*xl+yl*yl);
+        u[i] = xl;
+        v[i] = yl;
+    }
+    for (i = 0; i < nzones; i++)
+    {
+        int index;
+        double xavg, yavg;
+
+        index = (i*shapesize[0]);
+        xavg = (x[zonelist[index]] + x[zonelist[index+1]])/2;
+        yavg = (y[zonelist[index]] + y[zonelist[index+1]])/2;
+
+        xavg -= 2.0;
+        yavg -= 2.0;
+
+        p[i] = sqrt(xavg*xavg+yavg*yavg);
+    }
+
+
+    //
+    // Write out the variables.
+    //
+    cycle = 48;
+    time = 4.8;
+    dtime = 4.8;
+    tdim = 1;
+
+    char *info = "mesh ucd_linesmesh2d;pseudocolor d";
+    i = strlen(info) + 1;
+    DBWrite(dbfile, "_meshtvinfo", info, &i, 1, DB_CHAR);
+
+    optlist = DBMakeOptlist(4);
+    DBAddOption(optlist, DBOPT_CYCLE, &cycle);
+    DBAddOption(optlist, DBOPT_TIME, &time);
+    DBAddOption(optlist, DBOPT_DTIME, &dtime);
+    DBAddOption(optlist, DBOPT_TOPO_DIM, &tdim);
+
+    DBPutZonelist2(dbfile, "ucd2d_zonelist", nzones, 2, zonelist,
+                  zonelist_length, 0, 0, 0, 
+                  shapetype, shapesize, shapecount, 1,NULL);
+
+    DBPutUcdmesh(dbfile, "ucd_linesmesh2d", 2, NULL, coords, nnodes, nzones,
+                 "ucd2d_zonelist", NULL, DB_FLOAT, optlist);
+
+    dims[0] = nzones;
+
+    DBPutUcdvar1(dbfile, "d", "ucd_linesmesh2d", d, nnodes, NULL, 0, DB_FLOAT,
+                 DB_NODECENT, NULL);
+
+    DBPutUcdvar1(dbfile, "u", "ucd_linesmesh2d", u, nnodes, NULL, 0, DB_FLOAT,
+                 DB_NODECENT, NULL);
+
+    DBPutUcdvar1(dbfile, "v", "ucd_linesmesh2d", v, nnodes, NULL, 0, DB_FLOAT,
+                 DB_NODECENT, NULL);
+
+    DBPutUcdvar1(dbfile, "p", "ucd_linesmesh2d", p, nzones, NULL, 0, DB_FLOAT,
+                 DB_ZONECENT, NULL);
+
+    //
+    // Free the temporary storage.
+    //
+    DBFreeOptlist(optlist);
+}
+
+
+static void
 build_rect3d(DBfile * dbfile, int size)
 {
     int            cycle;
@@ -2455,6 +2635,160 @@ build_ucd3d(DBfile * dbfile, int size)
 }
 
 static void
+build_ucd3d_lines(DBfile * dbfile, int size)
+{
+    int             cycle;
+    float           time;
+    double          dtime;
+    int             tdim;
+    float          *coords[3];
+    int             dims[1];
+    float           x[13], y[13], z[13];
+    float           d[13];
+    float           p[16];
+    int             nzones, nnodes;
+    int             zonelist[32];
+    int             zonelist_length;
+    int             shapetype[1];
+    int             shapesize[1];
+    int             shapecount[1];
+    DBoptlist      *optlist = NULL;
+
+    int             i;
+
+    //
+    // Create the mesh.
+    //
+    coords[0] = x;
+    coords[1] = y;
+    coords[2] = z;
+
+    nnodes = 13;
+
+    x[0] = 0.0;     y[0] = 2.0;      z[0] = 0;
+    x[1] = 2.0;     y[1] = 0.0;      z[1] = 0;
+    x[2] = 1.5;     y[2] = 1.5;      z[2] = 4;
+    x[3] = 2.5;     y[3] = 1.5;      z[3] = 4;
+    x[4] = 4.0;     y[4] = 2.0;      z[4] = 0;
+    x[5] = 2.0;     y[5] = 1.5;      z[5] = 2;
+    x[6] = 1.5;     y[6] = 2.0;      z[6] = 2;
+    x[7] = 2.0;     y[7] = 2.0;      z[7] = 1;
+    x[8] = 2.5;     y[8] = 2.0;      z[8] = 2;
+    x[9] = 1.5;     y[9] = 2.5;      z[9] = 4;
+    x[10] = 2.0;     y[10] = 2.5;    z[10] = 2;
+    x[11] = 2.5;     y[11] = 2.5;    z[11] = 4;
+    x[12] = 2.0;     y[12] = 4.0;    z[12] = 0;
+
+    i = 0;
+    // line 0
+    zonelist[i++] = 0;
+    zonelist[i++] = 1;
+    // line 1
+    zonelist[i++] = 1;
+    zonelist[i++] = 2;
+    // line 2
+    zonelist[i++] = 2;
+    zonelist[i++] = 0;
+    // line 3
+    zonelist[i++] = 1;
+    zonelist[i++] = 4;
+    // line 4
+    zonelist[i++] = 4;
+    zonelist[i++] = 3;
+    // line 5
+    zonelist[i++] = 3;
+    zonelist[i++] = 1;
+    // line 6
+    zonelist[i++] = 0;
+    zonelist[i++] = 9;
+    // line 7
+    zonelist[i++] = 9;
+    zonelist[i++] = 12;
+    // line 8
+    zonelist[i++] = 12;
+    zonelist[i++] = 0;
+    // line 9
+    zonelist[i++] = 12;
+    zonelist[i++] = 11;
+    // line 10
+    zonelist[i++] = 11;
+    zonelist[i++] = 4;
+    // line 11
+    zonelist[i++] = 4;
+    zonelist[i++] = 12;
+    // line 12 
+    zonelist[i++] = 9;
+    zonelist[i++] = 11;
+    // line 13 
+    zonelist[i++] = 11;
+    zonelist[i++] = 3;
+    // line 14 
+    zonelist[i++] = 3;
+    zonelist[i++] = 2;
+    // line 15
+    zonelist[i++] = 2;
+    zonelist[i++] = 9;
+
+    zonelist_length = i;
+
+    nzones        = 16;
+    shapecount[0] = 16;
+    shapesize[0]  = 2;
+    shapetype[0]  = 10;
+
+    //
+    // Set up data variables
+    //
+    for (i = 0; i < nnodes; i++)
+    {
+        d[i] = i;
+    }
+    for (i = 0; i < nzones; i++)
+    {
+        p[i] = i; 
+    }
+
+
+    //
+    // Write out the variables.
+    //
+    cycle = 48;
+    time = 4.8;
+    dtime = 4.8;
+    tdim = 1;
+
+    char *info = "mesh ucd_linesmesh3d;pseudocolor d";
+    i = strlen(info) + 1;
+    DBWrite(dbfile, "_meshtvinfo", info, &i, 1, DB_CHAR);
+
+    optlist = DBMakeOptlist(4);
+    DBAddOption(optlist, DBOPT_CYCLE, &cycle);
+    DBAddOption(optlist, DBOPT_TIME, &time);
+    DBAddOption(optlist, DBOPT_DTIME, &dtime);
+    DBAddOption(optlist, DBOPT_TOPO_DIM, &tdim);
+
+    DBPutZonelist2(dbfile, "ucd3d_zonelist", nzones, 3, zonelist,
+                  zonelist_length, 0, 0, 0, 
+                  shapetype, shapesize, shapecount, 1,NULL);
+
+    DBPutUcdmesh(dbfile, "ucd_linesmesh3d", 3, NULL, coords, nnodes, nzones,
+                 "ucd3d_zonelist", NULL, DB_FLOAT, optlist);
+
+
+    DBPutUcdvar1(dbfile, "n", "ucd_linesmesh3d", d, nnodes, NULL, 0, DB_FLOAT,
+                 DB_NODECENT, NULL);
+
+    DBPutUcdvar1(dbfile, "z", "ucd_linesmesh3d", p, nzones, NULL, 0, DB_FLOAT,
+                 DB_ZONECENT, NULL);
+
+    //
+    // Free the temporary storage.
+    //
+    DBFreeOptlist(optlist);
+}
+
+
+static void
 build_poly3d(DBfile *dbfile, int size)
 {
     int            cycle;
@@ -3056,6 +3390,15 @@ MakeFiles(int size, int type)
     DBClose(dbfile);
 
     //
+    // Create the 2D ucd lines data file.
+    //
+    sprintf(filename, "ucd_lines2d.silo");
+    printf("   %s\n", filename);
+    dbfile = DBCreate(filename, 0, DB_LOCAL, "2D ucd lines test file", type);
+    build_ucd2d_lines(dbfile, size);
+    DBClose(dbfile);
+
+    //
     // Create the 3D rectilinear data file.
     //
     sprintf(filename, "rect3d.silo");
@@ -3090,6 +3433,16 @@ MakeFiles(int size, int type)
     dbfile = DBCreate(filename, 0, DB_LOCAL, "3D ucd test file", type);
     build_ucd3d(dbfile, size);
     DBClose(dbfile);
+
+    //
+    // Create the 3D ucd data file.
+    //
+    sprintf(filename, "ucd_lines3d.silo");
+    printf("   %s\n", filename);
+    dbfile = DBCreate(filename, 0, DB_LOCAL, "3D ucd lines test file", type);
+    build_ucd3d_lines(dbfile, size);
+    DBClose(dbfile);
+
 
     //
     // Create the 3d arbitrary polyhedra data file.
