@@ -43,19 +43,23 @@
 #include <avtLocateQuery.h>
 
 #include <float.h>
+
 #include <vtkBox.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
+#include <vtkIdList.h>
+#include <vtkLine.h>
 #include <vtkMath.h>
+#include <vtkPoints.h>
+#include <vtkPointSet.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkVisItCellLocator.h>
-#include <vtkVisItUtility.h>
-#include <NonQueryableInputException.h>
-#include <avtOriginatingSource.h>
-#include <avtExpressionEvaluatorFilter.h>
 
+#include <avtOriginatingSource.h>
 #include <avtParallel.h>
 #include <DebugStream.h>
+#include <NonQueryableInputException.h>
+#include <vtkVisItCellLocator.h>
+#include <vtkVisItUtility.h>
 
 
 
@@ -63,7 +67,7 @@
 //  Method: avtLocateQuery constructor
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   May 18, 2004 
+//  Creation:   May 18, 2004
 //
 //  Modifications:
 //
@@ -83,8 +87,8 @@ avtLocateQuery::avtLocateQuery()
 //      Defines the destructor.  Note: this should not be inlined in the header
 //      because it causes problems for certain compilers.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 18, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 18, 2004
 //
 // ****************************************************************************
 
@@ -144,13 +148,13 @@ avtLocateQuery::PreExecute(void)
 {
     avtDatasetQuery::PreExecute();
 
-    foundElement = foundDomain = -1; 
+    foundElement = foundDomain = -1;
     minDist = +FLT_MAX;
 
     avtDataAttributes &dAtts = GetInput()->GetInfo().GetAttributes();
- 
+
     if (dAtts.GetRectilinearGridHasTransform())
-    {   
+    {
         if (!(dAtts.HasInvTransform() && dAtts.GetCanUseInvTransform()) &&
             !(dAtts.HasInvTransform() && dAtts.GetCanUseInvTransform()))
         {
@@ -186,13 +190,13 @@ avtLocateQuery::PreExecute(void)
 //      This is called after all of the domains are executed.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   May 18, 2004 
+//  Creation:   May 18, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Nov  4 15:18:15 PST 2004
 //    Set a flag in pick atts specifiying whether or not this code was
 //    successful in finding an intersection.
-//    
+//
 // ****************************************************************************
 
 void
@@ -217,10 +221,10 @@ avtLocateQuery::PostExecute(void)
 //  Method: avtLocateQuery::SetPickAtts
 //
 //  Purpose:
-//      Sets the pickAtts to the passed values. 
+//      Sets the pickAtts to the passed values.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   May 18, 2004 
+//  Creation:   May 18, 2004
 //
 // ****************************************************************************
 
@@ -243,9 +247,9 @@ avtLocateQuery::SetPickAtts(const PickAttributes *pa)
 // ****************************************************************************
 
 const PickAttributes *
-avtLocateQuery::GetPickAtts() 
+avtLocateQuery::GetPickAtts()
 {
-    return &pickAtts; 
+    return &pickAtts;
 }
 
 
@@ -258,8 +262,8 @@ avtLocateQuery::GetPickAtts()
 //
 //  Arguments:
 //    ds        The dataset to search.
-//    dist      The distance from the isect to the ray-origin. 
-//    isect     The intersection point. 
+//    dist      The distance from the isect to the ray-origin.
+//    isect     The intersection point.
 //
 //  Returns:
 //    Cell id of intersected cell. (-1 if ds not intersected, or cell
@@ -277,8 +281,8 @@ avtLocateQuery::GetPickAtts()
 //
 // ****************************************************************************
 
-int                            
-avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist, 
+int
+avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
                            double isect[3])
 {
     int i, ijk[3];
@@ -288,7 +292,7 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
     int success = 0;
     int cellId = -1;
 
- 
+
     rgrid->GetBounds(dsBounds);
 
     if (rayPt1[0] == rayPt2[0] &&
@@ -302,7 +306,7 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
             isect[0] = rayPt1[0];
             isect[1] = rayPt1[1];
             isect[2] = rayPt1[2];
-            dist = 0; 
+            dist = 0;
         }
     }
     else
@@ -313,8 +317,8 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
         }
         if (vtkBox::IntersectBox(dsBounds, rayPt1, rayDir, isect, t))
         {
-            success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid, 
-                          isect, ijk); 
+            success = vtkVisItUtility::ComputeStructuredCoordinates(rgrid,
+                          isect, ijk);
             if (success)
             {
                 dist = vtkMath::Distance2BetweenPoints(rayPt1, isect);
@@ -324,7 +328,7 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
     if (success)
     {
         // vtkRectilinearGrid::ComputeCellId is buggy for dimensions
-        // of type 1xYxZ or Xx1xZ.  
+        // of type 1xYxZ or Xx1xZ.
         int dims[3];
         rgrid->GetDimensions(dims);
         if (dims[0] == 1 && dims[1] == 1)
@@ -355,17 +359,17 @@ avtLocateQuery::RGridIsect(vtkRectilinearGrid *rgrid, double &dist,
 //
 //  Arguments:
 //    ds      The dataset to query.
-//    dist    A place to store the distance along the ray of the 
-//            intersection point. 
-//    isect   A place to store the intersection point of the ray with the 
-//            dataset. 
+//    dist    A place to store the distance along the ray of the
+//            intersection point.
+//    isect   A place to store the intersection point of the ray with the
+//            dataset.
 //
 //  Returns:
 //    The id of the cell that was intersected (-1 if none found).
 //
 //  Notes:  Moved vrom avtLocateCellQuery.
 //
-//  Programmer: Kathleen Bonnell  
+//  Programmer: Kathleen Bonnell
 //  Creation:   June 2, 2004
 //
 //  Modifications:
@@ -389,7 +393,7 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, double &dist, double *isect)
     double *rayPt2 = pickAtts.GetRayPoint2();
     dist = -1;
 
-    vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New(); 
+    vtkVisItCellLocator *cellLocator = vtkVisItCellLocator::New();
     cellLocator->SetIgnoreGhosts(true);
     cellLocator->SetDataSet(ds);
     //
@@ -408,7 +412,7 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, double &dist, double *isect)
     double pcoords[3] = {0., 0., 0.}, ptLine[3] = {0., 0., 0.};
     int subId = 0, success = 0;
 
-    vtkIdType foundCell; 
+    vtkIdType foundCell;
     if (rayPt1[0] == rayPt2[0] &&
         rayPt1[1] == rayPt2[1] &&
         rayPt1[2] == rayPt2[2])
@@ -423,9 +427,9 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, double &dist, double *isect)
             isect[2] = rayPt1[2];
         }
     }
-    else 
+    else
     { /* RAY-INTERSECT LOCATE */
-        success = cellLocator->IntersectWithLine(rayPt1, rayPt2, dist, 
+        success = cellLocator->IntersectWithLine(rayPt1, rayPt2, dist,
                                      isect, pcoords, subId, foundCell);
     }
 
@@ -441,7 +445,7 @@ avtLocateQuery::LocatorFindCell(vtkDataSet *ds, double &dist, double *isect)
 //  Method: avtLocateQuery::RayIntersectsDataSet
 //
 //  Purpose:
-//    Determines if the ray stored in PickAtts intersects the passed dataset. 
+//    Determines if the ray stored in PickAtts intersects the passed dataset.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   October 6, 2004
@@ -470,10 +474,10 @@ avtLocateQuery::RayIntersectsDataSet(vtkDataSet *ds)
 //  Method: avtLocateQuery::ApplyFilters
 //
 //  Purpose:
-//      Retrieves the terminating source to use as input. 
+//      Retrieves the terminating source to use as input.
 //
-//  Programmer: Kathleen Bonnell  
-//  Creation:   June 14, 2006 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 14, 2006
 //
 //  Modifications:
 //
@@ -482,7 +486,7 @@ avtLocateQuery::RayIntersectsDataSet(vtkDataSet *ds)
 avtDataObject_p
 avtLocateQuery::ApplyFilters(avtDataObject_p inData)
 {
-    avtDataRequest_p dataRequest = 
+    avtDataRequest_p dataRequest =
         inData->GetOriginatingSource()->GetFullDataRequest();
 
     if (timeVarying || dataRequest->GetTimestep() == pickAtts.GetTimeStep())
@@ -503,4 +507,96 @@ avtLocateQuery::ApplyFilters(avtDataObject_p inData)
     CopyTo(rv, inData);
     rv->Update(contract);
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: avtLocateQuery::ClosestLineToLine
+//
+//  Purpose:
+//    Finds the line cell in the dataset closest to the line defined by pick
+//    atts ray points, the distance to that line, and the intersection point.
+//
+//  Returns:
+//    The element id (node or cell), or -1 if none found.
+//
+//  Arguments:
+//    ds          The dataset to query.
+//    returnNode  Whether or not to return the node coordinates in isect.
+//    dist        A place to store the minimum distance.
+//    isect       A place to store the intersection point:  The closest point
+//                along the line, or the closest node coordinates if
+//                returnNode is true.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   July 7, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtLocateQuery::ClosestLineToLine(vtkDataSet *ds, bool returnNode,
+    double &dist, double isect[3])
+{
+
+    if (! ds->IsA("vtkPointSet"))
+    {
+        debug3 << "avtLocateQuery::ClosestLineToLine encountered dataset"
+               << " that is not a vtkPointSet" << endl;
+        return -1;
+    }
+    vtkIdType found= -1;
+
+    double dist2, cp1[3], cp2[3], pt1[3], pt2[3], t1, t2;
+    double *rayPt1 = pickAtts.GetRayPoint1();
+    double *rayPt2 = pickAtts.GetRayPoint2();
+
+    vtkPoints *pts =  vtkPointSet::SafeDownCast(ds)->GetPoints();
+    vtkIdList *cellPtIds = vtkIdList::New();
+    for (vtkIdType i = 0; i < ds->GetNumberOfCells(); ++i)
+    {
+        if (ds->GetCellType(i) != VTK_LINE)
+        {
+            debug3 << "avtLocateQuery::ClosestLineToLine encountered cell"
+                   << " that is not a VTK_LINE" << endl;
+            continue;
+        }
+        ds->GetCellPoints(i, cellPtIds);
+        pts->GetPoint(cellPtIds->GetId(0), pt1);
+        pts->GetPoint(cellPtIds->GetId(1), pt2);
+
+        dist2 = vtkLine::DistanceBetweenLines(rayPt1, rayPt2, pt1, pt2,
+            cp1, cp2, t1, t2);
+        if (dist2 < dist && (t2 > 0 && t2 < 1))
+        {
+            if (returnNode)
+            {
+                if (t2 < 0.5)
+                {
+                    isect[0] = pt1[0];
+                    isect[1] = pt1[1];
+                    isect[2] = pt1[2];
+                    found = cellPtIds->GetId(0);
+
+                }
+                else
+                {
+                    isect[0] = pt2[0];
+                    isect[1] = pt2[1];
+                    isect[2] = pt2[2];
+                    found = cellPtIds->GetId(1);
+                }
+            }
+            else
+            {
+                isect[0] = cp2[0];
+                isect[1] = cp2[1];
+                isect[2] = cp2[2];
+                found = i;
+            }
+            dist = dist2;
+        }
+    }
+    return found;
 }

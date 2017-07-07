@@ -50,10 +50,10 @@
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkUnsignedCharArray.h>
-#include <vtkVisItPointLocator.h>
 
 #include <avtGhostData.h>
 #include <DebugStream.h>
+#include <vtkVisItPointLocator.h>
 
 #include <math.h>
 #include <float.h>
@@ -135,6 +135,9 @@ avtLocateNodeQuery::~avtLocateNodeQuery()
 //    not the node, pass along enough information for PickNode to possibly
 //    resolve the information.
 //
+//    Kathleen Biagas, Thu Jun 29 13:02:07 PDT 2017
+//    Remove constraint that lines should only be 2D spatially.
+//
 // ****************************************************************************
 
 void
@@ -162,10 +165,13 @@ avtLocateNodeQuery::Execute(vtkDataSet *ds, const int dom)
     //
     if (ds->GetDataObjectType() != VTK_RECTILINEAR_GRID)
     {
-        if (topodim == 1 && spatdim == 2) // LINES
+        if (topodim == 1) // LINES
         {
             dist = minDist;
-            foundNode = FindClosestPointOnLine(ds, dist, isect);
+            if (spatdim == 2)
+              foundNode = FindClosestPointOnLine(ds, dist, isect);
+            else if (spatdim == 3)
+              foundNode = ClosestLineToLine(ds, true, dist, isect);
         }
         else
         {
@@ -491,7 +497,8 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
 //
 //  Arguments:
 //    ds      The dataset to query.
-//    minDist The current minimum distance.
+//    dist    The current minimum distance.
+//    isect   The node coordinates.
 //
 //  Returns:
 //    The id of the closest point (-1 if none found).
@@ -504,16 +511,20 @@ avtLocateNodeQuery::FindClosestPoint(vtkDataSet *ds, const int isectedCell,
 //    Hank Childs, Thu Mar 10 10:27:57 PST 2005
 //    Fix memory leak.
 //
+//    Kathleen Biagas, Fri Jul  7 09:35:22 PDT 2017
+//    Changed arg from minDist to dist, to avoid overshadowing member var.
+//
 // ****************************************************************************
 
 int
-avtLocateNodeQuery::FindClosestPointOnLine(vtkDataSet *ds, double &minDist,
+avtLocateNodeQuery::FindClosestPointOnLine(vtkDataSet *ds, double &dist,
                                            double isect[3])
 {
     if (ds->GetNumberOfPoints() == 0)
     {
         return -1;
     }
+
     double *rayPt1 = pickAtts.GetRayPoint1();
 
     vtkVisItPointLocator *pointLocator = vtkVisItPointLocator::New();
@@ -523,13 +534,13 @@ avtLocateNodeQuery::FindClosestPointOnLine(vtkDataSet *ds, double &minDist,
 
     vtkIdType foundPoint = -1;
     double pt[3] = {rayPt1[0], rayPt1[1], 0.};
-    double dist, rad = minDist;
+    double dist2, rad = dist;
     foundPoint = pointLocator->FindClosestPointWithinRadius(rad, pt, dist);
 
-    if (foundPoint >= 0 && dist < minDist)
+    if (foundPoint >= 0 && dist2 < dist)
     {
         ds->GetPoint(foundPoint, isect);
-        minDist = dist;
+        dist = dist2;
     }
 
     pointLocator->Delete();
