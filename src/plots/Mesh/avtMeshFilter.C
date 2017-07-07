@@ -229,10 +229,12 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     vtkDataSet *revisedInput2 = NULL; 
     vtkDataSet *revisedInput3 = NULL; 
 
+    bool usedAFilter = false;
     avtDataValidity &v = GetInput()->GetInfo().GetValidity();
     if (!v.GetUsingAllData() && 
         inDS->GetCellData()->GetArray("avtGhostZones"))
     {
+        usedAFilter = true;
         ghostFilter->SetInputData(inDS);
         ghostFilter->Update();
         revisedInput = ghostFilter->GetOutput();
@@ -257,12 +259,14 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
             rectFacesFilter->SetInputData(revisedInput);
             rectFacesFilter->Update();
             opaquePolys = rectFacesFilter->GetOutput();
+            usedAFilter = true;
         }
         else
         {
             geometryFilter->SetInputData(revisedInput);
             geometryFilter->Update();
             opaquePolys = geometryFilter->GetOutput();
+            usedAFilter = true;
         }
     }
 
@@ -272,6 +276,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         extractEdges->SetInputData(revisedInput);
         extractEdges->Update();
         revisedInput2 = extractEdges->GetOutput();
+        usedAFilter = true;
     }
     else
     {
@@ -294,6 +299,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         revisedInput3 = geo->GetOutput()->NewInstance();
         revisedInput3->ShallowCopy(geo->GetOutput());
         geo->Delete();
+        usedAFilter = true;
     }
     else
     {
@@ -315,6 +321,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         rlines->SetInputData(revisedInput3);
         rlines->Update();
         outDS = rlines->GetOutput();
+        usedAFilter = true;
     }
     else if (revisedInput3->GetDataObjectType() == VTK_POLY_DATA) 
     {
@@ -334,6 +341,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
             lineFilter->SetInputData((vtkPolyData*)revisedInput3);
             lineFilter->Update();
             outDS = lineFilter->GetOutput();
+            usedAFilter = true;
         }
         else
         {
@@ -353,7 +361,10 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     //
     //  Don't want this information tagging along any more.
     //
-    outDS->GetCellData()->RemoveArray("avtOriginalCellNumbers");
+    if (usedAFilter)
+    {
+        outDS->GetCellData()->RemoveArray("avtOriginalCellNumbers");
+    }
 
     avtDataTree_p rv = NULL;
     if (outDS->GetNumberOfCells() == 0)
