@@ -1,0 +1,72 @@
+
+A:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <0.93329, 2.93329, 0>
+Zone:  8
+Incident Nodes:  12  0  
+
+B:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <1.64449, 1.06653, 2.84409>
+Zone:  1
+Incident Nodes:  1  2  
+
+C:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <2.5, 2.01952, 4>
+Zone:  13
+Incident Nodes:  11  3  
+
+D:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <1.5, 2.5, 4>
+Node:  9
+Incident Zones:  6  7  12  15  
+
+E:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <4, 2, 0>
+Node:  4
+Incident Zones:  3  4  10  11  
+
+F:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <2.5, 2.5, 4>
+Node:  11
+Incident Zones:  9  10  12  13  
+
+G:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <2.02667, 2.5, 4>
+Zone:  12
+Incident Nodes:  9  11  
+
+H:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <2.25682, 0.770461, 2.05456>
+Zone:  5
+Incident Nodes:  3  1  
+
+I:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <1.14653, 3.14653, 0>
+Zone:  8
+Incident Nodes:  12  0  
+
+J:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <2, 0, 0>
+Node:  1
+Incident Zones:  0  1  3  5  
+
+K:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <1.5, 2.5, 4>
+Node:  9
+Incident Zones:  6  7  12  15  
+
+L:  ucd_lines3d.silo
+ucd_linesmesh3d 
+Point: <4, 2, 0>
+Node:  4
+Incident Zones:  3  4  10  11  

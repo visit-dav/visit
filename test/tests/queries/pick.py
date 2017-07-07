@@ -2812,6 +2812,49 @@ def PickRange():
     Test("PickRange_01")
     DeleteAllPlots()
     ResetPickLetter()
+
+def PickLines3D():
+    OpenDatabase(silo_data_path("ucd_lines3d.silo"))
+    AddPlot("Mesh", "ucd_linesmesh3d")
+    DrawPlots()
+
+    ZonePick(113,182)
+    s = GetPickOutput();
+    ZonePick(134,107)
+    s = s + GetPickOutput();
+    ZonePick(177,151)
+    s = s + GetPickOutput();
+
+    NodePick(126,161)
+    s = s + GetPickOutput();
+    NodePick(203,130)
+    s = s + GetPickOutput();
+    NodePick(150,193)
+    s = s + GetPickOutput();
+
+    # rotate, so lines closer to camera are reversed.
+    v = GetView3D()
+    v.viewNormal=(0,0,-1)
+    SetView3D(v)
+
+    ZonePick(149,168)
+    s = s + GetPickOutput();
+    ZonePick(139,97)
+    s = s + GetPickOutput();
+    ZonePick(191,206)
+    s = s + GetPickOutput();
+
+    NodePick(161,73)
+    s = s + GetPickOutput();
+    NodePick(173,159)
+    s = s + GetPickOutput();
+    NodePick(54,153)
+    s = s + GetPickOutput();
+
+    TestText("PickLines3D", s)
+
+    DeleteAllPlots()
+    ResetPickLetter()
     
 def PickMain():
     Pick3DTo2D()
@@ -2845,6 +2888,7 @@ def PickMain():
     PickScatter()
     PickHighlight()
     PickRange()
+    PickLines3D()
 
 # Call the main function
 TurnOnAllAnnotations()
