@@ -52,16 +52,16 @@
 //  Class: avtLocateNodeQuery
 //
 //  Purpose:
-//      This query locates a node and domain given a world-coordinate point. 
+//      This query locates a node and domain given a world-coordinate point.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 18, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 18, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Jun 17 12:58:47 PDT 2004
 //    Added FindClosestPoint.
 //
-//    Kathleen Bonnell, Wed Jul  7 14:59:49 PDT 2004 
+//    Kathleen Bonnell, Wed Jul  7 14:59:49 PDT 2004
 //    Added FindClosestPointOnLine.
 //
 // ****************************************************************************
@@ -79,16 +79,16 @@ class QUERY_API avtLocateNodeQuery : public avtLocateQuery
 
   protected:
     virtual void                    Execute(vtkDataSet *, const int);
-    int                             RGridFindNode(vtkDataSet *, double&, 
+    int                             RGridFindNode(vtkDataSet *, double&,
                                                   double*);
-    int                             DeterminePickedNode(vtkDataSet *, int, 
+    int                             DeterminePickedNode(vtkDataSet *, int,
                                                        double*);
     int                             FindClosestPoint(vtkDataSet *, const int,
                                                   double*, int &);
-    int                             FindClosestPointOnLine(vtkDataSet *, 
+    int                             FindClosestPointOnLine(vtkDataSet *,
                                                            double &,
                                                            double [3]);
- 
+
 };
 
 
