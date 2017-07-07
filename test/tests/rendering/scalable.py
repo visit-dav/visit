@@ -40,7 +40,13 @@
 #    Brad Whitlock, Mon Dec 15 17:22:38 PST 2014
 #    Only close the compute engine if it is not parallel.
 #
+#    Kathleen Biagas, Fri Jul  7 13:41:36 PDT 2017
+#    Don't run this test if the parallel engine doesn't exist.
+#
 # ----------------------------------------------------------------------------
+
+if not os.path.exists(visit_bin_path("..", "exe", "engine_par")):
+    Exit(121)
 
 # sleep is needed to allow viewer to complete update of window information
 # before it is queried here
@@ -58,7 +64,7 @@ SetRenderingAttributes(ra)
 engines = GetEngineList()
 if len(engines) > 0:
     props = GetEngineProperties(engines[0])
-    if props.numProcessors < 2:
+    if props.numProcessors < 2: 
         CloseComputeEngine()
         # explicitly open a parallel engine, if possible
         # if it fails, the OpenDatabase will start a serial engine
