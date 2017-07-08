@@ -45,8 +45,12 @@
 #
 # ----------------------------------------------------------------------------
 
-if not os.path.exists(visit_bin_path("..", "exe", "engine_par")):
-    Exit(121)
+if not sys.platform.startswith("win"):
+    if not os.path.exists(visit_bin_path("..", "exe", "engine_par")):
+        Exit(121)
+else:
+    if not os.path.exists(visit_bin_path("engine_par.exe")):
+        Exit(121)
 
 # sleep is needed to allow viewer to complete update of window information
 # before it is queried here
