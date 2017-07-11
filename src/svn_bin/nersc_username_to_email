@@ -219,7 +219,7 @@ case $1 in
         ;;
     # Iulian Grindeanu
     "iulian")
-        emaddr=iulian@mcs.anl.gov
+        emaddr=iulian@anl.gov
         ;;
     "gmorriso")
         emaddr=gmorriso@uoregon.edu
