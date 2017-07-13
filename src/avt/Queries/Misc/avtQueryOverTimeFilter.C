@@ -76,21 +76,21 @@
 //  Arguments:
 //    atts      The attributes the filter should use.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   March 15, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Jan  6 11:16:40 PST 2005
 //    Add call to SetTimeLoop.  Initialize finalOutputCreated.
 //
-//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
-//    Initialize useTimeforXAxis and nResultsToStore. 
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Initialize useTimeforXAxis and nResultsToStore.
 //
 //    Hank Childs, Thu Feb  8 09:54:01 PST 2007
 //    Initialize numAdditionalFilters.
 //
 //    Kathleen Bonnell, Tue Nov 27 15:35:55 PST 2007
-//    Fix memory leak, delete 'query' used to initialize numAdditionalFilters. 
+//    Fix memory leak, delete 'query' used to initialize numAdditionalFilters.
 //    Set label from query's ShortDescription if available, otherwise use
 //    query name.
 //
@@ -125,9 +125,9 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
             label = qatts.GetName();
 
         const MapNode &tqs = query->GetTimeCurveSpecs();
-        useTimeForXAxis = tqs.GetEntry("useTimeForXAxis")->AsBool(); 
-        useVarForYAxis  = tqs.GetEntry("useVarForYAxis")->AsBool(); 
-        nResultsToStore = tqs.GetEntry("nResultsToStore")->AsInt(); 
+        useTimeForXAxis = tqs.GetEntry("useTimeForXAxis")->AsBool();
+        useVarForYAxis  = tqs.GetEntry("useVarForYAxis")->AsBool();
+        nResultsToStore = tqs.GetEntry("nResultsToStore")->AsInt();
         delete query;
     }
     CATCHALL
@@ -137,7 +137,7 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
                << "a query over time.  Stifling the error handling, because "
                << "this problem will be caught later when we are better "
                << "prepared to do error handling." << endl;
-    }         
+    }
     ENDTRY
 }
 
@@ -146,7 +146,7 @@ avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
 //  Method: avtQueryOverTimeFilter destructor
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 15, 2004 
+//  Creation:   March 15, 2004
 //
 // ****************************************************************************
 
@@ -177,40 +177,40 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //  Method: avtQueryOverTimeFilter::Execute
 //
 //  Purpose:
-//    Peforms a query over time, and collects the results into a 
+//    Peforms a query over time, and collects the results into a
 //    vtkDataSet consisting of 2d points (time, results).
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   March 15, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Apr  2 13:18:08 PST 2004
-//    Pass along to the query: startTime,  endTimes and stride instead of an 
+//    Pass along to the query: startTime,  endTimes and stride instead of an
 //    intVector representing timesteps.  Send a doubleVector for the query
 //    to fill with values requested for x-axis (cycle, time, or timestep).
 //
-//    Kathleen Bonnell, Tue May  4 14:21:37 PDT 2004 
-//    Replaced query->SetSILUseSet with query->SetSILRestriction. 
+//    Kathleen Bonnell, Tue May  4 14:21:37 PDT 2004
+//    Replaced query->SetSILUseSet with query->SetSILRestriction.
 //
-//    Kathleen Bonnell, Thu Jun 24 07:54:44 PDT 2004 
+//    Kathleen Bonnell, Thu Jun 24 07:54:44 PDT 2004
 //    Pass storage for skippedTimesteps and error message to the query.
 //    Check for skippedTimeSteps and issue a Warning message.
 //    Changed CATCH to CATCHALL.  Reset avtDataValidity before processing.
 //
 //    Kathleen Bonnell, Mon Jan  3 15:21:44 PST 2005
-//    Reworked, since time-looping is now handled by parent class 
+//    Reworked, since time-looping is now handled by parent class
 //    'avtTimeLoopFilter' instead of avtDatasetQuery::PerformQueryInTime.
 //    Test for error condition upstream, capture and store query results
 //    and times.   Moved IssueWarning callbacks to CreateFinalOutput.
 //
-//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Added call to query.GetTimeCurveSpecs.  Only retrive time value
 //    if it will be used for the X-axis.  Store the correct number of results.
 //
-//    Kathleen Bonnell, Tue Oct 24 18:59:27 PDT 2006 
+//    Kathleen Bonnell, Tue Oct 24 18:59:27 PDT 2006
 //    Added call to query->SetPickAttsForTimeQuery for VariableByNode/Zone.
 //
-//    Kathleen Bonnell, Tue Nov 20 10:33:49 PST 2007 
+//    Kathleen Bonnell, Tue Nov 20 10:33:49 PST 2007
 //    Added call to query->SetPickAttsForTimeQuery for LocateAndPickZone.
 //
 //    Kathleen Bonnell, Tue Jul  8 18:10:34 PDT 2008
@@ -228,13 +228,13 @@ void
 avtQueryOverTimeFilter::Execute(void)
 {
     //
-    // The real output will be created after all time steps have completed, 
+    // The real output will be created after all time steps have completed,
     // so create a dummy output to pass along for now.
     //
     avtDataTree_p dummy = new avtDataTree();
 
     //
-    // Set up error conditions and return early if any processor had an 
+    // Set up error conditions and return early if any processor had an
     // error upstream.
     //
 
@@ -249,12 +249,12 @@ avtQueryOverTimeFilter::Execute(void)
     if (hadError)
     {
         SetOutputDataTree(dummy);
-        success = false;    
+        success = false;
         return;
     }
 
     //
-    // Set up the query. 
+    // Set up the query.
     //
     QueryAttributes qatts = atts.GetQueryAtts();
     qatts.SetTimeStep(currentTime);
@@ -300,7 +300,7 @@ avtQueryOverTimeFilter::Execute(void)
         qatts.SetVariables(useThisVar);
     }
     //
-    // End HokeyHack. 
+    // End HokeyHack.
     //
 
     TRY
@@ -331,20 +331,20 @@ avtQueryOverTimeFilter::Execute(void)
     }
 
     //
-    // Store the necessary time value 
+    // Store the necessary time value
     //
     if (useTimeForXAxis)
     {
-        double tval;  
-        switch(atts.GetTimeType()) 
+        double tval;
+        switch(atts.GetTimeType())
         {
         case QueryOverTimeAttributes::Cycle:
             tval = (double) GetInput()->GetInfo().GetAttributes().GetCycle();
             break;
-        case QueryOverTimeAttributes::DTime: 
+        case QueryOverTimeAttributes::DTime:
             tval = GetInput()->GetInfo().GetAttributes().GetTime();
             break;
-        case QueryOverTimeAttributes::Timestep: 
+        case QueryOverTimeAttributes::Timestep:
         default: // timestep
             tval = (double)currentTime;
             break;
@@ -390,17 +390,17 @@ avtQueryOverTimeFilter::FilterSupportsTimeParallelization(void)
 //    Indicates the zones no longer correspond to the original problem.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   March 15, 2004 
+//  Creation:   March 15, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Jan  6 11:21:44 PST 2005
 //    Moved setting of  dataAttributes from PostExecute to here.
 //
-//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
-//    Use different labels/units if Time not used for X-Axis. 
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Use different labels/units if Time not used for X-Axis.
 //
-//    Kathleen Bonnell, Wed Nov 28 16:33:22 PST 2007 
-//    Use new 'label' member for Y axis label. 
+//    Kathleen Bonnell, Wed Nov 28 16:33:22 PST 2007
+//    Use new 'label' member for Y axis label.
 //
 //    Kathleen Bonnell, Tue Jul  8 15:48:38 PDT 2008
 //    Set y-axis labels and units from query var if useVarForYAxis is true.
@@ -444,7 +444,7 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
             {
                 outAtts.SetXUnits("timestep");
             }
-            else 
+            else
             {
                 outAtts.SetXUnits("");
             }
@@ -455,7 +455,7 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
                 outAtts.SetYUnits(outAtts.GetVariableUnits(yl.c_str()));
             }
         }
-        else 
+        else
         {
             std::string xl = atts.GetQueryAtts().GetVariables()[0] + "(t)";
             std::string yl = atts.GetQueryAtts().GetVariables()[1] + "(t)";
@@ -467,7 +467,7 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
         outAtts.SetLabels(atts.GetQueryAtts().GetVariables());
         if (atts.GetQueryAtts().GetVariables().size() > 1)
             outAtts.SetConstructMultipleCurves(true);
-        else 
+        else
             outAtts.SetConstructMultipleCurves(false);
         double bounds[6];
         avtDataset_p ds = GetTypedOutput();
@@ -481,10 +481,10 @@ avtQueryOverTimeFilter::UpdateDataObjectInfo(void)
 //  Method: avtQueryOverTimeFilter::SetSILAtts
 //
 //  Purpose:
-//    Sets the SILRestriction atts necessary to create a SILRestriction. 
+//    Sets the SILRestriction atts necessary to create a SILRestriction.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   May 4, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   May 4, 2004
 //
 //  Modifications:
 //
@@ -503,17 +503,17 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //  Purpose:
 //    Combines the results of all timesteps into one vtkDataSet output.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   January 3, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   January 3, 2005
 //
 //  Modifications:
-//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005 
-//    Time not always used for X-Axis. 
+//    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
+//    Time not always used for X-Axis.
 //
 //    Kathleen Bonnell, Mon Dec 19 08:01:21 PST 2005
-//    Don't issue warning about 'multiples of 2' unless nResultsToStore > 1. 
+//    Don't issue warning about 'multiples of 2' unless nResultsToStore > 1.
 //
-//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
+//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006
 //    Curves now represented as 1D RectilinearGrid.
 //
 //    Hank Childs, Fri Dec 24 21:01:29 PST 2010
@@ -533,6 +533,9 @@ avtQueryOverTimeFilter::SetSILAtts(const SILRestrictionAttributes *silAtts)
 //    Tom Fogal, Thu Jul 21 15:42:59 MDT 2011
 //    Do not use deprecated C++ streams.
 //
+//    Kathleen Biagas, Thu Jul 13 12:55:32 PDT 2017
+//    Only create the output tree if on root proc.
+//
 // ****************************************************************************
 
 void
@@ -542,11 +545,11 @@ avtQueryOverTimeFilter::CreateFinalOutput()
     {
         double *totalQRes;
         int    *qResMsgs;
-        CollectDoubleArraysOnRootProc(totalQRes, qResMsgs, 
+        CollectDoubleArraysOnRootProc(totalQRes, qResMsgs,
                                       &(qRes[0]),(int) qRes.size());
         double *totalTimes;
         int    *timesMsgs;
-        CollectDoubleArraysOnRootProc(totalTimes, timesMsgs, 
+        CollectDoubleArraysOnRootProc(totalTimes, timesMsgs,
                                       &(times[0]), (int)times.size());
         if (PAR_Rank() == 0)
         {
@@ -556,7 +559,7 @@ avtQueryOverTimeFilter::CreateFinalOutput()
             for (i = 0 ; i < PAR_Size() ; i++)
             {
                 nResults += timesMsgs[i];
-                maxIterations = (timesMsgs[i] > maxIterations ? timesMsgs[i] 
+                maxIterations = (timesMsgs[i] > maxIterations ? timesMsgs[i]
                                                               : maxIterations);
             }
 
@@ -592,58 +595,66 @@ avtQueryOverTimeFilter::CreateFinalOutput()
         }
     }
 
-    if (qRes.size() == 0)
+    if (PAR_Rank() == 0)
     {
-        debug4 << "Query failed at all timesteps" << endl;
-        avtCallback::IssueWarning("Query failed at all timesteps");
-        avtDataTree_p dummy = new avtDataTree();
-        SetOutputDataTree(dummy);
-        return;
-    }
-    if (useTimeForXAxis && qRes.size()/nResultsToStore != times.size())
-    {
-        debug4 << "QueryOverTime ERROR, number of results (" 
-               << qRes.size() << ") does not equal number "
-               << "of timesteps (" << times.size() << ")." << endl;
-        avtCallback::IssueWarning(
-            "\nQueryOverTime error, number of results does not equal "
-            "number of timestates.  Curve being created may be missing "
-            "some values.  Please contact a VisIt developer."); 
-    }
-    else if (nResultsToStore > 1 && qRes.size() % nResultsToStore != 0)
-    {
-        debug4 << "QueryOverTime ERROR, number of results (" 
-               << qRes.size() << ") is not a multiple of " << nResultsToStore
-               << "and therefore cannot generate x,y pairs." << endl;
-        avtCallback::IssueWarning(
-            "\nQueryOverTime error, number of results is incorrect.  "
-            "Curve being created may be missing some values.  "
-            "Please contact a VisIt developer."); 
-    }
-    if (skippedTimes.size() != 0)
-    {
-        std::ostringstream osm;
-        osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
-            << ") experienced\n"
-            << "problems with the following timesteps and \n"
-            << "skipped them while generating the curve:\n   ";
+        if (qRes.size() == 0)
+        {
+            debug4 << "Query failed at all timesteps" << endl;
+            avtCallback::IssueWarning("Query failed at all timesteps");
+            avtDataTree_p dummy = new avtDataTree();
+            SetOutputDataTree(dummy);
+            return;
+        }
+        if (useTimeForXAxis && qRes.size()/nResultsToStore != times.size())
+        {
+            debug4 << "QueryOverTime ERROR, number of results ("
+                   << qRes.size() << ") does not equal number "
+                   << "of timesteps (" << times.size() << ")." << endl;
+            avtCallback::IssueWarning(
+                "\nQueryOverTime error, number of results does not equal "
+                "number of timestates.  Curve being created may be missing "
+                "some values.  Please contact a VisIt developer.");
+        }
+        else if (nResultsToStore > 1 && qRes.size() % nResultsToStore != 0)
+        {
+            debug4 << "QueryOverTime ERROR, number of results ("
+                   << qRes.size() << ") is not a multiple of " << nResultsToStore
+                   << "and therefore cannot generate x,y pairs." << endl;
+            avtCallback::IssueWarning(
+                "\nQueryOverTime error, number of results is incorrect.  "
+                "Curve being created may be missing some values.  "
+                "Please contact a VisIt developer.");
+        }
+        if (skippedTimes.size() != 0)
+        {
+            std::ostringstream osm;
+            osm << "\nQueryOverTime (" << atts.GetQueryAtts().GetName().c_str()
+                << ") experienced\n"
+                << "problems with the following timesteps and \n"
+                << "skipped them while generating the curve:\n   ";
+    
+            for (size_t j = 0; j < skippedTimes.size(); j++)
+                osm << skippedTimes[j] << " ";
+            osm << "\nLast message received: " << errorMessage.c_str() << ends;
+            debug4 << osm.str() << endl;
+            avtCallback::IssueWarning(osm.str().c_str());
+        }
 
-        for (size_t j = 0; j < skippedTimes.size(); j++)
-            osm << skippedTimes[j] << " ";
-        osm << "\nLast message received: " << errorMessage.c_str() << ends;
-        debug4 << osm.str() << endl;
-        avtCallback::IssueWarning(osm.str().c_str());
+        stringVector vars = atts.GetQueryAtts().GetVariables();
+        bool multiCurve = false;
+        if (atts.GetQueryAtts().GetQueryInputParams().HasNumericEntry("curve_plot_type"))
+        {
+            multiCurve = (atts.GetQueryAtts().GetQueryInputParams().GetEntry("curve_plot_type")->ToInt() == 1);
+        }
+        avtDataTree_p tree = CreateTree(times, qRes, vars, multiCurve);
+        SetOutputDataTree(tree);
+        finalOutputCreated = true;
     }
-
-    stringVector vars = atts.GetQueryAtts().GetVariables();
-    bool multiCurve = false;
-    if (atts.GetQueryAtts().GetQueryInputParams().HasNumericEntry("curve_plot_type"))
+    else
     {
-        multiCurve = (atts.GetQueryAtts().GetQueryInputParams().GetEntry("curve_plot_type")->ToInt() == 1);
+        SetOutputDataTree(new avtDataTree());
+        finalOutputCreated = true;
     }
-    avtDataTree_p tree = CreateTree(times, qRes, vars, multiCurve);
-    SetOutputDataTree(tree);
-    finalOutputCreated = true;
 }
 
 
@@ -654,20 +665,20 @@ avtQueryOverTimeFilter::CreateFinalOutput()
 //    Creates a 1D Rectilinear datasets with point data scalars.
 //
 //  Arguments:
-//    times       The values to use for x-coordinates. 
+//    times       The values to use for x-coordinates.
 //    res         The values to use for point data scalars.
 //    vars        The variables associated with each output.
-//    doMultiCurvePlot   The type of plot to create. 
+//    doMultiCurvePlot   The type of plot to create.
 //
 //  Programmer:   Kathleen Bonnell
-//  Creation:     March 15, 2004 
+//  Creation:     March 15, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Nov  8 10:45:43 PST 2005
 //    Made this a member method. Time not always used for x-axis.
 //
-//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006 
-//    Renamed from CreatePolys to CreateRGrid. 
+//    Kathleen Bonnell, Thu Jul 27 17:43:38 PDT 2006
+//    Renamed from CreatePolys to CreateRGrid.
 //
 //    Kathleen Bonnell, Thu Feb 17 09:43:16 PST 2011
 //    Renamed from CreateRGrid to CreateTree, to reflect the possibility
@@ -675,8 +686,8 @@ avtQueryOverTimeFilter::CreateFinalOutput()
 //
 // ****************************************************************************
 
-avtDataTree_p 
-avtQueryOverTimeFilter::CreateTree(const doubleVector &times, 
+avtDataTree_p
+avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
                                    const doubleVector &res,
                                    stringVector &vars,
                                    const bool doMultiCurvePlot)
@@ -686,7 +697,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
     if (useTimeForXAxis && nResultsToStore == 1)
     {
        // Single curve with time for x axis.  NORMAL case.
-       // Most queries currently use this option. 
+       // Most queries currently use this option.
        nPts = (int)(times.size() <= res.size() ? times.size() : res.size());
     }
     else if (!useTimeForXAxis && nResultsToStore == 2)
@@ -705,7 +716,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
 
     if (singleCurve)
     {
-  
+
         vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(nPts);
 
         if (nPts == 0)
@@ -733,7 +744,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
                 xc->SetTuple1(i, times[i]);
                 sc->SetTuple1(i, res[i]);
             }
-            else 
+            else
             {
                 xc->SetTuple1(i, res[i*2]);
                 sc->SetTuple1(i, res[i*2+1]);
@@ -747,8 +758,8 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
     {
         // Setup for a MultiCurve plot
         nPts = (int)times.size();
-  
-        vtkRectilinearGrid *rgrid = 
+
+        vtkRectilinearGrid *rgrid =
             vtkVisItUtility::CreateEmptyRGrid(nPts, nResultsToStore, 1, VTK_FLOAT);
 
         if (nPts == 0)
@@ -794,13 +805,13 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
         rgrid->Delete();
         return tree;
     }
-    else  
+    else
     {
         // Setup for a Curve plot with multiple curves.
         nPts = (int)times.size();
         if (nPts == 0)
         {
-            vtkRectilinearGrid *rgrid = 
+            vtkRectilinearGrid *rgrid =
                 vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
             avtDataTree_p tree = new avtDataTree(rgrid, 0);
             rgrid->Delete();
@@ -808,7 +819,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
         }
         if (res.size() != (size_t)nPts*nResultsToStore)
         {
-            vtkRectilinearGrid *rgrid = 
+            vtkRectilinearGrid *rgrid =
                 vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
             debug1 << "Mismatch in QOT times/results sizes: " << endl;
             debug1 << "    times size:      " << times.size() << endl;
@@ -820,7 +831,7 @@ avtQueryOverTimeFilter::CreateTree(const doubleVector &times,
         }
         if (vars.size() != (size_t)nResultsToStore)
         {
-            vtkRectilinearGrid *rgrid = 
+            vtkRectilinearGrid *rgrid =
                 vtkVisItUtility::Create1DRGrid(nPts, VTK_FLOAT);
             debug1 << "Mismatch in QOT vars/nresults sizes: " << endl;
             debug1 << "    vars size:       " << times.size() << endl;

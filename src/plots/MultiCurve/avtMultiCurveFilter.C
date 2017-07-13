@@ -254,6 +254,10 @@ avtMultiCurveFilter::PostExecute(void)
 //    vtkDataArray GetTuple1 methods instead of VoidPointer. Merged the
 //    separate 'for (int j = 0; j < nx; j++)' loops into one.
 //
+//    Kathleen Biagas, Thu Jul 13 12:44:14 PDT 2017
+//    Don't throw an exception for no datasets. This is valid when running in
+//    parallel, doing a time-pick and creating MultiCurve plot from results.
+//
 // ****************************************************************************
 
 void
@@ -286,8 +290,8 @@ avtMultiCurveFilter::Execute(void)
     {
         // Free the memory from the GetAllLeaves function call.
         delete [] dataSets;
-
-        EXCEPTION1(ImproperUseException, "Expecting at least one dataset");
+        SetOutputDataTree(tree);
+        return;
     }
     else if (nSets > 1)
     {
