@@ -49,7 +49,7 @@ case $user in
         ;;
 esac
 
-nerscHost="edison.nersc.gov"
+nerscHost="cori.nersc.gov"
 
 # Change directories to the working directory.
 cd visit_run_tests
