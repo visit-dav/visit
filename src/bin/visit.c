@@ -295,6 +295,11 @@ static bool EndsWith(const char *s, const char *suffix)
  *   visit's components.  Use double-quotes when re-surrounding instead of
  *   single.
  *
+ *   Kathleen Biagas, Mon Jul 17 15:11:09 MST 2017
+ *   Ensure '-dv' isn't added multiple times to the command line.
+ *   Change placement of ';' when creating the engineArgs string for
+ *   the command line.
+ *
  *****************************************************************************/
 
 int
@@ -503,6 +508,10 @@ VisItLauncherMain(int argc, char *argv[])
             debugLaunch = true;
             componentArgs.push_back("-debuglaunch");
         }
+        else if(ARG("-dv"))
+        {
+            continue;
+        }
         else if(ARG("-apitrace"))
         {
             apitrace_component = string(argv[i+1]);
@@ -703,8 +712,9 @@ VisItLauncherMain(int argc, char *argv[])
         string eArgs;
         for (size_t i = 0; i < engineArgs.size(); ++i)
         {
-            eArgs.append(";");
             eArgs.append(engineArgs[i]);
+            if (i < engineArgs.size()-1)
+                eArgs.append(";");
         }
         command.push_back(eArgs);
     }
