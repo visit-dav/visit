@@ -129,7 +129,7 @@
 #
 # ----------------------------------------------------------------------------
 dateTag=`date +%y%b%d`
-svnHost=edison.nersc.gov
+svnHost=cori.nersc.gov
 rootTestDir=/groups/visit/miller/nersc_repo_test/trunk
 errorLogFile=$rootTestDir/testLogFile_$dateTag
 modifiersFile=$rootTestDir/nersc_repo_modifiers_since_last_pass
