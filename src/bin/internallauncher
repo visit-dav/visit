@@ -507,6 +507,9 @@ class JobSubmitter_salloc(JobSubmitter):
         if self.parallel.nn != None:
             parcmd = parcmd + ["--ntasks-per-node=%s" % self.PPN()]
 
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+
         parcmd = parcmd + ["srun","-N1","-n1","--preserve-env","--mpi=none", "mpirun"]
 
         if self.parallel.nn != None:
