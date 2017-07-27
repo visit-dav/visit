@@ -110,10 +110,18 @@ function build_openswr
     #
     cd $OPENSWR_BUILD_DIR || error "Couldn't cd to openswr build dir."
 
+    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+        OPENSWR_STATIC_DYNAMIC="--disable-shared --disable-shared-glapi --enable-static --enable-static-glapi"
+    fi
+
     info "Configuring OpenSWR . . ."
     LLVM_INSTALL=${VISIT_LLVM_DIR}/bin
     export PATH=${LLVM_INSTALL}:${PATH}
-    env LDFLAGS="-Wl,-rpath=${VISIT_LLVM_DIR}/lib" \
+    echo env LDFLAGS="-Wl,-rpath=${VISIT_LLVM_DIR}/lib" \
+        CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
+        CXX=${CXX_COMPILER} \
+        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
+        CC=${C_COMPILER} \
         ./autogen.sh \
         --prefix=${VISITDIR}/openswr/${OPENSWR_VERSION}/${VISITARCH} \
         --disable-dri \
@@ -127,7 +135,26 @@ function build_openswr
         --disable-va \
         --disable-glx \
         --with-gallium-drivers=swrast,swr \
-        --enable-gallium-osmesa
+        --enable-gallium-osmesa $OPENSWR_STATIC_DYNAMIC
+    env LDFLAGS="-Wl,-rpath=${VISIT_LLVM_DIR}/lib" \
+        CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
+        CXX=${CXX_COMPILER} \
+        CFLAGS="${CFLAGS} ${C_OPT_FLAGS}" \
+        CC=${C_COMPILER} \
+        ./autogen.sh \
+        --prefix=${VISITDIR}/openswr/${OPENSWR_VERSION}/${VISITARCH} \
+        --disable-dri \
+        --disable-egl \
+        --disable-gbm \
+        --disable-gles1 \
+        --disable-gles2 \
+        --disable-xvmc \
+        --disable-vdpau \
+        --disable-omx \
+        --disable-va \
+        --disable-glx \
+        --with-gallium-drivers=swrast,swr \
+        --enable-gallium-osmesa $OPENSWR_STATIC_DYNAMIC
 
     if [[ $? != 0 ]] ; then
         warn "OpenSWR configure failed.  Giving up"
