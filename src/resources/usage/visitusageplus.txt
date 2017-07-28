@@ -151,10 +151,12 @@
         -nopty               Run without PTYs.
         -verbose             Prints status information during pipeline
                              execution.
-        -dir <directory>     Run a version of VisIt in the specified directory.
+        -dir <directory>     Run the version of VisIt in the specified directory.
                              The directory argument should specify the 
                              path to a VisIt installation directory.
                              /bin is automatically appended to this path.
+        -startdir <dir>      Ensure that VisIt starts running in the specified
+                             directory.
         -forceversion <ver>  Force the given version.  Overrides all
                              intelligent version selection logic.
         -publicpluginsonly   Disable all plugins but the default ones.
