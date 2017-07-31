@@ -729,6 +729,15 @@ function build_numpy
         fi
     fi
 
+    if ! test -d ${CYTHON_BUILD_DIR} ; then
+        info "Extracting cython ..."
+        uncompress_untar ${CYTHON_FILE}
+        if test $? -ne 0 ; then
+            warn "Could not extract ${CYTHON_FILE}"
+            return 1
+        fi
+    fi
+
     if ! test -d ${NUMPY_BUILD_DIR} ; then
         info "Extracting numpy ..."
         uncompress_untar ${NUMPY_FILE}
