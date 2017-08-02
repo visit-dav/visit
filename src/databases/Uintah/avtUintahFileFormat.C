@@ -685,13 +685,13 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
       if (vartype.find("NC") != string::npos) {
         cent = AVT_NODECENT;
         mesh_for_this_var.assign("NC_Mesh"); 
-        addProcId=true;
+        addProcId = true;
       }  
       else if (vartype.find("CC") != string::npos) {  
         cent = AVT_ZONECENT;
         mesh_for_this_var.assign("CC_Mesh");
-        addProcId=true;
-        mesh_for_procid=mesh_for_this_var;
+        addProcId = true;
+        mesh_for_procid = mesh_for_this_var;
       }
       else if (vartype.find("SFC") != string::npos) { 
         cent = AVT_ZONECENT;
@@ -770,8 +770,15 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   if (addProcId)
   {
     avtScalarMetaData *scalar = new avtScalarMetaData();
-
     scalar->name = "proc_id";
+    scalar->meshName = mesh_for_procid;
+    scalar->centering = AVT_ZONECENT;
+    scalar->hasDataExtents = false;
+    scalar->treatAsASCII = false;
+    md->Add(scalar);
+
+    scalar = new avtScalarMetaData();
+    scalar->name = "patch_id";
     scalar->meshName = mesh_for_procid;
     scalar->centering = AVT_ZONECENT;
     scalar->hasDataExtents = false;
@@ -1486,7 +1493,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
   varName = varName.substr(0, found);
     
   string varType="CC_Mesh";
-  if (strcmp(varname, "proc_id")!=0) {
+  if (strcmp(varname, "proc_id") != 0 && strcmp(varname, "patch_id") != 0) {
     for (int k=0; k<(int)stepInfo->varInfo.size(); k++) {
       if (stepInfo->varInfo[k].name == varName) {
         varType = stepInfo->varInfo[k].type;
@@ -1514,18 +1521,26 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 
     GridDataRaw *gd=NULL;
 
-    if (strcmp(varname, "proc_id")==0) {
+    if (strcmp(varname, "proc_id") == 0 || strcmp(varname, "patch_id") == 0) {
+
       gd = new GridDataRaw;
       for (int i=0; i<3; i++) {
         gd->low[i ] = qlow[i];
         gd->high[i] = qhigh[i];
       }
-      gd->components=1;
+      gd->components = 1;
 
       int ncells = (qhigh[0]-qlow[0])*(qhigh[1]-qlow[1])*(qhigh[2]-qlow[2]);
       gd->data = new double[ncells];
+      double value;
+      
+      if (strcmp(varname, "proc_id") == 0 )
+        value = patchInfo.getProcId();
+      else if( strcmp(varname, "patch_id") == 0)
+        value = domain;
+      
       for (int i=0; i<ncells; i++) 
-        gd->data[i] = patchInfo.getProcId();
+        gd->data[i] = value;
     }
 
     else {
