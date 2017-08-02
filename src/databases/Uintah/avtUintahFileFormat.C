@@ -1537,7 +1537,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       if (strcmp(varname, "proc_id") == 0 )
         value = patchInfo.getProcId();
       else if( strcmp(varname, "patch_id") == 0)
-        value = domain;
+        value = patchInfo.getPatchId();
       
       for (int i=0; i<ncells; i++) 
         gd->data[i] = value;
