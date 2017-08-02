@@ -860,6 +860,11 @@ avtXRayImageQuery::GetSecondaryVars(std::vector<std::string> &outVars)
 //    Ensured that all ranks throw an Exception if any rank throws one
 //    for incorrectly centered data and/or missing variables.
 //
+//    Eric Brugger, Wed Aug  2 09:40:02 PDT 2017
+//    I corrected a bug where the type specified in the bov file was
+//    incorrectly set to float for the intensities in the case of double
+//    and integer output.
+//
 // ****************************************************************************
 
 void
@@ -1072,7 +1077,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     WriteFloats(baseName, numBins+i, numPixels,
                         (double*)pathLength->GetVoidPointer(0));
                     WriteBOVHeader(baseName, "path_length", numBins+i,
-                        nx, ny, "FLOAT");
+                        nx, ny, "DOUBLE");
                 }
                 else if (intensity->GetDataType() == VTK_INT)
                 {
@@ -1082,7 +1087,7 @@ avtXRayImageQuery::Execute(avtDataTree_p tree)
                     WriteFloats(baseName, numBins+i, numPixels,
                         (int*)pathLength->GetVoidPointer(0));
                     WriteBOVHeader(baseName, "path_length", numBins+i,
-                        nx, ny, "FLOAT");
+                        nx, ny, "INT");
                 }
             }
         }
