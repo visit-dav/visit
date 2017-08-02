@@ -2574,6 +2574,10 @@ SortSegments(int nLines, int *lineId, double *dists)
 //    Eric Brugger, Wed May 27 10:10:28 PDT 2015
 //    I modified the filter to also output the path length field.
 //
+//    Eric Brugger, Wed Aug  2 09:35:37 PDT 2017
+//    I modified the ray debugging to properly work in the case where
+//    divideEmisByAbsorb was set.
+//
 // ****************************************************************************
 
 template <typename T>
@@ -2697,7 +2701,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
     //
     // Make another pass if ray debugging is set. We only trace the first
-    // bin with divideEmisByAbsorb off.
+    // bin.
     //
     if (debugRay != -1)
     {
@@ -2735,7 +2739,10 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
 
                 // bin zero.
                 double tmp = exp(-a[0] * segLength);
-                intensityBinZero = intensityBinZero * tmp + e[0] * (1.0 - tmp);
+                if (divideEmisByAbsorb)
+                    intensityBinZero = intensityBinZero * tmp + (e[0] / a[0]) * (1.0 - tmp);
+                else
+                    intensityBinZero = intensityBinZero * tmp + e[0] * (1.0 - tmp);
                 fprintf(f, "%g, %g, %g, %g, %g, %g, %g\n",
                         dist[iPt*2], dist[iPt*2+1], tmp, segLength,
                         a[0], e[0], intensityBinZero);
