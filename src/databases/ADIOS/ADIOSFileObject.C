@@ -495,11 +495,9 @@ ADIOSFileObject::ReadScalarData(const std::string &nm, int ts, int block, vtkDat
     map<string, ADIOS_VARINFO*>::const_iterator it = variables.find(nm);
     if (it == variables.end())
         return false;
-    
+
     ADIOS_SELECTION *s = CreateSelection(it->second, block);
     ReadScalarData(nm, ts, s, arr);
-    delete [] s->u.bb.start;
-    delete [] s->u.bb.count;
     adios_selection_delete(s);
     return true;
 }
