@@ -7,6 +7,8 @@
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Cyrus Harrison, Tue Aug  1 15:31:48 PDT 2017
+#   Update for Cooley.
 #
 ###############################################################################
 
@@ -14,31 +16,37 @@ class JobSubmitter_qsub_ANL(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_ANL, self).__init__(launcher)
 
-    def IsRunningOnEureka(self):
-        return 1
-
     def CreateFilename(self, root):
-        if self.IsRunningOnEureka():
-            tdate = time.asctime()[11:19]
-            tuser = self.launcher.username()
-            return os.path.join("/home", tuser, "%s.%s.%s" % (root, tuser, tdate))
-        return super(JobSubmitter_qsub_ANL, self).CreateFilename(root)
+        tdate = time.asctime()[11:19]
+        tuser = self.launcher.username()
+        return os.path.join("/home", tuser, "%s.%s.%s" % (root, tuser, tdate))
 
-    def TFileLoadModules(self, tfile):
-        if self.IsRunningOnEureka():
-            tfile.write("export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/mx/lib\n")
+    def AddEnvironment(self):
+        env = ""
+        env = env + "HOME=" + GETENV("HOME")
+        env = env + ":LIBPATH=" + GETENV("LIBPATH")
+        env = env + ":LD_LIBRARY_PATH=" + GETENV("LD_LIBRARY_PATH")
+        env = env + ":VISITHOME=" + GETENV("VISITHOME")
+        env = env + ":VISITARCHHOME=" + GETENV("VISITARCHHOME")
+        env = env + ":VISITPLUGINDIR=" + GETENV("VISITPLUGINDIR")
+        return ["--env", env]
 
-    def AssembleCommandLine(self):
-        if self.IsRunningOnEureka():
-            parcmd = ["qsub"]
-            if self.parallel.bank != None:
-                parcmd = parcmd + ["-A", self.parallel.bank]
-            parcmd = parcmd + ["-n", self.parallel.nn]
-            parcmd = parcmd + ["-t", self.parallel.time]
-            parcmd = parcmd + [self.tfilename]
-        else:
-            parcmd = super(JobSubmitter_qsub_ANL, self).AssembleCommandLine()
-        return parcmd
+    def SetupPPN(self, nodes, procs, ppn, use_vis):
+        args = ["-n", nodes]
+        return args
+
+    def SetupTime(self):
+        args = []
+        if self.parallel.time != None:
+            args = ["-t", "%s" % self.parallel.time]
+        return args
+
+    def TFileSetup(self, tfile):
+        tfile.write("cd %s\n" % os.path.abspath(os.curdir))
+        tfile.write("ulimit -c 0\n")
+        env = self.AddEnvironment()[1]
+        tfile.write("export %s\n" % env)
+
 
 ###############################################################################
 # Class: ANLLauncher
@@ -49,43 +57,31 @@ class JobSubmitter_qsub_ANL(JobSubmitter_qsub):
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Cyrus Harrison, Tue Aug  1 15:31:48 PDT 2017
+#   Update for Cooley.
 #
 ###############################################################################
 
 class ANLLauncher(MainLauncher):
     def __init__(self):
         super(ANLLauncher, self).__init__()
-        self.eureka = -1
 
-    def IsRunningOnEureka(self):
-        if self.eureka == -1:
-            self.eureka = 0
-            if self.parallelArgs.parallel and \
-               self.generalArgs.exe_name == "engine" and \
-               self.hostname() in ("eureka", "alcf", "login1"):
-                self.eureka = 1
-        return self.eureka
-
-    def Customize(self):
-        # ----
-        # Eureka @ Argonne
-        # ----
-        if self.IsRunningOnEureka():
-            if self.domainname() == "gadzooks.alcf.anl.gov":
-                 self.generalArgs.host = "login1-mgmt.gadzooks"
-            else:
-                if domain != "mcs.anl.gov":
-                    self.generalArgs.host = "login1-mgmt.eureka"
-
+    #
+    #  Avoid python home before job is submitted
+    #  
+    def SetupEnvironment(self):
+        super(ANLLauncher, self).SetupEnvironment()
+        UNSETENV("PYTHONHOME")
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
     # be returned.
     #
     def JobSubmitterFactory(self, launch):
-        if launch[:4] == "qsub" or launch[:4] == "msub":
+        if launch[:4] == "qsub":
             return JobSubmitter_qsub_ANL(self)
         return super(ANLLauncher, self).JobSubmitterFactory(launch)
 
 # Launcher creation function
 def createlauncher():
     return ANLLauncher()
+
