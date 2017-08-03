@@ -366,7 +366,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
     EXCEPTION1(InvalidDBTypeException, "The function getGridData could not be located in the library!!!");
   }
 
-#if (1 <= UINTAH_MAJOR_VERSION && 7 <= UINTAH_MINOR_VERSION )
+#if (2 <= UINTAH_MAJOR_VERSION && 0 <= UINTAH_MINOR_VERSION )
   variableExists = (bool (*)(DataArchive*, std::string)) dlsym(libHandle, "variableExists");
   if((error = dlerror()) != NULL) {
     EXCEPTION1(InvalidDBTypeException, "The function variableExists could not be located in the library!!!");
@@ -777,6 +777,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
     scalar->treatAsASCII = false;
     md->Add(scalar);
 
+#if (2 <= UINTAH_MAJOR_VERSION && 1 <= UINTAH_MINOR_VERSION )
     scalar = new avtScalarMetaData();
     scalar->name = "patch_id";
     scalar->meshName = mesh_for_procid;
@@ -784,6 +785,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
     scalar->hasDataExtents = false;
     scalar->treatAsASCII = false;
     md->Add(scalar);
+#endif    
   }
   
 
@@ -1397,7 +1399,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
       //debug5<<"\t(*getParticleData)...\n";
       //todo: this returns an array of doubles. Need to return expected datatype to avoid unnecessary conversion.
 
-#if (1 <= UINTAH_MAJOR_VERSION && 7 <= UINTAH_MINOR_VERSION )
+#if (2 <= UINTAH_MAJOR_VERSION && 0 <= UINTAH_MINOR_VERSION )
       if( variableExists(archive, "p.particleID") )
 #endif
       {
@@ -1536,9 +1538,10 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       
       if (strcmp(varname, "proc_id") == 0 )
         value = patchInfo.getProcId();
+#if (2 <= UINTAH_MAJOR_VERSION && 1 <= UINTAH_MINOR_VERSION )
       else if( strcmp(varname, "patch_id") == 0)
         value = patchInfo.getPatchId();
-      
+#endif      
       for (int i=0; i<ncells; i++) 
         gd->data[i] = value;
     }
