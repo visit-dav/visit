@@ -96,6 +96,7 @@
                     {"platform":"win","category":"databases","file":"vista.py"},
                     {"platform":"win","category":"hybrid","file":"field_operators.py","cases":["field_op_04"]},
                     {"platform":"win","category":"hybrid","file":"movie.py"},
+                    {"platform":"win","category":"hybrid","file":"py_exprs.py"},
                     {"platform":"win","category":"operators" ,"file": "lcs.py"},
                     {"platform":"win","category":"operators" ,"file": "lcs_ic_1.py"},
                     {"platform":"win","category":"operators" ,"file": "lcs_lc_1.py"},
