@@ -2584,9 +2584,9 @@ class AVTGeneratorPlugin : public PluginBase
         h << "" << Endl;
         h << "    virtual void   OpenFile(const std::string &, int nb);" << Endl;
         h << "    virtual void   WriteHeaders(const avtDatabaseMetaData *," << Endl;
-        h << "                                std::vector<std::string> &, " << Endl;
-        h << "                                std::vector<std::string> &," << Endl;
-        h << "                                std::vector<std::string> &);" << Endl;
+        h << "                                const std::vector<std::string> &," << Endl;
+        h << "                                const std::vector<std::string> &," << Endl;
+        h << "                                const std::vector<std::string> &);" << Endl;
         h << "    virtual void   WriteChunk(vtkDataSet *, int);" << Endl;
         h << "    virtual void   CloseFile(void);" << Endl;
         h << "};" << Endl;
@@ -2661,8 +2661,9 @@ class AVTGeneratorPlugin : public PluginBase
         c << "" << Endl;
         c << "void" << Endl;
         c << "avt"<<name<<"Writer::WriteHeaders(const avtDatabaseMetaData *md," << Endl;
-        c << "                           vector<string> &scalars, vector<string> &vectors," << Endl;
-        c << "                           vector<string> &materials)" << Endl;
+        c << "                           const vector<string> &scalars," << Endl;
+        c << "                           const vector<string> &vectors," << Endl;
+        c << "                           const vector<string> &materials)" << Endl;
         c << "{" << Endl;
         c << "    // WRITE OUT HEADER INFO" << Endl;
         c << "}" << Endl;
