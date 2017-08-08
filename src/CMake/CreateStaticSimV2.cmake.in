@@ -107,7 +107,7 @@ get_enabled_plugins("${VISIT_BINARY_DIR}/include/enabled_operators.h"
 list(APPEND visit_libs_ser "ISimV2Database" "ESimV2Database_ser" "IVTKDatabase" "EVTKDatabase_ser")
 IF(VISIT_ENABLE_XDB)
     message(STATUS "Adding XDB to SimV2 static library.")
-    list(APPEND visit_libs_ser "VXDB_ser" "IFieldViewXDBDatabase" "EFieldViewXDBDatabase_ser")
+    list(APPEND visit_libs_ser "XDBLib" "VXDB_ser" "IFieldViewXDBDatabase" "EFieldViewXDBDatabase_ser")
 ENDIF(VISIT_ENABLE_XDB)
 
 if(VISIT_PARALLEL)
@@ -118,7 +118,7 @@ if(VISIT_PARALLEL)
     list(APPEND visit_libs_par "ISimV2Database" "ESimV2Database_par" "IVTKDatabase" "EVTKDatabase_par")
     IF(VISIT_ENABLE_XDB)
         message(STATUS "Adding XDB to parallel SimV2 static library.")
-        list(APPEND visit_libs_par "VXDB_par" "IFieldViewXDBDatabase" "EFieldViewXDBDatabase_par")
+        list(APPEND visit_libs_par "XDBLib" "VXDB_par" "IFieldViewXDBDatabase" "EFieldViewXDBDatabase_par")
     ENDIF(VISIT_ENABLE_XDB)
 endif()
 
