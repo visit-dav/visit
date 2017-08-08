@@ -1117,10 +1117,9 @@ function check_parallel
         # Try and use the Cray wrapper compiler to get MPI options.
         #
         if [[ "$CRAY_MPICH_DIR" != "" ]] ; then
-             # NOTE: I'm assuming we want the GNU programming environment here.
-             # The compiler used by PrgEnv-gnu might be a somewhat different version
-             # than the installed gcc if we have not previously loaded PrgEnv-gnu.
-             CCOUT=$(module unload PrgEnv-pgi ; module unload PrgEnv-intel; module load PrgEnv-gnu ; CC --cray-print-opts=all)
+             # NOTE: Unload darshan and cray-libsci. Otherwise keep the 
+             #       programming environment that is in effect.
+             CCOUT=$(module unload darshan; module unload cray-libsci; CC --cray-print-opts=all)
              ingroup="no"
              arg_rpath=""
              for arg in $CCOUT ; 
@@ -1375,16 +1374,19 @@ function build_hostconf
     echo "##" >> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_C_COMPILER $C_COMPILER TYPE FILEPATH)">> $HOSTCONF
     echo "VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER $CXX_COMPILER TYPE FILEPATH)" >> $HOSTCONF
+    if [[ "$FC_COMPILER" != "" ]] ; then
+        echo "VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER $FC_COMPILER TYPE FILEPATH)" >> $HOSTCONF
+    fi
 
     if [[ "$USE_VISIBILITY_HIDDEN" == "yes" ]] ; then
-        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS ${C_OPT_FLAGS} -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
+        echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS ${CXX_OPT_FLAGS} -fvisibility=hidden\" TYPE STRING)" >> $HOSTCONF
     else
         if test -n "$CFLAGS" ; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS\" TYPE STRING)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_C_FLAGS \"$CFLAGS ${C_OPT_FLAGS}\" TYPE STRING)" >> $HOSTCONF
         fi
         if test -n "$CXXFLAGS" ; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS\" TYPE STRING)" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS \"$CXXFLAGS ${CXX_OPT_FLAGS}\" TYPE STRING)" >> $HOSTCONF
         fi
     fi
 
@@ -1469,6 +1471,10 @@ function build_hostconf
         echo "##" >> $HOSTCONF
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_STATIC ON TYPE BOOL)" >> $HOSTCONF
+        if [[ "$CRAY_MPICH_DIR" != "" ]] ; then
+            echo "# Force static executables on Cray to be 100% statically linked." >> $HOSTCONF
+            echo "SET(VISIT_EXE_LINKER_FLAGS \"-static -static-libgcc -static-libstdc++ -pthread -Wl,-Bstatic\")" >> $HOSTCONF
+        fi
     fi
     if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]]; then
         echo >> $HOSTCONF
@@ -1486,6 +1492,38 @@ function build_hostconf
         echo \
         "VISIT_OPTION_DEFAULT(VISIT_ENGINE_ONLY ON TYPE BOOL)" >> $HOSTCONF
     fi
+
+    # Are we using Mesa/OpenSWR as our GL?
+    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+        if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+            if [[ "$DO_MESA" == "yes" ]] ; then
+                echo "# Set up VisIt to use Mesa as GL." >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_USE_X    OFF TYPE BOOL)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW OFF TYPE BOOL)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_SLIVR    OFF TYPE BOOL)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR  ${MESA_INSTALL_DIR})" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_LIBRARY ${MESA_LIB})" >> $HOSTCONF
+                if [[ "$DO_GLU" == "yes" ]] ; then
+                    echo "VISIT_OPTION_DEFAULT(VISIT_GLU_LIBRARY ${MESA_LIB_DIR}/libGLU.a)" >> $HOSTCONF
+                fi
+            elif [[ "$DO_OPENSWR" == "yes" ]] ; then
+                echo "# Set up VisIt to use OpenSWR as GL." >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_USE_X    OFF TYPE BOOL)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW OFF TYPE BOOL)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_SLIVR    OFF TYPE BOOL)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR  ${OPENSWR_INSTALL_DIR})" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_LIBRARY ${OPENSWR_LIB};${LLVM_LIB})" >> $HOSTCONF
+                if [[ "$DO_GLU" == "yes" ]] ; then
+                    echo "VISIT_OPTION_DEFAULT(VISIT_GLU_LIBRARY ${OPENSWR_LIB_DIR}/libGLU.a)" >> $HOSTCONF
+                fi
+            fi
+        fi
+    fi
+    # Are we on Cray? We might need the socket relay.
+    if [[ "$CRAY_MPICH_DIR" != "" ]] ; then
+        echo "VISIT_OPTION_DEFAULT(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE ON)" >> $HOSTCONF
+    fi
+
     if [[ "$DO_XDB" == "yes" ]]; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
@@ -1569,6 +1607,7 @@ function printvariables
 
     printf "%s%s\n" "C_COMPILER=" "${C_COMPILER}"
     printf "%s%s\n" "CXX_COMPILER=" "${CXX_COMPILER}"
+    printf "%s%s\n" "FC_COMPILER=" "${FC_COMPILER}"
     printf "%s%s\n" "CFLAGS=" "${CFLAGS}"
     printf "%s%s\n" "CXXFLAGS=" "${CXXFLAGS}"
     printf "%s%s\n" "C_OPT_FLAGS=" "${C_OPT_FLAGS}"
@@ -1615,6 +1654,7 @@ function usage
     printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
     printf "%-15s %s [%s]\n" "--download-only" "Only download the specified packages" "false"
     printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
+    printf "%-15s %s [%s]\n" "--fortran" "Enable compilation of Fortran sources" "false"
     printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
     printf "%-15s %s [%s]\n" "-h" "Display this help message." "false"
     printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
@@ -1673,6 +1713,7 @@ function usage
     printf "%-11s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
     printf "%-11s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
     printf "%-11s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
+    printf "%-11s %s [%s]\n" "--fc" "Explicitly set FC_COMPILER" "$FC_COMPILER"
     printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
     printf "%s <%s> %s\n" "--svn" \
            "Obtain VisIt source code and third party libraries from the SVN server"

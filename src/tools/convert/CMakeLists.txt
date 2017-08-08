@@ -124,6 +124,7 @@ VISIT_TOOLS_ADD_FOLDER(convert visitconvert_ser)
 IF(VISIT_DBIO_ONLY)
     SET_TARGET_PROPERTIES(visitconvert_ser PROPERTIES OUTPUT_NAME visitconvert_ser_lite)
     TARGET_LINK_LIBRARIES(visitconvert_ser 
+        ${VISIT_EXE_LINKER_FLAGS}
         ${engine_ser_exe_IDatabase}
         ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
@@ -135,12 +136,13 @@ IF(VISIT_DBIO_ONLY)
         ${ALL_THIRDPARTY_IO_LIB} 
         ${VTK_EXTRA_LIBS}
         ${MESA_LIBS}
-        ${GL_LIBS}
+        ${OPENGL_LIBRARIES}
         ${CMAKE_THREAD_LIBS} 
         ${ZLIB_LIB}
     )
 ELSE(VISIT_DBIO_ONLY)
     TARGET_LINK_LIBRARIES(visitconvert_ser 
+        ${VISIT_EXE_LINKER_FLAGS}
         ${engine_ser_exe_IDatabase}
         ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
@@ -160,7 +162,7 @@ ELSE(VISIT_DBIO_ONLY)
         ${ALL_THIRDPARTY_IO_LIB} 
         ${VTK_EXTRA_LIBS}
         ${MESA_LIBS}
-        ${GL_LIBS}
+        ${OPENGL_LIBRARIES}
         ${CMAKE_THREAD_LIBS} 
         ${ZLIB_LIB}
     )
@@ -196,7 +198,7 @@ IF(VISIT_PARALLEL)
             ${ALL_THIRDPARTY_IO_LIB} 
             ${VTK_EXTRA_LIBS}
             ${MESA_LIBS}
-            ${GL_LIBS}
+            ${OPENGL_LIBRARIES}
             ${CMAKE_THREAD_LIBS} 
             ${ZLIB_LIB} 
         )
@@ -221,7 +223,7 @@ IF(VISIT_PARALLEL)
             ${ALL_THIRDPARTY_IO_LIB} 
             ${VTK_EXTRA_LIBS}
             ${MESA_LIBS}
-            ${GL_LIBS}
+            ${OPENGL_LIBRARIES}
             ${CMAKE_THREAD_LIBS} 
             ${ZLIB_LIB} 
         )

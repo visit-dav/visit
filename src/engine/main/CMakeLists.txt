@@ -186,6 +186,7 @@ ENDIF(MESA_FOUND)
 ADD_EXECUTABLE(engine_ser_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_SER_RESOURCE_FILE})
 SET_TARGET_PROPERTIES(engine_ser_exe PROPERTIES OUTPUT_NAME engine_ser)
 TARGET_LINK_LIBRARIES(engine_ser_exe 
+    ${VISIT_EXE_LINKER_FLAGS}
     ${engine_ser_exe_IDatabase}
     ${engine_ser_exe_EDatabase_ser}
     ${engine_ser_exe_IOperator}

@@ -72,6 +72,21 @@ function bv_mesa_selected
     return 0
 }
 
+function bv_mesa_initialize_vars
+{
+    info "initalizing mesa vars"
+    if [[ "$DO_MESA" == "yes" ]]; then
+        MESA_INSTALL_DIR="${VISITDIR}/mesa/${MESA_VERSION}/${VISITARCH}"
+        MESA_INCLUDE_DIR="${MESA_INSTALL_DIR}/include"
+        MESA_LIB_DIR="${MESA_INSTALL_DIR}/lib"
+        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+            MESA_LIB="${MESA_LIB_DIR}/libOSMesa.a"
+        else
+            MESA_LIB="${MESA_LIB_DIR}/libOSMesa.${SO_EXT}"
+        fi
+    fi
+}
+
 function bv_mesa_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then

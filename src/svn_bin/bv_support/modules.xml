@@ -24,6 +24,7 @@
             <lib name="fastbit"/>
             <lib name="fastquery"/>
             <lib name="gdal"/>
+            <lib name="glu"/>
             <lib name="h5part"/>
             <lib name="hdf4"/>
             <lib name="hdf5"/>
@@ -72,6 +73,7 @@
             <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="gdal"/>
+            <lib name="glu"/>
             <lib name="fastbit"/>
             <lib name="fastquery"/>
             <lib name="hdf5"/>
@@ -162,6 +164,7 @@
             #all the optional non io libraries
         -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
+            <lib name="glu"/>
             <lib name="icet"/>
             <lib name="llvm"/>
             <lib name="mesa"/>
@@ -200,6 +203,7 @@
             <lib name="boost"/>
             <lib name="szip"/>
             <lib name="netcdf"/>
+            <lib name="glu"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="llvm"/>
@@ -266,6 +270,7 @@
         </group>
         <!-- #all the optional non io libraries -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
+            <lib name="glu"/>
             <lib name="icet"/>
             <lib name="llvm"/>
             <lib name="mesa"/>

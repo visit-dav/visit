@@ -780,6 +780,29 @@ function build_vtk
         vopts="${vopts} -DR_LIBRARY_BLAS:PATH=${R_INSTALL_DIR}/lib/R/lib/libRblas.${SO_EXT}"
     fi
 
+    # Use our Mesa or OpenSWR as GL? We want to do this if we're doing a server or engine only
+    # build and we're building statiically and we requested mesa or openswr.
+    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+        if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+            if [[ "$DO_MESA" == "yes" ]] ; then
+                vopts="${vopts} -DVTK_USE_X:BOOL=OFF -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+                vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESA_INCLUDE_DIR}"
+                vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${MESA_LIB};${LLVM_LIB}\""
+                vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${GLU_LIB}"
+                vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${MESA_LIB};${LLVM_LIB}\""
+                vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESA_INCLUDE_DIR}"
+            fi
+            if [[ "$DO_OPENSWR" == "yes" ]] ; then
+                vopts="${vopts} -DVTK_USE_X:BOOL=OFF -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+                vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${OPENSWR_INCLUDE_DIR}"
+                vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${OPENSWR_LIB};${LLVM_LIB}\""
+                vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${GLU_LIB}"
+                vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${OPENSWR_LIB};${LLVM_LIB}\""
+                vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${OPENSWR_INCLUDE_DIR}"
+            fi
+        fi
+    fi
+
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}
 

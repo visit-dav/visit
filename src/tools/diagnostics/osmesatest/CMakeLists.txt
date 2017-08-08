@@ -77,10 +77,10 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 ADD_EXECUTABLE(osmesatest_ser osmesatest.cpp)
-TARGET_LINK_LIBRARIES(osmesatest_ser ${MESA_LIBRARY_DIR}/${MESA_LIB} ${LIBDL} ${PTHREAD})
+TARGET_LINK_LIBRARIES(osmesatest_ser ${VISIT_EXE_LINKER_FLAGS} ${MESA_LIBRARY_DIR}/${MESA_LIB} ${LIBDL} ${PTHREAD})
 
 ADD_EXECUTABLE(osmesavtktest_ser osmesavtktest.cpp)
-TARGET_LINK_LIBRARIES(osmesavtktest_ser visit_vtk_osmesa visitcommon ${REQUIRED_VTK_LIBS} ${LIBDL} ${PTHREAD})
+TARGET_LINK_LIBRARIES(osmesavtktest_ser ${VISIT_EXE_LINKER_FLAGS} visit_vtk_osmesa visitcommon ${REQUIRED_VTK_LIBS} ${LIBDL} ${PTHREAD})
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_EXECUTABLE(osmesatest_par osmesatest.cpp)

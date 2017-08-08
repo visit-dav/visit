@@ -842,6 +842,7 @@ function run_build_visit()
                 cc) C_COMPILER="${arg}";;
                 cxx) CXX_COMPILER="${arg}";;
                 database-plugins) VISIT_SELECTED_DATABASE_PLUGINS="${arg}";;
+                fc) FC_COMPILER="${arg}"; DO_FORTRAN="yes"; ON_FORTRAN="on";;
                 log-file) LOG_FILE="${arg}";;
                 makeflags) MAKE_OPT_FLAGS="${arg}";;
                 prefix) VISIT_INSTALL_PREFIX="${arg}";;
@@ -945,6 +946,7 @@ function run_build_visit()
             --engine-only) DO_ENGINE_ONLY="yes";;
             --flags-debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;
             --gdal) DO_GDAL="yes"; ON_GDAL="on";;
+            --fc) next_arg="fc";;
             --fortran) DO_FORTRAN="yes"; ON_FORTRAN="on";;
             --group) next_arg="group"; DO_GROUP="yes"; ON_GROUP="on";;
             -h|--help) next_action="help";;
