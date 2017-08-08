@@ -390,11 +390,11 @@ ENDIF(VISIT_STATIC)
 # If we're not building statically, add SimV2.
 # If we're not building statically, add XDB -- if we enabled it.
 IF(NOT VISIT_STATIC)
-    IF(VISIT_ENABLE_XDB)
-        SET(XDBPLUGIN FieldViewXDB)
-    ENDIF(VISIT_ENABLE_XDB)
     SET(SIMV2_PLUGIN SimV2)
 ENDIF(NOT VISIT_STATIC)
+IF(VISIT_ENABLE_XDB)
+    SET(XDBPLUGIN FieldViewXDB)
+ENDIF(VISIT_ENABLE_XDB)
 
 # These are our required plugins (no external dependencies)
 SET(REQUIRED_DATABASE_PLUGINS
