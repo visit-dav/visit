@@ -53,7 +53,16 @@ function bv_openswr_graphical
 
 function bv_openswr_host_profile
 {
-    if [[ "$DO_OPENSWR" == "yes" ]] ; then
+    # If we are using openswr as the GL for VTK in a static build, we'll tell VisIt
+    # about openswr using a different mechanism.
+    addhp="yes"
+    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+        if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+            addhp="no"
+        fi
+    fi
+
+    if [[ "$DO_OPENSWR" == "yes" && "$addhp" == "yes" ]] ; then
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## OpenSWR" >> $HOSTCONF
@@ -72,6 +81,21 @@ function bv_openswr_selected
     fi
 
     return 0
+}
+
+function bv_openswr_initialize_vars
+{
+    info "initalizing openswr vars"
+    if [[ "$DO_OPENSWR" == "yes" ]]; then
+        OPENSWR_INSTALL_DIR="${VISITDIR}/openswr/${OPENSWR_VERSION}/${VISITARCH}"
+        OPENSWR_INCLUDE_DIR="${OPENSWR_INSTALL_DIR}/include"
+        OPENSWR_LIB_DIR="${OPENSWR_INSTALL_DIR}/lib"
+        if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+            OPENSWR_LIB="${OPENSWR_LIB_DIR}/libOSMesa.a"
+        else
+            OPENSWR_LIB="${OPENSWR_LIB_DIR}/libOSMesa.${SO_EXT}"
+        fi
+    fi
 }
 
 function bv_openswr_ensure

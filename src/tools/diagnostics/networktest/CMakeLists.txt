@@ -52,10 +52,10 @@ ${LIBRARY_OUTPUT_DIRECTORY}
 )
 
 ADD_EXECUTABLE(networktestclient networktestclient.cpp)
-TARGET_LINK_LIBRARIES(networktestclient visitcommon)
+TARGET_LINK_LIBRARIES(networktestclient ${VISIT_EXE_LINKER_FLAGS} visitcommon)
 
 ADD_EXECUTABLE(networktestserver networktestserver.cpp)
-TARGET_LINK_LIBRARIES(networktestserver visitcommon)
+TARGET_LINK_LIBRARIES(networktestserver ${VISIT_EXE_LINKER_FLAGS} visitcommon)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_EXECUTABLE(networktestserver_par networktestserver.cpp)
