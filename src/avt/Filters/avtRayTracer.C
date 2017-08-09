@@ -612,6 +612,10 @@ avtRayTracer::checkInBounds(double volBounds[6], double coord[3])
 //    Pascal Grosset & Manasa Prasad, Fri Aug 20 2016
 //    Add the ray casting SLIVR code
 //
+//    Qi WU, Tue Aug 8 2017
+//    Fix camera matrices multiplication order for ray casting SLIVR
+//    Also fixed panning for ray casting SLIVR
+//
 // ****************************************************************************
 
 void
@@ -725,8 +729,8 @@ avtRayTracer::Execute(void)
         double _clip[2];
         _clip[0]=oldNearPlane;  _clip[1]=oldFarPlane;
 
-        panPercentage[0] = view.imagePan[0];
-        panPercentage[1] = view.imagePan[1];
+        panPercentage[0] = view.imagePan[0] * view.imageZoom;
+        panPercentage[1] = view.imagePan[1] * view.imageZoom;
 
 
         // Scaling
@@ -749,11 +753,16 @@ avtRayTracer::Execute(void)
         vtkMatrix4x4 *vm = vtkMatrix4x4::New();
         vtkMatrix4x4 *vmInit = sceneCam->GetModelViewTransformMatrix();
 
-        vmInit->Transpose();
-        imageZoomAndPan->Transpose();
+        //
+        //? why we use zoom&pan * scale * vmInit here ?
+        // vmInit->Transpose();
+        // imageZoomAndPan->Transpose();
+        // vtkMatrix4x4::Multiply4x4(vmInit, scaletrans, tmp);
+        // vtkMatrix4x4::Multiply4x4(tmp, imageZoomAndPan, vm);
+        // vm->Transpose();
+        //
         vtkMatrix4x4::Multiply4x4(vmInit, scaletrans, tmp);
-        vtkMatrix4x4::Multiply4x4(tmp, imageZoomAndPan, vm);
-        vm->Transpose();
+        vtkMatrix4x4::Multiply4x4(imageZoomAndPan, tmp, vm);
 
         // Projection: http://www.codinglabs.net/article_world_view_projection_matrix.aspx
         vtkMatrix4x4 *p = sceneCam->GetProjectionTransformMatrix(aspect,oldNearPlane, oldFarPlane);
@@ -817,7 +826,7 @@ avtRayTracer::Execute(void)
         extractor.SetViewDirection(view_direction);
         extractor.SetTransferFn(transferFn1D);
         extractor.SetClipPlanes(_clip);
-        extractor.SetPanPercentages(view.imagePan);
+        extractor.SetPanPercentages(panPercentage);
         extractor.SetDepthExtents(depthExtents);
         extractor.SetMVPMatrix(pvm);
 
