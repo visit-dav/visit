@@ -229,6 +229,9 @@ avtOpacityMap::QuantizeValF(const double &val){
 //
 //  Modifications:
 //
+//    Qi Wu, Tue Aug 8 12:47:52 MT 2017
+//    Fixed index overflow problem when the scalar value reaches its maximum
+//
 // ****************************************************************************
 inline int
 avtOpacityMap::QueryTF(double scalarValue, double color[4])
@@ -261,7 +264,7 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4])
     double colorLow[4], colorHigh[4];
     float indexPos, indexDiff;
 
-    indexPos  = (scalarValue-min)/(max-min) *tableEntries;    // multiplier = 1.0/(max-min) * tableEntries
+    indexPos  = (scalarValue-min)/(max-min) * (tableEntries-1);    // multiplier = 1.0/(max-min) * tableEntries
     indexLow  = (int)indexPos;
     indexHigh = (int)(indexPos+1.0);
 
@@ -288,5 +291,3 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4])
 }
 
 #endif
-
-
