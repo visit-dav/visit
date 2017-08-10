@@ -46,19 +46,23 @@
 #include <string>
 
 #include <vtkCellData.h>
+#include <vtkCompositeDataSet.h>
 #include <vtkDataArray.h>
 #include <vtkDataArrayCollection.h>
 #include <vtkDataArraySelection.h>
-#include <vtkFloatArray.h>
-#include <vtkPointData.h>
 #include <vtkDataSet.h>
-#include <vtkEnSightReader.h>
-#include <vtkEnSightGoldBinaryReader.h>
-#include <vtkEnSightGoldReader.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkEnSight6BinaryReader.h>
 #include <vtkEnSight6Reader.h>
+#include <vtkEnSightGoldBinaryReader.h>
+#include <vtkEnSightGoldReader.h>
+#include <vtkEnSightReader.h>
 #include <vtkGenericEnSightReader.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredPoints.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
@@ -85,11 +89,16 @@ using std::string;
 //  Programmer:  Hank Childs
 //  Creation:    April 22, 2003
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Aug 10 14:51:53 MST 2017
+//    Add support for particles.
+//
 // ****************************************************************************
 
 avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
     : avtMTMDFileFormat(fname)
 {
+    hasParticles = false;
     InstantiateReader(fname);
     doneUpdate = false;
 }
@@ -131,6 +140,9 @@ avtEnSightFileFormat::avtEnSightFileFormat(const char *fname)
 //    Kathleen Biagas, Tue Apr 26 08:05:53 PDT 2016
 //    Utilize 'filename  start number' (if present) when substituting
 //    wildcards for geometry name.
+//
+//    Kathleen Biagas, Thu Aug 10 14:51:53 MST 2017
+//    Add support for particles.
 //
 // ****************************************************************************
 
@@ -187,6 +199,8 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
             type_line = line;
         if(line.find("model:") != std::string::npos)
             model_line = line;
+        if(line.find("measured:") != std::string::npos)
+            hasParticles = true;
         if(line.find("filename start number:") != std::string::npos)
         {
             std::string fileStart = line.substr(line.find(":")+1);
@@ -231,8 +245,8 @@ avtEnSightFileFormat::InstantiateReader(const char *fname_c)
     //
     // There may be wildcards in the case name.  If so, and we have a valid
     // 'filename start number' then substitute in that number, otherwise,
-    // substitute 001 for any *** (or 0001 for ****, etc).  This way we can get the
-    // name of a valid geometry file to open.
+    // substitute 001 for any *** (or 0001 for ****, etc).  This way we can
+    // get the name of a valid geometry file to open.
     //
 
     string model_name = model_line.substr(lastword);
@@ -374,6 +388,9 @@ avtEnSightFileFormat::~avtEnSightFileFormat()
 //    This may lead to unnecessary reads (when materials are present, but not
 //    being used), but doing better takes big effort.
 //
+//    Kathleen Biagas, Thu Aug 10 14:51:53 MST 2017
+//    Add support for particles.
+//
 // ****************************************************************************
 
 void
@@ -405,13 +422,25 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
     {
         if (strcmp(vars[j], "mesh") == 0)
             continue;
+        if (strcmp(vars[j], "particles") == 0)
+            continue;
         if (strcmp(vars[j], "materials") == 0)
             continue;
         if (strcmp(vars[j], "parts") == 0)
             continue;
+        if (strcmp(vars[j], "parts(mesh)") == 0)
+            continue;
+        if (strcmp(vars[j], "parts(particles)") == 0)
+            continue;
 
-        const char *name = vars[j];
-
+        string name(vars[j]);
+        if (hasParticles)
+        {
+            // vars are split up by mesh name, eg mesh/var1 particles/pvar1
+            size_t pos = name.rfind('/');
+            if (pos != string::npos)
+                name = name.substr(pos+1);
+        }
         bool isNodal = false;
         bool foundVar = false;
         if (!foundVar)
@@ -421,7 +450,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             {
                 const char *desc = reader->GetDescription(i,
                                        vtkEnSightReader::SCALAR_PER_NODE);
-                if (strcmp(name, desc) == 0)
+                if (name == desc)
                 {
                     isNodal = true;
                     foundVar = true;
@@ -436,7 +465,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             {
                 const char *desc = reader->GetDescription(i,
                                     vtkEnSightReader::SCALAR_PER_ELEMENT);
-                if (strcmp(name, desc) == 0)
+                if (name == desc)
                 {
                     isNodal = false;
                     foundVar = true;
@@ -451,7 +480,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             {
                 const char *desc = reader->GetDescription(i,
                                        vtkEnSightReader::VECTOR_PER_NODE);
-                if (strcmp(name, desc) == 0)
+                if (name == desc)
                 {
                     isNodal = true;
                     foundVar = true;
@@ -466,7 +495,7 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
             {
                 const char *desc = reader->GetDescription(i,
                                     vtkEnSightReader::VECTOR_PER_ELEMENT);
-                if (strcmp(name, desc) == 0)
+                if (name == desc)
                 {
                     isNodal = false;
                     foundVar = true;
@@ -474,19 +503,50 @@ avtEnSightFileFormat::RegisterVariableList(const char *primVar,
                 }
             }
         }
+        if (hasParticles)
+        {
+            if (!foundVar)
+            {
+                int nsz = reader->GetNumberOfScalarsPerMeasuredNode();
+                for (int i = 0 ; i < nsz ; i++)
+                {
+                    const char *desc = reader->GetDescription(i,
+                           vtkEnSightReader::SCALAR_PER_MEASURED_NODE);
+                    if (name == desc)
+                    {
+                        isNodal = true;
+                        foundVar = true;
+                        break;
+                    }
+                }
+            }
+            if (!foundVar)
+            {
+                int nsz = reader->GetNumberOfVectorsPerMeasuredNode();
+                for (int i = 0 ; i < nsz ; i++)
+                {
+                    const char *desc = reader->GetDescription(i,
+                           vtkEnSightReader::VECTOR_PER_MEASURED_NODE);
+                    if (name == desc)
+                    {
+                        isNodal = true;
+                        foundVar = true;
+                        break;
+                    }
+                }
+            }
+        }
 
         if (!foundVar)
             EXCEPTION1(InvalidVariableException, name);
 
-        char *vname = (char *) name; // remove const for VTK.
-
         if (isNodal)
         {
-            reader->GetPointDataArraySelection()->EnableArray(vname);
+            reader->GetPointDataArraySelection()->EnableArray(name.c_str());
         }
         else
         {
-            reader->GetCellDataArraySelection()->EnableArray(vname);
+            reader->GetCellDataArraySelection()->EnableArray(name.c_str());
         }
     }
 
@@ -613,6 +673,39 @@ avtEnSightFileFormat::GetTimes(std::vector<double> &times)
     debug4 << "}" << endl;
 }
 
+
+// ****************************************************************************
+//  Method: avtEnSightFileFormat::ConvertDomainToBlock
+//
+//  Purpose:
+//      Converts domain id to the correct block Id for the mesh.
+//
+//  Arguments:
+//      dom         The domain.
+//      meshName    The mesh name.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 10, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtEnSightFileFormat::ConvertDomainToBlock(int dom, const string &meshName)
+{
+    int blockId = dom;
+    if (hasParticles)
+    {
+        if (meshName == "mesh")
+           blockId = stdBlockIds[dom];
+        else if (meshName == "particles")
+           blockId = particleBlockIds[dom];
+    }
+    return blockId;
+}
+
+
 // ****************************************************************************
 //  Method: avtEnSightFileFormat::GetMesh
 //
@@ -641,7 +734,7 @@ avtEnSightFileFormat::GetMesh(int ts, int dom, const char *name)
         EXCEPTION2(BadIndexException, ts, GetNTimesteps());
     }
 
-    if (strcmp(name, "mesh") != 0)
+    if (strcmp(name, "mesh") != 0  && strcmp(name, "particles") != 0)
     {
         EXCEPTION1(InvalidVariableException, name);
     }
@@ -653,9 +746,15 @@ avtEnSightFileFormat::GetMesh(int ts, int dom, const char *name)
         reader->Update();
         doneUpdate = true;
     }
-    vtkDataSet *rv = (vtkDataSet *)reader->GetOutput()->GetBlock(dom)->NewInstance();
+
+    int blockId = ConvertDomainToBlock(dom, name);
+
+    vtkDataSet *rv =
+       (vtkDataSet *)reader->GetOutput()->GetBlock(blockId)->NewInstance();
+
     if(rv != NULL)
-        rv->CopyStructure((vtkDataSet *)reader->GetOutput()->GetBlock(dom));
+       rv->CopyStructure((vtkDataSet *)
+                         reader->GetOutput()->GetBlock(blockId));
 
     return rv;
 }
@@ -679,6 +778,9 @@ avtEnSightFileFormat::GetMesh(int ts, int dom, const char *name)
 //    Hank Childs, Fri Jul  9 07:37:46 PDT 2004
 //    Account for multiple parts.  Also, allow for multiple variables.
 //
+//    Kathleen Biagas, Thu Aug 10 15:18:51 MST 2017
+//    Add support for particles, and vars not defined on all parts.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -697,23 +799,39 @@ avtEnSightFileFormat::GetVar(int ts, int dom, const char *name)
         doneUpdate = true;
     }
 
-    vtkDataArray *rv = NULL;
-    vtkDataSet *block = (vtkDataSet *) reader->GetOutput()->GetBlock(dom);
-    if (block->GetPointData()->GetArray(name) != NULL)
+    int blockId = dom;
+    string vname(name);
+    if (hasParticles)
     {
-        vtkDataArray *dat = block->GetPointData()->GetArray(name);
+        // vars are split up by mesh name, eg mesh/var1 particles/pvar1
+        size_t pos = vname.rfind('/');
+        if (pos != string::npos)
+        {
+            string mesh(vname.substr(0, pos));
+            vname = vname.substr(pos+1);
+            blockId = ConvertDomainToBlock(dom, mesh);
+        }
+    }
+    vtkDataArray *rv = NULL;
+    vtkDataSet *block = (vtkDataSet *) reader->GetOutput()->GetBlock(blockId);
+    if (block->GetPointData()->GetArray(vname.c_str()) != NULL)
+    {
+        vtkDataArray *dat = block->GetPointData()->GetArray(vname.c_str());
         rv = dat;
         rv->Register(NULL);
     }
-    else if (block->GetCellData()->GetArray(name) != NULL)
+    else if (block->GetCellData()->GetArray(vname.c_str()) != NULL)
     {
-        vtkDataArray *dat = block->GetCellData()->GetArray(name);
+        vtkDataArray *dat = block->GetCellData()->GetArray(vname.c_str());
         rv = dat;
         rv->Register(NULL);
     }
     else
     {
-        EXCEPTION1(InvalidVariableException, name);
+        // We are looking for valid var that isn't defined on this
+        // part, so returning NULL is acceptable.
+        debug3 << "avtEnSightFileFormat could not find scalar var " << vname
+               << " for part " << blockId << endl;
     }
 
     return rv;
@@ -739,6 +857,9 @@ avtEnSightFileFormat::GetVar(int ts, int dom, const char *name)
 //    Account for multiple parts.  Also allow for the reading of multiple
 //    variables.
 //
+//    Kathleen Biagas, Thu Aug 10 15:18:51 MST 2017
+//    Add support for particles, and vars not defined on all parts.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -757,26 +878,225 @@ avtEnSightFileFormat::GetVectorVar(int ts, int dom, const char *name)
         doneUpdate = true;
     }
 
-    vtkDataArray *rv = NULL;
-    vtkDataSet *block = (vtkDataSet *) reader->GetOutput()->GetBlock(dom);
-    if (block->GetPointData()->GetArray(name) != NULL)
+    int blockId = dom;
+    string vname(name);
+    if (hasParticles)
     {
-        vtkDataArray *dat = block->GetPointData()->GetArray(name);
+        // vars are split up by mesh name, eg mesh/var1 particles/pvar1
+        size_t pos = vname.rfind('/');
+        if (pos != string::npos)
+        {
+            string mesh(vname.substr(0, pos));
+            vname = vname.substr(pos+1);
+            blockId = ConvertDomainToBlock(dom, mesh);
+        }
+    }
+
+    vtkDataArray *rv = NULL;
+    vtkDataSet *block = (vtkDataSet *) reader->GetOutput()->GetBlock(blockId);
+    if (block->GetPointData()->GetArray(vname.c_str()) != NULL)
+    {
+        vtkDataArray *dat = block->GetPointData()->GetArray(vname.c_str());
         rv = dat;
         rv->Register(NULL);
     }
-    else if (block->GetCellData()->GetArray(name) != NULL)
+    else if (block->GetCellData()->GetArray(vname.c_str()) != NULL)
     {
-        vtkDataArray *dat = block->GetCellData()->GetArray(name);
+        vtkDataArray *dat = block->GetCellData()->GetArray(vname.c_str());
         rv = dat;
         rv->Register(NULL);
     }
     else
     {
-        EXCEPTION1(InvalidVariableException, name);
+        // We are looking for valid var that isn't defined on this
+        // part, so returning NULL is acceptable.
+        debug3 << "avtEnSightFileFormat could not find vector var " << vname
+               << " for part " << blockId << endl;
     }
 
     return rv;
+}
+
+
+// ****************************************************************************
+//  Method: MeshTypeFromObjectType 
+//
+//  Purpose:
+//      Helper function to convert a VTK dataset type to avtMeshType. 
+//      An in-exhaustive conversion, as only type supported by EnSight
+//      format are considered.
+//
+//  Arguments:
+//      vtk_object_type   The vtk object type.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   August 10, 2017 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtMeshType
+MeshTypeFromObjectType(int vtk_object_type)
+{
+    avtMeshType mt = AVT_UNKNOWN_MESH;
+    switch (vtk_object_type)
+    {
+        case VTK_POLY_DATA:
+             // This may need to be changed to POINT_MESH
+             mt = AVT_SURFACE_MESH;
+             break;
+        case VTK_UNSTRUCTURED_GRID:
+             mt = AVT_UNSTRUCTURED_MESH;
+             break;
+        case VTK_STRUCTURED_GRID:
+             mt = AVT_CURVILINEAR_MESH;
+             break;
+        case VTK_RECTILINEAR_GRID:
+             mt= AVT_RECTILINEAR_MESH;
+             break;
+        default:
+             mt = AVT_UNKNOWN_MESH;
+             break;
+    }
+    return mt;
+}
+
+
+// ****************************************************************************
+//  Method: GetMeshType
+//
+//  Purpose:
+//      Helper function to retrieve the mesh type from a multiblock dataset. 
+//
+//  Notes:  Looks only at block 0. Assumes the rest conform (particles have
+//          already been considered).
+//
+//  Arguments:
+//      mbds    The multiblock dataset.
+//  
+//  Programmer: Kathleen Biagas
+//  Creation:   August 10, 2017 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtMeshType
+GetMeshType(vtkMultiBlockDataSet *mbds)
+{
+    if (mbds == NULL)
+        return AVT_UNKNOWN_MESH;
+
+    vtkDataObject *block = mbds->GetBlock(0);
+    if (block != NULL)
+    {
+        if (block->GetDataObjectType() == VTK_MULTIBLOCK_DATA_SET)
+        {
+            return GetMeshType(vtkMultiBlockDataSet::SafeDownCast(block));
+        }
+        else
+        {
+            return MeshTypeFromObjectType(block->GetDataObjectType()); 
+        }
+    }
+    return AVT_UNKNOWN_MESH;
+}
+
+
+// ****************************************************************************
+//  Method: DistinguishBlockTypes
+//
+//  Purpose:
+//      Helper function to distinguish which blocks are standard, and
+//      which are particle.  Stores ids in appropriate vector for later use.
+//
+//  Arguments:
+//     mbds     The multibblock dataset.
+//     stdIds   Storage for 'standard' (non particle) block ids.
+//     particleIds   Storage for particle block ids.
+//     index    For recursive calls.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 10, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+DistinguishBlockTypes(vtkMultiBlockDataSet *mbds,
+    vector<int> &stdIds, vector<int> &particleIds, int index)
+{
+    if (mbds == NULL)
+        return;
+
+    int nb = mbds->GetNumberOfBlocks();
+    for (int i = 0; i < nb; ++i)
+    {
+        vtkDataObject *block = mbds->GetBlock(i);
+        if (block != NULL)
+        {
+            if (block->GetDataObjectType() == VTK_MULTIBLOCK_DATA_SET)
+            {
+                DistinguishBlockTypes(
+                     vtkMultiBlockDataSet::SafeDownCast(block),
+                     stdIds, particleIds, i);
+            }
+            else
+            {
+                if (block->GetDataObjectType() == VTK_POLY_DATA)
+                {
+                    particleIds.push_back(index + i);
+                }
+                else
+                {
+                    stdIds.push_back(index + i);
+                } 
+            }
+        }
+    }
+}
+
+
+// ****************************************************************************
+//  Method: GetBlockNames
+//
+//  Purpose:
+//      Helper function to retrieve part names from the dataset if available.
+//
+//  Arguments:
+//    mbds      The multiblock dataset.
+//    ids       The block ids for the datset.
+//    names     Storage for the block names.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 10, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+GetBlockNames(vtkMultiBlockDataSet *mbds, vector<int> ids,
+              vector<string> &names)
+{
+    for (size_t i = 0; i < ids.size(); ++i)
+    {
+        string name;
+        if (mbds->HasMetaData(ids[i]))
+        {
+            if (mbds->GetMetaData(ids[i])->Get(vtkCompositeDataSet::NAME()) != NULL)
+                name = mbds->GetMetaData(ids[i])->Get(vtkCompositeDataSet::NAME());
+        }
+        if (name.empty())
+        {
+            std::ostringstream ss;
+            ss << "part" << ids[i];
+            name = ss.str();
+        }
+        names.push_back(name);
+    }
 }
 
 
@@ -800,6 +1120,10 @@ avtEnSightFileFormat::GetVectorVar(int ts, int dom, const char *name)
 //    Hank Childs, Thu Feb 23 09:54:50 PST 2012
 //    Add support for materials when "volume_fraction" scalars are present.
 //
+//    Kathleen Biagas, Thu Aug 10 14:51:53 MST 2017
+//    Add support for particle blocks, retrieving block names and actual
+//    mesh type.
+//
 // ****************************************************************************
 
 void
@@ -812,49 +1136,107 @@ avtEnSightFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
     reader->GetCellDataArraySelection()->RemoveAllArrays();
     reader->Update();
 
-    int  i;
+    vtkMultiBlockDataSet *mbds = reader->GetOutput();
+
+    particleBlockIds.clear();
+    stdBlockIds.clear();
+
+    DistinguishBlockTypes(mbds, stdBlockIds, particleBlockIds, 0);
+
+    vector< string > blockNames;
+    GetBlockNames(mbds, stdBlockIds, blockNames);
 
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "mesh";
-    mesh->meshType = AVT_UNSTRUCTURED_MESH;
-    mesh->numBlocks = reader->GetOutput()->GetNumberOfBlocks();
-    mesh->blockOrigin = 1;
+    mesh->meshType = GetMeshType(mbds);
+    mesh->numBlocks = (int) stdBlockIds.size();
     mesh->blockTitle = "parts";
-    mesh->blockPieceName = "part";
+    mesh->blockNames = blockNames;
     mesh->spatialDimension = 3;
     mesh->topologicalDimension = 3;
     mesh->hasSpatialExtents = false;
     md->Add(mesh);
 
-    for (i = 0 ; i < reader->GetNumberOfScalarsPerNode() ; i++)
+    if (hasParticles)
+    {
+        avtMeshMetaData *pmesh = new avtMeshMetaData;
+        pmesh->name = "particles";
+        pmesh->meshType = AVT_POINT_MESH;
+        pmesh->numBlocks = (int) particleBlockIds.size();
+        blockNames.clear();
+        GetBlockNames(mbds, particleBlockIds, blockNames);
+        pmesh->blockTitle = "parts";
+        pmesh->blockNames = blockNames;
+        pmesh->spatialDimension = 3;
+        pmesh->topologicalDimension = 1;
+        pmesh->hasSpatialExtents = false;
+        md->Add(pmesh);
+    }
+
+    for (int i = 0 ; i < reader->GetNumberOfScalarsPerNode() ; i++)
     {
         const char *name = reader->GetDescription(i,
                                        vtkEnSightReader::SCALAR_PER_NODE);
-        AddScalarVarToMetaData(md, name, "mesh", AVT_NODECENT);
+        string vname(name);
+        if (hasParticles)
+            vname = string("mesh/") + vname;
+
+        AddScalarVarToMetaData(md, vname, "mesh", AVT_NODECENT);
+    }
+
+    if (hasParticles)
+    {
+        for (int i = 0 ; i < reader->GetNumberOfScalarsPerMeasuredNode() ; i++)
+        {
+            string vname("particles/");
+            vname += reader->GetDescription(i,
+                           vtkEnSightReader::SCALAR_PER_MEASURED_NODE);
+            AddScalarVarToMetaData(md, vname, "particles", AVT_NODECENT);
+        }
     }
 
     matnames.clear();
-    for (i = 0 ; i < reader->GetNumberOfScalarsPerElement() ; i++)
+    for (int i = 0 ; i < reader->GetNumberOfScalarsPerElement() ; i++)
     {
         const char *name = reader->GetDescription(i,
                                     vtkEnSightReader::SCALAR_PER_ELEMENT);
-        AddScalarVarToMetaData(md, name, "mesh", AVT_ZONECENT);
+        string vname(name);
+        if (hasParticles)
+            vname = string("mesh/") + vname;
+        AddScalarVarToMetaData(md, vname, "mesh", AVT_ZONECENT);
         if (strncmp(name, "volume_fraction", strlen("volume_fraction")) == 0)
             matnames.push_back(name);
     }
 
-    for (i = 0 ; i < reader->GetNumberOfVectorsPerNode() ; i++)
+    for (int i = 0 ; i < reader->GetNumberOfVectorsPerNode() ; i++)
     {
         const char *name = reader->GetDescription(i,
-                                       vtkEnSightReader::VECTOR_PER_NODE);
-        AddVectorVarToMetaData(md, name, "mesh", AVT_NODECENT);
+                vtkEnSightReader::VECTOR_PER_NODE);
+        string vname(name);
+        if (hasParticles)
+            vname = string("mesh/") + vname;
+        AddVectorVarToMetaData(md, vname, "mesh", AVT_NODECENT);
     }
 
-    for (i = 0 ; i < reader->GetNumberOfVectorsPerElement() ; i++)
+    if (hasParticles)
+    {
+        for (int i = 0 ; i < reader->GetNumberOfVectorsPerMeasuredNode() ; i++)
+        {
+            string vname("particles/");
+            vname += reader->GetDescription(i,
+                vtkEnSightReader::VECTOR_PER_MEASURED_NODE);
+            AddVectorVarToMetaData(md, vname, "particles", AVT_NODECENT);
+        }
+    }
+
+    for (int i = 0 ; i < reader->GetNumberOfVectorsPerElement() ; i++)
     {
         const char *name = reader->GetDescription(i,
                                     vtkEnSightReader::VECTOR_PER_ELEMENT);
-        AddVectorVarToMetaData(md, name, "mesh", AVT_ZONECENT);
+        string vname(name);
+        if (hasParticles)
+            vname = string("mesh/") + vname;
+        AddVectorVarToMetaData(md, vname, "mesh", AVT_ZONECENT);
     }
 
     if (matnames.size() > 0)
