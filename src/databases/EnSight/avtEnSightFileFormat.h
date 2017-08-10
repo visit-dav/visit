@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtEnSightFileFormat.h                           //
+//                          avtEnSightFileFormat.h                           //
 // ************************************************************************* //
 
 #ifndef AVT_EnSight_FILE_FORMAT_H
@@ -45,11 +45,12 @@
 
 #include <avtMTMDFileFormat.h>
 
-#include <vector>
 #include <string>
+#include <vector>
 
 
 class     vtkGenericEnSightReader;
+class     vtkMultiBlockDataSet;
 
 
 // ****************************************************************************
@@ -74,6 +75,9 @@ class     vtkGenericEnSightReader;
 //
 //    Hank Childs, Thu Feb 23 09:54:50 PST 2012
 //    Add support for materials.
+//
+//    Kathleen Biagas, Thu Aug 10 14:49:13 MST 2017
+//    Add support for particle blocks.
 //
 // ****************************************************************************
 
@@ -105,9 +109,14 @@ class avtEnSightFileFormat : public avtMTMDFileFormat
     vtkGenericEnSightReader *reader;
     bool                  doneUpdate;
     std::vector<std::string> matnames;
+    bool                  hasParticles;
+    std::vector< int >    particleBlockIds;
+    std::vector< int >    stdBlockIds;
 
     void                  PrepReader(int);
     void                  InstantiateReader(const char *);
+
+    int                   ConvertDomainToBlock(int dom, const std::string &);
 };
 
 
