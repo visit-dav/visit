@@ -59,10 +59,10 @@
 #include <vtkEnSightGoldReader.h>
 #include <vtkEnSightReader.h>
 #include <vtkGenericEnSightReader.h>
+#include <vtkImageData.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
-#include <vtkStructuredPoints.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtMaterial.h>
@@ -705,6 +705,76 @@ avtEnSightFileFormat::ConvertDomainToBlock(int dom, const string &meshName)
     return blockId;
 }
 
+// ****************************************************************************
+//  Method: ConvertImageToRGrid
+//
+//  Purpose:
+//      Converts vtkImageData to a vtkRectilinearGrid
+//
+//  Arguments:
+//      image       the image data to convert
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 10, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+ConvertImageToRGrid(vtkImageData *image)
+{
+    int wholeDims[3];
+    double spacing[3];
+    double wholeOrigin[3];
+    image->GetDimensions(wholeDims);
+    image->GetSpacing(spacing);
+    image->GetOrigin(wholeOrigin);
+
+    int pieceDims[3];
+    double pieceOrigin[3];
+    pieceDims[0] = wholeDims[0];
+    pieceDims[1] = wholeDims[1];
+    pieceDims[2] = wholeDims[2];
+    pieceOrigin[0] = wholeOrigin[0];
+    pieceOrigin[1] = wholeOrigin[1];
+    pieceOrigin[2] = wholeOrigin[2];
+
+    vtkFloatArray *x = vtkFloatArray::New();
+    x->SetNumberOfComponents(1);
+    x->SetNumberOfTuples(pieceDims[0]);
+    vtkFloatArray *y = vtkFloatArray::New();
+    y->SetNumberOfComponents(1);
+    y->SetNumberOfTuples(pieceDims[1]);
+    vtkFloatArray *z = vtkFloatArray::New();
+    z->SetNumberOfComponents(1);
+    z->SetNumberOfTuples(pieceDims[2]);
+
+    vtkRectilinearGrid *outRG = vtkRectilinearGrid::New();
+    outRG->SetDimensions(pieceDims);
+    outRG->SetXCoordinates(x);
+    outRG->SetYCoordinates(y);
+    outRG->SetZCoordinates(z);
+    x->Delete();
+    y->Delete();
+    z->Delete();
+
+    int i;
+    float *ptr = x->GetPointer(0);
+    for (i = 0; i < pieceDims[0]; i++, ptr++)
+        *ptr = pieceOrigin[0] + i * spacing[0];
+
+    ptr = y->GetPointer(0);
+    for (i = 0; i < pieceDims[1]; i++, ptr++)
+        *ptr = pieceOrigin[1] + i * spacing[1];
+
+    ptr = z->GetPointer(0);
+    for (i = 0; i < pieceDims[2]; i++, ptr++)
+        *ptr = pieceOrigin[2] + i * spacing[2];
+
+    return outRG;
+}
+
 
 // ****************************************************************************
 //  Method: avtEnSightFileFormat::GetMesh
@@ -723,6 +793,9 @@ avtEnSightFileFormat::ConvertDomainToBlock(int dom, const string &meshName)
 //
 //    Hank Childs, Fri Jul  9 07:37:46 PDT 2004
 //    Account for multiple parts.
+//
+//    Kathleen Biagas, Thu Aug 10 17:44:31 PDT 2017
+//    Convert image data to rectilinear grids.
 //
 // ****************************************************************************
 
@@ -747,15 +820,22 @@ avtEnSightFileFormat::GetMesh(int ts, int dom, const char *name)
         doneUpdate = true;
     }
 
-    int blockId = ConvertDomainToBlock(dom, name);
+    vtkDataSet *block = vtkDataSet::SafeDownCast(
+        reader->GetOutput()->GetBlock(ConvertDomainToBlock(dom, name)));
 
-    vtkDataSet *rv =
-       (vtkDataSet *)reader->GetOutput()->GetBlock(blockId)->NewInstance();
-
-    if(rv != NULL)
-       rv->CopyStructure((vtkDataSet *)
-                         reader->GetOutput()->GetBlock(blockId));
-
+    vtkDataSet *rv = NULL;
+    if(block != NULL)
+    {
+        if (block->GetDataObjectType() == VTK_IMAGE_DATA)
+        {
+            rv = ConvertImageToRGrid((vtkImageData*) block);
+        }
+        else
+        {
+           rv = block->NewInstance();
+           rv->CopyStructure(block);
+        }
+    }
     return rv;
 }
 
@@ -952,6 +1032,8 @@ MeshTypeFromObjectType(int vtk_object_type)
         case VTK_STRUCTURED_GRID:
              mt = AVT_CURVILINEAR_MESH;
              break;
+        // we convert image data to rectilinear grid
+        case VTK_IMAGE_DATA:
         case VTK_RECTILINEAR_GRID:
              mt= AVT_RECTILINEAR_MESH;
              break;
