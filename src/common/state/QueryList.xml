@@ -23,6 +23,7 @@
       Pick
       Lineout
       Compactness
+      CompactnessVar
     </Enum>
     <Enum name="Groups">
       CurveRelated

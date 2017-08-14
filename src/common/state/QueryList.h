@@ -56,8 +56,6 @@
 // Creation:   omitted
 //
 // Modifications:
-//   Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
-//   Added the CompactnessVar window type.
 //   
 // ****************************************************************************
 
