@@ -78,6 +78,8 @@ PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *atts, const char *
 
     SNPRINTF(tmpStr, 1000, "%soutputMeshType = %d\n", prefix, atts->GetOutputMeshType());
     str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sboundsInputType = %d\n", prefix, atts->GetBoundsInputType());
+    str += tmpStr;
     {   const stringVector &listedVarNames = atts->GetListedVarNames();
         SNPRINTF(tmpStr, 1000, "%slistedVarNames = (", prefix);
         str += tmpStr;
@@ -149,6 +151,22 @@ PyThresholdOpAttributes_ToString(const ThresholdOpAttributes *atts, const char *
     else
         SNPRINTF(tmpStr, 1000, "%sdefaultVarIsScalar = 0\n", prefix);
     str += tmpStr;
+    {   const stringVector &boundsRange = atts->GetBoundsRange();
+        SNPRINTF(tmpStr, 1000, "%sboundsRange = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < boundsRange.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "\"%s\"", boundsRange[i].c_str());
+            str += tmpStr;
+            if(i < boundsRange.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -182,6 +200,30 @@ ThresholdOpAttributes_GetOutputMeshType(PyObject *self, PyObject *args)
 {
     ThresholdOpAttributesObject *obj = (ThresholdOpAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetOutputMeshType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+ThresholdOpAttributes_SetBoundsInputType(PyObject *self, PyObject *args)
+{
+    ThresholdOpAttributesObject *obj = (ThresholdOpAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the boundsInputType in the object.
+    obj->data->SetBoundsInputType((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ThresholdOpAttributes_GetBoundsInputType(PyObject *self, PyObject *args)
+{
+    ThresholdOpAttributesObject *obj = (ThresholdOpAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetBoundsInputType()));
     return retval;
 }
 
@@ -471,12 +513,63 @@ ThresholdOpAttributes_GetDefaultVarIsScalar(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ThresholdOpAttributes_SetBoundsRange(PyObject *self, PyObject *args)
+{
+    ThresholdOpAttributesObject *obj = (ThresholdOpAttributesObject *)self;
+
+    stringVector  &vec = obj->data->GetBoundsRange();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyString_Check(item))
+                vec[i] = std::string(PyString_AS_STRING(item));
+            else
+                vec[i] = std::string("");
+        }
+    }
+    else if(PyString_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = std::string(PyString_AS_STRING(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the boundsRange in the object as modified.
+    obj->data->SelectBoundsRange();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ThresholdOpAttributes_GetBoundsRange(PyObject *self, PyObject *args)
+{
+    ThresholdOpAttributesObject *obj = (ThresholdOpAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the boundsRange.
+    const stringVector &boundsRange = obj->data->GetBoundsRange();
+    PyObject *retval = PyTuple_New(boundsRange.size());
+    for(size_t i = 0; i < boundsRange.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(boundsRange[i].c_str()));
+    return retval;
+}
+
 
 
 PyMethodDef PyThresholdOpAttributes_methods[THRESHOLDOPATTRIBUTES_NMETH] = {
     {"Notify", ThresholdOpAttributes_Notify, METH_VARARGS},
     {"SetOutputMeshType", ThresholdOpAttributes_SetOutputMeshType, METH_VARARGS},
     {"GetOutputMeshType", ThresholdOpAttributes_GetOutputMeshType, METH_VARARGS},
+    {"SetBoundsInputType", ThresholdOpAttributes_SetBoundsInputType, METH_VARARGS},
+    {"GetBoundsInputType", ThresholdOpAttributes_GetBoundsInputType, METH_VARARGS},
     {"SetListedVarNames", ThresholdOpAttributes_SetListedVarNames, METH_VARARGS},
     {"GetListedVarNames", ThresholdOpAttributes_GetListedVarNames, METH_VARARGS},
     {"SetZonePortions", ThresholdOpAttributes_SetZonePortions, METH_VARARGS},
@@ -489,6 +582,8 @@ PyMethodDef PyThresholdOpAttributes_methods[THRESHOLDOPATTRIBUTES_NMETH] = {
     {"GetDefaultVarName", ThresholdOpAttributes_GetDefaultVarName, METH_VARARGS},
     {"SetDefaultVarIsScalar", ThresholdOpAttributes_SetDefaultVarIsScalar, METH_VARARGS},
     {"GetDefaultVarIsScalar", ThresholdOpAttributes_GetDefaultVarIsScalar, METH_VARARGS},
+    {"SetBoundsRange", ThresholdOpAttributes_SetBoundsRange, METH_VARARGS},
+    {"GetBoundsRange", ThresholdOpAttributes_GetBoundsRange, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -519,6 +614,8 @@ PyThresholdOpAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "outputMeshType") == 0)
         return ThresholdOpAttributes_GetOutputMeshType(self, NULL);
+    if(strcmp(name, "boundsInputType") == 0)
+        return ThresholdOpAttributes_GetBoundsInputType(self, NULL);
     if(strcmp(name, "listedVarNames") == 0)
         return ThresholdOpAttributes_GetListedVarNames(self, NULL);
     if(strcmp(name, "zonePortions") == 0)
@@ -531,6 +628,8 @@ PyThresholdOpAttributes_getattr(PyObject *self, char *name)
         return ThresholdOpAttributes_GetDefaultVarName(self, NULL);
     if(strcmp(name, "defaultVarIsScalar") == 0)
         return ThresholdOpAttributes_GetDefaultVarIsScalar(self, NULL);
+    if(strcmp(name, "boundsRange") == 0)
+        return ThresholdOpAttributes_GetBoundsRange(self, NULL);
 
     return Py_FindMethod(PyThresholdOpAttributes_methods, self, name);
 }
@@ -547,6 +646,8 @@ PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "outputMeshType") == 0)
         obj = ThresholdOpAttributes_SetOutputMeshType(self, tuple);
+    else if(strcmp(name, "boundsInputType") == 0)
+        obj = ThresholdOpAttributes_SetBoundsInputType(self, tuple);
     else if(strcmp(name, "listedVarNames") == 0)
         obj = ThresholdOpAttributes_SetListedVarNames(self, tuple);
     else if(strcmp(name, "zonePortions") == 0)
@@ -559,6 +660,8 @@ PyThresholdOpAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ThresholdOpAttributes_SetDefaultVarName(self, tuple);
     else if(strcmp(name, "defaultVarIsScalar") == 0)
         obj = ThresholdOpAttributes_SetDefaultVarIsScalar(self, tuple);
+    else if(strcmp(name, "boundsRange") == 0)
+        obj = ThresholdOpAttributes_SetBoundsRange(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);
