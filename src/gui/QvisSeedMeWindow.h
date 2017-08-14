@@ -47,20 +47,10 @@ class QCheckBox;
 class QLabel;
 class QTextBrowser;
 class QLineEdit;
-class QSpinBox;
 class QTabWidget;
-class QVBox;
-class QScrollBar;
 class QPushButton;
 class QFileSystemWatcher;
 class QComboBox;
-
-class QvisColorTableButton;
-class QvisOpacitySlider;
-class QvisColorButton;
-class QvisLineStyleWidget;
-class QvisLineWidthWidget;
-class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisSeedMeWindow
@@ -74,7 +64,9 @@ class QvisVariableButton;
 // Creation:   omitted
 //
 // Modifications:
-//   
+//    Kathleen Biagas, Mon Aug 14 10:43:08 MST 2017
+//    Added clearTabsOnClose, hide slot.
+//
 // ****************************************************************************
 
 class QvisSeedMeWindow : public QvisPostableWindowSimpleObserver
@@ -93,6 +85,7 @@ signals:
     void runCommand(const QString &);
 public slots:
     virtual void apply();
+    virtual void hide();
 protected:
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
@@ -127,11 +120,13 @@ private slots:
     void quickFrameRateProcessText();
     void quickDownloadTypeChanged(int val);
     void quickDownload();
+    void clearTabsOnCloseChanged(bool val);
 
 
     void ResetForm();
     void ClearLog();
 private:
+    void ResetForm2(int);
     QWidget *CreateQuickUploadTab();
     QWidget *CreateUploadTab();
     QWidget *CreateQueryTab();
@@ -212,6 +207,8 @@ private:
     QStringList uploadFiles;
 
     QPushButton *resetFormButton, *clearLogButton, *quickDownloadButton, *submitButton;
+
+    QCheckBox *clearTabsOnClose;
 
     void updateStatus(QString str);
 

@@ -73,6 +73,7 @@
 #include <QueryOverTimeAttributes.h>
 #include <RenderingAttributes.h>
 #include <SaveWindowAttributes.h>
+#include <SeedMeAttributes.h>
 #include <ViewCurveAttributes.h>
 #include <View2DAttributes.h>
 #include <View3DAttributes.h>
@@ -194,6 +195,8 @@ ViewerStateManager::CreateState()
 // Creation:   Tue Jun 17 14:57:28 PST 2003
 //
 // Modifications:
+//    Kathleen Biagas, Mon Aug 14 10:41:15 PDT 2017
+//    Added SeedMeAttributes.
 //
 // ****************************************************************************
 
@@ -229,6 +232,7 @@ ViewerStateManager::ConnectDefaultState()
     configMgr->Add(ViewerWindowManager::Instance()->GetInteractorDefaultAtts());
     configMgr->Add(GetViewerState()->GetMovieAttributes());
     configMgr->Add(GetViewerState()->GetFileOpenOptions());
+    configMgr->Add(GetViewerState()->GetSeedMeAttributes());
 }
 
 // ****************************************************************************
