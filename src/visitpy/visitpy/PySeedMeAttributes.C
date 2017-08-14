@@ -221,6 +221,72 @@ PySeedMeAttributes_ToString(const SeedMeAttributes *atts, const char *prefix)
 
     SNPRINTF(tmpStr, 1000, "%sdownloadName = \"%s\"\n", prefix, atts->GetDownloadName().c_str());
     str += tmpStr;
+    const char *quickSharing_names = "SHARING_PRIVATE, SHARING_GROUP, SHARING_PUBLIC";
+    switch (atts->GetQuickSharing())
+    {
+      case SeedMeAttributes::SHARING_PRIVATE:
+          SNPRINTF(tmpStr, 1000, "%squickSharing = %sSHARING_PRIVATE  # %s\n", prefix, prefix, quickSharing_names);
+          str += tmpStr;
+          break;
+      case SeedMeAttributes::SHARING_GROUP:
+          SNPRINTF(tmpStr, 1000, "%squickSharing = %sSHARING_GROUP  # %s\n", prefix, prefix, quickSharing_names);
+          str += tmpStr;
+          break;
+      case SeedMeAttributes::SHARING_PUBLIC:
+          SNPRINTF(tmpStr, 1000, "%squickSharing = %sSHARING_PUBLIC  # %s\n", prefix, prefix, quickSharing_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    SNPRINTF(tmpStr, 1000, "%squickCollectionTitle = \"%s\"\n", prefix, atts->GetQuickCollectionTitle().c_str());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%squickCollectionEmails = \"%s\"\n", prefix, atts->GetQuickCollectionEmails().c_str());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%squickFrameRate = %d\n", prefix, atts->GetQuickFrameRate());
+    str += tmpStr;
+    const char *quickDownloadType_names = "DOWNLOAD_Q_ALL, DOWNLOAD_Q_BEST, DOWNLOAD_Q_HIGHEST, DOWNLOAD_Q_HIGH, DOWNLOAD_Q_MEDIUM, "
+        "DOWNLOAD_Q_LOW, DOWNLOAD_Q_LOWEST";
+    switch (atts->GetQuickDownloadType())
+    {
+      case SeedMeAttributes::DOWNLOAD_Q_ALL:
+          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_ALL  # %s\n", prefix, prefix, quickDownloadType_names);
+          str += tmpStr;
+          break;
+      case SeedMeAttributes::DOWNLOAD_Q_BEST:
+          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_BEST  # %s\n", prefix, prefix, quickDownloadType_names);
+          str += tmpStr;
+          break;
+      case SeedMeAttributes::DOWNLOAD_Q_HIGHEST:
+          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_HIGHEST  # %s\n", prefix, prefix, quickDownloadType_names);
+          str += tmpStr;
+          break;
+      case SeedMeAttributes::DOWNLOAD_Q_HIGH:
+          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_HIGH  # %s\n", prefix, prefix, quickDownloadType_names);
+          str += tmpStr;
+          break;
+      case SeedMeAttributes::DOWNLOAD_Q_MEDIUM:
+          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_MEDIUM  # %s\n", prefix, prefix, quickDownloadType_names);
+          str += tmpStr;
+          break;
+      case SeedMeAttributes::DOWNLOAD_Q_LOW:
+          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_LOW  # %s\n", prefix, prefix, quickDownloadType_names);
+          str += tmpStr;
+          break;
+      case SeedMeAttributes::DOWNLOAD_Q_LOWEST:
+          SNPRINTF(tmpStr, 1000, "%squickDownloadType = %sDOWNLOAD_Q_LOWEST  # %s\n", prefix, prefix, quickDownloadType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
+    if(atts->GetClearAllTabsOnClose())
+        SNPRINTF(tmpStr, 1000, "%sclearAllTabsOnClose = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sclearAllTabsOnClose = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -854,6 +920,169 @@ SeedMeAttributes_GetDownloadName(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+SeedMeAttributes_SetQuickSharing(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the quickSharing in the object.
+    if(ival >= 0 && ival < 3)
+        obj->data->SetQuickSharing(SeedMeAttributes::Sharing(ival));
+    else
+    {
+        fprintf(stderr, "An invalid quickSharing value was given. "
+                        "Valid values are in the range of [0,2]. "
+                        "You can also use the following names: "
+                        "SHARING_PRIVATE, SHARING_GROUP, SHARING_PUBLIC.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_GetQuickSharing(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetQuickSharing()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_SetQuickCollectionTitle(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the quickCollectionTitle in the object.
+    obj->data->SetQuickCollectionTitle(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_GetQuickCollectionTitle(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetQuickCollectionTitle().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_SetQuickCollectionEmails(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the quickCollectionEmails in the object.
+    obj->data->SetQuickCollectionEmails(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_GetQuickCollectionEmails(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetQuickCollectionEmails().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_SetQuickFrameRate(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the quickFrameRate in the object.
+    obj->data->SetQuickFrameRate((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_GetQuickFrameRate(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetQuickFrameRate()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_SetQuickDownloadType(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the quickDownloadType in the object.
+    if(ival >= 0 && ival < 7)
+        obj->data->SetQuickDownloadType(SeedMeAttributes::DownloadQuality(ival));
+    else
+    {
+        fprintf(stderr, "An invalid quickDownloadType value was given. "
+                        "Valid values are in the range of [0,6]. "
+                        "You can also use the following names: "
+                        "DOWNLOAD_Q_ALL, DOWNLOAD_Q_BEST, DOWNLOAD_Q_HIGHEST, DOWNLOAD_Q_HIGH, DOWNLOAD_Q_MEDIUM, "
+                        "DOWNLOAD_Q_LOW, DOWNLOAD_Q_LOWEST.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_GetQuickDownloadType(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetQuickDownloadType()));
+    return retval;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_SetClearAllTabsOnClose(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the clearAllTabsOnClose in the object.
+    obj->data->SetClearAllTabsOnClose(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SeedMeAttributes_GetClearAllTabsOnClose(PyObject *self, PyObject *args)
+{
+    SeedMeAttributesObject *obj = (SeedMeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetClearAllTabsOnClose()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PySeedMeAttributes_methods[SEEDMEATTRIBUTES_NMETH] = {
@@ -906,6 +1135,18 @@ PyMethodDef PySeedMeAttributes_methods[SEEDMEATTRIBUTES_NMETH] = {
     {"GetDownloadType", SeedMeAttributes_GetDownloadType, METH_VARARGS},
     {"SetDownloadName", SeedMeAttributes_SetDownloadName, METH_VARARGS},
     {"GetDownloadName", SeedMeAttributes_GetDownloadName, METH_VARARGS},
+    {"SetQuickSharing", SeedMeAttributes_SetQuickSharing, METH_VARARGS},
+    {"GetQuickSharing", SeedMeAttributes_GetQuickSharing, METH_VARARGS},
+    {"SetQuickCollectionTitle", SeedMeAttributes_SetQuickCollectionTitle, METH_VARARGS},
+    {"GetQuickCollectionTitle", SeedMeAttributes_GetQuickCollectionTitle, METH_VARARGS},
+    {"SetQuickCollectionEmails", SeedMeAttributes_SetQuickCollectionEmails, METH_VARARGS},
+    {"GetQuickCollectionEmails", SeedMeAttributes_GetQuickCollectionEmails, METH_VARARGS},
+    {"SetQuickFrameRate", SeedMeAttributes_SetQuickFrameRate, METH_VARARGS},
+    {"GetQuickFrameRate", SeedMeAttributes_GetQuickFrameRate, METH_VARARGS},
+    {"SetQuickDownloadType", SeedMeAttributes_SetQuickDownloadType, METH_VARARGS},
+    {"GetQuickDownloadType", SeedMeAttributes_GetQuickDownloadType, METH_VARARGS},
+    {"SetClearAllTabsOnClose", SeedMeAttributes_SetClearAllTabsOnClose, METH_VARARGS},
+    {"GetClearAllTabsOnClose", SeedMeAttributes_GetClearAllTabsOnClose, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1017,6 +1258,40 @@ PySeedMeAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "downloadName") == 0)
         return SeedMeAttributes_GetDownloadName(self, NULL);
+    if(strcmp(name, "quickSharing") == 0)
+        return SeedMeAttributes_GetQuickSharing(self, NULL);
+    if(strcmp(name, "SHARING_PRIVATE") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::SHARING_PRIVATE));
+    if(strcmp(name, "SHARING_GROUP") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::SHARING_GROUP));
+    if(strcmp(name, "SHARING_PUBLIC") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::SHARING_PUBLIC));
+
+    if(strcmp(name, "quickCollectionTitle") == 0)
+        return SeedMeAttributes_GetQuickCollectionTitle(self, NULL);
+    if(strcmp(name, "quickCollectionEmails") == 0)
+        return SeedMeAttributes_GetQuickCollectionEmails(self, NULL);
+    if(strcmp(name, "quickFrameRate") == 0)
+        return SeedMeAttributes_GetQuickFrameRate(self, NULL);
+    if(strcmp(name, "quickDownloadType") == 0)
+        return SeedMeAttributes_GetQuickDownloadType(self, NULL);
+    if(strcmp(name, "DOWNLOAD_Q_ALL") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::DOWNLOAD_Q_ALL));
+    if(strcmp(name, "DOWNLOAD_Q_BEST") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::DOWNLOAD_Q_BEST));
+    if(strcmp(name, "DOWNLOAD_Q_HIGHEST") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::DOWNLOAD_Q_HIGHEST));
+    if(strcmp(name, "DOWNLOAD_Q_HIGH") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::DOWNLOAD_Q_HIGH));
+    if(strcmp(name, "DOWNLOAD_Q_MEDIUM") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::DOWNLOAD_Q_MEDIUM));
+    if(strcmp(name, "DOWNLOAD_Q_LOW") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::DOWNLOAD_Q_LOW));
+    if(strcmp(name, "DOWNLOAD_Q_LOWEST") == 0)
+        return PyInt_FromLong(long(SeedMeAttributes::DOWNLOAD_Q_LOWEST));
+
+    if(strcmp(name, "clearAllTabsOnClose") == 0)
+        return SeedMeAttributes_GetClearAllTabsOnClose(self, NULL);
 
     return Py_FindMethod(PySeedMeAttributes_methods, self, name);
 }
@@ -1079,6 +1354,18 @@ PySeedMeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SeedMeAttributes_SetDownloadType(self, tuple);
     else if(strcmp(name, "downloadName") == 0)
         obj = SeedMeAttributes_SetDownloadName(self, tuple);
+    else if(strcmp(name, "quickSharing") == 0)
+        obj = SeedMeAttributes_SetQuickSharing(self, tuple);
+    else if(strcmp(name, "quickCollectionTitle") == 0)
+        obj = SeedMeAttributes_SetQuickCollectionTitle(self, tuple);
+    else if(strcmp(name, "quickCollectionEmails") == 0)
+        obj = SeedMeAttributes_SetQuickCollectionEmails(self, tuple);
+    else if(strcmp(name, "quickFrameRate") == 0)
+        obj = SeedMeAttributes_SetQuickFrameRate(self, tuple);
+    else if(strcmp(name, "quickDownloadType") == 0)
+        obj = SeedMeAttributes_SetQuickDownloadType(self, tuple);
+    else if(strcmp(name, "clearAllTabsOnClose") == 0)
+        obj = SeedMeAttributes_SetClearAllTabsOnClose(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

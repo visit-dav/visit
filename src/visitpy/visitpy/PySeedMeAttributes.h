@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SEEDMEATTRIBUTES_NMETH 50
+#define SEEDMEATTRIBUTES_NMETH 62
 void VISITPY_API           PySeedMeAttributes_StartUp(SeedMeAttributes *subj, void *data);
 void VISITPY_API           PySeedMeAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PySeedMeAttributes_GetMethodTable(int *nMethods);

@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class SeedMeAttributes extends AttributeSubject
 {
-    private static int SeedMeAttributes_numAdditionalAtts = 29;
+    private static int SeedMeAttributes_numAdditionalAtts = 30;
 
     // Enum values
     public final static int COLLECTIONMODE_COLLECTION_NEW = 0;
@@ -121,6 +121,7 @@ public class SeedMeAttributes extends AttributeSubject
         quickCollectionEmails = new String("");
         quickFrameRate = 10;
         quickDownloadType = DOWNLOADQUALITY_DOWNLOAD_Q_ALL;
+        clearAllTabsOnClose = true;
     }
 
     public SeedMeAttributes(int nMoreFields)
@@ -156,6 +157,7 @@ public class SeedMeAttributes extends AttributeSubject
         quickCollectionEmails = new String("");
         quickFrameRate = 10;
         quickDownloadType = DOWNLOADQUALITY_DOWNLOAD_Q_ALL;
+        clearAllTabsOnClose = true;
     }
 
     public SeedMeAttributes(SeedMeAttributes obj)
@@ -191,6 +193,7 @@ public class SeedMeAttributes extends AttributeSubject
         quickCollectionEmails = new String(obj.quickCollectionEmails);
         quickFrameRate = obj.quickFrameRate;
         quickDownloadType = obj.quickDownloadType;
+        clearAllTabsOnClose = obj.clearAllTabsOnClose;
 
         SelectAll();
     }
@@ -236,7 +239,8 @@ public class SeedMeAttributes extends AttributeSubject
                 (quickCollectionTitle.equals(obj.quickCollectionTitle)) &&
                 (quickCollectionEmails.equals(obj.quickCollectionEmails)) &&
                 (quickFrameRate == obj.quickFrameRate) &&
-                (quickDownloadType == obj.quickDownloadType));
+                (quickDownloadType == obj.quickDownloadType) &&
+                (clearAllTabsOnClose == obj.clearAllTabsOnClose));
     }
 
     // Property setting methods
@@ -414,6 +418,12 @@ public class SeedMeAttributes extends AttributeSubject
         Select(28);
     }
 
+    public void SetClearAllTabsOnClose(boolean clearAllTabsOnClose_)
+    {
+        clearAllTabsOnClose = clearAllTabsOnClose_;
+        Select(29);
+    }
+
     // Property getting methods
     public int     GetCollectionMode() { return collectionMode; }
     public int     GetCollectionID() { return collectionID; }
@@ -444,6 +454,7 @@ public class SeedMeAttributes extends AttributeSubject
     public String  GetQuickCollectionEmails() { return quickCollectionEmails; }
     public int     GetQuickFrameRate() { return quickFrameRate; }
     public int     GetQuickDownloadType() { return quickDownloadType; }
+    public boolean GetClearAllTabsOnClose() { return clearAllTabsOnClose; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -506,6 +517,8 @@ public class SeedMeAttributes extends AttributeSubject
             buf.WriteInt(quickFrameRate);
         if(WriteSelect(28, buf))
             buf.WriteInt(quickDownloadType);
+        if(WriteSelect(29, buf))
+            buf.WriteBool(clearAllTabsOnClose);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -599,6 +612,9 @@ public class SeedMeAttributes extends AttributeSubject
         case 28:
             SetQuickDownloadType(buf.ReadInt());
             break;
+        case 29:
+            SetClearAllTabsOnClose(buf.ReadBool());
+            break;
         }
     }
 
@@ -691,6 +707,7 @@ public class SeedMeAttributes extends AttributeSubject
         if(quickDownloadType == DOWNLOADQUALITY_DOWNLOAD_Q_LOWEST)
             str = str + "DOWNLOADQUALITY_DOWNLOAD_Q_LOWEST";
         str = str + "\n";
+        str = str + boolToString("clearAllTabsOnClose", clearAllTabsOnClose, indent) + "\n";
         return str;
     }
 
@@ -725,5 +742,6 @@ public class SeedMeAttributes extends AttributeSubject
     private String  quickCollectionEmails;
     private int     quickFrameRate;
     private int     quickDownloadType;
+    private boolean clearAllTabsOnClose;
 }
 

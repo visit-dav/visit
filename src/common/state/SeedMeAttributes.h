@@ -172,6 +172,7 @@ public:
     void SetQuickCollectionEmails(const std::string &quickCollectionEmails_);
     void SetQuickFrameRate(int quickFrameRate_);
     void SetQuickDownloadType(DownloadQuality quickDownloadType_);
+    void SetClearAllTabsOnClose(bool clearAllTabsOnClose_);
 
     // Property getting methods
     CollectionMode    GetCollectionMode() const;
@@ -217,6 +218,7 @@ public:
           std::string &GetQuickCollectionEmails();
     int               GetQuickFrameRate() const;
     DownloadQuality   GetQuickDownloadType() const;
+    bool              GetClearAllTabsOnClose() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -292,6 +294,7 @@ public:
         ID_quickCollectionEmails,
         ID_quickFrameRate,
         ID_quickDownloadType,
+        ID_clearAllTabsOnClose,
         ID__LAST
     };
 
@@ -325,11 +328,12 @@ private:
     std::string quickCollectionEmails;
     int         quickFrameRate;
     int         quickDownloadType;
+    bool        clearAllTabsOnClose;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SEEDMEATTRIBUTES_TMFS "iiissbssbssbssbisissiiisissii"
+#define SEEDMEATTRIBUTES_TMFS "iiissbssbssbssbisissiiisissiib"
 
 #endif
