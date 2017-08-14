@@ -131,16 +131,17 @@ void avtIDXFileFormat::loadBalance(){
     std::vector<PatchInfo> newboxes;
     int n = nprocs;
     int b = level_info.patchInfo.size();
-    int c = b > n ? b/n : n/b; // how many patches per core
+    int c = b > n ? b/n : n/b; // how many patches per box
     int d = b > n ? b%n : n%b;
 
     //printf("Trying to use %d patches per core, res %d\n", c, d);
 
-    int h[b];
+    float h[b];
     int res[b];
     int slabs[b];
+    //  fprintf(stderr,"n %d b %d c %d d %d\n",n,b,c,d);
 
-    if(d == 0){
+//    if(d == 0){
       for(int i=0; i<b; i++){
         PatchInfo& box = level_info.patchInfo[i];
         int box_low[3];
@@ -149,17 +150,32 @@ void avtIDXFileFormat::loadBalance(){
         box.getBounds(box_low, box_high, "CC");
 
         int extent = box_high[maxdir]-box_low[maxdir]+1;
+    
+#if 0
+        h[i] = ceil((float)extent/c);
+        slabs[i] = ceil((float)extent/h[i]);
 
-        h[i] = extent/c;
-        slabs[i] = extent/h[i];
-        res[i] = extent%h[i];
+  if(c > slabs[i]) {
+            h[i] = floor((float)extent/c);
+            slabs[i] = floor((float)extent/h[i]);
+  }
+  
+  int diff = slabs[i]-c;
+  slabs[i] = c;
+  res[i] = extent%h[i] + diff*h[i];
+#else
+        h[i] = (float)extent/c;
+  slabs[i]=c;
+  res[i]=extent % int(h[i]*c);
+#endif  
+        //res[i] = extent%h[i];
 
-        //printf("Even H[%d] = %d res %d\n", i, h[i], res[i]);
+  //  printf("Even H[%d] = %d xslabs %d res %d\n", i, h[i], slabs[i], res[i]);
 
       }
+#if 0
     }
     else{
-
       // TODO sort boxes by height
 
       for(int i=0; i<b; i++){
@@ -172,7 +188,7 @@ void avtIDXFileFormat::loadBalance(){
         int extent = box_high[maxdir]-box_low[maxdir];
 
         if(i <= d){
-          h[i] = extent/c;
+    h[i] = ceil((float)extent/c);
           slabs[i] = extent/h[i];
           res[i] = extent%h[i];
         }
@@ -186,6 +202,7 @@ void avtIDXFileFormat::loadBalance(){
       }
 
     }
+#endif
 
     for(int i=0; i < b; i++){
       PatchInfo& box = level_info.patchInfo[i];
@@ -223,11 +240,11 @@ void avtIDXFileFormat::loadBalance(){
         added_boxes++;
 
         part_p1 = high[maxdir];
-        part_p2 = part_p1 + h[i] -1;
+        part_p2 = round(part_p1 + h[i]) -1;
 
       }
 
-      if(residual > 0){
+      if(residual > 0 || (high[maxdir] < box_high[maxdir])){
         int lowr[3];
         int highr[3];
 
@@ -251,13 +268,13 @@ void avtIDXFileFormat::loadBalance(){
       for(int i=0; i< level_info.patchInfo.size(); i++){
         debug4 << i << " = "<<level_info.patchInfo[i].toString();
             //boxes.at(i).p1 << " , " << boxes.at(i).p2 << " phy: "
-                      //<< phyboxes.at(i).p1 << " , " << phyboxes.at(i).p2 << std::endl<< std::flush;
+          //<< phyboxes.at(i).p1 << " , " << phyboxes.at(i).p2 << std::endl<< std::flush;
       }
       debug4 << "-------------------------" << std::endl<< std::flush;
     }
 
     if(level_info.patchInfo.size() % nprocs != 0){
-      fprintf(stderr,"ERROR: wrong domain decomposition\n");
+  fprintf(stderr,"ERROR: wrong domain decomposition, patches %d procs %d\n", level_info.patchInfo.size(), nprocs);
       assert(false);
     }
   }
@@ -848,7 +865,7 @@ avtIDXFileFormat::avtIDXFileFormat(const char *filename, DBOptionsAttributes* at
         void_ref_ptr vrTmp = cache->GetVoidRef("any_mesh", // MUST be called any_mesh
           AUXILIARY_DATA_DOMAIN_BOUNDARY_INFORMATION,
           -1, -1);
-        if (*vrTmp == NULL )//|| *vrTmp != *this->mesh_boundaries[meshname])
+  if (*vrTmp == NULL )//|| *vrTmp != *this->mesh_boundaries[meshname])
     fprintf(stderr,"pidx boundary mesh not registered\n");
 
 
@@ -1004,25 +1021,25 @@ void avtIDXFileFormat::computeDomainBoundaries(const char* meshname, int timesta
 
       for (int i=0; i < my_dims[c]; i++)
       {
-          // Face centered data gets shifted towards -inf by half a cell.
-          // Boundary patches are special shifted to preserve global domain.
-          // Internal patches are always just shifted.
+        // Face centered data gets shifted towards -inf by half a cell.
+        // Boundary patches are special shifted to preserve global domain.
+        // Internal patches are always just shifted.
        float face_offset= 0;
 
        if (sfc_offset[c]) 
        {
          if (i==0)
-                  if (low[c]==glow[c]) // patch is on low boundary
+            if (low[c]==glow[c]) // patch is on low boundary
               face_offset += 0.0;
             else
-                    face_offset += -0.5;       // patch boundary is internal to the domain
+              face_offset += -0.5;       // patch boundary is internal to the domain
            else if (i==my_dims[c]-1)
-                  if (high[c]==ghigh[c]-1) // patch is on high boundary (added -1)
-                  //if (levelInfo.periodic[c])  // periodic means one less value in the face-centered direction
-                  //  face_offset += 0.0;
+            if (high[c]==ghigh[c]-1) // patch is on high boundary (added -1)
+            //if (levelInfo.periodic[c])  // periodic means one less value in the face-centered direction
+            //  face_offset += 0.0;
                   //else
              face_offset += -1;
-                        else                        // patch boundary is internal to the domain
+            else                        // patch boundary is internal to the domain
               face_offset += -0.5;
             else
              face_offset += -0.5;
@@ -1036,10 +1053,10 @@ void avtIDXFileFormat::computeDomainBoundaries(const char* meshname, int timesta
 
           array[i] = level_info.anchor[c] + (i + low[c] + face_offset) * level_info.spacing[c];
 
-             // if(i==0)
-             //   printf("low %d[%d]: %f\n", domain,c, array[i]);
-             // if(i==my_dims[c]-1)
-             //   printf("high %d[%d]: %f\n", domain,c, array[i]);
+         // if(i==0)
+         //   printf("low %d[%d]: %f\n", domain,c, array[i]);
+         // if(i==my_dims[c]-1)
+         //   printf("high %d[%d]: %f\n", domain,c, array[i]);
         }
 
         switch(c) {
@@ -1235,8 +1252,8 @@ void avtIDXFileFormat::computeDomainBoundaries(const char* meshname, int timesta
           debug5 << "read data " << level_info.patchInfo[domain].toString();
           for(int k=0; k<3; k++){
  //      if(uintah_metadata && use_extracells){
-        // low[k]++;
-        // //high[k]++;
+  // low[k]++;
+  // //high[k]++;
  //      }
             my_box.p1[k] = low[k];
             my_box.p2[k] = high[k];
