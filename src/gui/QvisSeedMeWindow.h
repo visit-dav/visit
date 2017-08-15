@@ -65,7 +65,7 @@ class QComboBox;
 //
 // Modifications:
 //    Kathleen Biagas, Mon Aug 14 10:43:08 MST 2017
-//    Added clearTabsOnClose, hide slot.
+//    Added clearTabsOnClose, hide slot, closeEvent.
 //
 // ****************************************************************************
 
@@ -87,6 +87,7 @@ public slots:
     virtual void apply();
     virtual void hide();
 protected:
+    void closeEvent(QCloseEvent *event);
     void UpdateWindow(bool doAll);
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
