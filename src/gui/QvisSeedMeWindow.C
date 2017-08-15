@@ -47,6 +47,7 @@
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QButtonGroup>
+#include <QCloseEvent>
 #include <QRadioButton>
 #include <QTabWidget>
 #include <QTextBrowser>
@@ -625,6 +626,31 @@ QvisSeedMeWindow::hide()
         this->ClearLog();
     }
     QvisPostableWindow::hide();
+}
+
+// ****************************************************************************
+//  Method: QvisSeedMeWindow::closeEvent
+//
+//  Purpose:
+//    Override default method so that forms may be cleared.
+//
+//    Programmer: Kathleen Biagas
+//    Creation:   August 14, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+QvisSeedMeWindow::closeEvent(QCloseEvent *event)
+{
+    if (clearTabsOnClose->isChecked())
+    {
+        for (int i = 0; i < tabs->count(); ++i)
+            this->ResetForm2(tabs->currentIndex());
+        this->ClearLog();
+    }
+    event->accept();
 }
 
 void
