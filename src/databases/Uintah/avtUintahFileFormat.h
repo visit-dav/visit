@@ -113,19 +113,21 @@ protected:
   bool nodeCentered;
   bool forceMeshReload;
 
-  //VisIt meshes (see https://visitbugs.ornl.gov/issues/52)
+  std::string mesh_for_patch_data;
+  
+  // VisIt meshes (see https://visitbugs.ornl.gov/issues/52)
   std::map<std::string, void_ref_ptr> mesh_domains;
   std::map<std::string, void_ref_ptr> mesh_boundaries;
 
-  // data that is not dependent on time
+  // Data that is not dependent on time
   DataArchive *archive;
   std::vector<double> cycleTimes;
 
-  // data that is dependent on time
+  // Data that is dependent on time
   GridP *grid;
   TimeStepInfo *stepInfo;
         
-  // interface to the uda2vis library
+  // Interface to the uda2vis library
   void  * libHandle;
 
   DataArchive*     (*openDataArchive)(const std::string&);
@@ -137,7 +139,7 @@ protected:
   std::vector<double>   (*getCycleTimes)(DataArchive*);
   TimeStepInfo*    (*getTimeStepInfo)(DataArchive*, GridP*, int, bool);
 
-  GridDataRaw*     (*getGridData)(DataArchive*, GridP*, int, int, std::string, int, int, int[3], int[3]);
+  GridDataRaw*     (*getGridData)(DataArchive*, GridP*, int, int, std::string, int, int, int[3], int[3], bool);
 
   bool             (*variableExists)(DataArchive*, std::string);
 
