@@ -110,7 +110,6 @@ protected:
   bool useExtraCells;
   bool dataVariesOverTime;
   int currTimeStep;
-  bool nodeCentered;
   bool forceMeshReload;
 
   std::string mesh_for_patch_data;
