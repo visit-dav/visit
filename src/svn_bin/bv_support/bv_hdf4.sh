@@ -1358,7 +1358,7 @@ function build_hdf4
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
         --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" \
-        --disable-dependency-tracking"
+        --disable-dependency-tracking --disable-netcdf"
         if [[ $? != 0 ]] ; then
             warn "HDF4 configure failed.  Giving up"\
                  "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
@@ -1377,7 +1377,7 @@ function build_hdf4
         --prefix=\"$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH\" \
         --with-jpeg=\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/include/vtk-${VTK_SHORT_VERSION}/vtkjpeg\",\"$VISITDIR/${VTK_INSTALL_DIR}/${VTK_VERSION}/$VISITARCH/lib\" \
         --with-szlib=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" \
-        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\""
+        --with-zlib=\"$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH\" --disable-netcdf"
         if [[ $? != 0 ]] ; then
             warn "HDF4 configure failed.  Giving up.\n"\
                  "You can see the details of the build failure at $HDF4_BUILD_DIR/config.log\n"
@@ -1444,6 +1444,11 @@ function build_hdf4
             return 1
         fi
         cp libmfhdf.${SO_EXT} "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib"
+
+        # relocate the .a's we don't want them.
+        mkdir "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib/static"
+        mv "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib/libdf.a" "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib/static"
+        mv "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib/libmfhdf.a" "$VISITDIR/hdf4/$HDF4_VERSION/$VISITARCH/lib/static"
     fi
 
     if [[ "$DO_GROUP" == "yes" ]] ; then
