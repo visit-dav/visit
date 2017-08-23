@@ -2878,9 +2878,6 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
 //    Brad Whitlock, Thu Aug 14 09:57:29 PDT 2008
 //    Use qApp.
 //
-//    Mark C. Miller, Thu Jun  8 15:05:50 PDT 2017
-//    Just exit(0) and don't try to exit nicely. This can impact valgrind
-//    analysis so compile with DEBUG_MEMORY_LEAKS to disable.
 // ****************************************************************************
 
 void
@@ -2914,11 +2911,7 @@ ViewerSubject::Close()
     //
     // Break out of the application loop.
     //
-#ifdef DEBUG_MEMORY_LEAKS
     qApp->exit(0);
-#else
-    exit(0); // HOOKS_IGNORE
-#endif
 }
 
 // ****************************************************************************

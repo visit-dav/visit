@@ -239,12 +239,6 @@
 #define ENDSWITHQUOTE(A) (A[strlen(A)-1] == '\'' || A[strlen(A)-1] == '\"')
 #define HASSPACE(A) (strstr(A, " ") != NULL)
 
-// We do this so that the strings command on the .o file
-// can tell us whether or not DEBUG_MEMORY_LEAKS was turned on
-#ifdef DEBUG_MEMORY_LEAKS
-static const char *dummy_string1 = "DEBUG_MEMORY_LEAKS";
-#endif
-
 // Some internal prototypes.
 static void QPrinterToPrinterAttributes(QPrinter *, PrinterAttributes *);
 static void PrinterAttributesToQPrinter(PrinterAttributes *, QPrinter *);
@@ -681,11 +675,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     applicationStyle(), applicationLocale("default"), loadFile(), sessionFile(), 
     sessionDir(), movieArguments()
 {
-#ifdef DEBUG_MEMORY_LEAKS
-    // ensure dummy_string1 cannot optimized away
-    char const *dummy = dummy_string1; dummy++;
-#endif
-
     completeInit = visitTimer->StartTimer();
     int total = visitTimer->StartTimer();
 
@@ -1000,105 +989,6 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 }
 
 // ****************************************************************************
-// Method: QvisGUIApplication::DestructorHelper
-//
-// Purpose: A function to refactor destructor logic and control fast exit
-//     behavior
-//
-// Programmer: Mark C. Miller, Thu Jun 22 14:01:25 PDT 2017
-// ****************************************************************************
-
-void
-QvisGUIApplication::DestructorHelper(bool fastExit)
-{
-#if !defined(_WIN32) && !defined(__APPLE__)
-    if (!fastExit)
-    {
-        // Delete the windows.
-        for(WindowBaseMap::iterator pos = otherWindows.begin();
-            pos != otherWindows.end(); ++pos)
-        {
-            delete pos->second;
-        }
-        for(size_t i = 0; i < plotWindows.size(); ++i)
-        {
-            if(plotWindows[i] != 0)
-                delete plotWindows[i];
-        }
-        for(size_t i = 0; i < operatorWindows.size(); ++i)
-        {
-            if(operatorWindows[i] != 0)
-                delete operatorWindows[i];
-        }
-    }
-#endif
-
-    // Delete the file server
-    if (!fastExit)
-    {
-        delete fileServer;
-        fileServer = 0;
-    }
-
-    // Close down the viewer and delete it.
-    if(viewerIsAlive)
-    {
-        if(viewerInitiatedQuit)
-        {
-            debug1 << "Quitting because viewer told us to." << endl;
-        }
-        else
-        {
-            if(closeAllClients)
-            {
-                debug1 << "Telling viewer to close." << endl;
-                GetViewerProxy()->Close();
-            }
-            else
-            {
-                debug1 << "Telling viewer to detach this GUI." << endl;
-                GetViewerProxy()->Detach();
-            }
-        }
-    }
-
-    if (!fastExit)
-    {
-        delete GetViewerProxy();
-
-        // Delete the status subject that is used for the status bar.
-        delete statusSubject;
-        statusSubject = 0;
-
-        // Delete the socket notifiers.
-        delete fromViewer;
-
-        // Delete the application
-        if(!inheritedGUI)
-            delete mainApp;
-
-        // Delete the args for QT
-        for (size_t i = 0 ; i < (size_t)qt_argc ; i++)
-        {
-            if (qt_argv[i])
-                free(qt_argv[i]);
-        }
-        delete [] qt_argv;
-
-        // Delete the printer object.
-        delete printer;
-        delete printerObserver;
-
-        delete syncObserver;
-        delete systemSettings;
-        delete localSettings;
-    }
-
-    if (fastExit)
-        exit(0); // HOOKS_IGNORE
-}
-
-// ****************************************************************************
 // Method: QvisGUIApplication::~QvisGUIApplication
 //
 // Purpose: 
@@ -1139,7 +1029,78 @@ QvisGUIApplication::DestructorHelper(bool fastExit)
 
 QvisGUIApplication::~QvisGUIApplication()
 {
-    DestructorHelper();
+#if !defined(_WIN32) && !defined(__APPLE__)
+    // Delete the windows.
+    for(WindowBaseMap::iterator pos = otherWindows.begin();
+        pos != otherWindows.end(); ++pos)
+    {
+        delete pos->second;
+    }
+    for(size_t i = 0; i < plotWindows.size(); ++i)
+    {
+        if(plotWindows[i] != 0)
+            delete plotWindows[i];
+    }
+    for(size_t i = 0; i < operatorWindows.size(); ++i)
+    {
+        if(operatorWindows[i] != 0)
+            delete operatorWindows[i];
+    }
+#endif
+
+    // Delete the file server
+    delete fileServer;
+    fileServer = 0;
+
+    // Close down the viewer and delete it.
+    if(viewerIsAlive)
+    {
+        if(viewerInitiatedQuit)
+        {
+            debug1 << "Quitting because viewer told us to." << endl;
+        }
+        else
+        {
+            if(closeAllClients)
+            {
+                debug1 << "Telling viewer to close." << endl;
+                GetViewerProxy()->Close();
+            }
+            else
+            {
+                debug1 << "Telling viewer to detach this GUI." << endl;
+                GetViewerProxy()->Detach();
+            }
+        }
+    }
+    delete GetViewerProxy();
+
+    // Delete the status subject that is used for the status bar.
+    delete statusSubject;
+    statusSubject = 0;
+
+    // Delete the socket notifiers.
+    delete fromViewer;
+
+    // Delete the application
+    if(!inheritedGUI)
+        delete mainApp;
+
+    // Delete the args for QT
+    for (size_t i = 0 ; i < (size_t)qt_argc ; i++)
+    {
+        if (qt_argv[i])
+            free(qt_argv[i]);
+    }
+    delete [] qt_argv;
+
+    // Delete the printer object.
+    delete printer;
+    delete printerObserver;
+
+    delete syncObserver;
+    delete systemSettings;
+    delete localSettings;
 }
 
 // ****************************************************************************
@@ -2079,10 +2040,6 @@ QvisGUIApplication::Exec()
 //    David Camp, Thu Aug  8 08:50:06 PDT 2013
 //    Added the restore from last session feature. 
 //
-//    Mark C. Miller, Thu Jun  8 14:54:25 PDT 2017
-//    Just immediately exit(0) instead of trying to cleanup nicely. This
-//    can impact valgrind analysis so compile with DEBUG_MEMORY_LEAKS to
-//    turn off this behavior.
 // ****************************************************************************
 
 void
@@ -2148,12 +2105,7 @@ QvisGUIApplication::Quit()
         SaveSessionFile(restoreFile, host);
     }
 
-#ifdef DEBUG_MEMORY_LEAKS
     mainApp->quit();
-#else
-    bool const fastExit = true;
-    DestructorHelper(fastExit); 
-#endif
 }
 
 // ****************************************************************************
