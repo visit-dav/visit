@@ -245,6 +245,7 @@ SET(SILO_TARGETS
 arbpoly
 bigsil
 bounce
+big_quads
 csg
 emptydomains
 fullframe
@@ -263,6 +264,7 @@ multi_test
 multidir
 noise
 noise2d
+non_conforming
 one_quad
 quad_disk
 sid97
