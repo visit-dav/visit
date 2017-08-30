@@ -61,17 +61,23 @@ int
 main(int argc, char *argv[])
 {
     int i;
-    float x[] = {0,1,2,0,1,0,1,2};
-    float y[] = {0,0,0,1,1,2,2,2};
+    float ucdx[] = {0,1,2,0,1,2,0,1,2};
+    float ucdy[] = {0,0,0,1,1,1,2,2,2};
     int shapesize = 4;
-    int shapecnt = 3;
+    int shapecnt = 4;
     int shapetype = DB_ZONETYPE_QUAD;
-    int zonelist[] = {0,1,4,3,  3,4,6,5,  1,2,7,6};
+    int zonelist[] = {0,1,4,3,  1,2,5,4,  3,4,7,6,  4,5,8,7};
+    int trishapesize = 3;
+    int trishapecnt = 8;
+    int trishapetype = DB_ZONETYPE_TRIANGLE;
+    int trizonelist[] = {4,3,0, 4,0,1,  4,1,2, 4,2,5,  4,6,3, 4,7,6,  4,8,7, 4,5,8};
     char *coordnames[] = {"x","y"};
-    float *coords[2] = {x,y};
-    float xcomp[8], ycomp[8], mag[8];
-    char *varnames[] = {"xcomp","ycomp"};
-    float *vals[2] = {xcomp,ycomp};
+    float *ucdcoords[2] = {ucdx,ucdy};
+    double nodal_field[] = {0, 0, 0, 0, 10, 0, 0, 0, 0};
+    float qx[] = {0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
+    float *qcoords[] = {qx, qx};
+    int qdims[] = {21,21};
+    double nodal_field_highres[21*21];
 
     // Check for the right driver.
     int driver = DB_PDB;
@@ -98,37 +104,83 @@ main(int argc, char *argv[])
     }
 
     // Open the Silo file
-    DBfile *dbfile = DBCreate("non_conforming.silo", DB_CLOBBER, DB_LOCAL,
-        "2D, non-conforming mesh with continuous fields to test "
-        "VisIt's expression system", driver);
+    DBfile *dbfile = DBCreate("big_quads.silo", DB_CLOBBER, DB_LOCAL,
+        "2D mesh with large quads to demonstrate shading artifacts", driver);
     if(dbfile == NULL)
     {
         fprintf(stderr, "Could not create Silo file!\n");
         return -1;
     }
 
-    DBPutUcdmesh(dbfile, "mesh", 2, coordnames, coords,
-                8, 3, "zonelist", NULL, DB_FLOAT, NULL);
-
-    DBPutZonelist2(dbfile, "zonelist", 3, 2, zonelist, (int) sizeof(zonelist),
+    // Output mesh as 4 quads
+    DBPutUcdmesh(dbfile, "quads", 2, coordnames, ucdcoords,
+                9, 4, "quads_zl", NULL, DB_FLOAT, NULL);
+    DBPutZonelist2(dbfile, "quads_zl", 4, 2, zonelist, (int) sizeof(zonelist),
                 0, 0, 0, &shapetype, &shapesize, &shapecnt, 1, NULL);
+    DBPutUcdvar1(dbfile, "quads_field", "quads", nodal_field,
+        9, NULL, 0, DB_DOUBLE, DB_NODECENT, 0);
 
-    for (i = 0; i < 8; i++)
+
+    // Output mesh as 8 triangles with diagonals chosen "coorectly"
+    DBPutUcdmesh(dbfile, "tris", 2, coordnames, ucdcoords,
+                9, 8, "tris_zl", NULL, DB_FLOAT, NULL);
+    DBPutZonelist2(dbfile, "tris_zl", 8, 2, trizonelist, (int) sizeof(trizonelist),
+                0, 0, 0, &trishapetype, &trishapesize, &trishapecnt, 1, NULL);
+    DBPutUcdvar1(dbfile, "tris_field", "tris", nodal_field,
+        9, NULL, 0, DB_DOUBLE, DB_NODECENT, 0);
+
+
+    // Output much finer resolution version of 4 quad case by doing
+    // bi-linear sampling of each quad, the interpolation function
+    // VisIt should be using internally to describe the field variation
+    // over a quad.
     {
-        xcomp[i] = 1/(x[i]+1);
-        ycomp[i] = 1/(y[i]*y[i]+1);
-        mag[i] = sqrt(xcomp[i]*xcomp[i]+ycomp[i]*ycomp[i]);
+        for (int i = 0; i < 21; i++)
+        {
+            double h00, h10, h01, h11, xoff, yoff;
+            for (int j = 0; j < 21; j++)
+            {
+                if (qx[i] <= 1.0)
+                {
+                    xoff = 0;
+                    if (qx[j] <= 1.0)
+                    {
+                        yoff = 0;
+                        h00=0; h10=0; h01=0; h11=10;
+                    }
+                    else
+                    {
+                        yoff = 1;
+                        h00=0; h10=10; h01=0; h11=0;
+                    }
+                }
+                else
+                {
+                    xoff = 1;
+                    if (qx[j] <= 1.0)
+                    {
+                        yoff = 0;
+                        h00=0; h10=00; h01=10; h11=0;
+                    }
+                    else
+                    {
+                        yoff = 1;
+                        h00=10; h10=00; h01=0; h11=0;
+                    }
+                }
+                double dx = qx[i] - xoff;
+                double dy = qx[j] - yoff;
+                double h0x = dx*h10 + (1-dx)*h00;
+                double h1x = dx*h11 + (1-dx)*h01;
+                double h = dy*h1x + (1-dy)*h0x;
+                nodal_field_highres[j*21+i] = h; // [j*nx+i]
+            }
+        }
+        DBPutQuadmesh(dbfile, "qmesh", coordnames, qcoords, qdims, 2,
+            DB_FLOAT, DB_COLLINEAR, NULL);
+        DBPutQuadvar1(dbfile, "highres_field", "qmesh", nodal_field_highres,
+            qdims, 2, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
     }
-    /* enforce C1 continuity at the hanging node */
-    xcomp[4] = (xcomp[6]+xcomp[1]) / 2;
-    ycomp[4] = (ycomp[6]+ycomp[1]) / 2;
-    mag[4] = (mag[6]+mag[1]) / 2;
-
-    DBPutUcdvar(dbfile, "vec", "mesh", 2, varnames, (float**)vals,
-        8, NULL, 0, DB_FLOAT, DB_NODECENT, 0);
-
-    DBPutUcdvar1(dbfile, "vec_mag", "mesh", mag,
-        8, NULL, 0, DB_FLOAT, DB_NODECENT, 0);
 
     // Close the Silo file.
     DBClose(dbfile);
