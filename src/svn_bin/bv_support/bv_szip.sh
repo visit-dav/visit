@@ -1,19 +1,16 @@
 function bv_szip_initialize
 {
     export DO_SZIP="no"
-    export ON_SZIP="off"
 }
 
 function bv_szip_enable
 {
     DO_SZIP="yes"
-    ON_SZIP="on"
 }
 
 function bv_szip_disable
 {
     DO_SZIP="no"
-    ON_SZIP="off"
 }
 
 function bv_szip_depends_on
@@ -42,12 +39,6 @@ function bv_szip_print
 function bv_szip_print_usage
 {
     printf "%-15s %s [%s]\n" "--szip" "Build with SZIP" "$DO_SZIP"  
-}
-
-function bv_szip_graphical
-{
-    local graphical_out="SZip     $SZIP_VERSION($SZIP_FILE)      $ON_SZIP"
-    echo "$graphical_out"
 }
 
 function bv_szip_host_profile

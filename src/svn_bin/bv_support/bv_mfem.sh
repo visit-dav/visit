@@ -1,19 +1,16 @@
 function bv_mfem_initialize
 {
     export DO_MFEM="no"
-    export ON_MFEM="off"
 }
 
 function bv_mfem_enable
 {
     DO_MFEM="yes"
-    ON_MFEM="on"
 }
 
 function bv_mfem_disable
 {
     DO_MFEM="no"
-    ON_MFEM="off"
 }
 
 function bv_mfem_depends_on
@@ -43,12 +40,6 @@ function bv_mfem_print
 function bv_mfem_print_usage
 {
     printf "%-15s %s [%s]\n" "--mfem" "Build mfem support" "$DO_MFEM"
-}
-
-function bv_mfem_graphical
-{
-    local graphical_out="mfem     $MFEM_VERSION($MFEM_FILE)      $ON_MFEM"
-    echo "$graphical_out"
 }
 
 function bv_mfem_host_profile

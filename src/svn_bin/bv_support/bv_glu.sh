@@ -1,21 +1,18 @@
 function bv_glu_initialize
 {
     export DO_GLU="no"
-    export ON_GLU="off"
 }
 
 function bv_glu_enable
 {
     if [[ "$DO_MESA" == "yes" || "$DO_OPENSWR" == "yes" ]] ; then
         DO_GLU="yes"
-        ON_GLU="on"
     fi
 }
 
 function bv_glu_disable
 {
     DO_GLU="no"
-    ON_GLU="off"
 }
 
 function bv_glu_depends_on
@@ -47,12 +44,6 @@ function bv_glu_print_usage
     printf "%-15s %s [%s]\n" "--glu" "Build GLU" "$DO_GLU"
 }
 
-function bv_glu_graphical
-{
-    local graphical_out="GLU     $GLU_VERSION($GLU_FILE)      $ON_GLU"
-    echo $graphical_out
-}
-
 function bv_glu_host_profile
 {
 #    if [[ "$DO_GLU" == "yes" ]] ; then
@@ -70,7 +61,6 @@ function bv_glu_selected
     args=$@
     if [[ $args == "--glu" ]]; then
         DO_GLU="yes"
-        ON_GLU="on"
         return 1
     fi
 

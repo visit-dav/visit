@@ -1,19 +1,16 @@
 function bv_openswr_initialize
 {
     export DO_OPENSWR="no"
-    export ON_OPENSWR="off"
 }
 
 function bv_openswr_enable
 {
     DO_OPENSWR="yes"
-    ON_OPENSWR="on"
 }
 
 function bv_openswr_disable
 {
     DO_OPENSWR="no"
-    ON_OPENSWR="off"
 }
 
 function bv_openswr_depends_on
@@ -45,12 +42,6 @@ function bv_openswr_print_usage
     printf "%-15s %s [%s]\n" "--openswr" "Build OpenSWR" "$DO_OPENSWR"
 }
 
-function bv_openswr_graphical
-{
-    local graphical_out="OpenSWR  $OPENSWR_VERSION($OPENSWR_FILE)      $ON_OPENSWR"
-    echo $graphical_out
-}
-
 function bv_openswr_host_profile
 {
     # If we are using openswr as the GL for VTK in a static build, we'll tell VisIt
@@ -76,7 +67,6 @@ function bv_openswr_selected
     args=$@
     if [[ $args == "--openswr" ]]; then
         DO_OPENSWR="yes"
-        ON_OPENSWR="on"
         return 1
     fi
 

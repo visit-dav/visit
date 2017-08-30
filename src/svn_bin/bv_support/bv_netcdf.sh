@@ -1,7 +1,6 @@
 function bv_netcdf_initialize
 {
     export DO_NETCDF="no"
-    export ON_NETCDF="off"
     export USE_SYSTEM_NETCDF="no"
     add_extra_commandline_args "netcdf" "alt-netcdf-dir" 1 "Use alternative directory for netcdf"
 }
@@ -9,13 +8,11 @@ function bv_netcdf_initialize
 function bv_netcdf_enable
 {
     DO_NETCDF="yes"
-    ON_NETCDF="on"
 }
 
 function bv_netcdf_disable
 {
     DO_NETCDF="no"
-    ON_NETCDF="off"
 }
 
 function bv_netcdf_alt_netcdf_dir
@@ -73,12 +70,6 @@ function bv_netcdf_print_usage
 {
     printf "%-15s %s [%s]\n" "--netcdf" "Build NetCDF" "${DO_NETCDF}"
     printf "%-15s %s [%s]\n" "--alt-netcdf-dir" "Use NetCDF from an alternative directory"
-}
-
-function bv_netcdf_graphical
-{
-    local graphical_out="NetCDF   $NETCDF_VERSION($NETCDF_FILE)    $ON_NETCDF"
-    echo "$graphical_out"
 }
 
 function bv_netcdf_host_profile

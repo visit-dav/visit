@@ -1,19 +1,16 @@
 function bv_cfitsio_initialize
 {
     export DO_CFITSIO="no"
-    export ON_CFITSIO="off"
 }
 
 function bv_cfitsio_enable
 {
     DO_CFITSIO="yes"
-    ON_CFITSIO="on"
 }
 
 function bv_cfitsio_disable
 {
     DO_CFITSIO="no"
-    ON_CFITSIO="off"
 }
 
 function bv_cfitsio_depends_on
@@ -42,12 +39,6 @@ function bv_cfitsio_print
 function bv_cfitsio_print_usage
 {
     printf "%-15s %s [%s]\n" "--cfitsio" "Build CFITSIO" "$DO_CFITSIO"
-}
-
-function bv_cfitsio_graphical
-{
-    local graphical_out="CFITSIO  $CFITSIO_VERSION($CFITSIO_FILE)   $ON_CFITSIO"
-    echo $graphical_out
 }
 
 function bv_cfitsio_host_profile

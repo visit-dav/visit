@@ -1,19 +1,16 @@
 function bv_xercesc_initialize
 {
     export DO_XERCESC="no"
-    export ON_XERCESC="off"
 }
 
 function bv_xercesc_enable
 {
     DO_XERCESC="yes"
-    ON_XERCESC="on"
 }
 
 function bv_xercesc_disable
 {
     DO_XERCESC="no"
-    ON_XERCESC="off"
 }
 
 function bv_xercesc_depends_on
@@ -44,12 +41,6 @@ function bv_xercesc_print
 function bv_xercesc_print_usage
 {
     printf "%-15s %s [%s]\n" "--xercesc"   "Build XERCESC" "$DO_XERCESC"
-}
-
-function bv_xercesc_graphical
-{
-    local graphical_out="XERCESC    $XERCESC_VERSION($XERCESC_FILE)    $ON_XERCESC"
-    echo $graphical_out
 }
 
 function bv_xercesc_host_profile

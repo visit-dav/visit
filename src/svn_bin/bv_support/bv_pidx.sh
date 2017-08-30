@@ -1,7 +1,6 @@
 function bv_pidx_initialize
 {
     export DO_PIDX="no"
-    export ON_PIDX="off"
     export USE_SYSTEM_PIDX="no"
     add_extra_commandline_args "pidx" "alt-pidx-dir" 1 "Use alternative directory for pidx"
 }
@@ -9,13 +8,11 @@ function bv_pidx_initialize
 function bv_pidx_enable
 {
     DO_PIDX="yes"
-    ON_PIDX="on"
 }
 
 function bv_pidx_disable
 {
     DO_PIDX="no"
-    ON_PIDX="off"
 }
 
 function bv_pidx_alt_pidx_dir
@@ -70,12 +67,6 @@ function bv_pidx_print_usage
 {
     printf "%-15s %s [%s]\n" "--pidx" "Build pidx" "${DO_PIDX}"
     printf "%-15s %s [%s]\n" "--alt-pidx-dir" "Use pidx from an alternative directory"
-}
-
-function bv_pidx_graphical
-{
-    local graphical_out="PIDX     $PIDX_VERSION($PIDX_FILE)      $ON_PIDX"
-    echo $graphical_out
 }
 
 function bv_pidx_host_profile

@@ -1,19 +1,16 @@
 function bv_advio_initialize
 {
     export DO_ADVIO="no"
-    export ON_ADVIO="off"
 }
 
 function bv_advio_enable
 {
     DO_ADVIO="yes"
-    ON_ADVIO="on"
 }
 
 function bv_advio_disable
 {
     DO_ADVIO="no"
-    ON_ADVIO="off"
 }
 
 function bv_advio_depends_on
@@ -42,12 +39,6 @@ function bv_advio_print
 function bv_advio_print_usage
 {
     printf "%-15s %s [%s]\n" "--advio"   "Build AdvIO" "$DO_ADVIO"
-}
-
-function bv_advio_graphical
-{
-    local graphical_out="AdvIO    $ADVIO_VERSION($ADVIO_FILE)     $ON_ADVIO"
-    echo $graphical_out
 }
 
 function bv_advio_host_profile

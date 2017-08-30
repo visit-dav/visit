@@ -2,7 +2,6 @@ function bv_uintah_initialize
 {
     export FORCE_UINTAH="no"
     export DO_UINTAH="no"
-    export ON_UINTAH="off"
     export USE_SYSTEM_UINTAH="no"
     add_extra_commandline_args "uintah" "alt-uintah-dir" 1 "Use alternative directory for uintah"
 }
@@ -14,13 +13,11 @@ function bv_uintah_enable
     fi
 
     DO_UINTAH="yes"
-    ON_UINTAH="on"
 }
 
 function bv_uintah_disable
 {
     DO_UINTAH="no"
-    ON_UINTAH="off"
 }
 
 function bv_uintah_alt_uintah_dir
@@ -89,12 +86,6 @@ function bv_uintah_print_usage
 {
     printf "%-15s %s [%s]\n" "--uintah" "Build Uintah" "${DO_UINTAH}"
     printf "%-15s %s [%s]\n" "--alt-uintah-dir" "Use Uintah from an alternative directory"
-}
-
-function bv_uintah_graphical
-{
-    local graphical_out="UINTAH     $UINTAH_VERSION($UINTAH_FILE)      $ON_UINTAH"
-    echo $graphical_out
 }
 
 function bv_uintah_host_profile

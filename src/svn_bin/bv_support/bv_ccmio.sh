@@ -1,19 +1,16 @@
 function bv_ccmio_initialize
 {
     export DO_CCMIO="no"
-    export ON_CCMIO="off"
 }
 
 function bv_ccmio_enable
 {
     DO_CCMIO="yes"
-    ON_CCMIO="on"
 }
 
 function bv_ccmio_disable
 {
     DO_CCMIO="no"
-    ON_CCMIO="off"
 }
 
 function bv_ccmio_depends_on
@@ -42,12 +39,6 @@ function bv_ccmio_print
 function bv_ccmio_print_usage
 {
     printf "%-15s %s [%s]\n" "--ccmio"   "Build Star-CD support" "$DO_CCMIO"
-}
-
-function bv_ccmio_graphical
-{
-    local graphical_out="CCMIO    $CCMIO_VERSION($CCMIO_FILE) $ON_CCMIO"
-    echo $graphical_out
 }
 
 function bv_ccmio_host_profile

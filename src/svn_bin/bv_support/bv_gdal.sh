@@ -1,19 +1,16 @@
 function bv_gdal_initialize
 {
     export DO_GDAL="no"
-    export ON_GDAL="off"
 }
 
 function bv_gdal_enable
 {
     DO_GDAL="yes"
-    ON_GDAL="on"
 }
 
 function bv_gdal_disable
 {
     DO_GDAL="no"
-    ON_GDAL="off"
 }
 
 function bv_gdal_depends_on
@@ -43,12 +40,6 @@ function bv_gdal_print
 function bv_gdal_print_usage
 {
     printf "%-15s %s [%s]\n" "--gdal" "Build GDAL" "$DO_GDAL"
-}
-
-function bv_gdal_graphical
-{
-    local graphical_out="GDAL     $GDAL_VERSION($GDAL_FILE)      $ON_GDAL"
-    echo $graphical_out
 }
 
 function bv_gdal_host_profile

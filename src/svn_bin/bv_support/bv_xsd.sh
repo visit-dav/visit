@@ -1,19 +1,16 @@
 function bv_xsd_initialize
 {
     export DO_XSD="no"
-    export ON_XSD="off"
 }
 
 function bv_xsd_enable
 { 
     DO_XSD="yes"
-    ON_XSD="on"
 }
 
 function bv_xsd_disable
 {
     DO_XSD="no"
-    ON_XSD="off"
 }
 
 function bv_xsd_depends_on
@@ -42,12 +39,6 @@ function bv_xsd_print
 function bv_xsd_print_usage
 {
     printf "%-15s %s [%s]\n" "--xsd"   "Build XSD" "$DO_XSD"
-}
-
-function bv_xsd_graphical
-{
-    local graphical_out="XSD    $XSD_VERSION($XSD_FILE)    $ON_XSD"
-    echo $graphical_out
 }
 
 function bv_xsd_host_profile

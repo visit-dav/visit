@@ -1,7 +1,6 @@
 function bv_nektarpp_initialize
 {
     export DO_NEKTAR_PLUS_PLUS="no"
-    export ON_NEKTAR_PLUS_PLUS="off"
     export USE_SYSTEM_NEKTAR_PLUS_PLUS="no"
     add_extra_commandline_args "nektarpp" "alt-nektarpp-dir" 1 "Use alternative directory for nektar++"
 }
@@ -9,13 +8,11 @@ function bv_nektarpp_initialize
 function bv_nektarpp_enable
 {
     DO_NEKTAR_PLUS_PLUS="yes"
-    ON_NEKTAR_PLUS_PLUS="on"
 }
 
 function bv_nektarpp_disable
 {
     DO_NEKTAR_PLUS_PLUS="no"
-    ON_NEKTAR_PLUS_PLUS="off"
 }
 
 function bv_nektarpp_alt_nektarpp_dir
@@ -70,12 +67,6 @@ function bv_nektarpp_print_usage
 {
     printf "%-15s %s [%s]\n" "--nektarpp" "Build Nektar++" "${DO_NEKTAR_PLUS_PLUS}"
     printf "%-15s %s [%s]\n" "--alt-nektarpp-dir" "Use Nektar++ from an alternative directory"
-}
-
-function bv_nektarpp_graphical
-{
-    local graphical_out="NEKTAR_PLUS_PLUS     $NEKTAR_PLUS_PLUS_VERSION($NEKTAR_PLUS_PLUS_FILE)      $ON_NEKTAR_PLUS_PLUS"
-    echo $graphical_out
 }
 
 function bv_nektarpp_host_profile

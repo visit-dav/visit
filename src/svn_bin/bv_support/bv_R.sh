@@ -1,7 +1,6 @@
 function bv_R_initialize
 {
     export DO_R="no"
-    export ON_R="off"
     export USE_SYSTEM_R="no"
     add_extra_commandline_args "R" "alt-R-dir" 1 "Use alternative directory for R" 
 }
@@ -9,13 +8,11 @@ function bv_R_initialize
 function bv_R_enable
 {
     DO_R="yes"
-    ON_R="on"
 }
 
 function bv_R_disable
 {
     DO_R="no"
-    ON_R="off"
 }
 
 function bv_R_alt_R_dir
@@ -59,12 +56,7 @@ function bv_R_print_usage
 {
     printf "%-15s %s [%s]\n" "--R" "Build R" "$DO_R"
     printf "%-15s %s [%s]\n" "--alt-R-dir" "Use R from an alternative directory"
-}
 
-function bv_R_graphical
-{
-    local graphical_out="R    $R_VERSION($R_FILE)    $ON_R"
-    echo $graphical_out
 }
 
 function bv_R_host_profile

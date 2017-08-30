@@ -1,19 +1,16 @@
 function bv_fastbit_initialize
 {
     export DO_FASTBIT="no"
-    export ON_FASTBIT="off"
 }
 
 function bv_fastbit_enable
 {
     DO_FASTBIT="yes"
-    ON_FASTBIT="on"
 }
 
 function bv_fastbit_disable
 {
     DO_FASTBIT="no"
-    ON_FASTBIT="off"
 }
 
 function bv_fastbit_depends_on
@@ -43,12 +40,6 @@ function bv_fastbit_print_usage
 {
     printf "\t\t%15s\n" "NOTE: FastBit not available for download from web" 
     printf "%-15s %s [%s]\n" "--fastbit" "Build FastBit" "$DO_FASTBIT"
-}
-
-function bv_fastbit_graphical
-{
-    local graphical_out="FastBit  $FASTBIT_VERSION($FASTBIT_FILE)   $ON_FASTBIT"
-    echo $graphical_out
 }
 
 function bv_fastbit_host_profile

@@ -1,19 +1,16 @@
 function bv_llvm_initialize
 {
     export DO_LLVM="no"
-    export ON_LLVM="off"
 }
 
 function bv_llvm_enable
 {
     DO_LLVM="yes"
-    ON_LLVM="on"
 }
 
 function bv_llvm_disable
 {
     DO_LLVM="no"
-    ON_LLVM="off"
 }
 
 function bv_llvm_depends_on
@@ -45,12 +42,6 @@ function bv_llvm_print_usage
     printf "%-15s %s [%s]\n" "--llvm" "Build LLVM" "$DO_LLVM"
 }
 
-function bv_llvm_graphical
-{
-    local graphical_out="LLVM     $LLVM_VERSION($LLVM_FILE)      $ON_LLVM"
-    echo $graphical_out
-}
-
 function bv_llvm_host_profile
 {
     if [[ "$DO_LLVM" == "yes" ]] ; then
@@ -79,7 +70,6 @@ function bv_llvm_selected
     args=$@
     if [[ $args == "--llvm" ]]; then
         DO_LLVM="yes"
-        ON_LLVM="on"
         return 1
     fi
 

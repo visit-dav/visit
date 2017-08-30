@@ -1,7 +1,6 @@
 function bv_vtkm_initialize
 {
     export DO_VTKM="no"
-    export ON_VTKM="off"
     export USE_SYSTEM_VTKM="no"
     add_extra_commandline_args "vtkm" "alt-vtkm-dir" 1 "Use alternative directory for vtkm"
 }
@@ -9,13 +8,11 @@ function bv_vtkm_initialize
 function bv_vtkm_enable
 {
     DO_VTKM="yes"
-    ON_VTKM="on"
 }
 
 function bv_vtkm_disable
 {
     DO_VTKM="no"
-    ON_VTKM="off"
 }
 
 function bv_vtkm_alt_vtkm_dir
@@ -63,12 +60,6 @@ function bv_vtkm_print_usage
 {
     printf "%-15s %s [%s]\n" "--vtkm" "Build VTKm support" "$DO_VTKM"
     printf "%-15s %s [%s]\n" "--alt-vtkm-dir" "Use VTKm from an alternative directory"
-}
-
-function bv_vtkm_graphical
-{
-    local graphical_out="vtkm     $VTKM_VERSION($VTKM_FILE)      $ON_VTKM"
-    echo "$graphical_out"
 }
 
 function bv_vtkm_host_profile

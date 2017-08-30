@@ -6,21 +6,18 @@
 function bv_visit_initialize
 {
     export DO_VISIT="yes"
-    export ON_VISIT="on"
 }
 
 #enable the module for install
 function bv_visit_enable
 { 
     DO_VISIT="yes"
-    ON_VISIT="on"
 }
 
 #disable the module for install
 function bv_visit_disable
 {
     DO_VISIT="no"
-    ON_VISIT="off"
 }
 
 #add any dependency with comma separation
@@ -48,13 +45,6 @@ function bv_visit_print
 function bv_visit_print_usage
 {
     printf "%-15s %s [%s]\n" "--visit"   "Build VisIt" "$DO_VISIT"
-}
-
-#how to show information for graphical editor
-function bv_visit_graphical
-{
-    local graphical_out="VISIT    $VISIT_VERSION($VISIT_FILE)    $ON_VISIT"
-    echo $graphical_out
 }
 
 #values to add to host profile, write to $HOSTCONF
@@ -96,7 +86,6 @@ function bv_visit_ensure_built_or_ready
         #resetting any values that have mixup the build between Trunk and RC
         VISIT_FILE="" #erase any accidental setting of these values
         USE_VISIT_FILE="no"
-        ON_USE_VISIT_FILE="off"
         DO_SVN="yes" #if src directory exists it may have come from svn..
 
         # Build using a VisIt source tarball
@@ -473,59 +462,25 @@ function bv_visit_build
             VISIT_SRC_DIR="${VISIT_FILE%.tar*}/src"
         fi
 
-        FINISHED_MSG="Finished building VisIt.\n\n\
-    You many now try to run VisIt by cd'ing into the \
-    $VISIT_SRC_DIR/bin directory and invoking \"visit\".\n\n\
-    To create a binary distribution tarball from this build, cd to \
-    ${START_DIR}/${VISIT_SRC_DIR}\n\
-    then enter: \"make package\"\n\n\
-    This will produce a tarball called visitVERSION.ARCH.tar.gz, where \
-    VERSION is the version number, and ARCH is the OS architecure.\n\n\
-    To install the above tarball in a directory called \"INSTALL_DIR_PATH\",\
-    enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH\n\n\
-    If you run into problems, contact visit-users@ornl.gov."
-
         #
-        # Output the message indicating that we are finished. I couldn't get
-        # the imbedded newlines in the FINISHED_MSG to display properly so I
-        # am treating the graphical and console interfaces differently.
+        # Output the message indicating that we are finished.
         #
-        if test "${GRAPHICAL}" = "yes" ; then
-            info_box_large "$FINISHED_MSG"
-            log "Finished building VisIt."
-            log
-            log "You many now try to run VisIt by cd'ing into the"
-            log "$VISIT_SRC_DIR/bin directory and invoking \"visit\""
-            log
-            log "To create a binary distribution tarball from this build, cd to"
-            log "${START_DIR}/${VISIT_SRC_DIR}"
-            log "then enter: \"make package\""
-            log
-            log "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
-            log "VERSION is the version number, and ARCH is the OS architecure."
-            log
-            log "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
-            log "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
-            log
-            log "If you run into problems, contact visit-users@ornl.gov."
-        else
-            info "Finished building VisIt."
-            info
-            info "You many now try to run VisIt by cd'ing into the"
-            info "$VISIT_SRC_DIR/bin directory and invoking \"visit\""
-            info
-            info "To create a binary distribution tarball from this build, cd to"
-            info "${START_DIR}/${VISIT_SRC_DIR}"
-            info "then enter: \"make package\""
-            info
-            info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
-            info "VERSION is the version number, and ARCH is the OS architecure."
-            info
-            info "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
-            info "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
-            info
-            info "If you run into problems, contact visit-users@ornl.gov."
-        fi
+        info "Finished building VisIt."
+        info
+        info "You many now try to run VisIt by cd'ing into the"
+        info "$VISIT_SRC_DIR/bin directory and invoking \"visit\""
+        info
+        info "To create a binary distribution tarball from this build, cd to"
+        info "${START_DIR}/${VISIT_SRC_DIR}"
+        info "then enter: \"make package\""
+        info
+        info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
+        info "VERSION is the version number, and ARCH is the OS architecure."
+        info
+        info "To install the above tarball in a directory called \"INSTALL_DIR_PATH\""
+        info "enter: svn_bin/visit-install VERSION ARCH INSTALL_DIR_PATH"
+        info
+        info "If you run into problems, contact visit-users@ornl.gov."
     else
         if [[ $ANY_ERRORS == "no" ]] ; then
             info "Finished!"

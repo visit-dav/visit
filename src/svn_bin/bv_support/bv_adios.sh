@@ -2,7 +2,6 @@ function bv_adios_initialize
 {
     export FORCE_ADIOS="no"
     export DO_ADIOS="no"
-    export ON_ADIOS="off"
     export USE_SYSTEM_ADIOS="no"
     add_extra_commandline_args "adios" "alt-adios-dir" 1 "Use alternative directory for adios"
 
@@ -15,13 +14,11 @@ function bv_adios_enable
     fi
 
     DO_ADIOS="yes"
-    ON_ADIOS="on"
 }
 
 function bv_adios_disable
 {
     DO_ADIOS="no"
-    ON_ADIOS="off"
 }
 
 function bv_adios_alt_adios_dir
@@ -86,12 +83,6 @@ function bv_adios_print_usage
 {
     printf "%-15s %s [%s]\n" "--adios" "Build ADIOS" "$DO_ADIOS"
     printf "%-15s %s [%s]\n" "--alt-adios-dir" "Use ADIOS from an alternative directory"
-}
-
-function bv_adios_graphical
-{
-    local graphical_out="ADIOS    $ADIOS_VERSION($ADIOS_FILE)    $ON_ADIOS"
-    echo $graphical_out
 }
 
 function bv_adios_host_profile

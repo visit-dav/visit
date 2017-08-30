@@ -1,23 +1,19 @@
 function bv_xdmf_initialize
 {
     export DO_XDMF="no"
-    export ON_XDMF="off"
 }
 
 function bv_xdmf_enable
 {
     DO_XDMF="yes"
-    ON_XDMF="on"
 
     #xdmf is dependent on HDF5
     DO_HDF5="yes"
-    ON_HDF5="on"
 }
 
 function bv_xdmf_disable
 {
     DO_XDMF="no"
-    ON_XDMF="off"
 }
 
 function bv_xdmf_depends_on
@@ -46,12 +42,6 @@ function bv_xdmf_print
 function bv_xdmf_print_usage
 {
     printf "%-15s %s [%s]\n" "--xdmf" "Build Xdmf" "$DO_XDMF"
-}
-
-function bv_xdmf_graphical
-{
-    local graphical_out="Xdmf     $XDMF_VERSION($XDMF_FILE)    $ON_XDMF"
-    echo "$graphical_out"
 }
 
 function bv_xdmf_host_profile

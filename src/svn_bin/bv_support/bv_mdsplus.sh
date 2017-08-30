@@ -1,19 +1,16 @@
 function bv_mdsplus_initialize
 {
     export DO_MDSPLUS="no"
-    export ON_MDSPLUS="off"
 }
 
 function bv_mdsplus_enable
 {
     DO_MDSPLUS="yes"
-    ON_MDSPLUS="on"
 }
 
 function bv_mdsplus_disable
 {
     DO_MDSPLUS="no"
-    ON_MDSPLUS="off"
 }
 
 function bv_mdsplus_depends_on
@@ -43,12 +40,6 @@ function bv_mdsplus_print
 function bv_mdsplus_print_usage
 {
     printf "%-15s %s [%s]\n" "--mdsplus" "Build MDSplus" "${DO_MDSPLUS}"
-}
-
-function bv_mdsplus_graphical
-{
-    local graphical_out="MDSPLUS    $MDSPLUS_VERSION($MDSPLUS_FILE)     $ON_MDSPLUS"
-    echo $graphical_out
 }
 
 function bv_mdsplus_host_profile

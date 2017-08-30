@@ -1,7 +1,6 @@
 function bv_eavl_initialize
 {
     export DO_EAVL="no"
-    export ON_EAVL="off"
     export USE_SYSTEM_EAVL="no"
     add_extra_commandline_args "eavl" "alt-eavl-dir" 1 "Use alternative directory for EAVL"
 }
@@ -9,13 +8,11 @@ function bv_eavl_initialize
 function bv_eavl_enable
 {
     DO_EAVL="yes"
-    ON_EAVL="on"
 }
 
 function bv_eavl_disable
 {
     DO_EAVL="no"
-    ON_EAVL="off"
 }
 
 function bv_eavl_alt_eavl_dir
@@ -63,12 +60,6 @@ function bv_eavl_print_usage
 {
     printf "%-15s %s [%s]\n" "--eavl" "Build eavl support" "$DO_EAVL"
     printf "%-15s %s [%s]\n" "--alt-eavl-dir" "Use eavl from an alternative directory"
-}
-
-function bv_eavl_graphical
-{
-    local graphical_out="eavl     $EAVL_VERSION($EAVL_FILE)      $ON_EAVL"
-    echo "$graphical_out"
 }
 
 function bv_eavl_host_profile
