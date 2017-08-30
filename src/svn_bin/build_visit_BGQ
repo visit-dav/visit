@@ -429,7 +429,7 @@ function build_cmake
     (export BUILD_VISIT_BGQ="yes"
      eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --static --no-visit $SVN $TARBALL\
+        --static --no-visit $SVN $TARBALL\
         --no-thirdparty --cmake\
         --log-file building_cmake.txt \
         --arch "${ARCH}" \
@@ -478,7 +478,7 @@ function build_zlib_BGQ
     banner "Building zlib (Compute Node)"
     (eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --static --no-visit $SVN $TARBALL --engine-only \
+        --static --no-visit $SVN $TARBALL --engine-only \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
         --prefix "${PREFIX}" \
@@ -556,7 +556,7 @@ function build_vtk_BGQ
      export BUILD_VISIT_BGQ="yes"
      eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --static --no-visit $SVN $TARBALL --engine-only \
+        --static --no-visit $SVN $TARBALL --engine-only \
         --no-thirdparty --cmake --vtk \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
@@ -595,7 +595,7 @@ function build_icet_BGQ
      export C_COMPILER=$BG_CC
      eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --static --no-visit $SVN $TARBALL --engine-only \
+        --static --no-visit $SVN $TARBALL --engine-only \
         --no-thirdparty --cmake --icet \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
@@ -671,7 +671,7 @@ function build_for_compute_node
      export BUILD_VISIT_BGQ="yes"
      eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --static --no-visit $SVN $TARBALL --engine-only \
+        --static --no-visit $SVN $TARBALL --engine-only \
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
         --prefix "${PREFIX}" \
@@ -706,7 +706,7 @@ function build_for_compute_node
      export BUILD_VISIT_BGQ="yes"
      eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --static $NO_VISIT $SVN $TARBALL --engine-only\
+        --static $NO_VISIT $SVN $TARBALL --engine-only\
         --log-file compute_node.txt \
         --arch "${ARCH}_BGQ" \
         --prefix "${PREFIX}" \
@@ -777,7 +777,7 @@ function build_for_login_node
     banner "Building Dependencies (Login Node)"
     (eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --static --no-visit $SVN $TARBALL --server-components-only \
+        --static --no-visit $SVN $TARBALL --server-components-only \
         --log-file login_node.txt \
         --arch $ARCH \
         --prefix "${PREFIX}" \
@@ -798,7 +798,7 @@ function build_for_login_node
     banner "Building VisIt (Login Node)"
     (eval $bv_PATH/build_visit \
         --version ${VISIT_VERSION} \
-        --console --static $NO_VISIT $SVN $TARBALL --server-components-only \
+        --static $NO_VISIT $SVN $TARBALL --server-components-only \
         --log-file login_node.txt \
         --arch $ARCH \
         --prefix "${PREFIX}" \

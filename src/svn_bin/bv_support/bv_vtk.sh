@@ -1,7 +1,6 @@
 function bv_vtk_initialize
 {
     export DO_VTK="yes"
-    export ON_VTK="on"
     export FORCE_VTK="no"
     export USE_SYSTEM_VTK="no"
     add_extra_commandline_args "vtk" "system-vtk" 0 "Using system VTK (exp)"
@@ -11,14 +10,12 @@ function bv_vtk_initialize
 function bv_vtk_enable
 {
     DO_VTK="yes"
-    ON_VTK="on"
     FORCE_VTK="yes"
 }
 
 function bv_vtk_disable
 {
     DO_VTK="no"
-    ON_VTK="off"
     FORCE_VTK="no"
 }
 

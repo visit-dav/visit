@@ -1,7 +1,6 @@
 function bv_visus_initialize
 {
     export DO_VISUS="no"
-    export ON_VISUS="off"
     export USE_SYSTEM_VISUS="no"
     add_extra_commandline_args "visus" "alt-visus-dir" 1 "Use alternative directory for ViSUS"
 }
@@ -17,13 +16,11 @@ function bv_visus_alt_visus_dir
 function bv_visus_enable
 {
     DO_VISUS="yes"
-    ON_VISUS="on"
 }
 
 function bv_visus_disable
 {
     DOVISUS_="no"
-    ON_VISUS="off"
 }
 
 function bv_visus_depends_on
@@ -61,12 +58,6 @@ function bv_visus_print_usage
 {
     printf "%-15s %s [%s]\n" "--visus" "Build ViSUS support" "$DO_VISUS"
     printf "%-15s %s [%s]\n" "--alt-visus-dir" "Use ViSUS from an alternative directory"
-}
-
-function bv_visus_graphical
-{
-    local graphical_out="visus     $VISUS_VERSION($VISUS_FILE)      $ON_VISUS"
-    echo "$graphical_out"
 }
 
 function bv_visus_host_profile

@@ -1,19 +1,16 @@
 function bv_mili_initialize
 {
     export DO_MILI="no"
-    export ON_MILI="off"
 }
 
 function bv_mili_enable
 {
     DO_MILI="yes"
-    ON_MILI="on"
 }
 
 function bv_mili_disable
 {
     DO_MILI="no"
-    ON_MILI="off"
 }
 
 function bv_mili_depends_on
@@ -42,12 +39,6 @@ function bv_mili_print
 function bv_mili_print_usage
 {
     printf "%-15s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
-}
-
-function bv_mili_graphical
-{
-    local graphical_out="MILI    $MILI_VERSION($MILI_FILE)     $ON_MILI"
-    echo "$graphical_out"
 }
 
 function bv_mili_host_profile

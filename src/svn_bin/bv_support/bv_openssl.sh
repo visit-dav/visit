@@ -1,19 +1,16 @@
 function bv_openssl_initialize
 {
     export DO_OPENSSL="no"
-    export ON_OPENSSL="off"
 }
 
 function bv_openssl_enable
 {
     DO_OPENSSL="yes"
-    ON_OPENSSL="on"
 }
 
 function bv_openssl_disable
 {
     DO_OPENSSL="no"
-    ON_OPENSSL="off"
 }
 
 function bv_openssl_depends_on
@@ -41,12 +38,6 @@ function bv_openssl_print
 function bv_openssl_print_usage
 {
     printf "%-15s %s [%s]\n" "--openssl" "Build openssl support" "$DO_OPENSSL"
-}
-
-function bv_openssl_graphical
-{
-    local graphical_out="openssl     $OPENSSL_VERSION($OPENSSL_FILE)      $ON_OPENSSL"
-    echo "$graphical_out"
 }
 
 function bv_openssl_host_profile

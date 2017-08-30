@@ -1,7 +1,6 @@
 function bv_qt_initialize
 {
     export DO_QT="yes"
-    export ON_QT="on"
     export FORCE_QT="no"
     export USE_SYSTEM_QT="no"
     export IS_QT5="no"
@@ -13,14 +12,12 @@ function bv_qt_initialize
 function bv_qt_enable
 {
     DO_QT="yes"
-    ON_QT="on"
     FORCE_QT="yes"
 }
 
 function bv_qt_disable
 {
     DO_QT="no"
-    ON_QT="off"
     FORCE_QT="no"
 }
 
@@ -228,31 +225,13 @@ function qt_license_prompt
                 Qt licensing under the terms of the Lesser GNU General \
                 Public License (LGPL) version 2.1 or \
                 the GNU General Public License (GPL) version 3"
-    if [[ "$GRAPHICAL" == "yes" ]] ; then
-        if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-            $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 1>&3
-        else
-            $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_LIC_MSG" 0 0 
-        fi
-        if [[ $? == 1 ]] ; then
-            if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-                $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 1>&3
-            else
-                $DLG --backtitle "$DLG_BACKTITLE" --yesno "$QT_CONFIRM_MSG" 0 0 
-            fi
-            if [[ $? == 1 ]] ; then
-                return 1
-            fi
-        fi
-    else
-        info $QT_LIC_MSG
+    info $QT_LIC_MSG
+    read RESPONSE
+    if [[ "$RESPONSE" != "yes" ]] ; then
+        info $QT_CONFIRM_MSG
         read RESPONSE
-        if [[ "$RESPONSE" != "yes" ]] ; then
-            info $QT_CONFIRM_MSG
-            read RESPONSE
-            if [[ $RESPONSE != "yes" ]] ; then
-                return 1
-            fi
+        if [[ $RESPONSE != "yes" ]] ; then
+            return 1
         fi
     fi
 

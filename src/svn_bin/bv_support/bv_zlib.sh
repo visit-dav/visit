@@ -1,19 +1,16 @@
 function bv_zlib_initialize
 {
     export DO_ZLIB="no"
-    export ON_ZLIB="off"
 }
 
 function bv_zlib_enable
 {
     DO_ZLIB="yes"
-    ON_ZLIB="on"
 }
 
 function bv_zlib_disable
 {
     DO_ZLIB="no"
-    ON_ZLIB="off"
 }
 
 function bv_zlib_depends_on
@@ -45,12 +42,6 @@ function bv_zlib_print
 function bv_zlib_print_usage
 {
     printf "%-15s %s [%s]\n" "--zlib" "Build ZLIB support" "$DO_ZLIB"
-}
-
-function bv_zlib_graphical
-{
-    local graphical_out="ZLIB     $ZLIB_VERSION($ZLIB_FILE)      $ON_ZLIB"
-    echo "$graphical_out"
 }
 
 function bv_zlib_host_profile

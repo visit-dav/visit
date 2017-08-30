@@ -1,19 +1,16 @@
 function bv_damaris_initialize
 {
     export DO_DAMARIS="no"
-    export ON_DAMARIS="off"
 }
 
 function bv_damaris_enable
 { 
     DO_DAMARIS="yes"
-    ON_DAMARIS="on"
 }
 
 function bv_damaris_disable
 {
     DO_DAMARIS="no"
-    ON_DAMARIS="off"
 }
 
 function bv_damaris_depends_on
@@ -48,12 +45,6 @@ function bv_damaris_print
 function bv_damaris_print_usage
 {
     printf "%-15s %s [%s]\n" "--damaris"   "Build DAMARIS" "$DO_DAMARIS"
-}
-
-function bv_damaris_graphical
-{
-    local graphical_out="DAMARIS    $DAMARIS_VERSION($DAMARIS_FILE)    $ON_DAMARIS"
-    echo $graphical_out
 }
 
 function bv_damaris_host_profile

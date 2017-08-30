@@ -1,21 +1,17 @@
 function bv_hdf4_initialize
 {
     export DO_HDF4="no"
-    export ON_HDF4="off"
 }
 
 function bv_hdf4_enable
 {
     DO_HDF4="yes"
-    ON_HDF4="on"
     DO_SZIP="yes"
-    ON_SZIP="on"
 }
 
 function bv_hdf4_disable
 {
     DO_HDF4="no"
-    ON_HDF4="off"
 }
 
 function bv_hdf4_depends_on
@@ -56,12 +52,6 @@ function bv_hdf4_print
 function bv_hdf4_print_usage
 {
     printf "%-15s %s [%s]\n" "--hdf4" "Build HDF4" "${DO_HDF4}"
-}
-
-function bv_hdf4_graphical
-{
-    local graphical_out="HDF4     $HDF4_VERSION($HDF4_FILE)      $ON_HDF4"
-    echo $graphical_out
 }
 
 function bv_hdf4_host_profile

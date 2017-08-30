@@ -1,19 +1,16 @@
 function bv_icet_initialize
 {
     export DO_ICET="no"
-    export ON_ICET="off"
 }
 
 function bv_icet_enable
 {
     DO_ICET="yes"
-    ON_ICET="on"
 }
 
 function bv_icet_disable
 {
     DO_ICET="no"
-    ON_ICET="off"
 }
 
 function bv_icet_depends_on
@@ -43,12 +40,6 @@ function bv_icet_print_usage
 {
     printf "%-15s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
     printf "%-15s %s [%s]\n" "--no-icet" "Ice-T is automatically built with --enable-parallel.  Prevent it from being built" "$PREVENT_ICET"
-}
-
-function bv_icet_graphical
-{
-    local graphical_out="IceT     $ICET_VERSION($ICET_FILE)      $ON_ICET"
-    echo $graphical_out
 }
 
 function bv_icet_host_profile

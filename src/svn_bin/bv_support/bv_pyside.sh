@@ -2,12 +2,10 @@ function bv_pyside_initialize
 {
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
         export DO_PYSIDE="yes"
-        export ON_PYSIDE="on"
         export USE_SYSTEM_PYSIDE="no"
         add_extra_commandline_args "pyside" "alt-pyside-dir" 1 "Use alternative directory for pyside"
     else
         export DO_PYSIDE="no"
-        export ON_PYSIDE="off"
         export USE_SYSTEM_PYSIDE="no"
     fi
 }
@@ -15,15 +13,12 @@ function bv_pyside_initialize
 function bv_pyside_enable
 {
     DO_PYSIDE="yes"
-    ON_PYSIDE="on"
     DO_QT="yes"
-    ON_QT="on"
 }
 
 function bv_pyside_disable
 {
     DO_PYSIDE="no"
-    ON_PYSIDE="off"
 }
 
 function bv_pyside_alt_pyside_dir
@@ -98,12 +93,6 @@ function bv_pyside_print_usage
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
         printf "%-15s %s [%s]\n" "--alt-pyside-dir" "Use PySide from an alternative directory"
     fi
-}
-
-function bv_pyside_graphical
-{
-    local graphical_out="PySide    $PYSIDE_VERSION($PYSIDE_FILE)     $ON_PYSIDE"
-    echo "$graphical_out"
 }
 
 function bv_pyside_host_profile

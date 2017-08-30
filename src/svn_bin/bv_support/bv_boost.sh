@@ -1,7 +1,6 @@
 function bv_boost_initialize
 {
     export DO_BOOST="no"
-    export ON_BOOST="off"
     export USE_SYSTEM_BOOST="no"
     add_extra_commandline_args "boost" "alt-boost-dir" 1 "Use alternative directory for boost"
 }
@@ -9,13 +8,11 @@ function bv_boost_initialize
 function bv_boost_enable
 {
     DO_BOOST="yes"
-    ON_BOOST="on"
 }
 
 function bv_boost_disable
 {
     DO_BOOST="no"
-    ON_BOOST="off"
 }
 
 function bv_boost_alt_boost_dir
@@ -62,12 +59,6 @@ function bv_boost_print_usage
 {
     printf "%-15s %s [%s]\n" "--boost" "Build BOOST" "${DO_BOOST}"
     printf "%-15s %s [%s]\n" "--alt-boost-dir" "Use Boost from an alternative directory"
-}
-
-function bv_boost_graphical
-{
-    local graphical_out="BOOST     $BOOST_VERSION($BOOST_FILE)      $ON_BOOST"
-    echo $graphical_out
 }
 
 function bv_boost_host_profile

@@ -1,19 +1,16 @@
 function bv_conduit_initialize
 {
     export DO_CONDUIT="no"
-    export ON_CONDUIT="off"
 }
 
 function bv_conduit_enable
 {
     DO_CONDUIT="yes"
-    ON_CONDUIT="on"
 }
 
 function bv_conduit_disable
 {
     DO_CONDUIT="no"
-    ON_CONDUIT="off"
 }
 
 function bv_conduit_depends_on
@@ -48,12 +45,6 @@ function bv_conduit_print
 function bv_conduit_print_usage
 {
     printf "%-15s %s [%s]\n" "--conduit"   "Build Conduit" "$DO_CONDUIT"
-}
-
-function bv_conduit_graphical
-{
-    local graphical_out="Conduit    $CONDUIT_VERSION($CONDUIT_FILE)    $ON_CONDUIT"
-    echo $graphical_out
 }
 
 function bv_conduit_host_profile

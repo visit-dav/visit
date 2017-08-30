@@ -176,28 +176,9 @@ function verify_optional_module_exists
     declare -F "bv_${optlib}_print" &>/dev/null || errorFunc "${optlib} print not found"
     declare -F "bv_${optlib}_print_usage" &>/dev/null || errorFunc "${optlib} print_usage not found"
     declare -F "bv_${optlib}_host_profile" &>/dev/null || errorFunc "${optlib} host_profile not found"
-    declare -F "bv_${optlib}_graphical" &>/dev/null || errorFunc "${optlib} graphical not found"
     declare -F "bv_${optlib}_dry_run" &>/dev/null || errorFunc "${optlib} dry_run not found"
     declare -F "bv_${optlib}_is_installed" &>/dev/null || errorFunc "${optlib} is_installed not found"
     declare -F "bv_${optlib}_is_enabled" &>/dev/null || errorFunc "${optlib} is_enabled not found"
-}
-
-# *************************************************************************** #
-# Function: info_box                                                          #
-#                                                                             #
-# Purpose: Show an information box with a message.                            #
-#                                                                             #
-# Programmer: Brad Whitlock,                                                  #
-# Date: Thu Apr 5 14:38:36 PST 2007                                           #
-#                                                                             #
-# *************************************************************************** #
-
-function info_box
-{
-    if [[ "$GRAPHICAL" == "yes" ]] ; then
-        $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT $DLG_WIDTH
-    fi
-    return 0
 }
 
 # *************************************************************************** #
@@ -212,47 +193,15 @@ function info_box
 function info
 {
     if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        if test "${GRAPHICAL}" = "yes" ; then
-            info_box "$@" 1>&3
-        else
-            echo "$@" 1>&3
-        fi
+        echo "$@" 1>&3
     else
-        if test "${GRAPHICAL}" = "yes" ; then
-            info_box "$@"
-        else
-            echo "$@"
-        fi
+        echo "$@"
     fi
 
     if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
         # write message to log as well
         log "$@"
     fi
-}
-
-# *************************************************************************** #
-# Function: info_box_large                                                    #
-#                                                                             #
-# Purpose: Show a large information box with a message.                       #
-#                                                                             #
-# Programmer: Eric Brugger,                                                   #
-# Date: Thu Jul 21 08:25:52 PDT 2011                                          #
-#                                                                             #
-# *************************************************************************** #
-
-function info_box_large
-{
-    if [[ "$REDIRECT_ACTIVE" == "yes" ]] ; then
-        if [[ "$GRAPHICAL" == "yes" ]] ; then
-            $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT_TALL $DLG_WIDTH 1>&3
-        fi
-    else
-        if [[ "$GRAPHICAL" == "yes" ]] ; then
-            $DLG --backtitle "$DLG_BACKTITLE" --infobox "$1" $DLG_HEIGHT_TALL $DLG_WIDTH
-        fi
-    fi
-    return 0
 }
 
 # *************************************************************************** #
@@ -883,101 +832,6 @@ function check_files
 
 
 # *************************************************************************** #
-#                         Function 2.0, check_more_options                    #
-# --------------------------------------------------------------------------- #
-# This function will display variables and optionally allow changing          #
-# *************************************************************************** #
-
-function check_more_options
-{
-
-    # Override variable settings dialog
-    #
-    if [[ "$DO_MORE" == "yes" && "$GRAPHICAL" == "yes" ]] ; then
-        result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                      --title "More build options" \
-                      --checklist \
-                      "Version: specify version of VisIt to download and build\n"\
-                      "Build: build VisIt, disable to build 3rd party only\n"\
-                      "Required: build required 3rd party libraries\n"\
-                      "Logging: display build log to stdout\n"\
-                      "Symbol: turn on -g, debugging flag\n"\
-                      "Group: specify the group name for install\n"\
-                      "Path: specify the root directory for libraries\n"\
-                      "to use the given Path rather than the default [@executable_path/../lib]\n"\
-                      "Trace: print a trace of commands and arguments during build\n\n"\
-                      "Select build and installed options:" 0 0 0 \
-                      "Version"   "specify VisIt version [$VISIT_VERSION]" $ON_VERSION \
-                      "Build"     "enable building VisIt"                  $ON_VISIT \
-                      "Logging"   "disable logging to file"                $ON_LOG \
-                      "Symbol"    "enable debug compiling"                 $ON_DEBUG \
-                      "Group"     "specify group name for install"         $ON_GROUP \
-                      "HostConf"  "create host.conf file"                  $ON_HOSTCONF \
-                      "Path"      "specify library path [$THIRD_PARTY_PATH]" $ON_PATH \
-                      "Trace"     "enable SHELL debugging"      $ON_VERBOSE 3>&1 1>&2 2>&3)
-        retval=$?
-
-        # Remove the extra quoting, new dialog has --single-quoted
-        choice="$(echo $result | sed 's/"//g' )"
-        case $retval in
-          0)
-            DO_VERSION="no"
-            DO_VISIT="no"
-            DO_REQUIRED_THIRD_PARTY="no"
-            DO_LOG="no"
-            DO_DEBUG="no"
-            DO_GROUP="no"
-            DO_HOSTCONF="no"
-            DO_PATH="no"
-            DO_VERBOSE="no"
-            for OPTION in $choice
-            do
-                case $OPTION in
-                  Version)
-                     result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                        --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$VISIT_VERSION"   3>&1 1>&2 2>&3) 
-                     VISIT_VERSION="$result"
-                     VISIT_FILE="visit${VISIT_VERSION}.tar.gz"
-                     DO_VERSION="yes";;
-                  Build)
-                     DO_VISIT="yes";;
-                  Logging)
-                     DO_LOG="yes";;
-                  Symbol)
-                     DO_DEBUG="yes";;
-                  Group)
-                     result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                        --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$GROUP" 3>&1 1>&2 2>&3)
-                     GROUP="$result"
-                     DO_GROUP="yes";;
-                  HostConf)
-                      DO_HOSTCONF="yes";;
-                  Path)
-                     result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                        --nocancel --inputbox \
-"Enter $OPTION value:" 0 $DLG_WIDTH_WIDE "$THIRD_PARTY_PATH" 3>&1 1>&2 2>&3)
-                     THIRD_PARTY_PATH="$result"
-                     DO_PATH="yes";;
-                  Trace)
-                     DO_VERBOSE="yes";;
-                esac
-            done
-            ;;
-          1)
-            warn "Cancel pressed."
-            exit 1;;
-          255)
-            warn "ESC pressed.";;
-          *)
-            warn "Unexpected return code: $retval";;
-        esac
-    fi
-    return 0
-}
-
-# *************************************************************************** #
 #                          extract_parallel_ldflags                           #
 # --------------------------------------------------------------------------- #
 # VisIt's cmake config wants lib names stripped of "-l"                       #
@@ -1189,97 +1043,6 @@ function check_parallel
 }
 
 # *************************************************************************** #
-#                         Function 2.2, check_variables                       #
-# --------------------------------------------------------------------------- #
-# This function will display variables and optionally allow changing          #
-# *************************************************************************** #
-
-function check_variables_dialog
-{
-    local var="$1"
-    local input="$2"
-
-    result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                  --nocancel --inputbox \
-                  "Enter $var value:" 0 $DLG_WIDTH_WIDE "$input"  3>&1 1>&2 2>&3)
-    echo "$result"
-}
-
-function check_variables
-{
-
-    # Override variable settings dialog
-    #
-    if [[ "$verify" == "yes" ]] ; then
-        if [[ "$GRAPHICAL" == "yes" ]] ; then
-            result=$($DLG --backtitle "$DLG_BACKTITLE" \
-                          --title "Variable settings" \
-                          --checklist \
-                          "These variables use these system dependent defaults, but can be overridden "\
-                          "through this interface or using environment variables.\n\n"\
-                          "OPSYS: the default value returned from 'uname -s'\n"\
-                          "ARCH: architecure info (Darwin, linux, aix, irix64, ...)\n"\
-                          "C_COMPILER and CXX_COMPILER: the C and C++ compiler, respectively\n"\
-                          "CFLAGS and CXXFLAGS: the flags to use for all compiles (e.g. -fPIC)\n"\
-                          "C_OPT_FLAGS and CXX_OPT_FLAGS: the optimization flags to use for C and C++\n"\
-                          "VISITARCH: unique architecture info, appended to library path installation\n"\
-                          "REVISION: checkout a cwspecific SVN revision using supplied argument\n\n"\
-                          "Select the variables you wish to modify:" 28 $DLG_WIDTH 8 \
-                          "OPSYS"            "$OPSYS"             "off" \
-                          "ARCH"             "$ARCH"              "off" \
-                          "C_COMPILER"       "$C_COMPILER"        "off" \
-                          "CXX_COMPILER"     "$CXX_COMPILER"      "off" \
-                          "CFLAGS"           "$CFLAGS"       "off" \
-                          "CXXFLAGS"         "$CXXFLAGS"     "off" \
-                          "C_OPT_FLAGS"      "$C_OPT_FLAGS"       "off" \
-                          "CXX_OPT_FLAGS"    "$CXX_OPT_FLAGS"     "off" \
-                          "FC_COMPILER"      "$FC_COMPILER"       "off" \
-                          "FCFLAGS"          "$FCFLAGS"       "off" \
-                          "VISITARCH"        "$VISITARCHTMP"      "off" \
-                          "REVISION"         "$SVNREVISION"       "off"   3>&1 1>&2 2>&3) 
-            retval=$?
-
-            # Remove the extra quoting, new dialog has --single-quoted
-            choice="$(echo $result | sed 's/"//g' )"
-           tmp_var=0
-           case $retval in
-             0)
-               for OPTION in $choice
-               do
-
-                   #this code uses the name to get and set the option value
-                   #please use this convention, otherwise you will have to create
-                   #exception as the ones below..
-                   [[ $OPTION == "VISITARCH" ]] && OPTION="VISITARCHTMP"
-                   [[ $OPTION == "REVISION" ]] && OPTION="SVNREVISION"
-
-                   eval "tmp_var=\"\$$OPTION\""
-                   tmp_var=$(check_variables_dialog $OPTION "$tmp_var")
-                   eval "$OPTION=\"$tmp_var\""
-
-                   if [[ $OPTION == "SVNREVISION" ]]; then
-                        echo "Revision set to $SVNREVISION"
-                        DO_SVN="yes"
-                        DO_REVISION="yes"
-                   fi
-               done
-               ;;
-             1)
-               warn "Cancel pressed."
-               ;;
-             255)
-               warn "ESC pressed.";;
-             *)
-               warn "Unexpected return code: $retval";;
-           esac
-       fi
-    fi
-
-    return 0
-}
-
-
-# *************************************************************************** #
 #                          Function 9, build_hostconf                         #
 #                                                                             #
 # Mark C. Miller, Wed Oct 27 19:29:19 PDT 2010                                #
@@ -1290,7 +1053,7 @@ function check_variables
 # Remove setting of CMAKE_BUILD_TYPE                                          #
 #                                                                             #
 # Kathleen Biagas, Mon Aug 8 08:12:37 MST 2011                                #
-# Use FILEPATH type for compilers, STRING type for libdep.                    # 
+# Use FILEPATH type for compilers, STRING type for libdep.                    #
 # *************************************************************************** #
 hostconf_library_success=""
 function hostconf_library
@@ -1648,7 +1411,6 @@ function usage
     printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
     printf "%-15s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "false"
     printf "%-15s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
-    printf "%-15s %s [%s]\n" "--console" "Do not use dialog ('graphical') interface" "$GRAPHICAL"
     printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
     printf "%-15s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
     printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
@@ -1660,7 +1422,7 @@ function usage
     printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
     printf "%-15s %s [%s]\n" "--install-network" "Install specific network config files." "${VISIT_INSTALL_NETWORK}"
     printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
-    printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$ON_HOSTCONF"
+    printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$DO_HOSTCONF"
     printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
     printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
     printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"

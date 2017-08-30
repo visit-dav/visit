@@ -1,7 +1,6 @@
 function bv_cmake_initialize
 {
     export DO_CMAKE="yes"
-    export ON_CMAKE="on"
     export FORCE_CMAKE="no"
     export USE_SYSTEM_CMAKE="no"
     add_extra_commandline_args "cmake" "system-cmake" 0 "Use cmake found on system"
@@ -12,14 +11,12 @@ function bv_cmake_initialize
 function bv_cmake_enable
 {
     DO_CMAKE="yes"
-    ON_CMAKE="on"
     FORCE_CMAKE="yes"
 }
 
 function bv_cmake_disable
 {
     DO_CMAKE="no"
-    ON_CMAKE="off"
     FORCE_CMAKE="no"
 }
 

@@ -1,19 +1,16 @@
 function bv_cgns_initialize
 {
     export DO_CGNS="no"
-    export ON_CGNS="off"
 }
 
 function bv_cgns_enable
 {
     DO_CGNS="yes"
-    ON_CGNS="on"
 }
 
 function bv_cgns_disable
 {
     DO_CGNS="no"
-    ON_CGNS="off"
 }
 
 function bv_cgns_depends_on
@@ -51,12 +48,6 @@ function bv_cgns_print
 function bv_cgns_print_usage
 {
     printf "%-15s %s [%s]\n" "--cgns"    "Build CGNS" "$DO_CGNS" 
-}
-
-function bv_cgns_graphical
-{
-    local graphical_out="CGNS     $CGNS_VERSION($CGNS_FILE)      $ON_CGNS"
-    echo $graphical_out
 }
 
 function bv_cgns_host_profile

@@ -1,19 +1,16 @@
 function bv_mesa_initialize
 {
     export DO_MESA="no"
-    export ON_MESA="off"
 }
 
 function bv_mesa_enable
 {
     DO_MESA="yes"
-    ON_MESA="on"
 }
 
 function bv_mesa_disable
 {
     DO_MESA="no"
-    ON_MESA="off"
 }
 
 function bv_mesa_depends_on
@@ -43,12 +40,6 @@ function bv_mesa_print_usage
     printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "$DO_MESA"
 }
 
-function bv_mesa_graphical
-{
-    local graphical_out="Mesa     $MESA_VERSION($MESA_FILE)      $ON_MESA"
-    echo $graphical_out
-}
-
 function bv_mesa_host_profile
 {
     if [[ "$DO_MESA" == "yes" ]] ; then
@@ -65,7 +56,6 @@ function bv_mesa_selected
     args=$@
     if [[ $args == "--mesa" ]]; then
         DO_MESA="yes"
-        ON_MESA="on"
         return 1
     fi
 

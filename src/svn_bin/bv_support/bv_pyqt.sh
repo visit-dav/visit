@@ -1,7 +1,6 @@
 function bv_pyqt_initialize
 {
     export DO_PYQT="no"
-    export ON_PYQT="off"
     export USE_SYSTEM_PYQT="no"
     add_extra_commandline_args "pyqt" "alt-pyqt-dir" 1 "Use alternative directory for PyQt" 
 }
@@ -9,13 +8,11 @@ function bv_pyqt_initialize
 function bv_pyqt_enable
 {
     DO_PYQT="yes"
-    ON_PYQT="on"
 }
 
 function bv_pyqt_disable
 {
     DO_PYQT="no"
-    ON_PYQT="off"
 }
 
 function bv_pyqt_alt_pyqt_dir
@@ -52,12 +49,6 @@ function bv_pyqt_print_usage
 {
     printf "%-15s %s [%s]\n" "--pyqt" "Build PyQt support" "$DO_PYQT"
     printf "%-15s %s [%s]\n" "--alt-pyqt-dir" "Use alternative PyQt dir"
-}
-
-function bv_pyqt_graphical
-{
-    local graphical_out="PyQt    $PYQT_VERSION($PYQT_FILE)    $ON_PYQT"
-    echo $graphical_out
 }
 
 function bv_pyqt_host_profile

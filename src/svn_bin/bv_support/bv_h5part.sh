@@ -1,23 +1,18 @@
 function bv_h5part_initialize
 {
     export DO_H5PART="no"
-    export ON_H5PART="off"
 }
 
 function bv_h5part_enable
 {
     DO_H5PART="yes"
-    ON_H5PART="on"
     DO_HDF5="yes"
-    ON_HDF5="on"
-    DO_SZIP="yes" 
-    ON_SZIP="on"
+    DO_SZIP="yes"
 }
 
 function bv_h5part_disable
 {
     DO_H5PART="no"
-    ON_H5PART="off"
 }
 
 function bv_h5part_depends_on
@@ -47,12 +42,6 @@ function bv_h5part_print
 function bv_h5part_print_usage
 {
     printf "%-15s %s [%s]\n" "--h5part" "Build H5Part" "$DO_H5PART"
-}
-
-function bv_h5part_graphical
-{
-    local graphical_out="H5Part   $H5PART_VERSION($H5PART_FILE)    $ON_H5PART"
-    echo $graphical_out
 }
 
 function bv_h5part_host_profile

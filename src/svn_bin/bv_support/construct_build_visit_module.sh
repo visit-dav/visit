@@ -30,21 +30,18 @@ echo "
 function bv_${output}_initialize
 {
     export DO_${uppercase_out}=\"no\"
-    export ON_${uppercase_out}=\"off\"
 }
 
 #enable the module for install
 function bv_${output}_enable
 { 
     DO_${uppercase_out}=\"yes\"
-    ON_${uppercase_out}=\"on\"
 }
 
 #disable the module for install
 function bv_${output}_disable
 {
     DO_${uppercase_out}=\"no\"
-    ON_${uppercase_out}=\"off\"
 }
 
 #add any dependency with comma separation, both dependers and dependees
@@ -76,13 +73,6 @@ function bv_${output}_print_usage
 {
     printf \"%-15s %s [%s]\n\" \"--${output}\"   \"Build ${uppercase_out}\" \"\$DO_${uppercase_out}\"
     printf \"%-15s %s [%s]\n\" \"--no-${output}\"   \"Do not Build ${uppercase_out}\" \"\$DO_${uppercase_out}\"
-}
-
-#how to show information for graphical editor
-function bv_${output}_graphical
-{
-    local graphical_out=\"${uppercase_out}    \$${uppercase_out}_VERSION(\$${uppercase_out}_FILE)    \$ON_${uppercase_out}\"
-    echo \$graphical_out
 }
 
 #values to add to host profile, write to \$HOSTCONF

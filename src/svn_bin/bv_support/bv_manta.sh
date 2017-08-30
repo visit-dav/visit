@@ -1,19 +1,16 @@
 function bv_manta_initialize
 {
     export DO_MANTA="no"
-    export ON_MANTA="off"
 }
 
 function bv_manta_enable
 {
     DO_MANTA="yes"
-    ON_MANTA="on"
 }
 
 function bv_manta_disable
 {
     DO_MANTA="no"
-    ON_MANTA="off"
 }
 
 function bv_manta_depends_on
@@ -42,12 +39,6 @@ function bv_manta_print
 function bv_manta_print_usage
 {
     printf "%-15s %s [%s]\n" "--manta" "Build Manta" "${DO_MANTA}"
-}
-
-function bv_manta_graphical
-{
-    local graphical_out="MANTA    $MANTA_VERSION($MANTA_FILE)     $ON_MANTA"
-    echo $graphical_out
 }
 
 function bv_manta_host_profile

@@ -1,7 +1,6 @@
 function bv_python_initialize
 {
     export DO_PYTHON="yes"
-    export ON_PYTHON="on"
     export FORCE_PYTHON="no"
     export USE_SYSTEM_PYTHON="no"
     export BUILD_MPI4PY="no"
@@ -14,14 +13,12 @@ function bv_python_initialize
 function bv_python_enable
 {
     DO_PYTHON="yes"
-    ON_PYTHON="on"
     FORCE_PYTHON="yes"
 }
 
 function bv_python_disable
 {
     DO_PYTHON="no"
-    ON_PYTHON="off"
     FORCE_PYTHON="no"
 }
 

@@ -1,19 +1,16 @@
 function bv_boxlib_initialize
 {
     export DO_BOXLIB="no"
-    export ON_BOXLIB="off"
 }
 
 function bv_boxlib_enable
 {
     DO_BOXLIB="yes"
-    ON_BOXLIB="on"
 }
 
 function bv_boxlib_disable
 {
     DO_BOXLIB="no"
-    ON_BOXLIB="off"
 }
 
 function bv_boxlib_depends_on
@@ -43,12 +40,6 @@ function bv_boxlib_print
 function bv_boxlib_print_usage
 {
     printf "%-15s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB" 
-}
-
-function bv_boxlib_graphical
-{
-    local graphical_output="Boxlib   $BOXLIB_VERSION($BOXLIB_FILE)    $ON_BOXLIB"
-    echo $graphical_output
 }
 
 function bv_boxlib_host_profile

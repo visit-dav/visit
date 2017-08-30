@@ -108,6 +108,7 @@
         <group name="all-io" comment="Build all available I/O libraries" enabled="no">
             <lib name="adios"/>
 <!--        <lib name="advio"/>    Removed by Allen Sanderson-->
+            <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
@@ -128,12 +129,14 @@
             <lib name="uintah"/>
             <lib name="visus"/>
             <lib name="xdmf"/>
+            <lib name="zlib"/> <!-- required by nektarpp -->
         </group>
 
         <!-- dbio-only-->
         <group name="dbio-only" comment="Disables EVERYTHING but I/O." enabled="no">
             <lib name="adios"/>
             <lib name="advio"/>
+            <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
             <lib name="ccmio"/>
             <lib name="cfitsio"/>
@@ -154,6 +157,7 @@
             <lib name="visus"/>
             <lib name="uintah"/>
             <lib name="xdmf"/>
+            <lib name="zlib"/> <!-- required by nektarpp -->
             <lib name="no-mesa"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>
