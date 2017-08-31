@@ -25,6 +25,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li><a href="#Expression_changes">Changes to expressions</a></li>
   <li><a href="#Query_changes">Changes to picks and queries</a></li>
   <li><a href="#Bugs_fixed">Other bug fixes</a></li>
+  <li><a href="#Configuration_changes">Configuration changes</a></li>
   <li><a href="#Build_features">Changes for build_visit</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
@@ -83,14 +84,25 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's picks and queries in version 2.13</font></b></p>
 <ul>
   <li>The default for Queries that operate on either <i>Original</i> or <i>Actual</i> data has been changed from <i>Original</i> to <i>Actual</i>.  This makes them consistent with all the other queries that only operate on <i>Actual</i> data. Affected Queries include <i>Min</i>, <i>Max</i>, <i>MinMax</i>, <i>NumNodes</i>, <i>NumZones</i> and <i>Spatial Extents</i>. In the GUI, you will notice that the <i>Actual Data</i> button is the one activated by default for these queries, and from the cli, the <i>use_actual_data</i> parameter defaults to 1 if not set explicitly.  This will also affect QueryOverTime for any of these queries.</li>
-  <li>Query Change 2</li>
+  <li>Pick's error messaging was improved to prevent messages regarding expressions unrelated to the current Pick or the current problem it encountered.</li>
+  <li>NodePick failure with certain datasets was fixed.</li>
+  <li>Fixed the problem where NodePick of Sliced Boundary plot would place pick letter in wrong location.</li>
+  <li>Accuracy and performance of picking on lines/line meshes in 3D has been improved.</li>
+  <li>Fixed query-over-time when running in parallel to only create a single curve for each result.
+  <li>Corrected a bug with the <i>XRay Image</i> query, where the data type for bov output was incorrectly set to float in the case where the intensities were double or integer.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 2.13</font></b></p>
 <ul>
   <li>VTK export options have been modified to more explicitly state the combination of Legacy+[Ascii/Binary], XML+[Ascii/Binary]</li>
-  <li>Bug Fix 2</li>
+  <li>Removed "Lawrence Livermore National Laboratory (LLNL) rz network" from the list of network configurations to install when installing on Windows since that configuration only works when running VisIt directly on the rz machines.</li>
+</ul>
+
+<a name="Configuration_changes"></a>
+<p><b><font size="4">Configuration changes in version 2.12</font></b></p>
+<ul>
+  <li>Host profiles were removed for the Lawrence Livermore National Laboratories' Rzmerl and Rzzeus systems, which were retired.</li>
 </ul>
 
 <a name="Build_features"></a>
@@ -110,6 +122,6 @@ enhancements and bug-fixes that were added to this release.</p>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
-of VisIt: <a href=relnotes2.12.1.html>2.12.1</a>.</p>
+of VisIt: <a href=relnotes2.12.3.html>2.12.3</a>.</p>
 </body>
 </html>
