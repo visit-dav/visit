@@ -50,7 +50,7 @@ function bv_nektarpp_info
     export NEKTAR_PLUS_PLUS_FILE=${NEKTAR_PLUS_PLUS_FILE:-"nektar-${NEKTAR_PLUS_PLUS_VERSION}.tar.gz"}
     export NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION=${NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION:-"4.4"}
     export NEKTAR_PLUS_PLUS_BUILD_DIR=${NEKTAR_PLUS_PLUS_BUILD_DIR:-"nektar++-${NEKTAR_PLUS_PLUS_VERSION}"}
-    export NEKTAR_PLUS_PLUS_URL=${NEKTAR_PLUS_PLUS_URL:-"http://www.nektar.info/downloads/nektar++-${NEKTAR_PLUS_PLUS_VERSION}/src"}
+    export NEKTAR_PLUS_PLUS_URL=${NEKTAR_PLUS_PLUS_URL:-"https://www.nektar.info/wp-content/uploads/2017/03/"}
     export NEKTAR_PLUS_PLUS_MD5_CHECKSUM=""
     export NEKTAR_PLUS_PLUS_SHA256_CHECKSUM=""
 }
@@ -236,12 +236,12 @@ function apply_nektarpp_patch
            return 1
         fi
 
-        if [[ "$OPSYS" == "Darwin" ]]; then
+#        if [[ "$OPSYS" == "Darwin" ]]; then
             apply_nektarpp_4_4_OSX_patch
             if [[ $? != 0 ]]; then
 		return 1
             fi
-	fi	
+#	fi	
     fi
 
     return 0
