@@ -2,6 +2,7 @@
 <typesystem package="pyside_gui">
     <load-typesystem name="typesystem_core.xml" generate="no"/>
     <load-typesystem name="typesystem_gui.xml" generate="no"/>
+    <load-typesystem name="typesystem_widgets.xml" generate="no"/>
     <load-typesystem name="typesystem_opengl.xml" generate="no"/>
 
 <!--

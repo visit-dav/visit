@@ -61,7 +61,7 @@ except:
 
 
 try:
-    import PySide.QtCore
+    import PySide2.QtCore
     __pyside_imported = True
 except:
     __pyside_imported = False
