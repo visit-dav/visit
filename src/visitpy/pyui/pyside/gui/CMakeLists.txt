@@ -48,6 +48,7 @@ if(VISIT_QT5)
     set(pyside_qt_includes
         ${Qt5Core_INCLUDE_DIRS}
         ${Qt5Gui_INCLUDE_DIRS}
+        ${Qt5Widgets_INCLUDE_DIRS}
         ${Qt5OpenGL_INCLUDE_DIRS})
 else()
     set(pyside_qt_includes

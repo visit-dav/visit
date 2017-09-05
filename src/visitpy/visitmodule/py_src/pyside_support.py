@@ -54,7 +54,7 @@ from threading import Event, Thread
 using_pyside = False
 
 try:
-    from PySide.QtGui import QApplication
+    from PySide2.QtWidgets import QApplication
     import pyside_hook
     import pyside_gui
     using_pyside = True

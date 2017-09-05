@@ -18,7 +18,7 @@ from visit_test import *
 from visit_utils.qplot import *
 
 try:
-    import PySide.QtCore
+    import PySide2.QtCore
 except:
     pass
 
@@ -39,6 +39,8 @@ def patch_scene_input(in_fname,ult_fname):
 
 class TestScene(unittest.TestCase):
     def setUp(self):
+        if not os.path.isdir(output_dir):
+            os.mkdir(output_dir)
         self.curves = ult.Curve.load(pjoin(data_dir,"sine.ult"))
     def test_01_basic(self):
         crv = ult.Curve.load(pjoin(data_dir,"pattern.ult"))[0]
