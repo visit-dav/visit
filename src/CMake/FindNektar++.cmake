@@ -84,7 +84,6 @@ SET_UP_THIRD_PARTY(NEKTAR++
     LibUtilities
     LocalRegions
     MultiRegions
-    SolverUtils
     SpatialDomains
     StdRegions)
 
