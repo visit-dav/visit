@@ -12,7 +12,7 @@
 #                         eth_zurich | llnl_open | llnl_open_rz |"
 #                         llnl_open_cz | llnl_closed | lsu | ncar |"
 #                         nersc | nics | ohio | ornl | princeton |"
-#                         sandia | sandia_closed | tacc | umich | utah]"
+#                         sandia | sandia_closed | umich | utah]"
 #                      [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
 #                      [-beta | -private] version platform directory"
 #
@@ -395,6 +395,12 @@
 #    the specified bank, since the default bank in all the llnl host
 #    profiles is now "wbronze" instead of "bdivp".
 #
+#    Eric Brugger, Tue Sep  5 08:38:50 PDT 2017
+#    I removed the TACC option. TACC doesn't support client server and
+#    they support their own host profiles and custom launcher for use
+#    on the machines themselves, so there is no need to support it here.
+#    In fact they will only get out of date and cause confusion.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -469,7 +475,7 @@ if [ "$#" != "3" ]; then
    echo "                         eth_zurich | llnl_open | llnl_open_rz |"
    echo "                         llnl_open_cz | llnl_closed | lsu | ncar |"
    echo "                         nersc | nics | ohio | ornl | princeton | "
-   echo "                         sandia | sandia_closed | tacc | umich | utah]"
+   echo "                         sandia | sandia_closed | umich | utah]"
    echo "                     [-g group] [-b bank] [-gw] [-l] [-dmg] [-test]"
    echo "                     [-beta | -private] version platform directory"
    echo ""
@@ -754,14 +760,6 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
-    echo "Testing tacc configuration..."
-    rm -rf $dir
-    $0 -c tacc $version $platform $dir > /dev/null 2>&1
-    files=`ls $dir/$version/.visit/hosts/host_tacc*` 
-    if [ "$files" == "" ]; then
-       echo "failed"
-       exit 1
-    fi
     echo "Testing umich configuration..."
     rm -rf $dir
     $0 -c umich $version $platform $dir > /dev/null 2>&1
@@ -809,9 +807,8 @@ while [ "$config" = "prompt" ]; do
    echo "   18) Sandia network"
    echo "   19) Sandia closed network"
    echo "   20) Swiss National Supercomputing Center (CSCS) network"
-   echo "   21) TACC network"
-   echo "   22) U of Michigan Advanced Research Computing (ARC-TS) network"
-   echo "   23) U of Utah Center for High Performance Computing (CHPC) network"
+   echo "   21) U of Michigan Advanced Research Computing (ARC-TS) network"
+   echo "   22) U of Utah Center for High Performance Computing (CHPC) network"
    echo ""
    echo "Enter (1-23):"
 
@@ -878,12 +875,9 @@ while [ "$config" = "prompt" ]; do
          config=cscs
          ;;
       21)
-         config=tacc
-         ;;
-      22)
          config=umich
          ;;
-      23)
+      22)
          config=utah
          ;;
       *)
@@ -937,8 +931,6 @@ case "$config" in
       ;;
    cscs)
       ;;
-   tacc)
-      ;;
    umich)
       ;;
    utah)
@@ -947,7 +939,7 @@ case "$config" in
       echo "Illegal configuration option, choices are none, anag, anl,"
       echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
       echo "llnl_open_cz, llnl_closed, lsu, ncar, nersc, nics, ohio, ornl,"
-      echo "princeton, sandia, sandia_closed, tacc, umich, utah"
+      echo "princeton, sandia, sandia_closed, umich, utah"
       exit 4
       ;;
 esac
@@ -1133,9 +1125,6 @@ elif [ "$config" = "sandia" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "sandia_closed" ]; then
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
-elif [ "$config" = "tacc" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
 elif [ "$config" = "umich" ]; then
