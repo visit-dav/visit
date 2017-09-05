@@ -236,7 +236,7 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
       // No underscore before the cycle value.
       else
       {
-        ostringstream cycleStr;
+        std::ostringstream cycleStr;
         cycleStr << cycle;
 
         int fcycle = m_meshFile.find_last_of( cycleStr.str() );
@@ -278,8 +278,8 @@ avtNektarPPFileFormat::avtNektarPPFileFormat(const char *filename, DBOptionsAttr
   {
     LibUtilities::FieldMetaDataMap fieldMetaDataMap;
 
-    vector<LibUtilities::FieldDefinitionsSharedPtr> fieldDef;
-    vector<vector<NekDouble> > fieldData;
+    std::vector<LibUtilities::FieldDefinitionsSharedPtr> fieldDef;
+    std::vector< std::vector<NekDouble> > fieldData;
     
     LibUtilities::Import(m_fieldFile,fieldDef,fieldData,fieldMetaDataMap);
     
@@ -1070,7 +1070,7 @@ avtNektarPPFileFormat::GetVectorVar(int timestate, const char *varname)
     rv->SetNumberOfComponents(3);
     rv->SetNumberOfTuples(nVerts);
 
-    Nektar::Array<OneD, NekDouble> coords(3);
+    Array<OneD, NekDouble> coords(3);
     double vec[3];
 
     // for a 2D mesh read in the trianagle and quad elements.
@@ -1317,8 +1317,8 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
     
   //----------------------------------------------
   // Import field file.
-  vector<LibUtilities::FieldDefinitionsSharedPtr> fielddef;
-  vector<vector<NekDouble> > fielddata;
+  std::vector<LibUtilities::FieldDefinitionsSharedPtr> fielddef;
+  std::vector< std::vector<NekDouble> > fielddata;
   if( m_fieldFile.size() )
     LibUtilities::Import(m_fieldFile,fielddef,fielddata);
 
@@ -1346,7 +1346,7 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
   {
     for(int i = 0; i < fielddef.size(); ++i)
     {
-      vector<LibUtilities::PointsType> ptype;
+      std::vector<LibUtilities::PointsType> ptype;
       for(int j = 0; j < 3; ++j)
       {
         ptype.push_back(LibUtilities::ePolyEvenlySpaced);
@@ -1355,7 +1355,7 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
       fielddef[i]->m_pointsDef = true;
       fielddef[i]->m_points    = ptype; 
       
-      vector<unsigned int> porder;
+      std::vector<unsigned int> porder;
       if(fielddef[i]->m_numPointsDef == false)
       {
         for(int j = 0; j < fielddef[i]->m_numModes.size(); ++j)
@@ -1679,7 +1679,7 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
   //----------------------------------------------
   // Write solution
 
-  ostringstream outstream;
+  std::ostringstream outstream;
 
   Exp[0]->WriteVtkHeader(outstream);
     
@@ -1739,14 +1739,14 @@ std::string avtNektarPPFileFormat::GetNektarFileAsXMLString( std::string var )
 //
 // ****************************************************************************
 
-double avtNektarPPFileFormat::GetNektarVar( const Nektar::Array<OneD, NekDouble> &coords,
+double avtNektarPPFileFormat::GetNektarVar( const Array<OneD, NekDouble> &coords,
                                             const int nt_el,
                                             const int index ) const
 {
     if( 3 <= index || !nektar_field[index] )
       return 0.0;
 
-    Nektar::Array<Nektar::OneD, Nektar::NekDouble> physVals =
+    Array<OneD, NekDouble> physVals =
       nektar_field[index]->GetPhys() + nektar_field[index]->GetPhys_Offset(nt_el);
     return nektar_field[index]->GetExp(nt_el)->PhysEvaluate(coords, physVals);
 }
@@ -1768,7 +1768,7 @@ double avtNektarPPFileFormat::GetNektarVar( const Nektar::Array<OneD, NekDouble>
 //
 // ****************************************************************************
 
-void avtNektarPPFileFormat::GetNektarVectorVar( const Nektar::Array<OneD, NekDouble> &coords,
+void avtNektarPPFileFormat::GetNektarVectorVar( const Array<OneD, NekDouble> &coords,
                                                 const int nt_el,
                                                 double *vec ) const
 {

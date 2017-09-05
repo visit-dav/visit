@@ -126,11 +126,11 @@ class avtNektarPPFileFormat : public avtMTSDFileFormat
 
     std::string GetNektarFileAsXMLString( std::string var );
 
-    double GetNektarVar( const Nektar::Array<OneD, NekDouble> &coords,
+    double GetNektarVar( const Nektar::Array<Nektar::OneD, Nektar::NekDouble> &coords,
                          const int nt_el,
                          const int index ) const;
   
-    void GetNektarVectorVar( const Nektar::Array<OneD, NekDouble> &coords,
+    void GetNektarVectorVar( const Nektar::Array<Nektar::OneD, Nektar::NekDouble> &coords,
                              const int nt_el,
                              double *vec ) const;
 
