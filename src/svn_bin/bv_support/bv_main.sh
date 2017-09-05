@@ -956,6 +956,7 @@ function run_build_visit()
             --thirdparty-path) next_arg="thirdparty-path";;
             --version) next_arg="version";;
             --xdb) DO_XDB="yes";;
+            --console) ;;
             -4) deprecated="${deprecated} --hdf4";;
             -5) deprecated="${deprecated} --hdf5";;
             -c) deprecated="${deprecated} --cgns";;
