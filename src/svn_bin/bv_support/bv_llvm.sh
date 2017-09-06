@@ -147,14 +147,14 @@ function build_llvm
     fi
 
     info "Building LLVM . . ."
-    ${MAKE}
+    ${MAKE} ${MAKE_OPT_FLAGS}
     if [[ $? != 0 ]] ; then
         warn "LLVM build failed.  Giving up"
         return 1
     fi
 
     info "Installing LLVM . . ."
-    ${MAKE} install
+    ${MAKE} ${MAKE_OPT_FLAGS} install
     if [[ $? != 0 ]] ; then
         warn "LLVM install failed.  Giving up"
         return 1
