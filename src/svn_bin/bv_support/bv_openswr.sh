@@ -176,14 +176,14 @@ function build_openswr
     fi
 
     info "Building OpenSWR . . ."
-    ${MAKE}
+    ${MAKE} ${MAKE_OPT_FLAGS}
     if [[ $? != 0 ]] ; then
         warn "OpenSWR build failed.  Giving up"
         return 1
     fi
 
     info "Installing OpenSWR ..."
-    ${MAKE} install
+    ${MAKE} ${MAKE_OPT_FLAGS} install
     if [[ $? != 0 ]] ; then
         warn "OpenSWR install failed.  Giving up"
         return 1
