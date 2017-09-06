@@ -401,6 +401,9 @@
 #    on the machines themselves, so there is no need to support it here.
 #    In fact they will only get out of date and cause confusion.
 #
+#    Eric Brugger, Tue Sep  5 17:12:29 PDT 2017
+#    I unified the LLNL custom launchers and configs.
+#
 #-----------------------------------------------------------------------
 
 Compress=COMPRESS
@@ -1092,13 +1095,12 @@ elif [ "$config" = "llnl_open_cz" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_syrah.xml    "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_llnl_vulcan.xml   "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/host_slac_red.xml      "$dir"/$version+/.visit/hosts/
-
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
    cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "llnl_closed" ]; then
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
-   cp "$dir"/$version+/$platformDir/resources/hosts/$config/config              "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl_closed/*.xml           "$dir"/$version+/.visit/hosts/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/customlauncher         "$dir"/$version+/bin/
+   cp "$dir"/$version+/$platformDir/resources/hosts/llnl/config                 "$dir"/$version+/.visit/
 elif [ "$config" = "lsu" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
