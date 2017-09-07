@@ -137,11 +137,16 @@ avtPickByNodeQuery::~avtPickByNodeQuery()
 //    Kathleen Biagas, Tue Jul 22 11:38:50 MST 2014
 //    Don't convert to Global ids unless user wants ids shown as global.
 //
+//    Matt Larsen, Mon Jul 3 07:15:55 PDT 2017
+//    Adding support for picking a node by label. 
+//
 // ****************************************************************************
 
 void
 avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
 {
+    bool pickByLabel = pickAtts.GetElementLabel() != "";
+
     if (pickAtts.GetFulfilled() || ds == NULL)
     {
         return;
@@ -152,7 +157,8 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
         if (dom != pickAtts.GetDomain())
             return;
     }
-    else if (ds->GetPointData()->GetArray("avtGlobalNodeNumbers") == NULL)
+    else if (ds->GetPointData()->GetArray("avtGlobalNodeNumbers") == NULL && 
+             !pickByLabel)
     {
         pickAtts.SetDomain(-1);
         pickAtts.SetElementNumber(-1);
@@ -163,7 +169,40 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
         return; 
     }
 
-    int nodeid = pickAtts.GetElementNumber();
+    int nodeid;
+
+    if(pickByLabel)
+    {
+        std::string nodeLabel = pickAtts.GetElementLabel();
+        bool isZone = false;
+        int id;
+        bool error = GetElementIdByLabel(nodeLabel, isZone, id, dom); 
+
+        if(error)
+        {
+            pickAtts.SetDomain(-1);
+            pickAtts.SetElementNumber(-1);
+            pickAtts.SetErrorMessage("Pick could not be performed because a node "
+                                     "label was specified for Pick but the mesh "
+                                     "does not contain zone label information.");
+            pickAtts.SetError(true);
+            return;
+        }
+
+        if( id != -1 )
+        {
+            nodeid = id;
+        }
+        else
+        {
+            return;
+        }
+    }
+    else
+    {
+        nodeid = pickAtts.GetElementNumber();
+    }
+
     int usernodeid = nodeid;
     int maxEls = ds->GetNumberOfPoints(); 
 
@@ -176,7 +215,7 @@ avtPickByNodeQuery::Execute(vtkDataSet *ds, const int dom)
     bool DBsuppliedNodeId = true;
     if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
     {
-        if (pickAtts.GetElementIsGlobal())
+        if (pickAtts.GetElementIsGlobal() && !pickByLabel)
         {
             usernodeid = vtkVisItUtility::GetLocalElementForGlobal(ds, 
                           usernodeid, false);

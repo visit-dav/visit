@@ -9052,6 +9052,9 @@ visit_GetPickOutput(PyObject *self, PyObject *args)
 // Programmer: Kathleen Biagas 
 // Creation:   September 22, 2011
 //
+// Modifications:
+//  Matt Larsen Aug 21, 2017:
+//  adding the ability to get the output of a pick through a range of elements
 // ****************************************************************************
 
 STATIC PyObject *
@@ -9060,10 +9063,18 @@ visit_GetPickOutputObject(PyObject *self, PyObject *args)
     ENSURE_VIEWER_EXISTS();
     PickAttributes *pa = GetViewerState()->GetPickAttributes();
     std::string pickOut;
-    pa->CreateXMLString(pickOut);
-    XMLNode xml_node(pickOut);
-    MapNode node(xml_node);
-    return PyMapNode_Wrap(node);
+    if(pa->GetHasRangeOutput())
+    {
+        MapNode node = pa->GetRangeOutput();
+        return PyMapNode_Wrap(node);
+    }
+    else
+    {
+        pa->CreateXMLString(pickOut);
+        XMLNode xml_node(pickOut);
+        MapNode node(xml_node);
+        return PyMapNode_Wrap(node);
+    }
 }
 
 
@@ -13548,13 +13559,157 @@ visit_PickByZone(PyObject *self, PyObject *args, PyObject *kwargs)
             return NULL;
         }
     }
-    if (!pickParams.HasEntry("element") && !pickParams.HasEntry("pick_range"))
+    if (!pickParams.HasEntry("element") && 
+        !pickParams.HasEntry("pick_range") )
     {
-        VisItErrorFunc("PickByZone: requires \"element\" argument.");
+        VisItErrorFunc("PickByZone: requires \"element\" or \"pick_range\" argument.");
         return NULL;
     } 
     pickParams["query_name"] = std::string("Pick");
+    
     pickParams["pick_type"] = std::string("DomainZone");
+
+    ParseTimePickOptions(pickParams);
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
+    return visit_GetPickOutputObject(self, args);
+}
+
+
+// ****************************************************************************
+// Function: visit_PickByZoneLabel
+//
+// Purpose:
+//   Tells the viewer to do PickByZoneLabel.
+//
+// Notes:
+//
+// Programmer: Matt Larsen (Based on pick on PickByZone)
+// Creation:   April 12, 2017
+//
+// Modifications
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByZoneLabel(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode pickParams;
+
+    // parse arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If not, check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("PickByZoneLabel:  could not parse dictionary argument.");
+           return NULL;
+        }
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc("PickByZoneLabel:  could not parse keyword arguments.");
+            return NULL;
+        }
+    }
+    if ( !pickParams.HasEntry("element_label") )
+    {
+        VisItErrorFunc("PickByZoneLabel: requires \"element_name\" argument.");
+        return NULL;
+    } 
+    pickParams["query_name"] = std::string("Pick");
+    
+    pickParams["pick_type"] = std::string("ZoneLabel");
+    pickParams["element"] = 0;
+
+    ParseTimePickOptions(pickParams);
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->Query(pickParams);
+    MUTEX_UNLOCK();
+    Synchronize();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
+    return visit_GetPickOutputObject(self, args);
+}
+
+// ****************************************************************************
+// Function: visit_PickByNodeLabel
+//
+// Purpose:
+//   Tells the viewer to do PickByNodeLabel.
+//
+// Notes:
+//
+// Programmer: Matt Larsen (Based on pick on PickByNode)
+// Creation:   April 12, 2017
+//
+// Modifications
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_PickByNodeLabel(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    bool parse_success = true;
+    MapNode pickParams;
+
+    // parse arguments.  First check if first arg (if present) is
+    // a python dictionary object
+    // If not, check for named args (kwargs).
+    if (PyTuple_Size(args) > 0)
+    {
+        parse_success = PyDict_To_MapNode(PyTuple_GetItem(args,0), pickParams); 
+        if (!parse_success)
+        {
+           VisItErrorFunc("PickByNodeLabel:  could not parse dictionary argument.");
+           return NULL;
+        }
+    }
+    else if (kwargs != NULL)
+    {
+        parse_success = PyDict_To_MapNode(kwargs, pickParams); 
+        if (!parse_success)
+        {
+            VisItErrorFunc("PickByNodeLabel:  could not parse keyword arguments.");
+            return NULL;
+        }
+    }
+    if ( !pickParams.HasEntry("element_label") )
+    {
+        VisItErrorFunc("PickByNodeLabel: requires \"element_name\" argument.");
+        return NULL;
+    } 
+    pickParams["query_name"] = std::string("Pick");
+    
+    pickParams["pick_type"] = std::string("NodeLabel");
+    pickParams["element"] = 0;
+
     ParseTimePickOptions(pickParams);
 
     if (!suppressQueryOutputState)
@@ -17363,6 +17518,8 @@ AddProxyMethods()
     AddMethod("Pick", visit_ZonePick, visit_ZonePick_doc);
     AddMethod("PickByNode", visit_PickByNode, visit_PickByNode_doc);
     AddMethod("PickByZone", visit_PickByZone, visit_PickByZone_doc);
+    AddMethod("PickByZoneLabel", visit_PickByZoneLabel, visit_PickByZoneLabel_doc);
+    AddMethod("PickByNodeLabel", visit_PickByNodeLabel, visit_PickByNodeLabel_doc);
     AddMethod("PickByGlobalNode", visit_PickByGlobalNode,
                                                    visit_PickByGlobalNode_doc);
     AddMethod("PickByGlobalZone", visit_PickByGlobalZone,
@@ -17383,7 +17540,7 @@ AddProxyMethods()
     AddMethod("RemoveLastOperator", visit_RemoveLastOperator,
                                                      visit_RemoveOperator_doc);
     AddMethod("RemoveOperator", visit_RemoveOperator,visit_RemoveOperator_doc);
-    AddMethod("RenamePickLabel", visit_RenamePickLabel, visit_RenamePickLabel_doc);
+    AddMethod("ReenamePickLabel", visit_RenamePickLabel, visit_RenamePickLabel_doc);
     AddMethod("ReOpenDatabase", visit_ReOpenDatabase,visit_ReOpenDatabase_doc);
     AddMethod("ReplaceDatabase", visit_ReplaceDatabase,
                                                     visit_ReplaceDatabase_doc);

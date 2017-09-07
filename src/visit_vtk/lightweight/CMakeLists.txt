@@ -59,6 +59,7 @@ vtkDataSetFromVolume.C
 vtkDebugStream.C        
 vtkEnumThreshold.C
 vtkMultiLineSource.C
+vtkElementLabelArray.C
 vtkPolyDataRelevantPointsFilter.C
 vtkSkewLookupTable.C
 vtkTriangulationTables.C

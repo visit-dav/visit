@@ -157,6 +157,11 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sgroupPieceName = \"%s\"\n", prefix, atts->GetGroupPieceName().c_str());
     str += tmpStr;
+    if(atts->GetUseLabelAsPickLetter())
+        SNPRINTF(tmpStr, 1000, "%suseLabelAsPickLetter = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suseLabelAsPickLetter = 0\n", prefix);
+    str += tmpStr;
     if(atts->GetShowGlobalIds())
         SNPRINTF(tmpStr, 1000, "%sshowGlobalIds = 1\n", prefix);
     else
@@ -166,6 +171,8 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, "%sshowPickLetter = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sshowPickLetter = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%selementLabel = \"%s\"\n", prefix, atts->GetElementLabel().c_str());
     str += tmpStr;
     if(atts->GetReusePickLetter())
         SNPRINTF(tmpStr, 1000, "%sreusePickLetter = 1\n", prefix);
@@ -626,6 +633,30 @@ PickAttributes_GetGroupPieceName(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PickAttributes_SetUseLabelAsPickLetter(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the useLabelAsPickLetter in the object.
+    obj->data->SetUseLabelAsPickLetter(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetUseLabelAsPickLetter(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseLabelAsPickLetter()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
 PickAttributes_SetShowGlobalIds(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
@@ -670,6 +701,30 @@ PickAttributes_GetShowPickLetter(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetShowPickLetter()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PickAttributes_SetElementLabel(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the elementLabel in the object.
+    obj->data->SetElementLabel(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetElementLabel(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetElementLabel().c_str());
     return retval;
 }
 
@@ -917,10 +972,14 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
     {"GetBlockPieceName", PickAttributes_GetBlockPieceName, METH_VARARGS},
     {"SetGroupPieceName", PickAttributes_SetGroupPieceName, METH_VARARGS},
     {"GetGroupPieceName", PickAttributes_GetGroupPieceName, METH_VARARGS},
+    {"SetUseLabelAsPickLetter", PickAttributes_SetUseLabelAsPickLetter, METH_VARARGS},
+    {"GetUseLabelAsPickLetter", PickAttributes_GetUseLabelAsPickLetter, METH_VARARGS},
     {"SetShowGlobalIds", PickAttributes_SetShowGlobalIds, METH_VARARGS},
     {"GetShowGlobalIds", PickAttributes_GetShowGlobalIds, METH_VARARGS},
     {"SetShowPickLetter", PickAttributes_SetShowPickLetter, METH_VARARGS},
     {"GetShowPickLetter", PickAttributes_GetShowPickLetter, METH_VARARGS},
+    {"SetElementLabel", PickAttributes_SetElementLabel, METH_VARARGS},
+    {"GetElementLabel", PickAttributes_GetElementLabel, METH_VARARGS},
     {"SetReusePickLetter", PickAttributes_SetReusePickLetter, METH_VARARGS},
     {"GetReusePickLetter", PickAttributes_GetReusePickLetter, METH_VARARGS},
     {"SetShowPickHighlight", PickAttributes_SetShowPickHighlight, METH_VARARGS},
@@ -995,10 +1054,14 @@ PyPickAttributes_getattr(PyObject *self, char *name)
         return PickAttributes_GetBlockPieceName(self, NULL);
     if(strcmp(name, "groupPieceName") == 0)
         return PickAttributes_GetGroupPieceName(self, NULL);
+    if(strcmp(name, "useLabelAsPickLetter") == 0)
+        return PickAttributes_GetUseLabelAsPickLetter(self, NULL);
     if(strcmp(name, "showGlobalIds") == 0)
         return PickAttributes_GetShowGlobalIds(self, NULL);
     if(strcmp(name, "showPickLetter") == 0)
         return PickAttributes_GetShowPickLetter(self, NULL);
+    if(strcmp(name, "elementLabel") == 0)
+        return PickAttributes_GetElementLabel(self, NULL);
     if(strcmp(name, "reusePickLetter") == 0)
         return PickAttributes_GetReusePickLetter(self, NULL);
     if(strcmp(name, "showPickHighlight") == 0)
@@ -1071,10 +1134,14 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickAttributes_SetBlockPieceName(self, tuple);
     else if(strcmp(name, "groupPieceName") == 0)
         obj = PickAttributes_SetGroupPieceName(self, tuple);
+    else if(strcmp(name, "useLabelAsPickLetter") == 0)
+        obj = PickAttributes_SetUseLabelAsPickLetter(self, tuple);
     else if(strcmp(name, "showGlobalIds") == 0)
         obj = PickAttributes_SetShowGlobalIds(self, tuple);
     else if(strcmp(name, "showPickLetter") == 0)
         obj = PickAttributes_SetShowPickLetter(self, tuple);
+    else if(strcmp(name, "elementLabel") == 0)
+        obj = PickAttributes_SetElementLabel(self, tuple);
     else if(strcmp(name, "reusePickLetter") == 0)
         obj = PickAttributes_SetReusePickLetter(self, tuple);
     else if(strcmp(name, "showPickHighlight") == 0)

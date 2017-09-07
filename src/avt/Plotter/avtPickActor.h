@@ -43,10 +43,12 @@
 #include <ref_ptr.h>
 
 class vtkActor;
+class vtkActor2D;
 class vtkFollower;
 class vtkLineSource;
 class vtkMultiLineSource;
 class vtkPolyDataMapper;
+class vtkPolyDataMapper2D;
 class vtkRenderer;
 class vtkGlyphSource2D;
 
@@ -87,6 +89,9 @@ class vtkGlyphSource2D;
 //    Added method 'AddLine'
 //    Added methods 'GetShowPickLetter' 'SetShowPickLetter'
 //    Added member variable showPickLetter
+//
+//    Matt Larsen, Wed September 6 09:10:01 PDT 2017
+//    Changed highlights to overlay(2D) to show internal zones 
 //
 // ****************************************************************************
 
@@ -136,9 +141,9 @@ class PLOTTER_API avtPickActor
     vtkGlyphSource2D  *glyphSource;
     vtkPolyDataMapper *glyphMapper;
 
-    vtkMultiLineSource *highlightSource;
-    vtkPolyDataMapper  *highlightMapper;
-    vtkActor           *highlightActor;
+    vtkMultiLineSource   *highlightSource;
+    vtkPolyDataMapper2D  *highlightMapper;
+    vtkActor2D           *highlightActor;
     
     vtkRenderer        *renderer;
   private:

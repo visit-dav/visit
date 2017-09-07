@@ -106,7 +106,7 @@ public class ThresholdOpAttributes extends AttributeSubject
 
     public ThresholdOpAttributes(ThresholdOpAttributes obj)
     {
-        super(obj);
+        super(ThresholdOpAttributes_numAdditionalAtts);
 
         int i;
 

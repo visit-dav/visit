@@ -68,7 +68,8 @@ using std::string;
 // Creation:   June 9, 2011 
 //
 // Modifications:
-//
+//   Matt Larsen Wed May 31 09:32:11 PDT 2017
+//   Adding new pick options for node and zone labels
 // ****************************************************************************
 
 QvisPickQueryWidget::QvisPickQueryWidget(QWidget *parent,
@@ -89,6 +90,7 @@ QvisPickQueryWidget::QvisPickQueryWidget(QWidget *parent,
     pickType->addItem(tr("Pick using coordinate to determine node")); 
     pickType->addItem(tr("Pick using domain and element Id")); 
     pickType->addItem(tr("Pick using global element Id")); 
+    pickType->addItem(tr("Pick using unique element label")); 
     connect(pickType, SIGNAL(activated(int)),
             this, SLOT(pickTypeChanged(int)));
     pickType->setCurrentIndex(0);
@@ -269,6 +271,23 @@ QvisPickQueryWidget::UpdateControls()
          element->show();
          timePreserveType->button(1)->setChecked(true);
          break;
+      case 4: // Pick by domain/element label
+         coordinate->setEnabled(false);
+         coordinate->hide();
+         coordinateLabel->setEnabled(false);
+         coordinateLabel->hide();
+         elementType->button(0)->setEnabled(true);
+         elementType->button(1)->setEnabled(true);
+         elementType->button(0)->show();
+         elementType->button(1)->show();
+         domain->setEnabled(false);
+         domain->hide();
+         domainLabel->setEnabled(false);
+         domainLabel->hide();
+         element->setEnabled(true);
+         element->show();
+         timePreserveType->button(1)->setChecked(true);
+         break;
 
       default:
          break;
@@ -429,6 +448,36 @@ QvisPickQueryWidget::GetElementRange(std::string &range)
 }
 
 // ****************************************************************************
+// Method: QvisPickQueryWidget::GetElementLabel
+//
+// Purpose: 
+//   Retrieves the element label from the text field.
+//
+// Arguments:
+//   label : output value label of the zone or node to pick
+//
+// Returns:    True if it worked.
+//
+// Programmer: Matt Larsen
+// Creation:  June 12, 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool 
+QvisPickQueryWidget::GetElementLabel(std::string &label)
+{
+    QString temp(element->displayText().simplified());
+    bool okay = !temp.isEmpty();
+    if (okay)
+    {
+      label = temp.toStdString();
+    }
+    return okay;
+}
+
+// ****************************************************************************
 // Method: QvisPickQueryWidget::GetElementType
 //
 // Purpose: 
@@ -496,6 +545,7 @@ QvisPickQueryWidget::GetQueryParameters(MapNode &params)
     int preserveCoord = (int) GetTimePreservesCoord();
     int dom = 0, el = 0;
     std::string range;
+    std::string label;
     switch (pickType->currentIndex())
     {
       case 0: // Pick by zone coordinate
@@ -546,6 +596,22 @@ QvisPickQueryWidget::GetQueryParameters(MapNode &params)
                   params["pick_type"] = string("DomainZone");
               params["element"] = el;
               params["use_global_id"] = 1;
+          }
+          break;
+      case 4: // Pick by global element label
+          if (!GetElementLabel(label))
+              noerrors = false;
+          if (!GetElementRange(range))
+              noerrors = false;
+          if (noerrors)
+          { 
+              if (GetElementType() == 0)
+                  params["pick_type"] = string("NodeLabel");
+              else 
+                  params["pick_type"] = string("ZoneLabel");
+              params["element_label"] = label;
+              params["element"] = 0;
+              params["domain"] = 0;
           }
           break;
       default:
