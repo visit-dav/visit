@@ -232,6 +232,9 @@ QvisBaseVariableButton::VariablePopupInfo::DeleteMenu(int i)
 //   Mark C. Miller, Thu Jun  8 15:12:30 PDT 2017
 //   Add logic to conditionally destroy menus instead of just clearing them. 
 //   Add logic to skip some menus when possible.
+//
+//   Mark C. Miller, Thu Sep  7 12:17:57 PDT 2017
+//   Remove logic to skip some menus when possible. It was incorrect.
 // ****************************************************************************
 
 void
@@ -1039,13 +1042,13 @@ QvisVariableButton::UpdateActiveSourceButtons(VariableMenuPopulator *pop,
 
 void
 QvisVariableButton::UpdatePlotSourceButtons(VariableMenuPopulator *pop,
-    bool skipUpdateMenus, bool destroyMenuItems)
+    bool destroyMenuItems)
 {
     // Create the menus if they have not been created yet.
     plotSourceInfo->Initialize();
 
     // Update the menus.
-    if(pop && !skipUpdateMenus)
+    if(pop)
         plotSourceInfo->UpdateMenus(pop, destroyMenuItems);
  
     //

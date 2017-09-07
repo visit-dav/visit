@@ -67,7 +67,6 @@
 #include <PluginManagerAttributes.h>
 #include <QvisPlotListBoxItem.h>
 #include <QvisPlotListBox.h>
-#include <QvisVariableButton.h>
 #include <QvisVariablePopupMenu.h>
 #include <PlotPluginInfo.h>
 #include <WindowInformation.h>

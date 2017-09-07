@@ -1808,7 +1808,6 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu(bool destroyMenuItems,
     bool needsUpdate = forceUpdate || PopulateVariableLists(menuPopulator,
         fileServer->GetOpenFile());
     visitTimer->StopTimer(id, "PopulateVariableLists");
-
     debug4 << mName << "Need to update menus: " << (needsUpdate?"true":"false") << endl;
 
     // Update the various menus
@@ -1871,12 +1870,9 @@ QvisPlotManagerWidget::UpdatePlotVariableMenu(bool destroyMenuItems,
         // If there are no plots then update the variable buttons that
         // use the plot source with the active source.
         //
-        // menus get updated in UpdateActiveSourceButtons, so skip here
-        bool const skipUpdateMenus = true;
         id = visitTimer->StartTimer();
         if(plotList->GetNumPlots() < 1)
-            QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator,
-                skipUpdateMenus, destroyMenuItems);
+            QvisVariableButton::UpdatePlotSourceButtons(&menuPopulator, destroyMenuItems);
         visitTimer->StopTimer(id, "Updating plot source buttons");
     }
 
@@ -2131,9 +2127,8 @@ QvisPlotManagerWidget::UpdateVariableMenu(bool destroyMenuItems, bool forceUpdat
         //
         // Update all variable buttons that use the plot source.
         //
-        bool const skipUpdateMenus = false;
         QvisVariableButton::UpdatePlotSourceButtons(&varMenuPopulator,
-            skipUpdateMenus, destroyMenuItems);
+            destroyMenuItems);
     }
 }
 

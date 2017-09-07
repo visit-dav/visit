@@ -227,7 +227,7 @@ class WINUTIL_API QvisVariableButton : public QvisBaseVariableButton
     static void UpdateActiveSourceButtons(VariableMenuPopulator *pop,
         bool destroyMenuItems=false);
     static void UpdatePlotSourceButtons(VariableMenuPopulator *pop,
-        bool skipUpdateMenus=false, bool destroyMenyItems=false);
+        bool destroyMenyItems=false);
 #endif
 
   protected:
