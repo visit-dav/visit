@@ -292,7 +292,7 @@ function bv_pyside_is_installed
         return 0
     fi
 
-    if [[ "IS_QT5" == "yes" ]]; then
+    if [[ "$IS_QT5" == "yes" ]]; then
         if  [[ ! -e "${VISIT_PYSIDE_DIR}/shiboken2_success" ||
                  ! -e "${VISIT_PYSIDE_DIR}/pyside2_success" ]]; then
             info "pyside not installed completely"
