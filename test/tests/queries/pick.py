@@ -201,6 +201,9 @@
 #    For PickSubset, change plot var to 'domains' as Subset plots shouldn't 
 #    work for materials.  Change pick var to 'mat1' to preserve baselines.
 #
+#    Matt Larsen, Wed Sep 6 16:23:12 PST 2017
+#    Adding tests for pick by label for mili files.
+#
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -2856,6 +2859,52 @@ def PickLines3D():
     DeleteAllPlots()
     ResetPickLetter()
     
+def PickZoneLabel():
+    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "bend_magnitude")
+    DrawPlots()
+    options = {}
+    options["element_label"] = "brick 19"
+    options["vars"] = "OriginalZoneLabels"
+    PickByZoneLabel(options)
+    s = GetPickOutput()
+    TestText("PickByZoneLabel",s)
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+
+def PickNodeLabel():
+    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "bend_magnitude")
+    DrawPlots()
+    options = {}
+    options["element_label"] = "node 93"
+    options["vars"] = "OriginalNodeLabels"
+    PickByNodeLabel(options)
+    s = GetPickOutput()
+    TestText("PickByNodeLabel",s)
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+
+def PickRangeLabel():
+    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "bend_magnitude")
+    DrawPlots()
+    options = {}
+    options["element_label"] = "brick"
+    options["pick_range"] = "22-24,18"
+    options["vars"] = "OriginalZoneLabels"
+    output_dict = PickByZoneLabel(options)
+    s = str(output_dict)
+    TestText("PickRangeByZoneLabel",s)
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+
 def PickMain():
     Pick3DTo2D()
     Pick2D()
@@ -2889,6 +2938,9 @@ def PickMain():
     PickHighlight()
     PickRange()
     PickLines3D()
+    PickZoneLabel()
+    PickNodeLabel()
+    PickRangeLabel()
 
 # Call the main function
 TurnOnAllAnnotations()
