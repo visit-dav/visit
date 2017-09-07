@@ -90,6 +90,10 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Accuracy and performance of picking on lines/line meshes in 3D has been improved.</li>
   <li>Fixed query-over-time when running in parallel to only create a single curve for each result.
   <li>Corrected a bug with the <i>XRay Image</i> query, where the data type for bov output was incorrectly set to float in the case where the intensities were double or integer.</li>
+  <li>Enhanced pick highlights to overlay so internal zones can be seen</li>
+  <li>Added PickByZoneLabel and PickByNodeLabel for databases that support labels</li>
+  <li>Fixed memory error with using pick highlights that could cause an engine crash</li>
+  <li>Picking ranges of elements from the cli now returns a python dictionary of results indexed by element id or label</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
