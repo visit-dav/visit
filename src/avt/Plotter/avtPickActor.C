@@ -39,11 +39,15 @@
 #include <avtPickActor.h>
 
 #include <vtkActor.h>
+#include <vtkActor2D.h>
+#include <vtkCoordinate.h>
 #include <vtkFollower.h>
 #include <vtkLineSource.h>
 #include <vtkMultiLineSource.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkPolyDataMapper2D.h>
 #include <vtkProperty.h>
+#include <vtkProperty2D.h>
 #include <vtkRenderer.h>
 #include <vtkVectorText.h>
 #include <vtkGlyphSource2D.h>
@@ -74,6 +78,9 @@
 //
 //    Matt Larsen, Mon September 19 08:34:22 PDT 2016
 //    Changed glyph type to circle
+//
+//    Matt Larsen, Wed September 6 09:10:01 PDT 2017
+//    Changed highlights to overlay to show internal zones 
 // ****************************************************************************
 avtPickActor:: avtPickActor()
 {
@@ -91,12 +98,14 @@ avtPickActor:: avtPickActor()
         lineSource->SetResolution(1);   // only need one line segment here
     lineMapper  = vtkPolyDataMapper::New();
         lineMapper->SetInputConnection(lineSource->GetOutputPort());
+
     lineActor   = vtkActor::New();
         lineActor->SetMapper(lineMapper); 
         lineActor->PickableOff(); 
         lineActor->GetProperty()->SetColor(0., 0., 0.);
         lineActor->GetProperty()->SetAmbient(1.);
         lineActor->GetProperty()->SetDiffuse(0.);
+
 
     letterActor = vtkFollower::New(); 
         letterActor->GetProperty()->SetColor(0., 0., 0.);
@@ -142,6 +151,9 @@ avtPickActor:: avtPickActor()
 //
 //    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
 //    Delete highlightActor, highlightSource,highlightMapper
+//
+//    Matt Larsen, Wed September 6 09:10:01 PDT 2017
+//    Changed highlights to overlay to show internal zones 
 //
 // ****************************************************************************
 
@@ -292,6 +304,12 @@ avtPickActor::Remove()
 //
 //    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
 //    Added highlightSource shift.
+//
+//    Matt Larsen, Sat July 1 08:16:51 PDT 2017 
+//    We now support using a element label as a pick designator,
+//    and the text sizes are larger than the typical pick letter that
+//    is one or two chars long. We now increase the shift factor for
+//    the glyph in porportion to its legnth.
 // ****************************************************************************
 
 void 
@@ -301,6 +319,9 @@ avtPickActor::Shift(const double vec[3])
     if (mode3D)
     {
         shiftFactor = 3.;     // completely arbitrary shift factor!!!
+        // setting large designators like labels need to be 
+        // offset more than the standard amount
+        shiftFactor *= float(designator.size());
         newPos[0] = attach[0] + vec[0] *shiftFactor;
         newPos[1] = attach[1] + vec[1] *shiftFactor;
         newPos[2] = attach[2] + vec[2] *shiftFactor;
@@ -309,7 +330,6 @@ avtPickActor::Shift(const double vec[3])
         newGlyphPos[2] = attach[2] + vec[2] *0.25;
     
         glyphActor->SetPosition(newGlyphPos[0], newGlyphPos[1], newGlyphPos[2]);
-        if(highlightSource != NULL) highlightSource->Shift3d(vec, .7);
     }
     else
     {
@@ -321,7 +341,6 @@ avtPickActor::Shift(const double vec[3])
         vec2[0] = 0.;
         vec2[1] = 0.;
         vec2[2] = vec[2];
-        if(highlightSource != NULL) highlightSource->Shift2d(.1);
     }
     lineSource->SetPoint2(newPos[0], newPos[1], newPos[2]);
     letterActor->SetPosition(newPos[0], newPos[1], newPos[2]);
@@ -712,6 +731,9 @@ avtPickActor::GetLetterPosition()
 //
 //  Modifications:
 //
+//    Matt Larsen, Wed September 6 09:10:01 PDT 2017
+//    Changed highlights to overlay to show internal zones 
+//
 // ****************************************************************************
 
 void
@@ -720,14 +742,19 @@ avtPickActor::AddLine(double p0[3], double p1[3])
     if(highlightSource == NULL)
     {
         highlightSource = vtkMultiLineSource::New();
-        highlightMapper = vtkPolyDataMapper::New();
+
+        highlightMapper  = vtkPolyDataMapper2D::New();
             highlightMapper->SetInputConnection(highlightSource->GetOutputPort());
-        highlightActor = vtkActor::New();
+            vtkCoordinate *coordinate = vtkCoordinate::New(); 
+            coordinate->SetCoordinateSystemToWorld();
+            highlightMapper->SetTransformCoordinate(coordinate);
+            highlightMapper->ScalarVisibilityOn();
+            highlightMapper->SetScalarModeToUsePointData();
+
+        highlightActor = vtkActor2D::New();
         highlightActor->SetMapper(highlightMapper);
             highlightActor->PickableOff(); 
             highlightActor->GetProperty()->SetColor(1., 0., 0.);
-            highlightActor->GetProperty()->SetAmbient(1.);
-            highlightActor->GetProperty()->SetDiffuse(0.); 
             highlightActor->GetProperty()->SetLineWidth(3.);
     }
    

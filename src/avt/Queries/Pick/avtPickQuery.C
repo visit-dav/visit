@@ -53,8 +53,10 @@
 #include <vtkIdList.h>
 #include <vtkIntArray.h>
 #include <vtkMath.h>
+#include <vtkElementLabelArray.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
+#include <vtkSmartPointer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedIntArray.h>
 #include <vtkVisItUtility.h>
@@ -1915,11 +1917,12 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
    pickAtts.ClearLines();
    // Bail if highlights are not on
    if(!pickAtts.GetShowPickHighlight()) return;
+
    // Check to see if the cells were decomposed in some way
     vtkDataArray* origCellsArr = ds->GetCellData()->
         GetArray("avtOriginalCellNumbers");
     if ( (!origCellsArr) || (origCellsArr->GetDataType() != VTK_UNSIGNED_INT)
-      || (origCellsArr->GetNumberOfComponents() != 2))
+      || (origCellsArr->GetNumberOfComponents() != 2 ))
     {
         // this is a normal cell or could not find the proper
         // original cell information. Just extract the lines from the edges
@@ -1953,12 +1956,15 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
         {
             if(origCell == origCellNums[i*2+1] &&
                origDom == origCellNums[i*2+0])
+            {
                 relatedCells.push_back(i);
+            }
         }
 
         // loop over related cells and eliminate duplicate egdes
-        vtkEdgeTable *edgeTable = vtkEdgeTable::New();
+        vtkSmartPointer<vtkEdgeTable> edgeTable = vtkSmartPointer<vtkEdgeTable>::New();
         const int numRelated = relatedCells.size();
+
         for(int i = 0; i < numRelated; ++i)
         {
             const int cellId = relatedCells[i];
@@ -1988,13 +1994,82 @@ avtPickQuery::ExtractZonePickHighlights(const int &zoneId,
         {
             vtkIdType p1Id,p2Id;
             edgeTable->GetNextEdge(p1Id,p2Id);
-            double p1[3],p2[2];
+            double p1[3],p2[3];
             ds->GetPoint(p1Id, p1);
             ds->GetPoint(p2Id, p2);
             pickAtts.AddLine(p1, p2,i);
         }
-        // cleanup
-        edgeTable->Delete();
     }
 }
 
+// ****************************************************************************
+//  Method: avtPickQuery::GetElementIdByLabel
+//
+//  Purpose:
+//    This method translates between and element label and its actual element
+//    id so the rest of the pick can proceed normally
+//
+//  Programmer: Matt Larsen
+//  Creation:   May 4, 2017
+//
+// ****************************************************************************
+bool
+avtPickQuery::GetElementIdByLabel(const std::string &elementLabel, 
+                                  bool isZone, 
+                                  int &elementId,
+                                  int dom)
+{
+    int timestep = 0;
+    int chunk = dom;
+    elementId = -1;
+    avtDataRequest_p labelRequest;
+    if(isZone)
+    {
+        labelRequest  = new avtDataRequest("OriginalZoneLabels", timestep, chunk);
+    }
+    else
+    {
+        labelRequest  = new avtDataRequest("OriginalNodeLabels", timestep, chunk);
+    }
+    int pipelineIndex = 0;
+    avtContract_p contract_p = new avtContract(labelRequest, pipelineIndex);
+    avtDataObject_p dataObject = this->GetInput();
+    VoidRefList result;
+    void * args = NULL;
+    const char * type ="AUXILIARY_DATA_IDENTIFIERS";
+    TRY
+    {
+        dataObject->GetOriginatingSource()->GetVariableAuxiliaryData(type, args, contract_p, result);
+    }
+    CATCH2(VisItException, e)
+    {
+        debug3<<"avtPickQuery: failed to find original zone/node labels";
+        debug3<<e.Message()<<"\n";
+
+        bool error = true;
+        return error; 
+    }
+    ENDTRY
+    for(int i = 0; i < result.nList; ++i)
+    {
+        vtkElementLabelArray *labels = reinterpret_cast<vtkElementLabelArray*>(*result.list[i]);
+        if(labels == NULL)
+        {
+            continue;
+        } 
+        bool success = labels->GetElementId(elementLabel, elementId);
+        if(success)
+        {
+            const char *raw_labels = reinterpret_cast<char *>(labels->GetVoidPointer(0));
+            int offset = labels->GetNumberOfComponents() * elementId;
+            const char *label = raw_labels + offset;
+            if(pickAtts.GetUseLabelAsPickLetter())
+            {
+                pickAtts.SetPickLetter(std::string(label));
+            }
+        }
+    }
+    
+    bool error = false;
+    return error;
+}

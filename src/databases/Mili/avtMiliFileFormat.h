@@ -108,6 +108,9 @@ class vtkFloatArray;
 //    The reader now returns the cycles and times in the meta data and 
 //    marks them as accurate so that they are used where needed.
 //
+//    Matt Larsen, Wed May 31  08:15:42 PDT 2017
+//    Adding functions and data structures for node and zone labels
+//
 // ****************************************************************************
 
 class avtMiliFileFormat : public avtMTMDFileFormat
@@ -329,6 +332,27 @@ class avtMiliFileFormat : public avtMTMDFileFormat
     void                  AddClassSubsets(char *meshname, avtDatabaseMetaData *md);
     vtkFloatArray        *GetClassSubsets();
 
+    struct Label_mapping
+    {
+        std::vector<int> label_ranges_begin;
+        std::vector<int> label_ranges_end;
+        std::vector<int> el_ids_begin;
+        std::vector<int> el_ids_end;
+    };
+
+    std::vector<int>                       max_zone_label_lengths;
+    std::vector<int>                       max_node_label_lengths;
+    std::vector<std::vector<std::string> > zoneLabels;
+    std::vector<std::vector<std::string> > nodeLabels;
+    std::vector<std::map<std::string,Label_mapping> > zone_label_mappings;
+    std::vector<std::map<std::string,Label_mapping> > node_label_mappings;
+
+    void PopulateNodeLabels(const int fam_id, const int mesh_id, 
+                            char *short_name, const int dom, int &num_nodes);
+
+    void PopulateZoneLabels(const int fam_id, const int mesh_id, 
+                            char *short_name, const int dom, int &num_zones,
+                            const int elems_in_group);
 };
 
 

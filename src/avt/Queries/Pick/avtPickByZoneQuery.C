@@ -144,11 +144,16 @@ avtPickByZoneQuery::~avtPickByZoneQuery()
 //    Fixed pick highlight issue with incorrect zone being hightlighted 
 //    in some cases.
 //
+//    Matt Larsen, July 19 08:29:l2 PDT 2017
+//    Added support for picking by label
+//
 // ****************************************************************************
 
 void
 avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
 {
+    bool pickByLabel = pickAtts.GetElementLabel() != "";
+
     if (pickAtts.GetFulfilled() || ds == NULL)
     {
         return;
@@ -159,7 +164,8 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         if (dom != pickAtts.GetDomain()) 
             return;
     }
-    else if (ds->GetCellData()->GetArray("avtGlobalZoneNumbers") == NULL)
+    else if (ds->GetCellData()->GetArray("avtGlobalZoneNumbers") == NULL &&
+             !pickByLabel)
     {
         pickAtts.SetDomain(-1);
         pickAtts.SetElementNumber(-1);
@@ -169,7 +175,39 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
         pickAtts.SetError(true);
         return; 
     }
-    int userZoneId = pickAtts.GetElementNumber();
+
+    int userZoneId =  pickAtts.GetElementNumber();
+    if(pickByLabel)
+    {
+        std::string zoneLabel = pickAtts.GetElementLabel();
+        bool isZone = true;
+        int id;
+        bool error = GetElementIdByLabel(zoneLabel, isZone, id, dom); 
+
+        if(error)
+        {
+            pickAtts.SetDomain(-1);
+            pickAtts.SetElementNumber(-1);
+            pickAtts.SetErrorMessage("Pick could not be performed because a zone "
+                                     "label was specified for Pick but the mesh "
+                                     "does not contain zone label information.");
+            pickAtts.SetError(true);
+            return;
+        }
+
+        if( id != -1 )
+        {
+            userZoneId = id;
+        }
+        else
+        {
+            return;
+        }
+    }
+    else
+    {
+        userZoneId = pickAtts.GetElementNumber();
+    }
     int zoneid = userZoneId;
     int origPick = zoneid;
     int maxEls = ds->GetNumberOfCells();
@@ -191,7 +229,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     bool DBsuppliedZoneId = true;
     if (!pickAtts.GetMatSelected() && ghostType != AVT_CREATED_GHOSTS)
     {
-        if (pickAtts.GetElementIsGlobal())
+        if (pickAtts.GetElementIsGlobal() && !pickByLabel)
         {
             userZoneId = vtkVisItUtility::GetLocalElementForGlobal(
                          ds, userZoneId, true);
@@ -219,7 +257,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
             return; 
         }
     }
-    if (pickAtts.GetElementIsGlobal())
+    if (pickAtts.GetElementIsGlobal()&& !pickByLabel)
         pickAtts.SetDomain(dom); 
 
     src->Query(&pickAtts);
@@ -227,7 +265,7 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     if (!pickAtts.GetFulfilled())
         return;
 
-    if (pickAtts.GetElementIsGlobal() && DBsuppliedZoneId)
+    if (pickAtts.GetElementIsGlobal() && DBsuppliedZoneId && !pickByLabel)
     {
        zoneid =  GetCurrentZoneForOriginal(ds, pickAtts.GetElementNumber());
        userZoneId = zoneid;
@@ -236,7 +274,6 @@ avtPickByZoneQuery::Execute(vtkDataSet *ds, const int dom)
     }
 
     pickAtts.SetElementNumber(userZoneId+cellOrigin);
-
     if (pickAtts.GetMatSelected())
     {
         RetrieveVarInfo(ds, zoneid, pickAtts.GetIncidentElements());

@@ -70,7 +70,9 @@ public:
         CurveZone,
         CurveNode,
         DomainZone,
-        DomainNode
+        DomainNode,
+        ZoneLabel,
+        NodeLabel
     };
     enum CoordinateType
     {
@@ -135,6 +137,8 @@ public:
     void SelectGroupPieceName();
     void SelectGhosts();
     void SelectGlobalIncidentElements();
+    void SelectRangeOutput();
+    void SelectElementLabel();
     void SelectSubsetName();
     void SelectFloatFormat();
     void SelectTimeOptions();
@@ -193,11 +197,15 @@ public:
     void SetElementIsGhost(bool elementIsGhost_);
     void SetRequiresGlyphPick(bool requiresGlyphPick_);
     void SetLocationSuccessful(bool locationSuccessful_);
+    void SetUseLabelAsPickLetter(bool useLabelAsPickLetter_);
     void SetShowGlobalIds(bool showGlobalIds_);
     void SetGlobalElement(int globalElement_);
     void SetGlobalIncidentElements(const intVector &globalIncidentElements_);
     void SetElementIsGlobal(bool elementIsGlobal_);
     void SetShowPickLetter(bool showPickLetter_);
+    void SetHasRangeOutput(bool hasRangeOutput_);
+    void SetRangeOutput(const MapNode &rangeOutput_);
+    void SetElementLabel(const std::string &elementLabel_);
     void SetReusePickLetter(bool reusePickLetter_);
     void SetGhostType(int ghostType_);
     void SetHasMixedGhostTypes(int hasMixedGhostTypes_);
@@ -293,12 +301,18 @@ public:
     bool               GetElementIsGhost() const;
     bool               GetRequiresGlyphPick() const;
     bool               GetLocationSuccessful() const;
+    bool               GetUseLabelAsPickLetter() const;
     bool               GetShowGlobalIds() const;
     int                GetGlobalElement() const;
     const intVector    &GetGlobalIncidentElements() const;
           intVector    &GetGlobalIncidentElements();
     bool               GetElementIsGlobal() const;
     bool               GetShowPickLetter() const;
+    bool               GetHasRangeOutput() const;
+    const MapNode      &GetRangeOutput() const;
+          MapNode      &GetRangeOutput();
+    const std::string  &GetElementLabel() const;
+          std::string  &GetElementLabel();
     bool               GetReusePickLetter() const;
     int                GetGhostType() const;
     int                GetHasMixedGhostTypes() const;
@@ -426,11 +440,15 @@ public:
         ID_elementIsGhost,
         ID_requiresGlyphPick,
         ID_locationSuccessful,
+        ID_useLabelAsPickLetter,
         ID_showGlobalIds,
         ID_globalElement,
         ID_globalIncidentElements,
         ID_elementIsGlobal,
         ID_showPickLetter,
+        ID_hasRangeOutput,
+        ID_rangeOutput,
+        ID_elementLabel,
         ID_reusePickLetter,
         ID_ghostType,
         ID_hasMixedGhostTypes,
@@ -505,11 +523,15 @@ private:
     bool                 elementIsGhost;
     bool                 requiresGlyphPick;
     bool                 locationSuccessful;
+    bool                 useLabelAsPickLetter;
     bool                 showGlobalIds;
     int                  globalElement;
     intVector            globalIncidentElements;
     bool                 elementIsGlobal;
     bool                 showPickLetter;
+    bool                 hasRangeOutput;
+    MapNode              rangeOutput;
+    std::string          elementLabel;
     bool                 reusePickLetter;
     int                  ghostType;
     int                  hasMixedGhostTypes;
@@ -530,6 +552,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbii*bbbiibbbiibssbimm"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimm"
 
 #endif

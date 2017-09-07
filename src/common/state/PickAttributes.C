@@ -49,21 +49,21 @@
 
 static const char *PickType_strings[] = {
 "Zone", "Node", "CurveZone", 
-"CurveNode", "DomainZone", "DomainNode"
-};
+"CurveNode", "DomainZone", "DomainNode", 
+"ZoneLabel", "NodeLabel"};
 
 std::string
 PickAttributes::PickType_ToString(PickAttributes::PickType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 6) index = 0;
+    if(index < 0 || index >= 8) index = 0;
     return PickType_strings[index];
 }
 
 std::string
 PickAttributes::PickType_ToString(int t)
 {
-    int index = (t < 0 || t >= 6) ? 0 : t;
+    int index = (t < 0 || t >= 8) ? 0 : t;
     return PickType_strings[index];
 }
 
@@ -71,7 +71,7 @@ bool
 PickAttributes::PickType_FromString(const std::string &s, PickAttributes::PickType &val)
 {
     val = PickAttributes::Zone;
-    for(int i = 0; i < 6; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         if(s == PickType_strings[i])
         {
@@ -218,10 +218,12 @@ void PickAttributes::Init()
     elementIsGhost = false;
     requiresGlyphPick = false;
     locationSuccessful = false;
+    useLabelAsPickLetter = false;
     showGlobalIds = false;
     globalElement = -1;
     elementIsGlobal = false;
     showPickLetter = true;
+    hasRangeOutput = false;
     reusePickLetter = false;
     ghostType = 0;
     hasMixedGhostTypes = -1;
@@ -339,11 +341,15 @@ void PickAttributes::Copy(const PickAttributes &obj)
     elementIsGhost = obj.elementIsGhost;
     requiresGlyphPick = obj.requiresGlyphPick;
     locationSuccessful = obj.locationSuccessful;
+    useLabelAsPickLetter = obj.useLabelAsPickLetter;
     showGlobalIds = obj.showGlobalIds;
     globalElement = obj.globalElement;
     globalIncidentElements = obj.globalIncidentElements;
     elementIsGlobal = obj.elementIsGlobal;
     showPickLetter = obj.showPickLetter;
+    hasRangeOutput = obj.hasRangeOutput;
+    rangeOutput = obj.rangeOutput;
+    elementLabel = obj.elementLabel;
     reusePickLetter = obj.reusePickLetter;
     ghostType = obj.ghostType;
     hasMixedGhostTypes = obj.hasMixedGhostTypes;
@@ -607,11 +613,15 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (elementIsGhost == obj.elementIsGhost) &&
             (requiresGlyphPick == obj.requiresGlyphPick) &&
             (locationSuccessful == obj.locationSuccessful) &&
+            (useLabelAsPickLetter == obj.useLabelAsPickLetter) &&
             (showGlobalIds == obj.showGlobalIds) &&
             (globalElement == obj.globalElement) &&
             (globalIncidentElements == obj.globalIncidentElements) &&
             (elementIsGlobal == obj.elementIsGlobal) &&
             (showPickLetter == obj.showPickLetter) &&
+            (hasRangeOutput == obj.hasRangeOutput) &&
+            (rangeOutput == obj.rangeOutput) &&
+            (elementLabel == obj.elementLabel) &&
             (reusePickLetter == obj.reusePickLetter) &&
             (ghostType == obj.ghostType) &&
             (hasMixedGhostTypes == obj.hasMixedGhostTypes) &&
@@ -823,11 +833,15 @@ PickAttributes::SelectAll()
     Select(ID_elementIsGhost,              (void *)&elementIsGhost);
     Select(ID_requiresGlyphPick,           (void *)&requiresGlyphPick);
     Select(ID_locationSuccessful,          (void *)&locationSuccessful);
+    Select(ID_useLabelAsPickLetter,        (void *)&useLabelAsPickLetter);
     Select(ID_showGlobalIds,               (void *)&showGlobalIds);
     Select(ID_globalElement,               (void *)&globalElement);
     Select(ID_globalIncidentElements,      (void *)&globalIncidentElements);
     Select(ID_elementIsGlobal,             (void *)&elementIsGlobal);
     Select(ID_showPickLetter,              (void *)&showPickLetter);
+    Select(ID_hasRangeOutput,              (void *)&hasRangeOutput);
+    Select(ID_rangeOutput,                 (void *)&rangeOutput);
+    Select(ID_elementLabel,                (void *)&elementLabel);
     Select(ID_reusePickLetter,             (void *)&reusePickLetter);
     Select(ID_ghostType,                   (void *)&ghostType);
     Select(ID_hasMixedGhostTypes,          (void *)&hasMixedGhostTypes);
@@ -1014,6 +1028,12 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // elementIsGhost is not persistent and should not be saved.
     // requiresGlyphPick is not persistent and should not be saved.
     // locationSuccessful is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_useLabelAsPickLetter, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useLabelAsPickLetter", useLabelAsPickLetter));
+    }
+
     if(completeSave || !FieldsEqual(ID_showGlobalIds, &defaultObject))
     {
         addToParent = true;
@@ -1027,6 +1047,19 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     {
         addToParent = true;
         node->AddNode(new DataNode("showPickLetter", showPickLetter));
+    }
+
+    if(completeSave || !FieldsEqual(ID_hasRangeOutput, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("hasRangeOutput", hasRangeOutput));
+    }
+
+    // rangeOutput is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_elementLabel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("elementLabel", elementLabel));
     }
 
     // reusePickLetter is not persistent and should not be saved.
@@ -1161,6 +1194,8 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     // elementIsGhost is not persistent and was not saved.
     // requiresGlyphPick is not persistent and was not saved.
     // locationSuccessful is not persistent and was not saved.
+    if((node = searchNode->GetNode("useLabelAsPickLetter")) != 0)
+        SetUseLabelAsPickLetter(node->AsBool());
     if((node = searchNode->GetNode("showGlobalIds")) != 0)
         SetShowGlobalIds(node->AsBool());
     // globalElement is not persistent and was not saved.
@@ -1168,6 +1203,11 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     // elementIsGlobal is not persistent and was not saved.
     if((node = searchNode->GetNode("showPickLetter")) != 0)
         SetShowPickLetter(node->AsBool());
+    if((node = searchNode->GetNode("hasRangeOutput")) != 0)
+        SetHasRangeOutput(node->AsBool());
+    // rangeOutput is not persistent and was not saved.
+    if((node = searchNode->GetNode("elementLabel")) != 0)
+        SetElementLabel(node->AsString());
     // reusePickLetter is not persistent and was not saved.
     // ghostType is not persistent and was not saved.
     // hasMixedGhostTypes is not persistent and was not saved.
@@ -1567,6 +1607,13 @@ PickAttributes::SetLocationSuccessful(bool locationSuccessful_)
 }
 
 void
+PickAttributes::SetUseLabelAsPickLetter(bool useLabelAsPickLetter_)
+{
+    useLabelAsPickLetter = useLabelAsPickLetter_;
+    Select(ID_useLabelAsPickLetter, (void *)&useLabelAsPickLetter);
+}
+
+void
 PickAttributes::SetShowGlobalIds(bool showGlobalIds_)
 {
     showGlobalIds = showGlobalIds_;
@@ -1599,6 +1646,27 @@ PickAttributes::SetShowPickLetter(bool showPickLetter_)
 {
     showPickLetter = showPickLetter_;
     Select(ID_showPickLetter, (void *)&showPickLetter);
+}
+
+void
+PickAttributes::SetHasRangeOutput(bool hasRangeOutput_)
+{
+    hasRangeOutput = hasRangeOutput_;
+    Select(ID_hasRangeOutput, (void *)&hasRangeOutput);
+}
+
+void
+PickAttributes::SetRangeOutput(const MapNode &rangeOutput_)
+{
+    rangeOutput = rangeOutput_;
+    Select(ID_rangeOutput, (void *)&rangeOutput);
+}
+
+void
+PickAttributes::SetElementLabel(const std::string &elementLabel_)
+{
+    elementLabel = elementLabel_;
+    Select(ID_elementLabel, (void *)&elementLabel);
 }
 
 void
@@ -2179,6 +2247,12 @@ PickAttributes::GetLocationSuccessful() const
 }
 
 bool
+PickAttributes::GetUseLabelAsPickLetter() const
+{
+    return useLabelAsPickLetter;
+}
+
+bool
 PickAttributes::GetShowGlobalIds() const
 {
     return showGlobalIds;
@@ -2212,6 +2286,36 @@ bool
 PickAttributes::GetShowPickLetter() const
 {
     return showPickLetter;
+}
+
+bool
+PickAttributes::GetHasRangeOutput() const
+{
+    return hasRangeOutput;
+}
+
+const MapNode &
+PickAttributes::GetRangeOutput() const
+{
+    return rangeOutput;
+}
+
+MapNode &
+PickAttributes::GetRangeOutput()
+{
+    return rangeOutput;
+}
+
+const std::string &
+PickAttributes::GetElementLabel() const
+{
+    return elementLabel;
+}
+
+std::string &
+PickAttributes::GetElementLabel()
+{
+    return elementLabel;
 }
 
 bool
@@ -2486,6 +2590,18 @@ void
 PickAttributes::SelectGlobalIncidentElements()
 {
     Select(ID_globalIncidentElements, (void *)&globalIncidentElements);
+}
+
+void
+PickAttributes::SelectRangeOutput()
+{
+    Select(ID_rangeOutput, (void *)&rangeOutput);
+}
+
+void
+PickAttributes::SelectElementLabel()
+{
+    Select(ID_elementLabel, (void *)&elementLabel);
 }
 
 void
@@ -2786,11 +2902,15 @@ PickAttributes::GetFieldName(int index) const
     case ID_elementIsGhost:              return "elementIsGhost";
     case ID_requiresGlyphPick:           return "requiresGlyphPick";
     case ID_locationSuccessful:          return "locationSuccessful";
+    case ID_useLabelAsPickLetter:        return "useLabelAsPickLetter";
     case ID_showGlobalIds:               return "showGlobalIds";
     case ID_globalElement:               return "globalElement";
     case ID_globalIncidentElements:      return "globalIncidentElements";
     case ID_elementIsGlobal:             return "elementIsGlobal";
     case ID_showPickLetter:              return "showPickLetter";
+    case ID_hasRangeOutput:              return "hasRangeOutput";
+    case ID_rangeOutput:                 return "rangeOutput";
+    case ID_elementLabel:                return "elementLabel";
     case ID_reusePickLetter:             return "reusePickLetter";
     case ID_ghostType:                   return "ghostType";
     case ID_hasMixedGhostTypes:          return "hasMixedGhostTypes";
@@ -2883,11 +3003,15 @@ PickAttributes::GetFieldType(int index) const
     case ID_elementIsGhost:              return FieldType_bool;
     case ID_requiresGlyphPick:           return FieldType_bool;
     case ID_locationSuccessful:          return FieldType_bool;
+    case ID_useLabelAsPickLetter:        return FieldType_bool;
     case ID_showGlobalIds:               return FieldType_bool;
     case ID_globalElement:               return FieldType_int;
     case ID_globalIncidentElements:      return FieldType_intVector;
     case ID_elementIsGlobal:             return FieldType_bool;
     case ID_showPickLetter:              return FieldType_bool;
+    case ID_hasRangeOutput:              return FieldType_bool;
+    case ID_rangeOutput:                 return FieldType_MapNode;
+    case ID_elementLabel:                return FieldType_string;
     case ID_reusePickLetter:             return FieldType_bool;
     case ID_ghostType:                   return FieldType_int;
     case ID_hasMixedGhostTypes:          return FieldType_int;
@@ -2980,11 +3104,15 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_elementIsGhost:              return "bool";
     case ID_requiresGlyphPick:           return "bool";
     case ID_locationSuccessful:          return "bool";
+    case ID_useLabelAsPickLetter:        return "bool";
     case ID_showGlobalIds:               return "bool";
     case ID_globalElement:               return "int";
     case ID_globalIncidentElements:      return "intVector";
     case ID_elementIsGlobal:             return "bool";
     case ID_showPickLetter:              return "bool";
+    case ID_hasRangeOutput:              return "bool";
+    case ID_rangeOutput:                 return "MapNode";
+    case ID_elementLabel:                return "string";
     case ID_reusePickLetter:             return "bool";
     case ID_ghostType:                   return "int";
     case ID_hasMixedGhostTypes:          return "int";
@@ -3325,6 +3453,11 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (locationSuccessful == obj.locationSuccessful);
         }
         break;
+    case ID_useLabelAsPickLetter:
+        {  // new scope
+        retval = (useLabelAsPickLetter == obj.useLabelAsPickLetter);
+        }
+        break;
     case ID_showGlobalIds:
         {  // new scope
         retval = (showGlobalIds == obj.showGlobalIds);
@@ -3348,6 +3481,21 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_showPickLetter:
         {  // new scope
         retval = (showPickLetter == obj.showPickLetter);
+        }
+        break;
+    case ID_hasRangeOutput:
+        {  // new scope
+        retval = (hasRangeOutput == obj.hasRangeOutput);
+        }
+        break;
+    case ID_rangeOutput:
+        {  // new scope
+        retval = (rangeOutput == obj.rangeOutput);
+        }
+        break;
+    case ID_elementLabel:
+        {  // new scope
+        retval = (elementLabel == obj.elementLabel);
         }
         break;
     case ID_reusePickLetter:

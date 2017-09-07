@@ -7,6 +7,8 @@
       CurveNode
       DomainZone
       DomainNode
+      ZoneLabel
+      NodeLabel
     </Enum>
     <Enum name="CoordinateType">
       XY
@@ -167,6 +169,9 @@
     <Field name="locationSuccessful" label="locationSuccessful" type="bool" internal="true" persistent="false">
       false
     </Field>
+    <Field name="useLabelAsPickLetter" label="useLabelAsPickLetter" type="bool">
+     false 
+    </Field>
     <Field name="showGlobalIds" label="showGlobalIds" type="bool">
       false
     </Field>
@@ -180,6 +185,13 @@
     </Field>
     <Field name="showPickLetter" label="showPickLetter" type="bool">
       true
+    </Field>
+    <Field name="hasRangeOutput" label="hasRangeOutput" internal="true" type="bool" persistant="false">
+     false 
+    </Field>
+    <Field name="rangeOutput" label="rangeOutput" type="MapNode" internal="true" persistent="false">
+    </Field>
+    <Field name="elementLabel" label="elementLabel" type="string">
     </Field>
     <Field name="reusePickLetter" label="reusePickLetter" type="bool" persistent="false">
       false

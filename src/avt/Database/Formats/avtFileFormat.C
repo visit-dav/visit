@@ -972,4 +972,33 @@ FileFormatCloseFileCallback(void *ptr, int idx)
     ff->CloseFileDescriptor(idx);
 }
 
+// ****************************************************************************
+//  Function: AddLabelVarToMetaData
+//
+//  Purpose:
+//      Function to assist for adding labeled elements (zone and node) meta
+//      data
+//
+//  Arguments:
+//      md        The meta-data object to add the scalar var to.
+//      name      The name of the scalar variable.
+//      mesh      The mesh the scalar var is defined on.
+//      cent      The centering type - node vs cell.
+//
+//  Programmer: Matt Larsen
+//  Creation:   July 1, 2017 
+//
+// ****************************************************************************
+void
+avtFileFormat::AddLabelVarToMetaData(avtDatabaseMetaData *md, string name,
+                                      string mesh, avtCentering cent, int dim,
+                                      bool hideFromGUI)
+{
+    avtLabelMetaData *label = new avtLabelMetaData();
+    label->name = name;
+    label->meshName = mesh;
+    label->centering = cent;
+    label->hideFromGUI = hideFromGUI;
+    md->Add(label);
+}
 

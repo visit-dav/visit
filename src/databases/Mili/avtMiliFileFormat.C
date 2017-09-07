@@ -57,6 +57,7 @@
 #include <vector>
 #include <string>
 using std::getline;
+#include <sstream> 
 #include <snprintf.h>
 #include <visitstream.h>
 #include <set>
@@ -67,6 +68,7 @@ extern "C" {
 
 #include <vtkCellData.h>
 #include <vtkCellTypes.h>
+#include <vtkElementLabelArray.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
@@ -810,7 +812,6 @@ avtMiliFileFormat::GetMesh(int ts, int dom, const char *mesh)
     delete [] ns;
     delete [] fpts;
     rv->Delete();
-
     return ugrid;
 }
 
@@ -1183,6 +1184,9 @@ avtMiliFileFormat::GetSizeInfoForGroup(const char *group_name, int &offset,
 //
 //    Mark C. Miller, Mon Sep 30 10:45:46 PDT 2013
 //    Fixed bug handling tets as degenerate hexes.
+//
+//    Matt Larsen, Mon May 1 08:39:01 PDT 2013
+//    Adding support for populating Mili labels  
 // ****************************************************************************
 
 void
@@ -1199,6 +1203,8 @@ avtMiliFileFormat::ReadMesh(int dom)
     //
 
     int mesh_id;
+    int total_nodes = 0;
+    
     for (mesh_id = 0; mesh_id < nmeshes; ++mesh_id)
     {
         //
@@ -1208,6 +1214,7 @@ avtMiliFileFormat::ReadMesh(int dom)
         mc_get_class_info(dbid[dom], mesh_id, M_NODE, node_id, short_name, 
                           long_name, &nnodes[dom][mesh_id]);
 
+        PopulateNodeLabels(dbid[dom], mesh_id, short_name, dom, total_nodes);
         //
         // Read initial nodal position information, if available
         //
@@ -1263,9 +1270,15 @@ avtMiliFileFormat::ReadMesh(int dom)
         conn_list.resize(n_elem_types);
         list_size.resize(n_elem_types);
         mat_list.resize(n_elem_types);
+
+        max_zone_label_lengths[dom] = 0;
+
         int i, j, k;
         ncells[dom][mesh_id] = 0;
         int ncoords = 0;
+
+        int total_elems = 0;
+
         for (i = 0 ; i < n_elem_types ; i++)
         {
             int args[2];
@@ -1279,7 +1292,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                 int nelems;
                 mc_get_class_info(dbid[dom], mesh_id, elem_sclasses[i], j,
                                   short_name, long_name, &nelems);
-                  
+                 
                 int *conn = new int[nelems * conn_count[i]];
                 int *mat = new int[nelems];
                 int *part = new int[nelems];
@@ -1295,6 +1308,9 @@ avtMiliFileFormat::ReadMesh(int dom)
 
                 ncoords += list_size[i][j] * (conn_count[i] + 1);
                 delete [] part;
+
+                PopulateZoneLabels(dbid[dom], mesh_id, short_name, dom, 
+                                   total_elems, nelems);
             }
         }
 
@@ -1318,13 +1334,17 @@ avtMiliFileFormat::ReadMesh(int dom)
         for (i = 0; i < mat_list.size(); ++i)
             for (j = 0; j < mat_list[i].size(); ++j)
                 delete[] (mat_list[i][j]);
-
+        //
+        // vars to create default zone labels if needed.
+        //
+        int zone_count = 0;
+        int class_id = -1; 
         //
         // Now construct the connectivity in a VTK dataset.
         //
         for (i = 0 ; i < n_elem_types ; i++)
         {
-            for (j = 0 ; j < conn_list[i].size() ; j++)
+            for (j = 0 ; j < conn_list[i].size(); j++)
             {
                 int *conn = conn_list[i][j];
                 int nelems = list_size[i][j];
@@ -1333,7 +1353,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                     vtkIdType verts[100];
                     for(int cc = 0; cc < conn_count[i]; ++cc)
                         verts[cc] = (vtkIdType)conn[cc];
-
+                    
                     switch (elem_sclasses[i])
                     {
                       case M_TRUSS:
@@ -1390,7 +1410,7 @@ avtMiliFileFormat::ReadMesh(int dom)
                         debug1 << "Unable to add cell" << endl;
                         break;
                     }
-     
+
                     conn += conn_count[i];
                 }
                 conn = conn_list[i][j];
@@ -1661,6 +1681,9 @@ avtMiliFileFormat::RestrictVarToFreeNodes(vtkFloatArray *src, int ts) const
 //    Mark C. Miller, Wed Nov 15 01:46:16 PST 2006
 //    Added "no_free_nodes" variants of variables. Changed names of
 //    free_node variables from 'xxx_free_nodes' to 'free_nodes/xxx'
+//
+//    Matt Larsen, Wed May 17 01:46:16 PST 2017
+//    Added OriginalZoneLabels and OriginalNodeLabels
 // ****************************************************************************
 
 vtkDataArray *
@@ -1678,6 +1701,89 @@ avtMiliFileFormat::GetVar(int ts, int dom, const char *name)
 
     int meshid = 0;
     vtkFloatArray *rv = 0;
+    if( strcmp("OriginalZoneLabels", name) == 0 )
+    {
+        int max_size = max_zone_label_lengths[dom] + 1;
+        vtkElementLabelArray *names = 0;
+        names = vtkElementLabelArray::New();
+        names->SetNumberOfComponents(max_size);
+        const int nels = zoneLabels[dom].size();
+        names->SetNumberOfTuples(nels);
+        char * ptr = (char *) names->GetVoidPointer(0);
+        for(int i = 0; i < nels; ++i)
+        {
+            const int offset = i * max_size;
+            const char * el_label = zoneLabels[dom][i].c_str();
+            const int c_size = zoneLabels[dom][i].size();
+            for(int j = 0; j < max_size; ++j)
+            {   
+                if(j < c_size)
+                    ptr[offset + j] = el_label[j];
+                else
+                    ptr[offset + j] = '\0';
+            }
+
+        }
+        //
+        // Add the data so we can do reverse lookups
+        //
+        std::map<std::string,Label_mapping>::iterator it;
+        for(it = zone_label_mappings[dom].begin(); 
+            it != zone_label_mappings[dom].end(); ++it)
+        {
+             std::string name = it->first;
+             Label_mapping label_map = it->second;
+             names->AddName(name,
+                            label_map.label_ranges_begin,
+                            label_map.label_ranges_end,
+                            label_map.el_ids_begin,
+                            label_map.el_ids_end);
+        }
+        return names;
+
+    }
+
+    if( strcmp("OriginalNodeLabels", name) == 0 )
+    {
+        int max_size = max_node_label_lengths[dom] + 1;
+        vtkElementLabelArray *names = 0;
+        names = vtkElementLabelArray::New();
+        names->SetNumberOfComponents(max_size);
+        const int nels = nodeLabels[dom].size();
+        names->SetNumberOfTuples(nels);
+        char * ptr = (char *) names->GetVoidPointer(0);
+        for(int i = 0; i < nels; ++i)
+        {
+            const int offset = i * max_size;
+            const char * el_label = nodeLabels[dom][i].c_str();
+            const int c_size = nodeLabels[dom][i].size();
+            for(int j = 0; j < max_size; ++j)
+            {   
+                if(j < c_size)
+                    ptr[offset + j] = el_label[j];
+                else
+                    ptr[offset + j] = '\0';
+            }
+
+        }
+        //
+        // Add the data so we can do reverse lookups
+        //
+        std::map<std::string,Label_mapping>::iterator it;
+        for(it = node_label_mappings[dom].begin(); 
+            it != node_label_mappings[dom].end(); ++it)
+        {
+             std::string name = it->first;
+             Label_mapping label_map = it->second;
+             names->AddName(name,
+                            label_map.label_ranges_begin,
+                            label_map.label_ranges_end,
+                            label_map.el_ids_begin,
+                            label_map.el_ids_end);
+        }
+        return names;
+
+    }
 
     /*    if ( !strcmp("MiliClasses", name) ) {
          vtkIntArray *scalars = 0;
@@ -2204,6 +2310,9 @@ avtMiliFileFormat::GetNTimesteps()
 //    The reader now returns the cycles and times in the meta data and 
 //    marks them as accurate so that they are used where needed.
 //
+//    Matt Larsen, Fri May 26 07:45:12 PDT 2017
+//    Adding zone and node labels to meta data
+//
 // ****************************************************************************
 
 void
@@ -2249,6 +2358,20 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         AddMaterialToMetaData(md, matname, meshname, nmaterials[i], mnames);
         AddMaterialToMetaData(md, nofnmatname, nofnmeshname, nmaterials[i], mnames);
 
+        AddLabelVarToMetaData(md, 
+                              "OriginalZoneLabels", 
+                              meshname, 
+                              AVT_ZONECENT, 
+                              dims);
+        // Visit is intercepting these labels and displaying something
+        // else, so current work around is just to hide them
+        bool hideFromGui = true;
+        AddLabelVarToMetaData(md, 
+                              "OriginalNodeLabels", 
+                              meshname, 
+                              AVT_NODECENT, 
+                              dims, 
+                              hideFromGui);
         //
         // Add the free-nodes and no-free-nodes meshes
         // if variable "sand" is defined on this mesh
@@ -2392,6 +2515,7 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
           default:
             break;
         }
+        
     }
 
     //
@@ -3397,6 +3521,9 @@ avtMiliFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 //    Akira Haddox, Fri May 23 08:13:09 PDT 2003
 //    Added in support for multiple meshes. Changed for MTMD.
 //
+//    Matt Larsen, Fri May 4 08:13:09 PDT 2017
+//    Added in support for Zone and Node labels.
+//
 // ****************************************************************************
  
 void *
@@ -3404,12 +3531,30 @@ avtMiliFileFormat::GetAuxiliaryData(const char *var, int ts, int dom,
                                     const char * type, void *,
                                     DestructorFunction &df) 
 {
-    if (strcmp(type, AUXILIARY_DATA_MATERIAL))
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL) && strcmp(type, "AUXILIARY_DATA_IDENTIFIERS"))
+    {
         return NULL;
-
+    }
     if (!readMesh[dom])
         ReadMesh(dom);
     
+    if(!strcmp(type, "AUXILIARY_DATA_IDENTIFIERS"))
+    {
+        std::string varName(var);
+        if(varName != "OriginalZoneLabels" && 
+           varName != "OriginalNodeLabels" )
+        {
+            EXCEPTION1(InvalidVariableException, var);
+        }
+
+        df = vtkElementLabelArray::Destruct;
+        return (void *)this->GetVar(ts, dom, var);
+    }
+
+    if (strcmp(type, AUXILIARY_DATA_MATERIAL))
+    {
+        return NULL;
+    }
     //
     // The valid variables are meshX, where X is an int > 0.
     // We need to verify the name, and get the meshId.
@@ -3733,6 +3878,9 @@ avtMiliFileFormat::CanCacheVariable(const char *varname)
 //  Programmer: I. R. Corey
 //  Creation:   June 21, 2011
 //
+//  Modifications:
+//  Matt Larsen Mon May 15 08:54:44 2017
+//  Adding data structures to support labels
 // ****************************************************************************
 void
 avtMiliFileFormat::LoadMiliInfo(const char *fname)
@@ -3814,6 +3962,18 @@ avtMiliFileFormat::LoadMiliInfo(const char *fname)
     sub_records.resize(ndomains);
     sub_record_ids.resize(ndomains);
     element_group_name.resize(ndomains);
+
+    zoneLabels.resize(ndomains);
+    nodeLabels.resize(ndomains);
+    zone_label_mappings.resize(ndomains);
+    node_label_mappings.resize(ndomains);
+    max_zone_label_lengths.resize(ndomains);
+    max_node_label_lengths.resize(ndomains);
+    for(int i = 0; i < ndomains; ++i)
+    {
+        max_zone_label_lengths[i] = 0;
+        max_node_label_lengths[i] = 0;
+    }
     connectivity_offset.resize(ndomains);
     group_mesh_associations.resize(ndomains);
     materials.resize(ndomains);
@@ -4096,6 +4256,187 @@ avtMiliFileFormat::ReadMiliFileLine(ifstream &in, const char *commentSymbol,
         *lineReturned=false;
         return NULL;
     }
+}
+
+// ***************************************************************************
+//  Function: PopulateZoneLabels
+//
+//  Purpose:
+//      Populate data structures to implement a reverse mapping between
+//      a zone label and a zone id
+//  Arguments: 
+//             fam_id - mili familiy id
+//             mesh_id - id of the mesh associtated with the labels 
+//             short_name - the short name of the mili class (e.g., "brick") 
+//             dom - id of the domain 
+//             num_zones - running count of the total number of zones in
+//                         the mesh. Needed for the reverse mapping
+//             elems_in_group - number of elements in this group
+//           
+//  Author: Matt Larsen May 10 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+void 
+avtMiliFileFormat::PopulateZoneLabels(const int fam_id, const int mesh_id, 
+                                      char *short_name, const int dom, int &num_zones,
+                                      const int elems_in_group)
+{
+
+    int num_blocks = 0; 
+    int **block_range = new int*[1];
+    block_range[0] = NULL;
+    int *elem_list = new int[elems_in_group];
+    int *label_ids = new int[elems_in_group];
+    
+    //
+    // Check for labels
+    //
+    int num_expected_labels = elems_in_group;
+    mc_load_conn_labels(dbid[dom], mesh_id, short_name, 
+                        num_expected_labels, &num_blocks, 
+                        block_range, elem_list ,label_ids);
+    
+    if(num_blocks == 0)
+    {
+        debug4<<"mili block contains no labels\n";
+        //Create default labels
+        for(int elem_num = 1; elem_num <= elems_in_group; ++ elem_num)
+        {
+            // create the label strings for each cell
+            std::stringstream sstream;
+            sstream<<"";
+            zoneLabels[dom].push_back(sstream.str());
+            max_zone_label_lengths[dom] = 
+                std::max(int(sstream.str().size()), max_zone_label_lengths[dom]);
+        }
+        num_zones += elems_in_group;
+    }
+    else
+    {
+        debug4<<"Mili labels found. There are "<<num_blocks<<" blocks in class "<<short_name<<" in dom "<<dom<<"\n";
+        for(int el = 0; el < elems_in_group; ++el)
+        {
+            std::stringstream sstream;
+            sstream<<short_name;
+            sstream<<" "<<label_ids[el];
+            zoneLabels[dom].push_back(sstream.str());
+            max_zone_label_lengths[dom] = 
+                std::max(int(sstream.str().size()), max_zone_label_lengths[dom]);
+        }
+        Label_mapping label_map;
+        for(int block = 0; block < num_blocks; ++block)
+        {
+          int range_size = block_range[0][block * 2 + 1] - block_range[0][block * 2] + 1;
+          label_map.label_ranges_begin.push_back(block_range[0][block*2]);
+          label_map.label_ranges_end.push_back(block_range[0][block*2+1]);
+          label_map.el_ids_begin.push_back(num_zones);
+          label_map.el_ids_end.push_back(num_zones - 1 + range_size);
+
+          num_zones += range_size;
+        }
+
+        zone_label_mappings[dom][std::string(short_name)] = label_map;
+
+    }
+
+    if(block_range[0]) delete[] block_range[0];
+    delete[] block_range;
+
+    delete [] label_ids;
+    delete [] elem_list;
+}
+
+// ***************************************************************************
+//  Function: PopulateNodeLabels
+//
+//  Purpose:
+//      Populate data structures to implement a reverse mapping between
+//      a zone label and a zone id
+//  Arguments: 
+//             fam_id - mili familiy id
+//             mesh_id - id of the mesh associtated with the labels 
+//             short_name - the short name of the mili class (e.g., "brick") 
+//             dom - id of the domain 
+//             num_zones - running count of the total number of zones in
+//                         the mesh. Needed for the reverse mapping
+//           
+//  Author: Matt Larsen May 10 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+void 
+avtMiliFileFormat::PopulateNodeLabels(const int fam_id, const int mesh_id, 
+                                      char *short_name, const int dom, int &num_nodes)
+{
+
+    const int n_nodes = nnodes[dom][mesh_id];
+    max_node_label_lengths[dom] = 0;
+    int num_blocks = 0; 
+    int **block_range = new int*[1];
+    block_range[0] = NULL;
+    int *elem_list = new int[n_nodes];
+    int *label_ids = new int[n_nodes];
+
+    mc_load_node_labels(dbid[dom], mesh_id, short_name, 
+                        &num_blocks,block_range,label_ids);
+
+
+    if(num_blocks == 0)
+    {
+        debug4<<"Mili block does not contain node labels\n";
+        
+        //Create default labels
+        for(int elem_num = 1; elem_num <= n_nodes; ++elem_num)
+        {
+            // create the label strings for each cell
+            std::stringstream sstream;
+            sstream<<"";
+            zoneLabels[dom].push_back(sstream.str());
+            max_node_label_lengths[dom] = 
+                std::max(int(sstream.str().size()), max_node_label_lengths[dom]);
+        }
+        num_nodes += n_nodes;
+    }
+    else
+    {
+        debug4<<"Mili labels node found. There are "<<num_blocks<<" blocks in class "<<short_name<<" in dom "<<dom<<"\n";
+        for(int el = 0; el < n_nodes; ++el)
+        {
+            std::stringstream sstream;
+            sstream<<short_name;
+            sstream<<" "<<label_ids[el];
+            nodeLabels[dom].push_back(sstream.str());
+            max_node_label_lengths[dom] = 
+                std::max(int(sstream.str().size()), max_node_label_lengths[dom]);
+        }
+        Label_mapping label_map;
+        for(int block = 0; block < num_blocks; ++block)
+        {
+          int range_size = block_range[0][block * 2 + 1] - block_range[0][block * 2] + 1;
+          label_map.label_ranges_begin.push_back(block_range[0][block*2]);
+          label_map.label_ranges_end.push_back(block_range[0][block*2+1]);
+          label_map.el_ids_begin.push_back(num_nodes);
+          label_map.el_ids_end.push_back(num_nodes - 1 + range_size);
+
+           num_nodes += range_size;
+        }
+
+        node_label_mappings[dom][std::string(short_name)] = label_map;
+
+    }
+    
+    //
+    // cleanup
+    //
+    if(block_range[0]) delete[] block_range[0];
+    delete[] block_range;
+
+    delete [] label_ids;
+    delete [] elem_list;
+
 }
 
 #ifdef TEST

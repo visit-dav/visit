@@ -220,7 +220,6 @@ avtZonePickQuery::Execute(vtkDataSet *ds, const int dom)
 
         pickAtts.SetElementNumber(pickedZone);
     }
-
     if (!pickAtts.GetMatSelected())
     {
         bool success = false;
