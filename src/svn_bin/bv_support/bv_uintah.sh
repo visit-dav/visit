@@ -45,8 +45,6 @@ function bv_uintah_depends_on
     else
         echo ""
     fi
-    
-    
 }
 
 function bv_uintah_initialize_vars
@@ -64,9 +62,9 @@ function bv_uintah_initialize_vars
 
 function bv_uintah_info
 {
-    export UINTAH_VERSION=${UINTAH_VERSION:-"2.0.0"}
+    export UINTAH_VERSION=${UINTAH_VERSION:-"2.1.0"}
     export UINTAH_FILE=${UINTAH_FILE:-"Uintah-${UINTAH_VERSION}.tar.gz"}
-    export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.0"}
+    export UINTAH_COMPATIBILITY_VERSION=${UINTAH_COMPATIBILITY_VERSION:-"2.1"}
     export UINTAH_BUILD_DIR=${UINTAH_BUILD_DIR:-"Uintah-${UINTAH_VERSION}/optimized"}
     export UINTAH_URL=${UINTAH_URL:-"http://www.sci.utah.edu/releases/uintah_v${UINTAH_VERSION}"}
     
@@ -236,9 +234,9 @@ function build_uintah
 
         warn "Uintah may require fortran to be enabled. It does not appear that the --fortran "
         warn "agrument was set. If Uintah fails to build try adding the --fortran argument"
-        FORTRANARGS="--without-fortran"
+        FORTRANARGS=""
     else
-        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\" --enable-fortran"
+        FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\""
     fi
 
     #
@@ -252,15 +250,18 @@ function build_uintah
     fi
 
     #
-    mkdir $UINTAH_BUILD_DIR
+    if [[ ! -d $UINTAH_BUILD_DIR ]] ; then
+        echo "Making build directory $UINTAH_BUILD_DIR"
+        mkdir $UINTAH_BUILD_DIR
+    fi
     cd $UINTAH_BUILD_DIR || error "Can't cd to UINTAH build dir."
 
     info "Configuring UINTAH . . ."
     cf_darwin=""
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
-        cf_build_type="--disable-shared --enable-static"
+        cf_build_type="--enable-static"
     else
-        cf_build_type="--enable-shared --disable-static"
+        cf_build_type="--disable-static"
     fi
 
     ZLIB_ARGS=""
@@ -283,7 +284,7 @@ function build_uintah
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
-        --enable-optimize --without-petc --without-hypre \
+        --enable-optimize --without-petsc --without-hypre \
         --with-mpi="${PAR_INCLUDE_DIR}/.." "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
@@ -297,7 +298,7 @@ function build_uintah
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
-        --enable-optimize --without-petc --without-hypre \
+        --enable-optimize --without-petsc --without-hypre\
         --with-mpi="${PAR_INCLUDE_DIR}/.." "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
@@ -352,12 +353,12 @@ function build_uintah
     fi
 
     if [[ ! -e $VISITDIR/uintah/$UINTAH_VERSION ]] ; then
-	mkdir $VISITDIR/uintah/$UINTAH_VERSION || error "Can't make UINTAH install dir."
+        mkdir $VISITDIR/uintah/$UINTAH_VERSION || error "Can't make UINTAH install dir."
     fi
 
     if [[ ! -e $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH ]] ; then
-	mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
-    else	
+        mkdir $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH || error "Can't make UINTAH install dir."
+    else        
         rm -rf $VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH/* || error "Can't remove old UINTAH install dir."
     fi
 
