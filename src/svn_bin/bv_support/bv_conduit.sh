@@ -26,12 +26,12 @@ function bv_conduit_depends_on
 
 function bv_conduit_info
 {
-    export CONDUIT_VERSION=${CONDUIT_VERSION:-"0.2.1"}
-    export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}.tar.gz"}
-    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"0.2.1"}
+    export CONDUIT_VERSION=${CONDUIT_VERSION:-"v0.3.0"}
+    export CONDUIT_FILE=${CONDUIT_FILE:-"conduit-${CONDUIT_VERSION}-src-with-blt.tar.gz"}
+    export CONDUIT_COMPATIBILITY_VERSION=${CONDUIT_COMPATIBILITY_VERSION:-"v0.3.0"}
     export CONDUIT_BUILD_DIR=${CONDUIT_BUILD_DIR:-"conduit-${CONDUIT_VERSION}"}
-    export CONDUIT_MD5_CHECKSUM="cd2b42c76f70ac3546582b6da77c6028"
-    export CONDUIT_SHA256_CHECKSUM="13c1b3d8af93c000f10eed9dc37d339dcf6dd7cd614d7c835ec6ffc1c0507a13"
+ #   export CONDUIT_MD5_CHECKSUM="cd2b42c76f70ac3546582b6da77c6028"
+ #   export CONDUIT_SHA256_CHECKSUM="13c1b3d8af93c000f10eed9dc37d339dcf6dd7cd614d7c835ec6ffc1c0507a13"
 }
 
 function bv_conduit_print
@@ -149,7 +149,8 @@ function build_conduit
     else
         cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
-    #cfg_opts="${cfg_opts} -DENABLE_TESTS:BOOL=false"
+    
+    cfg_opts="${cfg_opts} -DENABLE_TESTS:BOOL=false"
     cfg_opts="${cfg_opts} -DENABLE_DOCS:BOOL=false"
     cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
     cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
@@ -178,10 +179,16 @@ function build_conduit
         cfg_opts="${cfg_opts} -DENABLE_FORTRAN:BOOL=ON"
         cfg_opts="${cfg_opts} -DCMAKE_Fortran_COMPILER:STRING=${FC_COMPILER}"
     fi
+    
+    #
+    # Conduit Relay MPI Support
+    #
 
-    #
-    # TODO: Conduit, Relay MPI Support
-    #
+    if [[ "$PAR_COMPILER" != "" ]] ; then
+        cfg_opts="${cfg_opts} -DENABLE_MPI:BOOL=ON"
+        cfg_opts="${cfg_opts} -DMPI_C_COMPILER:STRING=${PAR_COMPILER}"
+        cfg_opts="${cfg_opts} -DMPI_CXX_COMPILER:STRING=${PAR_COMPILER}"
+    fi
     
     
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
