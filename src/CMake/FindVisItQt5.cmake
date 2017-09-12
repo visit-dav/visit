@@ -223,9 +223,17 @@ if(NOT VISIT_QT_SKIP_INSTALL)
   if (WIN32)
       install(DIRECTORY ${VISIT_QT_DIR}/plugins/platforms
               DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/qtplugins)
+      install(DIRECTORY ${VISIT_QT_DIR}/plugins/printsupport
+              DESTINATION ${VISIT_INSTALLED_VERSION_BIN}/qtplugins)
 
-      # We also need the platforms and the qt.conf in the build dir.
+      # We also need the platforms, print support and qt.conf in the build dir.
       file(COPY ${VISIT_QT_DIR}/plugins/platforms
+           DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins
+           FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                            GROUP_READ GROUP_WRITE
+                            WORLD_READ
+      )
+      file(COPY ${VISIT_QT_DIR}/plugins/printsupport
            DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/ThirdParty/qtplugins
            FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                             GROUP_READ GROUP_WRITE
