@@ -6902,7 +6902,6 @@ void
 QvisGUIApplication::PrintWindow()
 {
     PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 #if (defined(Q_WS_MACX) || defined(Q_OS_MAC)) && !defined(VISIT_MAC_NO_CARBON)
     //
     // If we're on MacOS X and the Mac application style is being used, manage
@@ -7109,7 +7108,6 @@ QvisGUIApplication::PrintWindow()
 #if (defined(Q_WS_MACX) || defined(Q_OS_MAC)) && !defined(VISIT_MAC_NO_CARBON)
     }
 #endif
-#endif
 }
 
 // ****************************************************************************
@@ -7187,6 +7185,9 @@ QPrinterToPrinterAttributes(QPrinter *printer, PrinterAttributes *p)
 //   Brad Whitlock, Mon May 24 13:42:17 PDT 2010
 //   Only allow valid printer names.
 //
+//   Kathleen Biagas, Tues Sep 12 10:27:13 MST 2017 
+//   Add less expensive call to availablePrinterNames for Qt version >= 5.3.
+//
 // ****************************************************************************
 
 static void
@@ -7194,6 +7195,7 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
 {
     // Only set the printer name if it is a valid name.
     QString printerName(p->GetPrinterName().c_str());
+#if QT_VERSION < QT_VERSION_CHECK(5, 3, 0)
     QList<QPrinterInfo> availablePrinters(QPrinterInfo::availablePrinters());
     for(int i = 0; i < availablePrinters.size(); ++i)
     {
@@ -7203,6 +7205,18 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
             break;
         }
     }
+#else
+    // less expensive call introduced in Qt 5.3
+    QStringList availablePrinters(QPrinterInfo::availablePrinterNames());
+    for(int i = 0; i < availablePrinters.size(); ++i)
+    {
+        if(availablePrinters[i] == printerName)
+        {
+            printer->setPrinterName(printerName);
+            break;
+        }
+    }
+#endif
 
     printer->setPrintProgram(p->GetPrintProgram().c_str());
     printer->setCreator(p->GetCreator().c_str());
