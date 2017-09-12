@@ -494,7 +494,6 @@ WindowMetrics::CalculateBorders(QWidget *win,
                                 int &borderT, int &borderB,
                                 int &borderL, int &borderR)
 {
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     unsigned int nchildren;
     Window root, parent_window, *children=NULL;
     XWindowAttributes leaf_attributes;
@@ -601,7 +600,6 @@ WindowMetrics::CalculateBorders(QWidget *win,
         if (borderL < 0) borderL = 0;
         if (borderR < 0) borderR = 0;
     }
-#endif
 }
 
 // ****************************************************************************
@@ -691,7 +689,6 @@ WindowMetrics::WaitForWindowManagerToMoveWindow(QWidget *win)
 void
 WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
 {
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     Window root, parent;
     XWindowAttributes atts;
 
@@ -717,7 +714,6 @@ WindowMetrics::CalculateTopLeft(QWidget *wid, int &X, int &Y)
     XGetWindowAttributes(dpy, window, &atts);
     X = atts.x;
     Y = atts.y;
-#endif
 }
 
 // ****************************************************************************
