@@ -2168,6 +2168,10 @@ def TestBatchSimulation(sim):
 #    I changed the parallel job launching logic to use srun on both surface
 #    and cab instead of just surface.
 #
+#    Eric Brugger, Tue Sep 12 09:19:14 PDT 2017
+#    I changed the parallel job launching logic to use srun on syrah in
+#    addition to surface and cab.
+#
 # ----------------------------------------------------------------------------
 class Simulation(object):
     def __init__(self, vdir, s, sim2, np=1, batch=False):
@@ -2208,7 +2212,8 @@ class Simulation(object):
             # For now...
             import socket
             if "surface" in socket.gethostname() or \
-               "cab" in socket.gethostname():
+               "cab" in socket.gethostname() or \
+               "syrah" in socket.gethostname():
                 do_submit = 0
                 if do_submit:
                     msubscript = os.path.join(os.path.abspath(os.curdir), string.replace(self.sim2, "sim2", "msub"))
