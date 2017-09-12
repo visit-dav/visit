@@ -96,12 +96,8 @@ ENDIF()
 IF(PySide_FOUND)
     if(VISIT_QT5)
         set(pysidename "PySide2")
-        if(NOT WIN32)
-            SET_UP_THIRD_PARTY(PYSIDE lib include
+        SET_UP_THIRD_PARTY(PYSIDE lib include
               pyside2-python${PYTHON_VERSION} shiboken2-python${PYTHON_VERSION})
-        else()
-            SET_UP_THIRD_PARTY(PYSIDE lib include pyside2 shiboken2)
-        endif()
     else()
         set(pysidename "PySide")
         SET_UP_THIRD_PARTY(PYSIDE lib include
