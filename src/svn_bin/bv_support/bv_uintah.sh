@@ -314,7 +314,7 @@ function build_uintah
         $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize --without-petc --without-hypre" \
+        --enable-optimize --without-petsc --without-hypre" \
         $ZLIBARGS 
 
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
@@ -324,7 +324,7 @@ function build_uintah
         $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize --without-petc --without-hypre" \
+        --enable-optimize --without-petsc --without-hypre" \
         $ZLIBARGS
     fi
 
