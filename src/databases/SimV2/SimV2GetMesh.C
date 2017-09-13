@@ -183,15 +183,15 @@ GetQuadGhostZones(int nnodes, int ndims,
 
         if (first[i] < 0 || first[i] >= dims[i])
         {
-            debug1 << "bad Index on first[" << i << "] dims is: "
-                   << dims[i] << endl;
+            debug1 << "bad Index on first[" << i << "]=" << first[i]
+                   << " dims is: " << dims[i] << endl;
             badIndex = true;
         }
 
         if (last[i] < 0 || last[i] >= dims[i])
         {
-            debug1 << "bad Index on last[" << i << "] dims is: "
-                   << dims[i] << endl;
+            debug1 << "bad Index on last[" << i << "]=" << last[i]
+                   << " dims is: " << dims[i] << endl;
             badIndex = true;
         }
 
