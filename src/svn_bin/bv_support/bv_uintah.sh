@@ -267,7 +267,7 @@ function build_uintah
     ZLIB_ARGS=""
     
     if [[ "$DO_ZLIB" == "yes" ]]; then
-        ZLIB_ARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
+        ZLIB_ARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
     fi
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
@@ -310,24 +310,22 @@ function build_uintah
         info "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
-        --with-mpi=built-in \
         $FORTRANARGS \
         $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
         --enable-optimize --without-petsc --without-hypre" \
-        $ZLIBARGS 
+        --with-mpi=built-in
 
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         MPI_EXTRA_LIB_FLAG=\"$PAR_LIBRARY_NAMES\" \
-        --with-mpi=built-in \
         $FORTRANARGS \
         $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
         --enable-optimize --without-petsc --without-hypre" \
-        $ZLIBARGS
+        --with-mpi=built-in
     fi
 
 
