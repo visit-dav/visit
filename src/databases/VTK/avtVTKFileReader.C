@@ -90,7 +90,7 @@ const char   *avtVTKFileReader::MESHNAME="mesh";
 const char   *avtVTKFileReader::VARNAME="VTKVar";
 
 
-static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, 
+static void GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug,
                                      vtkUnsignedCharArray *uca);
 
 int    avtVTKFileReader::INVALID_CYCLE = -INT_MAX;
@@ -112,10 +112,10 @@ double avtVTKFileReader::INVALID_TIME = -DBL_MAX;
 //    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //    Initialized matvarname
 //
-//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
-//    Save the file extension. 
+//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005
+//    Save the file extension.
 //
-//    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
+//    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006
 //    Add vtk_time, to store time from the VTK file if it is available.
 //
 //    Hank Childs, Mon Jun 11 21:27:04 PDT 2007
@@ -287,7 +287,7 @@ avtVTKFileReader::~avtVTKFileReader()
 // ****************************************************************************
 // Method: avtVTKFileReader::GetNumberOfDomains
 //
-// Purpose: 
+// Purpose:
 //   Return the number of domains, reading the data file to figure it out.
 //
 // Returns:    The number of domains.
@@ -296,7 +296,7 @@ avtVTKFileReader::~avtVTKFileReader()
 // Creation:   Mon Oct 22 17:08:06 PDT 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -449,23 +449,23 @@ avtVTKFileReader::ReadInFile(int _domain)
 //    Use VisIt's version of the reader, so that all variables can be read
 //    into the dataset in one pass.
 //
-//    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004 
-//    Convert StructuredPoints datasets into RectilinearGrids. 
+//    Kathleen Bonnell, Thu Mar 11 12:53:12 PST 2004
+//    Convert StructuredPoints datasets into RectilinearGrids.
 //
-//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005 
+//    Kathleen Bonnell, Thu Sep 22 15:37:13 PDT 2005
 //    Support vtk xml file formats.
 //
-//    Kathleen Bonnell, Wed May 17 14:03:29 PDT 2006 
+//    Kathleen Bonnell, Wed May 17 14:03:29 PDT 2006
 //    Remove call to SetSource(NULL), as it now removes information necessary
 //    to the dataset.
 //
-//    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006 
+//    Kathleen Bonnell, Thu Jun 29 17:30:40 PDT 2006
 //    Retrieve TIME from FieldData if available.
 //
 //    Hank Childs, Mon Jun 11 21:27:04 PDT 2007
 //    Add support for files with no extensions.
 //
-//    Kathleen Bonnell, Fri Feb 29 09:02:44 PST 2008 
+//    Kathleen Bonnell, Fri Feb 29 09:02:44 PST 2008
 //    Support VTK_IMAGE_DATA (returned from vtkXMLImageDataReader), convert it
 //    to rectilinear, as we do with StructuredPoints data.
 //
@@ -522,7 +522,7 @@ avtVTKFileReader::ReadInDataset(int domain)
     if (pieceExtension == "vtk" || pieceExtension == "none")
     {
         if (pieceExtension == "none") {
-            debug1 << "No extension given ... assuming legacy VTK format." 
+            debug1 << "No extension given ... assuming legacy VTK format."
                    << endl;
         }
 
@@ -555,10 +555,10 @@ avtVTKFileReader::ReadInDataset(int domain)
         }
         dataset->Register(NULL);
         reader->Delete();
-    } 
-    else if (pieceExtension == "vtr") 
+    }
+    else if (pieceExtension == "vtr")
     {
-        vtkXMLRectilinearGridReader *reader = 
+        vtkXMLRectilinearGridReader *reader =
             vtkXMLRectilinearGridReader::New();
         reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
@@ -569,10 +569,10 @@ avtVTKFileReader::ReadInDataset(int domain)
         }
         dataset->Register(NULL);
         reader->Delete();
-    } 
+    }
     else if (pieceExtension == "vts")
     {
-        vtkXMLStructuredGridReader *reader = 
+        vtkXMLStructuredGridReader *reader =
             vtkXMLStructuredGridReader::New();
         reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
@@ -583,8 +583,8 @@ avtVTKFileReader::ReadInDataset(int domain)
         }
         dataset->Register(NULL);
         reader->Delete();
-    } 
-    else if (pieceExtension == "vtp") 
+    }
+    else if (pieceExtension == "vtp")
     {
         vtkXMLPolyDataReader *reader = vtkXMLPolyDataReader::New();
         reader->SetFileName(pieceFileNames[domain]);
@@ -596,10 +596,10 @@ avtVTKFileReader::ReadInDataset(int domain)
         }
         dataset->Register(NULL);
         reader->Delete();
-    } 
-    else if (pieceExtension == "vtu") 
+    }
+    else if (pieceExtension == "vtu")
     {
-        vtkXMLUnstructuredGridReader *reader = 
+        vtkXMLUnstructuredGridReader *reader =
             vtkXMLUnstructuredGridReader::New();
         reader->SetFileName(pieceFileNames[domain]);
         reader->Update();
@@ -610,10 +610,10 @@ avtVTKFileReader::ReadInDataset(int domain)
         }
         dataset->Register(NULL);
         reader->Delete();
-    } 
+    }
     else
     {
-        EXCEPTION2(InvalidFilesException, pieceFileNames[domain], 
+        EXCEPTION2(InvalidFilesException, pieceFileNames[domain],
                    "could not match extension to a VTK file format type");
     }
 
@@ -640,7 +640,7 @@ avtVTKFileReader::ReadInDataset(int domain)
         dataset->GetDataObjectType() == VTK_IMAGE_DATA)
     {
         //
-        // The old dataset passed in will be deleted, a new one will be 
+        // The old dataset passed in will be deleted, a new one will be
         // returned.
         //
         dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
@@ -666,13 +666,13 @@ avtVTKFileReader::ReadInDataset(int domain)
 // ****************************************************************************
 // Method: avtVTKFileReader::CreateCurves
 //
-// Purpose: 
+// Purpose:
 //   Create curve datasets based on the input rectilinear grid.
 //
 // Arguments:
 //   rgrid : The rectilinear grid from which to create curves.
 //
-// Returns:    
+// Returns:
 //
 // Note:       vtkCurves gets the new datasets.
 //
@@ -680,7 +680,7 @@ avtVTKFileReader::ReadInDataset(int domain)
 // Creation:   Wed Oct 26 11:01:44 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -743,8 +743,8 @@ avtVTKFileReader::CreateCurves(vtkRectilinearGrid *rgrid)
 // ****************************************************************************
 //  Method: avtVTKFileReader::GetAuxiliaryData
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   September 15, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   September 15, 2005
 //
 //  Modifications:
 //    Hank Childs, Fri Feb 15 11:25:32 PST 2008
@@ -981,7 +981,7 @@ avtVTKFileReader::GetMesh(int domain, const char *mesh)
 //    Hank Childs, Tue Mar 26 13:33:43 PST 2002
 //    Add a reference so that reference counting tricks work.
 //
-//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002 
+//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
 //    Hank Childs, Thu Aug 15 09:07:38 PDT 2002
@@ -1015,7 +1015,7 @@ avtVTKFileReader::GetVar(int domain, const char *real_name)
     char buffer[1024];
     if (strncmp(var, "internal_var_", strlen("internal_var_")) == 0)
     {
-        sprintf(buffer, "avt%s", var + strlen("internal_var_")); 
+        sprintf(buffer, "avt%s", var + strlen("internal_var_"));
         var = buffer;
     }
 
@@ -1077,7 +1077,7 @@ avtVTKFileReader::GetVar(int domain, const char *real_name)
 //    Hank Childs, Tue Mar 26 13:33:43 PST 2002
 //    Add a reference so that reference counting tricks work.
 //
-//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002 
+//    Kathleen Bonnell, Wed Mar 27 15:47:14 PST 2002
 //    vtkVectors has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
 //    Hank Childs, Thu Aug 15 09:17:14 PDT 2002
@@ -1141,16 +1141,16 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    Do not return variables with name "avt", since we may want to look
 //    at these variables and the generic DB will throw them away.
 //
-//    Kathleen Bonnell, Wed Jul 13 18:27:05 PDT 2005 
-//    Specify whether or not scalar data should be treated as ascii. 
+//    Kathleen Bonnell, Wed Jul 13 18:27:05 PDT 2005
+//    Specify whether or not scalar data should be treated as ascii.
 //
 //    Mark C. Miller, Thu Sep 15 19:45:51 PDT 2005
 //    Added support for arrays representing materials
-// 
+//
 //    Brad Whitlock, Wed Nov 9 10:59:35 PDT 2005
 //    Added support for color vectors (ncomps==4).
 //
-//    Kathleen Bonnell, Fri Feb  3 11:20:02 PST 2006 
+//    Kathleen Bonnell, Fri Feb  3 11:20:02 PST 2006
 //    Added support for MeshCoordType (int in FieldData of dataset,
 //    0 == XY, 1 == RZ, 2 == ZR).
 //
@@ -1162,7 +1162,7 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //
 //    Brad Whitlock, Fri May 15 16:05:22 PDT 2009
 //    I improved the array variable support, adding them for cell data and I
-//    added expressions to extract their components. I also added support 
+//    added expressions to extract their components. I also added support
 //    label variables.
 //
 //    Jeremy Meredith, Mon Nov  9 13:03:18 EST 2009
@@ -1240,7 +1240,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         spat = 2;
         topo = 2;
     }
- 
+
     //
     // Some mesh types can have a lower topological dimension
     //
@@ -1299,7 +1299,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             }
         }
     }
- 
+
     avtMeshMetaData *mesh = new avtMeshMetaData;
     if(vtk_meshname.empty())
     {
@@ -1316,7 +1316,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     {
         mesh->numGroups = ngroups;
         if (!groupNames.empty())
-            mesh->groupNames = groupNames; 
+            mesh->groupNames = groupNames;
         if (!groupPieceName.empty())
         {
             mesh->groupPieceName = groupPieceName;
@@ -1385,7 +1385,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     else
         mesh->containsGhostZones = AVT_NO_GHOSTS;
 
-    md->Add(mesh); 
+    md->Add(mesh);
 
     std::map<std::string, vtkRectilinearGrid *>::iterator pos;
     for(pos = vtkCurves.begin(); pos != vtkCurves.end(); ++pos)
@@ -1601,7 +1601,7 @@ avtVTKFileReader::IsEmpty()
 //  Purpose:
 //     Gets a list of the unique cell types.
 //
-//  Notes: This is done externally to the similar method in 
+//  Notes: This is done externally to the similar method in
 //         vtkUnstructuredGrid, since that method is buggy and can get
 //         into an infinite loop.
 //
@@ -1640,11 +1640,11 @@ GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, vtkUnsignedCharArray *uca)
 //  Function: ConvertStructuredPointsToRGrid
 //
 //  Purpose:
-//     Constructs a vtkRectilinearGrid from the passed vtkStructuredPoints. 
+//     Constructs a vtkRectilinearGrid from the passed vtkStructuredPoints.
 //
 //  Notes: The passed in dataset will be deleted.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   March 9, 2004
 //
 //  Modifications:
@@ -1655,13 +1655,16 @@ GetListOfUniqueCellTypes(vtkUnstructuredGrid *ug, vtkUnsignedCharArray *uca)
 //    Kathleen Biagas, Fri Nov  1 13:27:44 PDT 2013
 //    Changed pieceOrigin from int to double to prevent truncating.
 //
+//    Kathleen Biagas, Thu Sep 14 13:45:00 PDT 2017
+//    Take the quick copy-array route when pieceDims == wholeDims.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
     int *extents)
 {
-    int wholeDims[3]; 
+    int wholeDims[3];
     double spacing[3];
     double wholeOrigin[3];
     inSP->GetDimensions(wholeDims);
@@ -1670,6 +1673,7 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
 
     int pieceDims[3];
     double pieceOrigin[3];
+    bool pieceEqualWhole = false;
     if (extents == NULL)
     {
         pieceDims[0] = wholeDims[0];
@@ -1678,6 +1682,7 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
         pieceOrigin[0] = wholeOrigin[0];
         pieceOrigin[1] = wholeOrigin[1];
         pieceOrigin[2] = wholeOrigin[2];
+        pieceEqualWhole = true;
     }
     else
     {
@@ -1687,6 +1692,10 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
         pieceOrigin[0] = wholeOrigin[0] + extents[0] * spacing[0];
         pieceOrigin[1] = wholeOrigin[1] + extents[2] * spacing[1];
         pieceOrigin[2] = wholeOrigin[2] + extents[4] * spacing[2];
+
+        pieceEqualWhole = (wholeDims[0] == pieceDims[0]) &&
+                          (wholeDims[1] == pieceDims[1]) &&
+                          (wholeDims[2] == pieceDims[2]);
     }
 
     vtkFloatArray *x = vtkFloatArray::New();
@@ -1711,17 +1720,17 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
     int i;
     float *ptr = x->GetPointer(0);
     for (i = 0; i < pieceDims[0]; i++, ptr++)
-        *ptr = pieceOrigin[0] + i * spacing[0]; 
+        *ptr = pieceOrigin[0] + i * spacing[0];
 
     ptr = y->GetPointer(0);
     for (i = 0; i < pieceDims[1]; i++, ptr++)
-        *ptr = pieceOrigin[1] + i * spacing[1]; 
+        *ptr = pieceOrigin[1] + i * spacing[1];
 
     ptr = z->GetPointer(0);
     for (i = 0; i < pieceDims[2]; i++, ptr++)
-        *ptr = pieceOrigin[2] + i * spacing[2]; 
-  
-    if (extents == NULL)
+        *ptr = pieceOrigin[2] + i * spacing[2];
+
+    if (extents == NULL || pieceEqualWhole)
     {
         for (i = 0; i < inSP->GetPointData()->GetNumberOfArrays(); i++)
             outRG->GetPointData()->AddArray(inSP->GetPointData()->GetArray(i));
@@ -1745,11 +1754,11 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
             vtkIdType outIndex = 0;
             vtkIdType nx  = wholeDims[0];
             vtkIdType nxy = wholeDims[0] * wholeDims[1];
-            for (unsigned int iZ = extents[4]; iZ < (unsigned int)extents[5]; iZ++) 
+            for (unsigned int iZ = extents[4]; iZ < (unsigned int)extents[5]; iZ++)
             {
-                for (unsigned int iY = extents[2]; iY < (unsigned int)extents[3]; iY++) 
+                for (unsigned int iY = extents[2]; iY < (unsigned int)extents[3]; iY++)
                 {
-                    for (unsigned int iX = extents[0]; iX < (unsigned int)extents[1]; iX++) 
+                    for (unsigned int iX = extents[0]; iX < (unsigned int)extents[1]; iX++)
                     {
                         vtkIdType inIndex = iZ * nxy + iY * nx + iX;
                         out->SetTuple(outIndex, inIndex, in);
@@ -1790,11 +1799,11 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
             zoneExtents[3] = extents[2] + pieceZonalDims[1];
             zoneExtents[4] = extents[4];
             zoneExtents[5] = extents[4] + pieceZonalDims[2];
-            for (int iZ = zoneExtents[4]; iZ < zoneExtents[5]; iZ++) 
+            for (int iZ = zoneExtents[4]; iZ < zoneExtents[5]; iZ++)
             {
-                for (int iY = zoneExtents[2]; iY < zoneExtents[3]; iY++) 
+                for (int iY = zoneExtents[2]; iY < zoneExtents[3]; iY++)
                 {
-                    for (int iX = zoneExtents[0]; iX < zoneExtents[1]; iX++) 
+                    for (int iX = zoneExtents[0]; iX < zoneExtents[1]; iX++)
                     {
                         vtkIdType inIndex = iZ * nXY + iY * nX + iX;
                         out->SetTuple(outIndex, inIndex, in);
@@ -1805,9 +1814,9 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
             outRG->GetCellData()->AddArray(out);
         }
     }
-   
-    inSP->Delete(); 
-    return outRG; 
+
+    inSP->Delete();
+    return outRG;
 }
 
 // ****************************************************************************
@@ -1816,7 +1825,7 @@ avtVTKFileReader::ConvertStructuredPointsToRGrid(vtkStructuredPoints *inSP,
 //  Purpose: Return the time associated with this file
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   Jun 29, 2006 
+//  Creation:   Jun 29, 2006
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Jul  9 18:14:24 PDT 2008
@@ -1842,7 +1851,7 @@ avtVTKFileReader::GetTime()
 //  Purpose: Return the cycle associated with this file
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   July 9, 2008 
+//  Creation:   July 9, 2008
 //
 //  Modifications:
 //    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
@@ -1877,14 +1886,14 @@ avtVTKFileReader::GetCycle()
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Jul 13 18:28:51 PDT 2005
-//    Add optional bool 'treatAsASCII' arg. 
+//    Add optional bool 'treatAsASCII' arg.
 //
 // ****************************************************************************
 
 void
 avtVTKFileReader::AddScalarVarToMetaData(avtDatabaseMetaData *md, string name,
                                       string mesh, avtCentering cent,
-                                      const double *extents, 
+                                      const double *extents,
                                       const bool treatAsASCII)
 {
     avtScalarMetaData *scalar = new avtScalarMetaData();
@@ -1999,7 +2008,7 @@ avtVTKFileReader::AddTensorVarToMetaData(avtDatabaseMetaData *md, string name,
 // ****************************************************************************
 
 void
-avtVTKFileReader::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name, 
+avtVTKFileReader::AddArrayVarToMetaData(avtDatabaseMetaData *md, string name,
                                      int ncomps, string mesh,avtCentering cent)
 {
     avtArrayMetaData *st = new avtArrayMetaData();
