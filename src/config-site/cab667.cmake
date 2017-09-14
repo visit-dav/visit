@@ -1,4 +1,4 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/cmake/3.8.1/linux-x86_64_gcc-4.8/bin/cmake
 ##
 ## ./build_visit2_13_0 generated host.cmake
 ## created: Wed Sep  6 08:06:07 PDT 2017
@@ -8,8 +8,8 @@
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/chaos5)
-SET(VISITARCH linux-x86_64_gcc-4.9)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0)
+SET(VISITARCH linux-x86_64_gcc-4.8)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
