@@ -325,6 +325,7 @@ echo "Starting tests:\`date\`"
 
 # Run the tests, consolidating the results in one directory
 cd ../test
+export GALLIUM_DRIVER=swr
 rm -rf \$dateTag
 mkdir \$dateTag
 mkdir output
