@@ -65,9 +65,11 @@
 
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkPoints.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 
@@ -210,6 +212,7 @@ avtSAMRAIFileFormat::avtSAMRAIFileFormat(const char *fname)
     ratios_coarser_levels = NULL;
     var_cell_centered = NULL;
     patch_extents = NULL;
+    patch_bdry_type = NULL;
     var_extents = NULL;
     var_names = NULL;
     var_num_components = NULL;
@@ -304,6 +307,7 @@ avtSAMRAIFileFormat::~avtSAMRAIFileFormat()
     SAFE_DELETE(num_patches_level);
     SAFE_DELETE(ratios_coarser_levels)
     SAFE_DELETE(patch_extents);
+    SAFE_DELETE(patch_bdry_type);
     
     if (var_extents != NULL) {
         for(v=0; v<num_vars; v++) {
@@ -712,6 +716,9 @@ avtSAMRAIFileFormat::GetMesh(int patch, const char *)
 //    Cyrus Harrison, Mon May 23 14:16:47 PDT 2011
 //    Added Nathan Masters' fix for ghost data w/ 'levels' and 'patches'.
 //
+//    Mark C. Miller, Thu Sep 14 11:11:10 PDT 2017
+//    Add logic to support boundary ghosts vs. internal duplicate ghosts
+//    provided patch_bdry_type array is populated.
 // ****************************************************************************
 vtkDataSet *
 avtSAMRAIFileFormat::ReadMesh(int patch)
@@ -847,6 +854,8 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         int nghost = 0;
         int ncells = 1;
         int i;
+        int const *bdry_type = patch_bdry_type ? &patch_bdry_type[patch*6] : 0;
+
         for (i = 0; i < dim; i++)
             ncells *= (dimensions[i]-1);
 
@@ -854,10 +863,14 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         ghostCells->SetName("avtGhostZones");
         ghostCells->Allocate(ncells);
 
-        // fill in ghost value (0/1) for each cell
+        // fill in appropriate ghost value for each cell
+        unsigned char realVal=0, internalGhost=0, externalGhost=0;
+        avtGhostData::AddGhostZoneType(internalGhost, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+        avtGhostData::AddGhostZoneType(externalGhost, ZONE_EXTERIOR_TO_PROBLEM);
         for (i = 0; i < ncells; i++)
         {
             bool in_ghost_layers = false;
+            unsigned char ghostVal;
 
             // determine if cell is in ghost layers
             int cell_idx = i;
@@ -866,29 +879,50 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
                 int nj = dimensions[j] - 1;
                 int jidx = cell_idx % nj;
 
-                if ((jidx < num_ghosts[j]) || (jidx >= nj - num_ghosts[j]))
+                if (jidx < num_ghosts[j])
                 {
                     in_ghost_layers = true;
-                    break;
+                    if (j == 0 && bdry_type && bdry_type[0]) { // xlo
+                        ghostVal = externalGhost; break;
+                    } else if (j == 1 && bdry_type && bdry_type[2]) { // ylo
+                        ghostVal = externalGhost; break;
+                    } else if (j == 2 && bdry_type && bdry_type[4]) { // zlo
+                        ghostVal = externalGhost; break;
+                    } else {
+                        ghostVal = internalGhost; break;
+                    }
                 }
-
+                else if (jidx >= nj - num_ghosts[j])
+                {
+                    in_ghost_layers = true;
+                    if (j == 0 && bdry_type && bdry_type[1]) { // xhi
+                        ghostVal = externalGhost; break;
+                    } else if (j == 1 && bdry_type && bdry_type[3]) { // yhi
+                        ghostVal = externalGhost; break;
+                    } else if (j == 2 && bdry_type && bdry_type[5]) { // zhi
+                        ghostVal = externalGhost; break;
+                    } else {
+                        ghostVal = internalGhost; break;
+                    }
+                }
                 cell_idx = cell_idx / nj;
             }
 
             if (in_ghost_layers)
             {
-                unsigned char v = 0;
-                avtGhostData::AddGhostZoneType(v, 
-                                          DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
-                ghostCells->InsertNextValue(v);
+                ghostCells->InsertNextValue(ghostVal);
                 nghost++;
             }   
             else
-                ghostCells->InsertNextValue((unsigned char)0);
+            {
+                ghostCells->InsertNextValue(realVal);
+            }
         }
 
         // now, attach the ghost data to the grid
         retval->GetCellData()->AddArray(ghostCells);
+        retval->GetInformation()->Set(
+                vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
         ghostCells->Delete();
 
         debug5 << "avtSAMRAIFileFormat::ReadMesh ghosted " <<
@@ -1006,7 +1040,7 @@ avtSAMRAIFileFormat::ReadVar(int patch,
 {
 
     debug5 << "avtSAMRAIFileFormat::ReadVar for variable " << visit_var_name
-           << "on patch " << patch << endl;
+           << " on patch " << patch << endl;
 
     string var_name = visit_var_name; 
 
@@ -1074,7 +1108,7 @@ avtSAMRAIFileFormat::ReadVar(int patch,
     }
     if (num_alloc_comps == 0)
     {
-        EXCEPTION2(UnexpectedValueException, "a value other than zero", num_alloc_comps);
+        EXCEPTION2(UnexpectedValueException, "a value greater than zero", num_alloc_comps);
     }
 
     // allocate VTK data array for this variable 
@@ -2584,6 +2618,8 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
            blockPieceNames[i] = tmpName;
         }
         mesh->blockNames = blockPieceNames;
+        if (has_ghost && (grid_type == "ALE" || grid_type == "DEFORMED"))
+            mesh->containsExteriorBoundaryGhosts = true;
         md->Add(mesh);
         md->AddGroupInformation(num_levels, num_patches, groupIds);
 
@@ -2842,6 +2878,7 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
 
         ReadVarExtents(h5_file);
         ReadPatchExtents(h5_file);
+        ReadPatchBoundaryType(h5_file);
         ReadPatchMap(h5_file);
 
         ReadChildArrayLength(h5_file);
@@ -2918,9 +2955,6 @@ avtSAMRAIFileFormat::ReadTime(hid_t &h5_file)
 void 
 avtSAMRAIFileFormat::ReadAndCheckVDRVersion(hid_t &h5_file)
 {
-//    cerr << "WARNING, SAMRAI VERSION CHECK DISABLED" << endl;
-//    return;
-   
     hid_t h5_dataset = H5Dopen(h5_file,"/BASIC_INFO/VDR_version_number");
     if (h5_dataset < 0) {
         char str[1024];
@@ -3666,6 +3700,31 @@ avtSAMRAIFileFormat::ReadPatchExtents(hid_t &h5_file)
     }
 }
 
+// ****************************************************************************
+//  Method:  ReadPatchMap
+//
+//  Purpose: Read information needed to handle boundary ghost vs internal
+//  dup ghost. Each patch has 6 ints for the kind of ghost along the patch's
+//  boundary for xlo,xhi,ylo,yhi,zlo,zhi. Always 6 no matter actual mesh
+//  dimension. non-zero indicates the ghost is a boundary. Otherwise its an
+//  internal dup. If data is available, it just leaves patch_bdry_type null.
+//
+//  Mark C. Miller, Thu Sep 14 11:14:34 PDT 2017
+//
+// ****************************************************************************
+void
+avtSAMRAIFileFormat::ReadPatchBoundaryType(hid_t &h5_file)
+{
+    hid_t h5_dataset = H5Dopen(h5_file, "/extents/bdry_type");
+
+    if (h5_dataset < 0)
+        return; // silently ignore if not available
+
+    patch_bdry_type = new int[num_patches*6];
+    H5Dread(h5_dataset, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT,
+            patch_bdry_type);
+    H5Dclose(h5_dataset);       
+}
 
 // ****************************************************************************
 //  Method:  ReadPatchMap

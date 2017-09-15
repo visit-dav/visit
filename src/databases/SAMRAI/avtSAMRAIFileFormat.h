@@ -240,6 +240,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
 
     var_extents_t               **var_extents; 
     patch_extents_t              *patch_extents;
+    int                          *patch_bdry_type;
     patch_map_t                  *patch_map;
 
     int                          *child_array;
@@ -299,6 +300,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     
     void            ReadVarExtents(hid_t &h5_file);
     void            ReadPatchExtents(hid_t &h5_file);
+    void            ReadPatchBoundaryType(hid_t &h5_file);
     void            ReadPatchMap(hid_t &h5_file);
     
     void            ReadChildArrayLength(hid_t &h5_file);
