@@ -375,4 +375,20 @@ AddPlot("Pseudocolor","speed")
 DrawPlots()
 Test("samrai_34")
 
+
+DeleteAllPlots()
+CloseDatabase(data_path("samrai_test_data/sparse_mats/summary.samrai"))
+OpenDatabase(data_path("samrai_test_data/curv_bnd_ghost/dumps.visit"))
+AddPlot("Pseudocolor","Y_01")
+DrawPlots()
+Test("samrai_35")
+
+silr = SILRestriction()
+for i in range(silr.NumSets()):
+    if silr.SetName(i) == "level0,patch7":
+        silr.TurnOffSet(i)
+        break
+SetPlotSILRestriction(silr)
+Test("samrai_36")
+
 Exit()
