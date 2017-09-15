@@ -85,6 +85,9 @@
 #    Garrett Morrison, Mon Jan  2 11:51:16 PST 2017
 #    Added case for usedid "gmorriso".  Also switch Hank's email to UOregon.
 #
+#    Alister Maguire, Thu Sep 14 14:26:07 PDT 2017
+#    Added case for userid "alister"
+#
 # *****************************************************************************
 
 
@@ -223,6 +226,10 @@ case $1 in
         ;;
     "gmorriso")
         emaddr=gmorriso@uoregon.edu
+        ;;
+    # Alister Maguire
+    "alister")
+        emaddr=maguire7@llnl.gov
         ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
