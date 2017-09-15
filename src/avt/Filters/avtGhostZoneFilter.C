@@ -46,6 +46,8 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
 
 #include <DebugStream.h>
@@ -77,8 +79,8 @@
 avtGhostZoneFilter::avtGhostZoneFilter()
 {
     ghostDataMustBeRemoved = false;
-    ghostNodeTypesToRemove = 255;
-    ghostZoneTypesToRemove = 255;
+    ghostNodeTypesToRemove = 0xFF; // remove all types if must be removed
+    ghostZoneTypesToRemove = 0xFF; // remove all types if must be removed
 }
 
 
@@ -99,6 +101,105 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
     ;
 }
 
+// ****************************************************************************
+//  Function: ExamineGhostArray
+//
+//  Purpose: Efficiently examine ghost array data for whether all entities are
+//  ghost and/or whether all entities on exterior boundary are ghost.
+//
+//  Programmer: Mark C. Miller
+//  Creation:   Thu Sep 14 11:17:39 PDT 2017
+//
+// ****************************************************************************
+static void
+ExamineGhostArray(vtkDataSet *in_ds, bool zones, bool haveGhost,
+    unsigned char typesToRemove, bool *_allGhost, bool *_allLogBndGhost)
+{
+    if (!haveGhost)
+    {
+        if (_allGhost) *_allGhost = false;
+        if (_allLogBndGhost) *_allLogBndGhost = false;
+        return;
+    }
+
+    vtkUnsignedCharArray *ghostArray = zones ?
+        (vtkUnsignedCharArray *) in_ds->GetCellData()->GetArray("avtGhostZones") :
+        (vtkUnsignedCharArray *) in_ds->GetPointData()->GetArray("avtGhostNodes");
+    const int nVals = zones ? in_ds->GetNumberOfCells() : in_ds->GetNumberOfPoints();
+
+    unsigned char const *ghostVals = ghostArray->GetPointer(0);
+    bool allGhost = true;
+    for (int i = 0 ; i < nVals && allGhost; i++)
+    {
+        if ((ghostVals[i] & typesToRemove) == 0x00)
+            allGhost = false;
+    }
+    if (_allGhost) *_allGhost = allGhost;
+
+    bool allLogBndGhost = true;
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID ||
+        in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        int dims[3];
+        if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+        {
+            vtkRectilinearGrid *rg = vtkRectilinearGrid::SafeDownCast(in_ds);
+            rg->GetDimensions(dims);
+        }
+        else
+        {
+            vtkStructuredGrid *sg = vtkStructuredGrid::SafeDownCast(in_ds);
+            sg->GetDimensions(dims);
+        }
+
+        // If were here for cells instead of nodes, reduce dims by 1
+        if (zones)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                if (dims[i] > 1)
+                    dims[i]--;
+            }
+        }
+
+        //
+        // This nesting of loops looks bad but has plenty of
+        // opportunities to terminate early.
+        //
+        for (int k = 0; k < dims[2] && allLogBndGhost; k++)
+        {
+            for (int j = 0; j < dims[1] && allLogBndGhost; j++)
+            {
+                for (int i = 0; i < dims[0] && allLogBndGhost; i++)
+                {
+                    if (i==0 || i==(dims[0]-1))
+                    {
+                        int idx = k*dims[1]*dims[0] + j*dims[0] + i;
+                        if ((ghostVals[idx] & typesToRemove) == 0x00)
+                            allLogBndGhost = false;
+                    }
+                    else if (j==0 || j==(dims[1]-1))
+                    {
+                        int idx = k*dims[1]*dims[0] + j*dims[0] + i;
+                        if ((ghostVals[idx] & typesToRemove) == 0x00)
+                            allLogBndGhost = false;
+                    }
+                    else if (k==0 || k==(dims[2]-1))
+                    {
+                        int idx = k*dims[1]*dims[0] + j*dims[0] + i;
+                        if ((ghostVals[idx] & typesToRemove) == 0x00)
+                            allLogBndGhost = false;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        allLogBndGhost = false;
+    }
+    if (_allLogBndGhost) *_allLogBndGhost = allLogBndGhost;
+}
 
 // ****************************************************************************
 //  Method: avtGhostZoneFilter::ExecuteData
@@ -161,6 +262,9 @@ avtGhostZoneFilter::~avtGhostZoneFilter()
 //    I modified the routine to return a NULL in the case where it previously
 //    returned an avtDataRepresentation with a NULL vtkDataSet.
 //
+//    Mark C. Miller, Thu Sep 14 11:18:52 PDT 2017
+//    Refactored code to check for all ghost nodes and zones and added checks
+//    for all logical boundary ghost.
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -191,59 +295,30 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
         return in_dr;
     }
 
-    //
-    // Check to see if the data is all ghost.  If so, then we don't need
-    // to go any further.
-    //
-    if (haveGhostZones)
+    bool const zones = true;
+    bool allGhost = true;
+    bool allLogBndZonesGhost = false;
+    ExamineGhostArray(in_ds, zones, haveGhostZones, ghostZoneTypesToRemove,
+        &allGhost, &allLogBndZonesGhost);
+    if (allGhost)
     {
-        vtkUnsignedCharArray *ghost_zones = (vtkUnsignedCharArray *)
-                               in_ds->GetCellData()->GetArray("avtGhostZones");
-        unsigned char *gz = ghost_zones->GetPointer(0);
-        bool allGhost = true;
-        const int nCells = in_ds->GetNumberOfCells();
-        for (int i = 0 ; i < nCells ; i++)
-        {
-            if ((gz[i] & ghostZoneTypesToRemove) == '\0')
-            {
-                allGhost = false;
-                break;
-            }
-        }
-
-        if (allGhost)
-        {
-            debug5 << "Domain " << domain << " contains only ghosts.  Removing"
-                   << endl;
-            return NULL;
-        }
-    }
-    if (haveGhostNodes)
-    {
-        vtkUnsignedCharArray *ghost_nodes = (vtkUnsignedCharArray *)
-                               in_ds->GetPointData()->GetArray("avtGhostNodes");
-        unsigned char *gn = ghost_nodes->GetPointer(0);
-        bool allGhost = true;
-        const int nNodes = in_ds->GetNumberOfPoints();
-        for (int i = 0 ; i < nNodes ; i++)
-        {
-            if ((gn[i] & ghostNodeTypesToRemove) == '\0')
-            {
-                allGhost = false;
-                break;
-            }
-        }
-
-        if (allGhost)
-        {
-            debug5 << "Domain " << domain << " contains only ghosts.  Removing"
-                   << endl;
-            return NULL;
-        }
+        debug5 << "Domain " << domain << " contains only ghost zones.  Removing" << endl;
+        return NULL;
     }
 
+    allGhost = true;
+    bool allLogBndNodesGhost = false;
+    ExamineGhostArray(in_ds, !zones, haveGhostNodes, ghostNodeTypesToRemove,
+        &allGhost, &allLogBndNodesGhost);
+    if (allGhost)
+    {
+        debug5 << "Domain " << domain << " contains only ghost nodes.  Removing" << endl;
+        return NULL;
+    }
+    bool allLogBndGhost = allLogBndZonesGhost || allLogBndNodesGhost;
+    
     if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID && 
-        !ghostDataMustBeRemoved)
+        !ghostDataMustBeRemoved && !allLogBndGhost)
     {
         debug5 << "Allow rectilinear grid to travel through with ghost data;"
                << " depending on mapper to remove ghost data during render." 
@@ -252,7 +327,7 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     }
 
     if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID && 
-        !ghostDataMustBeRemoved)
+        !ghostDataMustBeRemoved && !allLogBndGhost)
     {
         debug5 << "Allow structured grid to travel through with ghost data;"
                << " depending on mapper to remove ghost data during render." 
@@ -317,7 +392,7 @@ avtGhostZoneFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateZones();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
-    if (ghostZoneTypesToRemove == 255)
+    if (ghostZoneTypesToRemove == 0xFF)
         GetOutput()->GetInfo().GetAttributes().
                                           SetContainsGhostZones(AVT_NO_GHOSTS);
 }
