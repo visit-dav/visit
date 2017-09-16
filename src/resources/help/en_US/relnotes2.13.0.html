@@ -47,8 +47,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 2.13</font></b></p>
 <ul>
-  <li>GUI Change 1</li>
-  <li>GUI Change 2</li>
+  <li>Fixed a problem where some buttons in the GUI intended to display variable menus were disabled. Under certain circumstances, this impacted, for example, the Scatter Plot Wizard making it impossible to select variables to plot.</li>
 </ul>
 
 <a name="File_format"></a>
@@ -56,6 +55,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>EnSight reader was modified to handle variables not defined on all parts.  Part descriptions are now used to fill out the SIL.  Particles supplied in measured files are now supported as a separate mesh.</li>
   <li>The VTK reader was modified to fix a bug reading .pvti data.</li>
+  <li>Fixed an issue with blank plots from SAMRAI data when ale/deformed mesh blocks are completely surrounded by a layer of ghost zones.</li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -108,7 +108,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Host profiles were removed for the Lawrence Livermore National Laboratories' Rzmerl and Rzzeus systems, which were retired.</li>
   <li>Host profiles for running client/server to machines at TACC were removed. Users should use VNC instead as described <a href=https://portal.tacc.utexas.edu/user-guides/STAMPEDE#vis>here</a>.</li>
-  <li>Fixed a problem where some buttons in the GUI intended to display variable menus were disabled. Under certain circumstatnces, this impacted, for example, the Scatter Plot Wizard making it impossible to select variables to plot.</li>
 </ul>
 
 <a name="Build_features"></a>
