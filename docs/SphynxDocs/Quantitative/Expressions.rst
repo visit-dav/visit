@@ -670,7 +670,7 @@ Tensor Expressions
 
 Eigenvalue: ``eigenvalue(expr)``
     The ``expr`` must evaluate to a 3x3 *symmetric* tensor. The eigenvalue
-    expression returns the eigenvalues of the 3x3 matrix *symmetric* argument
+    expression returns the eigenvalues of the 3x3 *symmetric* matrix argument
     as a vector valued expression where each eigenvalue is a component of
     the vector. Use the component index operator ('[]') to access individual
     eigenvalues.
@@ -684,7 +684,6 @@ Eigenvector: ``eigenvector(expr)``
     ``transpose()`` expression function. For example, if
     ``evecs = transpose(eigenvector(tensor))``, the expression ``evecs[1]``
     will return the second eigenvector.
-    
 
 Array Expressions
 """""""""""""""""
