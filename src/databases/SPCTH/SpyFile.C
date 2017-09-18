@@ -47,6 +47,7 @@
 
 #include <snprintf.h>
 #include <float.h>
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <cstring>
