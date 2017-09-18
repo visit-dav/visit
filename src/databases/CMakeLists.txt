@@ -441,6 +441,7 @@ ProteinDataBank
 RAW
 SAR
 SAS
+SPCTH
 STL
 Shapefile
 ${SIMV2_PLUGIN}
