@@ -1453,6 +1453,10 @@ void avtTransparencyActor::SyncProps()
 //  Creation:   Thu Jun 25 12:34:39 PDT 2015
 //
 //  Modifications:
+//    Kathleen Biagas, Mon Sep 18 18:52:22 MST 2017
+//    Changed curMTime from 'unsigned long long' to 'unsigned long', because
+//    MPI_MAX is not defined for MPI_UNSIGNED_LONG_LONG in the MSMPI we use on
+//    Windows, and the actual type returned by GetMTime is 'unsigned long'.
 //
 // ****************************************************************************
 
@@ -1461,18 +1465,13 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
 #ifdef avtTransparencyActorDEBUG
     debug2 << "avtTransparencyActor::SyncProps " << dest << " " << source << endl;
 #endif
-    int rank = 0;
-    int size = 1;
-
-#ifdef PARALLEL
-    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
-    MPI_Comm_size(VISIT_MPI_COMM, &size);
-#endif
+    int rank = PAR_Rank();
+    int size = PAR_Size();
 
     // skip a bunch of communication of props haven't changed
-    unsigned long long curMTime = source ? source->GetMTime() : 0;
+    unsigned long curMTime = source ? source->GetMTime() : 0;
 #ifdef PARALLEL
-    MPI_Allreduce(MPI_IN_PLACE, &curMTime, 1, MPI_UNSIGNED_LONG_LONG,
+    MPI_Allreduce(MPI_IN_PLACE, &curMTime, 1, MPI_UNSIGNED_LONG,
         MPI_MAX, VISIT_MPI_COMM);
 #endif
 #ifdef avtTransparencyActorDEBUG
