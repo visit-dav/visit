@@ -696,10 +696,11 @@ function build_mesa
 
     info 
     
-    # Neither of these should be necessary, but we use them as a temporary
-    # workaround for a mesa issue.
+    # None of these should be necessary, but we use them as a temporary
+    # workarounds for a mesa issues. The __STDC_CONSTANT_MACROS is for
+    # gcc 4.8.2 and 4.9.2.
     if test `uname` = "Linux" ; then
-        HACK_FLAGS="-fPIC -DGLX_USE_TLS"
+        HACK_FLAGS="-fPIC -DGLX_USE_TLS -D__STDC_CONSTANT_MACROS"
     fi
 
     # Do not build libGLU unless we're on MacOS X

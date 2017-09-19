@@ -1,15 +1,15 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/cmake/3.8.1/linux-x86_64_gcc-4.8/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/chaos5/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake
 ##
 ## ./build_visit2_13_0 generated host.cmake
-## created: Wed Sep  6 08:06:07 PDT 2017
-## system: Linux cab670 2.6.32-696.3.1.1chaos.ch5.6.x86_64 #1 SMP Tue May 30 14:20:14 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
+## created: Mon Sep 18 15:51:03 PDT 2017
+## system: Linux cab690 2.6.32-696.10.1.1chaos.ch5.6.x86_64 #1 SMP Tue Aug 22 17:45:41 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0)
-SET(VISITARCH linux-x86_64_gcc-4.8)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/chaos5)
+SET(VISITARCH linux-x86_64_gcc-4.9)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
 ## Compiler flags.
@@ -54,6 +54,11 @@ VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
+
+##
+## Mesa
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 
 ##
 ## Python
@@ -136,16 +141,6 @@ VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.10.0/${VISITARCH})
 
 ##
-## LLVM
-##
-VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/4.0.0/${VISITARCH})
-
-##
-## OpenSWR
-##
-VISIT_OPTION_DEFAULT(VISIT_OPENSWR_DIR ${VISITHOME}/openswr/17.0.6/${VISITARCH})
-
-##
 ## H5Part
 ##
 SETUP_APP_VERSION(H5PART 1.6.6)
@@ -185,7 +180,7 @@ VISIT_OPTION_DEFAULT(VISIT_MOAB_MPI_LIBDEP HDF5_MPI_LIBRARY_DIR hdf5_mpi ${VISIT
 ##
 ## Nektar++
 ##
-SETUP_APP_VERSION(NEKTAR++ 4.1.0)
+SETUP_APP_VERSION(NEKTAR++ 4.4.0)
 VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_DIR ${VISITHOME}/nektar++/${NEKTAR++_VERSION}/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_NEKTAR++_LIBDEP ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
 
@@ -198,7 +193,7 @@ VISIT_OPTION_DEFAULT(VISIT_NETCDF_LIBDEP HDF5_LIBRARY_DIR hdf5_hl HDF5_LIBRARY_D
 ##
 ## PySide
 ##
-VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/2.0.0-2017.02.14/${VISITARCH}/)
+VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/2.0.0-2017.08.30/${VISITARCH}/)
 
 ##
 ## Silo
