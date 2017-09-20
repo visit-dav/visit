@@ -58,13 +58,6 @@
 #include <QStyleFactory>
 #include <QTranslator>
 
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
-// On MacOS X, we manage the printer options window instead of letting
-// Qt do it when we use the Mac or Aqua style.
-#include <Carbon/Carbon.h>
-#include <QStyle>
-#endif
-
 #include <QMenuBar>
 #include <QTimer>
 #include <QvisGUIApplication.h>
@@ -6896,218 +6889,73 @@ QvisGUIApplication::SaveWindow()
 //   I renamed this method to PrintWindow and I made all platforms print if
 //   the print dialog is accepted.
 //
+//   Kevin Griffin, Tue Sep 19 16:48:21 PDT 2017
+//   Removed the OS X specific coding since the PMSessionPrintDialog method 
+//   has been deprecated and removed and the QPrinter object is now adequate
+//   for printing on OS X.
+//
 // ****************************************************************************
     
 void
 QvisGUIApplication::PrintWindow()
 {
     PrinterAttributes *p = GetViewerState()->GetPrinterAttributes();
-#if (defined(Q_WS_MACX) || defined(Q_OS_MAC)) && !defined(VISIT_MAC_NO_CARBON)
+    // Each time through, clear out the printer's save to filename.
+    bool setupPrinter = true;
+    p->SetOutputToFile(false);
+    p->SetOutputToFileName("");
+    
     //
-    // If we're on MacOS X and the Mac application style is being used, manage
-    // the printer setup ourselves since the QPrinter object does not return
-    // enough information when it uses the native MacOS X printer dialog. Here
-    // we use the native MacOS X printer dialog but we get what we need out
-    // of it.
+    // If we've never set up the printer options, set them up now using
+    // Qt's printer object and printer dialog.
     //
-    if(qApp->style()->inherits("QMacStyle"))
+    if(printer == 0)
     {
-        PMPageFormat pformat;
-        PMPrintSettings psettings;
-        PMPrintSession psession;
-        int nObjectsToFree = 0;
-        bool okayToPrint = true;
-    
-        TRY
-        {
-            if(PMCreateSession(&psession) != kPMNoError)
-            {
-                EXCEPTION0(VisItException);
-            }
-            nObjectsToFree = 1;
+        // Create a new printer object.
+        printer = new QPrinter;
         
-            if(PMCreatePrintSettings(&psettings) != kPMNoError)
-            {
-                EXCEPTION0(VisItException);
-            }
-            nObjectsToFree = 2;
-            if(PMSessionDefaultPrintSettings(psession, psettings) != kPMNoError)
-            {
-                EXCEPTION0(VisItException);
-            }
-        
-            if(PMCreatePageFormat(&pformat) != kPMNoError)
-            {
-                EXCEPTION0(VisItException);
-            }
-            nObjectsToFree = 3;
-            if(PMSessionDefaultPageFormat(psession, pformat) != kPMNoError)
-            {
-                EXCEPTION0(VisItException);
-            }
-    
-            //
-            // Show the MacOS X printer window and allow the user to select
-            // the printer to use when printing images in VisIt.
-            //
-            Boolean accepted = false;
-            if(PMSessionPrintDialog(psession, psettings, pformat, &accepted) == kPMNoError &&
-               accepted == true)
-            {       
-                // Get the name of the printer to use for printing the image.
-                CFArrayRef printerList = NULL;
-                CFIndex currentIndex;
-                PMPrinter currentPrinter;
-                if(PMSessionCreatePrinterList(psession, &printerList, &currentIndex,
-                   &currentPrinter) == kPMNoError)
-                {
-                    if(printerList != NULL)
-                    {
-                        const void *pData = CFArrayGetValueAtIndex(printerList,
-                            currentIndex);
-                        if(pData != NULL)
-                        {
-                            CFStringRef pName = (CFStringRef)pData;
-                            char buf[1000]; buf[0] = '\0';
-                            CFStringGetCString(pName, buf, 1000,
-                                kCFStringEncodingMacRoman);
-                            p->SetPrinterName(buf);
-                        }
-                        else
-                        {
-                            debug4 << "Could not find printer name" << endl;
-                            CFRelease(printerList);
-                            EXCEPTION0(VisItException);
-                        }
-                    
-                        // Free the printerList
-                        CFRelease(printerList);
-                    }
-                    else
-                    {
-                        debug4 << "Could not return the list of printer names"
-                               << endl;
-                        EXCEPTION0(VisItException);
-                    }
-                }
-
-                // Get the options from the psettings object.
-                PMOrientation orient;
-                PMGetOrientation(pformat, &orient);
-                p->SetPortrait(orient == kPMPortrait || orient == kPMReversePortrait);
-        
-                // Set the number of copies
-                UInt32 ncopies = 1;
-                PMGetCopies(psettings, &ncopies);
-                p->SetNumCopies(int(ncopies));
-     
-                // Set some of the last properties
-                p->SetOutputToFile(false);
-                p->SetOutputToFileName("");
-                p->SetPrintColor(true);
-                p->SetCreator(GetViewerProxy()->GetLocalUserName());
-
-                // Tell the viewer what the properties are.
-                if(printerObserver != 0)             
-                    printerObserver->SetUpdate(false);
-                p->Notify();
-            }
-            else
-                debug4 << "User cancelled the printer options window." << endl;
-        }
-        CATCH(VisItException)
+        // If the printer attributes have no printer name then set the
+        // printer object's name into the printer attributes.
+        p->SetCreator("VisIt");
+        if(p->GetPrinterName() == "")
         {
-            Error(tr("VisIt encountered an error while setting up printer options."));
-            okayToPrint = false;
-        }
-        ENDTRY
-    
-        //
-        // Free the PM objects that we created.
-        //
-        switch(nObjectsToFree)
-        {
-        case 3:
-            PMRelease(pformat);
-            // Fall through
-        case 2:
-            PMRelease(psettings);
-            // Fall through
-        case 1:
-            PMRelease(psession);       
-        }
-    
-        //
-        // Tell the viewer to print the image because the MacOS X printer
-        // dialog has the word "Print" to click when you're done setting
-        // options. This says to me that MacOS X applications expect to
-        // print once the options are set.
-        //
-        if(okayToPrint)
-            GetViewerMethods()->PrintWindow();
-    }
-    else
-    {
-#endif
-        // Each time through, clear out the printer's save to filename.
-        bool setupPrinter = true;
-        p->SetOutputToFile(false);
-        p->SetOutputToFileName("");
-
-        //
-        // If we've never set up the printer options, set them up now using
-        // Qt's printer object and printer dialog.
-        //
-        if(printer == 0)
-        {
-            // Create a new printer object.
-            printer = new QPrinter;
-
-            // If the printer attributes have no printer name then set the
-            // printer object's name into the printer attributes.
-            p->SetCreator("VisIt");
-            if(p->GetPrinterName() == "")
-            {
-                p->SetPrinterName(printer->printerName().toStdString());
-                p->Notify();
-            }
-
-            // Create an observer for the printer attributes that will copy
-            // their values into the printer object when there are changes.
-            printerObserver = new ObserverToCallback(p,
-                UpdatePrinterAttributes, (void *)printer);
-
-            // Indicate that we need to set up the printer.
-            setupPrinter = true;
-        }
-
-        // Store the printer attributes into the printer object.
-        if(setupPrinter)
-            PrinterAttributesToQPrinter(p, printer);
-
-        // Execute the printer dialog
-        QPrintDialog printDialog(printer, mainWin);
-        if(printDialog.exec() == QDialog::Accepted)
-        {
-            //
-            // Send all of the Qt printer options to the viewer
-            //
-            QPrinterToPrinterAttributes(printer, p);
-            p->SetCreator("VisIt");
-            printerObserver->SetUpdate(false);
+            p->SetPrinterName(printer->printerName().toStdString());
             p->Notify();
-
-            //
-            // Tell the viewer to print the image. All print dialogs I've seen
-            // for Qt 4 have "Print" as the button that accepts the Print dialog.
-            // This says to me that applications expect to print once the options
-            // are set.
-            //
-            GetViewerMethods()->PrintWindow();
         }
-#if (defined(Q_WS_MACX) || defined(Q_OS_MAC)) && !defined(VISIT_MAC_NO_CARBON)
+        
+        // Create an observer for the printer attributes that will copy
+        // their values into the printer object when there are changes.
+        printerObserver = new ObserverToCallback(p,
+                                                 UpdatePrinterAttributes, (void *)printer);
+        
+        // Indicate that we need to set up the printer.
+        setupPrinter = true;
     }
-#endif
+    
+    // Store the printer attributes into the printer object.
+    if(setupPrinter)
+        PrinterAttributesToQPrinter(p, printer);
+    
+    // Execute the printer dialog
+    QPrintDialog printDialog(printer, mainWin);
+    if(printDialog.exec() == QDialog::Accepted)
+    {
+        //
+        // Send all of the Qt printer options to the viewer
+        //
+        QPrinterToPrinterAttributes(printer, p);
+        p->SetCreator("VisIt");
+        printerObserver->SetUpdate(false);
+        p->Notify();
+        
+        //
+        // Tell the viewer to print the image. All print dialogs I've seen
+        // for Qt 4 have "Print" as the button that accepts the Print dialog.
+        // This says to me that applications expect to print once the options
+        // are set.
+        //
+        GetViewerMethods()->PrintWindow();
+    }
 }
 
 // ****************************************************************************
