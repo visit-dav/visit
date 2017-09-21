@@ -12,7 +12,7 @@
 
 from os.path import join as pjoin
 
-bp_test_dir = "blueprint_4cda12d_test_data"
+bp_test_dir = "blueprint_v0.3.0_test_data"
 
 braid_2d_root = data_path(pjoin(bp_test_dir,"braid_2d_examples.blueprint_root_hdf5"))
 braid_3d_root = data_path(pjoin(bp_test_dir,"braid_3d_examples.blueprint_root_hdf5"))
