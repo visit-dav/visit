@@ -185,13 +185,17 @@ vtkSegmentedMergeTree::~vtkSegmentedMergeTree()
 //  Programmer: Peer-Timo Bremer
 //  Creation:   August 8, 2016
 //
+// Modifications:
+//   Cyrus Harrison, Wed Mar  6 13:48:48 PST 2002
+//   Fixed use of wrong type in push_back (#2882)
+//
 // ****************************************************************************
 vtkTypeUInt32
 vtkSegmentedMergeTree::AddNode(vtkIdType id)
 {
     vtkTypeUInt32 index = vtkMergeTree::AddNode(id);
 
-    Branches.push_back(std::vector<vtkTypeInt64>());
+    Branches.push_back(std::vector<vtkIdType>());
 
     assert (Branches.size() == index+1);
 
