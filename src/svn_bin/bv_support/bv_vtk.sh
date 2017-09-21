@@ -699,6 +699,15 @@ function build_vtk
                 echo "Xcode 7 on MacOS 10.10 detected: Enabling CMake workaround"
                 vopts="${vopts} -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=\"\" -DCMAKE_OSX_SYSROOT:STRING=/"
             fi
+        elif test "${MACOSX_DEPLOYMENT_TARGET}" = "10.12"; then
+            # If building on 10.12 (Sierra) check if we are building with Xcode 9 ...
+            XCODE_VER=$(xcodebuild -version | head -n 1 | awk '{print $2}')
+            if test ${XCODE_VER%.*} == 9; then
+                # Workaround for Xcode 9 not having a 10.12 SDK: Prevent CMake from linking to 10.13 SDK
+                # by using Frameworks installed in root directory.
+                echo "Xcode 9 on MacOS 10.12 detected: Enabling CMake workaround"
+                vopts="${vopts} -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=\"\" -DCMAKE_OSX_SYSROOT:STRING=/"
+            fi
         fi
     fi
 
