@@ -285,7 +285,7 @@ function build_uintah
         ${cf_darwin} \
         ${cf_build_type} \
         --enable-optimize --without-petsc --without-hypre \
-        --with-mpi="${PAR_INCLUDE_DIR}/.." "
+        --with-mpi=\"$PAR_INCLUDE_DIR/..\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
@@ -298,8 +298,8 @@ function build_uintah
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_darwin} \
         ${cf_build_type} \
-        --enable-optimize --without-petsc --without-hypre\
-        --with-mpi="${PAR_INCLUDE_DIR}/.." "
+        --enable-optimize --without-petsc --without-hypre \
+        --with-mpi=\"$PAR_INCLUDE_DIR/..\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
         #        --with-mpi-lib="${PAR_INCLUDE_DIR}/../lib" "
@@ -314,8 +314,8 @@ function build_uintah
         $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize --without-petsc --without-hypre" \
-        --with-mpi=built-in
+        --enable-optimize --without-petsc --without-hypre \
+        --with-mpi=built-in"
 
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
@@ -324,8 +324,8 @@ function build_uintah
         $ZLIB_ARGS \
         --prefix=\"$VISITDIR/uintah/$UINTAH_VERSION/$VISITARCH\" \
         ${cf_build_type} \
-        --enable-optimize --without-petsc --without-hypre" \
-        --with-mpi=built-in
+        --enable-optimize --without-petsc --without-hypre \
+        --with-mpi=built-in"
     fi
 
 
