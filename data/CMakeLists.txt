@@ -89,6 +89,10 @@
 #   properly.  Reworked the create_data_examples targets so things work
 #   correctly on Windows.
 #
+#   Eric Brugger, Wed Sep 20 17:35:37 PDT 2017
+#   Modify the script to untar files of the name "*test_data*.tar.gz" instead
+#   of just "*test_data.tar.gz".
+#
 #****************************************************************************/
 
 cmake_minimum_required(VERSION 2.8)
@@ -427,7 +431,7 @@ ENDIF(NOT WIN32)
 # of the source tarball. This makes tracking the dependencies simple.
 #
 #-----------------------------------------------------------------------------
-FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data.tar.gz)
+FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data*.tar.gz)
 
 #-----------------------------------------------------------------------------
 # Add a custom command to extract each archived dataset & collect
