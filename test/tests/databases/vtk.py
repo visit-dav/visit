@@ -30,6 +30,9 @@
 #    Kathleen Biagas, Tue Aug 18 14:00:16 PDT 2015
 #    Added a test for VTM files.
 #
+#    Kathleen Biagas, Thu Sep 21 14:56:25 MST 2017
+#    Added a test for PVTK files.
+#
 # ----------------------------------------------------------------------------
 
 def TestMaterials():
@@ -304,6 +307,30 @@ def TestVTM():
     DeleteAllPlots()
     CloseDatabase(fN)
 
+def TestPVTK():
+    TestSection("PVTK files")
+    f = "earth.pvtk"
+    fN = data_path("vtk_test_data/pvtk/%s"%f)
+    OpenDatabase(fN)
+    AddPlot("Truecolor", "PNGImage")
+    DrawPlots()
+    ResetView()
+    Test("vtk_41")
+
+    DeleteAllPlots()
+    CloseDatabase(fN)
+    
+    f = "dbA.pvtk"
+    fN = data_path("vtk_test_data/pvtk/dbA/%s"%f)
+    OpenDatabase(fN)
+    AddPlot("Pseudocolor", "mesh/ireg")
+    DrawPlots()
+    ResetView()
+    Test("vtk_42")
+
+    DeleteAllPlots()
+    CloseDatabase(fN)
+
 TestMaterials()
 TestXML()
 TestHigherOrder()
@@ -312,5 +339,6 @@ TestPVTU()
 TestPVTI()
 TestMixedTopology()
 TestVTM()
+TestPVTK()
 
 Exit()
