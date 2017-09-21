@@ -716,7 +716,9 @@ ConduitElementShapeSize(const std::string &shape_name)
 mfem::Geometry::Type
 ElementShapeNameToMFEMShape(const std::string &shape_name)
 {
-    mfem::Geometry::Type res;
+    // init to somethign to avoid invalid memory access 
+    // in the mfem mesh constructor 
+    mfem::Geometry::Type res = mfem::Geometry::POINT;
     if(shape_name == "point")
         res = mfem::Geometry::POINT;
     else if(shape_name == "line")
@@ -827,7 +829,9 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &mesh)
 
     const int *bndry_indices = NULL;
     int num_bndry_ele        = 0;
-    mfem::Geometry::Type bndry_geo;
+    // init to something b/c the mesh constructor will use this for a 
+    // table lookup, even if we don't have boundary info.
+    mfem::Geometry::Type bndry_geo = mfem::Geometry::POINT;
     
     if( mesh.has_child("boundary") )
     {

@@ -56,7 +56,10 @@
 class avtBlueprintTreeCache
 {
 public:
-
+    
+    class IO;
+    class CacheMap;
+    
     //-----------------------------------------------------------------------//
     avtBlueprintTreeCache();
 
@@ -64,8 +67,7 @@ public:
    ~avtBlueprintTreeCache();
 
     //-----------------------------------------------------------------------//
-    std::string Expand(const std::string pattern,
-                       int idx) const;
+    void        Release();
 
     //-----------------------------------------------------------------------//
     void        SetFilePattern(const std::string &file_pattern);
@@ -83,22 +85,47 @@ public:
     void        SetProtocol( const std::string &protocol);
 
     //-----------------------------------------------------------------------//
+    void        FetchBlueprintTree(int tree_id, 
+                                   const std::string &sub_tree_path,
+                                   conduit::Node &out);
+
+
+
+    //-----------------------------------------------------------------------//
+    std::string Expand(const std::string pattern,
+                       int idx) const;
+
+    //-----------------------------------------------------------------------//
     std::string GenerateFilePath(int tree_id) const;
 
     //-----------------------------------------------------------------------//
     std::string GenerateTreePath(int tree_id) const;
 
+
+    
     //-----------------------------------------------------------------------//
-    void        FetchBlueprintTree(int tree_id, 
-                                   const std::string &sub_tree_path,
-                                   conduit::Node &out);
+    bool        HasPath(int tree_id,
+                        const std::string &path);
 
-    void        Release();
+    //-----------------------------------------------------------------------//
+    void        Read(int tree_id,
+                     const std::string &path,
+                     conduit::Node &out);
+    
+    //-----------------------------------------------------------------------//
+    // Read using schema (supports reading slabs)
+    //-----------------------------------------------------------------------//
+    bool        Read(int domain_id,
+                     const std::string &path,
+                     const conduit::DataType &dtype,
+                     conduit::Node &out);
 
-private:
+    //-----------------------------------------------------------------------//
+    CacheMap   &Cache();
 
-    class IO;
-    class CacheMap;
+private: 
+    
+
     
     
     std::string   m_file_pattern;
@@ -106,7 +133,7 @@ private:
     int           m_num_files;
     int           m_num_trees;
     std::string   m_protocol;
-    CacheMap     *m_cache_map;
+    avtBlueprintTreeCache::CacheMap     *m_cache_map;
 
 };
 

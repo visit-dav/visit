@@ -78,7 +78,7 @@ SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EBlueprintDatabase_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EBlueprintDatabase_par visitcommon avtdatabase_par avtpipeline_par ${CONDUIT_LIB} ${MFEM_LIB} )
+    TARGET_LINK_LIBRARIES(EBlueprintDatabase_par visitcommon avtdatabase_par avtpipeline_par ${CONDUIT_LIB} ${MFEM_LIB} conduit_relay_mpi )
     ADD_TARGET_DEFINITIONS(EBlueprintDatabase_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EBlueprintDatabase_par)
 ENDIF(VISIT_PARALLEL)
