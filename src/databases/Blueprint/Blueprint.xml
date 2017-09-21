@@ -28,6 +28,9 @@
       avtBlueprintDataAdaptor.C
       avtBlueprintTreeCache.C
     </Files>
+    <LIBS components="EPar">
+      conduit_relay_mpi
+    </LIBS>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
     </Attribute>
   </Plugin>

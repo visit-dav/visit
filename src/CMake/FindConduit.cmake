@@ -43,5 +43,11 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(CONDUIT lib include/conduit conduit conduit_relay conduit_blueprint)
+IF(VISIT_PARALLEL)
+    SET_UP_THIRD_PARTY(CONDUIT lib include/conduit conduit conduit_relay conduit_blueprint conduit_relay_mpi)
+ELSE()
+    SET_UP_THIRD_PARTY(CONDUIT lib include/conduit conduit conduit_relay conduit_blueprint)
+ENDIF()
+
+
 

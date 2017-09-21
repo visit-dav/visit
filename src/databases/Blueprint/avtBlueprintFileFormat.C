@@ -77,6 +77,13 @@
 #include "mfem.hpp"
 
 
+#ifdef PARALLEL
+#include <mpi.h>
+#include <avtParallel.h>
+#include "conduit_relay_mpi.hpp"
+#endif
+
+
 //-----------------------------------------------------------------------------
 // bp visit plugin includes
 //-----------------------------------------------------------------------------
@@ -715,14 +722,37 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         std::string root_file(root_fname);
         BP_PLUGIN_INFO("Opening root file " << root_fname);
         
-        // fast fail check for if this is a valid hdf5 blueprint root file
-        // (if this path doesn't exist, relay will throw an exception)
-        Node n_read_check;
-        relay::io::load(root_file + ":file_pattern", "hdf5",n_read_check);
+        
+        int ok = false;
+
+// only check on proc-0
+#ifdef PARALLEL
+        if (PAR_Rank() == 0)
+#endif
+        // TODO: REDUCE ERROR 
+        {
+            // fast fail check for if this is a valid hdf5 blueprint root file
+            // (if this path doesn't exist, relay will throw an exception)
+
+            Node n_read_check;
+            relay::io::load(root_file + ":file_pattern", "hdf5",n_read_check);
+        }
+        
+
  
-        // TODO: in parallel only 1 processor should read and then broadcast 
-    
+
+#ifdef PARALLEL
+        if (PAR_Rank() == 0)
+        {
+            relay::io::load(root_file, "hdf5",m_root_node);
+        }
+        
+        conduit::relay::mpi::broadcast_using_schema(m_root_node,
+                                                    0,
+                                                    VISIT_MPI_COMM);
+#else
         relay::io::load(root_file, "hdf5",m_root_node);
+#endif
     
         BP_PLUGIN_INFO("Root file contents" << endl << m_root_node.to_json());
     
