@@ -9,6 +9,7 @@
       *.vtu
       *.vtm
       *.pvti
+      *.pvtk
       *.pvtp
       *.pvtr 
       *.pvts
@@ -19,6 +20,7 @@
       avtVTKFileReader.C
       avtVTKOptions.C
       vtkVisItXMLPDataReader.C
+      PVTKParser.C
       VTMParser.C
     </Files>
     <Files components="E">
@@ -27,6 +29,7 @@
       avtVTKOptions.C
       avtVTKWriter.C
       vtkVisItXMLPDataReader.C
+      PVTKParser.C
       VTMParser.C
     </Files>
     <LIBS>

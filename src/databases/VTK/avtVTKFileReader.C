@@ -67,6 +67,7 @@
 #include <vtkXMLStructuredGridReader.h>
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkVisItXMLPDataReader.h>
+#include <PVTKParser.h>
 #include <VTMParser.h>
 
 #include <snprintf.h>
@@ -82,6 +83,7 @@
 #include <vector>
 
 using std::string;
+using std::vector;
 
 //
 // Define the static const's
@@ -242,7 +244,7 @@ avtVTKFileReader::FreeUpResources(void)
         delete [] pieceExtents;
         pieceExtents = 0;
     }
-    for(std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
+    for(std::map<string, vtkRectilinearGrid *>::iterator pos = vtkCurves.begin();
         pos != vtkCurves.end(); ++pos)
     {
         pos->second->Delete();
@@ -327,6 +329,9 @@ avtVTKFileReader::GetNumberOfDomains()
 //    Kathleen Biagas, Thu Aug 13 17:29:21 PDT 2015
 //    Add support for groups and block names, as read from 'vtm' file.
 //
+//    Kathleen Biagas, Thu Sep 21 14:59:31 MST 2017
+//    Add support for pvtk files.
+//
 // ****************************************************************************
 
 void
@@ -372,6 +377,45 @@ avtVTKFileReader::ReadInFile(int _domain)
         xmlpReader->Delete();
 
         pieceExtension = fileExtension.substr(1,3);
+    }
+    else if (fileExtension == "pvtk")
+    {
+        PVTKParser *parser = new PVTKParser();
+        parser->SetFileName(filename);
+        if (!parser->Parse())
+        {
+            string em = parser->GetErrorMessage();
+            delete parser;
+            EXCEPTION2(InvalidFilesException, filename, em);
+        }
+
+        ngroups = 1;
+        nblocks = parser->GetNumberOfPieces();
+        pieceFileNames = new char*[nblocks];
+        for (int i = 0; i < nblocks; i++)
+        {
+            string pfn = parser->GetPieceFileName(i);
+            pieceFileNames[i] = new char[pfn.size() +1];
+            strcpy(pieceFileNames[i], pfn.c_str());
+        }
+
+        if (parser->HasExtents())
+        {
+            pieceExtents = new int*[nblocks];
+            for (int i = 0; i < nblocks; i++)
+            {
+                vector< int >  &readerExtent = parser->GetPieceExtent(i);
+                pieceExtents[i] = new int[6];
+                int *ext = pieceExtents[i];
+                ext[0] = readerExtent[0]; ext[1] = readerExtent[1];
+                ext[2] = readerExtent[2]; ext[3] = readerExtent[3];
+                ext[4] = readerExtent[4]; ext[5] = readerExtent[5];
+            }
+        }
+
+        delete parser;
+
+        pieceExtension = "vtk";
     }
     else if (fileExtension == "vtm")
     {
@@ -707,7 +751,7 @@ avtVTKFileReader::CreateCurves(vtkRectilinearGrid *rgrid)
             curve->GetPointData()->SetScalars(curve_yc);
             curve_yc->Delete();
 
-            vtkCurves[std::string("curve_") + std::string(arr->GetName())] = curve;
+            vtkCurves[string("curve_") + string(arr->GetName())] = curve;
         }
     }
 
@@ -734,7 +778,7 @@ avtVTKFileReader::CreateCurves(vtkRectilinearGrid *rgrid)
             curve->GetPointData()->SetScalars(curve_yc);
             curve_yc->Delete();
 
-            vtkCurves[std::string("curve_") + std::string(arr->GetName())] = curve;
+            vtkCurves[string("curve_") + string(arr->GetName())] = curve;
         }
     }
 }
@@ -928,7 +972,7 @@ avtVTKFileReader::GetMesh(int domain, const char *mesh)
     }
 
     // If the requested mesh is a curve, return it.
-    std::map<std::string, vtkRectilinearGrid *>::iterator pos = vtkCurves.find(mesh);
+    std::map<string, vtkRectilinearGrid *>::iterator pos = vtkCurves.find(mesh);
     if(pos != vtkCurves.end())
     {
         pos->second->Register(NULL);
@@ -1387,7 +1431,7 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 
     md->Add(mesh);
 
-    std::map<std::string, vtkRectilinearGrid *>::iterator pos;
+    std::map<string, vtkRectilinearGrid *>::iterator pos;
     for(pos = vtkCurves.begin(); pos != vtkCurves.end(); ++pos)
     {
         avtCurveMetaData *curve = new avtCurveMetaData;

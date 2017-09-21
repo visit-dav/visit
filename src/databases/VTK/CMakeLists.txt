@@ -19,6 +19,7 @@ avtVTKFileFormat.C
 avtVTKFileReader.C
 avtVTKOptions.C
 vtkVisItXMLPDataReader.C
+PVTKParser.C
 VTMParser.C
 )
 
@@ -30,6 +31,7 @@ avtVTKFileReader.C
 avtVTKOptions.C
 avtVTKWriter.C
 vtkVisItXMLPDataReader.C
+PVTKParser.C
 VTMParser.C
 )
 
