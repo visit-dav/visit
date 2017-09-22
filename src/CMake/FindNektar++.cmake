@@ -80,12 +80,8 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 SET_UP_THIRD_PARTY(NEKTAR++
     ${LIB}/nektar++-${NEKTAR++_VERSION}
     include/nektar++-${NEKTAR++_VERSION}
-    Collections
-    LibUtilities
-    LocalRegions
-    MultiRegions
-    SpatialDomains
-    StdRegions)
+    ${NEKTAR++_LIBRARIES}
+    )
 
 IF(NEKTAR++_FOUND)
     SET(HAVE_NEKTAR_PP true CACHE BOOL "Have Nektar++ lib")
