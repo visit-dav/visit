@@ -152,6 +152,9 @@
 #   Eric Brugger, Wed Jun 21 10:11:10 PDT 2017
 #   I replaced surface with cab.
 #
+#   Eric Brugger, Fri Sep 22 11:32:57 PDT 2017
+#   I replaced rzzeus with rzalastor.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -198,7 +201,7 @@ ubuntu1404_64=false
 cab=true
 quartz=true
 rztrona=true
-rzzeus=true
+rzalastor=true
 rzuseq=false
 carver=true
 glory=false
@@ -221,7 +224,7 @@ do
          cab=false
          quartz=false
          rztrona=false
-         rzzeus=false
+         rzalastor=false
          rzuseq=false
          carver=false
          glory=false
@@ -276,12 +279,12 @@ do
          rztrona=true
          shift
          ;;
-      -rzzeus)
-         rzzeus=false
+      -rzalastor)
+         rzalastor=false
          shift
          ;;
-      +rzzeus)
-         rzzeus=true
+      +rzalastor)
+         rzalastor=true
          shift
          ;;
       -rzuseq)
@@ -336,7 +339,7 @@ then
    echo "    cab (LC, Linux, x86_64),"
    echo "    quartz (LC, Linux, x86_64),"
    echo "    rztrona (LC, Linux, x86_64),"
-   echo "    rzzeus (LC, Linux, x86_64),"
+   echo "    rzalastor (LC, Linux, x86_64),"
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
    echo "    carver (LBNL, Linux, x86_64),"
    echo "    glory (Sandia, Linux)"
@@ -710,33 +713,33 @@ then
 fi
 
 #
-# Build on rzzeus.
+# Build on rzalastor.
 #
-rm -f rzzeus
-cat <<EOF > rzzeus
+rm -f rzalastor
+cat <<EOF > rzalastor
 #!/bin/sh
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
-if test ! -d /usr/tmp/$user/rzzeus ; then
-   mkdir /usr/tmp/$user/rzzeus
+if test ! -d /usr/tmp/$user/rzalastor ; then
+   mkdir /usr/tmp/$user/rzalastor
 fi
-rm -rf /usr/tmp/$user/rzzeus/visitbuild
-mkdir /usr/tmp/$user/rzzeus/visitbuild
-mv rzzeus_$dist.tar.gz /usr/tmp/$user/rzzeus/visitbuild/$dist.tar.gz
-cd /usr/tmp/$user/rzzeus/visitbuild
+rm -rf /usr/tmp/$user/rzalastor/visitbuild
+mkdir /usr/tmp/$user/rzalastor/visitbuild
+mv rzalastor_$dist.tar.gz /usr/tmp/$user/rzalastor/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/rzalastor/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
 export PATH=\$PATH:/usr/bin/X11
-/usr/gapps/visit/thirdparty_shared/2.12.0/cmake/3.0.2/linux-x86_64_gcc-4.4/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
-make -j 6 package >> ../../buildlog 2>&1
+/usr/workspace/wsrzc/visit/visit/thirdparty_shared/2.13.0/chaos5/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake . -DVISIT_CONFIG_SITE:PATH=config-site/rzalastor4.cmake -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON -DVISIT_PARADIS:BOOL=ON >> ../../buildlog 2>&1
+make -j 16 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-x86_64.tar.gz ../..
 cd ../..
 rm -f resultlog
-echo "        build of visit on rzzeus"       > resultlog 2>&1
-echo "       --------------------------"      >> resultlog 2>&1
+echo "        build of visit on rzalastor"    > resultlog 2>&1
+echo "       -----------------------------"   >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
 ls -l                                         >> resultlog 2>&1
 echo ""                                       >> resultlog 2>&1
@@ -746,17 +749,17 @@ echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> 
 echo ""                                       >> resultlog 2>&1
 echo "The database plugins:"                  >> resultlog 2>&1
 ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
-mail  -s "VisIt build ($dist): rzzeus" $emailName < resultlog
+mail  -s "VisIt build ($dist): rzalastor" $emailName < resultlog
 EOF
 
-if [ $rzzeus = true ]
+if [ $rzalastor = true ]
 then
    if [ $test = no ]
    then
-      echo "Building on rzzeus"
-      scp rzzeus rzzeus:rzzeus_buildit
-      scp $dist.tar.gz rzzeus:rzzeus_$dist.tar.gz
-      ssh rzzeus286 "chmod 750 rzzeus_buildit;./rzzeus_buildit" &
+      echo "Building on rzalastor"
+      cp rzalastor rzalastor_buildit
+      cp $dist.tar.gz rzalastor_$dist.tar.gz
+      chmod 750 rzalastor_buildit;./rzalastor_buildit &
    fi
 fi
 
@@ -1010,5 +1013,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1104_64 ubuntu1404_64 cab quartz rztrona rzzeus rzuseq carver glory vulcan
+   rm -f kickit ubuntu1104_64 ubuntu1404_64 cab quartz rztrona rzalastor rzuseq carver glory vulcan
 fi
