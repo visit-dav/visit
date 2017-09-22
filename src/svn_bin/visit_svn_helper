@@ -109,7 +109,7 @@ is_two_digit_version_string()
 
     typeset X
     typeset -L1 X=$1
-    if [ "$X" != [0-9] ] ; then
+    if ! [[ "$X" =~ [0-9]+$ ]] ; then
         return 0
     fi
 
@@ -121,14 +121,14 @@ is_two_digit_version_string()
 
     typeset -L3 X=$1
     typeset -R1 X
-    if [ "$X" != [0-9] ] ; then
+    if ! [[ "$X" =~ [0-9]+$ ]] ; then
         return 0
     fi
 
     if [ ${#1} = 4 ] ; then
         typeset -L4 X=$1
         typeset -R1 X
-        if [ "$X" != [0-9] ] ; then
+        if ! [[ "$X" =~ [0-9]+$ ]] ; then
             return 0
         fi
     fi
@@ -144,7 +144,7 @@ is_three_digit_version_string()
 
     typeset X
     typeset -L1 X=$1
-    if [ "$X" != [0-9] ] ; then
+    if ! [[ "$X" =~ [0-9]+$ ]] ; then
         return 0
     fi
 
@@ -156,7 +156,7 @@ is_three_digit_version_string()
 
     typeset -L3 X=$1
     typeset -R1 X
-    if [ "$X" != [0-9] ] ; then
+    if ! [[ "$X" =~ [0-9]+$ ]] ; then
         return 0
     fi
 
@@ -165,11 +165,11 @@ is_three_digit_version_string()
     if [ "$X" = "." ] ; then
         typeset -L5 X=$1
         typeset -R1 X
-        if [ "$X" != [0-9] ] ; then
+        if ! [[ "$X" =~ [0-9]+$ ]] ; then
             return 0
         fi
     elif [ "$X" != "." ] ; then
-        if [ "$X" != [0-9] ] ; then
+        if ! [[ "$X" =~ [0-9]+$ ]] ; then
             return 0
         fi
         typeset -L5 X=$1
@@ -179,7 +179,7 @@ is_three_digit_version_string()
         fi
         typeset -L6 X=$1
         typeset -R1 X
-        if [ "$X" != [0-9] ] ; then
+        if ! [[ "$X" =~ [0-9]+$ ]] ; then
             return 0
         fi
     fi
@@ -195,7 +195,7 @@ is_four_digit_version_string()
 
     typeset X
     typeset -L1 X=$1
-    if [ "$X" != [0-9] ] ; then
+    if ! [[ "$X" =~ [0-9]+$ ]] ; then
         return 0
     fi
 
@@ -207,7 +207,7 @@ is_four_digit_version_string()
 
     typeset -L3 X=$1
     typeset -R1 X
-    if [ "$X" != [0-9] ] ; then
+    if ! [[ "$X" =~ [0-9]+$ ]] ; then
         return 0
     fi
 
@@ -219,7 +219,7 @@ is_four_digit_version_string()
 
     typeset -L5 X=$1
     typeset -R1 X
-    if [ "$X" != [0-9] ] ; then
+    if ! [[ "$X" =~ [0-9]+$ ]] ; then
         return 0
     fi
 
@@ -231,7 +231,7 @@ is_four_digit_version_string()
 
     typeset -L7 X=$1
     typeset -R1 X
-    if [ "$X" != [0-9] ] ; then
+    if ! [[ "$X" =~ [0-9]+$ ]] ; then
         return 0
     fi
 
