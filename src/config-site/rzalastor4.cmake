@@ -1,14 +1,14 @@
-#/usr/workspace/wsrzc/visit/visit/thirdparty_shared/2.13.0/toss3/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake
+#/usr/workspace/wsrzc/visit/visit/thirdparty_shared/2.13.0/chaos5/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake
 ##
 ## ./build_visit2_13_0 generated host.cmake
-## created: Thu Sep 21 16:29:33 PDT 2017
-## system: Linux rztopaz572 3.10.0-514.10.2.2chaos.ch6.x86_64 #1 SMP Fri Mar 17 15:45:16 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
+## created: Fri Sep 22 10:54:17 PDT 2017
+## system: Linux rzalastor4 2.6.32-696.10.1.1chaos.ch5.6.x86_64 #1 SMP Tue Aug 22 17:45:41 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsrzc/visit/visit/thirdparty_shared/2.13.0/toss3)
+SET(VISITHOME /usr/workspace/wsrzc/visit/visit/thirdparty_shared/2.13.0/chaos5)
 SET(VISITARCH linux-x86_64_gcc-4.9)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -19,7 +19,6 @@ VISIT_OPTION_DEFAULT(VISIT_CXX_COMPILER g++ TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_FORTRAN_COMPILER no TYPE FILEPATH)
 VISIT_OPTION_DEFAULT(VISIT_C_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
 VISIT_OPTION_DEFAULT(VISIT_CXX_FLAGS " -m64 -fPIC -fvisibility=hidden" TYPE STRING)
-SET(CMAKE_INSTALL_RPATH "/usr/tce/packages/gcc/gcc-4.9.3/lib64")
 
 ##
 ## VisIt Thread Option
@@ -30,17 +29,18 @@ VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 ## Parallel Build Setup.
 ##
 VISIT_OPTION_DEFAULT(VISIT_PARALLEL ON TYPE BOOL)
-VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/include TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib -Wl,-rpath=/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib" TYPE STRING)
-VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl)
-VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/lib")
+VISIT_OPTION_DEFAULT(VISIT_MPI_CXX_FLAGS -I/usr/local/tools/mvapich2-gnu/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_C_FLAGS   -I/usr/local/tools/mvapich2-gnu/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_FORTRAN_FLAGS -I/usr/local/tools/mvapich2-gnu/include TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LD_FLAGS  "-L/usr/local/tools/mvapich2-gnu/lib -Wl,-rpath=/usr/local/tools/mvapich2-gnu/lib" TYPE STRING)
+VISIT_OPTION_DEFAULT(VISIT_MPI_LIBS     mpich mpl pmi)
+VISIT_OPTION_DEFAULT(VISIT_MPI_FORTRAN_LIBS    fmpich mpich mpl pmi)
+VISIT_OPTION_DEFAULT(VISIT_PARALLEL_RPATH  "/usr/local/tools/mvapich2-gnu/lib")
 
 ##
 ## Turn on DDT support.
 ##
 VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
-
 
 ##############################################################
 ##
@@ -54,6 +54,11 @@ VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
+
+##
+## Mesa
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 
 ##
 ## Python
