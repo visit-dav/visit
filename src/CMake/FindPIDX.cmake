@@ -58,7 +58,7 @@ ELSE ()
   IF (PIDX_FIND_REQUIRED)
     MESSAGE(FATAL_ERROR "PIDX library not found. Try setting PIDX_DIR")
   ELSE()
-    MESSAGE("WARNING: PIDX library not found. Try setting PIDX_DIR")
+    MESSAGE(STATUS "PIDX library not found. Try setting PIDX_DIR")
   ENDIF()
 ENDIF ()
                          
