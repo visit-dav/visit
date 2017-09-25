@@ -45,6 +45,16 @@
 #MESSAGE(STATUS "  NEKTAR++_VERSION=${NEKTAR++_VERSION}")
 #MESSAGE(STATUS "  VISIT_NEKTAR++_DIR=${VISIT_NEKTAR++_DIR}")
 
+# The libraries as of Nektar++ 4.4
+SET(NEKTAR++_LIBRARIES LibUtilities
+                       StdRegions
+                       SpatialDomains
+                       LocalRegions
+                       MultiRegions
+                       Collections
+                       GlobalMapping
+                       FieldUtils)
+
 If( EXISTS ${VISIT_NEKTAR++_DIR} )
 
     IF(EXISTS ${VISIT_NEKTAR++_DIR}/lib64)
