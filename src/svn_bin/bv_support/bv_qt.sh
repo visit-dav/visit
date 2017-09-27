@@ -128,7 +128,8 @@ function bv_qt_info
         if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.8" ||
                     "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ||
                     "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
+                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ||
+                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.12" ]]; then
             export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.6.tar.gz"}
             export QT_VERSION=${QT_VERSION:-"4.8.6"}
             export QT_MD5_CHECKSUM="2edbe4d6c2eff33ef91732602f3518eb"
