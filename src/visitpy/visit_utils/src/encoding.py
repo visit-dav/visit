@@ -59,6 +59,9 @@ import subprocess
 import glob
 import re
 import string
+import distutils.spawn
+import platform
+import shutil
 
 from os.path import join as pjoin
 
@@ -555,7 +558,10 @@ def gen_symlinks(ipattern,fdup):
     for f in ifs:
         for i in range(fdup):
             lnk = pattern  % lnk_cnt
-            os.symlink(f,lnk)
+            if platform.system() != "Windows":
+              os.symlink(f,lnk)
+            else:
+              shutil.copy2(f, lnk)
             lnks.append(lnk)
             lnk_cnt +=1
     res = {"full":pattern }
@@ -595,10 +601,16 @@ def gen_symlinks_stereo(ipattern,fdup=None):
             lnk_1 = pattern_s % (lnk_cnt + 1)
             lnk_l = pattern_l % frm_cnt
             lnk_r = pattern_r % frm_cnt
-            os.symlink(in_l,lnk_0)
-            os.symlink(in_r,lnk_1)
-            os.symlink(in_l,lnk_l)
-            os.symlink(in_r,lnk_r)
+            if platform.system() != "Windows":
+                os.symlink(in_l,lnk_0)
+                os.symlink(in_r,lnk_1)
+                os.symlink(in_l,lnk_l)
+                os.symlink(in_r,lnk_r)
+            else:
+                shutil.copy2(in_l,lnk_0)
+                shutil.copy2(in_r,lnk_1)
+                shutil.copy2(in_l,lnk_l)
+                shutil.copy2(in_r,lnk_r)
             lnks.extend([lnk_0,lnk_1,lnk_l,lnk_r])
             lnk_cnt +=2
             frm_cnt +=1
@@ -668,11 +680,14 @@ def ffmpeg_bin():
     """
     Returns path to the 'ffmpeg' binary, or None if this binary is not available.
     """
-    res = sexe("which ffmpeg",ret_output=True)[1].strip()
-    if os.path.exists(res):
-        return res
+    if (platform.system() == "Windows"):
+        return distutils.spawn.find_executable("ffmpeg")
     else:
-        return None
+        res = sexe("which ffmpeg",ret_output=True)[1].strip()
+        if os.path.exists(res):
+            return res
+        else:
+            return None
 
 def ffmpeg_version():
     """
