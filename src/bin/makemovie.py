@@ -36,6 +36,7 @@
 ##############################################################################
 
 import os, select, signal, socket, string, sys, thread
+import distutils.spawn
 from xmllib import *
 
 from visit_utils import encoding
@@ -62,6 +63,9 @@ def CommandInPath(command):
         cmd = "which %s > /dev/null" % command
         rv = os.system(cmd)
         if (rv == 0):
+            retval = 1
+    else:
+        if distuils.spawn.find_executable(command) != None:
             retval = 1
     return retval
 
