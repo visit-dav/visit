@@ -1119,7 +1119,9 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
         hid_t intype = H5Dget_type(ds);
         if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
             H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
-            H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+            H5Tequal(intype, H5T_NATIVE_LDOUBLE) ||
+            H5Tequal(intype, H5T_IEEE_F32BE) ||
+            H5Tequal(intype, H5T_IEEE_F64BE))
         {        
             vtkDoubleArray *array = vtkDoubleArray::New();
             array->SetNumberOfTuples(nvals);
@@ -1198,7 +1200,9 @@ avtPFLOTRANFileFormat::GetVar(int timestate, int, const char *varname)
         hid_t intype = H5Dget_type(ds);
         if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
             H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
-            H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+            H5Tequal(intype, H5T_NATIVE_LDOUBLE) ||
+            H5Tequal(intype, H5T_IEEE_F32BE) ||
+            H5Tequal(intype, H5T_IEEE_F64BE))
         {        
             double *in = new double[nvals];
             herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
@@ -1318,8 +1322,10 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
             hid_t intype = H5Dget_type(ds);
             if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
                 H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
-                H5Tequal(intype, H5T_NATIVE_LDOUBLE))
-            {        
+                H5Tequal(intype, H5T_NATIVE_LDOUBLE) ||
+                H5Tequal(intype, H5T_IEEE_F32BE) ||
+                H5Tequal(intype, H5T_IEEE_F64BE))
+            {
                 double *in = new double[nvals];
                 herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL,
                                      H5P_DEFAULT, in);
@@ -1406,7 +1412,9 @@ avtPFLOTRANFileFormat::GetVectorVar(int timestate, int domain,
             hid_t intype = H5Dget_type(ds);
             if (H5Tequal(intype, H5T_NATIVE_FLOAT) ||
                 H5Tequal(intype, H5T_NATIVE_DOUBLE) ||
-                H5Tequal(intype, H5T_NATIVE_LDOUBLE))
+                H5Tequal(intype, H5T_NATIVE_LDOUBLE) ||
+                H5Tequal(intype, H5T_IEEE_F32BE) ||
+                H5Tequal(intype, H5T_IEEE_F64BE))
             {        
                 double *in = new double[nvals];
                 herr_t err = H5Dread(ds, H5T_NATIVE_DOUBLE, memSpace, slabSpace,
