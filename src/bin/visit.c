@@ -300,6 +300,11 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Change placement of ';' when creating the engineArgs string for
  *   the command line.
  *
+ *   Kathleen Biagas, Fri Sep 7 09:34:27 MST 2017
+ *   Support MSMPI version 8 which creates an MSMPI_BIN env var, and include/
+ *   libs are in a completely different location, so don't assume mpiexec
+ *   can be found from MSMPI_INC.
+ *
  *****************************************************************************/
 
 int
@@ -558,6 +563,63 @@ VisItLauncherMain(int argc, char *argv[])
     if(component == "engine")
         component = parallel ? "engine_par" : "engine_ser";
 
+    string mpipath;
+    if (component == "engine_par")
+    {
+        mpipath = WinGetEnv("VISIT_MPIEXEC");
+        // first look for an EnvVar set by the installer
+        if (mpipath.empty())
+        {
+            // Check for EnvVar set by MSMPI 8.1 redist installer
+            mpipath = WinGetEnv("MSMPI_BIN");
+            if (!mpipath.empty())
+            {
+                // found the include path, point to Bin
+                mpipath += "\\mpiexec.exe";
+            }
+        }
+        if (mpipath.empty())
+        {
+            // Check for EnvVar set by MSMPI R2 redist installer
+            mpipath = WinGetEnv("MSMPI_INC");
+            if (!mpipath.empty())
+            {
+                mpipath += "\\..\\Bin\\mpiexec.exe";
+                // found the include path, point to Bin
+                // however, this env var is also set by MSMPI 8.1 SDK,
+                // so actually should check that executable exists
+                if (!PathFileExists(mpipath.c_str()))
+                {
+                    mpipath.clear();
+                }
+            }
+        }
+        if (mpipath.empty())
+        {
+            // Check for EnvVar set by HPC SDK installer
+            mpipath = WinGetEnv("CCP_SDK");
+            if (!mpipath.empty())
+            {
+                // found the base path, point to Bin
+                mpipath += "\\Bin\\mpiexec.exe";
+                // check that mpiexec exists
+                if (!PathFileExists(mpipath.c_str()))
+                {
+                    mpipath.clear();
+                }
+            }
+        }
+        if (mpipath.empty())
+        {
+            cerr << "Could not find path to \"mpiexec\"" << endl;
+            cerr << "If it is installed on your system, please set "
+                 << "an environment variable 'VISIT_MPIEXEC' that points"
+                 << "to its location." << endl;
+            parallel = false;
+            component = "engine_ser";
+        }
+    }
+
     if (parallel && !noloopback)
     {
         noloopback = true;
@@ -619,41 +681,12 @@ VisItLauncherMain(int argc, char *argv[])
 
     if (component == "engine_par")
     {
-        // first look for an EnvVar set by the installer
-        string mpipath = WinGetEnv("VISIT_MPIEXEC");
-        if (mpipath.empty())
-        {
-            // Check for EnvVar set by MSMPI R2 redist installer
-            mpipath = WinGetEnv("MSMPI_INC");
-            if (!mpipath.empty())
-            {
-                // found the include path, point to Bin
-                mpipath += "\\..\\Bin\\mpiexec.exe";
-            }
-        }
-        if (mpipath.empty())
-        {
-            // Check for EnvVar set by HPC SDK installer
-            mpipath = WinGetEnv("CCP_SDK");
-            if (!mpipath.empty())
-            {
-                // found the base path, point to Bin
-                mpipath += "\\Bin\\mpiexec.exe";
-            }
-        }
-        if (mpipath.empty())
-        {
-            cerr << "Could not find path to \"mpiexec\"" << endl;
-            cerr << "If it is installed on your system, please set "
-                 << "an environment variable 'VISIT_MPIEXEC' that points"
-                 << "to its location." << endl;
-            return -1;
-        }
-
+        // we've already determined the path to mpiexec, if it wasn't
+        // found, we've switched to a serial engine.
         char *shortmpipath = (char*)malloc(512);
         GetShortPathName(mpipath.c_str(), shortmpipath, 512);
 
-        // mpi exec, with shortpath 
+        // mpi exec, with shortpath
         command.push_back(shortmpipath);
         free(shortmpipath);
         // mpi exec args, 
@@ -1239,7 +1272,7 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
     { 
         char *ssh = NULL, *sshargs = NULL;
         int haveSSH = 0, haveSSHARGS = 0, freeSSH = 0, freeSSHARGS = 0;
-        
+
         if((ssh = getenv("VISITSSH")) == NULL)
         {
             haveSSH = ReadKey("SSH", &ssh);
