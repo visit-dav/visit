@@ -2607,7 +2607,6 @@ ELSE (NOT WIN32)
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
-                    /DCL_64=${CMAKE_CL_64}
                     /DQT5=${VISIT_QT5}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
@@ -2616,8 +2615,8 @@ ELSE (NOT WIN32)
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
-                    /DCL_64=${CMAKE_CL_64}
                     /DQT5=${VISIT_QT5}
+                    /DMPI_VERSION=${VISIT_MSMPI_VERSION}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
