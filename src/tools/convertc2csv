@@ -1,0 +1,72 @@
+#! /usr/bin/env python
+#
+# Get the command line arguments.
+#
+import sys
+
+if (len(sys.argv) != 3):
+    print "Usage: convertc2csv input_curve_file output_csv_file"
+    quit()
+
+curve_file_name = sys.argv[1]
+csv_file_name = sys.argv[2]
+print "Converting %s to %s" % (curve_file_name, csv_file_name)
+
+#
+# Read the curve file.
+#
+input_list=[]
+with open(curve_file_name, 'rb') as curve_file:
+    for line in curve_file.readlines():
+        input_list.append(tuple(line.strip().split()))
+
+#
+# Split the lists into multiple lists.
+#
+names=["time"]
+
+all_lists=[]
+cur_list=[]
+n_lists = 0
+for row in input_list:
+    if (len(row) >= 2):
+        if (row[0] == '#'):
+            if (n_lists > 0):
+                all_lists.append(cur_list)
+                cur_list=[]
+            n_lists = n_lists + 1
+            names.append(row[1])
+        else:
+            cur_list.append(row)
+
+all_lists.append(cur_list)
+
+print "We have %d curves with %d points." % (len(all_lists), len(all_lists[0]))
+
+#
+# Create the swapped list.
+#
+output_list=[]
+
+npoints = len(all_lists[0])
+ncolumns = len(all_lists);
+
+# Add the heading.
+output_list.append(names)
+# Add the rows.
+for i in range(0, npoints, 1):
+    cur_row = [all_lists[0][i][0], all_lists[0][i][1]] 
+    for j in range(1, ncolumns, 1):
+        cur_row.append(all_lists[j][i][1])
+    output_list.append(cur_row)
+
+#
+# Output the new csv file.
+#
+import csv
+
+with open(csv_file_name, 'wb') as csv_file:
+    writer = csv.writer(csv_file, delimiter=',')
+    writer.writerows(output_list)
+
+quit()
