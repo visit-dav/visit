@@ -1,14 +1,14 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/toss3/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake
 ##
 ## ./build_visit2_13_0 generated host.cmake
-## created: Thu Sep  7 09:51:52 PDT 2017
+## created: Thu Sep 21 15:30:12 PDT 2017
 ## system: Linux quartz2498 3.10.0-514.10.2.2chaos.ch6.x86_64 #1 SMP Fri Mar 17 15:45:16 PDT 2017 x86_64 x86_64 x86_64 GNU/Linux
 ## by: brugger
 
 ##
 ## Setup VISITHOME & VISITARCH variables.
 ##
-SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0)
+SET(VISITHOME /usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/toss3)
 SET(VISITARCH linux-x86_64_gcc-4.9)
 VISIT_OPTION_DEFAULT(VISIT_SLIVR TRUE TYPE BOOL)
 
@@ -53,6 +53,11 @@ VISIT_OPTION_DEFAULT(VISIT_DDT ON TYPE BOOL)
 ## Library's LIBDEP settings must come after them.
 ##############################################################
 ##
+
+##
+## Mesa
+##
+VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})
 
 ##
 ## Python
@@ -124,33 +129,21 @@ VISIT_OPTION_DEFAULT(VISIT_HDF5_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz
 VISIT_OPTION_DEFAULT(VISIT_HDF5_MPI_LIBDEP ${VISITHOME}/szip/2.1/${VISITARCH}/lib sz ${VISITHOME}/zlib/1.2.7/${VISITARCH}/lib z TYPE STRING)
 
 ##
-## Conduit
-##
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.3.0/${VISITARCH})
-VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
-##
-
-
-##
 ## CGNS
 ##
 VISIT_OPTION_DEFAULT(VISIT_CGNS_DIR ${VISITHOME}/cgns/3.2.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_CGNS_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
 
 ##
+## Conduit
+##
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_DIR ${VISITHOME}/conduit/v0.3.0/${VISITARCH})
+VISIT_OPTION_DEFAULT(VISIT_CONDUIT_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} TYPE STRING)
+
+##
 ## GDAL
 ##
 VISIT_OPTION_DEFAULT(VISIT_GDAL_DIR ${VISITHOME}/gdal/1.10.0/${VISITARCH})
-
-##
-## LLVM
-##
-VISIT_OPTION_DEFAULT(VISIT_LLVM_DIR ${VISITHOME}/llvm/4.0.0/${VISITARCH})
-
-##
-## OpenSWR
-##
-VISIT_OPTION_DEFAULT(VISIT_OPENSWR_DIR ${VISITHOME}/openswr/17.0.6/${VISITARCH})
 
 ##
 ## H5Part
@@ -212,6 +205,12 @@ VISIT_OPTION_DEFAULT(VISIT_PYSIDE_DIR ${VISITHOME}/pyside/2.0.0-2017.08.30/${VIS
 ##
 VISIT_OPTION_DEFAULT(VISIT_SILO_DIR ${VISITHOME}/silo/4.10.1/${VISITARCH})
 VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP} ZLIB_LIBRARY_DIR z TYPE STRING)
+
+##
+## Uintah
+##
+SETUP_APP_VERSION(UINTAH 2.1.0)
+VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##
 ## VISUS 
