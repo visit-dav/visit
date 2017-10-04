@@ -108,7 +108,6 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/third_party_builtin/nek5000/jl
-${VISIT_SOURCE_DIR}/third_party_builtin/nektar++
 ${VTK_INCLUDE_DIRS}
 ${NEKTAR++_INCLUDE_DIR}
 ${NEKTAR++_INCLUDE_DIRS}
