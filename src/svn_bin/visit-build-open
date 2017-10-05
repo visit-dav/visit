@@ -560,11 +560,11 @@ fi
 rm -f cab
 cat <<EOF > cab
 #!/bin/sh
-export PATH=/opt/rh/devtoolset-2/root/usr/bin:\$PATH
-export GNU_INCLUDES=/opt/rh/devtoolset-2/root/usr/include/c++/4.8.2
-export GNU_LIBS=/opt/rh/devtoolset-2/root/usr/lib64:/opt/rh/devtoolset-2/root/usr/lib/gcc/x86_64-redhat-linux/4.8.2
-export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rh/devtoolset-2/root/usr/lib64:/opt/rh/devtoolset-2/root/usr/lib/gcc/x86_64-redhat-linux/4.8.2
-export _LMFILES_=/opt/modules/modulefiles/gnu/4.8.2
+export PATH=/opt/rh/devtoolset-3/root/usr/bin:\$PATH
+export GNU_INCLUDES=/opt/rh/devtoolset-3/root/usr/include/c++/4.9.2
+export GNU_LIBS=/opt/rh/devtoolset-3/root/usr/lib64:/opt/rh/devtoolset-3/root/usr/lib/gcc/x86_64-redhat-linux/4.9.2
+export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rh/devtoolset-3/root/usr/lib64:/opt/rh/devtoolset-3/root/usr/lib/gcc/x86_64-redhat-linux/4.9.2
+export _LMFILES_=/opt/modules/modulefiles/gnu/4.9.2
 if test ! -d /usr/tmp/$user ; then
    mkdir /usr/tmp/$user
 fi
