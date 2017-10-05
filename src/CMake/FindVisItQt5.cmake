@@ -42,12 +42,16 @@
 #
 #   Kevin Griffin, Wed Nov 2 10:04:28 PDT 2016
 #   Added logic to install the correct OSX frameworks and static library.
-# 
+#
 #   Kevin Griffin, Wed May 17 13:23:24 PDT 2017
 #   Installed the platform plugins directory in the gui.app and viewer.app
 #   directories containing the gui and viewer executeables for OSX. Also 
 #   added missing frameworks, archives, and includes.
-#   
+#
+#   Eric Brugger, Thu Oct  5 15:11:39 PDT 2017
+#   Added Svg to the visit_qt_modules for all platforms. Previously, there
+#   was separate logic for adding it to Windows and Mac, but Linux also
+#   needs it.
 #
 #*****************************************************************************
 
@@ -62,18 +66,14 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(QT5_INCLUDE_DIRS "")
 set(QT5_LIBRARIES "")
 
-set(visit_qt_modules Core Gui Widgets OpenGL Network PrintSupport Qml Xml UiTools)
+set(visit_qt_modules Core Gui Widgets OpenGL Network PrintSupport Qml Svg Xml UiTools)
 
 if(LINUX)
     set (visit_qt_modules ${visit_qt_modules} X11Extras)
 endif()
 
-if(WIN32)
-    set (visit_qt_modules ${visit_qt_modules} Svg)
-endif()
-
 if(APPLE)
-        set (visit_qt_modules ${visit_qt_modules} Svg Concurrent)
+    set (visit_qt_modules ${visit_qt_modules} Concurrent)
 endif()
 
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VISIT_QT_DIR}/lib/cmake)
