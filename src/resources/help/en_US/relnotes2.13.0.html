@@ -33,7 +33,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Enhanced the database read/export options that contain enums to present the string form of the enum via the cli. Setting the option will accept an int or a valid string and print error messages if either is invalid for the option being set.</li>
   <li>Enhanced the SeedMe window to clear all forms by default when the window is closed. The Settings tab has a new checkbox <i>Clear all tabs on close</i> to control this behavior. If modified, the option will be saved in VisIt's config file when settings are saved.</li>
-  <li>Enhanced movie encoding scripts to utilize ffmeg on Windows if it is found in the PATH environment variable.</li>
+  <li>Enhanced the movie encoding scripts to utilize ffmeg on Windows if it is found in the PATH environment variable.</li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -62,6 +62,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Removed legacy support for non-material (e.g. domains, levels) variables from the Boundary and FilledBoundary plots. Old session files and python scripts specifying non-material variables for Boundary or FilledBoundary plots <b>will fail</b>. Changing the plot type in scripts or session files to Subset should allow them to work.</li>
   <li>Removed legacy support for material variables from the Subset plot. Old session files and python scripts specifying material variables for Subset plot <b>will fail</b>. Changing the plot type to FilledBoundary should allow them to work.</li>
 </ul>
+
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 2.13</font></b></p>
 <ul>
