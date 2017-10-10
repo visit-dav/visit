@@ -53,6 +53,10 @@
 #   was separate logic for adding it to Windows and Mac, but Linux also
 #   needs it.
 #
+#   Eric Brugger, Tue Oct 10 12:33:50 PDT 2017
+#   Added Concurrent to the visit_qt_modules for Linux. Previously,
+#   it was only adding it for Mac, but Linux also needs it.
+#
 #*****************************************************************************
 
 
@@ -69,7 +73,7 @@ set(QT5_LIBRARIES "")
 set(visit_qt_modules Core Gui Widgets OpenGL Network PrintSupport Qml Svg Xml UiTools)
 
 if(LINUX)
-    set (visit_qt_modules ${visit_qt_modules} X11Extras)
+    set (visit_qt_modules ${visit_qt_modules} Concurrent X11Extras)
 endif()
 
 if(APPLE)
@@ -155,7 +159,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
         Qt5::Xml
   )
   if(LINUX)
-      set(qt_libs_install ${qt_libs_install} Qt5::X11Extras)
+      set(qt_libs_install ${qt_libs_install} Qt5::Concurrent Qt5::X11Extras)
   endif()
   if(APPLE)
       set(qt_libs_install ${qt_libs_install} Qt5::Concurrent)
