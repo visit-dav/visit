@@ -151,16 +151,14 @@ if(NOT VISIT_QT_SKIP_INSTALL)
         Qt5::PrintSupport
         Qt5::Widgets
         Qt5::Qml
+        Qt5::Svg
         Qt5::Xml
   )
   if(LINUX)
       set(qt_libs_install ${qt_libs_install} Qt5::X11Extras)
   endif()
-  if(WIN32)
-      set(qt_libs_install ${qt_libs_install} Qt5::Svg)
-  endif()
   if(APPLE)
-      set(qt_libs_install ${qt_libs_install} Qt5::Svg Qt5::Concurrent)
+      set(qt_libs_install ${qt_libs_install} Qt5::Concurrent)
   endif()
 
   IF(APPLE)
