@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+  <Plugin name="Denovo" type="database" label="Denovo" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" dbtype="STMD" haswriter="false" hasoptions="false" filePatternsStrict="false" opensWholeDirectory="false">
+    <CXXFLAGS>
+      ${HDF5_INCLUDE_DIR}
+    </CXXFLAGS>
+    <LDFLAGS>
+      ${HDF5_LIBRARY_DIR}
+    </LDFLAGS>
+    <LIBS>
+      ${HDF5_LIB}
+    </LIBS>
+    <DEFINES>
+      ${HDF5_LIB}
+    </DEFINES>
+    <FilePatterns>
+      *.h5
+    </FilePatterns>
+    <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">
+    </Attribute>
+  </Plugin>
