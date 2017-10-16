@@ -65,7 +65,7 @@ def CommandInPath(command):
         if (rv == 0):
             retval = 1
     else:
-        if distuils.spawn.find_executable(command) != None:
+        if distutils.spawn.find_executable(command) != None:
             retval = 1
     return retval
 
