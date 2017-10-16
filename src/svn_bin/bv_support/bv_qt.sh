@@ -142,7 +142,8 @@ function bv_qt_info
 {
     bv_qt_enable
 
-    export QT_VERSION=${QT_VERSION:-"5.8.0"}
+#    export QT_VERSION=${QT_VERSION:-"5.8.0"}
+    export QT_VERSION=${QT_VERSION:-"5.6.1"}
     export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"}
     export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"a9f2494f75f966e2f22358ec367d8f41"}
     export QT_SHA256_CHECKSUM=${QT_SHA256_CHECKSUM:-"9dc5932307ae452855863f6405be1f7273d91173dcbe4257561676a599bd58d3"}
@@ -257,7 +258,16 @@ function apply_qt_patch
         fi
     fi
 
-    if [[ ${QT_VERSION} == 5.8.0 ]] ; then
+    if [[ ${QT_VERSION} == 5.6.1 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+
+            XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
+#           info ${XCODE_VERSION}
+            if [[ "$XCODE_VERSION" == "Xcode 8"* ]]; then
+                apply_qt_561_osx_xcode_8_patch
+            fi
+        fi
+    elif [[ ${QT_VERSION} == 5.8.0 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]]; then
             apply_qt_580_osx_patch
         fi
@@ -302,6 +312,61 @@ diff -c src/gui/painting/qpaintengine_mac.cpp.orig src/gui/painting/qpaintengine
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 4.8.6 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_561_osx_xcode_8_patch
+{
+    # fix for OS X 10.11 or 10.12 with Xcode 8
+    info "Patching qt 5.6.1 for OS X and Xcode 8"
+    patch -p0 << \EOF
+diff -c  qtbase/configure.orig qtbase/configure
+*** qtbase/configure.orig       2017-10-16 15:48:39.000000000 -0600
+--- qtbase/configure    2017-10-16 15:48:54.000000000 -0600
+***************
+*** 543,549 ****
+          exit 2
+      fi
+  
+!     if ! /usr/bin/xcrun -find xcrun >/dev/null 2>&1; then
+          echo >&2
+          echo "   Xcode not set up properly. You may need to confirm the license" >&2
+          echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
+--- 543,549 ----
+          exit 2
+      fi
+  
+!     if ! /usr/bin/xcrun -find xcodebuild >/dev/null 2>&1; then
+          echo >&2
+          echo "   Xcode not set up properly. You may need to confirm the license" >&2
+          echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
+
+diff -c qtbase/mkspecs/features/mac/default_pre.prf.orig qtbase/mkspecs/features/mac/default_pre.prf
+*** qtbase/mkspecs/features/mac/default_pre.prf.orig    2017-10-16 15:33:57.000000000 -0600
+--- qtbase/mkspecs/features/mac/default_pre.prf 2017-10-16 15:35:02.000000000 -0600
+***************
+*** 12,18 ****
+          error("Xcode is not installed in $${QMAKE_XCODE_DEVELOPER_PATH}. Please use xcode-select to choose Xcode installation path.")
+  
+      # Make sure Xcode is set up properly
+!     isEmpty($$list($$system("/usr/bin/xcrun -find xcrun 2>/dev/null"))): \
+          error("Xcode not set up properly. You may need to confirm the license agreement by running /usr/bin/xcodebuild.")
+  }
+  
+--- 12,18 ----
+          error("Xcode is not installed in $${QMAKE_XCODE_DEVELOPER_PATH}. Please use xcode-select to choose Xcode installation path.")
+  
+      # Make sure Xcode is set up properly
+!     isEmpty($$list($$system("/usr/bin/xcrun -find xcodebuild 2>/dev/null"))): \
+          error("Xcode not set up properly. You may need to confirm the license agreement by running /usr/bin/xcodebuild.")
+  }
+  
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.6.1 patch failed."
         return 1
     fi
 
