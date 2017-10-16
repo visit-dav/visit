@@ -35,13 +35,14 @@
 # DAMAGE.
 #
 # Modifications:
+#   Eric Brugger, Mon Oct 16 09:12:31 PDT 2017
+#   I modified the file to no longer use BSD style pseudo terminals on
+#   MacOSX, since it doesn't work on newer Mac operating sytems.
 #
 #****************************************************************************/
 
 IF(NOT WIN32)
     IF(CMAKE_SYSTEM_NAME STREQUAL AIX)
-        MESSAGE(STATUS "BSD style pseudo-tty")
-    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL Darwin)
         MESSAGE(STATUS "BSD style pseudo-tty")
     ELSE(CMAKE_SYSTEM_NAME STREQUAL AIX)
         TRY_COMPILE(tmpVar
