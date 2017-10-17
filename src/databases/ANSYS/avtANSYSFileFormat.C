@@ -42,6 +42,7 @@
 
 #include <avtANSYSFileFormat.h>
 
+#include <algorithm>
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -488,7 +489,9 @@ avtANSYSFileFormat::ReadFile(const char *name, int nLines)
               nverts = -1;
               if(comma != 0)
               {
-                if(char* solid = strcasestr(comma+1, "solid"))
+                std::string lowerCase = comma+1;
+                std::transform(lowerCase.begin(), lowerCase.end(), lowerCase.begin(), ::tolower);
+                if(std::string::npos != lowerCase.find_first_of("solid"))
                 {
                   // if the line looks like "eblock,19,solid,,1762" we read it in.
                   // if solid is not in this line then the number of verts is contained 
