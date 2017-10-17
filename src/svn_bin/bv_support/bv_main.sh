@@ -86,8 +86,12 @@ function initialize_build_visit()
             export MACOSX_DEPLOYMENT_TARGET=10.12
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
+        elif [[ ${VER%%.*} == 17 ]] ; then
+            export MACOSX_DEPLOYMENT_TARGET=10.13
+            export C_COMPILER=${C_COMPILER:-"clang"}
+            export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         else
-            export MACOSX_DEPLOYMENT_TARGET=10.12
+            export MACOSX_DEPLOYMENT_TARGET=10.13
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         fi
