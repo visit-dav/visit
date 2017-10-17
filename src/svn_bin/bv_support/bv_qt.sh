@@ -3,6 +3,7 @@ function bv_qt_initialize
     export DO_QT="yes"
     export FORCE_QT="no"
     export USE_SYSTEM_QT="no"
+    # NOTE: IS_QT4 is used in bv_pyside.sh
     export IS_QT4="no"
     add_extra_commandline_args "qt" "qt4" 0 "Build Qt4 instead of Qt5"
     add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
@@ -142,7 +143,9 @@ function bv_qt_info
 {
     bv_qt_enable
 
+#    Note: Qt 5.8 is not yet compatible with Pyside2.
 #    export QT_VERSION=${QT_VERSION:-"5.8.0"}
+    
     export QT_VERSION=${QT_VERSION:-"5.6.1"}
     export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"}
     export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"a9f2494f75f966e2f22358ec367d8f41"}
@@ -196,7 +199,7 @@ function bv_qt_host_profile
                 fi
             fi
         fi
-    fi    
+    fi
 }
 
 function bv_qt_ensure
