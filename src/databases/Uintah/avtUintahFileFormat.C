@@ -1804,26 +1804,20 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     LevelInfo &levelInfo = stepInfo->levelInfo[level];
     PatchInfo &patchInfo = levelInfo.patchInfo[local_patch];
 
-    bool nodeCentered;
-    
     // The region we're going to ask uintah for (from plow to phigh-1)
     int plow[3], phigh[3];
     patchInfo.getBounds(plow, phigh, varType);
     
     // For node based meshes add one if there is a neighbor.
-    if( varType.find("NC") != std::string::npos )
+    bool nodeCentered = (varType.find("NC") != std::string::npos);
+    
+    if( nodeCentered )
     {
-      nodeCentered = true;
-      
       int nlow[3], nhigh[3];
       patchInfo.getBounds(nlow, nhigh, "NEIGHBORS");
       
       for (int i=0; i<3; i++)
         phigh[i] += nhigh[i];
-    }
-    else
-    {  
-      nodeCentered = false;      
     }
     
     GridDataRaw *gd = NULL;
@@ -1869,8 +1863,11 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       // Patch processor Id
       else if (strcmp(varname, "patch/processor") == 0 )
       {
+#if (2 <= UINTAH_MAJOR_VERSION && 2 <= UINTAH_MINOR_VERSION )
+        double value = patchInfo.getProcRankId();
+#else
         double value = patchInfo.getProcId();
-      
+#endif      
         for (int i=0; i<gd->num; i++) 
           gd->data[i] = value;
       }
