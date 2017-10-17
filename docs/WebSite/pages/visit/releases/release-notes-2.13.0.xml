@@ -96,7 +96,8 @@ enhancements and bug-fixes that were added to this release.</p>
 
 <h2>Build changes in version 2.13</h2>
 <ul>
-  <li>Enhanced build_visit to support OpenSWR. OpenSWR is an Intel software renderer that is now part of Mesa. OpenSWR should not be enabled with mesa. To enable OpenSWR add the following flags "--llvm --openswr" to the command line. When you build visit with OpenSWR support it will use the Mesa llvmpipe renderer by default. To enable the OpenSWR renderer you will need to set the GALLIUM_DRIVER environment variable to swr (e.g. "setenv GALLIUM_DRIVER swr"). When VisIt runs with OpenSWR it will print AVX or AVX2 to the terminal depending on the type of Intel CPU you are running on.</li>
+  <li>Enhanced build_visit to support OpenSWR. OpenSWR is an Intel software renderer that is now part of Mesa. OpenSWR should not be enabled with mesa. To enable OpenSWR add the flags "--llvm --openswr" to the command line. When you build visit with OpenSWR support it will use the Mesa llvmpipe renderer by default. To enable the OpenSWR renderer you will need to set the GALLIUM_DRIVER environment variable to swr (e.g. "setenv GALLIUM_DRIVER swr"). When VisIt runs with OpenSWR it will print AVX or AVX2 to the terminal depending on the type of Intel CPU you are running on.</li>
+  <li>Modified build_visit to build Qt 5 by default. The option "--qt5" has been removed, the option "--qt4" has been added and "--qt" now builds Qt 5.</li>
   <li>Updated build_visit to build PySide 2 when specifying --pyside when using Qt 5.</li>
   <li>Updated build_visit to build CMake version 3.8.1.</li>
   <li>Removed the gui option from build_visit.</li>
