@@ -3,8 +3,9 @@ function bv_qt_initialize
     export DO_QT="yes"
     export FORCE_QT="no"
     export USE_SYSTEM_QT="no"
-    export IS_QT5="no"
-    add_extra_commandline_args "qt" "qt5" 0 "Build Qt5 instead of Qt4"
+    # NOTE: IS_QT4 is used in bv_pyside.sh
+    export IS_QT4="no"
+    add_extra_commandline_args "qt" "qt4" 0 "Build Qt4 instead of Qt5"
     add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
     add_extra_commandline_args "qt" "alt-qt-dir" 1 "Use qt found in alternative directory"
 }
@@ -38,9 +39,9 @@ function qt_set_vars_helper
     QT_LIB_DIR=`"$QT_QMAKE_COMMAND" -query QT_INSTALL_LIBS`
     QT_QTUITOOLS_INCLUDE_DIR="$QT_INCLUDE_DIR/QtUiTools"
 
-    IS_QT5="no"
-    if [[ "${QT_VERSION%%.*}" == "5" ]]; then
-        IS_QT5="yes"
+    IS_QT4="no"
+    if [[ "${QT_VERSION%%.*}" == "4" ]]; then
+        IS_QT4="yes"
     fi 
 }
 
@@ -83,20 +84,6 @@ function bv_qt_alt_qt_dir
     QT_FILE=""
 }
 
-function bv_qt_qt5
-{
-    info "enabling Qt5.."
-    bv_qt_enable
-
-    QT_VERSION="5.6.1"
-    QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
-    QT_BUILD_DIR="${QT_FILE%.tar*}"
-    QT_BIN_DIR="${QT_BUILD_DIR}/bin"
-    QT_MD5_CHECKSUM=""
-    QT_SHA256_CHECKSUM=""
-    IS_QT5="yes"
-}
-
 function bv_qt_initialize_vars
 {
     info "initalizing qt vars"
@@ -121,27 +108,51 @@ function bv_qt_depends_on
     echo ""
 }
 
-function bv_qt_info
+function bv_qt_qt4
 {
-    # if we are on osx 10.8 or later, we need to use 4.8.6   
+    bv_qt_enable
+
+    # if we are on osx 10.8 or later, we need to use 4.8.6
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.8" ||
-                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ||
-                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ||
-                    "${MACOSX_DEPLOYMENT_TARGET}" == "10.12" ]]; then
-            export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.6.tar.gz"}
-            export QT_VERSION=${QT_VERSION:-"4.8.6"}
-            export QT_MD5_CHECKSUM="2edbe4d6c2eff33ef91732602f3518eb"
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ||
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ||
+              "${MACOSX_DEPLOYMENT_TARGET}" == "10.12" ]]; then
+            QT_VERSION="4.8.6"
+            QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
+            QT_MD5_CHECKSUM="2edbe4d6c2eff33ef91732602f3518eb"
+            QT_SHA256_CHECKSUM=""
         fi
+    else
+        QT_VERSION="4.8.3"
+        QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
+        QT_MD5_CHECKSUM="a663b6c875f8d7caa8ac9c30e4a4ec3b"
+        QT_SHA256_CHECKSUM=""
     fi
     
-    export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-4.8.3.tar.gz"}
-    export QT_VERSION=${QT_VERSION:-"4.8.3"}
-    export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"a663b6c875f8d7caa8ac9c30e4a4ec3b"}
+    QT_BUILD_DIR="${QT_FILE%.tar*}"
+    QT_BIN_DIR="${QT_BUILD_DIR}/bin"
+
+    info "enabling Qt${QT_VERSION}..."
+
+    IS_QT4="yes"
+}
+
+function bv_qt_info
+{
+    bv_qt_enable
+
+#    Note: Qt 5.8 is not yet compatible with Pyside2.
+#    export QT_VERSION=${QT_VERSION:-"5.8.0"}
+    
+    export QT_VERSION=${QT_VERSION:-"5.6.1"}
+    export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"}
+    export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"a9f2494f75f966e2f22358ec367d8f41"}
+    export QT_SHA256_CHECKSUM=${QT_SHA256_CHECKSUM:-"9dc5932307ae452855863f6405be1f7273d91173dcbe4257561676a599bd58d3"}
+
     export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
-    export QT_BIN_DIR="${QT_BUILD_DIR}/bin"
-    export QT_SHA256_CHECKSUM=""
+    export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
 }
 
 function bv_qt_print
@@ -156,7 +167,7 @@ function bv_qt_print
 function bv_qt_print_usage
 {
     printf "%-15s %s [%s]\n" "--qt" "Build Qt4" "built by default unless --no-thirdparty flag is used"
-    printf "%-15s %s [%s]\n" "--qt5" "Build Qt5 instead of Qt4" "$IS_QT5"
+    printf "%-15s %s [%s]\n" "--qt4" "Build Qt4 instead of Qt5" "$IS_QT4"
     printf "%-15s %s [%s]\n" "--system-qt" "Use the system installed Qt"
     printf "%-15s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory"
 }
@@ -171,23 +182,24 @@ function bv_qt_host_profile
                 echo "## Qt" >> $HOSTCONF
                 echo "##" >> $HOSTCONF
                 echo "SETUP_APP_VERSION(QT $QT_VERSION)" >> $HOSTCONF
-                if [[ "$IS_QT5" == "yes" ]]; then
-                    echo "VISIT_OPTION_DEFAULT(VISIT_QT5 ON TYPE BOOL)" >> $HOSTCONF
+
+                if [[ $USE_SYSTEM_QT == "yes" ]]; then
+                    echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
+                    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
+                    echo "SET(VISIT_QT_SKIP_INSTALL ON)" >> $HOSTCONF
+                else
+                    if [[ "$IS_QT4" == "yes" ]]; then
+                        echo "VISIT_OPTION_DEFAULT(VISIT_QT4 ON TYPE BOOL)" >> $HOSTCONF
+                    else 
+                        echo "VISIT_OPTION_DEFAULT(VISIT_QT5 ON TYPE BOOL)" >> $HOSTCONF
+                    fi
+                    
                     echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR \${VISITHOME}/qt/\${QT_VERSION}/\${VISITARCH})" >> $HOSTCONF
                     echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISIT_QT_DIR}/bin)" >> $HOSTCONF
-                else 
-                    if [[ $USE_SYSTEM_QT == "yes" ]]; then
-                        echo "VISIT_OPTION_DEFAULT(QT_QTUITOOLS_INCLUDE_DIR ${QT_QTUITOOLS_INCLUDE_DIR})" >> $HOSTCONF
-                        echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
-                        echo "SET(VISIT_QT_SKIP_INSTALL ON)" >> $HOSTCONF
-                    else
-                        echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR \${VISITHOME}/qt/\${QT_VERSION}/\${VISITARCH})" >> $HOSTCONF
-                        echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISIT_QT_DIR}/bin)" >> $HOSTCONF
-                    fi
                 fi
             fi
         fi
-    fi    
+    fi
 }
 
 function bv_qt_ensure
@@ -213,8 +225,6 @@ function bv_qt_dry_run
 
 function qt_license_prompt
 {
-
-
     QT_LIC_MSG="During the build process this script will build Qt and confirm\
             that you accept Trolltech's license for the Qt Open Source\
             Edition. Please respond \"yes\" to accept (in advance) either\
@@ -239,26 +249,40 @@ function qt_license_prompt
     return 0
 }
 
-
 function apply_qt_patch
 {
     if [[ ${QT_VERSION} == 4.8.6 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]]; then
             if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-                  "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ]]; then
-                apply_qt_486_osx1011_patch 
+                  "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ||
+                  "${MACOSX_DEPLOYMENT_TARGET}" == "10.12" ]]; then
+                apply_qt_486_osx10_patch 
             fi
+        fi
+    fi
+
+    if [[ ${QT_VERSION} == 5.6.1 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+
+            XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
+#           info ${XCODE_VERSION}
+            if [[ "$XCODE_VERSION" == "Xcode 8"* ]]; then
+                apply_qt_561_osx_xcode_8_patch
+            fi
+        fi
+    elif [[ ${QT_VERSION} == 5.8.0 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]]; then
+            apply_qt_580_osx_patch
         fi
     fi
 
     return 0
 }
 
-
-function apply_qt_486_osx1011_patch
+function apply_qt_486_osx10_patch
 {
-    # fix for OS X 10.11 
-    info "Patching qt 4.8.6 for OS X 10.10 or 10.11"
+    # fix for OS X 10.10
+    info "Patching qt 4.8.6 for OS X 10.10 and above"
     patch -p0 << \EOF
 
 diff -c src/gui/painting/qpaintengine_mac.cpp.orig src/gui/painting/qpaintengine_mac.cpp
@@ -291,6 +315,101 @@ diff -c src/gui/painting/qpaintengine_mac.cpp.orig src/gui/painting/qpaintengine
 EOF
     if [[ $? != 0 ]] ; then
         warn "qt 4.8.6 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_561_osx_xcode_8_patch
+{
+    # fix for OS X 10.11 or 10.12 with Xcode 8
+    info "Patching qt 5.6.1 for OS X and Xcode 8"
+    patch -p0 << \EOF
+diff -c  qtbase/configure.orig qtbase/configure
+*** qtbase/configure.orig       2017-10-16 15:48:39.000000000 -0600
+--- qtbase/configure    2017-10-16 15:48:54.000000000 -0600
+***************
+*** 543,549 ****
+          exit 2
+      fi
+  
+!     if ! /usr/bin/xcrun -find xcrun >/dev/null 2>&1; then
+          echo >&2
+          echo "   Xcode not set up properly. You may need to confirm the license" >&2
+          echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
+--- 543,549 ----
+          exit 2
+      fi
+  
+!     if ! /usr/bin/xcrun -find xcodebuild >/dev/null 2>&1; then
+          echo >&2
+          echo "   Xcode not set up properly. You may need to confirm the license" >&2
+          echo "   agreement by running /usr/bin/xcodebuild without arguments." >&2
+
+diff -c qtbase/mkspecs/features/mac/default_pre.prf.orig qtbase/mkspecs/features/mac/default_pre.prf
+*** qtbase/mkspecs/features/mac/default_pre.prf.orig    2017-10-16 15:33:57.000000000 -0600
+--- qtbase/mkspecs/features/mac/default_pre.prf 2017-10-16 15:35:02.000000000 -0600
+***************
+*** 12,18 ****
+          error("Xcode is not installed in $${QMAKE_XCODE_DEVELOPER_PATH}. Please use xcode-select to choose Xcode installation path.")
+  
+      # Make sure Xcode is set up properly
+!     isEmpty($$list($$system("/usr/bin/xcrun -find xcrun 2>/dev/null"))): \
+          error("Xcode not set up properly. You may need to confirm the license agreement by running /usr/bin/xcodebuild.")
+  }
+  
+--- 12,18 ----
+          error("Xcode is not installed in $${QMAKE_XCODE_DEVELOPER_PATH}. Please use xcode-select to choose Xcode installation path.")
+  
+      # Make sure Xcode is set up properly
+!     isEmpty($$list($$system("/usr/bin/xcrun -find xcodebuild 2>/dev/null"))): \
+          error("Xcode not set up properly. You may need to confirm the license agreement by running /usr/bin/xcodebuild.")
+  }
+  
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.6.1 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_qt_580_osx_patch
+{
+    # fix for OS X 10.11 
+    info "Patching qt 5.8.0 for OS X"
+    patch -p0 << \EOF
+
+diff -c qtbase/mkspecs/features/qt_module.prf.orig qtbase/mkspecs/features/qt_module.prf
+*** qtbase/mkspecs/features/qt_module.prf.orig  Wed Jan 18 06:20:58 2017
+--- qtbase/mkspecs/features/qt_module.prf       Thu Apr 20 07:42:05 2017
+***************
+*** 68,76 ****
+  
+  header_module {
+      TEMPLATE     = aux
+!     CONFIG      += \
+!         force_qt \  # Needed for the headers_clean tests.
+!         qt_no_install_library
+  } else {
+      TEMPLATE     = lib
+  }
+--- 68,76 ----
+  
+  header_module {
+      TEMPLATE     = aux
+!     CONFIG      += force_qt  # Needed for the headers_clean tests.
+!     !lib_bundle: \
+!         CONFIG += qt_no_install_library 
+  } else {
+      TEMPLATE     = lib
+  }
+
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.8.0 patch failed."
         return 1
     fi
 
@@ -343,7 +462,7 @@ function build_qt
         QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
         # webkit causes the linker on Hank's mac to run out of memory
         # Hari: for Qt5 I have disabled webkit all together
-        if [[ "$IS_QT5" == "no" ]]; then
+        if [[ "$IS_QT4" == "yes" ]]; then
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-webkit -no-phonon -no-phonon-backend"
         fi
         # Figure out whether we need to build 64-bit version of Qt
@@ -358,7 +477,10 @@ function build_qt
     elif [[ "$OPSYS" == "Linux" ]] ; then
         # w/ Qt 4.8.3, these guys will on fail on linux
         # if gstreamer isn't installed ...
-        EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-webkit -no-phonon -no-phonon-backend"
+        if [[ "$IS_QT4" == "yes" ]]; then
+            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-webkit -no-phonon -no-phonon-backend"
+        fi
+        
         # For OLD versions of linux, disable openssl
         VER=$(uname -r)
         if [[ "${VER:0:3}" == "2.4" ]] ; then
@@ -408,7 +530,6 @@ function build_qt
     # Call configure
     #
 
-
     QT_CFLAGS="${CFLAGS} ${C_OPT_FLAGS}"
     QT_CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}"
 
@@ -421,8 +542,16 @@ function build_qt
     qt_flags="${qt_flags} -opensource"
     qt_flags="${qt_flags} -confirm-license"
 
-    QT_VER_MSG="Qt4"
-    if [[ $IS_QT5 == "yes" ]]; then
+    if [[ $IS_QT4 == "yes" ]]; then
+        QT_VER_MSG="Qt4"
+        qt_flags="${qt_flags} -fast"
+        qt_flags="${qt_flags} -no-libtiff"
+        qt_flags="${qt_flags} -no-qt3support"
+        qt_flags="${qt_flags} -nomake docs"
+        qt_flags="${qt_flags} -nomake demos"
+        qt_flags="${qt_flags} -nomake examples"
+        qt_flags="${qt_flags} ${EXTRA_QT_FLAGS}"
+    else
         QT_VER_MSG="Qt5"
         qt_flags="${qt_flags} -skip 3d"
         qt_flags="${qt_flags} -skip sensors"
@@ -439,19 +568,17 @@ function build_qt
         if [[ "$OPSYS" == "Linux" ]] ; then
             qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
         fi
-    else
-        qt_flags="${qt_flags} -fast -no-libtiff -no-qt3support -nomake docs -nomake demos"
-        qt_flags="${qt_flags} -nomake examples"
-        qt_flags="${qt_flags} ${EXTRA_QT_FLAGS}"
     fi
-    info "Configuring ${QT_VER_MSG}: CFLAGS=${QT_CFLAGS} CXXFLAGS=${QT_CXXFLAGS}" \
-         "./configure --prefix=${QT_INSTALL_DIR}" \
+
+    info "Configuring ${QT_VER_MSG}: " \
+         "CFLAGS=${QT_CFLAGS} CXXFLAGS=${QT_CXXFLAGS}" \
+         "./configure -prefix ${QT_INSTALL_DIR}" \
          "-platform ${QT_PLATFORM}" \
          "-make libs -make tools -no-separate-debug-info" \
          "${qt_flags}" 
 
     (echo "o"; echo "yes") | CFLAGS="${QT_CFLAGS}" CXXFLAGS="${QT_CXXFLAGS}"  \
-                                   ./configure --prefix=${QT_INSTALL_DIR} \
+                                   ./configure -prefix ${QT_INSTALL_DIR} \
                                    -platform ${QT_PLATFORM} \
                                    -make libs -make tools -no-separate-debug-info \
                                    ${qt_flags} | tee qt.config.out
@@ -465,7 +592,7 @@ function build_qt
     #
     if [[ "${DO_DBIO_ONLY}" != "yes" && "${DO_ENGINE_ONLY}" != "yes" && "${DO_SERVER_COMPONENTS_ONLY}" != "yes" ]] ; then
         HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
-        if [[ "$IS_QT5" == "no" && "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
+        if [[ "$IS_QT4" == "yes" && "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
             warn "Qt4 configure did not find OpenGL." \
                  "VisIt needs Qt4 with enabled OpenGL support. Giving up.\n" \
                  "Here are some common reasons why Qt will not build with GL support.\n" \
