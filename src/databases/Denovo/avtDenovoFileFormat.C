@@ -60,44 +60,53 @@
 
 using namespace std;
 
-static void printInfo(hid_t &fileId, const string &name)
+static bool readStringAttr(hid_t dataset,
+                           const string &attrName,
+                           vector<string> &attrs)
 {
-    hid_t id = H5Dopen(fileId, name.c_str(), H5P_DEFAULT);
-    hid_t spaceId = H5Dget_space(id);
-    int numDims = H5Sget_simple_extent_ndims(spaceId);
-    
-    hsize_t dims[12];
-    H5Sget_simple_extent_dims(spaceId, dims, NULL);
-    H5S_class_t classType = H5Sget_simple_extent_type(spaceId);
+    hid_t attrId = H5Aopen(dataset, attrName.c_str(), H5P_DEFAULT);
+    if (attrId < 0) return false;
 
-    cout<<name<<": "<<numDims<<": [";
-    for (int i = 0; i < numDims; i++)
-        cout<<dims[i]<<" ";
-    cout<<"]";
+    hid_t attrSpace = H5Aget_space(attrId);
+    hsize_t dims[8];
+    int ndims = H5Sget_simple_extent_dims(attrSpace, dims, NULL);
+    attrs.resize(dims[0]);
 
-    hid_t dt = H5Topen(fileId, name.c_str(), id);
-    hid_t dtype = H5Dget_type(id);
-    int typeClass = H5Tget_class(dtype);
-    string classNm = "meow";
-    if (typeClass == H5T_COMPOUND)
-        classNm = "compound";
-
-    int nMembers = H5Tget_nmembers(dt);
-    cout<<" nMembers= "<<nMembers;
-    cout<<" Tsize= "<<H5Tget_size(dt);
-    cout<<" simple= "<<H5Sis_simple(spaceId);
-    cout<<" datatype= "<<dtype;
-    cout<<" class= "<<typeClass<<" "<<classNm;
-    if (typeClass == H5T_COMPOUND)
+    herr_t status;
+    hid_t attrType = H5Aget_type(attrId);
+    if (H5Tis_variable_str(attrType))
     {
-        int nm = H5Tget_nmembers(dtype);
-        cout<<" nMem= "<<nm;
-        H5T_class_t t0 = H5Tget_class(H5Tget_member_type(dtype, 0));
-        H5T_class_t t1 = H5Tget_class(H5Tget_member_type(dtype, 1));
-        H5T_class_t t2 = H5Tget_class(H5Tget_member_type(dtype, 2));
-        cout<<" "<<t0<<" "<<t1<<" "<<t2;
+        vector<char *> strbuffs(dims[0]);
+        status = H5Aread(attrId, attrType, strbuffs.data());
+        if (status < 0) return false;
+
+        vector<char*>::iterator it = strbuffs.begin();
+        for (int i = 0; i < attrs.size(); i++)
+        {
+            string &str = attrs[i];
+            char *buff = *it++;
+            str = string(buff);
+            std::free(buff);
+        }
     }
-    cout<<endl;
+    else
+    {
+        size_t len = H5Tget_size(attrType);
+        vector<char> charBuff(len * dims[0]);
+        H5Aread(attrId, attrType, charBuff.data());
+        const char *srcPtr = charBuff.data();
+        for (int i = 0; i < attrs.size(); i++)
+        {
+            string &str = attrs[i];
+            str = string(srcPtr);
+            srcPtr += len;
+        }        
+    }
+
+    H5Aclose(attrId);
+    H5Sclose(attrSpace);
+    
+    return true;
 }
 
 
@@ -201,19 +210,17 @@ avtDenovoFileFormat::LoadFile()
     int numDims = H5Sget_simple_extent_ndims(matIdS);
     hsize_t dims[12];
     H5Sget_simple_extent_dims(matIdS, dims, NULL);
-    cout<<"MatIDs: "<<numDims<<" : "<<dims[0]<<" "<<dims[1]<<" "<<dims[2]<<endl;
 
     //Mix table.
     hid_t mixId = H5Dopen(fileId, "/denovo/mixtable", H5P_DEFAULT);
     if (mixId < 0) EXCEPTION1(InvalidFilesException, GetFilename());
     hid_t mixIdS = H5Dget_space(mixId);
     if (mixIdS < 0) EXCEPTION1(InvalidFilesException, GetFilename());
+    
     numDims = H5Sget_simple_extent_ndims(mixIdS);
     H5S_class_t classType = H5Sget_simple_extent_type(mixIdS);
     H5Sget_simple_extent_dims(mixIdS, dims, NULL);
     int mixTableSize = dims[0];
-    cout<<"MixIds: "<<numDims<<" : "<<mixTableSize<<endl;
-
 
     mixTable.resize(mixTableSize);
     hid_t mtType = H5Tcreate(H5T_COMPOUND, sizeof(mixTableEntry));
@@ -221,6 +228,9 @@ avtDenovoFileFormat::LoadFile()
     H5Tinsert(mtType, "col", sizeof(int), H5T_NATIVE_INT);
     H5Tinsert(mtType, "val", 2*sizeof(int), H5T_NATIVE_DOUBLE);
     H5Dread(mixId, mtType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &mixTable[0]);
+
+    readStringAttr(mixId, "names", materialNames);
+    readStringAttr(mixId, "colors", materialColors);    
 
 #if 0
     for (int i = 0; i < mixTable.size(); i++)
@@ -262,10 +272,16 @@ avtDenovoFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for (int j = 0; j < varMetaData[i].varNames.size(); j++)
             AddScalarVarToMetaData(md, varMetaData[i].varNames[j], meshName, AVT_ZONECENT);
 
-    materialNames.push_back("void");
-    materialNames.push_back("parafin");
-    materialNames.push_back("graphite");
-    AddMaterialToMetaData(md, "materials", meshName, materialNames.size(), materialNames);
+    //Add materials.
+    if (materialNames.size() > 0)
+    {
+        avtMaterialMetaData *matMD = new avtMaterialMetaData;
+        matMD->name = "materials";
+        matMD->meshName = meshName;
+        matMD->materialNames = materialNames;
+        matMD->colorNames = materialColors;
+        md->Add(matMD);
+    }
 }
 
 // ****************************************************************************
@@ -291,7 +307,6 @@ avtDenovoFileFormat::GetAuxiliaryData(const char *var,
 
     if (strcmp(type, AUXILIARY_DATA_MATERIAL) == 0)
     {
-        cout<<"GetAux: "<<var<<" "<<type<<endl;
         ret = GetMaterial(var, domain);
         df = avtMaterial::Destruct;
         return ret;
@@ -484,8 +499,6 @@ avtDenovoFileFormat::GetVectorVar(int domain, const char *varname)
 avtMaterial *
 avtDenovoFileFormat::GetMaterial(const std::string &var, int domain)
 {
-    cout<<"GetMaterial: "<<var<<" domain= "<<domain<<endl;
-
     int ndims = 3;
     int nx = coordMetaData[0].dims[0]-1;
     int ny = coordMetaData[1].dims[0]-1;

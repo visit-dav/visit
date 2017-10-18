@@ -151,7 +151,7 @@ class avtDenovoFileFormat : public avtSTMDFileFormat
         double val;
     };
     std::vector<mixTableEntry> mixTable;
-    std::vector<std::string> materialNames;
+    std::vector<std::string> materialNames, materialColors;
 };
 
 
