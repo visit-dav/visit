@@ -388,7 +388,7 @@ avtDenovoFileFormat::GetVar(int domain, const char *varname)
     
     string varName(varname);
 
-    int varIdx = -1;
+    hsize_t varIdx = -1;
     varInfo var;
     for (int i = 0; i < varMetaData.size(); i++)
         for (int j = 0; j < varMetaData[i].varNames.size(); j++)
@@ -404,7 +404,8 @@ avtDenovoFileFormat::GetVar(int domain, const char *varname)
     if (varIdx == -1)
         EXCEPTION1(InvalidVariableException, varname);
 
-    int nx=0, ny=0, nz=0, num=0, status=-1;
+    hsize_t nx=0, ny=0, nz=0, num=0;
+    int status=-1;
     vector<float> buff;
     
     if (var.dims.size() == 3)
