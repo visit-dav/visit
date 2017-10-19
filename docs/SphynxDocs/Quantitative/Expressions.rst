@@ -12,7 +12,7 @@ to a simulation database to save disk space. Sometimes variables can be
 derived from other variables using a variable expression. VisIt provides
 variable expressions to allow scientists to create derived variables using
 variables that are stored in the database. Expressions are extremely powerful
-because they allow you to analyze new data without necessarily having to
+because they allow users to analyze new data without necessarily having to
 rerun a simulation. Variables created using expressions behave just like
 variables stored in a database; they appear in the plot menu and can be
 visualized using VisIt's plots.
@@ -21,7 +21,7 @@ Expression Window
 ~~~~~~~~~~~~~~~~~
 
 VisIt provides an **Expression Window**, shown in
-:numref:`Figure %s <expressionwindow>`, that allows you to create new
+:numref:`Figure %s <expressionwindow>`, that allows users to create new
 variables that can be used in visualizations. You can open the
 **Expression Window** by clicking on the **Expressions** option in the
 **Main Window's Controls** menu. The **Expression Window** is divided
@@ -37,21 +37,24 @@ definition.
 
    Expression Window
 
-In addition to displaying expressions that you create yourself, the
-**Expression Window** displays expressions that were written to the
-database or expressions that were added by one of VisIt's database
-reader plugins.  Expressions that came from a database change when you
-change open databases but expressions that you defined yourself remain
-in the window regardless which database is open. Expressions that came
-from a database are not usually shown in the **Expression list** by
-default but you can choose to show them by clicking on the **Display
+In addition to displaying expressions that users create themselves, the
+**Expression Window** displays expressions defined in the
+database or expressions that are defined automatically by the associated
+database reader plugin. Expressions from a database change when
+the open database changes but expressions that users create themselves
+or that the associated database reader plugin create
+remain in the window regardless which database is open. Expressions that
+came from a database are not shown in the **Expression list** by
+default but users can choose to show them by clicking on the **Display
 expressions from database** check box.
+
+.. danger:: Text below is obsolete. Many auto-gen exprs now. Also, include info regarding open and GUI performance.
 
 There is one special case when VisIt adds expressions to the expression
 list that were not in the database and were not added by a database
 reader plugin: mesh quality expressions. When the open database contains
 meshes that are unstructured or curvilinear, VisIt adds special mesh
-quality expressions to the expression list to let you more easily plot
+quality expressions to the expression list to let users more easily plot
 metrics of mesh quality such as the volume of cells or how much cells
 are skewed. The mesh quality expressions are primarily used to evaluate
 the fitness of computational meshes and VisIt adds them to the expression
@@ -69,11 +72,11 @@ variables.
 Creating a new expression
 """""""""""""""""""""""""
 
-You can create a new expression by clicking on the **Expression Window's New**
-button. When you click on the **New** button, VisIt adds a new expression
+A user can create a new expression by clicking on the **Expression Window's New**
+button. When the user clicks on the **New** button, VisIt adds a new expression
 and shows its new, empty definition in the **Definitions** area. The initial
 name for a new expression is *"unnamed"* followed by some integer suffix.
-As you type a new name for the expression into the **Name** text field,
+As the user types a new name for the expression into the **Name** text field,
 the expression's name in the **Expression list** will update.
 
 Each expression has an expression type that determines the variable menu
@@ -86,7 +89,7 @@ species variables can be used in the Contour, Pseudocolor, and Volume
 plots. Vector mesh variables are used in the Streamline and Vector plots.
 Tensor mesh variables are used in the Tensor plot.
 
-To edit an expression's actual definition, you can type a new expression
+To edit an expression's actual definition, users can type a new expression
 comprised of constants, variable names, and other VisIt expressions into
 the **Definition** text field. The expression definition can span multiple
 lines as the VisIt expression parser ignores whitespace. For a complete
@@ -104,9 +107,9 @@ menu.
 
    Expression Window's Insert Function... menu
 
-In addition to the **Insert Function...** menu, which lets you insert built-in
+In addition to the **Insert Function...** menu, which lets users insert built-in
 functions into the expression definition, VisIt's **Expression Window**
-provides an **Insert Variable...** menu that allows you to insert variables
+provides an **Insert Variable...** menu that allows users to insert variables
 for the active database into the expression definition. The
 **Insert Variable...** menu, shown in
 :numref:`Figure %s <expressionwindow-varmenu>`, is broken up into Scalars,
@@ -122,7 +125,7 @@ heading so they are easy to find.
 Some variables can only be expressed as very complex expressions containing
 several intermediate subexpressions that are only used to simplify the
 overall expression definition. These types of subexpressions are seldom
-visualized on their own. If you want to prevent them from being added to
+visualized on their own. If users want to prevent them from being added to
 the **Plot** menu, turn off the **Show variable in plot menus** check box.
 
 Deleting an expression
@@ -133,7 +136,7 @@ and then clicking on the **Delete** button. Deleting an expression removes
 it from the list of defined expressions and will cause unresolved references
 for any other expression that uses the deleted expression. If a plot uses
 an expression with unresolved references, VisIt will not be able to generate
-it until you resolve the reference or change the active plot variable.
+it until the user resolves the reference or change the active plot variable.
 
 Expression grammar
 ~~~~~~~~~~~~~~~~~~
@@ -428,9 +431,11 @@ Modulo Function (``mod()``) : ``mod(expr0,exrp1)``
 .. _Random_Expression_Function:
 
 Random Function (``random()``) : ``random(expr0)``
-    Creates a new expression which is everywhere a random number, as computed
-    by :math:`(\text{rand}()%1024)/1024` where ``rand()`` is the standard
-    ``rand()``. The argument, ``expr0``, must be a mesh variable. The seed
+    Creates a new expression which is everywhere a random floating point number
+    between 0 and 1, as computed by :math:`(\text{rand()} \% 1024) \div 1024`
+    where ``rand()`` is the standard C library
+    `rand() <http://www.cplusplus.com/reference/cstdlib/rand/>`_ random
+    number generator. The argument, ``expr0``, must be a mesh variable. The seed
     used on each block of the mesh is the absolute domain number.
 
 Relational, Conditional and Logical Expressions
@@ -439,7 +444,8 @@ Relational, Conditional and Logical Expressions
 .. danger::
    Confirm relational and logical expressions produce new, boolean valued
    expression variables which are themselves plottable in VisIt. Their
-   original intent may have only to be used as args in the IF expression.
+   original intent may have been only to be used as args in the IF expression
+   and not so much be plottable outputs in their own right.
 
 The ``if()`` conditional expression is designed to be used in concert with
 relation and logical expressions. Together, these expressions can be used to
@@ -680,7 +686,7 @@ Eigenvector: ``eigenvector(expr)``
     expression returns the eigenvectors of the 3x3 matrix argument as a tensor
     (3x3 matrix) valued expression where each column in the tensor is one of
     the eigenvectors. In order to use the component index operator (``[]``)
-    to access individual eigenvectors, you must transpose the result with the
+    to access individual eigenvectors, the result must be *transposed* with the
     ``transpose()`` expression function. For example, if
     ``evecs = transpose(eigenvector(tensor))``, the expression ``evecs[1]``
     will return the second eigenvector.
