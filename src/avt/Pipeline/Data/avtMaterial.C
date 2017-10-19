@@ -822,6 +822,13 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
 //
 //    Mark C. Miller, Wed Feb 11 17:03:53 PST 2015
 //    Made it more robust in the presence of poorly constructed fracs arrays.
+//    
+//    Mark C. Miller, Thu Oct 19 15:25:23 PDT 2017
+//    Fixed number of issues with creation of mixed material structure from
+//    full zonal arrays...reversed loops over zones and materials, do not
+//    increase mixlen for already clean zones for which some non-zero fracs
+//    are encountered, fixed one-origin indexing in mix_zone array, clean
+//    up any zones left in notSet status to one of the used materials.
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
@@ -863,16 +870,10 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
     int mixl = 0;
     for (m = 0; m < nTotMats; m++)
     {
-        const float *frac = vfracs[m];
-
-        // skip this material if it isn't present 
-        if (frac == 0)
-            continue;
-
         for (z = 0; z < ncells; z++)
         {
-            if ((frac[z] > 0.0) &&
-                (frac[z] < 1.0))
+            double vf = vfracs[m] ? vfracs[m][z] : 0;
+            if (0 < vf && vf < 1)
                 mixl++;
         }
     }
@@ -886,33 +887,34 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
     // loop over materials
     mixl = 0;
     vector<bool> matUsed(nTotMats, false);
-    for (m = 0; m < nTotMats; m++)
+    vector<int> emptyZones;
+    for (z = 0; z < ncells; z++)
     {
-        const float *frac = vfracs[m];
-
-        // skip this material if frac data isn't present 
-        if (frac == 0)
-            continue;
-
-        // loop over zones
-        bool foundNonZeroFrac = false;
-        for (z = 0; z < ncells; z++)
+        int nmixing = 0;
+        for (m = 0; m < nTotMats; m++)
         {
-            if (frac[z] >= 1.0)
+            double vf = vfracs[m] ? vfracs[m][z] : 0;
+            bool foundNonZeroFrac = false;
+
+            if (vf >= 1.0)
             {
+                assert(ml[z] == notSet);
                 ml[z] = mats[m];
                 foundNonZeroFrac = true;
             }
-            else if (frac[z] > 0.0)
+            else if (vf > 0.0)
             {
+                nmixing++;
+                foundNonZeroFrac = true;
                 if (ml[z] == notSet)
                 {
                     // put the first entry in the list for this zone
                     ml[z] = -(mixl+1); 
                     mixm[mixl] = mats[m]; 
-                    mixv[mixl] = frac[z];
-                    mixz[mixl] = z;
+                    mixv[mixl] = vf;
+                    mixz[mixl] = z+1; // one-origin indexing
                     mixn[mixl] = 0;
+                    mixl++;
                 }
                 else if (ml[z] < 0)
                 {
@@ -926,27 +928,38 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
 
                     // put in the new entry
                     mixm[mixl] = mats[m];
-                    mixv[mixl] = frac[z];
-                    mixz[mixl] = z;
+                    mixv[mixl] = vf;
+                    mixz[mixl] = z+1; // one-origin inexing
                     mixn[mixl] = 0;
+                    mixl++;
                 }
                 else
                 {
                     // We've encountered a zone with a frac>=1 *AND* another
                     // frac > 0. We ignore the frac>0 since we already have
-                    // marked the zone clean for the frac>=1. We effectively
-                    // put a placeholder entry into the mix arrays here.
-                    mixm[mixl] = mats[m];
-                    mixv[mixl] = frac[z];
-                    mixz[mixl] = z;
-                    mixn[mixl] = 0;
+                    // marked the zone clean for the frac>=1.
+                    (void)0; // no op
                 }
-                foundNonZeroFrac = true;
-                mixl++;
             }
+            if (foundNonZeroFrac)
+                matUsed[m] = true;
         }
-        matUsed[m] = foundNonZeroFrac;
+        assert(nmixing==0 || nmixing >=2);
+        if (ml[z] == notSet)
+            emptyZones.push_back(z);
     }
+
+    // find at least one material that is actually used
+    int oneUsedMat = notSet;
+    for (i = 0; i < nTotMats && oneUsedMat == notSet; i++)
+    {
+        if (matUsed[i])
+            oneUsedMat = i;
+    }
+
+    // Go back and fix all the empty zones to be clean in the one material
+    for (vector<int>::size_type q = 0; q < emptyZones.size(); q++)
+        ml[emptyZones[q]] = oneUsedMat;
 
     //
     // see if the materials are arbitrarily numbered
@@ -1930,6 +1943,17 @@ avtMaterial::RawPrint(ostream &out)
                        mix_next);
 }
 
+// ****************************************************************************
+//  Method:  avtMaterial::AssertSelfIsValid
+//
+//  Purpose: Traverse object and apply numerous assertions.
+//
+//  Programmer: Mark C. Miller, Thu Oct 19 15:29:59 PDT 2017
+//
+//  Modifications:
+//      Fix one-origin indexing assertion for mix_zone.
+//
+// ****************************************************************************
 #ifndef NDEBUG
 void
 avtMaterial::AssertSelfIsValid() const
@@ -1949,7 +1973,7 @@ avtMaterial::AssertSelfIsValid() const
                 assert(0 <= mix_vf[midx] && mix_vf[midx] <= 1);
                 vfsum += mix_vf[midx];
                 if (mix_zone && mix_zone[midx] >= 0)
-                    assert(mix_zone[midx] < nZones);
+                    assert(mix_zone[midx] < nZones+1); // one-origin
                 midx = mix_next[midx]-1; 
             }
             float const eps = 1.0e-5;
