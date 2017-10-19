@@ -96,12 +96,12 @@ The **Save movie wizard** allows you to create stereo movies if you choose the
 **Yes** button on the wizard's third screen. The default is to create 
 non-stereo movies because stereo movies are not widely supported. 
 
-.. note::
+.. note:: "Streaming movie" format is an LLNL format
 
-The only movie format that VisIt produces that is compatible with stereo
-movies is the "Streaming movie" format, which is an LLNL format commonly used
-for tiled displays. The "Streaming movie" format can support stereo movies
-where the image will flicker between left and right eye versions of the movie,
+The only movie format that VisIt produces that is compatible with stereo movies
+is the "Streaming movie" format, which is an LLNL format commonly used for
+tiled displays. The "Streaming movie" format can support stereo movies where
+the image will flicker between left and right eye versions of the movie,
 causing a stereo effect if you view the movie using suitable liquid-crystal
 goggles. The stereo option has no effect when used with other movie formats.
 However, if you choose to save a stereo movie in any of VisIt's supported image

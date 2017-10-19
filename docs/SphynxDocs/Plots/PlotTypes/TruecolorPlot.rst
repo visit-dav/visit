@@ -1,7 +1,7 @@
+.. _truecolor_plot:
+
 Truecolor plot
 ~~~~~~~~~~~~~~
-
-.. _truecolor_plot:
 
 .. figure:: ../images/truecolor.png
 

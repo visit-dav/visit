@@ -50,7 +50,7 @@ Adding an operator
 """"""""""""""""""
 
 You add operators by making a selection from the **Operators** menu, shown in
-:numref:`Figure %s <operatormenu>`, which you activate by clicking on the 
+:numref:`Figure %s <operatormenu2>`, which you activate by clicking on the 
 **Operators** option in the **Plots and Operators** menu. If you do not see an 
 operator listed in this chapter in the **Operators** menu then the operator 
 might not be loaded by default. If you want to enable additional operators, 
@@ -60,7 +60,7 @@ operator to the selected plots in the Plot list unless the
 selected operator is applied to all plots in the **Plot list** . By default, 
 operators are applied to all plots in the **Plot list**.  
 
-.. _operatormenu:
+.. _operatormenu2:
 
 .. figure:: images/operatormenu.png
 

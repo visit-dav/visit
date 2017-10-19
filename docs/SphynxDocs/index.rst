@@ -30,6 +30,7 @@ Contents:
    Preferences/index
    Help/index
    StartupOptions/index
+   Acknowledgements/index
 
 .. Indices and tables
 .. ==================

@@ -7,11 +7,11 @@ An interactive tool is an object that can be added to a visualization
 window to set attributes for certain plots and operators such as the
 Streamline plot or Slice operator. You can turn interactive tools on
 and off by clicking on the tool icons in a visualization window's
-**Toolbar** or **Popup menu** (see :numref:`Figure %s <toolmenu>`).
+**Toolbar** or **Popup menu** (see :numref:`Figure %s <toolmenu2>`).
 Note that some tools prefer to operate in visualization windows that
 contain plots of a certain dimension so some tools are not always available.
 
-.. _toolmenu:
+.. _toolmenu2:
 
 .. figure:: images/toolmenu.png
 

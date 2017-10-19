@@ -274,7 +274,7 @@ or *cell* centered or *piecewise-constant* over mesh cells while the other is
 *node* or *point* centered or *pieceiwse-linear* over mesh cells), VisIt will
 *recenter* any *node*-centered fields to *zone*-centering to compute the
 sum. This may not always be desirable. When it is not, the 
-:ref:`Recenter_Expression_Function` may be used to explicitly control the
+:ref:`recenter() <Recenter_Expression_Function>` may be used to explicitly control the
 centering of specific operands in an expression.
 
 .. _Sum_Expression_Operator:
@@ -606,14 +606,14 @@ Color Function (``color()``) : ``color(exprR,exprG,exprB)``
 .. _HSVColor_Expression_Function:
 
 HSV Color Function (``hsvcolor()``) : ``hsvcolor(exprH,exprS,exprV)``
-    See :ref:`Color_Expression_Function`. This function is similar to the
+    See :ref:`color() <Color_Expression_Function>`. This function is similar to the
     ``color()`` function but takes *Hue*, *Saturation* and *Value* (Lightness)
     arguments as inputs and produces an RGB *vector* expression.
 
 .. _Color4_Expression_Function:
 
 Color4 Function (``color4()``) : ``color4(exprR,exprG,exprB,exprA)``
-    See :ref:`Color_Expression_Function`. This function is similar to the
+    See :ref:`color() <Color_Expression_Function>`. This function is similar to the
     ``color()`` function but also supports *alpha-transparency* as the
     fourth argument, again in the range 0...255.
 
