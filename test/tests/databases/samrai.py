@@ -391,4 +391,14 @@ for i in range(silr.NumSets()):
 SetPlotSILRestriction(silr)
 Test("samrai_36")
 
+DeleteAllPlots()
+CloseDatabase(data_path("samrai_test_data/curv_bnd_ghost/dumps.visit"))
+OpenDatabase(data_path("samrai_test_data/matghosts_fullzonal/dumps.visit"))
+AddPlot("FilledBoundary", "materials")
+DrawPlots()
+silr = SILRestriction()
+silr.TurnOffSet(30)
+SetPlotSILRestriction(silr)
+Test("samrai_37")
+
 Exit()
