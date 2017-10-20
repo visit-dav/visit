@@ -21,6 +21,7 @@ close($flistfile);
 # 'A'dded in this commit
 #
 my %udirs;
+my %dels;
 foreach my $line (@flist) {
     if ($line =~ /^A/) {
         chomp($line);
@@ -29,13 +30,38 @@ foreach my $line (@flist) {
         my $dname = dirname($line);
         push @{ $udirs{$dname} }, $bname;
     }
+    elsif ($line =~ /^D/) {
+        chomp($line);
+        $line =~ s/^D *(.*)/$1/;
+        my $bname = basename($line);
+        my $dname = dirname($line);
+        push @{ $dels{$dname} }, $bname;
+    }
 }
+
 # If nothing is being added, we're done
 if (!%udirs) {
     exit 0;
 }
 
+#
+# Remove from consideration any Additions for which there are matching
+# Deletions
+#
+my @delkeys;
+while (my ($k,$v)=each %dels) {
+    if (exists($udirs{$k})) {
+        push @delkeys, $k;
+    }
+}
+foreach my $k (@delkeys) {
+    delete $udirs{$k}
+}
 
+# If nothing is left to be added, we're done
+if (!%udirs) {
+    exit 0;
+}
 
 #
 # First pass to check that nothing *within* this commit
