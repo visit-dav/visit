@@ -2,7 +2,6 @@ Expressions
 -----------
 
 .. danger::
-   Gorfo
    Confirm the text here adequately characterizes that an expression has
    value everywhere over the whole mesh it is defined on. Its a field.
 
