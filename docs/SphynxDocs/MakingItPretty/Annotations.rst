@@ -5,342 +5,350 @@ Annotations
 
 Annotations are objects in the visualization window that convey information
 about the plots. Annotations can be global objects that show information
-such as database name, or they can be objects like plot legends that are
-directly tied to plots. Annotations are an essential component of a good
-visualization because they make it clear what is being visualized and they
-make the visualization appear more polished.
+such as the database name, or they can be objects like plot legends that
+are directly tied to plots. Annotations are an essential component of a good
+visualization because they make it clear what is being visualized and make
+the visualization appear more polished.
 
-VisIt supports a few different annotation types that can be used to enhance
-visualizations. The first category of annotations includes global annotations
-like database name, user name, and plot legends. These annotations convey
-a good deal of information about what is being visualized, what values are
-in the plots, and who created the visualization. The second category of
+VisIt supports several different annotation types that can be used to enhance
+visualizations. The first category of annotations includes general annotations
+like the database name, the user name, and plot legends. These annotations
+convey a good deal of information about what is being visualized, what values
+are in the plots, and who created the visualization. The second category of
 annotations include the plot axes and labels. This group of annotations comes
-in two groups: 2D, and 3D. The attributes for the 2D annotations can be set
-independently of the 3D annotation attributes. Colors can greatly enhance
-the look of a visualization so VisIt provides controls to set the colors
-used for annotations and the visualization window that contains them. The
-third and final category includes annotation objects that can be added to
-the visualization window. You can add as many annotation objects as you want
-to a visualization window. The currently supported annotation objects are:
-2D text and time slider annotations.
+in three groups: 2D, 3D and Array. The attributes for these groups can be
+set independently. Colors can greatly enhance the look of a visualization so
+VisIt provides controls to set the colors used for annotations and the
+visualization window that contains them. The third and final category includes
+annotation objects that can be added to the visualization window. You can add
+as many annotation objects as you want to a visualization window. The currently
+supported annotation objects are: 2D text, 3D text, time slider, 2D line,
+3D line, and image annotations.
 
 Annotation Window
 ~~~~~~~~~~~~~~~~~
 
-.. _fig-annotation1:
+.. _fig-MakingItPretty-Annotation:
 
-.. figure:: images/annotation1.png
+.. figure:: images/MakingItPretty-Annotation.png
 
-   Annotation Window
+   The Annotation window
 
-The **Annotation Window** (see :numref:`Figure %s <fig-annotation1>`)
+The **Annotation Window** (:numref:`Figure %s <fig-MakingItPretty-Annotation>`)
 contains controls for the various annotations that can appear in a
 visualization window. You can open the window choosing the **Annotation**
 option from the **Main Window's Controls menu**. The **Annotation Window**
-has a tabbed interface which allows the three basic categories of annotations
-to be grouped together. The first tab lets you control the 2D annotation
-options. The second tab lets you control the 3D annotation options. The
-third tab lets you control the colors used for annotations and the
-visualization window. Finally, the fourth tab lets you create arbitrary
-numbers of annotation objects such as 2D text annotations or time slider
-annotations.
-
-In addition to the four tabs that contain annotation controls, there are
-three check boxes at the top of the **Annotation Window** for turning global
-annotations, such as database name, on and off. If you want to turn off all
-annotations then you can click the **No annotations** button.
+has a tabbed interface which groups the different categories of annotations
+together.
 
 General Annotations
 ~~~~~~~~~~~~~~~~~~~
 
+.. _fig-MakingItPretty-Annotation2DExample:
+
+.. figure:: images/MakingItPretty-Annotation2DExample.png
+
+   2D plot with annotations 
+
 VisIt has a few general annotations that describe the visualization and are
 independent of the type of database in the visualization. General annotations
-encompass user name, database name, and plot legends. The **Annotation Window**
-does not provide too much flexibility for these types of annotations, but
-it does provide controls that allow you to disable these annotations.
-:numref:`Figure %s <fig-annot2D>` shows common locations for some general
-annotations.
-
-Turning user information on/off
-"""""""""""""""""""""""""""""""
-
-When add plots to the visualization window, your username is shown in the
-lower right corner. The user information annotation is turned on or off using
-the **User information** check box at the top of the **Annotation Window**.
-You may want to turn off user information when you are generating a movie.
-
-Turning database information on/off
-"""""""""""""""""""""""""""""""""""
-
-When plots are displayed in the visualization window, the name of the database
-used in the plots is shown in the visualization window's upper left corner.
-You can turn the database information on or off using the **Database** check
-box at the top of the **Annotation Window**.
+encompass the user name, the database name, and plot legends. The general
+annotation controls are located in the **General** tab. 
+:numref:`Figure %s <fig-MakingItPretty-Annotation2DExample>` shows common
+locations for some general annotations.
 
 Turning plot legends off globally
 """""""""""""""""""""""""""""""""
 
 Plot legends are special annotations that are added by plots. An example of
-a plot legend is the color bars and title that the Pseudocolor plot adds to
+a plot legend is the color bar and title that the Pseudocolor plot adds to
 the visualization window. Normally, plot legends are turned on or off by a
 check box in a plot attribute window but VisIt also provides a check box in
-the **Annotation Window** that can turn off the plot legends for all plots
+the **General** tab that can turn off the plot legends for all the plots
 in the visualization window. You can use the **Legend** check box at the
-top of the **Annotation Window** to turn plot legends off if they are present.
+top of the **General** tab to turn plot legends off if they are present.
+
+Displaying database information
+"""""""""""""""""""""""""""""""
+
+When plots are displayed in the visualization window, the name of the database
+used in the plots is shown in the visualization window's upper left corner.
+You can turn the database information on or off using the **Database** check
+box in the **General** tab.
+
+The **Path Expansion** selection box controls the display of the filename
+text. **File** causes just the name of the file to be displayed. **Directory**
+causes the directory name of the file to be displayed. **Full** causes the
+full path of the file to be displayed. **Smart** uses simulation code
+specific conventions to display the file name in an optimal fashion.
+**Smart Directory** uses simulation code specific conventions to display
+the directory name in an optimal fashion.
+
+The **Time** check box controls the display of the time associatied with
+the current database. If **Time** is enabled then the **Time scale factor**
+and **Time offset** controls become active, allowing you to scale as well
+as apply an offset to the time associated with a database when displaying it.
+
+Displaying user information
+"""""""""""""""""""""""""""
+
+When you add plots to the visualization window, your username is shown in the
+lower right corner. The user information annotation is turned on or off using
+the **User information** check box. You may want to turn off user information
+when you are generating images for presentations.
 
 2D Annotations
 ~~~~~~~~~~~~~~
 
 VisIt has a number of controls in the **Annotation Window** to control 2D
-annotations on the **2D** options tab (:numref:`Figure %s <fig-annotation1>`).
-The 2D annotation settings are primarily concerned with the appearance of
-the 2D axes that frame plots of 2D databases. :numref:`Figure %s <fig-annot2D>`
-shows a plot with various annotations.
+annotations on the **2D** tab
+(:numref:`Figure %s <fig-MakingItPretty-Annotation2DGeneral>`). The 2D
+annotation settings are primarily concerned with the appearance of the
+2D axes that frame plots of 2D databases.
+:numref:`Figure %s <fig-MakingItPretty-Annotation2DExample>` shows a plot
+with various annotations.
 
-.. _fig-annot2D:
+.. _fig-MakingItPretty-Annotation2DGeneral:
 
-.. figure:: images/annot2D.png
+.. figure:: images/MakingItPretty-Annotation2DGeneral.png
 
-   2D plot with annotations 
+   The general 2D properties
 
-Setting grid line properties
-""""""""""""""""""""""""""""
+The **Show axes** check box turns on and off the display of the 2D axes.
 
-The 2D grid lines are a set of lines that make a grid over the 2D viewport.
-The grid lines are disabled by default but you can enable them by checking
-the **Show grid lines** check boxes on the **Grid and Ticks** sub-tab in the
-**Annotation Window's 2D tab** (:numref:`Figure %s <annotation1>`). Grid
-lines can be enabled for one or more dimensions.
+General 2D axis properties
+""""""""""""""""""""""""""
 
-.. _annotation1:
+**Auto scale label values** causes the labels to be multiplied by a factor
+of 10 to a multiple of 3 power such that the labels are in the range 0.001
+to 999. It then displays the multiplier in the axis title. An example is
+shown in :numref:`Figure %s <fig-MakingItPretty-AutoscaleAxesLabelsExample>`.
+The X-Axis range is 0 to 100,000, which causes the labels to be in the range
+0 to 100, with a (x10^3) added to the X-Axis and Y-Axis labels to indicate
+that the true range is actually 0 to 100x10^3 or 100,000.
 
-.. figure:: images/annotation1.png
+.. _fig-MakingItPretty-AutoscaleAxesLabelsExample:
 
-   Grid and Ticks tab on the Annotation Window's 2D tab
+.. figure:: images/MakingItPretty-AutoscaleAxesLabelsExample.png
 
-Setting tick mark properties
-""""""""""""""""""""""""""""
+   2D plot with axes labels being scaled by 10^3
 
 The tick marks are small lines that are drawn along the edges of the 2D
 viewport. Tick marks can be drawn on a variety of axes by selecting a new
 option from the **Show tick marks** menu. Tick marks can also be drawn on
 the inside, outside, or both sides of the plot viewport by selecting a new
-option from the **Tick mark locations** menu in the **Annotation Window**.
+option from the **Tick mark locations** menu.
 
 Tick mark spacing is usually changed to best suite the plots in the
 visualization window but you can explicitly set the tick mark spacing by
 first unchecking the **Auto set ticks** check box and then typing new tick
-spacing values into the
-**Major tick minimum, Major tick maximum, Major tick spacing,** and
-**Minor tick spacing** text fields. The text fields on the left correspond
-to the horizontal axis while the rightmost text fields set the tick spacing
-for the vertical axis.
+spacing values into the **Major minimum**, **Major maximum**,
+**Major spacing**, and **Minor spacing** text fields in the **X-Axis** and
+**Y-Axis** tabs.
 
-Setting axis label properties
-"""""""""""""""""""""""""""""
+Setting the X-Axis and Y-Axis properties
+""""""""""""""""""""""""""""""""""""""""
 
-The axis labels are the labels that appear along the 2D plot viewport.
-This includes the title of the axis as well as the numeric labels that
-indicate the plot's spatial dimensions. By default, the axis labels are
-enabled and set to appear for both the X and Y axes. You can turn the
-labels off for one or more axes unchecking the **Show labels** check boxes
-on the **Annotation Window's 2D tab**. You can change the size of
-the axis labels and titles by entering new font sizes, specified as a
-percentage of vis window height, into the **Label font height** and
-**Title font height** text fields. Note that you can set these label
-properties for the X and Y dimensions independently.
+There are tabs for seperately controlling the properties of the X and Y
+axes. The tab for setting the X-Axis properties is shown in
+:numref:`Figure %s <fig-MakingItPretty-Annotation2DAxes>`.
 
-Setting axis titles and units
-"""""""""""""""""""""""""""""
+.. _fig-MakingItPretty-Annotation2DAxes:
+
+.. figure:: images/MakingItPretty-Annotation2DAxes.png
+
+   The 2D axes properties
 
 The axis titles are the names that are drawn along each axis, indicating
 the meaning of the values shown along the axis. Normally, the names used
 for the axis titles come from the database being plotted so the axis titles
 are relevant for the displayed plots. Many of VisIt's database readers
 plugins read file formats that have no support for storing axis titles
-so VisIt uses default values such as: "X-Axis", "Y-Axis". VisIt's
-**Annotation Window** provides options that allow you to override the
-defaults or the axis titles that come from the file. If you want to
-override the axis titles that VisIt uses for 2D visualizations, turn on
-the **Set X-Axis title** or **Set Y-Axis title** check boxes on the
-**Title and Labels** sub-tab (see :numref:`Figure %s <fig-annotation1b>`)
-on the **Annotation Window's 2D** tab. Next, type the new axis
-titles into the adjacent text fields.
+so VisIt uses default values such as: "X-Axis", "Y-Axis". VisIt provides
+options that allow you to override the defaults or the axis titles that
+come from the file. You can control the display of the axis titles by
+enabling and disabling the **Title** check box. If you want to override
+the axis titles that VisIt uses for 2D visualizations, turn on the
+**Custom title** check box and type the new axis title into the adjacent
+text field.
 
-On addition to overriding the names of the axis titles, you can also
+In addition to overriding the names of the axis titles, you can also
 override the units that are displayed next to the axis titles. Units are
 displayed only when they are available in the file format and like axis
 titles, they are not always stored in the file being plotted. If you want
-to specify units for the axes, turn on the **Set X-Axis units** or
-**Set Y-Axis units** check boxes and type new units into the adjacent
-text fields.
+to specify units for the axes, turn on the **Custom Units** check box
+and type new units into the adjacent text field.
 
-.. _fig-annotation1b:
+The axis labels are the labels that appear along the 2D plot viewport.
+By default, the axis labels are enabled and set to appear. You can turn
+the labels off by unchecking the **Labels** check box. You can change
+the label scale factor by changing the **Scaling (x10^?)** text field.
 
-.. figure:: images/annotation1b.png
+Tick mark spacing is usually changed to best suite the plots in the
+visualization window but you can explicitly set the tick mark spacing by
+first unchecking the **Auto set ticks** check box on the **General 2D**
+tab and then typing new tick spacing values into the **Major minimum**,
+**Major maximum**, **Major spacing**, and **Minor spacing** text fields.
 
-   Title and Labels tab on the Annotation Window's 2D tab
+The 2D grid lines are a set of lines that make a grid over the 2D viewport.
+The grid lines are disabled by default but you can enable them by checking
+the **Show grid** check box. The grid lines correspond to the major tick
+marks.
 
 3D Annotations
 ~~~~~~~~~~~~~~
 
-.. _fig-annot3D:
+VisIt has a number of controls, located on the **3D** tab in the
+**Annotation Window** for controlling annotations that are used when the
+visualization window contains 3D plots. Like the 2D controls, these
+controls focus mainly on the axes that are drawn around plots.
+:numref:`Figure %s <fig-MakingItPretty-Annotation3DExample>` shows an
+example 3D plot with the 3D annotations. 
+:numref:`Figure %s <fig-MakingItPretty-Annotation3DGeneral>` and
+:numref:`Figure %s <fig-MakingItPretty-Annotation3DAxes>` shows the
+**Annotation Window's 3D tab**.
 
-.. figure:: images/annot3D.png
+.. _fig-MakingItPretty-Annotation3DExample:
+
+.. figure:: images/MakingItPretty-Annotation3DExample.png
 
    3D plot with annotations
 
-VisIt has a number of controls, located on the **3D tab**, in the
-**Annotation Window** for controlling annotations that are used when
-the visualization window contains 3D plots. Like the 2D controls,
-these controls focus mainly on the axes that are drawn around plots.
-:numref:`Figure %s <fig-annot3D>` shows an example 3D plot with the 3D
-annotations labeled and :numref:`Figure %s <fig-annotation2>` and
-:numref:`Figure %s <fig-annotation2b>` shows the
-**Annotation Window's 3D tab**.
+.. _fig-MakingItPretty-Annotation3DGeneral:
 
-.. _fig-annotation2:
+.. figure:: images/MakingItPretty-Annotation3DGeneral.png
 
-.. figure:: images/annotation2.png
+   The general 3D properties
 
-   Grid and Ticks tab on the Annotation Window's 3D tab
+The **Show axes** check box turns on and off the display of the 3D axes.
 
-.. _fig-annotation2b:
+The **Show triad** check box turns on and off the display of the triad
+annotation. The triad annotation consists of a small set of axes and is
+displayed in the lower left corner of the visualization window and help
+you get your bearings in 3D.
 
-.. figure:: images/annotation2b.png
+The **Show bounding box** check box turns on an off the display of the
+bounding box. The bounding box annotation displays the edges of a box that
+contains all the data.
 
-   Title and Labels tab on the Annotation Window's 3D tab
-
-Hiding all axes
-"""""""""""""""
-
-As a convenience, VisIt provides a **Draw axes** check box that can be used
-to turn all axes off without having to turn off each individual annotation
-setting. To hide all of the 3D axes, uncheck the **Draw axes** check box.
-
-Turning off the triad
-"""""""""""""""""""""
-
-The triad annotation contains a small set of axes and it is drawn in the
-lower left corner of the visualization window. It is displayed so you can
-get your bearings in 3D. The triad can be turned off by unchecking the
-**Triad** check box in the **Annotation Window**.
-
-Setting grid line properties
-""""""""""""""""""""""""""""
-
-The 3D grid lines are a set of lines that make a grid around the 3D
-bounding box. The grid lines are disabled by default but you can enable
-them using the **Show grid lines** check boxes in the **Annotation Window**.
-Grid lines can be enabled for one or more dimensions.
-
-Setting tick mark properties
-""""""""""""""""""""""""""""
-
-The tick marks are small lines that are drawn along the edges of the 3D
-bounding box. Tick marks can be drawn on a variety of axes by checking the
-**Show tick marks** check boxes. Tick marks can also be drawn on the inside,
-outside, or both sides of the bounding box by selecting a new option from the
-**Tick mark locations** menu in the **Annotation Window**.
-
-Setting the plot axis type
+General 3D axis properties
 """"""""""""""""""""""""""
 
-VisIt provides a few different types of 3D plot axes. You can set the plot
-axis type by making a selection from the **Axis type** menu on the
-**Grid and Ticks** sub-tab in the **Annotation Window's 3D tab**.
+**Auto scale label values** causes the labels to be multiplied by a factor
+of 10 to a multiple of 3 power such that the labels are in the range 0.001
+to 999. It then displays the multiplier in the axis title. A 2D example is
+shown in :numref:`Figure %s <fig-MakingItPretty-AutoscaleAxesLabelsExample>`.
+The X-Axis range is 0 to 100,000, which causes the labels to be in the range
+0 to 100, with a (x10^3) added to the X-Axis and Y-Axis labels to indicate
+that the true range is actually 0 to 100x10^3 or 100,000.
 
-Setting axis label properties
-"""""""""""""""""""""""""""""
+The tick marks are small lines that are drawn along the edges of the bounding
+box surfaces. Tick marks can be drawn on a variety of axes by selecting a
+new option from the **Show tick marks** menu. Tick marks can also be drawn
+on the inside, outside, or both sides of the plot bounding box by selecting
+a new option from the **Tick mark locations** menu.
 
-The 3D annotation options provide three **Show labels** check boxes that
-allow you to turn individual axis labels on and off. Click the check box
-next to each axis that you want to have axis labels or leave them unchecked
-if you do not want axis labels.
+Tick mark spacing is usually changed to best suite the plots in the
+visualization window but you can explicitly set the tick mark spacing by
+first unchecking the **Auto set ticks** check box and then typing new tick
+spacing values into the **Major minimum**, **Major maximum**,
+**Major spacing**, and **Minor spacing** text fields in the **X-Axis**, 
+**Y-Axis** and **Z-Axis** tabs.
 
-You can specify a label scale, which affects how VisIt displays the
-numbers used in the axes. To specify a label scale, turn off the
-**Auto scale label values** check box and type new scaling exponents
-into the **Label scale** text fields for the X, Y, and Z dimensions.
+Setting the X-Axis, Y-Axis and Z-Axis properties
+""""""""""""""""""""""""""""""""""""""""""""""""
 
-Setting axis titles and units
-"""""""""""""""""""""""""""""
+There are tabs for seperately controlling the properties of the X, Y and Z
+axes. The tab for setting the X-Axis properties is shown in
+:numref:`Figure %s <fig-MakingItPretty-Annotation3DAxes>`.
+
+.. _fig-MakingItPretty-Annotation3DAxes:
+
+.. figure:: images/MakingItPretty-Annotation3DAxes.png
+
+   The 3D axes properties
 
 The axis titles are the names that are drawn along each axis, indicating
 the meaning of the values shown along the axis. Normally, the names used
 for the axis titles come from the database being plotted so the axis titles
 are relevant for the displayed plots. Many of VisIt's database readers
-plugins read file formats that have no support for storing axis titles so
-VisIt uses default values such as: "X-Axis", "Y-Axis", "Z-Axis". VisIt's
-**Annotation Window** provides options that allow you to override the
-defaults or the axis titles that come from the file. If you want to override
-the axis titles that VisIt uses for 3D visualizations, turn on the
-**Set X-Axis title**, **Set Y-Axis title**, or **Set Z-Axis title**
-check boxes on the **Title and Labels** sub-tab 
-(:numref:`Figure %s <fig-annotation2>`) on the **Annotation Window's 3D tab**.
-Next, type the new axis titles into the adjacent text fields.
+plugins read file formats that have no support for storing axis titles
+so VisIt uses default values such as: "X-Axis", "Y-Axis" and "Z-Axis".
+VisIt provides options that allow you to override the defaults or the axis
+titles that come from the file. You can control the display of the axis
+titles by enabling and disabling the **Title** check box. If you want to
+override the axis titles that VisIt uses for 3D visualizations, turn on
+the **Custom title** check box and type the new axis title into the
+adjacent text field.
 
-On addition to overriding the names of the axis titles, you can also override
-the units that are displayed next to the axis titles. Units are displayed
-only when they are available in the file format and like axis titles, they
-are not always stored in the file being plotted. If you want to specify
-units for the axes, turn on the **Set X-Axis units**, **Set Y-Axis units**,
-or **Set Z-Axis units** check boxes and type new units into the adjacent
-text fields.
+In addition to overriding the names of the axis titles, you can also
+override the units that are displayed next to the axis titles. Units are
+displayed only when they are available in the file format and like axis
+titles, they are not always stored in the file being plotted. If you want
+to specify units for the axes, turn on the **Custom Units** check box
+and type new units into the adjacent text field.
+
+The axis labels are the labels that appear along the edges of the bounding
+box. By default, the axis labels are enabled and set to appear. You can
+turn the labels off by unchecking the **Labels** check box. You can change
+the label scale factor by changing the **Scaling (x10^?)** text field.
+
+Tick mark spacing is usually changed to best suite the plots in the
+visualization window but you can explicitly set the tick mark spacing by
+first unchecking the **Auto set ticks** check box on the **General 3D**
+tab then typing new tick spacing values into the **Major minimum**,
+**Major maximum**, **Major spacing**, and **Minor spacing** text fields.
+
+The 3D grid lines are a set of lines that make a grid over the the bounding
+box. The grid lines are disabled by default but you can enable them by
+checking the **Show grid** check box. The grid lines correspond to the
+major tick marks.
 
 Annotation Colors
 ~~~~~~~~~~~~~~~~~
 
 Colors are very important in a visualization since they help to determine
 how easy it is to read annotations. VisIt provides a tab in the
-**Annotation Window**, shown in :numref:`Figure %s <fig-annotation3>`,
-specifically devoted to choosing annotation colors. The **Colors** tab
-contains controls to set the background and foreground for the visualization
-window which, in turn, sets the colors used for annotations. The **Colors**
-tab also provides controls for more advanced background colors called
-gradients which are colors that bleed into each other.
+**Annotation Window**, shown in
+:numref:`Figure %s <fig-MakingItPretty-AnnotationColors>`, specifically
+devoted to choosing annotation colors. The **Colors** tab contains controls
+to set the background and foreground for the visualization window which, in
+turn, set the colors used for annotations. The **Colors** tab also provides
+controls for more advanced background colors called gradients which are
+colors that bleed into each other.
 
-.. _fig-annotation3:
+.. _fig-MakingItPretty-AnnotationColors:
 
-.. figure:: images/annotation3.png
+.. figure:: images/MakingItPretty-AnnotationColors.png
 
-   Colors tab
+   The annotation colors tab
 
-Setting background and foreground colors
-""""""""""""""""""""""""""""""""""""""""
+The **Background color** and **Foreground color** buttons allow you to
+set the background and foreground colors. To set the color, click the
+color button and select a color from the **Popup color menu**
+(see :numref:`Figure %s <fig-MakingItPretty-ColorSelectDialog>`).
+Releasing the mouse outside of the **Popup color menu** cancels color
+selection and the color is not changed. Once you select a new color
+and click the **Apply** button, the colors for the active visualization
+window change. Note that each visualization window can have different
+background and foreground colors.
 
-The **Colors** tab has two color buttons that allow you to set the background
-and foreground colors. To set the background or foreground color, click the
-**Background** or **Foreground** color button and select a color from the
-**Popup color menu**. Releasing the mouse outside of the **Popup color menu**
-(see :numref:`Figure %s <fig-colorselectdialog>`) cancels color selection
-and the color is not changed. Once you select a new color and click the
-**Apply** button, the colors for the active visualization window change.
-Note that each visualization window can have different background and
-foreground colors.
+.. _fig-MakingItPretty-ColorSelectDialog:
 
-.. _fig-colorselectdialog:
+.. figure:: images/MakingItPretty-ColorSelectDialog.png
 
-.. figure:: images/colorselectdialog.png
+   The popup color menu and the color selection dialog
 
-   Popup color menu and the Color Selection Dialog
-
-Changing the background style
-"""""""""""""""""""""""""""""
-
-VisIt has two possible background styles from which to choose. The default
-background style is solid where the entire background is a single color.
-Another background style is a gradient background. In a gradient background
-, two colors are blended into each other in various ways. The resulting
-background offers differing degrees of contrast and can enhance the
-look of many visualizations. To change the background style, click the
-**Background style** radio buttons in the **Annotation Window**. Choosing
-**Solid** selects a solid background while choosing **Gradient** selects
-a gradient background.
-
-Customizing gradient backgrounds
-""""""""""""""""""""""""""""""""
+The **Background style** setting allows you to select from four background
+styles. The default background style is **Solid** where the entire background
+is a single color. The second style is a **Gradient** background. In a
+gradient background, two colors are blended into each other in various
+ways. The resulting background offers differing degrees of contrast and can
+enhance the look of many visualizations. The third style is an **Image**
+background, where an image is tiled across the background. The fourth style
+is an **Image sphere**, where an image is projected onto a sphere. This can
+be used to paint the stars onto the background of an astrophysics simulation.
+To change the background style, click the **Background style** radio buttons. 
 
 VisIt provides controls for setting the colors and style used for gradient
 backgrounds. There are two color buttons: **Gradient color 1** and
@@ -355,13 +363,18 @@ the style name. For example, Bottom to Top will have gradient color 1 at
 the bottom and gradient color 2 at the top. The radial gradient style puts
 gradient color 1 in the middle of the visualization window and blends
 gradient color 2 radially outward from the center. Examples of the gradient
-styles are shown in :numref:`Figure %s <fig-gradients>`.
+styles are shown in :numref:`Figure %s <fig-MakingItPretty-Gradients>`.
 
-.. _fig-gradients:
+.. _fig-MakingItPretty-Gradients:
 
-.. figure:: images/gradients.png
+.. figure:: images/MakingItPretty-Gradients.png
 
-   Gradient styles
+   The various gradient styles
+
+The **Background image** text field allows you to specify the name of the
+file to use for the background image. The **Repetitions in X** and
+**Repetitions in Y** settings allow you to specify how many times to
+replicate the image in each of the X and Y image directions.
 
 Annotation Objects
 ~~~~~~~~~~~~~~~~~~
@@ -370,18 +383,18 @@ So far, the annotations that have been described can only have a single
 instance. To provide more flexibility in the types and numbers of annotations,
 VisIt allows you to create annotation objects, which are objects that
 are added to the visualization window to convey information about the
-visualization. Currently, VisIt supports four types of annotation objects:
-2D text objects, time slider objects, 2D line objects, and image objects.
-All of those types of annotation objects will be described herein. The
-fourth tab, or **Objects** tab, in the **Annotation Window**
-(:numref:`Figure %s <fig-annotation4>` ) is devoted to managing the list
-of annotation objects and setting their properties.
+visualization. Currently, VisIt supports six types of annotation objects:
+2D text objects, 3D text objects, time slider objects, 2D line objects, 3D
+line objects and image objects. All of those types of annotation objects
+will be described herein. The **Objects** tab, in the **Annotation Window**
+(:numref:`Figure %s <fig-MakingItPretty-AnnotationObjects>` ) is devoted
+to managing the list of annotation objects and setting their properties.
 
-.. _fig-annotation4:
+.. _fig-MakingItPretty-AnnotationObjects:
 
-.. figure:: images/annotation4.png
+.. figure:: images/MakingItPretty-AnnotationObjects.png
   
-   Annotation object tab
+   The annotation objects tab
 
 The **Objects** tab in the **Annotation Window** is divided up into three
 main areas. The top of the window is split vertically into two areas that
@@ -428,26 +441,35 @@ Deleting an annotation object
 """""""""""""""""""""""""""""
 
 To delete an annotation object, select it in the **Annotation objects**
-list and then click the **Delete** button on the **Objects** tab. You
-can delete more than one plot if you select multiple plots in the
+list and then click the **Delete** button on the **Objects** tab. You can
+delete more than one object if you select multiple objects plots in the
 **Annotation objects** list before clicking the **Delete** button.
 
 Text annotation objects
 """""""""""""""""""""""
 
-Text annotation objects, shown in :numref:`Figure %s <fig-combined_annot_text>`,
+Text annotation objects, shown in 
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObjectTextExample>`,
 are created by clicking the **Text** button in the **Create new** area on the
 **Objects** tab. Text annotation objects are simple 2D text objects that are
 drawn on top of plots in the visualization window and are useful for adding
-titles or classification levels to a visualization. Text annotation objects
-can be placed anywhere in the visualization window and you can set their
-size, text, colors, and font properties.
+titles to a visualization.
 
-.. _fig-combined_annot_text:
+.. _fig-MakingItPretty-AnnotationObjectTextExample:
 
-.. figure:: images/combined_annot_text.png
+.. figure:: images/MakingItPretty-AnnotationObjectTextExample.png
   
-   Text annotations and text annotation interface
+   Examples of text annotations
+
+The text annotation object properties, shown in
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObjectText>`, can be used
+to set the position, size, text, colors, and font properties.
+
+.. _fig-MakingItPretty-AnnotationObjectText:
+
+.. figure:: images/MakingItPretty-AnnotationObjectText.png
+  
+   The text annotation interface
 
 Text annotation objects are placed using 2D coordinates where the X, and Y
 values are in the range [0,1]. The point (0,0) corresponds to the lower left
@@ -459,29 +481,20 @@ position a text annotation object, enter a new 2D coordinate into the
 **Lower left** text field to interactively choose a new lower left coordinate
 for the text annotation using the screen positioning control, which represents
 the visualization window. The screen positioning control, shown in
-:numref:`Figure %s <fig-annotationobjectinterface_text2>`, lets you move a
-set of cross-hairs to any point on a square area that represents the
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObjectPosition>`, lets you
+move a set of cross-hairs to any point on a square area that represents the
 visualization window. Once you release the left mouse button, the location
 of the cross-hairs is used as the new coordinate for the text annotation
 object's lower left corner.
 
-.. _fig-annotationobjectinterface_text2:
+.. _fig-MakingItPretty-AnnotationObjectPosition:
 
-.. figure:: images/annotationobjectinterface_text2.png
+.. figure:: images/MakingItPretty-AnnotationObjectPosition.png
   
    Screen positioning control
 
-Text annotations objects are currently sized using a percentage of the
-visualization window's width. When you specify a width for the text annotation
-object, you are setting its maximum width. To set the width for a text
-annotation, type a new width value into the **Width** spin box or use its
-the +/- arrows to increase or decrease the size of the text annotation
-object. The height of the text depends on the length and composition of the
-text that the text annotation will display. Text annotation objects will
-likely be changed in the near future so they are specified in terms of
-visualization window height instead of width so it is easier to make
-different text annotation objects have the same font size when they display
-different lines of text.
+The size of the text is set using the **Height** spin box. The height is the
+fraction of the visualization window height.
 
 To set the text that a text annotation object displays, type a new string
 into the **Text** text field. You can make the text annotation object display
@@ -492,39 +505,86 @@ will display Time=10 in the visualization window when the active database's
 time is 10. Whatever text you enter for the text annotation object is used
 to identify the text annotation object in the **Annotation objects** list.
 
-Text annotation objects can be displayed in any color, including the
-visualization window's foreground color. You can also set the opacity for
-text annotation objects to make them transparent. If you want to set the
-color for a text annotation object, you must first turn off the
-**Use foreground color** check box. Once that check box is turned off,
-the text annotation uses the color that you pick for it instead of the
-visualization window's foreground color. To change the color for a text
-annotation object, click the **Text color** button and choose a new color
-from the **Popup color menu**. To change the opacity, use the opacity
-slider next to the **Text color** button.
+In addition to the usual text properties, text annotation objects can also
+include a shadow.
 
-In addition to being able to set the position, size, message, and color
-for the text annotation object, you can also choose from 3 different fonts
-(Arial, Courier, and Times) and set certain font display properties such
-as bold, italic, and shadow.
+3D text annotation objects
+""""""""""""""""""""""""""
+
+3D text annotation objects, shown in
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObject3DTextExample>`,
+are created by clicking the **3D Text** button in the **Create new** area on
+the **Objects** tab. 3D text annotation objects are extruded text that are
+positioned in 3D and are part of the 3D scene, so they may become obscured
+by other objects in the scene and will move in space as the image is panned
+and zoomed.
+
+.. _fig-MakingItPretty-AnnotationObject3DTextExample:
+
+.. figure:: images/MakingItPretty-AnnotationObject3DTextExample.png
+  
+   Examples of 3d text annotations
+
+The 3D text annotation object properties, shown in
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObject3DText>`, can be used
+to set the text, position, size, orientation and color properties.
+
+.. _fig-MakingItPretty-AnnotationObject3DText:
+
+.. figure:: images/MakingItPretty-AnnotationObject3DText.png
+  
+   The 3D text annotation interface
+
+To set the text that a 3D text annotation object displays, type a new string
+into the **Text** text field.
+
+3D text annotation objects are placed in 3D coordinates in the same coordinate
+system used by the simulation data. To position a 3D text annotation object,
+enter a new 3D coordinate into the **Position** text field.
+
+The size of the text can be specified in two different ways. The first is
+using a relative height, where the height is a fraction of the size of the
+simulation data. The second is a fixed size, where the size is specified
+in the coorindate system of the simulation data. If you were to specify a
+relative height and apply the Transform operator to scale the data in each
+direction by a factor of 10, the size of the text would not change. If you
+were to specify a fixed height, scaling the data by a factor of 10 would
+result in the text being one tenth the size. To specify a relative height,
+select the **Relative** radio button and set the size using the spin box
+next to it. The specify a fixed height, select the **Fixed** radio button
+and enter the new height in the text box next to it.
+
+The orientation of the text can also be specified in two different ways.
+The first is relative to the screen coordinate system and the second is
+in the coordinate system of the simulation data. If the orientation is
+relative to the screen coordinate system, then rotating the image will
+not change the orientation of the text. If the orientation is relative
+to the coordinate system of the simulation data, then rotating the image
+will change the orientation of the text. To make the orientation relative
+to the screen, select the **Preserve orientation when view changes**
+radio button. To make the orientation relative to the simulation coordinate
+system, de-select the **Preserve orientation when view changes** radio
+button. To set the orientation, set the **Rotate Y**, **Rotate X** and
+**Rotate Z** spin boxes. The rotations are applied in the left to right
+order of the spin boxes in the interface.
 
 Time slider annotation objects
 """"""""""""""""""""""""""""""
 
 Time slider annotation objects, shown in
-:numref:`Figure %s <fig-annotationobject_timeslider>`, are created by
-clicking the Time slider button in the **Create new** area on the
-**Objects** tab. Time slider annotation objects consist of a graphic that
-shows the progress through an animation using animation and text that
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObjectTimeSliderExample>`,
+are created by clicking the Time slider button in the **Create new** area
+on the **Objects** tab. Time slider annotation objects consist of a graphic
+that shows the progress through an animation using animation and text that
 shows the current database time. Time slider annotation objects can be
 placed anywhere in the visualization window and you can set their size,
 text, colors, and appearance properties.
 
-.. _fig-annotationobject_timeslider:
+.. _fig-MakingItPretty-AnnotationObjectTimeSliderExample:
 
-.. figure:: images/annotationobject_timeslider.png
+.. figure:: images/MakingItPretty-AnnotationObjectTimeSliderExample.png
   
-   Time slider annotation object
+   An example of a time slider annotation object
 
 Time slider annotation objects are placed using 2D coordinates where the X,
 and Y values are in the range [0,1]. The point (0,0) corresponds to the
@@ -537,17 +597,16 @@ To position a text annotation object, enter a new 2D coordinate into the
 for the text annotation using the screen positioning control, which represents
 the visualization window.
 
-.. _fig-annotationobjectinterface_timeslider:
+.. _fig-MakingItPretty-AnnotationObjectTimeSlider:
 
-.. figure:: images/annotationobjectinterface_timeslider.png
+.. figure:: images/MakingItPretty-AnnotationObjectTimeSlider.png
   
-   Time slider object interface
+   The time slider interface
 
 The size of a time slider annotation object is controlled by settings its
-height and width as a percentage of the vis window height and width. Type
-new values into the **Width** and **Height** spin buttons or use the +/-
-arrows next to the **Width** and **Height** spin buttons to set a new width
-or height for the time slider annotation object.
+height and width as a percentage of the visualization window height and
+width. Type new values into the **Width** and **Height** spin buttons
+to set a new width or height for the time slider annotation object.
 
 You can set the text displayed by the time slider annotation object by
 typing a new text string into the **Text label** text field. Text is
@@ -570,12 +629,12 @@ color, and text color. A time slider annotation object displays time like
 a progress bar in that the progress bar starts out small and then grows to
 the right until it takes up the whole length of the annotation. The color
 used to represent the progress can be set by clicking the **Start color**
-button and choosing a new color from the **Popup color menu**. As the time
+button and choosing a new color from the **Popup color** menu. As the time
 slider annotation object shows more progress, the color that is used to
 fill up the time that has not been reached yet (end color) is overtaken
 by the start color. To set the end color for the time slider annotation
 object, click the **End color** button and choose a new color from the
-**Popup color menu**. Normally, time slider annotation objects use the
+**Popup color** menu. Normally, time slider annotation objects use the
 foreground color of the vis window when drawing the annotation's text.
 If you want to make the annotation use a special color, turn off the
 **Use foreground color** check box and click the **Text color** button
@@ -593,19 +652,19 @@ to be more 3-dimensional.
 """"""""""""""""""""""""""
 
 2D line annotation objects, shown in
-:numref:`Figure %s <fig-annotationobject_line2D>`, are created by clicking
-the **2D Line** button in the **Create new** area on the **Objects** tab.
-2D line annotation objects are simple line objects that are drawn on top
-of plots in the visualization window and are useful for pointing to features
-of interest in a visualization. 2D line annotation objects can be placed
-anywhere in the visualization window and you can set their locations, arrow
-properties, and color.
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObject2DLine>`, are created
+by clicking the **2D Line** button in the **Create new** area on the
+**Objects** tab. 2D line annotation objects are simple line objects that are
+drawn on top of plots in the visualization window and are useful for pointing
+to features of interest in a visualization. 2D line annotation objects can be
+placed anywhere in the visualization window and you can set their locations,
+arrow properties, and color.
 
-.. _fig-annotationobject_line2D:
+.. _fig-MakingItPretty-AnnotationObject2DLineExample:
 
-.. figure:: images/annotationobject_line2D.png
+.. figure:: images/MakingItPretty-AnnotationObject2DLineExample.png
   
-   2D line annotations and text annotations can be used to point to features of interest
+   Examples of 2D line annotations
 
 2D line annotations are described mainly by two coordinates that specify the
 start and end points for the line. The start and end coordinates are specified
@@ -618,23 +677,24 @@ line object interface. You can also click the down arrow to the right of the
 **Start** or **End** text fields to interactively choose new coordinates using
 the screen positioning control.
 
-.. _fig-annotationobjectinterface_line2D:
+.. _fig-MakingItPretty-AnnotationObject2DLine:
 
-.. figure:: images/annotationobjectinterface_line2D.png
+.. figure:: images/MakingItPretty-AnnotationObject2DLine.png
   
-   2D line object interface
+   The 2D line object interface
 
 Once the 2D line annotation has been positioned there are other attributes
 that can be set to improve its appearance. First of all, if the 2D line
 annotation is being used to point at important features in a visualization,
 you might want to increase the 2D line annotation's width to make it stand
-out more. To change the width, type a new number of pixels into the **Width**
-spin box or use the +/- buttons to increment or decrement the current width.
-After changing the width, the color of the 2D line annotation should be
-chosen to stand out against the plots in the visualization. The color that
-you use should be chosen such that the line contrasts sharply with the plots
-over which it is drawn. To choose a new color for the line, click on the
-**Line color** button and choose a new color from the **Popup color menu**.
+out more. To change the width, select the new pixel width from the **Width**
+menu. It is also possible to set the line style. To change the style of the
+line, select the new line style from the **Style** menu. After changing the
+width and style, the color of the 2D line annotation should be chosen to
+stand out against the plots in the visualization. The color that you use
+should be chosen such that the line contrasts sharply with the plots over
+which it is drawn. To choose a new color for the line, click on the
+**Line color** button and choose a new color from the **Popup color** menu.
 You can also adjust the opacity of the line by using the opacity slider
 next to the **Line color** button.
 
@@ -642,13 +702,61 @@ The last properties that are commonly set for 2D line annotations determine
 whether the end points of the line have arrow heads. The 2D line annotation
 supports two different styles of arrow heads: filled and lines. To make your
 line have arrow heads at the start or the end, make new selections from the
-**Begin Arrow** and **End Arrow** menus.
+**Begin arrow** and **End arrow** menus.
+
+3D line annotation objects
+""""""""""""""""""""""""""
+
+3D line annotation objects, shown in
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObject3DTextExample>`,
+are created by clicking the **3D Line** button in the **Create new** area on
+the **Objects** tab. 3D line annotation objects are lines that are
+positioned in 3D and are part of the 3D scene, so they may become obscured
+by other objects in the scene and will move in space as the image is panned
+and zoomed.
+
+The 3D line annotation object properties, shown in
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObject3DLine>`, can be used
+to set the position, style and color properties.
+
+.. _fig-MakingItPretty-AnnotationObject3DLine:
+
+.. figure:: images/MakingItPretty-AnnotationObject3DLine.png
+  
+   The 3D line object interface
+
+3D text annotation objects are placed in 3D coordinates in the same coordinate
+system used by the simulation data. To position a 3D line annotation object,
+specify the start and end location of the line by entering the start location
+in the **Start** text field and the end location in the **End** text field.
+
+There are two types of lines supported, one is a normal line and the other
+is a tube. The line type is selected through the **Line type** menu. When
+using a normal line, you can specify the normal line width and line style
+properties using the **Line Width** and **Line Style** menus. When using
+a tube you can specify the tube quality and radius. The tube is created
+from a series of flat surfaces around the center of the line to approximate
+a tube. The number of surfaces used is controlled by the tube quality. The
+tube radius is the radius of the tube in the coordinate system of the
+simulation data. These properties can be changed through the **Tube Quality**
+and **Tube Radius** menus.
+
+It is also possible to add arrows to the beginning and end of the line. These
+can be enabled with the **Begin Arrow** and **End Arrow** toggle buttons.
+For each arrow, the user can also control the resolution and radius of the
+arrows. The arrows consist of cones places at the ends of the line and are
+contructed out of triangles that approximate a cone. The number of triangles
+used is controlled by the resolution. The radius is the radius of the
+cone in the same coordinate system as the simulation data. The resolution
+can be changed using the **Resolution** spin box and the radius is changed
+by typing a new value into the **Radius** text field.
 
 Image annotation objects
 """"""""""""""""""""""""
 
-Image annotation objects, shown in :numref:`Figure %s <fig-combined_annot_text>`
-, are created by clicking the **Image** button in the **Create new** area on
+Image annotation objects, shown in
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImageExample>`,
+are created by clicking the **Image** button in the **Create new** area on
 the **Objects** tab. Image annotation objects display images from image
 files on disk in a visualization window. Images are drawn on top of plots
 in the visualization window and are useful for adding logos, pictures of
@@ -656,11 +764,11 @@ experimental data, or other views of the same visualization. Image annotation
 objects can be placed anywhere in the visualization window and you can set
 their size, and optional transparency color.
 
-.. _fig-annotationobject_image:
+.. _fig-MakingItPretty-AnnotationObjectImageExample:
 
-.. figure:: images/annotationobject_image.png
+.. figure:: images/MakingItPretty-AnnotationObjectImageExample.png
   
-   Visualization with two overlayed image annotations
+   An Example of a visualization with two overlayed image annotations
 
 The first step in incorporating an image annotation into a visualization
 is to choose the file that contains the image that will serve as the
@@ -669,10 +777,16 @@ the full path and filename to the file that you want to use into the
 **Image source** text field. You can also use the file browser to locate
 the image file if you click on the "..." button to the right of the
 **Image source** text field in the **Image annotation interface**, shown
-in :numref:`Figure %s <fig-annotationobjectinterface_image>`. Note that
-since image annotations are incorporated into a visualization inside of
-VisIt's viewer component, the image file must be located on the same
+in :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImage>`. Note
+that since image annotations are incorporated into a visualization inside
+of VisIt's viewer component, the image file must be located on the same
 computer that runs the viewer.
+
+.. _fig-MakingItPretty-AnnotationObjectImage:
+
+.. figure:: images/MakingItPretty-AnnotationObjectImage.png
+  
+   The image object interface
 
 After selecting an image file, you can position its lower left coordinate
 in the visualization window. The lower left corner of the visualization
@@ -685,24 +799,18 @@ the image annotation does not scale automatically when the visualization
 window changes size. The image annotation will remain the same size -
 something to take into account when setting up movies that use the image
 annotation. To scale the image relative to its original size, enter new
-percentages into the **Width** and **Height** spin boxes or click their
-+/- buttons. If you want to scale one dimension of the image and let the
-other dimension remain unchanged, turn off the **Lock aspect** check box.
-
-.. _fig-annotationobjectinterface_image:
-
-.. figure:: images/annotationobjectinterface_image.png
-  
-   Image object interface
+percentages into the **Width** and **Height** spin boxes. If you want to
+scale one dimension of the image and let the other dimension remain
+unchanged, turn off the **Lock aspect** check box.
 
 Finally, if you are overlaying an image annotation whose image contains a
 constant background color or other area that you want to remove, you can
 pick a color that VisIt will make transparent. For example,
-:numref:`Figure %s <fig-annotationobjectinterface_image>` shows an image
-of some Curve plots overlayed on top of the plots in the visualization
-window and the original background color in the annotation object was
-removed to make it transparent. If you want to make a color in an image
-transparent before VisIt displays it as an image annotation object, click
-on the **Transparent color** check box and then select a new color by
-clicking on the **Transparent color** button and picking a new color
-from the **Popup color menu**.
+:numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImageExample>`
+shows an image of some Curve plots overlayed on top of the plots in the
+visualization window and the original background color in the annotation
+object was removed to make it transparent. If you want to make a color in
+an image transparent before VisIt displays it as an image annotation
+object, click on the **Transparent color** check box and then select a
+new color by clicking on the **Transparent color** button and picking a
+new color from the **Popup color menu**.
