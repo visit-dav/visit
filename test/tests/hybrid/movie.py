@@ -16,8 +16,11 @@
 #     on all platforms.  Use raw string for database path when writing to
 #     fb_wave.py.
 #
+#     Kathleen Biagas, Mon Oct 23 17:41:43 MST 2017
+#     Use Image lib for image conversion instead of 'convert'.
+#
 # ----------------------------------------------------------------------------
-import os, string, subprocess, visit_utils
+import os, string, subprocess, visit_utils, Image
 
 def GenerateMovie(movieArgs):
     if TestEnv.params["parallel"]:
@@ -329,9 +332,9 @@ def test5():
             #
             bmp = f[0]
             png = f[0][:-4] + ".png"
-            cmd = "convert %s %s" % (bmp, png)
-            print cmd
-            os.system(cmd)
+            print "convert %s %s" % (bmp, png)
+            im1 = Image.open(bmp)
+            im1.save(png, "png")
             img = img + [(png,0)]
     txt = string.join([x[0] for x in img], "\n")
     TestText("movie_5_00", txt)
