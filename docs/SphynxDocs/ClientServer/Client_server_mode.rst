@@ -3,31 +3,29 @@
 Client-Server Mode
 ------------------
 
-.. danger::
-
-   Add VisIt’s architecture image
-
-
-When you run VisIt locally, you usually select files and
-create plots using the open database. Fortunately, the procedure for running
-VisIt in client-server mode is no different than it is for running in
-single-computer mode. You begin by launching the :ref:`File Open Window` 
-and typing the name of the computer where the files are stored into the
-**Host** text field.
+When you run VisIt locally, you usually select files and create plots using 
+the open database. Fortunately, the procedure for running VisIt in 
+client-server mode is no different than it is for running in single-computer 
+mode. You begin by launching the :ref:`File Open Window` and typing the name 
+of the computer where the files are stored into the **Host** text field.
 
 Once you have told VisIt which host to use when accessing files, VisIt launches
 the VisIt Component Launcher (VCL) on the remote computer. The VCL is a VisIt
 component that runs on remote computers and is responsible for launching other
 VisIt components such as the metadata server (mdserver) and compute engine.
+(:numref:`Figure %s<visit_architecture_image>`).  Once you are connected to 
+the remote computer and VCL is running, you won't have to enter a password 
+again for the remote computer because VCL stays active for the life of your 
+VisIt session and it takes care of launching VisIt components on the remote 
+computer.
 
-.. danger::
+.. _visit_architecture_image:
+
+.. figure:: images/Visit_connectivity_diagram.png
+   :width: 60%
+   :align: center
    
-   As seen in figure ...
- 
-Once you are connected to the remote computer and VCL is running, you won't
-have to enter a password again for the remote computer because VCL stays active
-for the life of your VisIt session and it takes care of launching VisIt
-components on the remote computer.
+   VisIt's Architecture
 
 If VCL was able to launch on the remote computer and if it was able to
 successfully launch the metadata server, the files for the remote computer
