@@ -9,6 +9,12 @@ defined by an axis-aligned box. The Box operator does not clip cells that
 straddle the box boundary, it just removes the cells from the visualization 
 leaving jagged edges around the edges of the box where cells were removed.
 
+.. _box:
+
+.. figure:: images/box.png
+
+    Box operator example (original on left, with Box operator applied on right)
+
 Setting how cells are removed
 """""""""""""""""""""""""""""
 
@@ -17,13 +23,15 @@ or it can remove those cells outside of the box and cells that are only
 partially outside of the box. By default, the Box operator only removes cells 
 that are completely outside of the box. To make the Box operator also remove 
 cells that are partially outside of the box, you click the **All** radio button 
-in the **Box attributes window** (shown in :numref:`Figure %s <box>`).
+in the **Box attributes window** (shown in :numref:`Figure %s <box>`). 
+Selecting the **Inverse** option will return everything in the mesh except 
+those cells bounded by the selected box.
 
-.. _box:
+.. _box_attributes:
 
-.. figure:: images/box.png
+.. figure:: images/boxwindow.png
 
-    Box operator example (original on left, with Box operator applied on right) 
+    Box operator attributes window
 
 Resizing the box
 """"""""""""""""
