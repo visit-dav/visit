@@ -37,3 +37,18 @@ new radius into the **Radius** text field in the **Cylinder attributes window** 
 .. figure:: images/cylinderwindow.png
 
    Cylinder operator window.
+
+Inverting the cylinder region
+"""""""""""""""""""""""""""""
+
+Once the Cylinder operator has been applied to plots and a cylindrical region 
+has been clipped away, clicking the **Inverse** check box brings back the 
+cylindrical region and removes the region that was previously shown. 
+
+.. _cylinder_inverse:
+
+.. figure:: images/cylinder_inverse.png
+   :width: 60%
+   :align: center
+
+   Cylinder with inverse applied

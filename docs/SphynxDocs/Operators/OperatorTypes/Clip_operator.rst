@@ -37,18 +37,22 @@ Only one plane needs to be used to remove half of a plot. Find the center of
 the database by inspecting the 3D axis annotations in the visualization window. 
 Type the center as the new plane origin into the **Origin** text field for 
 plane 1 then click the **Plane 1** check box for plane 1 (see 
-:numref:`Figure %s <clipwindows>`). When the **Apply** button is clicked, half 
+:numref:`Figure %s <clipwindow>`). When the **Apply** button is clicked, half 
 of the plot should be removed. You can rotate the clipping plane by entering a 
 new normal vector into the **Normal** text field. The normal is specified by 
 three floating point values separated by spaces.
 
-.. image:: images/clipwindow1.png
+.. _clipwindow:
 
-.. _clipwindows:
-
-.. figure:: images/clipwindow2.png
+.. figure:: images/clipwindow.png
+   :width: 60%
+   :align: center
 
    Clip attributes window 
+
+The **Accurate** option can be used when multiple planes are specified, to 
+ensure accuracy when planes intersect a zone but do not clip the vertices. 
+It can be up to 6x slower than the **Fast** option.
 
 Removing one quarter of a plot
 """"""""""""""""""""""""""""""
@@ -71,7 +75,6 @@ remove only one eighth of the plot.
 
    Removing one quarter of a plot using two clip planes: Plane1 clipped region + Plane2 clipped region = One quarter removed
 
- 
 Spherical clipping
 """"""""""""""""""
 
@@ -85,8 +88,8 @@ Inverting the clipped region
 """"""""""""""""""""""""""""
 
 Once the Clip operator has been applied to plots and a region has been clipped 
-away, clicking the **Invert** check box brings back the clipped region and 
-clips away the region that was previously unclipped. Using the **Invert** 
+away, clicking the **Inverse** check box brings back the clipped region and 
+clips away the region that was previously unclipped. Using the **Inverse** 
 check box is an easy way to get only the clipped region back so it can be used 
 for other operations.  
 
