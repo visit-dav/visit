@@ -3,6 +3,15 @@
 Startup Options
 ---------------
 
+You can get help on starting VisIt with the commands
+
+::
+
+    visit -help
+    visit -fullhelp
+
+For convenience, the output from ``visit -fullhelp`` is shown below.
+
 USAGE: visit [options]::
 
     Interface options
