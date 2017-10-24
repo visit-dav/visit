@@ -25,6 +25,5 @@ to create animations both ways.
 
     Animation_basics
     Keyframing
-    Session_files
     Scripting
     Movie_tools

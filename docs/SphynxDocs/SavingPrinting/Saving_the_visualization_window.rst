@@ -35,8 +35,8 @@ covered later in this chapter.
 The Save Window
 ~~~~~~~~~~~~~~~
 
-You can open the **Save Window** by selecting **Set Save options...** from the
-**Main Window's File menu**. The **Save Window** contains the controls that
+You can set the **Save window** options before saving by selecting **Set Save options. . .** from the
+**Main Window's File menu**. The **Set save options** window contains the controls that
 allow you to set the options that govern how visualizations are saved.
 
 .. _save_window_fig:
@@ -47,12 +47,12 @@ allow you to set the options that govern how visualizations are saved.
 
    Save Window
 
-The **Save Window**, shown in :numref:`Figure %s<save_window_fig>`, contains
+The **Set Save options** window, shown in :numref:`Figure %s<save_window_fig>`, contains
 four basic groups of controls. The first group, *Filename*, allows you to set the file information. Use the file informtion controls to set the name and destination. If the *Family* checkbox is selected, then each time an image is saved with the same name, a number will be appended to the filename that is one more than the current file with the same name. The second group, *Format options*, allows you to set the file type, compression type, and any optional quality parameters that may exist for the selected file type. Use the third group of controls, *Aspect ratio and resolution*, to specify the dimensions of the saved image. If *Screen capture* is checked, the aspect ratio and width/height will be ignored and the current screen image will be saved. The last group, *Multi-window save*, allows you to set options for each window being saved by clicking on the **Window** drop-down and selecting the appropriate window. When the save options are set and applied
 by clicking the **Apply** button, the active visualization can be saved either
 through the **Save Window** option in the **Main Window's File menu**, by the
 keyboard shortcut *Ctrl+S* , or by clicking the **Save** button in the
-**Save Window**.
+**Set Save options** window.
 
 Selecting the output directory for saved files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,15 +91,15 @@ The family toggle setting allows you to save series of files that all have
 essentially the same name except for a number that is appended to the file
 name. The number increases by one each time an image is saved. If the family
 toggle setting is on then a file named *"visit"* of type *TIFF* will save out
-as *"visit0000.tif"*. If the family toggle setting is off, the file will save
-as *"visit.tif"*.
+as *"visit0000.tiff"*. If the family toggle setting is off, the file will save
+as *"visit.tiff"*.
 
 Setting the file type
 ~~~~~~~~~~~~~~~~~~~~~
 
 You set the file type by making a selection from the **File type** menu.
 You can choose from image file types or geometry file types. Note that some
-areas of the **Save Window** become enabled for certain file types.
+areas of the **Save Window** become enabled or disabled for certain file types.
 
 Choosing *JPEG* format files enables the **Quality** slider and the
 **Progressive** check box. These controls allow you to specify the desired
@@ -186,6 +186,8 @@ Saving tiled images
 
    Saving tiled images example (before)
 
+.. _save_tiled_fig1:
+
 .. figure:: images/tiledafter.png 
 
    Saving tiled images example (after)
@@ -193,8 +195,6 @@ Saving tiled images
 
 A tiled image is a large image that contains the images from all visualization
 windows that have plots. If you want to save tiled images, make sure to check
-the **Save tiled** check box in the **Save Window** To get an idea of how VisIt
-saves your visualization windows into a tiled image, see Figure
-
-
-
+the **Save tiled** check box in the **Set Save options** window. To get an idea of how VisIt
+saves your visualization windows into a tiled image, see :numref:`Figure %s<save_tiled_fig>` and 
+:numref:`Figure %s<save_tiled_fig1>`.

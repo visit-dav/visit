@@ -4,8 +4,9 @@ Saving and Printing
 ===================
 
 In this chapter, we discuss how to save and print files from within VisIt. The
-section on saving files is further broken down into three main areas: saving 
-images, saving movies, and exporting databases. We first learn about saving 
+section on saving files is further broken down into four main areas: saving session files, saving 
+images, saving movies, and exporting databases. We first learn about saving
+session files using the **Save Session** window. We then learn aobut saving
 images of visualizations using the **Save Window** and then we move on to 
 saving movies and sets of image files using the **Save movie wizard**. After 
 learning to save images and movies, this chapter concentrates on exporting 
@@ -16,6 +17,7 @@ Finally, we learn to print images of visualizations using the
 .. toctree::
     :maxdepth: 2
 
+    Session_files
     Saving_the_visualization_window
     Saving_movies
     Exporting_databases

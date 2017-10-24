@@ -1,13 +1,18 @@
-.. _truecolor_plot:
 
 Truecolor plot
 ~~~~~~~~~~~~~~
 
+.. _truecolor_plot:
+
 .. figure:: ../images/truecolor.png
+   :align: center
+
+   Truecolor Plot
 
 .. figure:: ../images/truecolorwindow.png
+   :align: center
    
-   Truecolor Plot Attributes and Example Rendering
+   Truecolor Plot Attributes
 
 
 The Truecolor plot, shown in :numref:`Figure %s<truecolor_plot>`, is used to
