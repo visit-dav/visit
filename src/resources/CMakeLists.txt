@@ -50,6 +50,9 @@
 #   Brad Whitlock, Fri Oct 12 16:32:28 PDT 2012
 #   Move the help directory to here.
 #
+#   Kathleen Biagas, Mon Oct 23 17:07:52 MST 2017
+#   Change how Resources dir is handled for build on Windows.
+#
 #*****************************************************************************
 
 # Do a little extra in the hosts directory.
@@ -62,10 +65,23 @@ SET(RESOURCE_DIRECTORIES colortables help hosts images movietemplates translatio
 FOREACH(ITEM ${RESOURCE_DIRECTORIES})
     GET_FILENAME_COMPONENT(ITM_RP ${CMAKE_CURRENT_SOURCE_DIR}/${ITEM}
                            REALPATH)
-    FILE(COPY ${ITM_RP}
-         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-         PATTERN ".svn" EXCLUDE
-         PATTERN "CMakeLists.txt" EXCLUDE)
+
+    if(NOT WIN32)
+        FILE(COPY ${ITM_RP}
+             DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+             PATTERN ".svn" EXCLUDE
+             PATTERN "CMakeLists.txt" EXCLUDE)
+    else()
+        foreach(CFG Release Debug RelWithDebInfo MinSizeRel)
+            file(COPY ${ITM_RP}
+                 DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}/resources
+                 FILE_PERMISSIONS OWNER_READ OWNER_WRITE
+                                  GROUP_READ GROUP_WRITE
+                                  WORLD_READ
+                 PATTERN ".svn" EXCLUDE
+                 PATTERN "CMakeLists.txt" EXCLUDE)
+        endforeach()
+    endif()
 ENDFOREACH(ITEM)
 
 # Install these directories in their entirety to the installed "resources" 

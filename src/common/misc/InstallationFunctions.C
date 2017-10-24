@@ -451,23 +451,15 @@ GetSystemVisItHostsDirectory()
 //   Kathleen Biagas, Wed Aug 6 13:32:47 PDT 2014
 //   Support the correct loction in dev version on Windows.
 //
+//   Kathleen Biagas, Mon Oct 23 17:06:21 MST 2017
+//   Resources dir on Windows is now the same whether dev build or not.
+//
 // ****************************************************************************
 
 std::string
 GetVisItResourcesDirectory(VisItResourceDirectoryType t)
 {
     std::string retval(GetVisItArchitectureDirectory());
-#if defined(_WIN32)
-    if (GetIsDevelopmentVersion())
-    {
-        size_t pos = retval.rfind("exe");
-        if (pos != std::string::npos)
-        {
-            std::string tmp = retval.substr(0, pos-1);
-            retval = tmp;
-        }
-    }
-#endif
     retval += VISIT_SLASH_STRING;
     retval += "resources";
 

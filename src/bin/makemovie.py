@@ -2261,6 +2261,9 @@ class MakeMovie(object):
     #   Brad Whitlock, Wed Apr  3 17:36:15 PDT 2013
     #   Check formatInfo.
     #
+    #   Kathleen Biagas, Mon Oct 23 17:04:22 MST 2017
+    #   Resources dir on Windows is same now whether dev build or not.
+    #
     ###########################################################################
 
     def GenerateFrames(self):
@@ -2345,12 +2348,7 @@ class MakeMovie(object):
             # Determine the name of the movie template base class's file.
             prefix = ""
             if os.name == "nt":
-                pos = string.find(sys.executable[:-7], "exe")
-                if pos != -1:
-                    # Development version
-                    prefix = sys.executable[:pos] + "resources" + self.slash
-                else:
-                    prefix = sys.executable[:-7] + "resources" + self.slash
+                prefix = sys.executable[:-7] + "resources" + self.slash
             else:
                 pos = string.find(sys.argv[0], "exe" + self.slash + "cli")
                 if pos != -1:
