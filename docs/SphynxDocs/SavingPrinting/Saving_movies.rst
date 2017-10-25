@@ -24,7 +24,7 @@ For example, the **Save movie wizard** asks which image and movie formats
 you want to generate, where you want to store the movies, what you want to
 call the movies, etc. Each of these questions appears on a separate screen
 in the **Save movie wizard** and once you answer the question on the current
-screen, clicking the **Next** button advances you to the next screen. You can
+screen, clicking the **Next (Continue for OSX)** button advances you to the next screen. You can
 cancel saving a movie at any time by clicking on the **Cancel** button. If you
 advance to the last screen in the **Save movie wizard** then you have
 successfully provided all of the required information that VisIt needs to make
@@ -52,7 +52,7 @@ your movie because it is often easier to create different versions of the movie
 all at once as opposed to doing it later once you've discovered that you need
 a new version to play on a laptop computer or a tiled display wall.
 
-The **Save movie wizard's ** second screen is divided vertically into two main
+The **Save movie wizard's** second screen is divided vertically into two main
 areas. On the left you will find the **Format and resolution** area, which
 displays the format and resolution for the current movie. On the right, you
 will find the **Output** area, which lists the formats and resolutions for all
@@ -75,26 +75,10 @@ that if you specify a width and height that causes the movie's shape to differ
 from the visualization window's shape, you might want to double-check that the
 view used for the visualization window's plots does not change appreciably.
 
-Once you have selected the desired movie format, width, and height, click on
-the right-arrow button that separates the **Format and resolution** area from
-the **Output** area. Clicking the right-arrow button adds your movie to the
-list of movies that you want to make. Once you have at least one movie in the
-**Output** area, the screen's Next button will become active. Click the
-**Next** button to go to the next screen in the **Save movie wizard**
-
-Making a stereo movie
-~~~~~~~~~~~~~~~~~~~~~
-
-
-.. _save_movie_wizard_3:
-
-.. figure:: images/savemoviewizard3.png 
-   
-   Save movie wizard (screen 3)
-
-The **Save movie wizard** allows you to create stereo movies if you choose the
-**Yes** button on the wizard's third screen. The default is to create 
-non-stereo movies because stereo movies are not widely supported. 
+The **Save movie wizard** allows you to create stereo movies if you check the 
+**Stereo movie** box and select a stereo type from the **Stereo type** drop-down
+menu. The default is to create non-stereo movies because stereo movies are not 
+widely supported. 
 
 .. note:: "Streaming movie" format is an LLNL format
 
@@ -108,6 +92,26 @@ However, if you choose to save a stereo movie in any of VisIt's supported image
 formats, VisIt will save images for the left eye and images for the right eye.
 You can then take the left and right images into your favorite stereo movie
 creation software to create your own stereo movie.
+
+Once you have selected the desired movie format, width, and height, click on
+the right-arrow button that separates the **Format and resolution** area from
+the **Output** area. Clicking the right-arrow button adds your movie to the
+list of movies that you want to make. Once you have at least one movie in the
+**Output** area, the screen's Next button will become active. Click the
+**Next** button to go to the next screen in the **Save movie wizard**
+
+Choosing movie length
+~~~~~~~~~~~~~~~~~~~~~
+
+.. _save_movie_wizard_3:
+
+.. figure:: images/savemoviewizard3.png
+
+   Save movie wizard (screen 3)
+
+It is possible to specify the range of time states to use for the movie, as well
+as specify a stride if you have too many time states savedi (see :numref:`Figure %s<save_movie_wizard_3>`). 
+The wizard will automatically set the range of time states.
 
 Choosing the movie name
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,7 +127,7 @@ want to make, you must provide the base name and location for your movies. By
 default, movies are saved to the directory in which you started VisIt. If you
 want to specify an alternate directory, you can either type in a new directory
 path into the **Output directory** text field 
-(see :numref:`Figure %s<save_movie_wizard_4>` ) or you can select a directory 
+(see :numref:`Figure %s<save_movie_wizard_4>`) or you can select a directory 
 from the **Choose directory** dialog box activated by clicking on
 the *"..."* button.
 
@@ -134,8 +138,8 @@ generate many different movies with different names but they will all share the
 same base filename that you provided by typing into the **Base filename** text
 field.
 
-Choosing movie generation method
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Choosing e-mail notification
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _save_movie_wizard_5:
 
@@ -143,12 +147,25 @@ Choosing movie generation method
    
    Save movie wizard (screen 5)
 
+If you want to be notified by e-mail when the movie creation is complete, then 
+select the **Yes** option and enter the appropriate e-mail address (see :numref:`Figure %s<save_movie_wizard_5>`). 
+By default, no e-mail notification is sent once the movie creation is complete. 
+
+Choosing movie generation method
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _save_movie_wizard_6:
+
+.. figure:: images/savemoviewizard6.png 
+   
+   Save movie wizard (screen 6)
+
 After you've specified all of your movie options, VisIt prompts you how you
-would like your movie made. At this point, you can click the **Finish** button
+would like your movie made. At this point, you can click the **Finish**/**Done** button
 to make VisIt start generating your movie. You can change how VisIt creates
 your movie by clicking a different movie generation method on the
-**Save movie wizard's** fifth screen, shown in Figure
-:numref:`Figure %s<save_movie_wizard_5>` .
+**Save movie wizard's** sixth screen, shown in Figure
+:numref:`Figure %s<save_movie_wizard_6>` .
 
 
 The default option for movie creation allows VisIt to use your current VisIt

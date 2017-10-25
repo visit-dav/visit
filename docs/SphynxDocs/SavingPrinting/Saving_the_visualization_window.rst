@@ -43,7 +43,6 @@ allow you to set the options that govern how visualizations are saved.
 
 .. figure:: images/savewindow.png 
    :width: 60%
-   :align: center
 
    Save Window
 

@@ -10,7 +10,6 @@ The Printer Window
 .. _printer_window:
 
 .. figure:: images/printwindowmac.png 
-   :align: center
    
    Printer window 
 
