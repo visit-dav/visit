@@ -11,18 +11,23 @@ like contouring. The InverseGhostZone operator is useful for debugging ghost
 cell placement in simulation data and for database reader plugins under
 development.
 
-Making all cells visible
-""""""""""""""""""""""""
-
-The InverseGhostZone operator's only purpose is to make ghost cells visible
-and real cells are usually stripped out. If you want to ensure that real
-cells are not removed while still making the ghost cells be enabled, click
-the **Both ghost zones and real zones** radio button in the
-**InverseGhostZone operator attributes window** (see
-:numref:`Figure %s <inverseghostzone>`).
-
 .. _inverseghostzone:
 
 .. figure:: images/inverseghostzone.png
+   :width: 60%
+   :align: center
 
    InversetGhostZone example
+
+The InverseGhostZone operator's attributes window 
+(:numref:`Figure %s <inverseghostzonewindow>`) has various **Show** options
+allowing you to select which types of ghost cells are returned.  By default
+all options are turned on.
+
+.. _inverseghostzonewindow:
+
+.. figure:: images/inverseghostzonewindow.png
+   :width: 50%
+   :align: center
+
+   InversetGhostZone window

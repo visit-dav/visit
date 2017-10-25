@@ -27,6 +27,8 @@ evaluated until after the ExternalSurface operator has been applied.
 .. _defer:
 
 .. figure:: images/defer.png
+   :width: 60%
+   :align: center
 
    DeferExpression operator example
 

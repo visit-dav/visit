@@ -51,26 +51,27 @@ boxes in the **K** row.
    Index Select attributes window 
 
 
-Block number
-""""""""""""
+Restricting to a subset of the whole database
+"""""""""""""""""""""""""""""""""""""""""""""
 
-Some databases are composed of multiple meshes, often called domains or blocks. 
-The **Index Select attributes window** calls these submeshes blocks. Often when 
-examining a database, you might want to look at only one block at a time. By 
-default, the Index Select operator is applied to all blocks in the database. 
-This means that each index range is applied to each block in the database and 
-will probably result in an image featuring several small chunks of cells. When 
-the Index select operator is set to apply to just one block, the index ranges 
-are relative to the specified block. To make the Index Select operator apply to 
-just one block, click on the **Block** radio button and type a new block number 
-into the **Block** text field.
+Some databases are composed of multiple groups of meshes, which are often 
+called groups or blocks.  Some databases are composed of multiple meshes, often 
+called blocks or domains.  Some are composed of both groups and domains.
+When examining a database, you might want to look at only one block or group 
+at a time.  By default, the Index Select operator is applied to all blocks in 
+the database.  This means that each index range is applied to each block in the
+database and will probably result in an image featuring several small chunks of 
+cells. When the Index select operator is set to apply to just one block or 
+group, the index ranges are relative to the specified block or group.
 
-Group number
-""""""""""""
+To make the Index Select operator apply to just one block or group, uncheck the 
+**Use Whole Collection** check box. The **Category** and **Set** dropowns will 
+be filled according to how the database has named the groups or submeshes.
+Choose the correct category from the **Category** dropdown, and the desired set 
+from the **Set** dropdown.  :numref:`Figure %s <indexselect_categoryselection>` shows a single mesh selection for a multiple mesh database whose submeshes are 
+called domains.
 
-Some databases are composed of multiple groups of meshes, which are often called
-groups. The **Index Select attributes window** calls these groups of meshes 
-groups. The Index Select operator can be used to examine parts of a group of 
-meshes by clicking the **Groups** radio button and typing a group number into 
-the **Group** text field.
+.. _indexselect_categoryselection:
+
+.. figure:: images/indexselect_categoryselection.png
 

@@ -17,6 +17,8 @@ shown in :numref:`Figure %s <displace>`.
 .. _displace:
 
 .. figure:: images/displace.png
+   :width: 60%
+   :align: center
 
    Mesh and Vector plots and a Mesh plot that uses the Displace operator to deform the mesh using a vector field.
    

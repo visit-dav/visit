@@ -4,6 +4,8 @@ Isovolume operator
 .. _isovolume_operator_example:
 
 .. figure:: images/isovolume_example.png
+   :width: 60%
+   :align: center
    
    Isovolume Operator Example
 
@@ -24,6 +26,8 @@ Using the Isovolume operator
 .. _isovolume_window:
 
 .. figure:: images/isovolumewindow.png
+   :width: 60%
+   :align: center
    
    Isovolume Attributes Window
 

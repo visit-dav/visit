@@ -72,3 +72,23 @@ variable contributes to make differences more obvious, you can click on the
 **Elevation height relative to XY limits** check box in the 
 **Elevate operator attributes window**.
 
+.. _elevatescale:
+
+.. figure:: images/elevatescale.png
+   :width: 60%
+   :align: center
+
+   Effect of scaling relative to XY limits
+
+
+The Elevate operator can be used to simply place a 2D plot in 3D space by 
+use of the **Elevate with zero height** option. This will assign a value of
+zero to all of the z coordinates when converting into 3D. 
+
+.. _elevatezeroheight:
+
+.. figure:: images/elevate_zero.png
+   :width: 40%
+   :align: center
+
+   Effect of elevating with zero height

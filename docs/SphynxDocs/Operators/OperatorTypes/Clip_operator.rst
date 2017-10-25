@@ -45,7 +45,7 @@ three floating point values separated by spaces.
 .. _clipwindow:
 
 .. figure:: images/clipwindow.png
-   :width: 60%
+   :width: 90%
    :align: center
 
    Clip attributes window 

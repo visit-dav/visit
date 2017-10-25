@@ -9,7 +9,8 @@ trying to maintain the overall shape of the original mesh. The Decimate
 operator can currently operate only on the external surfaces of the input 
 geometry. This means that in order to apply the Decimate operator, you must 
 first apply the :ref:`ExternalSurface operator`, which will be covered later 
-in this chapter.
+in this chapter. The Decimate operator is not enabled by default but it can be 
+turned on in the **Plugin Manager Window**. 
 
 Using the Decimate operator
 """""""""""""""""""""""""""
@@ -29,15 +30,19 @@ higher values for **Target Reduction** value cause VisIt to simplify
 the mesh even more.
 
 .. image:: images/decimate1.png
+   :width: 60%
+   :align: center
 
 .. _decimateimages:
 
 .. figure:: images/decimate2.png 
+   :width: 60%
+   :align: center
 
-    Decimate opeator applied to reduce the number of cells in the mesh. 
-    (Left-to-right, top-to-bottom):
-    Original Mesh,   Reduction = 0.1,
-    Reduction = 0.5, Reduction = 0.75
+   Decimate operator applied to reduce the number of cells in the mesh. 
+   (Left-to-right, top-to-bottom):
+   Original Mesh,   Reduction = 0.1,
+   Reduction = 0.5, Reduction = 0.75
 
 .. _decimatewindow:
 

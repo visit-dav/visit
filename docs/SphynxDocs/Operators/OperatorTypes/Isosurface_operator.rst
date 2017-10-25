@@ -18,6 +18,8 @@ another variable. An example of the Isosurface operator is shown in
 .. _isosurface:
 
 .. figure:: images/isosurface.png
+   :width: 60%
+   :align: center
 
    Isosurface operator example
 
@@ -32,6 +34,8 @@ levels you want to see or indicate the percentages for the levels.
 .. _isosurfacewindow:
 
 .. figure:: images/isosurfacewindow.png
+   :width: 60%
+   :align: center
 
    Isosurface operator attributes
 
@@ -56,12 +60,12 @@ The **Isosurface operator attributes window**, shown in
 specify artificial minima and maxima for the data in the plot. You might set
 limits when you have a small range of values that you are interested in and
 you only want the isosurfaces to be generated through that range. To set the
-minimum value, click the **Min** check box to enable the **Min** text field
-and then type a new minimum value into the text field. To set the maximum
-value, click the **Max** check box to enable the **Max** text field and then
-type a new maximum value into the text field. Note that either the min, max
-or both can be specified. If neither minimum nor maximum values are specified,
-VisIt uses the minimum and maximum values in the dataset.
+minimum value, click the **Minimum** check box to enable the **Minimum** text 
+field and then type a new minimum value into the text field. To set the maximum
+value, click the **Maximum** check box to enable the **Maximum** text field and 
+then type a new maximum value into the text field. Note that either the 
+minimum, maximum or both can be specified. If neither minimum nor maximum 
+values are specified, VisIt uses the minimum and maximum values in the dataset.
 
 Scaling
 """""""
