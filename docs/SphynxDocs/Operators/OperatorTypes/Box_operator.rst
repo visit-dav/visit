@@ -31,7 +31,7 @@ those cells bounded by the selected box.
 
 .. figure:: images/boxwindow.png
 
-    Box operator attributes window
+    Box attributes window
 
 Resizing the box
 """"""""""""""""

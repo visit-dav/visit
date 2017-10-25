@@ -29,39 +29,33 @@ slice plane.
 
 .. figure:: images/slicewindow.png
 
-  Slice operator attributes window
+  Slice attributes window
 
 
 VisIt allows the slice plane normal to be aligned to a specific axis or it can 
 be set to any arbitrary vector. If you want the slice plane to be along any of 
-the three axes, click the **X-Axis** , **Y-Axis** , or **Z-Axis** radio button. 
+the three axes, click the **X-Axis**, **Y-Axis**, or **Z-Axis** radio button. 
 If you want to make a slice plane that does not align with the principle axes, 
-click the **Arbitrary** radio button and then type a direction vector into the 
-text field to the right of the **Arbitrary** radio button. The vector need not 
-be normalized since VisIt will normalize the vector before using it.
+click the **Arbitrary** or **Theta-Phi** radio button and then type a direction
+vector into the text field to the right of the radio button. The vector need 
+not be normalized since VisIt will normalize the vector before using it.
 
 The slice plane's origin, which specifies the location of the slice plane, can 
-be set five different ways. The middle of the **Slice operator attributes 
-window** , or **Origin area** (see the Figures below), provides the necessary controls required 
-to set the slice plane origin. The **Origin area**
-provides five radio buttons:
-**Point** , **Intercept** , **Percent** , **Zone** , and **Node** . Clicking on one of these radio buttons causes the **Origin area** to display the appropriate controls for setting the slice plane origin.  To set the slice plane origin to a specific point, click the **Point** radio button in the **Origin area** and then type a new 3D point into the **Point** text field. To set the slice plane origin to a specific value along the principle slice axis (usually an orthogonal slice), click the **Intercept** radio button and then type a new value into the **Intercept** text field.
+be set five different ways. The middle of the **Slice attributes window**, or 
+**Origin area** (see the Figures below), provides the necessary controls 
+required to set the slice plane origin. The **Origin area** provides five 
+radio buttons: **Point**, **Intercept**, **Percent**, **Zone**, and 
+**Node**. Clicking on one of these radio buttons causes the **Origin area** to 
+display the appropriate controls for setting the slice plane origin.  To set 
+the slice plane origin to a specific point, click the **Point** radio button in 
+the **Origin area** and then type a new 3D point into the **Point** text field. 
+To set the slice plane origin to a specific value along the principle slice 
+axis (usually an orthogonal slice), click the **Intercept** radio button and 
+then type a new value into the **Intercept** text field.
 
-.. _slicewindow_origin1:
+.. _slicewindow_origins:
 
-.. figure:: images/slicewindow_origin1.png
-
-.. _slicewindow_origin2:
-
-.. figure:: images/slicewindow_origin2.png
-
-.. _slicewindow_origin3:
-
-.. figure:: images/slicewindow_origin3.png
-
-.. _slicewindow_origin4:
-
-.. figure:: images/slicewindow_origin4.png
+.. figure:: images/slicewindow_origins.png
 
   Origin area appearance
 
@@ -83,7 +77,10 @@ contains the zone into the **Domain** text field if you are slicing a
 multi-domain database. If you want to make sure that the slice plane's origin 
 is at a specific node in a mesh, click the **Node** radio button and enter a 
 new node number into the **Node** text field. Note that you must also specify a 
-domain if you are slicing a multi-domain database.
+domain if you are slicing a multi-domain database.  If the database contains
+multiple meshes, their will also be **Mesh** dropdown option from which to
+choose the mesh to use, as seen in the **Node** example in 
+:numref:`Figure %s <slicewindow_origins>`.
 
 Use the up-axis vector when you want the slice plane to be projected to 2D. The 
 up-axis vector is a vector that lies in the slice plane and defines a 2D 
@@ -101,8 +98,8 @@ tool is an object in the visualization window that can be moved and rotated.
 When the plane tool is changed, it gives its new slice plane to the Slice 
 operator if the operator is set to accept information interactively. To make 
 sure that the Slice operator can accept a new slice plane from the plane tool, 
-check the **Interactive** check box in the **Slice operator attributes window**
-. For more information about the plane tool, read the **Interactive Tools**
+check the **Interactive** check box in the **Slice attributes window**.
+For more information about the plane tool, read the :ref:`InteractiveTools`
 chapter.
 
 Projecting the slice to 2D
@@ -112,5 +109,5 @@ The Slice operator usually leaves sliced plots in 3D so you can position the
 slice with the plane tool. However, you might want the plot projected to 2D. 
 When a sliced plot is projected to 2D, any 2D operation, like **Lineout**
 , can be applied to the plot. To project a plot to 2D, check the **Project 2D**
-check box in the **Slice operator attributes window** .
+check box in the **Slice attributes window** .
 

@@ -70,7 +70,7 @@ relative to the spatial extents in order to produce a visualization where the Z
 value differs noticeably. If you want to exaggerate the Z values that the scalar
 variable contributes to make differences more obvious, you can click on the 
 **Elevation height relative to XY limits** check box in the 
-**Elevate operator attributes window**.
+**Elevate attributes window**.
 
 .. _elevatescale:
 

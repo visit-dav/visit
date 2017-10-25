@@ -28,7 +28,7 @@ The Threshold operator uses a range of values to determine which cells from the
 database should be kept in the visualization. For the **Default** bounds input, you specify the range of values by lower and upper bounds on the threshold variable. Cells with values below the 
 lower bound or with values above the upper bound are removed from the 
 visualization. To specify a new lower bound, type a new number or the special 
-keyword: min into the **Threshold operator attributes window's** 
+keyword: min into the **Threshold attributes window's** 
 ( :numref:`Figure %s <thresholdwindow>`) **Lower bound** text field. To specify 
 a new upper bound, type a new number or the special keyword: max into the
 **Upper bound** text field.
@@ -37,7 +37,7 @@ a new upper bound, type a new number or the special keyword: max into the
 
 .. figure:: images/thresholdwindow.png
 
-  Threshold operator attributes window - Default
+  Threshold attributes window - Default
 
 For the **Custom** bounds input, you can specify a list of ranges in the **Range** text field. A colon - ':' defines a range and a comma - ',' defines a logical OR. The range shown in :numref:`Figure %s <customthresholdwindow>` has the following meaning:
 
@@ -51,7 +51,7 @@ Numbers, commas, and colons are the only valid symbols that can be used in speci
 
 .. figure:: images/threshold_custom.png
 
-  Threshold operator attributes window - Custom
+  Threshold attributes window - Custom
 
 When the threshold variable is a nodal quantity, the cell being considered by 
 the Threshold operator has values at each node in the cell. In this case, the 
@@ -87,4 +87,4 @@ criterion, leaving behind a set of cells that are gathered into an unstructured
 mesh. Sometimes, it can be useful to transform the remaining cells into a point 
 mesh. You can specify the desired output mesh type using the 
 **Cells from input** and **Point mesh** radio buttons in the 
-**Threshold operator attributes window** .  
+**Threshold attributes window** .  

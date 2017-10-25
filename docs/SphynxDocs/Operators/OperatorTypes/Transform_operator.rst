@@ -26,22 +26,21 @@ Rotation
 You can use the Transform operator to rotate plots around an arbitrary axis in 
 3D and around the Z-axis in 2D. To apply the rotation component of the 
 Transform operator, be sure to check the **Rotate** check box in the 
-**Transform operator attributes window** (:numref:`Figure %s <transformwindow>`). 
-An origin and normal are needed to
-specify the axis of rotation. The origin serves as a reference point for the 
-object being rotated. The axis of rotation is a 3D vector that, along with the 
-origin, determines the 3D axis that will serve as the axis of rotation. You must
-supply an origin and an axis vector to specify an axis of rotation. To change 
-the origin, type a new 3D vector into the top **Origin**
-text field. To change the 3D axis, type a new 3D vector into the **Axis** text 
-field. Both the origin and the axis are represented by three space-separated 
-floating point numbers.
+**Transform attributes window** (:numref:`Figure %s <transformwindow>`). 
+An origin and normal are needed to specify the axis of rotation. The origin 
+serves as a reference point for the object being rotated. The axis of rotation 
+is a 3D vector that, along with the origin, determines the 3D axis that will 
+serve as the axis of rotation. You must supply an origin and an axis vector to 
+specify an axis of rotation. To change the origin, type a new 3D vector into 
+the top **Origin** text field. To change the 3D axis, type a new 3D vector into 
+the **Axis** text field. Both the origin and the axis are represented by three 
+space-separated floating point numbers.
 
 .. _transformwindow:
 
 .. figure:: images/transformwindow.png
 
-   Transform operator attributes window
+   Transform attributes window
 
 When applying the Transform operator to plots, you probably want to make the 
 origin the same as the center of the plot extents which can be found by looking 
@@ -64,7 +63,7 @@ independently by entering a new scale factor into the **X, Y, Z** text fields.
 Each scale factor is a multiplier so that a value of 1 scales plots to their 
 original size while a value of 2 scales plots to twice their original size. To 
 apply the scale component of the Transform operator, be sure to check the 
-**Scale** check box in the **Transform operator attributes window** . 
+**Scale** check box in the **Transform attributes window** . 
 All dimensions are scaled relative to a scaling origin which can be changed by 
 typing a new origin into the middle lower **Origin** text field.
 
@@ -73,7 +72,7 @@ Translation
 
 You can use the Transform operator to translate plots. To apply the translation 
 component of the Transform operator, be sure to check the **Translate** check 
-box in the **Transform operator attributes window** . To translate plots in the X dimension, replace the default value of zero in the **X** translation text 
+box in the **Transform attributes window** . To translate plots in the X dimension, replace the default value of zero in the **X** translation text 
 field. Translations in the Y and Z dimensions are handled in the same manner.
 
 Coordinate system conversion
@@ -112,15 +111,13 @@ plot as it is intended to look.
 The Transform operator allows coordinate system transformations between any of 
 the three supported coordinate systems, shown in 
 :numref:`Figure %s <transformwindow2>` . To pick a coordinate system 
-transformation,
-you must first pick the coordinate system used for the input geometry. Next, 
-you must pick the desired output coordinate system. In the example shown in
-:numref:`Figure %s <transform2>`, the input coordinate system was Spherical 
-and the 
-output coordinate system was Cartesian. Note that if you use the Transform 
-operator to perform a coordinate system transformation then you cannot also 
-perform rotation, scaling, or translation. If you must perform any of those 
-operations, add a second Transform operator to your plots.
+transformation, you must first pick the coordinate system used for the input 
+geometry. Next, you must pick the desired output coordinate system. In the 
+example shown in :numref:`Figure %s <transform2>`, the input coordinate system 
+was Spherical and the output coordinate system was Cartesian. Note that if you 
+use the Transform operator to perform a coordinate system transformation then 
+you cannot also perform rotation, scaling, or translation. If you must perform 
+any of those operations, add a second Transform operator to your plots.
 
 
 .. _transformwindow2:
@@ -128,3 +125,27 @@ operations, add a second Transform operator to your plots.
 .. figure:: images/transformwindow2.png
 
   Supported coordinate systems
+
+
+Linear transforms 
+"""""""""""""""""
+
+Linear transforms can be specified via a 4x4 matrix as shown in 
+:numref:`Figure %s<transformwindow3>`.  Vectors will be transformed by default,
+uncheck the **transform vectors** checkbox if this is not desired.  The inverse 
+transform can be applied by selecting **Invert linear transform**.
+
+.. _transformwindow3:
+
+.. figure:: images/transformwindow3.png
+
+    Linear transformation options
+
+.. _transform_linear:
+
+.. figure:: images/transform_linear.png
+
+    Linear transformation example
+
+
+

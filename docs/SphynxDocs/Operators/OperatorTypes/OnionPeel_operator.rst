@@ -57,7 +57,7 @@ Growing layers
 
 .. figure:: images/onionpeelwindow.png
 
-   Onion peel operator attributes
+   Onion peel attributes
 
 The OnionPeel operator starts with a seed and adds layers of new cells around
 that seed. The added cells are determined by the layer number and the adjacency
@@ -65,7 +65,7 @@ information. The cell adjacency rule determines the connectivity between cells.
 Cells are next to each other if they share a cell face or a cell node. The
 visualization will differ slightly depending on which adjacency rule is used.
 To change the adjacency rule, click the **Node** or the **Face** radio buttons
-in the **OnionPeel operator attributes window**, shown in
+in the **OnionPeel attributes window**, shown in
 :numref:`Figure %s <onionpeelwindow>`.
 
 The OnionPeel operator initially shows zero layers out from the seed, so only

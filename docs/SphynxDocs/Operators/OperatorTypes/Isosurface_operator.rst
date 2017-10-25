@@ -37,7 +37,7 @@ levels you want to see or indicate the percentages for the levels.
    :width: 60%
    :align: center
 
-   Isosurface operator attributes
+   Isosurface attributes
 
 To choose how levels are specified, make a selection from the **Select by**
 menu. The available options are: **N levels**, **Levels**, and **Percent**.
@@ -55,7 +55,7 @@ of the **Select by** menu.
 Setting Limits
 """"""""""""""
 
-The **Isosurface operator attributes window**, shown in
+The **Isosurface attributes window**, shown in
 :numref:`Figure %s <isosurfacewindow>`, provides controls that allow you to
 specify artificial minima and maxima for the data in the plot. You might set
 limits when you have a small range of values that you are interested in and
@@ -75,7 +75,7 @@ values by linearly interpolating to the next value. You can also change
 scales so a logarithmic function is used to get the list of isosurface
 values through the specified range. To change the scale, click either the
 **Linear** or **Log** radio buttons in the
-**Isosurface operator attributes window**.
+**Isosurface attributes window**.
 
 Setting the isosurfacing variable
 """""""""""""""""""""""""""""""""

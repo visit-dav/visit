@@ -47,7 +47,7 @@ into the **Value for uncovered regions** text field.
    :width: 50%
    :align: center
   
-   Resample operator attributes window
+   Resample attributes window
 
 Using Resample with CSG meshes
 """"""""""""""""""""""""""""""

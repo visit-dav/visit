@@ -37,4 +37,4 @@ of revolution manually, uncheck the **Choose axis based on mesh type** checkbox.
 
 .. figure:: images/revolvewindow.png
 
-  Revolve operator attributes window
+  Revolve attributes window

@@ -18,7 +18,7 @@ Positioning and resizing the slice sphere
 """""""""""""""""""""""""""""""""""""""""
 
 You can position the slice sphere by setting its origin in the
-**SphereSlice operator attributes window** shown in 
+**SphereSlice attributes window** shown in 
 :numref:`Figure %s <sphereslicewindow>` . The slice sphere is specified by a 
 center point and a radius. To change the slice sphere's center, enter a new 
 point into the **Origin** text field. The origin is a 3D coordinate that is 
@@ -29,10 +29,16 @@ sphere, enter a new radius number into the **Radius** text field.
 
 .. figure:: images/sphereslicewindow.png
 
-  SphereSlice operator attributes window
+  SphereSlice attributes window
 
 Positioning the slice sphere using the Sphere tool
 """"""""""""""""""""""""""""""""""""""""""""""""""
 
-You can also position the slice sphere using VisIt's interactive sphere tool. The sphere tool, available in the visualization window's popup menu, allows you to position and resize a slice sphere interactively using the mouse. The sphere tool is an object in the visualization window that can be moved and resized. When the sphere tool is changed, it gives its new slice sphere to the SphereSlice operator. For more information about the sphere tool, read the Interactive Tools chapter.
+You can also position the slice sphere using VisIt's interactive sphere tool. 
+The sphere tool, available in the visualization window's popup menu, allows you 
+to position and resize a slice sphere interactively using the mouse. The sphere 
+tool is an object in the visualization window that can be moved and resized. 
+When the sphere tool is changed, it gives its new slice sphere to the 
+SphereSlice operator. For more information about the sphere tool, read the 
+:ref:`InteractiveTools` chapter.
 
