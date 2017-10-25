@@ -30,8 +30,8 @@ operators that you rarely use.
     OnionPeel_operator
     Project_operator
     Reflect_operator
-    Revolve_operator
     Resample_operator
+    Revolve_operator
     Slice_operator
     Smooth_operator
     SphereSlice_operator

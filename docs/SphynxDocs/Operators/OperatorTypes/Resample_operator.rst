@@ -11,8 +11,10 @@ meshes, or mapping multiple datasets into a common grid for comparison purposes.
 .. _resample:
 
 .. figure:: images/resample.png
+   :width: 80%
+   :align: center
 
-  Resample operator example
+   Resample operator example
 
 
 Resampling onto a rectilinear grid
@@ -23,14 +25,17 @@ use case for the Resample operator. When a Resample operator is applied to a
 plot, the Resample operator clips out any data values that are not within the 
 operator's bounding box. For the data that remains inside the bounding box, 
 the operator samples it using the user-specified numbers of samples for the X, 
-Y, and Z dimensions. The bounding box is specified by entering new start and 
-end values for each dimension. For example, if you want to change the locations 
-sampled in the X dimension then you could type new floating point values into 
-the **Resample operator attributes window's** **Start X** and **End X** text 
-fields. The same pattern applies to changing the locations sampled in the Y and 
-Z dimensions. One difference between resampling 2D and 3D datasets is that 3D 
-datasets must have the **3D resampling** check box enabled to ensure that VisIt 
-uses the user-specified Z-extents and number of samples in Z.
+Y, and Z dimensions. The default for the Resample operator is to use the entire
+exents of the dataset.  If you want to choose a smaller region, unselect the
+**Resample Entire Extents** checkbox and enter new bounding box information.
+The bounding box is specified by entering new start and end values for each 
+dimension. For example, if you want to change the locations sampled in the X 
+dimension then you could type new floating point values into the **Start X** 
+and **End X** text fields. The same pattern applies to changing the locations 
+sampled in the Y and Z dimensions. One difference between resampling 2D and 3D 
+datasets is that 3D datasets must have the **3D resampling** check box enabled 
+to ensure that VisIt uses the user-specified Z-extents and number of samples in 
+Z.
 
 Samples for which there was no data in the original input dataset are provided 
 with a default value that you can change by typing a new floating point number 
@@ -39,8 +44,10 @@ into the **Value for uncovered regions** text field.
 .. _resamplewindow:
 
 .. figure:: images/resamplewindow.png
+   :width: 50%
+   :align: center
   
-  Resample operator attributes window
+   Resample operator attributes window
 
 Using Resample with CSG meshes
 """"""""""""""""""""""""""""""
@@ -88,3 +95,8 @@ buttons and by selecting an appropriate variable using the
 
   Using the Resample operator to create a 2D projection
 
+When used in parallel, the resampled data is distributed across all processors.
+This can be changed by unslecting the checkbox.
+
+You can also force the output data to be cell centered by selecting the
+**Make output cell centered** checkbox.

@@ -75,3 +75,6 @@ seed cells are very small. To add more layers around the seed, enter a larger
 layer number into the **Layer Number** text field. Clicking the up or down
 buttons next to the **Layer Number** text field also increments or decrements
 the layer number.
+
+By default, Onion Peel will honor the structure of the original mesh.  In some
+cases, as with arbitrary polyhedral data, you may want to see how VisIt split the original mesh.  In this case, use the dropdown to change to **Honor actual mesh**.
