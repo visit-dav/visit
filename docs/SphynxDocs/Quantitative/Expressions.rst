@@ -1,7 +1,7 @@
 Expressions
 -----------
 
-.. danger:: Foo
+.. danger::
    Confirm the text here adequately characterizes that an expression has
    value everywhere over the whole mesh it is defined on. Its a field.
 
@@ -14,19 +14,20 @@ variable expressions to allow scientists to create derived variables using
 variables that are stored in the database. Expressions are extremely powerful
 because they allow users to analyze new data without necessarily having to
 rerun a simulation. Variables created using expressions behave just like
-variables stored in a database; they appear in the plot menu and can be
-visualized using VisIt's plots.
+variables stored in a database; they appear in menus where database variables
+appear and can be visualized like any other database variable.
 
 Expression Window
 ~~~~~~~~~~~~~~~~~
 
 VisIt provides an **Expression Window**, shown in
 :numref:`Figure %s <expressionwindow>`, that allows users to create new
-variables that can be used in visualizations. You can open the
+variables that can be used in visualizations. Users can open the
 **Expression Window** by clicking on the **Expressions** option in the
 **Main Window's Controls** menu. The **Expression Window** is divided
-vertically into two main areas: **Expression list** and **Definitions**.
-The Expression list contains the list of expressions. The Definitions
+vertically into two main areas with the **Expression list** on the left
+and the **Definition** area on the right.
+The **Expression list** contains the list of expressions. The **Definition**
 area displays the definition of the expression that is highlighted in
 the **Expression list** and provides controls to edit the expression
 definition.
@@ -37,68 +38,60 @@ definition.
 
    Expression Window
 
-In addition to displaying expressions that users create themselves, the
-**Expression Window** displays expressions defined in the
-database or expressions that are defined automatically by the associated
-database reader plugin. Expressions from a database change when
-the open database changes but expressions that users create themselves
-or that the associated database reader plugin create
-remain in the window regardless which database is open. Expressions that
-came from a database are not shown in the **Expression list** by
-default but users can choose to show them by clicking on the **Display
-expressions from database** check box.
+Expressions in VisIt are created either manually by the user or automatically
+by various means including...
 
-.. danger:: Text below is obsolete. Many auto-gen exprs now. Also, include info regarding open and GUI performance.
+* Preferences
 
-There is one special case when VisIt adds expressions to the expression
-list that were not in the database and were not added by a database
-reader plugin: mesh quality expressions. When the open database contains
-meshes that are unstructured or curvilinear, VisIt adds special mesh
-quality expressions to the expression list to let users more easily plot
-metrics of mesh quality such as the volume of cells or how much cells
-are skewed. The mesh quality expressions are primarily used to evaluate
-the fitness of computational meshes and VisIt adds them to the expression
-list to make them more accessible to users since they are so commonly
-used. :numref:`Figure %s <meshquality>` shows the how the mesh quality
-expressions appear in the variable list for plots that accept scalar
-variables.
+  * Mesh quality expressions
+  * Time derivative expressions
+  * Vector magnitude expressions
 
-.. _meshquality:
+* GUI wizards
+* Operators
+* Databases
 
-.. figure:: images/meshquality.png
-
-   Mesh quality expressions
+By default, the **Expression list** will display only those expressions
+created manually by the user. A check box near the bottom of the
+**Expression list** controls the display of automatically created
+expressions. When this box is checked, the **Expression list** will also
+include expressions created automatically by **Preferences** and **Databases**
+but not expressions created automatically by **GUI wizards** or **Operators**.
 
 Creating a new expression
 """""""""""""""""""""""""
 
-A user can create a new expression by clicking on the **Expression Window's New**
+Users can create a new expression by clicking on the **Expression Window's New**
 button. When the user clicks on the **New** button, VisIt adds a new expression
 and shows its new, empty definition in the **Definitions** area. The initial
 name for a new expression is *"unnamed"* followed by some integer suffix.
 As the user types a new name for the expression into the **Name** text field,
 the expression's name in the **Expression list** will update.
 
-Each expression has an expression type that determines the variable menu
-in which the new variable appears. The available expression types are:
-*Scalar Mesh Variable*, *Vector Mesh Variable*, *Mesh variable*,
-*Tensor variable*, *Symmetric Tensor Variable*. Since the expression
-type determines the menu in which the variable appears, it also determines
-the plots that can operate on the variable. Scalar mesh variables and
-species variables can be used in the Contour, Pseudocolor, and Volume
-plots. Vector mesh variables are used in the Streamline and Vector plots.
-Tensor mesh variables are used in the Tensor plot.
+Each expression also has a **Type** that specifies the type of variable
+the expression produces. The available types are:
 
-To edit an expression's actual definition, users can type a new expression
-comprised of constants, variable names, and other VisIt expressions into
+* Scalar
+* Vector
+* Tensor
+* Symmetric Tensor
+* Array
+* Curve
+
+Users must be sure to select the appropriate type for any expression they
+create. The selected type determines the menu in which the variable appears
+and subsequently the plots that can operate on the variable.
+
+To edit an expression's definition, users can type a new expression
+comprised of constants, variable names, and even other VisIt expressions into
 the **Definition** text field. The expression definition can span multiple
 lines as the VisIt expression parser ignores whitespace. For a complete
 list of VisIt's built-in expressions, refer to the table in section
-:ref:`Built-in_expressions`. You can also use the **Insert Function...**
+:ref:`Built-in_expressions`. Users can also use the **Insert Function...**
 menu, shown in :numref:`Figure %s <expressionwindow-functionmenu>`, to
 insert any of VisIt's built-in expressions directly into the expression
-definition. The list of built-in expressions divided into certain
-categories as evidenced by the structure of the **Insert Function...**
+definition. The list of built-in expressions is divided into certain
+categories as shown by the structure of the **Insert Function...**
 menu.
 
 .. _expressionwindow-functionmenu:
@@ -107,10 +100,16 @@ menu.
 
    Expression Window's Insert Function... menu
 
+In the example shown in :numref:`Figure %s <expressionwindow-functionmenu>`,
+the **Insert Function...** operation inserted a sort of *template* for the
+function giving some indication of the argument(s) to the function and their
+meanings. Users can then simply edit those parts of the function template that
+need to be specified.
+
 In addition to the **Insert Function...** menu, which lets users insert built-in
 functions into the expression definition, VisIt's **Expression Window**
 provides an **Insert Variable...** menu that allows users to insert variables
-for the active database into the expression definition. The
+from the active database into the expression definition. The
 **Insert Variable...** menu, shown in
 :numref:`Figure %s <expressionwindow-varmenu>`, is broken up into Scalars,
 Vectors, Meshes, etc. and has the available variables under the appropriate
@@ -131,12 +130,12 @@ the **Plot** menu, turn off the **Show variable in plot menus** check box.
 Deleting an expression
 """"""""""""""""""""""
 
-You can delete an expression by clicking on it in the **Expression list**
+Users can delete an expression by clicking on it in the **Expression list**
 and then clicking on the **Delete** button. Deleting an expression removes
 it from the list of defined expressions and will cause unresolved references
-for any other expression that uses the deleted expression. If a plot uses
+for any other expressions that use the deleted expression. If a plot uses
 an expression with unresolved references, VisIt will not be able to generate
-it until the user resolves the reference or change the active plot variable.
+it until the user resolves the reference.
 
 Expression grammar
 ~~~~~~~~~~~~~~~~~~
@@ -149,7 +148,7 @@ The following paragraphs detail the syntax of VisIt expressions.
 Math operators
 """"""""""""""
 
-These include use of +, -, %%*%%, /, ^ as addition, subtraction, multiplication,
+These include use of +, -, \*, /, ^ as addition, subtraction, multiplication,
 division, and exponentiation as infix operators, as well as the unary minus,
 in their normal precedence and associativity. Parentheses may be used as
 well to force a desired associativity.
@@ -251,6 +250,7 @@ as a delimiter.
 
 *Examples: <file:var> </dir/file:/domain/var> <file@192.168.1.1:/var> <[#0]:zerocyclevar>*
 
+
 .. _Built-in_expressions:
 
 Built-in expressions
@@ -270,7 +270,7 @@ Arithmetic Operator Expressions (Math Expressions)
 
 In binary arithmetic operator expressions, each operand must evaluate to
 the same type field. For example, both must evaluate to a 
-*scalar* field or both must evaluate to a *material* field.
+*scalar* field or both must evaluate to a *vector* field.
 
 In addition, if the two expressions differ in centering (e.g. one is *zone*
 or *cell* centered or *piecewise-constant* over mesh cells while the other is
@@ -1884,3 +1884,75 @@ Time Iteration Expressions
 |                             |                                                                                                                | *Example: zoneid(density)*                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |                             |                                                                                                                |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 +-----------------------------+----------------------------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+Expression Compatability Gotchas
+""""""""""""""""""""""""""""""""
+
+VisIt will allow you to define expressions that it winds up determining to be
+invalid later when it attempts to execute those expressions. Some common
+issues are the mixing of incompatible mesh variables in the same expression
+*without* the necessary additional functions to make them compatible.
+
+Tensor Rank Compatibility
+"""""""""""""""""""""""""
+
+For example, what happens if you mix scalar and vector mesh variables in the
+same expression? VisIt will allow users to define such an expression. But, when
+it is plotted, the plot will fail.
+
+As an aside, as the user goes back and forth between the Expressions window
+creating and/or adjusting expression definitions, VisIt makes no attempt to
+keep track of all the changes made in expressions and automatically update
+plots as expressions change. Users have to manually clear or delete plots to
+force VisIt to re-draw plots in which you've changed expressions.
+
+If what is really intended was a scalar mesh variable, then users must use
+one of the expression functions that converts a vector to a scalar such as
+the magnitude() built-in expression or the array dereference operator.
+
+Centering Compatibility
+"""""""""""""""""""""""
+
+Some variables are zone centered and some are node centered. What happens if
+a user combines these in an expression? VisIt will default to zone centering
+for the result. If this is not the desired result, the
+:ref:`recenter() <Recenter_Expression_Function>` expression function should be
+used, where appropriate, to adjust centering of some of the
+terms in the expression.  Note that ordering of operations will probably be
+important. For example
+
+::
+
+    node_var + recenter(zone_var)
+    recenter(zone_var + node_var)
+
+both achieve a node-centered result. But, each expression is subtly
+(and numerically) different. The first recenter's `zone_var` to the
+nodes and then performs the summation operator at each node. In the
+second, there is an implied recentering of `node_var` to the zones first. Then,
+the summation operator is applied at each zone center and finally the results
+are recentered back to the nodes. In all likelihood this creates in a
+numerically lower quality result. The moral is that in a complex series of
+expressions be sure to take care where you want recentering to occur.
+
+Mesh Compatibility
+""""""""""""""""""
+
+In many cases, especially in Silo databases, all the available variables in a
+database are not always defined on the same mesh. This can complicate matters
+involving expressions in variables from different meshes.
+
+Just as in the previous two examples of incompatible variables where the
+solution was to apply some function to make the variables compatible, we have
+to do the same thing when variables from different meshes are combined in an
+expression. The key expression functions which enable this are called
+**Cross Mesh Field Evaluation** or **CMFE** expression functions. We will only
+briefly touch on these here. **CMFEs** will be discussed in much greater detail
+elsewhere.
+
+Just as for centering, we have two options when dealing with variables from
+two different meshes. Each of which involves *mapping* one of the variables
+onto the other variable's mesh using one of the CMFE expression functions.
+
+Automatic expressions
+~~~~~~~~~~~~~~~~~~~~~
