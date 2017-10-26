@@ -57,7 +57,7 @@ Silo file format can safely export any type of data that you may want to export.
 If you want to export data to other applications and the data must be stored in
 an ASCII file that contains columns of data, you might want to choose the Xmdv
 file format. If you want to choose a specific database plugin to export your
-data files, make a selection from the **File Type** menu shown in
+data files, make a selection from the **Export to** menu shown in
 :numref:`Figure %s<export_db_3>` .
 
 .. _export_db_3:
