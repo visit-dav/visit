@@ -26,7 +26,7 @@ Contents:
    InteractiveTools/index
    MultipleDatabaseAndWindows/index
    ClientServer/index
-   ManagingComputeEngines/index
+   ComputeEngines/index
    Preferences/index
    Help/index
    StartupOptions/index
