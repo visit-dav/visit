@@ -40,13 +40,9 @@ Scatter plot wizard
 
 .. _scatterwizard:
 
-.. figure:: ../images/scatterwizard00.png
+.. figure:: ../images/scatterplotwizard.png
 
-.. figure:: ../images/scatterwizard01.png
-
-.. figure:: ../images/scatterwizard02.png
-
-   Example of Scatter plot wizard
+   Example of the Scatter plot wizard
 
 Plots are typically created in VisIt when you choose a variable from one of the
 **Plot menus**. Since the Scatter plot takes as input up to four input
@@ -58,8 +54,7 @@ variables. Since that would not be a very straightforward way to create a
 Scatter plot, VisIt now has support for plot wizards. A plot wizard is a simple
 dialog window that pops up when you select a variable to plot. A plot wizard
 leads you through a series of questions that allow VisIt to more fully
-initialize a new plot. The Scatter plot is the first of VisIt's plots to
-support plot wizards. The **Scatter plot wizard** prompts you for the scalar
+initialize a new plot. The **Scatter plot wizard** prompts you for the scalar
 variable to use for the Y-Axis, the variable to use for the Z-Axis (optional),
 and the variable to use for the plot's colors (optional).
 
@@ -145,8 +140,9 @@ Setting point properties
 
    Scatter plot attributes window's Appearance tab 
 
-The Scatter plot can draw its points in five different styles: Box, Axis,
-Icosahedron, Point, and Sphere. The default value of Point is the fastest and
+The Scatter plot can draw its points in eight different styles: Box, Axis,
+Icosahedron, Octahedron, Tetrahedron, Point, and Sphere. The default value 
+of Point is the fastest and
 forces the Scatter plot to draw all of its points as tiny points. When the
 Scatter plot uses the Sphere point type, it draws points but applies textures
 to the points so it is nearly as fast as the Point point type. Any of the other

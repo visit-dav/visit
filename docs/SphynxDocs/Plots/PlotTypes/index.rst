@@ -16,7 +16,6 @@ Pseudocolor,
 Scatter,
 Spreadsheet,
 Subset,
-Surface,
 Tensor,
 Truecolor,
 Vector, and Volume. This section explains each plot in detail.
@@ -34,7 +33,6 @@ Vector, and Volume. This section explains each plot in detail.
     PseudocolorPlot
     ScatterPlot
     SubsetPlot
-    SurfacePlot
     TensorPlot
     TruecolorPlot
     VectorPlot

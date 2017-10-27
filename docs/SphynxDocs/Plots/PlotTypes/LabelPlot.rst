@@ -162,4 +162,11 @@ Labeling subset names and material names
 The Label plot can label subset names and material names in addition to meshes
 and fields defined on those meshes. To add subset names or material names to
 your visualization, be sure to create a Label plot using a variable of either of
-those types. An example of a Label plot of material names is presented in.
+those types. An example of a Label plot of material names is presented in :numref:`Figure %s <labelplotmats>`.
+
+.. _labelplotmats:
+
+.. figure:: ../images/labelplotmats.png
+
+   Label plot of materials 
+

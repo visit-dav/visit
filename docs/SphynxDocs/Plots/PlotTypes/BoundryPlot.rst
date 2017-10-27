@@ -4,7 +4,7 @@ Boundary and FilledBoundary Plots
 The Boundary plot and FilledBoundary plot are discussed together because
 of their similarity. Both plots concentrate on the boundaries between
 materials but each plot shows the boundary in a different way. The
-Boundary plot, shown in, displays the surface or lines that separate materials.
+Boundary plot, shown in :numref:`Figure %s <boundarystuff>`, displays the surface or lines that separate materials.
 
 .. _boundarystuff:
 

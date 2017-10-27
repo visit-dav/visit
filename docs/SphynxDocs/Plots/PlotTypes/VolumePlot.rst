@@ -47,25 +47,32 @@ sampling process when the pixel opacity gets above a certain threshold. This
 method of volume-rendering yields superior pictures at the cost of speed and
 memory use.
 
+
 .. _volume_plot_atts_window:
 
 .. figure:: ../images/volumewindow.png
+
+.. figure:: ../images/volumewindow2.png
    
    Volume Attributes Window
 
 
 The **Volume Attributes Window**, shown in 
-(:numref:`Figure %s<volume_plot_atts_window>`), is divided into three main areas.
-The top **Color area** sets the colors that go along with the plot's data
-values. The **Opacity area** sets the opacity for the plot's data values.
-The bottom area contains controls which set the level of detail used to draw
-the plot.
+(:numref:`Figure %s<volume_plot_atts_window>`), is divided into two main tabs.
+The **Rendering Options** tab constrols the rendering setting. Each volume 
+rendering method has a different set of inputs. For example, splatting and
+3D Texturing both specify the total number of samples, while ray-casting 
+settings are specified in samples-per-ray. Additionlly, the **Rendering 
+Options** tab constains controls for lighting. **1D transfer function tab** 
+controls how the data is mapped onto colors and the opacities to use for
+different scalar values.
 
 Setting colors
 """"""""""""""
 
 You can design the color component of the volume transfer function using the
-controls in the top of the **Volume Attributes Window**. The controls are
+controls in **1D Transfer Function** tab of the **Volume Attributes Window**. 
+The controls are
 similar to the controls for the **Color Table Window**. There is a color
 spectrum that has color control points which determine the final look of the
 color table. Color control points are added and removed using the ``+``
@@ -76,14 +83,13 @@ popup color menu from which a new control point color can be chosen.
 Limits
 """"""
 
-The **Volume Attributes Window** provides controls for setting the limits of
+The **1D transfer function** tab provides controls for setting the limits of
 the variable being plotted. Limits are artificial minima or maxima that are
 specified by the user. Setting the limits to a smaller range of values than
 present in the database cause the plot's colors to be distributed among a
 smaller range of values, resulting in a plot with more color variety.
 
-You set the limits for the variable being plotted in the **Color area**
-of the window. To set the limits are set by first clicking the **Min**
+To set the limits are set by first clicking the **Min** 
 or **Max** check box next to the **Min** or **Max** text field. Clicking a
 check box enables a text field into which you can type a new minimum or
 maximum value.
@@ -91,19 +97,19 @@ maximum value.
 Like VisIt's other plots that map scalar values to colors, the Volume plot
 allows for the data values to be scaled using Linear, Log, and Skew functions.
 To select a scaling function other than linear where values in the data range
-are mapped 1:1 to values in the color range, click on the **Log10** or **Skew**
+are mapped 1:1 to values in the color range, click on the **Log** or **Skew**
 radio buttons.
 
 Setting opacities
 """""""""""""""""
 
-The **Volume Attributes Window** provides several controls that allow you
+The **1D transfer function** tab provides several controls that allow you
 to define the opacity portion of the volume transfer function. The opacity
 portion of the volume transfer function determines what can be seen in the
 volume-rendered image. Data values with a lower opacity allow more to be seen
 and give the plot a gel-like appearance, while data values with higher opacity
 appear more solid and occlude objects behind them. The controls for setting
-opacities are located in the center of the window in the **Opacity area**.
+opacities are located at the botton of the window in the **Opacity** area.
 
 .. _volume_plot_opacity:
 
@@ -111,8 +117,9 @@ opacities are located in the center of the window in the **Opacity area**.
    
    Volume Plot Opacity Options
 
-You can set opacity two ways. You can hand-draw an opacity map, or create it by
-designing curves that specify the opacity when they are added together. Both
+You can set opacity three ways. You can hand-draw an opacity map, create it by
+designing curves that specify the opacity when they are added together, or use 
+the opacities in the color table, if present. All 
 methods use the controls shown in :numref:`Figure %s<volume_plot_atts_window>`.
 
 The interaction mode determines how opacity is set. Clicking on the

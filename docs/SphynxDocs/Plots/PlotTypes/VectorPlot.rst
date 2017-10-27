@@ -92,7 +92,7 @@ vectors. The Vector plot becomes incomprehensible with too many vectors. VisIt
 provides controls to thin the number of vectors to a number that looks
 appealing in a visualization. You can accomplish this reduction by setting a
 fixed number of vectors or by setting a stride. To set a fixed number of
-vectors, select the **N vectors** radio button and enter a new number of
-vectors into the **N vectors** text field. To reduce the number of vectors
+vectors, select the **Fixed vectors** radio button and enter a new number of
+vectors into the corresponding text field. To reduce the number of vectors
 by setting the stride, select the **Stride** radio button and enter a new
 stride value into the **Stride** text field.
