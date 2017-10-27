@@ -977,6 +977,9 @@ specific definitions of the various mesh quality metrics defined by the
 simply list all the mesh quality metrics and describe in detail only
 those that are not part of the *Verdict Mesh Quality Library*
 
+In all cases in the **Mesh Quality Expressions**, the input argument is
+a *mesh variable* from a database and the output is a *scalar* expression.
+
 .. _Neighbor_Function:
 
 Neighbor Function: ``neighbor()`` : ``neighbor(<Mesh>)``
@@ -1178,6 +1181,436 @@ Relative Face Planarity Function: ``relative_face_planarity()`` : ``relative_fac
 
 Solution Transfer (Comparison) Expressions
 """"""""""""""""""""""""""""""""""""""""""
+
+.. _Surface_Normal_Function:
+
+surface normal Function: ``surface_normal()`` : ``surface_normal(expr0)``
+
+.. _Point_Surface_Normal_Function:
+
+point surface normal Function: ``point_surface_normal()`` : ``point_surface_normal(expr0)``
+
+.. _Cell_Surface_Normal_Function:
+
+cell surface normal Function: ``cell_surface_normal()`` : ``cell_surface_normal(expr0)``
+
+.. _Edge_Normal_Function:
+
+edge normal Function: ``edge_normal()`` : ``edge_normal(expr0)``
+
+.. _Point_Edge_Normal_Function:
+
+point edge normal Function: ``point_edge_normal()`` : ``point_edge_normal(expr0)``
+
+.. _Cell_Edge_Normal_Function:
+
+cell edge normal Function: ``cell_edge_normal()`` : ``cell_edge_normal(expr0)``
+
+.. _Zoneid_Function:
+
+zoneid Function: ``zoneid()`` : ``zoneid(expr0)``
+
+.. _Global_Zoneid_Function:
+
+global zoneid Function: ``global_zoneid()`` : ``global_zoneid(expr0)``
+
+.. _Nodeid_Function:
+
+nodeid Function: ``nodeid()`` : ``nodeid(expr0)``
+
+.. _Global_Nodeid_Function:
+
+global nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
+
+.. _Biggest_Neighbor_Function:
+
+biggest neighbor Function: ``biggest_neighbor()`` : ``biggest_neighbor(expr0)``
+
+.. _Smallest_Neighbor_Function:
+
+smallest neighbor Function: ``smallest_neighbor()`` : ``smallest_neighbor(expr0)``
+
+.. _Neighbor_Average_Function:
+
+neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
+
+.. _Cylindrical_Radius_Function:
+
+cylindrical radius Function: ``cylindrical_radius()`` : ``cylindrical_radius(expr0)``
+
+.. _Cylindrical_Theta_Function:
+
+cylindrical theta Function: ``cylindrical_theta()`` : ``cylindrical_theta(expr0)``
+
+.. _Polar_Radius_Function:
+
+polar radius Function: ``polar_radius()`` : ``polar_radius(expr0)``
+
+.. _Polar_Theta_Function:
+
+polar theta Function: ``polar_theta()`` : ``polar_theta(expr0)``
+
+.. _Polar_Phi_Function:
+
+polar phi Function: ``polar_phi()`` : ``polar_phi(expr0)``
+
+.. _Zonetype_Function:
+
+zonetype Function: ``zonetype()`` : ``zonetype(expr0)``
+
+.. _Zonetype_Rank_Function:
+
+zonetype rank Function: ``zonetype_rank()`` : ``zonetype_rank(expr0)``
+
+.. _Min_Coord_Function:
+
+min coord Function: ``min_coord()`` : ``min_coord(expr0)``
+
+.. _Max_Coord_Function:
+
+max coord Function: ``max_coord()`` : ``max_coord(expr0)``
+
+.. _External_Node_Function:
+
+external node Function: ``external_node()`` : ``external_node(expr0)``
+
+.. _External_Cell_Function:
+
+external cell Function: ``external_cell()`` : ``external_cell(expr0)``
+
+.. _Conn_Cmfe_Function:
+
+conn cmfe Function: ``conn_cmfe()`` : ``conn_cmfe(expr0)``
+
+.. _Curve_Cmfe_Function:
+
+curve cmfe Function: ``curve_cmfe()`` : ``curve_cmfe(expr0)``
+
+.. _Pos_Cmfe_Function:
+
+pos cmfe Function: ``pos_cmfe()`` : ``pos_cmfe(expr0)``
+
+.. _Eval_Transform_Function:
+
+eval transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
+
+.. _Symm_Transform_Function:
+
+symm transform Function: ``symm_transform()`` : ``symm_transform(expr0)``
+
+.. _Eval_Plane_Function:
+
+eval plane Function: ``eval_plane()`` : ``eval_plane(expr0)``
+
+.. _Symm_Plane_Function:
+
+symm plane Function: ``symm_plane()`` : ``symm_plane(expr0)``
+
+.. _Eval_Point_Function:
+
+eval point Function: ``eval_point()`` : ``eval_point(expr0)``
+
+.. _Symm_Point_Function:
+
+symm point Function: ``symm_point()`` : ``symm_point(expr0)``
+
+.. _Conservative_Smoothing_Function:
+
+conservative smoothing Function: ``conservative_smoothing()`` : ``conservative_smoothing(expr0)``
+
+.. _Mean_Filter_Function:
+
+mean filter Function: ``mean_filter()`` : ``mean_filter(expr0)``
+
+.. _Median_Filter_Function:
+
+median filter Function: ``median_filter()`` : ``median_filter(expr0)``
+
+.. _Abel_Inversion_Function:
+
+abel inversion Function: ``abel_inversion()`` : ``abel_inversion(expr0)``
+
+.. _Time_Function:
+
+time Function: ``time()`` : ``time(expr0)``
+
+.. _Cycle_Function:
+
+cycle Function: ``cycle()`` : ``cycle(expr0)``
+
+.. _Timestep_Function:
+
+timestep Function: ``timestep()`` : ``timestep(expr0)``
+
+.. _Average_Over_Time_Function:
+
+average over time Function: ``average_over_time()`` : ``average_over_time(expr0)``
+
+.. _Min_Over_Time_Function:
+
+min over time Function: ``min_over_time()`` : ``min_over_time(expr0)``
+
+.. _Max_Over_Time_Function:
+
+max over time Function: ``max_over_time()`` : ``max_over_time(expr0)``
+
+.. _Sum_Over_Time_Function:
+
+sum over time Function: ``sum_over_time()`` : ``sum_over_time(expr0)``
+
+.. _First_Time_When_Condition_Is_True_Function:
+
+first time when condition is true Function: ``first_time_when_condition_is_true()`` : ``first_time_when_condition_is_true(expr0)``
+
+.. _Last_Time_When_Condition_Is_True_Function:
+
+last time when condition is true Function: ``last_time_when_condition_is_true()`` : ``last_time_when_condition_is_true(expr0)``
+
+.. _First_Cycle_When_Condition_Is_True_Function:
+
+first cycle when condition is true Function: ``first_cycle_when_condition_is_true()`` : ``first_cycle_when_condition_is_true(expr0)``
+
+.. _Last_Cycle_When_Condition_Is_True_Function:
+
+last cycle when condition is true Function: ``last_cycle_when_condition_is_true()`` : ``last_cycle_when_condition_is_true(expr0)``
+
+.. _First_Time_Index_When_Condition_Is_True_Function:
+
+first time index when condition is true Function: ``first_time_index_when_condition_is_true()`` : ``first_time_index_when_condition_is_true(expr0)``
+
+.. _Last_Time_Index_When_Condition_Is_True_Function:
+
+last time index when condition is true Function: ``last_time_index_when_condition_is_true()`` : ``last_time_index_when_condition_is_true(expr0)``
+
+.. _Var_When_Condition_Is_First_True_Function:
+
+var when condition is first true Function: ``var_when_condition_is_first_true()`` : ``var_when_condition_is_first_true(expr0)``
+
+.. _Var_When_Condition_Is_Last_True_Function:
+
+var when condition is last true Function: ``var_when_condition_is_last_true()`` : ``var_when_condition_is_last_true(expr0)``
+
+.. _Time_At_Minimum_Function:
+
+time at minimum Function: ``time_at_minimum()`` : ``time_at_minimum(expr0)``
+
+.. _cycle_At_Minimum_Function:
+
+cycle at minimum Function: ``cycle_at_minimum()`` : ``cycle_at_minimum(expr0)``
+
+.. _Time_Index_At_Minimum_Function:
+
+time index at minimum Function: ``time_index_at_minimum()`` : ``time_index_at_minimum(expr0)``
+
+.. _Value_At_Minimum_Function:
+
+value at minimum Function: ``value_at_minimum()`` : ``value_at_minimum(expr0)``
+
+.. _Time_At_Maximum_Function:
+
+time at maximum Function: ``time_at_maximum()`` : ``time_at_maximum(expr0)``
+
+.. _Cycle_At_Maximum_Function:
+
+cycle at maximum Function: ``cycle_at_maximum()`` : ``cycle_at_maximum(expr0)``
+
+.. _Time_Index_At_Maximum_Function:
+
+time index at maximum Function: ``time_index_at_maximum()`` : ``time_index_at_maximum(expr0)``
+
+.. _Value_At_Maximum_Function:
+
+value at maximum Function: ``value_at_maximum()`` : ``value_at_maximum(expr0)``
+
+.. _Enumerate_Function:
+
+enumerate Function: ``enumerate()`` : ``enumerate(expr0)``
+
+.. _Map_Function:
+
+map Function: ``map()`` : ``map(expr0)``
+
+.. _Array_Componentwise_Division_Function:
+
+array componentwise division Function: ``array_componentwise_division()`` : ``array_componentwise_division(expr0)``
+
+.. _Array_Componentwise_Product_Function:
+
+array componentwise product Function: ``array_componentwise_product()`` : ``array_componentwise_product(expr0)``
+
+.. _Array_Compose_Function:
+
+array compose Function: ``array_compose()`` : ``array_compose(expr0)``
+
+.. _Array_Decompose2d_Function:
+
+array decompose2d Function: ``array_decompose2d()`` : ``array_decompose2d(expr0)``
+
+.. _Array_Sum_Function:
+
+array sum Function: ``array_sum()`` : ``array_sum(expr0)``
+
+.. _Localized_Compactness_Function:
+
+localized compactness Function: ``localized_compactness()`` : ``localized_compactness(expr0)``
+
+.. _Recenter_Function:
+
+recenter Function: ``recenter()`` : ``recenter(expr0)``
+
+.. _Resample_Function:
+
+resample Function: ``resample()`` : ``resample(expr0)``
+
+.. _Displacement_Function:
+
+displacement Function: ``displacement()`` : ``displacement(expr0)``
+
+.. _Degree_Function:
+
+degree Function: ``degree()`` : ``degree(expr0)``
+
+.. _Cylindrical_Function:
+
+cylindrical Function: ``cylindrical()`` : ``cylindrical(expr0)``
+
+.. _Procid_Function:
+
+procid Function: ``procid()`` : ``procid(expr0)``
+
+.. _Threadid_Function:
+
+threadid Function: ``threadid()`` : ``threadid(expr0)``
+
+.. _Merge_Tree_Function:
+
+merge tree Function: ``merge_tree()`` : ``merge_tree(expr0)``
+
+.. _Split_Tree_Function:
+
+split tree Function: ``split_tree()`` : ``split_tree(expr0)``
+
+.. _Local_Threshold_Function:
+
+local threshold Function: ``local_threshold()`` : ``local_threshold(expr0)``
+
+.. _Python_Function:
+
+python Function: ``python()`` : ``python(expr0)``
+
+.. _Mean_Curvature_Function:
+
+mean curvature Function: ``mean_curvature()`` : ``mean_curvature(expr0)``
+
+.. _Gauss_Curvature_Function:
+
+gauss curvature Function: ``gauss_curvature()`` : ``gauss_curvature(expr0)``
+
+.. _Agrad_Function:
+
+agrad Function: ``agrad()`` : ``agrad(expr0)``
+
+.. _Key_Aggregate_Function:
+
+key aggregate Function: ``key_aggregate()`` : ``key_aggregate(expr0)``
+
+.. _Laplacian_Function:
+
+laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
+
+.. _Rectilinear_Laplacian_Function:
+
+rectilinear laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_laplacian(expr0)``
+
+.. _Conn_Components_Function:
+
+conn components Function: ``conn_components()`` : ``conn_components(expr0)``
+
+.. _Resrad_Function:
+
+resrad Function: ``resrad()`` : ``resrad(expr0)``
+
+.. _Relative_Difference_Function:
+
+relative difference Function: ``relative_difference()`` : ``relative_difference(expr0)``
+
+.. _Var_Skew_Function:
+
+var skew Function: ``var_skew()`` : ``var_skew(expr0)``
+
+.. _Apply_Data_Binning_Function:
+
+apply data binning Function: ``apply_data_binning()`` : ``apply_data_binning(expr0)``
+
+.. _Distance_To_Best_Fit_Line_Function:
+
+distance to best fit line Function: ``distance_to_best_fit_line()`` : ``distance_to_best_fit_line(expr0)``
+
+.. _distance_to_best_fit_Line2_Function:
+
+distance to best fit line2 Function: ``distance_to_best_fit_line2()`` : ``distance_to_best_fit_line2(expr0)``
+
+.. _min_Function:
+
+.. _Geodesic_Vector_Quantize_Function:
+
+geodesic vector quantize Function: ``geodesic_vector_quantize()`` : ``geodesic_vector_quantize(expr0)``
+
+.. _Cell_Constant_Function:
+
+cell constant Function: ``cell_constant()`` : ``cell_constant(expr0)``
+
+.. _Zonal_Constant_Function:
+
+zonal constant Function: ``zonal_constant()`` : ``zonal_constant(expr0)``
+
+.. _Zone_Constant_Function:
+
+zone constant Function: ``zone_constant()`` : ``zone_constant(expr0)``
+
+.. _Point_Constant_Function:
+
+point constant Function: ``point_constant()`` : ``point_constant(expr0)``
+
+.. _Nodal_Constant_Function:
+
+nodal constant Function: ``nodal_constant()`` : ``nodal_constant(expr0)``
+
+.. _Node_Constant_Function:
+
+node constant Function: ``node_constant()`` : ``node_constant(expr0)``
+
+.. _Curve_Domain_Function:
+
+curve domain Function: ``curve_domain()`` : ``curve_domain(expr0)``
+
+.. _Curve_Integrate_Function:
+
+curve integrate Function: ``curve_integrate()`` : ``curve_integrate(expr0)``
+
+.. _Curve_Swapxy_Function:
+
+curve swapxy Function: ``curve_swapxy()`` : ``curve_swapxy(expr0)``
+
+.. _Curve_Function:
+
+curve Function: ``curve()`` : ``curve(expr0)``
+
+.. _Bin_Function:
+
+bin Function: ``bin()`` : ``bin(expr0)``
+
+.. _Isnan_Function:
+
+isnan Function: ``isnan()`` : ``isnan(expr0)``
+
+.. _Q_Criterion_Function:
+
+q criterion Function: ``q_criterion()`` : ``q_criterion(expr0)``
+
+.. _Lambda2_Function:
+
+lambda2 Function: ``lambda2()`` : ``lambda2(expr0)``
 
 Image Processing Expressions
 """"""""""""""""""""""""""""
