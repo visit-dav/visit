@@ -821,7 +821,7 @@ Tensor Maximum Shear Function: ``tensor_maximum_shear()`` : ``tensor_maximum_she
 Trace Function: ``trace()`` : ``trace(expr0)``
     No description available.
 
-.. _Viscous_Stress_Function:
+.. _Viscous_Stress_Expression_Function:
 
 Viscuos Stress Function: ``viscous_stress()`` : ``viscous_stress(expr0)``
     No description available.
@@ -830,7 +830,7 @@ Viscuos Stress Function: ``viscous_stress()`` : ``viscous_stress(expr0)``
 Array Expressions
 """""""""""""""""
 
-.. _Array_Compose_Function:
+.. _Array_Compose_Expression_Function:
 
 Array Compose Function: ``array_compose()`` : ``array_compose(expr0, expr1, ..., exprN-1)``
     Create a new *array* expression variable which is everywhere the array
@@ -846,7 +846,7 @@ Array Compose Function: ``array_compose()`` : ``array_compose(expr0, expr1, ...,
     simultaneously. For example, the Label plot can display the values in an
     array variable.
 
-.. _Array_Compose_With_Bins_Function:
+.. _Array_Compose_With_Bins_Expression_Function:
 
 Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compose_with_bins(expr0,...,exprN-1,b0,...bn-1 )``
     This expression combines two related concepts. One is the array concept
@@ -877,7 +877,7 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
 
     Bar graph created from picking an array variable created with array_compose_with_bins()
 
-.. _Array_Decompose_Function:
+.. _Array_Decompose_Expression_Function:
 
 Array Decompose Function: ``array_decompose()`` : ``array_decompose(Arr,Idx)``
     Creates a new *scalar* expression which is everywhere the scalar member of
@@ -886,13 +886,13 @@ Array Decompose Function: ``array_decompose()`` : ``array_decompose(Arr,Idx)``
 Material Expressions
 """"""""""""""""""""
 
-.. _Dominant_Mat_Function:
+.. _Dominant_Mat_Expression_Function:
 
 Dominant Material Function: ``dominant_mat()`` : ``domimant_mat(<Mesh>)``
     Creates a new scalar expression which is for every mesh cell/zone the
     material having the largest volume fraction.
 
-.. _Materror_Function:
+.. _Materror_Expression_Function:
 
 Material Error Function: ``materror()`` : ``materror(<Mat>,[Const,Const...])``
     Creates a new scalar expression which is everywhere the difference in
@@ -912,7 +912,7 @@ Material Error Function: ``materror()`` : ``materror(<Mat>,[Const,Const...])``
     materror(materials, "copper")
     materror(materials, ["copper", "steel"])
 
-.. _Matvf_Function:
+.. _Matvf_Expression_Function:
 
 Material Volume Fractions Function: ``matvf()`` : ``matvf(<Mat>,[Const,Const,...])``
     Creates a new scalar expression which is everywhere the sum of the volume
@@ -930,14 +930,14 @@ Material Volume Fractions Function: ``matvf()`` : ``matvf(<Mat>,[Const,Const,...
     matvf(materials, "copper")
     matvf(materials, ["copper", "steel"])
 
-.. _NMats_Function:
+.. _NMats_Expression_Function:
 
 NMats Function: ``nmats()`` : ``nmats(<Mat>)``
     Creates a new scalar expression which for each mesh cell/zone is the number
     of materials in the cell/zone. The ``<Mat>`` argument is a
     *material variable* from a database.
     
-.. _Specmf_Function:
+.. _Specmf_Expression_Function:
 
 Specmf Function: ``specmf()`` : ``specmf(<Spec>,<MConst>,[Const,Const,...])``
     Performs the analagous operation to ``matvf`` for species mass fractions.
@@ -954,7 +954,7 @@ Specmf Function: ``specmf()`` : ``specmf(<Spec>,<MConst>,[Const,Const,...])``
     specmf(species, "copper", 1)
     specmf(species, "copper", [1,3])
 
-.. _Value_For_Material_Function:
+.. _Value_For_Material_Expression_Function:
 
 Value For Material Function: ``value_for_material()`` : ``value_for_material(<Var>,<Const>)``
     Creates a new scalar expression which is everywhere the material-specific
@@ -969,20 +969,212 @@ Mesh Expressions
 Mesh Quality Expressions
 """"""""""""""""""""""""
 
-Minimum Edge Length : ``min_edge_length(expr)``
-    The ``expr`` must be an expression that evaluates to a mesh. The Minimum
-    Edge Length expression calculates the edge length for each edge in a cell,
-    assigning the length of the smallest edge to the entire cell.            
+VisIt employes the *Verdict Mesh Quality Library* to support a number of
+expressions related to computing cell-by-cell mesh quality metrics. The
+specific definitions of the various mesh quality metrics defined by the
+*Verdict Mesh Quality Library* are amply explained in the
+:download:`Verdict Manual <./VerdictManual-revA.pdf>`. Below, we
+simply list all the mesh quality metrics and describe in detail only
+those that are not part of the *Verdict Mesh Quality Library*
 
-Minimum Side Volume : ``min_side_volume(expr)``
-    The ``expr`` must be an expression that evaluates to a three-dimensional
-    mesh. The Minimum Side Volume expression calculates the side volume for
-    each side in a cell, assigning the value of the smallest side volume to
-    the entire cell.
+.. _Neighbor_Function:
 
-    A *side* is a tetrahedron that covers one edge of a cell plus parts of the
-    surrounding faces. When a cell has negative side volume, it is usually
-    twisted.
+Neighbor Function: ``neighbor()`` : ``neighbor(<Mesh>)``
+    See the Verdict Manual
+
+.. _Node_Degree_Function:
+
+Node Degree Function: ``node_degree()`` : ``node_degree(<Mesh>)``
+    See the Verdict Manual
+
+.. _Area_Function:
+
+Area Function: ``area()`` : ``area(<Mesh>)``
+    See the Verdict Manual
+
+.. _Aspect_Function:
+
+Aspect Function: ``aspect()`` : ``aspect(<Mesh>)``
+    See the Verdict Manual
+
+.. _Skew_Function:
+
+Skew Function: ``skew()`` : ``skew(<Mesh>)``
+    See the Verdict Manual
+
+.. _Taper_Function:
+
+Taper Function: ``taper()`` : ``taper(<Mesh>)``
+    See the Verdict Manual
+
+.. _Volume_Function:
+
+Volume Function: ``volume()`` : ``volume(<Mesh>)``
+    See the Verdict Manual
+
+.. _Volume2_Function:
+
+Volume2 Function: ``volume2()`` : ``volume2(<Mesh>)``
+    See the Verdict Manual
+
+.. _Min_Corner_Angle_Function:
+
+Minimum Corner Angle Function: ``min_corner_angle()`` : ``min_corner_angle(<Mesh>)``
+    See the Verdict Manual
+
+.. _Max_Corner_Angle_Function:
+
+Maximum Corner Angle Function: ``max_corner_angle()`` : ``max_corner_angle(<Mesh>)``
+    See the Verdict Manual
+
+.. _Min_Edge_Length_Function:
+
+Minimum Edge Length Function: ``min_edge_length()`` : ``min_edge_length(<Mesh>)``
+    See the Verdict Manual
+
+.. _Max_Edge_Length_Function:
+
+Maximum Edge Length Function: ``max_edge_length()`` : ``max_edge_length(<Mesh>)``
+    See the Verdict Manual
+
+.. _Min_Side_Volume_Function:
+
+Minimum Side Volume Function: ``min_side_volume()`` : ``min_side_volume(<Mesh>)``
+    See the Verdict Manual
+
+.. _Max_Side_Volume_Function:
+
+Maximum Side Volume Function: ``max_side_volume()`` : ``max_side_volume(<Mesh>)``
+    See the Verdict Manual
+
+.. _Stretch_Function:
+
+Stretch Function: ``stretch()`` : ``stretch(<Mesh>)``
+    See the Verdict Manual
+
+.. _Diagonal_Ratio_Function:
+
+Diagonal Ratio Function: ``diagonal_ratio()`` : ``diagonal_ratio(<Mesh>)``
+    See the Verdict Manual
+
+.. _Max_Diagonal_Function:
+
+Maximum Diagonal Function: ``max_diagonal()`` : ``max_diagonal(<Mesh>)``
+    See the Verdict Manual
+
+.. _Min_Diagonal_Function:
+
+Minimum Diagonal Function: ``min_diagonal()`` : ``min_diagonal(<Mesh>)``
+    See the Verdict Manual
+
+.. _Dimension_Function:
+
+Dimension Function: ``dimension()`` : ``dimension(<Mesh>)``
+    See the Verdict Manual
+
+.. _Oddy_Function:
+
+Oddy Function: ``oddy()`` : ``oddy(<Mesh>)``
+    See the Verdict Manual
+
+.. _Condition_Function:
+
+Condition Function: ``condition()`` : ``condition(<Mesh>)``
+    See the Verdict Manual
+
+.. _Jacobian_Function:
+
+Jacobian Function: ``jacobian()`` : ``jacobian(<Mesh>)``
+    See the Verdict Manual
+
+.. _Scaled_Jacobian_Function:
+
+Scaled Jacobian Function: ``scaled_jacobian()`` : ``scaled_jacobian(<Mesh>)``
+    See the Verdict Manual
+
+.. _Shear_Function:
+
+Shear Function: ``shear()`` : ``shear(<Mesh>)``
+    See the Verdict Manual
+
+.. _Shape_Function:
+
+Shape Function: ``shape()`` : ``shape(<Mesh>)``
+    See the Verdict Manual
+
+.. _Relative_Size_Function:
+
+Relative Size Function: ``relative_size()`` : ``relative_size(<Mesh>)``
+    See the Verdict Manual
+
+.. _Shape_And_Size_Function:
+
+Shape and Size Function: ``shape_and_size()`` : ``shape_and_size(<Mesh>)``
+    See the Verdict Manual
+
+.. _Aspect_Gamma_Function:
+
+Aspect Gamma Function: ``aspect_gamma()`` : ``aspect_gamma(<Mesh>)``
+    See the Verdict Manual
+
+.. _Warpage_Function:
+
+Warpage Function: ``warpage()`` : ``warpage(<Mesh>)``
+    See the Verdict Manual
+
+.. _Maximum_Angle_Function:
+
+Maximum Angle Function: ``maximum_angle()`` : ``maximum_angle(<Mesh>)``
+    See the Verdict Manual
+
+.. _Minimum_Angle_Function:
+
+Minimum Angle Function: ``minimum_angle()`` : ``minimum_angle(<Mesh>)``
+    See the Verdict Manual
+
+.. _Revolved_Volume_Function:
+
+Revolved Volume Function: ``revolved_volume()`` : ``revolved_volume(<Mesh>)``
+    See the Verdict Manual
+
+.. _Revolved_Surface_Area_Function:
+
+Revolved Surface Area Function: ``revolved_surface_area()`` : ``revolved_surface_area(<Mesh>)``
+    See the Verdict Manual
+
+.. _Min_Corner_Area_Function:
+
+Minimum Corner Area Function: ``min_corner_area()`` : ``min_corner_area(<Mesh>)``
+    See the Verdict Manual
+
+.. _Min_Sin_Corner_Function:
+
+Minimum Sin Corner Function: ``min_sin_corner()`` : ``min_sin_corner(<Mesh>)``
+    See the Verdict Manual
+
+.. _Min_Sin_Corner_Cw_Function:
+
+Minimum Sin Corner CW Function: ``min_sin_corner_cw()`` : ``min_sin_corner_cw(<Mesh>)``
+    See the Verdict Manual
+
+.. _Face_Planarity_Function:
+
+Face Planarity Function: ``face_planarity()`` : ``face_planarity(<Mesh>)``
+    Creates a new expression which is everywhere a measure of how close to
+    *planar* all the points comprising a face are. This is computed for
+    each face of a cell and the maximum over all faces is selected for each
+    cell. Planarity is measured as the maximum distance from an arbitrary plane
+    defined by the first 3 points of a face of the remaining points of the face.
+    Values closer to zero are *better*. A triangle face will always have a
+    planarity measure of zero. This mesh quality exprssion is not part of
+    the Verdict library. 
+
+.. _Relative_Face_Planarity_Function:
+
+Relative Face Planarity Function: ``relative_face_planarity()`` : ``relative_face_planarity(<Mesh>)``
+    Performs the same computation as the
+    :ref:`face_planarity() <Face_Planarity_Function>`, except where each
+    face's value is normalized by the average edge length of the face.
 
 Solution Transfer (Comparison) Expressions
 """"""""""""""""""""""""""""""""""""""""""
