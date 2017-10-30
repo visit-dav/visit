@@ -21,7 +21,7 @@ involve the contents of multiple databases using VisIt's expression
 language. Database comparisons use a special expression called *conn_cmfe*,
 which is capable of mapping a field from one mesh to another mesh
 using a mesh connectivity-based approach. The name "conn_cmfe" means
-*connectivity-based common mesh field evaluation* (CMFE) and as the name
+*connectivity-based cross-mesh field evaluation* (CMFE) and as the name
 implies, the expression takes fields from one mesh and maps the field onto
 another mesh by taking the cell or node-centered values on the donor mesh
 and mapping them onto the cells or nodes having the same indices in the

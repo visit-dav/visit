@@ -711,18 +711,24 @@ IJK_Gradient Function: ``ijk_gradient()`` :  ``ijk_gradient(expr0)``
 .. _Surface_Normal_Expression_Function:
 
 Surface Normal Function: ``surface_normal()`` :  ``surface_normal(expr0)``
-    No description available.
+    This function is an *alias* for
+    :ref:`cell_surface_normal() <Cell_Surface_Normal_Expression_Function>`
 
 .. _Point_Surface_Normal_Expression_Function:
 
 Point Surface Normal Function: ``point_surface_normal()`` :  ``point_surface_normal(expr0)``
-    No description available.
+    Like :ref:`cell_surface_normal() <Cell_Surface_Normal_Expression_Function>`
+    except that after computing face normals, they are averaged to the nodes. 
 
 .. _Cell_Surface_Normal_Expression_Function:
 
-Cell Surface Normal Function: ``cell_surface_normal()`` :  ``cell_surface_normal(expr0)``
-    No description available.
-
+Cell Surface Normal Function: ``cell_surface_normal()`` :  ``cell_surface_normal(<Mesh>)``
+    Computes a *vector* variable which is the normal to a *surface*. The input
+    argument is a *Mesh* variable. In addition, this function cannot be used
+    in isolation. It must be used in combination the
+    :ref:`external surface <ExternalSurface operator>`, *first*, and the
+    :ref:`defer expression <DeferExpression operator>`, *second*, operators.
+    
 .. _Edge_Normal_Expression_Function:
 
 Edge Normal Function: ``edge_normal()`` :  ``edge_normal(expr0)``
@@ -1182,433 +1188,561 @@ Relative Face Planarity Function: ``relative_face_planarity()`` : ``relative_fac
 Solution Transfer (Comparison) Expressions
 """"""""""""""""""""""""""""""""""""""""""
 
-.. _Surface_Normal_Function:
+.. _Zoneid_Expression_Function:
 
-surface normal Function: ``surface_normal()`` : ``surface_normal(expr0)``
+zoneid Function: ``zoneid()`` : ``zoneid(<Mesh>)``
+    Return a zone-centered *scalar* variable where the value for each zone/cell
+    is local index of a zone, staring from zero, within its domain.
 
-.. _Point_Surface_Normal_Function:
+.. _Global_Zoneid_Expression_Function:
 
-point surface normal Function: ``point_surface_normal()`` : ``point_surface_normal(expr0)``
+global zoneid Function: ``global_zoneid()`` : ``global_zoneid(<Mesh>)``
+    If global zone ids are specified by the input database, return a
+    zone-centered *scalar* variable where the value for each zone/cell
+    is the *global* index of a zone, as specified by the data producer.
 
-.. _Cell_Surface_Normal_Function:
-
-cell surface normal Function: ``cell_surface_normal()`` : ``cell_surface_normal(expr0)``
-
-.. _Edge_Normal_Function:
-
-edge normal Function: ``edge_normal()`` : ``edge_normal(expr0)``
-
-.. _Point_Edge_Normal_Function:
-
-point edge normal Function: ``point_edge_normal()`` : ``point_edge_normal(expr0)``
-
-.. _Cell_Edge_Normal_Function:
-
-cell edge normal Function: ``cell_edge_normal()`` : ``cell_edge_normal(expr0)``
-
-.. _Zoneid_Function:
-
-zoneid Function: ``zoneid()`` : ``zoneid(expr0)``
-
-.. _Global_Zoneid_Function:
-
-global zoneid Function: ``global_zoneid()`` : ``global_zoneid(expr0)``
-
-.. _Nodeid_Function:
+.. _Nodeid_Expression_Function:
 
 nodeid Function: ``nodeid()`` : ``nodeid(expr0)``
+    Return a node-centered *scalar* variable where the value for each
+    node/vertex/point is local index of a node, staring from zero, within
+    its domain.
 
-.. _Global_Nodeid_Function:
+.. _Global_Nodeid_Expression_Function:
 
 global nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
+    If global node ids are specified by the input database, return a
+    node-centered *scalar* variable where the value for each node/vertex/point
+    is the *global* index of a node, as specified by the data producer.
 
-.. _Biggest_Neighbor_Function:
+.. _Biggest_Neighbor_Expression_Function:
 
 biggest neighbor Function: ``biggest_neighbor()`` : ``biggest_neighbor(expr0)``
+    No description available.
 
-.. _Smallest_Neighbor_Function:
+.. _Smallest_Neighbor_Expression_Function:
 
 smallest neighbor Function: ``smallest_neighbor()`` : ``smallest_neighbor(expr0)``
+    No description available.
 
-.. _Neighbor_Average_Function:
+.. _Neighbor_Average_Expression_Function:
 
 neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
+    No description available.
 
-.. _Cylindrical_Radius_Function:
-
-cylindrical radius Function: ``cylindrical_radius()`` : ``cylindrical_radius(expr0)``
-
-.. _Cylindrical_Theta_Function:
+.. _Cylindrical_Theta_Expression_Function:
 
 cylindrical theta Function: ``cylindrical_theta()`` : ``cylindrical_theta(expr0)``
+    No description available.
 
-.. _Polar_Radius_Function:
+.. _Polar_Radius_Expression_Function:
 
 polar radius Function: ``polar_radius()`` : ``polar_radius(expr0)``
 
-.. _Polar_Theta_Function:
+.. _Polar_Theta_Expression_Function:
 
 polar theta Function: ``polar_theta()`` : ``polar_theta(expr0)``
 
-.. _Polar_Phi_Function:
+.. _Polar_Phi_Expression_Function:
 
 polar phi Function: ``polar_phi()`` : ``polar_phi(expr0)``
 
-.. _Zonetype_Function:
+.. _Zonetype_Expression_Function:
 
-zonetype Function: ``zonetype()`` : ``zonetype(expr0)``
+Zonetype Function: ``zonetype()`` : ``zonetype(<Mesh>)``
+    Return a *zone* centered, character valued variable which indicates
+    the *shape type* of each zone suitable for being used within the
+    *label* plot. Upper case characters generally denote 3D shapes
+    (e.g. ``T`` for ``tet``) while lower case characters denote 2D shapes
+    (e.g. ``t`` for ``triangle``).
 
-.. _Zonetype_Rank_Function:
+.. _Zonetype_Rank_Expression_Function:
 
-zonetype rank Function: ``zonetype_rank()`` : ``zonetype_rank(expr0)``
+Zonetype Rank Function: ``zonetype_rank()`` : ``zonetype_rank(<Mesh>)``
+    Return a *zone* centered, integer valued variable which indicates
+    the *VTK shape type* of each zone. This expression is often useful
+    with the threshold operator to select only certain shapes within
+    the mesh to be displayed.
 
-.. _Min_Coord_Function:
+.. _Min_Coord_Expression_Function:
 
 min coord Function: ``min_coord()`` : ``min_coord(expr0)``
 
-.. _Max_Coord_Function:
+.. _Max_Coord_Expression_Function:
 
 max coord Function: ``max_coord()`` : ``max_coord(expr0)``
 
-.. _External_Node_Function:
+.. _External_Node_Expression_Function:
 
 external node Function: ``external_node()`` : ``external_node(expr0)``
 
-.. _External_Cell_Function:
+.. _External_Cell_Expression_Function:
 
 external cell Function: ``external_cell()`` : ``external_cell(expr0)``
 
-.. _Conn_Cmfe_Function:
+.. _Pos_Cmfe_Expression_Function:
 
-conn cmfe Function: ``conn_cmfe()`` : ``conn_cmfe(expr0)``
+Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Target Mesh>,<Fill>)``
+   *CMFE* is an abbreviation for *cross-mesh field evaluation*. The
+   position-based CMFE function and its friend, the connectivity-based CMFE
+   function, :ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>` are the
+   work-horse methods needed when working with variables from *different*
+   meshes in the *same* expression. A common example is taking the difference
+   between results from two simulation runs. In order to compose an expression
+   involving variables from multiple databases, the *first* step is to *map* the
+   variables onto a *common* mesh. The CMFE expressions are used perform this
+   function.
 
-.. _Curve_Cmfe_Function:
+   The ``pos_cmfe()`` function performs the mapping assuming the two meshes,
+   that is the ``<Target Mesh>`` and the mesh upon which the
+   ``<Donor Variable>`` is defined, share *only* a common spatial (positional)
+   extent. Its friend, the :ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>`
+   function is *optimized* to perform the mapping when the two meshes are
+   *topologically identical*. In other words, their *coordinate* and
+   *connectivity* arrays are 1:1. In this case, the mapping can be performed
+   with more efficiency and numerical accuracy. Therefore, when it is possible
+   and makes sense to do so, it is always best to use ``conn_cmfe()``.
+
+   We'll describe the arguments to ``pos_cmfe()`` working backwards from the
+   last.
+
+   The last, ``<Fill>`` argument is a numerical constant that VisIt
+   will use to determine the value of the result in places on the target
+   mesh that do not spatially overlap with the mesh of the donor variable. Note
+   that if a value is chosen within the range of the donor variable, it may
+   by difficult to distinguish regions VisIt deemed were non-overlapping.
+   On the other hand, if a value outside the range is chosen, it will effect
+   the range of the mapped variable. A common practice is to choose a value that
+   is an extremum of the donor variable's range. Another practice is to
+   choose a value that is easily distinguishable and then apply a threshold
+   operator to remove those portions of the result. If the ``Fill`` argument
+   is not specified, zero is assumed.
+
+   Working backwards, the next argument, is the ``<Target Mesh>``.
+   The ``<Target Mesh>`` argument in ``pos_cmfe()`` is always
+   interpreted as a mesh *within* the currently active database. The CMFE
+   expressions are always mapping data from *other* meshes, possibly in other
+   databases onto the ``<Target Mesh>`` which is understood to be in the
+   currently active database. When mapping data between meshes
+   *in different databases*, the additional information necessary to specify
+   the other database is encoded with a special syntax in the
+   ``Donor Variable`` argument.
+
+   The ``Donor Variable`` argument is a string argument consisting
+   of the donor variable's name and up to three pre-pending sub-strings which
+   may be optionally needed to specify...
+
+       #. ...the *Database* in which the donor variable resides,
+       #. ...the *State Id* from which to take the donor variable,
+       #. ...the *Modality*, cycle, time, or index by which states are
+          identified in the *State Id* sub-string.
+
+   Depending on circumstances, specifying the ``Donor-Variable`` argument to
+   the CMFE functions can get cumbersome. For this reason, CMFE expressions
+   are typically created using the *Data-Level Comparisons Wizard* under the
+   *Controls* menu. Nonetheless, here we describe the syntax and provide
+   examples for a number of cases of increasing complexity in specifying where
+   the ``Donor Variable`` resides.
+
+   When the donor variable is in the same database and state as the target mesh,
+   then only the variable's name is needed. The optional substrings are not.
+   See case A in the examples below.
+
+   When the donor variable is in a different database **and** the databases
+   do not have multiple time states, then only sub-string 1, above, is
+   needed to specify the path to the database in the file system. The path
+   to the database can be specified using either *absolute* or *relative*
+   paths. *Relative* paths are interpreted relative to the current working
+   directory in which the VisIt session was started. See cases B and C
+   in the examples below.
+
+   When the donor variable is in a different database **and** the databases
+   have multiple states, then all 3 sub-strings, above, are required. The
+   ``State Id`` substring is a square-bracket enclosed number used to identify
+   *which state* from which to take the donor variable. The ``Modality``
+   substring is a one- or two-character moniker. The first character indicates
+   whether the number in the the ``State Id`` substring is a (``c``)ycle,
+   a (``t``)ime, or an (``i``)ndex. The second character, if present, is a ``d``
+   character to indicate the cycle, time or index is *relative* (e.g. a *delta*)
+   to the current state. For example, the substring ``[200]c`` means to
+   treat the ``200`` as a *cycle number* in the donor database whereas the
+   the substring ``[-10]id`` means to treat the ``-10`` as an (``i``)ndex
+   (``d``)elta. Note that in cases where the donor database does not have
+   an exact match for the specified cycle or time, VisIt will chose the state
+   with the cycle or time which is closest in absolute distance. For the *index*
+   modality, if there is no exact match for the specified index, an error
+   results. See cases D-I in the examples below.
+
+   Note that the *relative* form of specifying the *State Id* is needed even
+   when working with different states *within the same database*. In particular,
+   to create an expression representing a *time derivative* of a variable in
+   a database, the key insight is to realize it involves mapping a donor
+   variable from one state in the database onto a mesh at another state. In
+   addition, the value in using the *relative* form of specifyin the
+   ``State Id`` of the donor variable is that as the current time is changed,
+   the expression properly identifies the different states of the donor
+   variable instead of always mapping a fixed state.
+
+   Examples...
+   
+::
+
+    # Case A: Donor variable, "pressure" in same database as mesh, "ucdmesh"
+    pos_cmfe(<pressure>,<ucdmesh>,1e+15)
+
+    # Case B: Donor variable in a different database using absolute path
+    pos_cmfe(</var/tmp/foo.silo:pressure>,<ucdmesh>,1e+15)
+
+    # Case C: Donor variable in a different database using relative path
+    pos_cmfe(<foo/bar.silo:pressure>,<ucdmesh>,1e+15)
+
+    # Case D: Map "p" from wave.visit at state index=7 onto "mesh"
+    pos_cmfe(<./wave.visit[7]i:p>, mesh, 1e+15)
+
+    # Case E: Map "p" from wave.visit at state index current-1 onto "mesh"
+    pos_cmfe(<./wave.visit[-1]id:p>, mesh, 1e+15)
+
+    # Case F: Map "p" from wave.visit at state with cycle~200 onto "mesh"
+    pos_cmfe(<./wave.visit[200]c:p>, mesh, 1e+15)
+
+    # Case G: Map "p" from wave.visit at state with cycle~cycle(current)-200 onto "mesh"
+    pos_cmfe(<./wave.visit[-200]id:p>, mesh, 1e+15)
+
+    # Case H: Map "p" from wave.visit at state with time~1.4 onto "mesh"
+    pos_cmfe(<./wave.visit[1.4]t:p>, mesh, 1e+15)
+
+    # Case I: Map "p" from wave.visit at state with time~time(current)-0.8 onto "mesh"
+    pos_cmfe(<./wave.visit[-0.8]td:p>, mesh, 1e+15)
+
+.. _Conn_Cmfe_Expression_Function:
+
+Connectivity-Based CMFE Function: ``conn_cmfe()`` : ``conn_cmfe(<Donor Variable>,<Target Mesh>)``
+    The connectivity-based CMFE is an *optimized* version of
+    :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>` for cases where the
+    ``Target Mesh`` and the mesh of the ``Donor Variable`` are
+    *topologically and geometrically identical*. In such cases, there is no
+    opportunity for the two meshes to fail to overlap perfectly. Thus, there
+    is no need for the third, ``<Fill>`` argument. In all other respects,
+    ``conn_cmfe()`` performs the same function as
+    :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>` except that
+    ``conn_cmfe()`` *assumes* that any differences in the coordinates of the
+    two meshes are numerically insignificant to the resulting mapped variable.
+
+.. _Curve_Cmfe_Expression_Function:
 
 curve cmfe Function: ``curve_cmfe()`` : ``curve_cmfe(expr0)``
 
-.. _Pos_Cmfe_Function:
-
-pos cmfe Function: ``pos_cmfe()`` : ``pos_cmfe(expr0)``
-
-.. _Eval_Transform_Function:
+.. _Eval_Transform_Expression_Function:
 
 eval transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
 
-.. _Symm_Transform_Function:
+.. _Symm_Transform_Expression_Function:
 
 symm transform Function: ``symm_transform()`` : ``symm_transform(expr0)``
 
-.. _Eval_Plane_Function:
+.. _Eval_Plane_Expression_Function:
 
 eval plane Function: ``eval_plane()`` : ``eval_plane(expr0)``
 
-.. _Symm_Plane_Function:
+.. _Symm_Plane_Expression_Function:
 
 symm plane Function: ``symm_plane()`` : ``symm_plane(expr0)``
 
-.. _Eval_Point_Function:
+.. _Eval_Point_Expression_Function:
 
 eval point Function: ``eval_point()`` : ``eval_point(expr0)``
 
-.. _Symm_Point_Function:
+.. _Symm_Point_Expression_Function:
 
 symm point Function: ``symm_point()`` : ``symm_point(expr0)``
 
-.. _Conservative_Smoothing_Function:
+.. _Conservative_Smoothing_Expression_Function:
 
 conservative smoothing Function: ``conservative_smoothing()`` : ``conservative_smoothing(expr0)``
 
-.. _Mean_Filter_Function:
+.. _Mean_Filter_Expression_Function:
 
 mean filter Function: ``mean_filter()`` : ``mean_filter(expr0)``
 
-.. _Median_Filter_Function:
+.. _Median_Filter_Expression_Function:
 
 median filter Function: ``median_filter()`` : ``median_filter(expr0)``
 
-.. _Abel_Inversion_Function:
+.. _Abel_Inversion_Expression_Function:
 
 abel inversion Function: ``abel_inversion()`` : ``abel_inversion(expr0)``
 
-.. _Time_Function:
+.. _Time_Expression_Function:
 
 time Function: ``time()`` : ``time(expr0)``
 
-.. _Cycle_Function:
+.. _Cycle_Expression_Function:
 
 cycle Function: ``cycle()`` : ``cycle(expr0)``
 
-.. _Timestep_Function:
+.. _Timestep_Expression_Function:
 
 timestep Function: ``timestep()`` : ``timestep(expr0)``
 
-.. _Average_Over_Time_Function:
+.. _Average_Over_Time_Expression_Function:
 
 average over time Function: ``average_over_time()`` : ``average_over_time(expr0)``
 
-.. _Min_Over_Time_Function:
+.. _Min_Over_Time_Expression_Function:
 
 min over time Function: ``min_over_time()`` : ``min_over_time(expr0)``
 
-.. _Max_Over_Time_Function:
+.. _Max_Over_Time_Expression_Function:
 
 max over time Function: ``max_over_time()`` : ``max_over_time(expr0)``
 
-.. _Sum_Over_Time_Function:
+.. _Sum_Over_Time_Expression_Function:
 
 sum over time Function: ``sum_over_time()`` : ``sum_over_time(expr0)``
 
-.. _First_Time_When_Condition_Is_True_Function:
+.. _First_Time_When_Condition_Is_True_Expression_Function:
 
 first time when condition is true Function: ``first_time_when_condition_is_true()`` : ``first_time_when_condition_is_true(expr0)``
 
-.. _Last_Time_When_Condition_Is_True_Function:
+.. _Last_Time_When_Condition_Is_True_Expression_Function:
 
 last time when condition is true Function: ``last_time_when_condition_is_true()`` : ``last_time_when_condition_is_true(expr0)``
 
-.. _First_Cycle_When_Condition_Is_True_Function:
+.. _First_Cycle_When_Condition_Is_True_Expression_Function:
 
 first cycle when condition is true Function: ``first_cycle_when_condition_is_true()`` : ``first_cycle_when_condition_is_true(expr0)``
 
-.. _Last_Cycle_When_Condition_Is_True_Function:
+.. _Last_Cycle_When_Condition_Is_True_Expression_Function:
 
 last cycle when condition is true Function: ``last_cycle_when_condition_is_true()`` : ``last_cycle_when_condition_is_true(expr0)``
 
-.. _First_Time_Index_When_Condition_Is_True_Function:
+.. _First_Time_Index_When_Condition_Is_True_Expression_Function:
 
 first time index when condition is true Function: ``first_time_index_when_condition_is_true()`` : ``first_time_index_when_condition_is_true(expr0)``
 
-.. _Last_Time_Index_When_Condition_Is_True_Function:
+.. _Last_Time_Index_When_Condition_Is_True_Expression_Function:
 
 last time index when condition is true Function: ``last_time_index_when_condition_is_true()`` : ``last_time_index_when_condition_is_true(expr0)``
 
-.. _Var_When_Condition_Is_First_True_Function:
+.. _Var_When_Condition_Is_First_True_Expression_Function:
 
 var when condition is first true Function: ``var_when_condition_is_first_true()`` : ``var_when_condition_is_first_true(expr0)``
 
-.. _Var_When_Condition_Is_Last_True_Function:
+.. _Var_When_Condition_Is_Last_True_Expression_Function:
 
 var when condition is last true Function: ``var_when_condition_is_last_true()`` : ``var_when_condition_is_last_true(expr0)``
 
-.. _Time_At_Minimum_Function:
+.. _Time_At_Minimum_Expression_Function:
 
 time at minimum Function: ``time_at_minimum()`` : ``time_at_minimum(expr0)``
 
-.. _cycle_At_Minimum_Function:
+.. _cycle_At_Minimum_Expression_Function:
 
 cycle at minimum Function: ``cycle_at_minimum()`` : ``cycle_at_minimum(expr0)``
 
-.. _Time_Index_At_Minimum_Function:
+.. _Time_Index_At_Minimum_Expression_Function:
 
 time index at minimum Function: ``time_index_at_minimum()`` : ``time_index_at_minimum(expr0)``
 
-.. _Value_At_Minimum_Function:
+.. _Value_At_Minimum_Expression_Function:
 
 value at minimum Function: ``value_at_minimum()`` : ``value_at_minimum(expr0)``
 
-.. _Time_At_Maximum_Function:
+.. _Time_At_Maximum_Expression_Function:
 
 time at maximum Function: ``time_at_maximum()`` : ``time_at_maximum(expr0)``
 
-.. _Cycle_At_Maximum_Function:
+.. _Cycle_At_Maximum_Expression_Function:
 
 cycle at maximum Function: ``cycle_at_maximum()`` : ``cycle_at_maximum(expr0)``
 
-.. _Time_Index_At_Maximum_Function:
+.. _Time_Index_At_Maximum_Expression_Function:
 
 time index at maximum Function: ``time_index_at_maximum()`` : ``time_index_at_maximum(expr0)``
 
-.. _Value_At_Maximum_Function:
+.. _Value_At_Maximum_Expression_Function:
 
 value at maximum Function: ``value_at_maximum()`` : ``value_at_maximum(expr0)``
 
-.. _Enumerate_Function:
+.. _Enumerate_Expression_Function:
 
 enumerate Function: ``enumerate()`` : ``enumerate(expr0)``
 
-.. _Map_Function:
+.. _Map_Expression_Function:
 
 map Function: ``map()`` : ``map(expr0)``
 
-.. _Array_Componentwise_Division_Function:
+.. _Array_Componentwise_Division_Expression_Function:
 
 array componentwise division Function: ``array_componentwise_division()`` : ``array_componentwise_division(expr0)``
 
-.. _Array_Componentwise_Product_Function:
+.. _Array_Componentwise_Product_Expression_Function:
 
 array componentwise product Function: ``array_componentwise_product()`` : ``array_componentwise_product(expr0)``
 
-.. _Array_Compose_Function:
-
-array compose Function: ``array_compose()`` : ``array_compose(expr0)``
-
-.. _Array_Decompose2d_Function:
+.. _Array_Decompose2d_Expression_Function:
 
 array decompose2d Function: ``array_decompose2d()`` : ``array_decompose2d(expr0)``
 
-.. _Array_Sum_Function:
+.. _Array_Sum_Expression_Function:
 
 array sum Function: ``array_sum()`` : ``array_sum(expr0)``
 
-.. _Localized_Compactness_Function:
+.. _Localized_Compactness_Expression_Function:
 
 localized compactness Function: ``localized_compactness()`` : ``localized_compactness(expr0)``
 
-.. _Recenter_Function:
-
-recenter Function: ``recenter()`` : ``recenter(expr0)``
-
-.. _Resample_Function:
+.. _Resample_Expression_Function:
 
 resample Function: ``resample()`` : ``resample(expr0)``
 
-.. _Displacement_Function:
+.. _Displacement_Expression_Function:
 
 displacement Function: ``displacement()`` : ``displacement(expr0)``
 
-.. _Degree_Function:
+.. _Degree_Expression_Function:
 
 degree Function: ``degree()`` : ``degree(expr0)``
 
-.. _Cylindrical_Function:
+.. _Cylindrical_Expression_Function:
 
 cylindrical Function: ``cylindrical()`` : ``cylindrical(expr0)``
 
-.. _Procid_Function:
+.. _Procid_Expression_Function:
 
 procid Function: ``procid()`` : ``procid(expr0)``
 
-.. _Threadid_Function:
+.. _Threadid_Expression_Function:
 
 threadid Function: ``threadid()`` : ``threadid(expr0)``
 
-.. _Merge_Tree_Function:
+.. _Merge_Tree_Expression_Function:
 
 merge tree Function: ``merge_tree()`` : ``merge_tree(expr0)``
 
-.. _Split_Tree_Function:
+.. _Split_Tree_Expression_Function:
 
 split tree Function: ``split_tree()`` : ``split_tree(expr0)``
 
-.. _Local_Threshold_Function:
+.. _Local_Threshold_Expression_Function:
 
 local threshold Function: ``local_threshold()`` : ``local_threshold(expr0)``
 
-.. _Python_Function:
+.. _Python_Expression_Function:
 
 python Function: ``python()`` : ``python(expr0)``
 
-.. _Mean_Curvature_Function:
+.. _Mean_Curvature_Expression_Function:
 
 mean curvature Function: ``mean_curvature()`` : ``mean_curvature(expr0)``
 
-.. _Gauss_Curvature_Function:
+.. _Gauss_Curvature_Expression_Function:
 
 gauss curvature Function: ``gauss_curvature()`` : ``gauss_curvature(expr0)``
 
-.. _Agrad_Function:
+.. _Agrad_Expression_Function:
 
 agrad Function: ``agrad()`` : ``agrad(expr0)``
 
-.. _Key_Aggregate_Function:
+.. _Key_Aggregate_Expression_Function:
 
 key aggregate Function: ``key_aggregate()`` : ``key_aggregate(expr0)``
 
-.. _Laplacian_Function:
+.. _Laplacian_Expression_Function:
 
 laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
 
-.. _Rectilinear_Laplacian_Function:
+.. _Rectilinear_Laplacian_Expression_Function:
 
 rectilinear laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_laplacian(expr0)``
 
-.. _Conn_Components_Function:
+.. _Conn_Components_Expression_Function:
 
 conn components Function: ``conn_components()`` : ``conn_components(expr0)``
 
-.. _Resrad_Function:
+.. _Resrad_Expression_Function:
 
 resrad Function: ``resrad()`` : ``resrad(expr0)``
 
-.. _Relative_Difference_Function:
+.. _Relative_Difference_Expression_Function:
 
 relative difference Function: ``relative_difference()`` : ``relative_difference(expr0)``
 
-.. _Var_Skew_Function:
+.. _Var_Skew_Expression_Function:
 
 var skew Function: ``var_skew()`` : ``var_skew(expr0)``
 
-.. _Apply_Data_Binning_Function:
+.. _Apply_Data_Binning_Expression_Function:
 
 apply data binning Function: ``apply_data_binning()`` : ``apply_data_binning(expr0)``
 
-.. _Distance_To_Best_Fit_Line_Function:
+.. _Distance_To_Best_Fit_Line_Expression_Function:
 
 distance to best fit line Function: ``distance_to_best_fit_line()`` : ``distance_to_best_fit_line(expr0)``
 
-.. _distance_to_best_fit_Line2_Function:
+.. _distance_to_best_fit_Line2_Expression_Function:
 
 distance to best fit line2 Function: ``distance_to_best_fit_line2()`` : ``distance_to_best_fit_line2(expr0)``
 
-.. _min_Function:
+.. _min_Expression_Function:
 
-.. _Geodesic_Vector_Quantize_Function:
+.. _Geodesic_Vector_Quantize_Expression_Function:
 
 geodesic vector quantize Function: ``geodesic_vector_quantize()`` : ``geodesic_vector_quantize(expr0)``
 
-.. _Cell_Constant_Function:
+.. _Cell_Constant_Expression_Function:
 
 cell constant Function: ``cell_constant()`` : ``cell_constant(expr0)``
 
-.. _Zonal_Constant_Function:
+.. _Zonal_Constant_Expression_Function:
 
 zonal constant Function: ``zonal_constant()`` : ``zonal_constant(expr0)``
 
-.. _Zone_Constant_Function:
+.. _Zone_Constant_Expression_Function:
 
 zone constant Function: ``zone_constant()`` : ``zone_constant(expr0)``
 
-.. _Point_Constant_Function:
+.. _Point_Constant_Expression_Function:
 
 point constant Function: ``point_constant()`` : ``point_constant(expr0)``
 
-.. _Nodal_Constant_Function:
+.. _Nodal_Constant_Expression_Function:
 
 nodal constant Function: ``nodal_constant()`` : ``nodal_constant(expr0)``
 
-.. _Node_Constant_Function:
+.. _Node_Constant_Expression_Function:
 
 node constant Function: ``node_constant()`` : ``node_constant(expr0)``
 
-.. _Curve_Domain_Function:
+.. _Curve_Domain_Expression_Function:
 
 curve domain Function: ``curve_domain()`` : ``curve_domain(expr0)``
 
-.. _Curve_Integrate_Function:
+.. _Curve_Integrate_Expression_Function:
 
 curve integrate Function: ``curve_integrate()`` : ``curve_integrate(expr0)``
 
-.. _Curve_Swapxy_Function:
+.. _Curve_Swapxy_Expression_Function:
 
 curve swapxy Function: ``curve_swapxy()`` : ``curve_swapxy(expr0)``
 
-.. _Curve_Function:
+.. _Curve_Expression_Function:
 
 curve Function: ``curve()`` : ``curve(expr0)``
 
-.. _Bin_Function:
+.. _Bin_Expression_Function:
 
 bin Function: ``bin()`` : ``bin(expr0)``
 
-.. _Isnan_Function:
+.. _Isnan_Expression_Function:
 
 isnan Function: ``isnan()`` : ``isnan(expr0)``
 
-.. _Q_Criterion_Function:
+.. _Q_Criterion_Expression_Function:
 
 q criterion Function: ``q_criterion()`` : ``q_criterion(expr0)``
 
-.. _Lambda2_Function:
+.. _Lambda2_Expression_Function:
 
 lambda2 Function: ``lambda2()`` : ``lambda2(expr0)``
 
@@ -1624,20 +1758,21 @@ Recenter Expression Function : ``recenter(expr, ["nodal", "zonal", "toggle"])``
     This function can be used to recenter ``expr``. The second argument is
     optional and defaults to *"toggle"* if it is not specified. A value of
     *"toggle"* for the second argument means that if ``expr`` is *node*
-    centered, it is recentered to *zone* centering and that if ``expr`` is
-    *zone* centered, it is recentered to *ndoe* centering. Note that the
+    centered, it is recentered to *zone* centering and if ``expr`` is
+    *zone* centered, it is recentered to *node* centering. Note that the
     quotes are required for the second argument. This function is typically
     used to force a specific centering among the operands of some other
     expression.
 
-Time Iteration Expressions
-""""""""""""""""""""""""""
+.. _Cylindrical_Radius_Expression_Function:
 
-Cylindrical Radius : ``cylindrical_radius(expr)``
-     The ``expr`` must be an expression that evaluates to a mesh. The cylindrical
-     radius expression converts the coordinates of the input mesh from cartesian
+Cylindrical Radius : ``cylindrical_radius(<Mesh>)``
+     Converts the coordinates of the input mesh from cartesian
      coordinates to cylindrical coordinates and returns the radius component of
      the cylindrical coordinates.
+
+Time Iteration Expressions
+""""""""""""""""""""""""""
 
 Expression Compatability Gotchas
 """"""""""""""""""""""""""""""""
