@@ -465,7 +465,7 @@ have the same view. There are three types of views in VisIt: curve, 2D, and
 window is considered to be 2D. Locking that 2D visualization window's view
 will only update other visualization windows that are also 2D and vice-versa.
 The same is true for curve and 3D views. To lock a visualization window's
-view, select the **Lock->View** option from the **Main Window's Window**
+view, select the **Lock->View** option from the **Main Window's Windows**
 menu or use the visualization menu's **Popup menu** or **Toolbar**.
 
 Locking time
@@ -476,4 +476,4 @@ windows, you can lock the visualization windows together in time so as
 you change time in one visualization window, it updates in all other
 visualization windows that are locked in time.To lock a visualization
 window in time, select the **Lock->Time** option from the
-**Main Window's Window** menu.
+**Main Window's Windows** menu.
