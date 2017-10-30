@@ -1,3 +1,5 @@
+.. _OnionPeel operator:
+
 OnionPeel operator
 ~~~~~~~~~~~~~~~~~~
 

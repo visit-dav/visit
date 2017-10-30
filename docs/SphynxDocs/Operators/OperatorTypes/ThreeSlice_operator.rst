@@ -1,3 +1,5 @@
+.. _ThreeSlice operator:
+
 ThreeSlice operator
 ~~~~~~~~~~~~~~~~~~~
 

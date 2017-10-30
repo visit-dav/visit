@@ -1,3 +1,5 @@
+.. _SphereSlice operator: 
+
 SphereSlice operator
 ~~~~~~~~~~~~~~~~~~~~
 

@@ -1,3 +1,5 @@
+.. _Transform operator:
+
 Transform operator
 ~~~~~~~~~~~~~~~~~~
 

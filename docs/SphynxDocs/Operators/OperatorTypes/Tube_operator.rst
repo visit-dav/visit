@@ -1,3 +1,5 @@
+.. _Tube operator:
+
 Tube operator
 ~~~~~~~~~~~~~
 

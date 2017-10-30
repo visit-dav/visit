@@ -1,3 +1,5 @@
+.. _Smooth operator:
+
 Smooth operator
 ~~~~~~~~~~~~~~~
 

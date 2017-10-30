@@ -1,3 +1,5 @@
+.. _Project operator:
+
 Project operator
 ~~~~~~~~~~~~~~~~
 

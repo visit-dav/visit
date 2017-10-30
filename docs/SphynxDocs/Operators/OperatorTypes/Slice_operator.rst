@@ -1,3 +1,5 @@
+.. _Slice operator:
+
 Slice operator
 ~~~~~~~~~~~~~~
 

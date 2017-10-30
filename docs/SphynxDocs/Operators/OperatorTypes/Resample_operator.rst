@@ -1,3 +1,5 @@
+.. _Resample operator:
+
 Resample operator
 ~~~~~~~~~~~~~~~~~
 

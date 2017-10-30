@@ -1,3 +1,5 @@
+.. _Merge operator:
+
 Merge operator
 ~~~~~~~~~~~~~~
 

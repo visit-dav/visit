@@ -1,3 +1,5 @@
+.. _Isovolume operator:
+
 Isovolume operator
 ~~~~~~~~~~~~~~~~~~
 

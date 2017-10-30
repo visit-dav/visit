@@ -1,3 +1,5 @@
+.. _InverseGhostZone operator:
+
 InverseGhostZone operator
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

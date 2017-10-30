@@ -1,3 +1,5 @@
+.. _Isosurface operator:
+
 Isosurface operator
 ~~~~~~~~~~~~~~~~~~~
 

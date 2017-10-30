@@ -1,3 +1,5 @@
+.. _Revolve operator:
+
 Revolve operator
 ~~~~~~~~~~~~~~~~
 
