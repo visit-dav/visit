@@ -1,3 +1,5 @@
+.. _Curve plot:
+
 Curve Plot
 ~~~~~~~~~~
 
