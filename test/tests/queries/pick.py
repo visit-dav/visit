@@ -204,6 +204,15 @@
 #    Matt Larsen, Wed Sep 6 16:23:12 PST 2017
 #    Adding tests for pick by label for mili files.
 #
+#    Alister Maguire, Tue Sep 26 14:23:09 PDT 2017
+#    Added test for pick highlight color. 
+#
+#    Alister Maguire, Mon Oct 23 10:34:28 PDT 2017
+#    Added tests for removing a list of picks. 
+#
+#    Alister Maguire, Mon Oct 30 15:54:30 PDT 2017
+#    Added test for removing a list of labeled picks. 
+#
 # ----------------------------------------------------------------------------
 
 def Pick3DTo2D():
@@ -2801,6 +2810,38 @@ def PickHighlight():
     annotAtts.axes3D.triadFlag = 1;
     SetAnnotationAttributes(annotAtts)
 
+def PickHighlightColor():
+    OpenDatabase(silo_data_path("noise.silo"))
+    annotAtts  = GetAnnotationAttributes() 
+    annotAtts.userInfoFlag = 0
+    annotAtts.axes3D.xAxis.title.visible = 0
+    annotAtts.axes3D.yAxis.title.visible = 0
+    annotAtts.axes3D.zAxis.title.visible = 0
+    annotAtts.axes3D.bboxFlag = 0;
+    annotAtts.axes3D.triadFlag = 0;
+    SetAnnotationAttributes(annotAtts)
+    AddPlot("Pseudocolor", "hardyglobal")
+    pickAtts = GetPickAttributes()
+    pickAtts.showPickHighlight  = 1
+    pickAtts.pickHighlightColor = (0, 0, 1) 
+    SetPickAttributes(pickAtts)
+    DrawPlots()
+    PickByZone(116242)
+    Test("PickHighlightColor_01")
+    DeleteAllPlots()
+    ResetPickLetter()
+    #restore the attributes
+    pickAtts.pickHighlightColor = (1, 0, 0)
+    SetPickAttributes(pickAtts)
+    annotAtts  = GetAnnotationAttributes() 
+    annotAtts.userInfoFlag = 1
+    annotAtts.axes3D.xAxis.title.visible = 1
+    annotAtts.axes3D.yAxis.title.visible = 1
+    annotAtts.axes3D.zAxis.title.visible = 1
+    annotAtts.axes3D.bboxFlag = 1;
+    annotAtts.axes3D.triadFlag = 1;
+    SetAnnotationAttributes(annotAtts)
+    
 def PickRange():
     OpenDatabase(silo_data_path("noise.silo"))
     TurnOffAllAnnotations()
@@ -2856,6 +2897,7 @@ def PickLines3D():
 
     TestText("PickLines3D", s)
 
+    ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
     
@@ -2905,6 +2947,72 @@ def PickRangeLabel():
     DeleteAllPlots()
     ResetPickLetter()
 
+def TestRemovePicks():
+    OpenDatabase(silo_data_path("noise.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "hardyglobal")
+    pickAtts = GetPickAttributes()
+    pickAtts.showPickHighlight = 1
+    SetPickAttributes(pickAtts) 
+    DrawPlots()
+
+    PickByZone(0)
+    PickByZone(5)
+    PickByZone(35)
+    PickByZone(18)
+    Test("RemovePicks_01")
+    to_remove = "A, C, D"
+    removed   = RemovePicks(to_remove)
+    Test("RemovePicks_02")
+
+    #check that the returned list matches
+    #what we expect
+    AssertTrue(removed == to_remove, True)
+    ClearPickPoints() 
+
+    PickByZone(0)
+    PickByZone(18)
+    Test("RemovePicks_03")
+    to_remove = "A, C, D, E"
+    removed   = RemovePicks(to_remove)
+    Test("RemovePicks_04")
+
+    expected = "C, D, E"
+    AssertTrue(expected == to_remove, True)
+
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+
+def TestRemoveLabeledPicks():
+    OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "bend_magnitude")
+    pickAtts = GetPickAttributes()
+    pickAtts.showPickHighlight = 1
+    SetPickAttributes(pickAtts) 
+    DrawPlots()
+
+    options = {}
+    options["element_label"] = "brick 1"
+    PickByZoneLabel(options)
+    options["element_label"] = "brick 2"
+    PickByZoneLabel(options)
+    options["element_label"] = "brick 5"
+    PickByZoneLabel(options)
+
+    Test("RemoveLabeledPicks_00")
+    to_remove = "brick 1, brick 2, brick 19"
+    removed   = RemovePicks(to_remove)
+    Test("RemoveLabeledPicks_01")
+
+    expected = "brick 1, brick 2"
+    AssertTrue(expected == removed, True)
+
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+
 def PickMain():
     Pick3DTo2D()
     Pick2D()
@@ -2936,7 +3044,10 @@ def PickMain():
     PickBox()
     PickScatter()
     PickHighlight()
+    PickHighlightColor()
     PickRange()
+    TestRemovePicks()
+    TestRemoveLabeledPicks()
     PickLines3D()
     PickZoneLabel()
     PickNodeLabel()

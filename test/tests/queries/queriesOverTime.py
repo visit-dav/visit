@@ -57,6 +57,9 @@
 #    Kathleen Biagas, Thu Jul 14 10:44:55 PDT 2011
 #    Use named arguments. 
 #
+#    Alister Maguire, Tue Oct 17 16:54:48 PDT 2017
+#    Added TestPickRangeTimeQuery
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotation():
@@ -607,6 +610,44 @@ def MultiVarTimePick():
     SetActiveWindow(1)
     DeleteAllPlots()
 
+def TestPickRangeTimeQuery():
+    OpenDatabase(silo_data_path("wave_tv.visit"))
+    SetTimeSliderState(17)
+    pickAtts = GetPickAttributes()
+    pickAtts.showPickHighlight = 1
+    SetPickAttributes(pickAtts)
+
+    AddPlot("Pseudocolor", "v")
+    DrawPlots()
+
+    #query entire time range
+    options = {}
+    options["pick_range"] = "100-105, 100, 1"
+    options["do_time"] = 1
+    output_dict = PickByZone(options)
+    s = str(output_dict)
+
+    Test("TimePickRange_00")
+    TestText("TimePickRangeDict_00",s)
+    ClearPickPoints()
+
+    #query specific time range and stride
+    options = {}
+    options["pick_range"] = "100-105, 100, 1"
+    options["do_time"] = 1
+    options["start_time"] = 10
+    options["end_time"] = 14
+    options["stride"] = 2
+    output_dict = PickByNode(options)
+    s = str(output_dict)
+
+    Test("TimePickRange_01")
+    TestText("TimePickRangeDict_01",s)
+
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+   
 def TimeQueryMain():
     TestAllTimeQueries()
     TestFilledBoundary()
@@ -618,6 +659,7 @@ def TimeQueryMain():
     TestQueryAfterQueryOverTime()
     TestMili()
     MultiVarTimePick()
+    TestPickRangeTimeQuery()
 
 # main
 InitAnnotation()
