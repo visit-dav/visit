@@ -26,10 +26,9 @@ single axis of rotation.
    Plane tool with sliced plot
 
 You can use the plane tool to set the attributes for certain VisIt plots and
-operators. The Slice operator, for example, can update its plane equation
+operators. The :ref:`Slice operator`, for example, can update its plane equation
 from the plane tool's plane equation. If a plot has a Slice operator applied
 to it, the plane tool is initialized with that operator's slice plane when
 it is first enabled. As the plane tool is repositioned and reoriented, the
 plane tool's plane equation is given to the operator and the sliced plot is
-recalculated. You can also use the plane tool with the Streamline plot to
-modify the source plane that it uses for streamline seed points.
+recalculated. 

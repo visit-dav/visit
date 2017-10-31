@@ -3,7 +3,7 @@
 Line Tool
 ---------
 
-It is common to create Curve plots when analysing a simulation database.
+It is common to create Curve plots when analyzing a simulation database.
 Curve plots are created using VisIt's lineout mechanism where reference
 lines are drawn in a visualization window and Curve plots are created in
 another visualization window using the path described by the reference
@@ -47,8 +47,8 @@ example of the line tool in 3D is shown in :numref:`Figure %s <line2>`.
    Line tool in 3D
 
 The line tool can be used to set the attributes for certain VisIt operators
-such as VisIt's Lineout operator. If a plot has a Lineout operator applied
-to it, the line tool is initialized with that operator's endpoints when it
-is first enabled. As the line tool is repositioned and reoriented, the line
-tool's line endpoints are given to the Lineout operator and and Curve plots
+such as VisIt's :ref:`Lineout operator`. If a plot has a Lineout operator 
+applied to it, the line tool is initialized with that operator's endpoints 
+when it is first enabled. As the line tool is repositioned and reoriented, the 
+line tool's line endpoints are given to the Lineout operator and and Curve plots
 that are fed by the Lineout operator are recalculated.

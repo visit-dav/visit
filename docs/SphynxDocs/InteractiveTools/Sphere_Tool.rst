@@ -21,7 +21,6 @@ sphere or move the hot point away from the origin to enlarge the sphere.
 
 You can use the sphere tool to set the attributes for certain VisIt plots
 and operators. The sphere tool is commonly used to set the attributes for
-the Sphere slice operator. After applying a Sphere slice operator to a
+the :ref:`SphereSlice operator`. After applying a SphereSlice operator to a
 plot, enable the Sphere tool to interactively position the sphere that
-slices the plot. You can also use the sphere tool to set the seed points
-for the Streamline plot.
+slices the plot. 

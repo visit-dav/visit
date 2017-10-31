@@ -5,14 +5,14 @@ Box Tool
 
 The box tool, which is shown in :numref:`Figure %s <boxtool1>`, allows you
 to move an axis-aligned box around in 3D space. You can use the box tool
-with the Box and Clip operators or the Streamline plot to interactively
-restrict plots to a certain volume. The box tool is drawn as a box with
-five hotpoints that allow you to move the box in 3D space or resize it in
-any or all dimensions.
+with the Box and Clip operators to interactively restrict plots to a certain 
+volume. The box tool is drawn as a box with five hotpoints that allow you to 
+move the box in 3D space or resize it in any or all dimensions.
 
 .. _boxtool1:
 
 .. figure:: images/boxtool1.png
+   :width: 60%
 
    Box tool with a plot restricted to the box
 
