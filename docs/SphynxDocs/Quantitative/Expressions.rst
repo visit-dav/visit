@@ -1437,38 +1437,91 @@ Connectivity-Based CMFE Function: ``conn_cmfe()`` : ``conn_cmfe(<Donor Variable>
 
 .. _Curve_Cmfe_Expression_Function:
 
-curve cmfe Function: ``curve_cmfe()`` : ``curve_cmfe(expr0)``
-    No description available.
-
-.. _Eval_Transform_Expression_Function:
-
-eval transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
-    No description available.
-
-.. _Symm_Transform_Expression_Function:
-
-symm transform Function: ``symm_transform()`` : ``symm_transform(expr0)``
-    No description available.
-
-.. _Eval_Plane_Expression_Function:
-
-eval plane Function: ``eval_plane()`` : ``eval_plane(expr0)``
-    No description available.
-
-.. _Symm_Plane_Expression_Function:
-
-symm plane Function: ``symm_plane()`` : ``symm_plane(expr0)``
-    No description available.
-
-.. _Eval_Point_Expression_Function:
-
-eval point Function: ``eval_point()`` : ``eval_point(expr0)``
-    No description available.
+Curve CMFE Function: ``curve_cmfe()`` : ``curve_cmfe(<Donor Curve>,<Target Curve>)``
+    The curve-based CMFE performs the same function as
+    :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>` except for curves. The
+    arguments specify the ``Target Curve`` and ``Donor Curve`` and the same
+    syntax rules apply for specifying the ``Donor Curve`` as for the
+    ``Donor Variable`` in :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>`.
+    However, if curves represent different spatial extents or different
+    numbers of samples or sample spacing, no attempt is made to unify them.
 
 .. _Symm_Point_Expression_Function:
 
-symm point Function: ``symm_point()`` : ``symm_point(expr0)``
-    No description available.
+Symm Point Function: ``symm_point()`` : ``symm_point(<Scalar>,[Px,Py,Pz])``
+    Return a new *scalar* variable which is the symmetric difference of
+    ``<Scalar>`` about the point ``[Px, Py, Pz]``.  If the input ``<Scalar>``
+    is indeed symmetric about the point, the result will be a constant
+    valued variable of zero.
+
+.. _Symm_Plane_Expression_Function:
+
+Symm Plane Function: ``symm_plane()`` : ``symm_plane(<Scalar>,[Nx,Ny,Nz,Px,Py,Pz])``
+    Return a new *scalar* variable which is the symmetric difference of
+    ``<Scalar>`` about the plane defined by the point ``[Px, Py, Pz]`` and
+    normal ``[Nx, Ny, Nz]``.  In 2D, the z arguments are still required but
+    ignored. If the input ``<Scalar>`` is indeed symmetric about the plane,
+    the result will be a constant valued variable of zero.
+
+.. _Symm_Transform_Expression_Function:
+
+Symm Transform Function: ``symm_transform()`` : ``symm_transform(<Scalar>,[T00,T01,T02,...,T22])``
+    Return a new *scalar* variable which is the symmetric difference of
+    ``<Scalar>`` where each point, ``[Px,Py,Pz]``, in the mesh supporting
+    ``<Scalar>`` is transformed by the transform coefficients,
+    ``[T00, T01,...,T22]`` as shown below. If the input ``<Scalar>`` is
+    indeed symmetric through the transform, the result will be a constant valued
+    variable of zero.
+
+.. math::
+
+    \begin{bmatrix}
+        T_{00} & T_{01} & T_{02} \\
+        T_{10} & T_{11} & T_{12} \\
+        T_{20} & T_{21} & T_{22}
+    \end{bmatrix}
+    *
+    \begin{bmatrix}
+        P_{x} \\
+        P_{y} \\
+        P_{z}
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        T_{00}*P_{x}+T_{01}*P_{y}+T_{02}*P_{z} \\
+        T_{10}*P_{x}+T_{11}*P_{y}+T_{12}*P_{z} \\
+        T_{20}*P_{x}+T_{21}*P_{y}+T_{22}*P_{z}
+    \end{bmatrix}
+
+.. _Eval_Point_Expression_Function:
+
+Eval Point Function: ``eval_point()`` : ``eval_point(expr0)``
+    Performs only the point-symmetric mapping half of the
+    :ref:`symm_point() <Symm_Point_Expression_Function>` operation. That is, it
+    computes a new *scalar* variable which is the input ``<Scalar>`` mapped
+    through the symmetric point. It does not then take the *difference* between
+    with the input ``<Scalar>`` as
+    :ref:`symm_point() <Symm_Point_Expression_Function>` does.
+
+.. _Eval_Plane_Expression_Function:
+
+Eval Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Px,Py,Pz])``
+    Performs only the plane-symmetric mapping half of the
+    :ref:`symm_plane() <Symm_Plane_Expression_Function>` operation. That is, it
+    computes a new *scalar* variable which is the input ``<Scalar>`` mapped
+    through the symmetric plane. It does not then take the *difference* between
+    with the input ``<Scalar>`` as
+    :ref:`symm_plane() <Symm_Plane_Expression_Function>` does.
+
+.. _Eval_Transform_Expression_Function:
+
+Eval Transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
+    Performs only the transform-symmetric mapping half of the
+    :ref:`symm_transform() <Symm_Transform_Expression_Function>` operation.
+    That is, it computes a new *scalar* variable which is the input
+    ``<Scalar>`` mapped through the transform. It does not then take the
+    *difference* between with the input ``<Scalar>`` as
+    :ref:`symm_transform() <Symm_Transform_Expression_Function>` does.
 
 .. _Conservative_Smoothing_Expression_Function:
 
@@ -1477,13 +1530,22 @@ conservative smoothing Function: ``conservative_smoothing()`` : ``conservative_s
 
 .. _Mean_Filter_Expression_Function:
 
-mean filter Function: ``mean_filter()`` : ``mean_filter(expr0)``
-    No description available.
+Mean Filter Function: ``mean_filter()`` : ``mean_filter(<Scalar>,<Int>)``
+    Return a filtered version of the input *scalar* variable using the
+    mean filter of width specified by ``<Int>`` argument. By default, the
+    filter width is 3 (3x3). The input scalar must be defined on a structured
+    mesh.
+
+.. danger::
+    It is not clear how filtering is handled across different domain
+    boundaries.
 
 .. _Median_Filter_Expression_Function:
 
-median filter Function: ``median_filter()`` : ``median_filter(expr0)``
-    No description available.
+Median Filter Function: ``median_filter()`` : ``median_filter(expr0)``
+    Return a filtered version of the input *scalar* variable using a
+    3x3 median filter. The input scalar must be defined on a structured
+    mesh. 
 
 .. _Abel_Inversion_Expression_Function:
 
@@ -1492,23 +1554,30 @@ abel inversion Function: ``abel_inversion()`` : ``abel_inversion(expr0)``
 
 .. _Time_Expression_Function:
 
-time Function: ``time()`` : ``time(expr0)``
-    No description available.
+Time Function: ``time()`` : ``time(expr0)``
+    Return a *constant scalar* variable which is everywhere the time 
+    of the associated input argument within its time-series.
 
 .. _Cycle_Expression_Function:
 
-cycle Function: ``cycle()`` : ``cycle(expr0)``
-    No description available.
+Cycle Function: ``cycle()`` : ``cycle(expr0)``
+    Return a *constant scalar* variable which is everywhere the cycle
+    of the associated input argument within its time-series.
 
 .. _Timestep_Expression_Function:
 
-timestep Function: ``timestep()`` : ``timestep(expr0)``
-    No description available.
+Timestep Function: ``timestep()`` : ``timestep(expr0)``
+    Return a *constant scalar* variable which is everywhere the index
+    of the associated input argument within its time-series.
 
 .. _Average_Over_Time_Expression_Function:
 
-average over time Function: ``average_over_time()`` : ``average_over_time(expr0)``
-    No description available.
+Average Over Time Function: ``average_over_time()`` : ``average_over_time(<Scalar>,<Start>,<Stop>,<Stride>)``
+    Return a new *scalar* variable in which each zonal or nodal value is the
+    average over the times indicated by ``Start``, ``Stop`` and ``Stride``.
+
+.. danger::
+    How does this work with changing topology?
 
 .. _Min_Over_Time_Expression_Function:
 
@@ -1607,13 +1676,24 @@ value at maximum Function: ``value_at_maximum()`` : ``value_at_maximum(expr0)``
 
 .. _Enumerate_Expression_Function:
 
-enumerate Function: ``enumerate()`` : ``enumerate(expr0)``
-    No description available.
+Enumerate Function: ``enumerate()`` : ``enumerate(<Int-Scalar>,<[Int-List]>)``
+    Map an integer valued *scalar* variable to a new set of integer values.
+    If *K* is the maximum value in the ``Int-Scalar`` input argument,
+    the ``[Int-List]`` argument must be a square bracketed list of *K+1*
+    integer values. Value *i* in the ``Int-Scalar`` input argument is used to
+    index the *i-th* entry in the ``[Int-List]`` to produce mapped value.
 
 .. _Map_Expression_Function:
 
-map Function: ``map()`` : ``map(expr0)``
-    No description available.
+Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-List]>)``
+    A more general form of :ref:`enumerate() <Enumerate_Expression_Function>`
+    which supports non-integer input *scalar* variables and input and output
+    maps which do not include all values in the input *scalar* variable.
+    The ``[Input-Value-List]`` and ``[Output-Value-List]`` must have the same
+    number of entries. A value in the input *scalar* variable that matches
+    the *ith* entry in the ``[Input-Value-List]`` is mapped to the new value
+    at the *ith* entry in the ``[Output-Value-List]``. Values that do not
+    match any entry in the ``[Input-Value-List]`` are mapped to ``-1``.
 
 .. _Array_Componentwise_Division_Expression_Function:
 
@@ -1642,12 +1722,22 @@ localized compactness Function: ``localized_compactness()`` : ``localized_compac
 
 .. _Resample_Expression_Function:
 
-resample Function: ``resample()`` : ``resample(expr0)``
-    No description available.
+Resample Function: ``resample()`` : ``resample(<Var>,Nx,Ny,Nz)``
+    Resample ``<Var>`` onto a regular grid defined by taking the
+    X, Y and for 3D, Z spatial extents of the mesh ``<Var>`` is defined on nad
+    taking ``Nx`` samples over the spatial extents in X, and
+    taking ``Ny`` samples over the spatial extents in Y, and, for 3D,
+    taking ``Nz`` samples over the spatial extents in Z.
+    Any samples that *miss* the mesh ``<Var>`` is defined on are assigned
+    the value *-FLT_MAX*. For 2D, the ``Nz`` argument is still required but
+    ignored.
+
+.. danger::
+    How does this work in parallel?
 
 .. _Displacement_Expression_Function:
 
-displacement Function: ``displacement()`` : ``displacement(expr0)``
+Displacement Function: ``displacement()`` : ``displacement(expr0)``
     No description available.
 
 .. _Degree_Expression_Function:
