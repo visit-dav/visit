@@ -113,18 +113,22 @@ function bv_python_alt_python_dir
     PYTHON_CONFIG_COMMAND="$PYTHON_ALT_DIR/bin/python-config"
     PYTHON_FILE=""
     python_set_vars_helper #set vars..
-
 }
 
 
 function bv_python_depends_on
 {
+    local depends_on=""
+
     if [[ "$DO_OPENSSL" == "yes" ]] ; then
-        echo "openssl"
-    else
-        echo ""
+        depends_on="openssl"
     fi
 
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="$depends_on zlib"
+    fi
+
+    echo $depends_on
 }
 
 function bv_python_info
@@ -359,8 +363,15 @@ function build_python
     if [[ "$DO_OPENSSL" == "yes" ]]; then
         OPENSSL_INCLUDE="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/include"
         OPENSSL_LIB="$VISITDIR/openssl/$OPENSSL_VERSION/$VISITARCH/lib"
-        PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L ${OPENSSL_LIB}"
-        PYTHON_CPPFLAGS="-I ${OPENSSL_INCLUDE}"
+        PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${OPENSSL_LIB}"
+        PYTHON_CPPFLAGS="${PTYHON_CPPFLAGS} -I${OPENSSL_INCLUDE}"
+    fi
+
+    if [[ "$DO_ZLIB" == "yes" ]]; then
+        PY_ZLIB_INCLUDE="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/include"
+        PY_ZLIB_LIB="$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH/lib"
+        PYTHON_LDFLAGS="${PYTHON_LDFLAGS} -L${PY_ZLIB_LIB}"
+        PYTHON_CPPFLAGS="${PYTHON_CPPFLAGS} -I${PY_ZLIB_INCLUDE}"
     fi
 
     if [[ "$OPSYS" == "AIX" ]]; then
