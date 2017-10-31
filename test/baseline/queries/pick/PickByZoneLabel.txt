@@ -1,5 +1,5 @@
 
-A:  sslide14ball_l.plt.mili  timestep 0
+brick 19:  sslide14ball_l.plt.mili  timestep 0
 mesh1 
 Point: <2.24167, 0.75, 0.245>
 Zone:  106
