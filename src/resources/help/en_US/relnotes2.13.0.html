@@ -113,6 +113,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Modified build_visit to build Qt 5 by default. The option "--qt5" has been removed, the option "--qt4" has been added and "--qt" now builds Qt 5.</li>
   <li>Updated build_visit to build PySide 2 when specifying --pyside when using Qt 5.</li>
   <li>Updated build_visit to build CMake version 3.8.1.</li>
+  <li>Updated build_visit to properly build numpy and seedme on systems without zlib or ssl. If zlib is missing you should add "--zlib" to the build_visit command line. If ssl is missing you should add "--openssl" to the build_visit command line.</li>
   <li>Removed the gui option from build_visit.</li>
 </ul>
 
