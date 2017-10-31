@@ -4600,6 +4600,49 @@ visit_ClearPickPoints(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_RemovePicks
+//
+// Purpose:
+//   Tells the viewer to remove a list of pick points. 
+//
+// Notes:
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Oct 16 15:41:23 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_RemovePicks(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *cLabels;
+    if(!PyArg_ParseTuple(args, "s", &cLabels))
+        return NULL;
+
+    std::string sLabels(cLabels);
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(true);
+
+    MUTEX_LOCK();
+        GetViewerMethods()->RemovePicks(sLabels);
+        GetViewerMethods()->RedrawWindow();
+    MUTEX_UNLOCK();
+
+    if (!suppressQueryOutputState)
+        ToggleSuppressQueryOutput_NoLogging(false);
+
+    std::string removedPicks = 
+        GetViewerState()->GetPickAttributes()->GetRemovedPicks();
+
+    return PyString_FromString(removedPicks.c_str());
+}
+
+// ****************************************************************************
 // Function: visit_ClearReferenceLines
 //
 // Purpose:
@@ -17334,6 +17377,8 @@ AddProxyMethods()
                                                          visit_ClearCache_doc);
     AddMethod("ClearPickPoints", visit_ClearPickPoints,
                                                     visit_ClearPickPoints_doc);
+    AddMethod("RemovePicks", visit_RemovePicks,
+                                                    visit_RemovePicks_doc);
     AddMethod("ClearReferenceLines", visit_ClearReferenceLines,
                                                 visit_ClearReferenceLines_doc);
     AddMethod("ClearViewKeyframes", visit_ClearViewKeyframes,

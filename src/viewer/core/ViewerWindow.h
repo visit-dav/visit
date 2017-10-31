@@ -485,6 +485,9 @@ class ViewerPlotList;
 //    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
 //    Changed the return type of GetNumberOfCells to long long
 //
+//    Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
+//    Added RemovePicks.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -634,6 +637,7 @@ public:
     void SetPickFunction(void (*func)(void *, bool, const PickAttributes *),
                          void *data, bool);
     void ClearPickPoints();
+    void RemovePicks(std::string);
     void RenamePickLabel(const std::string &, const std::string &);
 
     void ValidateQuery(const PickAttributes *, const Line *);

@@ -236,6 +236,9 @@ void PickAttributes::Init()
     floatFormat = "%g";
     timePreserveCoord = true;
     timeCurveType = Single_Y_Axis;
+    pickHighlightColor[0] = 1;
+    pickHighlightColor[1] = 0;
+    pickHighlightColor[2] = 0;
 
     PickAttributes::SelectAll();
 }
@@ -365,6 +368,11 @@ void PickAttributes::Copy(const PickAttributes &obj)
     timeCurveType = obj.timeCurveType;
     timeOptions = obj.timeOptions;
     plotRequested = obj.plotRequested;
+    pickHighlightColor[0] = obj.pickHighlightColor[0];
+    pickHighlightColor[1] = obj.pickHighlightColor[1];
+    pickHighlightColor[2] = obj.pickHighlightColor[2];
+
+    removedPicks = obj.removedPicks;
 
     PickAttributes::SelectAll();
 }
@@ -559,6 +567,11 @@ PickAttributes::operator == (const PickAttributes &obj) const
         varInfo_equal = (varInfo1 == varInfo2);
     }
 
+    // Compare the pickHighlightColor arrays.
+    bool pickHighlightColor_equal = true;
+    for(int i = 0; i < 3 && pickHighlightColor_equal; ++i)
+        pickHighlightColor_equal = (pickHighlightColor[i] == obj.pickHighlightColor[i]);
+
     // Create the return value
     return ((variables == obj.variables) &&
             (showIncidentElements == obj.showIncidentElements) &&
@@ -636,7 +649,9 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (timePreserveCoord == obj.timePreserveCoord) &&
             (timeCurveType == obj.timeCurveType) &&
             (timeOptions == obj.timeOptions) &&
-            (plotRequested == obj.plotRequested));
+            (plotRequested == obj.plotRequested) &&
+            pickHighlightColor_equal &&
+            (removedPicks == obj.removedPicks));
 }
 
 // ****************************************************************************
@@ -857,6 +872,8 @@ PickAttributes::SelectAll()
     Select(ID_timeCurveType,               (void *)&timeCurveType);
     Select(ID_timeOptions,                 (void *)&timeOptions);
     Select(ID_plotRequested,               (void *)&plotRequested);
+    Select(ID_pickHighlightColor,          (void *)pickHighlightColor, 3);
+    Select(ID_removedPicks,                (void *)&removedPicks);
 }
 
 // ****************************************************************************
@@ -1092,6 +1109,13 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     // timeCurveType is not persistent and should not be saved.
     // timeOptions is not persistent and should not be saved.
     // plotRequested is not persistent and should not be saved.
+    // pickHighlightColor is not persistent and should not be saved.
+    if(completeSave || !FieldsEqual(ID_removedPicks, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("removedPicks", removedPicks));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1226,6 +1250,9 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     // timeCurveType is not persistent and was not saved.
     // timeOptions is not persistent and was not saved.
     // plotRequested is not persistent and was not saved.
+    // pickHighlightColor is not persistent and was not saved.
+    if((node = searchNode->GetNode("removedPicks")) != 0)
+        SetRemovedPicks(node->AsString());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1772,6 +1799,22 @@ PickAttributes::SetPlotRequested(const MapNode &plotRequested_)
 {
     plotRequested = plotRequested_;
     Select(ID_plotRequested, (void *)&plotRequested);
+}
+
+void
+PickAttributes::SetPickHighlightColor(const float *pickHighlightColor_)
+{
+    pickHighlightColor[0] = pickHighlightColor_[0];
+    pickHighlightColor[1] = pickHighlightColor_[1];
+    pickHighlightColor[2] = pickHighlightColor_[2];
+    Select(ID_pickHighlightColor, (void *)pickHighlightColor, 3);
+}
+
+void
+PickAttributes::SetRemovedPicks(const std::string &removedPicks_)
+{
+    removedPicks = removedPicks_;
+    Select(ID_removedPicks, (void *)&removedPicks);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2432,6 +2475,30 @@ PickAttributes::GetPlotRequested()
     return plotRequested;
 }
 
+const float *
+PickAttributes::GetPickHighlightColor() const
+{
+    return pickHighlightColor;
+}
+
+float *
+PickAttributes::GetPickHighlightColor()
+{
+    return pickHighlightColor;
+}
+
+const std::string &
+PickAttributes::GetRemovedPicks() const
+{
+    return removedPicks;
+}
+
+std::string &
+PickAttributes::GetRemovedPicks()
+{
+    return removedPicks;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2626,6 +2693,18 @@ void
 PickAttributes::SelectPlotRequested()
 {
     Select(ID_plotRequested, (void *)&plotRequested);
+}
+
+void
+PickAttributes::SelectPickHighlightColor()
+{
+    Select(ID_pickHighlightColor, (void *)pickHighlightColor, 3);
+}
+
+void
+PickAttributes::SelectRemovedPicks()
+{
+    Select(ID_removedPicks, (void *)&removedPicks);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2926,6 +3005,8 @@ PickAttributes::GetFieldName(int index) const
     case ID_timeCurveType:               return "timeCurveType";
     case ID_timeOptions:                 return "timeOptions";
     case ID_plotRequested:               return "plotRequested";
+    case ID_pickHighlightColor:          return "pickHighlightColor";
+    case ID_removedPicks:                return "removedPicks";
     default:  return "invalid index";
     }
 }
@@ -3027,6 +3108,8 @@ PickAttributes::GetFieldType(int index) const
     case ID_timeCurveType:               return FieldType_enum;
     case ID_timeOptions:                 return FieldType_MapNode;
     case ID_plotRequested:               return FieldType_MapNode;
+    case ID_pickHighlightColor:          return FieldType_floatArray;
+    case ID_removedPicks:                return FieldType_string;
     default:  return FieldType_unknown;
     }
 }
@@ -3128,6 +3211,8 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_timeCurveType:               return "enum";
     case ID_timeOptions:                 return "MapNode";
     case ID_plotRequested:               return "MapNode";
+    case ID_pickHighlightColor:          return "floatArray";
+    case ID_removedPicks:                return "string";
     default:  return "invalid index";
     }
 }
@@ -3571,6 +3656,21 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_plotRequested:
         {  // new scope
         retval = (plotRequested == obj.plotRequested);
+        }
+        break;
+    case ID_pickHighlightColor:
+        {  // new scope
+        // Compare the pickHighlightColor arrays.
+        bool pickHighlightColor_equal = true;
+        for(int i = 0; i < 3 && pickHighlightColor_equal; ++i)
+            pickHighlightColor_equal = (pickHighlightColor[i] == obj.pickHighlightColor[i]);
+
+        retval = pickHighlightColor_equal;
+        }
+        break;
+    case ID_removedPicks:
+        {  // new scope
+        retval = (removedPicks == obj.removedPicks);
         }
         break;
     default: retval = false;

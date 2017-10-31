@@ -238,6 +238,7 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::ClearCacheForAllEnginesRPC,    new ClearCacheForAllEnginesAction(win));
     mgr->SetLogic(ViewerRPC::ClearCacheRPC,                 new ClearCacheAction(win));
     mgr->SetLogic(ViewerRPC::ClearPickPointsRPC,            new ClearPickPointsAction(win));
+    mgr->SetLogic(ViewerRPC::RemovePicksRPC,                new RemovePicksAction(win));
     mgr->SetLogic(ViewerRPC::ClearRefLinesRPC,              new ClearReferenceLinesAction(win));
     mgr->SetLogic(ViewerRPC::ClearViewKeyframesRPC,         new ClearViewKeyframesAction(win));
     mgr->SetLogic(ViewerRPC::ClearWindowRPC,                new ClearWindowAction(win));

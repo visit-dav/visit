@@ -185,6 +185,13 @@ public:
 //   Kathleen Biagas, Fri Mar 20 16:07:53 PDT 2015
 //   Added slot 'resetPickLetter'.
 //
+//   Alister Maguire, Wed Sep 27 10:11:04 PDT 2017
+//   Added slot 'setHighlightColor'. 
+//
+//   Alister Maguire, Thu Sep 28 15:06:20 PDT 2017
+//   Added 'setHighlightColorButton' as private member
+//   so that it can be hid from view when not needed. 
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -248,6 +255,7 @@ private slots:
     void timeCurveTypeActivated(int);
     void clearPicks();
     void resetPickLetter();
+    void setHighlightColor();
     void redoPickClicked();
     void redoPickWithSpreadsheetClicked();
     void optionsTabSelected(int);
@@ -282,6 +290,8 @@ private:
     QLineEdit          *floatFormatLineEdit;
 
     QTabWidget         *optionsTabWidget;
+  
+    QPushButton        *setHighlightColorButton;
 
     // Display Options Tab widgets
     QWidget            *pageDisplay;

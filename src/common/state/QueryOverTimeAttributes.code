@@ -158,7 +158,6 @@ PyQueryOverTimeAttributes_GetLogString()
     return s;
 }
 
-
 Function: PyQueryOverTimeAttributes_CallLogRoutine
 Declaration: static void PyQueryOverTimeAttributes_CallLogRoutine(Subject *subj, void *data)
 Definition:

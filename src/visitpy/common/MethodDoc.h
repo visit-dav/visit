@@ -49,6 +49,7 @@ extern const char *visit_ChooseCenterOfRotation_doc;
 extern const char *visit_ClearCache_doc;
 extern const char *visit_ClearMacros_doc; 
 extern const char *visit_ClearPickPoints_doc;
+extern const char *visit_RemovePicks_doc;
 extern const char *visit_ClearReferenceLines_doc;
 extern const char *visit_ClearViewKeyframes_doc;
 extern const char *visit_Clear_doc;

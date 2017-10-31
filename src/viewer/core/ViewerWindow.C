@@ -6790,6 +6790,51 @@ ViewerWindow::ClearPickPoints()
 
 
 // ****************************************************************************
+//  Method: ViewerWindow::RemovePicks
+//
+//  Purpose: 
+//    Remove a list of picks from the window. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Oct 16 15:41:23 PDT 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerWindow::RemovePicks(const std::string sLabels)
+{
+    std::vector< std::string > vLabels;
+    std::string                label;
+    std::stringstream          ss(sLabels); 
+    
+    // Remove leading and trailing whitespace. 
+    while (getline(ss, label, ','))
+    {
+        size_t start = label.find_first_not_of(" ");
+        size_t end   = label.find_last_not_of(" ");
+        label        = label.substr(start, end-start+1);
+        vLabels.push_back(label);
+    }
+    
+    std::string removedPicks = visWindow->RemovePicks(vLabels);
+    visWindow->RemovePicks(vLabels);
+    GetViewerState()->GetPickAttributes()->SetRemovedPicks(removedPicks);
+    ViewerQueryManager::Instance()->ClearPickPoints();
+
+    // Tell each plot in the window that the pick points have been cleared.
+    // This is important for the spreadsheet plot.
+    PickAttributes pickAtts;
+    pickAtts.SetClearWindow(true);
+    ViewerPlotList *plist = GetPlotList();
+    int numPlots = plist->GetNumPlots();
+    for (int i = 0 ; i < numPlots ; i++)
+        plist->GetPlot(i)->SetPlotAtts(&pickAtts);
+}
+
+
+// ****************************************************************************
 // Method: ViewerWindow::IsTheSameWindow
 //
 // Purpose:

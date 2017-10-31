@@ -116,6 +116,9 @@
 //    Brad Whitlock, Fri Aug 27 11:28:26 PDT 2010
 //    Add an id argument to UpdateQuery.
 //
+//    Alister Maguire, Mon Oct 16 15:32:59 PDT 2017
+//    Added RemovePicks. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinQuery : public VisWinColleague
@@ -139,6 +142,7 @@ class VISWINDOW_API VisWinQuery : public VisWinColleague
 
     void                          Pick(const VisualCueInfo *);
     void                          ClearPickPoints(const int which = 0);
+    std::string                   RemovePicks(const std::vector< std::string >);
 
     virtual void                  FullFrameOn(const double, const int);
     virtual void                  FullFrameOff(void);

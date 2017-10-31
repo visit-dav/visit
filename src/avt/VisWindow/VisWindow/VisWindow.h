@@ -464,6 +464,9 @@ class VisitInteractor;
 //    Added set/get methods for compositer thread and blocking
 //    params
 //
+//    Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
+//    Added RemovePicks.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -653,6 +656,7 @@ public:
 
     void                 UpdateView();
     void                 ClearPickPoints();
+    std::string          RemovePicks(std::vector< std::string >);
     void                 ClearRefLines();
 
     void                 QueryIsValid(const VisualCueInfo *, 

@@ -1214,6 +1214,11 @@ static std::string log_ClearPickPointsRPC(ViewerRPC *rpc)
     return visitmodule() + std::string("ClearPickPoints()\n");
 }
 
+static std::string log_RemovePicksRPC(ViewerRPC *rpc)
+{
+    return visitmodule() + std::string("RemovePicks()\n");
+}
+
 static std::string log_SetWindowModeRPC(ViewerRPC *rpc)
 {
     const char *wmodes[] = {"navigate", "zoom", "zone pick", "node pick", 
@@ -2288,6 +2293,9 @@ LogRPCs(Subject *subj, void *)
         break;
     case ViewerRPC::ClearPickPointsRPC:
         str = log_ClearPickPointsRPC(rpc);
+        break;
+    case ViewerRPC::RemovePicksRPC:
+        str = log_RemovePicksRPC(rpc);
         break;
     case ViewerRPC::SetWindowModeRPC:
         str = log_SetWindowModeRPC(rpc);

@@ -54,6 +54,7 @@
 #include <QSpinBox>
 #include <QStringList>
 #include <QWidget>
+#include <QColorDialog>
 
 #include <QvisTimeQueryOptionsWidget.h>
 #include <QvisVariableButton.h>
@@ -329,6 +330,9 @@ QvisPickWindow::~QvisPickWindow()
 //   Kathleen Biagas, Fri Mar 20 16:07:53 PDT 2015
 //   Added button for resetting pick letter.
 //
+//   Alister Maguire, Wed Sep 27 10:11:04 PDT 2017
+//   Added a button for changing the pick highlights color. 
+//
 // ****************************************************************************
 
 void
@@ -425,6 +429,13 @@ QvisPickWindow::CreateWindowContents()
     connect(resetLetterButton, SIGNAL(clicked()),
             this, SLOT(resetPickLetter()));
     gLayout->addWidget(resetLetterButton, 5, 2, 1, 2);
+
+    setHighlightColorButton = new QPushButton(tr("Set Highlight Color"), 
+                                             central);
+    connect(setHighlightColorButton, SIGNAL(clicked()),
+            this, SLOT(setHighlightColor()));
+    gLayout->addWidget(setHighlightColorButton, 5, 0, 1, 2);
+    setHighlightColorButton->setEnabled(false);
   
     optionsTabWidget = new QTabWidget(central);
     connect(optionsTabWidget, SIGNAL(currentChanged(int)),
@@ -502,7 +513,6 @@ QvisPickWindow::CreateDisplayOptionsTab()
     connect(displayPickHighlight, SIGNAL(toggled(bool)),
             this, SLOT(displayPickHighlightToggled(bool)));
     dLayout->addWidget(displayPickHighlight, 4, 2, 1, 2);
-
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(pageDisplay);
@@ -733,6 +743,10 @@ QvisPickWindow::UpdateWindow(bool doAll)
 //   Kathleen Biagas, Wed Jan 25 16:03:59 MST 2012
 //   Set enabled state of redoPickButton when 'doTimeCurve' is selected.
 //
+//   Alister Maguire, Thu Sep 28 15:06:20 PDT 2017
+//   If 'show pick highlights' is enabled, show the color
+//   setting button. Otherwise, hide it.  
+//
 // ****************************************************************************
 
 void
@@ -905,7 +919,12 @@ QvisPickWindow::UpdateAll(bool doAll)
     if (pickAtts->IsSelected(PickAttributes::ID_showPickHighlight) || doAll)
     {
         displayPickHighlight->blockSignals(true);
-        displayPickHighlight->setChecked(pickAtts->GetShowPickHighlight());
+        bool showHighlight = pickAtts->GetShowPickHighlight();
+        if (showHighlight)
+            setHighlightColorButton->setEnabled(true);
+        else
+            setHighlightColorButton->setEnabled(false);
+        displayPickHighlight->setChecked(showHighlight);
         displayPickHighlight->blockSignals(false);
     }
 
@@ -2174,6 +2193,39 @@ void
 QvisPickWindow::resetPickLetter()
 {
     GetViewerMethods()->ResetPickLetter();
+}
+
+
+// ****************************************************************************
+// Method: QvisPickWindow::setHighlightColor
+//
+// Purpose:
+//    This is a Qt slot function that opens up a color picker
+//    and allows the user to change the color of the pick
+//    highlights. 
+//
+// Programmer: Alister Maguire
+// Creation: Sep 27, 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPickWindow::setHighlightColor()
+{
+    QColor color = QColorDialog::getColor(Qt::red, this);
+    float  fRGB[3];
+    int    iRGB[3];
+    iRGB[0] = color.red();
+    iRGB[1] = color.green();
+    iRGB[2] = color.blue();
+    
+    //Convert the 0 -> 255 range to 0.0 -> 1.0
+    for (int j = 0; j < 3; ++j)
+        fRGB[j] = (float)iRGB[j]/255.0;
+
+    pickAtts->SetPickHighlightColor(fRGB);
 }
 
 

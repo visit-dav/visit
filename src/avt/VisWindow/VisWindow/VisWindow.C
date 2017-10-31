@@ -5189,6 +5189,28 @@ VisWindow::ClearPickPoints()
 
 
 // ****************************************************************************
+// Method: VisWindow::RemovePicks
+//
+// Purpose: 
+//   Tell the plots to remove a list of pick points. 
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Oct 16 15:41:23 PDT 2017
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+std::string
+VisWindow::RemovePicks(std::vector< std::string > targetLabels)
+{
+    std::string removedPicks = queries->RemovePicks(targetLabels);
+    Render();
+    return removedPicks;
+}
+
+
+// ****************************************************************************
 // Method: VisWindow::Lineout
 //
 // Purpose: 

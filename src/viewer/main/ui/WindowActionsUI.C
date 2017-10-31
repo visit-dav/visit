@@ -331,6 +331,53 @@ ClearPickPointsActionUI::Enabled() const
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: RemovePicksActionUI::RemovePicksActionUI
+//
+// Purpose: 
+//   Constructor for the RemovePicksActionUI class.
+//
+// Arguments:
+//   win : The window to which the action belongs.
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Oct 16 15:41:23 PDT 2017
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+RemovePicksActionUI::RemovePicksActionUI(ViewerActionLogic *L) :
+    ViewerActionUISingle(L)
+{
+    SetAllText(tr("Remove picks"));
+}
+
+// ****************************************************************************
+// Method: RemovePicksActionUI::Enabled
+//
+// Purpose: 
+//   Returns when the action is enabled.
+//
+// Returns:    True if the action is enabled; false otherwise.
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Oct 16 15:41:23 PDT 2017
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+RemovePicksActionUI::Enabled() const
+{
+    // This action should only be enabled if the window to which the action belongs
+    // has plots in it.
+    return (GetLogic()->GetWindow()->GetPlotList()->GetNumPlots() > 0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
 // Method: ClearReferenceLinesActionUI::ClearReferenceLinesActionUI
 //
 // Purpose: 

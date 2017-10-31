@@ -178,6 +178,27 @@ ClearPickPointsAction::Execute()
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
+// Method: RemovePicks::Execute
+//
+// Purpose: 
+//   Does the work for RemovePicksAction.
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Oct 16 15:41:23 PDT 2017
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+RemovePicksAction::Execute()
+{
+    window->RemovePicks(args.GetStringArg1());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
 // Method: ClearReferenceLinesAction::Execute
 //
 // Purpose: 

@@ -734,10 +734,14 @@ avtPickActor::GetLetterPosition()
 //    Matt Larsen, Wed September 6 09:10:01 PDT 2017
 //    Changed highlights to overlay to show internal zones 
 //
+//    Alister Maguire, Tue Sep 26 10:22:55 PDT 2017
+//    Added an rgb argument for users to set the color of the 
+//    pick highlight. 
+//
 // ****************************************************************************
 
 void
-avtPickActor::AddLine(double p0[3], double p1[3])
+avtPickActor::AddLine(double p0[3], double p1[3], const float *rgb)
 {
     if(highlightSource == NULL)
     {
@@ -750,11 +754,22 @@ avtPickActor::AddLine(double p0[3], double p1[3])
             highlightMapper->SetTransformCoordinate(coordinate);
             highlightMapper->ScalarVisibilityOn();
             highlightMapper->SetScalarModeToUsePointData();
+       
+        //If the rgb values exceed the 0 -> 1 range, 
+        //clamp them to the endpoints. 
+        float clampedRGB[3];
+        for (int i = 0; i < 3; ++i)
+        {
+            clampedRGB[i] = (rgb[i] > 1.0) ? 1.0 : rgb[i]; 
+            clampedRGB[i] = (rgb[i] < 0.0) ? 0.0 : clampedRGB[i]; 
+        }
 
         highlightActor = vtkActor2D::New();
         highlightActor->SetMapper(highlightMapper);
             highlightActor->PickableOff(); 
-            highlightActor->GetProperty()->SetColor(1., 0., 0.);
+            highlightActor->GetProperty()->SetColor(clampedRGB[0], 
+                                                    clampedRGB[1], 
+                                                    clampedRGB[2]);
             highlightActor->GetProperty()->SetLineWidth(3.);
     }
    

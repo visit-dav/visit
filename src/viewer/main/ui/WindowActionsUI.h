@@ -186,6 +186,31 @@ public:
 };
 
 // ****************************************************************************
+// Class: RemovePicksActionUI
+//
+// Purpose:
+//    Handles removing a list of picks. 
+//
+// Notes:      
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Oct 16 15:41:23 PDT 2017
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWER_API RemovePicksActionUI : public ViewerActionUISingle
+{
+public:
+    RemovePicksActionUI(ViewerActionLogic *L);
+    virtual ~RemovePicksActionUI() { };
+
+    virtual bool Enabled() const;
+    virtual bool AllowInToolbar() const { return false; }
+};
+
+// ****************************************************************************
 // Class: ClearReferenceLinesActionUI
 //
 // Purpose:

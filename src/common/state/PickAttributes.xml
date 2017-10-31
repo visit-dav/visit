@@ -170,7 +170,7 @@
       false
     </Field>
     <Field name="useLabelAsPickLetter" label="useLabelAsPickLetter" type="bool">
-     false 
+      false
     </Field>
     <Field name="showGlobalIds" label="showGlobalIds" type="bool">
       false
@@ -186,8 +186,8 @@
     <Field name="showPickLetter" label="showPickLetter" type="bool">
       true
     </Field>
-    <Field name="hasRangeOutput" label="hasRangeOutput" internal="true" type="bool" persistant="false">
-     false 
+    <Field name="hasRangeOutput" label="hasRangeOutput" type="bool" internal="true">
+      false
     </Field>
     <Field name="rangeOutput" label="rangeOutput" type="MapNode" internal="true" persistent="false">
     </Field>
@@ -205,11 +205,11 @@
     <Field name="linesData" label="linesData" type="bool" internal="true" persistent="false">
       false
     </Field>
-    <Field name="showPickHighlight" label="showPickHighlight" type="bool" internal="false" persistent="false">
+    <Field name="showPickHighlight" label="showPickHighlight" type="bool" persistent="false">
       false
     </Field>
-    <Field name="notifyEnabled" label="notifyEnabled" type="bool" internal="false" persistent="false">
-      true 
+    <Field name="notifyEnabled" label="notifyEnabled" type="bool" persistent="false">
+      true
     </Field>
     <Field name="inputTopoDim" label="inputTopoDim" type="int" internal="true" persistent="false">
       -1
@@ -234,6 +234,13 @@
     <Field name="timeOptions" label="timeOptions" type="MapNode" internal="true" persistent="false">
     </Field>
     <Field name="plotRequested" label="plotRequested" type="MapNode" internal="true" persistent="false">
+    </Field>
+    <Field name="pickHighlightColor" label="pickHighlightColor" type="floatArray" length="3" persistent="false">
+      1.000000
+      0.000000
+      0.000000
+    </Field>
+    <Field name="removedPicks" label="Removed Picks" type="string">
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>

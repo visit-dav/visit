@@ -93,6 +93,9 @@ class vtkGlyphSource2D;
 //    Matt Larsen, Wed September 6 09:10:01 PDT 2017
 //    Changed highlights to overlay(2D) to show internal zones 
 //
+//    Alister Maguire, Tue Sep 26 14:23:09 PDT 2017
+//    Changed AddLine to include an rgb argument. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -122,7 +125,7 @@ class PLOTTER_API avtPickActor
     void               Translate(const double vec[3]);
     void               ResetPosition(const double vec[3]);
     void               UseGlyph(const bool v) { useGlyph = v; } ;
-    void               AddLine(double p0[3], double p1[3]);
+    void               AddLine(double p0[3], double p1[3], const float *rgb);
     bool               GetShowPickLetter() const;
     void               SetShowPickLetter(const bool);
   protected:

@@ -265,6 +265,9 @@ ViewerFactoryUI::SetActionManagerLogicUI(ViewerActionManager *mgr, ViewerWindow 
 //
 // Modifications:
 //
+//   Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
+//   Added RemovePicks
+//
 // ****************************************************************************
 
 #define INSTALL_ACTION_UI(RPC, UI) \
@@ -291,6 +294,7 @@ ViewerFactoryUI::SetActionManagerUI(ViewerActionManager *mgr0, ViewerWindow *win
     INSTALL_ACTION_UI(ViewerRPC::ChooseCenterOfRotationRPC,     ChooseCenterOfRotationActionUI);
     INSTALL_ACTION_UI(ViewerRPC::ClearAllWindowsRPC,            ClearAllWindowsActionUI);
     INSTALL_ACTION_UI(ViewerRPC::ClearPickPointsRPC,            ClearPickPointsActionUI);
+    INSTALL_ACTION_UI(ViewerRPC::RemovePicksRPC,                RemovePicksActionUI);
     INSTALL_ACTION_UI(ViewerRPC::ClearRefLinesRPC,              ClearReferenceLinesActionUI);
     INSTALL_ACTION_UI(ViewerRPC::ClearWindowRPC,                ClearWindowActionUI);
     INSTALL_ACTION_UI(ViewerRPC::CloneWindowRPC,                CloneWindowActionUI);

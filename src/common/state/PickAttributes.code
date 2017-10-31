@@ -1241,7 +1241,7 @@ PickAttributes::AddLine(const double *_c0, const double *_c1, const int &pos)
 
 }
 
-Function: Notify 
+Function: Notify
 Declaration: void Notify();
 Definition:
 // ****************************************************************************
@@ -1526,5 +1526,4 @@ PyPickAttributes_CallLogRoutine(Subject *subj, void *data)
         cb(s);
     }
 }
-
 

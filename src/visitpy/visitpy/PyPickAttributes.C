@@ -235,6 +235,22 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
           break;
     }
 
+    {   const float *pickHighlightColor = atts->GetPickHighlightColor();
+        SNPRINTF(tmpStr, 1000, "%spickHighlightColor = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", pickHighlightColor[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     return str;
 }
 
@@ -938,6 +954,60 @@ PickAttributes_GetTimeCurveType(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+PickAttributes_SetPickHighlightColor(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    float *fvals = obj->data->GetPickHighlightColor();
+    if(!PyArg_ParseTuple(args, "fff", &fvals[0], &fvals[1], &fvals[2]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 3)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                else if(PyInt_Check(item))
+                    fvals[i] = float(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    fvals[i] = float(PyLong_AsDouble(item));
+                else
+                    fvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the pickHighlightColor in the object as modified.
+    obj->data->SelectPickHighlightColor();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetPickHighlightColor(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the pickHighlightColor.
+    PyObject *retval = PyTuple_New(3);
+    const float *pickHighlightColor = obj->data->GetPickHighlightColor();
+    for(int i = 0; i < 3; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(pickHighlightColor[i])));
+    return retval;
+}
+
 
 
 PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
@@ -996,6 +1066,8 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
     {"GetTimePreserveCoord", PickAttributes_GetTimePreserveCoord, METH_VARARGS},
     {"SetTimeCurveType", PickAttributes_SetTimeCurveType, METH_VARARGS},
     {"GetTimeCurveType", PickAttributes_GetTimeCurveType, METH_VARARGS},
+    {"SetPickHighlightColor", PickAttributes_SetPickHighlightColor, METH_VARARGS},
+    {"GetPickHighlightColor", PickAttributes_GetPickHighlightColor, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1090,6 +1162,8 @@ PyPickAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Multiple_Y_Axes") == 0)
         return PyInt_FromLong(long(PickAttributes::Multiple_Y_Axes));
 
+    if(strcmp(name, "pickHighlightColor") == 0)
+        return PickAttributes_GetPickHighlightColor(self, NULL);
 
     return Py_FindMethod(PyPickAttributes_methods, self, name);
 }
@@ -1158,6 +1232,8 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickAttributes_SetTimePreserveCoord(self, tuple);
     else if(strcmp(name, "timeCurveType") == 0)
         obj = PickAttributes_SetTimeCurveType(self, tuple);
+    else if(strcmp(name, "pickHighlightColor") == 0)
+        obj = PickAttributes_SetPickHighlightColor(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

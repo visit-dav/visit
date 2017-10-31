@@ -254,6 +254,10 @@ typedef struct {
 //    Brad Whitlock, Thu Sep 11 23:16:44 PDT 2014
 //    Moved some client state objects out.
 //
+//    Alister Maguire, Tue Oct  3 11:27:21 PDT 2017
+//    Added overrideTimeStep for pick ranges that include
+//    a pick time curve. 
+//
 // ****************************************************************************
     
 class VIEWERCORE_API ViewerQueryManager : public ViewerBase
@@ -400,6 +404,7 @@ class VIEWERCORE_API ViewerQueryManager : public ViewerBase
 
     bool                  suppressQueryOutput; 
     bool                  activePlotsChanged; 
+    bool                  overrideTimeStep;
 
     std::string           floatFormat;
 

@@ -99,6 +99,9 @@ void VisualCueInfo::Init()
     lineStyle = 0;
     lineWidth = 0;
     opacity = 1;
+    highlightColor[0] = 0;
+    highlightColor[1] = 1;
+    highlightColor[2] = 0;
 
     VisualCueInfo::SelectAll();
 }
@@ -129,6 +132,10 @@ void VisualCueInfo::Copy(const VisualCueInfo &obj)
     lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     opacity = obj.opacity;
+    highlightColor[0] = obj.highlightColor[0];
+    highlightColor[1] = obj.highlightColor[1];
+    highlightColor[2] = obj.highlightColor[2];
+
 
     VisualCueInfo::SelectAll();
 }
@@ -287,6 +294,11 @@ VisualCueInfo::operator = (const VisualCueInfo &obj)
 bool
 VisualCueInfo::operator == (const VisualCueInfo &obj) const
 {
+    // Compare the highlightColor arrays.
+    bool highlightColor_equal = true;
+    for(int i = 0; i < 3 && highlightColor_equal; ++i)
+        highlightColor_equal = (highlightColor[i] == obj.highlightColor[i]);
+
     // Create the return value
     return ((points == obj.points) &&
             (cueType == obj.cueType) &&
@@ -296,7 +308,8 @@ VisualCueInfo::operator == (const VisualCueInfo &obj) const
             (showLabel == obj.showLabel) &&
             (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
-            (opacity == obj.opacity));
+            (opacity == obj.opacity) &&
+            highlightColor_equal);
 }
 
 // ****************************************************************************
@@ -440,15 +453,16 @@ VisualCueInfo::NewInstance(bool copy) const
 void
 VisualCueInfo::SelectAll()
 {
-    Select(ID_points,    (void *)&points);
-    Select(ID_cueType,   (void *)&cueType);
-    Select(ID_color,     (void *)&color);
-    Select(ID_glyphType, (void *)&glyphType);
-    Select(ID_label,     (void *)&label);
-    Select(ID_showLabel, (void *)&showLabel);
-    Select(ID_lineStyle, (void *)&lineStyle);
-    Select(ID_lineWidth, (void *)&lineWidth);
-    Select(ID_opacity,   (void *)&opacity);
+    Select(ID_points,         (void *)&points);
+    Select(ID_cueType,        (void *)&cueType);
+    Select(ID_color,          (void *)&color);
+    Select(ID_glyphType,      (void *)&glyphType);
+    Select(ID_label,          (void *)&label);
+    Select(ID_showLabel,      (void *)&showLabel);
+    Select(ID_lineStyle,      (void *)&lineStyle);
+    Select(ID_lineWidth,      (void *)&lineWidth);
+    Select(ID_opacity,        (void *)&opacity);
+    Select(ID_highlightColor, (void *)highlightColor, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -516,6 +530,15 @@ VisualCueInfo::SetOpacity(double opacity_)
 {
     opacity = opacity_;
     Select(ID_opacity, (void *)&opacity);
+}
+
+void
+VisualCueInfo::SetHighlightColor(const float *highlightColor_)
+{
+    highlightColor[0] = highlightColor_[0];
+    highlightColor[1] = highlightColor_[1];
+    highlightColor[2] = highlightColor_[2];
+    Select(ID_highlightColor, (void *)highlightColor, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -600,6 +623,18 @@ VisualCueInfo::GetOpacity() const
     return opacity;
 }
 
+const float *
+VisualCueInfo::GetHighlightColor() const
+{
+    return highlightColor;
+}
+
+float *
+VisualCueInfo::GetHighlightColor()
+{
+    return highlightColor;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -628,6 +663,12 @@ VisualCueInfo::SelectLabel()
     Select(ID_label, (void *)&label);
 }
 
+void
+VisualCueInfo::SelectHighlightColor()
+{
+    Select(ID_highlightColor, (void *)highlightColor, 3);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -652,15 +693,16 @@ VisualCueInfo::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_points:    return "points";
-    case ID_cueType:   return "cueType";
-    case ID_color:     return "color";
-    case ID_glyphType: return "glyphType";
-    case ID_label:     return "label";
-    case ID_showLabel: return "showLabel";
-    case ID_lineStyle: return "lineStyle";
-    case ID_lineWidth: return "lineWidth";
-    case ID_opacity:   return "opacity";
+    case ID_points:         return "points";
+    case ID_cueType:        return "cueType";
+    case ID_color:          return "color";
+    case ID_glyphType:      return "glyphType";
+    case ID_label:          return "label";
+    case ID_showLabel:      return "showLabel";
+    case ID_lineStyle:      return "lineStyle";
+    case ID_lineWidth:      return "lineWidth";
+    case ID_opacity:        return "opacity";
+    case ID_highlightColor: return "highlightColor";
     default:  return "invalid index";
     }
 }
@@ -685,15 +727,16 @@ VisualCueInfo::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_points:    return FieldType_doubleVector;
-    case ID_cueType:   return FieldType_enum;
-    case ID_color:     return FieldType_color;
-    case ID_glyphType: return FieldType_string;
-    case ID_label:     return FieldType_string;
-    case ID_showLabel: return FieldType_bool;
-    case ID_lineStyle: return FieldType_linestyle;
-    case ID_lineWidth: return FieldType_linewidth;
-    case ID_opacity:   return FieldType_opacity;
+    case ID_points:         return FieldType_doubleVector;
+    case ID_cueType:        return FieldType_enum;
+    case ID_color:          return FieldType_color;
+    case ID_glyphType:      return FieldType_string;
+    case ID_label:          return FieldType_string;
+    case ID_showLabel:      return FieldType_bool;
+    case ID_lineStyle:      return FieldType_linestyle;
+    case ID_lineWidth:      return FieldType_linewidth;
+    case ID_opacity:        return FieldType_opacity;
+    case ID_highlightColor: return FieldType_floatArray;
     default:  return FieldType_unknown;
     }
 }
@@ -718,15 +761,16 @@ VisualCueInfo::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_points:    return "doubleVector";
-    case ID_cueType:   return "enum";
-    case ID_color:     return "color";
-    case ID_glyphType: return "string";
-    case ID_label:     return "string";
-    case ID_showLabel: return "bool";
-    case ID_lineStyle: return "linestyle";
-    case ID_lineWidth: return "linewidth";
-    case ID_opacity:   return "opacity";
+    case ID_points:         return "doubleVector";
+    case ID_cueType:        return "enum";
+    case ID_color:          return "color";
+    case ID_glyphType:      return "string";
+    case ID_label:          return "string";
+    case ID_showLabel:      return "bool";
+    case ID_lineStyle:      return "linestyle";
+    case ID_lineWidth:      return "linewidth";
+    case ID_opacity:        return "opacity";
+    case ID_highlightColor: return "floatArray";
     default:  return "invalid index";
     }
 }
@@ -796,6 +840,16 @@ VisualCueInfo::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_opacity:
         {  // new scope
         retval = (opacity == obj.opacity);
+        }
+        break;
+    case ID_highlightColor:
+        {  // new scope
+        // Compare the highlightColor arrays.
+        bool highlightColor_equal = true;
+        for(int i = 0; i < 3 && highlightColor_equal; ++i)
+            highlightColor_equal = (highlightColor[i] == obj.highlightColor[i]);
+
+        retval = highlightColor_equal;
         }
         break;
     default: retval = false;
@@ -870,6 +924,7 @@ VisualCueInfo::SetFromP(const PickAttributes *pa)
     SetPointD(0,pa->GetPickPoint());
     SetLabel(pa->GetPickLetter());
     SetShowLabel(pa->GetShowPickLetter());
+    SetHighlightColor(pa->GetPickHighlightColor());
     if ((pa->GetPickType() != PickAttributes::Zone) &&
         (pa->GetPickType() != PickAttributes::DomainZone))
         SetGlyphType("Square");

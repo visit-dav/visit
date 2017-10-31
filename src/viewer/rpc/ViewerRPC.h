@@ -157,6 +157,7 @@ public:
         RedoViewRPC,
         InvertBackgroundRPC,
         ClearPickPointsRPC,
+        RemovePicksRPC,
         SetWindowModeRPC,
         EnableToolRPC,
         SetToolUpdateModeRPC,

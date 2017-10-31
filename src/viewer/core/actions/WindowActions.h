@@ -185,6 +185,30 @@ public:
 };
 
 // ****************************************************************************
+// Class: RemovePointsAction
+//
+// Purpose:
+//   Handles removing a list of pick points. 
+//
+// Notes:      
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Oct 16 15:41:23 PDT 2017
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class VIEWERCORE_API RemovePicksAction : public ViewerActionLogic
+{
+public:
+    RemovePicksAction(ViewerWindow *win) : ViewerActionLogic(win) {}
+    virtual ~RemovePicksAction() { };
+
+    virtual void Execute();
+};
+
+// ****************************************************************************
 // Class: ClearReferenceLinesAction
 //
 // Purpose:

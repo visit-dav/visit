@@ -76,7 +76,7 @@ static const char *ViewerRPCType_strings[] = {
 "TogglePerspectiveViewRPC", "ToggleSpinModeRPC", "ToggleLockTimeRPC", 
 "ToggleLockToolsRPC", "ToggleLockViewModeRPC", "ToggleFullFrameRPC", 
 "UndoViewRPC", "RedoViewRPC", "InvertBackgroundRPC", 
-"ClearPickPointsRPC", "SetWindowModeRPC", "EnableToolRPC", 
+"ClearPickPointsRPC", "RemovePicksRPC", "SetWindowModeRPC", "EnableToolRPC", 
 "SetToolUpdateModeRPC", "CopyViewToWindowRPC", "CopyLightingToWindowRPC", 
 "CopyAnnotationsToWindowRPC", "CopyPlotsToWindowRPC", "ClearCacheRPC", 
 "ClearCacheForAllEnginesRPC", "SetViewExtentsTypeRPC", "ClearRefLinesRPC", 

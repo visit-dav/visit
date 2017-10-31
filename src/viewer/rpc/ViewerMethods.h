@@ -179,6 +179,9 @@ class ViewerState;
 //   David Camp, Thu Aug 27 09:40:00 PDT 2015
 //   Added host name to the Export and Import of the state functions.
 //
+//   Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
+//   Added RemovePicks.
+//
 // ****************************************************************************
 
 class VIEWER_RPC_API ViewerMethods
@@ -381,6 +384,7 @@ public:
     void ProcessExpressions();
 
     void ClearPickPoints();
+    void RemovePicks(const std::string);
     void ClearReferenceLines();
 
     void SetRenderingAttributes();

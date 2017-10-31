@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-  <Attribute name="VisualCueInfo" purpose="attributes necessary to describe a visual cue in a VisWindow (e.g. pick point or refline)" persistent="false" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="VisualCueInfo.code">
+  <Attribute name="VisualCueInfo" purpose="attributes necessary to describe a visual cue in a VisWindow (e.g. pick point or refline)" persistent="false" keyframe="true" exportAPI="STATE_API" exportInclude="state_exports.h" codefile="VisualCueInfo.code">
     <Enum name="CueType">
       PickPoint
       RefLine
@@ -10,7 +10,7 @@
     <Field name="cueType" label="cueType" type="enum" subtype="CueType">
       Unknown
     </Field>
-    <Field name="color" label="color" type="color">
+    <Field name="color" label="color" type="color" length="4">
       0
       0
       0
@@ -31,6 +31,11 @@
     </Field>
     <Field name="opacity" label="opacity" type="opacity">
       1.000000
+    </Field>
+    <Field name="highlightColor" label="highlightColor" type="floatArray" length="3" persistent="false">
+      0.000000
+      1.000000
+      0.000000
     </Field>
     <Function name="SetPointF" user="true" member="true">
     </Function>
