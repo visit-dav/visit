@@ -1580,51 +1580,71 @@ Average Over Time Function: ``average_over_time()`` : ``average_over_time(<Scala
 
 .. danger::
     How does this work with changing topology?
+    Also, what is the actual math of the average? Is it an update algorithm or a sum and then div
+    by num iters?
 
 .. _Min_Over_Time_Expression_Function:
 
-min over time Function: ``min_over_time()`` : ``min_over_time(expr0)``
-    No description available.
+Min Over Time Function: ``min_over_time()`` : ``min_over_time(<Scalar>,<Start>,<Stop>,<Stride>)``
+    Return a new *scalar* variable in which each zonal or nodal value is the
+    minimum value the variable, ``<Scalar>``, attained over the times indicated
+    by ``Start``, ``Stop`` and ``Stride``.
 
 .. _Max_Over_Time_Expression_Function:
 
-max over time Function: ``max_over_time()`` : ``max_over_time(expr0)``
-    No description available.
+Max Over Time Function: ``max_over_time()`` : ``max_over_time(<Scalar>,<Start>,<Stop>,<Stride>)``
+    Return a new *scalar* variable in which each zonal or nodal value is the
+    maximum value the variable, ``<Scalar>``, attains over the times indicated
+    by ``Start``, ``Stop`` and ``Stride``.
 
 .. _Sum_Over_Time_Expression_Function:
 
-sum over time Function: ``sum_over_time()`` : ``sum_over_time(expr0)``
-    No description available.
+Sum Over Time Function: ``sum_over_time()`` : ``sum_over_time(<Scalar>,<Start>,<Stop>,<Stride>)``
+    Return a new *scalar* variable in which each zonal or nodal value is the
+    sum of the values the variable, ``<Scalar>`` attains over the times
+    indicated by ``Start``, ``Stop`` and ``Stride``.
 
 .. _First_Time_When_Condition_Is_True_Expression_Function:
 
-first time when condition is true Function: ``first_time_when_condition_is_true()`` : ``first_time_when_condition_is_true(expr0)``
-    No description available.
+First Time When Condition Is True Function: ``first_time_when_condition_is_true()`` : ``first_time_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+    Return a new *scalar* variable in which each zonal or nodal value is the
+    *first* time (not cyle and not time-index, but floating point time) at which
+    the true/false condition, ``<Cond>`` is true.
 
 .. _Last_Time_When_Condition_Is_True_Expression_Function:
 
-last time when condition is true Function: ``last_time_when_condition_is_true()`` : ``last_time_when_condition_is_true(expr0)``
-    No description available.
+Last Time When Condition Is True Function: ``last_time_when_condition_is_true()`` : ``last_time_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+    Return a new *scalar* variable in which each zonal or nodal value is the
+    *liast* time (not cyle and not time-index, but floating point time) at which
+    the true/false condition, ``<Cond>`` is true.
 
 .. _First_Cycle_When_Condition_Is_True_Expression_Function:
 
-first cycle when condition is true Function: ``first_cycle_when_condition_is_true()`` : ``first_cycle_when_condition_is_true(expr0)``
-    No description available.
+First Cycle When Condition Is True Function: ``first_cycle_when_condition_is_true()`` : ``first_cycle_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+    Return a new integer valued *scalar* variable in which each zonal or nodal
+    value is the *first* cycle (not time and not time-index, but integer cycle)
+    at which the true/false condition, ``<Cond>`` is true.
 
 .. _Last_Cycle_When_Condition_Is_True_Expression_Function:
 
-last cycle when condition is true Function: ``last_cycle_when_condition_is_true()`` : ``last_cycle_when_condition_is_true(expr0)``
-    No description available.
+Last Cycle When Condition Is True Function: ``last_cycle_when_condition_is_true()`` : ``last_cycle_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+    Return a new integer valued *scalar* variable in which each zonal or nodal
+    value is the *last* cycle (not time and not time-index, but integer cycle)
+    at which the true/false condition, ``<Cond>`` is true.
 
 .. _First_Time_Index_When_Condition_Is_True_Expression_Function:
 
-first time index when condition is true Function: ``first_time_index_when_condition_is_true()`` : ``first_time_index_when_condition_is_true(expr0)``
-    No description available.
+First Time Index When Condition Is True Function: ``first_time_index_when_condition_is_true()`` : ``first_time_index_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+    Return a new integer valued *scalar* variable in which each zonal or nodal
+    value is the *first* time index (not cyle and not time, but integer
+    time-index) at which the true/false condition, ``<Cond>`` is true.
 
 .. _Last_Time_Index_When_Condition_Is_True_Expression_Function:
 
-last time index when condition is true Function: ``last_time_index_when_condition_is_true()`` : ``last_time_index_when_condition_is_true(expr0)``
-    No description available.
+Last Time Index When Condition Is True Function: ``last_time_index_when_condition_is_true()`` : ``last_time_index_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+    Return a new integer valued *scalar* variable in which each zonal or nodal
+    value is the *last* time index (not cyle and not time, but integer
+    time-index) at which the true/false condition, ``<Cond>`` is true.
 
 .. _Var_When_Condition_Is_First_True_Expression_Function:
 
@@ -1683,7 +1703,7 @@ Enumerate Function: ``enumerate()`` : ``enumerate(<Int-Scalar>,<[Int-List]>)``
     If *K* is the maximum value in the ``Int-Scalar`` input argument,
     the ``[Int-List]`` argument must be a square bracketed list of *K+1*
     integer values. Value *i* in the ``Int-Scalar`` input argument is used to
-    index the *i-th* entry in the ``[Int-List]`` to produce mapped value.
+    index the *ith* entry in the ``[Int-List]`` to produce mapped value.
 
 .. _Map_Expression_Function:
 
@@ -1699,13 +1719,15 @@ Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-Lis
 
 .. _Array_Componentwise_Division_Expression_Function:
 
-array componentwise division Function: ``array_componentwise_division()`` : ``array_componentwise_division(expr0)``
-    No description available.
+Array Componentwise Division Function: ``array_componentwise_division()`` : ``array_componentwise_division(<Array>,<Divisor>)``
+    Return a new *array* variable which is the old input ``<Array>`` variable
+    with each of its components divided by the ``<Divisor>``.
 
 .. _Array_Componentwise_Product_Expression_Function:
 
-array componentwise product Function: ``array_componentwise_product()`` : ``array_componentwise_product(expr0)``
-    No description available.
+Array Componentwise Product Function: ``array_componentwise_product()`` : ``array_componentwise_product(<Array>,<Multiplier>)``
+    Return a new *array* variable which is the old input ``<Array>`` variable
+    with each of its components multiplied by the ``<Multiplier>``.
 
 .. _Array_Decompose2d_Expression_Function:
 
@@ -1714,8 +1736,8 @@ array decompose2d Function: ``array_decompose2d()`` : ``array_decompose2d(expr0)
 
 .. _Array_Sum_Expression_Function:
 
-array sum Function: ``array_sum()`` : ``array_sum(expr0)``
-    No description available.
+Array Sum Function: ``array_sum()`` : ``array_sum(<Array>)``
+    Return a new *scalar* variable which is the sum of the ``<Array>`` components.
 
 .. _Localized_Compactness_Expression_Function:
 
@@ -1726,16 +1748,13 @@ localized compactness Function: ``localized_compactness()`` : ``localized_compac
 
 Resample Function: ``resample()`` : ``resample(<Var>,Nx,Ny,Nz)``
     Resample ``<Var>`` onto a regular grid defined by taking the
-    X, Y and for 3D, Z spatial extents of the mesh ``<Var>`` is defined on nad
+    X, Y and for 3D, Z spatial extents of the mesh ``<Var>`` is defined on and
     taking ``Nx`` samples over the spatial extents in X, and
     taking ``Ny`` samples over the spatial extents in Y, and, for 3D,
     taking ``Nz`` samples over the spatial extents in Z.
     Any samples that *miss* the mesh ``<Var>`` is defined on are assigned
     the value *-FLT_MAX*. For 2D, the ``Nz`` argument is still required but
     ignored.
-
-.. danger::
-    How does this work in parallel?
 
 .. _Displacement_Expression_Function:
 
@@ -1754,13 +1773,21 @@ cylindrical Function: ``cylindrical()`` : ``cylindrical(expr0)``
 
 .. _Procid_Expression_Function:
 
-procid Function: ``procid()`` : ``procid(expr0)``
-    No description available.
+Process Id Function: ``procid()`` : ``procid(<Var>)``
+    Return an integer *scalar* variable which is everywhere the MPI rank
+    associated with each of the blocks of the possibly parallel decomposed mesh
+    upon which ``<Var>`` is defined. For serial execution or for parallel
+    execution of a single-block mesh, this will produce a constant zero
+    variable. Otherwise, the values will vary block by block.
 
 .. _Threadid_Expression_Function:
 
-threadid Function: ``threadid()`` : ``threadid(expr0)``
-    No description available.
+Thread Id Function: ``threadid()`` : ``threadid(expr0)``
+    Return an integer *scalar* variable which is everywhere the local thread id
+    associated with each of the blocks of the possibly parallel decomposed mesh
+    upon which ``<Var>`` is defined. For non-threaded execution, this will
+    produce a constant zero variable. Otherwise, the values will vary block
+    by block.
 
 .. _Merge_Tree_Expression_Function:
 
@@ -1854,35 +1881,37 @@ distance to best fit line2 Function: ``distance_to_best_fit_line2()`` : ``distan
 geodesic vector quantize Function: ``geodesic_vector_quantize()`` : ``geodesic_vector_quantize(expr0)``
     No description available.
 
-.. _Cell_Constant_Expression_Function:
-
-cell constant Function: ``cell_constant()`` : ``cell_constant(expr0)``
-    No description available.
-
 .. _Zonal_Constant_Expression_Function:
 
-zonal constant Function: ``zonal_constant()`` : ``zonal_constant(expr0)``
-    No description available.
+Zonal Constant Function: ``zonal_constant()`` : ``zonal_constant(expr0)``
+    Return a *scalar*, zone-centered field that is everywhere on ``<Mesh>``
+    the constant value ``<Const>``.
 
 .. _Zone_Constant_Expression_Function:
 
-zone constant Function: ``zone_constant()`` : ``zone_constant(expr0)``
-    No description available.
+Zone Constant Function: ``zone_constant()`` : ``zone_constant(<Mesh>,<Const>)``
+    An alias for :ref:`zonal_constant() <Zonal_Constant_Expression_Function>`
 
-.. _Point_Constant_Expression_Function:
+.. _Cell_Constant_Expression_Function:
 
-point constant Function: ``point_constant()`` : ``point_constant(expr0)``
-    No description available.
+Cell Constant Function: ``cell_constant()`` : ``cell_constant(expr0)``
+    An alias for :ref:`zonal_constant() <Zonal_Constant_Expression_Function>`
 
 .. _Nodal_Constant_Expression_Function:
 
-nodal constant Function: ``nodal_constant()`` : ``nodal_constant(expr0)``
-    No description available.
+Nodal Constant Function: ``nodal_constant()`` : ``nodal_constant(<Mesh>,<Const>)``
+    Return a *scalar*, node-centered field that is everywhere on ``<Mesh>``
+    the constant value ``<Const>``.
 
 .. _Node_Constant_Expression_Function:
 
-node constant Function: ``node_constant()`` : ``node_constant(expr0)``
-    No description available.
+Node Constant Function: ``node_constant()`` : ``node_constant(expr0)``
+    An alias for :ref:`nodal_constant() <Nodal_Constant_Expression_Function>`
+
+.. _Point_Constant_Expression_Function:
+
+Point Constant Function: ``point_constant()`` : ``point_constant(expr0)``
+    An alias for :ref:`nodal_constant() <Nodal_Constant_Expression_Function>`
 
 .. _Curve_Domain_Expression_Function:
 
