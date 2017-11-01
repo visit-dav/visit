@@ -3,7 +3,7 @@
   <title><![CDATA[Release Notes for VisIt 2.13]]></title>
   <owner><![CDATA[Page Owner Name]]></owner>
   <IM>LLNL-WEB-739935</IM>
-  <lastchanged><![CDATA[October 18, 2017]]></lastchanged>
+  <lastchanged><![CDATA[October 30, 2017]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -43,8 +43,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Enhanced the EnSight reader to handle variables not defined on all parts. Part descriptions are now used to fill out the SIL. Particles supplied in measured files are now supported as a separate mesh.</li>
   <li>Corrected a bug with the VTK reader reading .pvti data.</li>
   <li>Corrected a bug plotting SAMRAI data where blank plots would get generated when curvilinear mesh blocks are completely surrounded by a layer of ghost zones.</li>
-  <li>Added a reader for the SPCTH (Spy) file format.</li> 
-  <li>Updated the Blueprint reader to use Conduit v0.3.0 and incorporate Mesh Blueprint changes.</li> 
+  <li>Added a reader for the SPCTH (Spy) file format.</li>
+  <li>Updated the Blueprint reader to use Conduit v0.3.0 and incorporate Mesh Blueprint changes.</li>
   <li>Enhanced the VTK reader to support '.pvtk' files.</li>
 </ul>
 
@@ -85,6 +85,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug with using transparency in scalable rendering mode that caused a crash when running in parallel on Windows.</li>
   <li>Fixed a type related compile error in vtkMergeTree that broke builds with gcc 4.9 on Raspberry Pis.</li>
   <li>Corrected an issue with newer versions of the Mac operating system (10.13, High Sierra), where VisIt couldn't connect to remote instances of VisIt.</li>
+  <li>Corrected a bug constructing material plots from database plugins that serve up dense volume fractions.</li>
+  <li>Corrected a bug saving images greater than screen resolution using non-screen capture on Windows.</li>
 </ul>
 
 <h2>Configuration changes in version 2.13</h2>
@@ -100,6 +102,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Modified build_visit to build Qt 5 by default. The option "--qt5" has been removed, the option "--qt4" has been added and "--qt" now builds Qt 5.</li>
   <li>Updated build_visit to build PySide 2 when specifying --pyside when using Qt 5.</li>
   <li>Updated build_visit to build CMake version 3.8.1.</li>
+  <li>Updated build_visit to properly build numpy and seedme on systems without zlib or ssl. If zlib is missing you should add "--zlib" to the build_visit command line. If ssl is missing you should add "--openssl" to the build_visit command line.</li>
   <li>Removed the gui option from build_visit.</li>
 </ul>
 
