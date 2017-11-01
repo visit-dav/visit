@@ -50,7 +50,7 @@ The OnionPeel operator can only operate on one domain at a time and when the
 operator grows layers, they do not cross domain boundaries. The seed cell index
 is always relative to the active domain. To make a cell in a different domain
 the new seed cell, change the domain number by selecting a new domain from the
-**Set** drop down list.
+**Set** combo box.
 
 Growing layers
 """"""""""""""
@@ -79,4 +79,5 @@ buttons next to the **Layer Number** text field also increments or decrements
 the layer number.
 
 By default, Onion Peel will honor the structure of the original mesh.  In some
-cases, as with arbitrary polyhedral data, you may want to see how VisIt split the original mesh.  In this case, use the dropdown to change to **Honor actual mesh**.
+cases, as with arbitrary polyhedral data, you may want to see how VisIt split the original mesh.  In this case, use the combo box to change to 
+**Honor actual mesh**.

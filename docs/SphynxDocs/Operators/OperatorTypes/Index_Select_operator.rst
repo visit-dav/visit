@@ -65,11 +65,12 @@ cells. When the Index select operator is set to apply to just one block or
 group, the index ranges are relative to the specified block or group.
 
 To make the Index Select operator apply to just one block or group, uncheck the 
-**Use Whole Collection** check box. The **Category** and **Set** dropowns will 
-be filled according to how the database has named the groups or submeshes.
-Choose the correct category from the **Category** dropdown, and the desired set 
-from the **Set** dropdown.  :numref:`Figure %s <indexselect_categoryselection>` shows a single mesh selection for a multiple mesh database whose submeshes are 
-called domains.
+**Use Whole Collection** check box. The **Category** and **Set** combo boxes
+will be filled according to how the database has named the groups or submeshes.
+Choose the correct category from the **Category** combo box, and the desired 
+set from the **Set** combo box.  
+:numref:`Figure %s <indexselect_categoryselection>` shows a single mesh 
+selection for a multiple mesh database whose submeshes are called domains.
 
 .. _indexselect_categoryselection:
 

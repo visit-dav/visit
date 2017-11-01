@@ -22,7 +22,7 @@ The Project operator can project 3D down to 2D using either Cartesian or
 Cylindrical transforms, which can be performed along the X, Y or Z
 axis, as shown in (see :numref:`Figure %s<project_projection_type>`).
 To specify which of these transforms you want to use when using the Project 
-operator, choose the appropriate option from the **Projection type** dropdown.
+operator, choose the appropriate option from the **Projection type** combo box.
 **Z-Axis Cartesian** is the default option.
 
 .. _project_projection_type:
@@ -39,7 +39,7 @@ Choosing how vectors are treated
 The Project operator can treat vectors as instaneous directions, as coordinate 
 displacements or as point coordinates.  The Project operator can also ignore the
 vectors and not transform them at all.  To specify how you wish vectors to be 
-treated during the projection transform, choose the appropriate option from the **Vector transform method** dropdown.
+treated during the projection transform, choose the appropriate option from the **Vector transform method** combo box.
 (see :numref:`Figure %s<project_vector_transform>`) The default is 
 **Treat as instaneous directions**.
 

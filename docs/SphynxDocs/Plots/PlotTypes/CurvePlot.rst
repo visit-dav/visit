@@ -58,10 +58,10 @@ necessary that Curve plots can be distinguished from each other. Fortunately,
 VisIt provides controls to change the line style and line width so that Curve
 plots can be told apart. Line style is a pattern used to draw the line and it
 is solid by default but it can also be dashed, dotted, or dash-dotted. You
-choose a new line style by making a selection from the **Line Style menu** on
-the **Geometry tab** (see :numref:`Figure %s <curvewindow2>`). The
+choose a new line style by making a selection from the **Line Style** combo box
+on the **Geometry tab** (see :numref:`Figure %s <curvewindow2>`). The
 line width, which determines the boldness of the curve, is set by making a
-selection from the **Line Width menu**.
+selection from the **Line Width** combo box.
 
 .. _curvewindow2:
 
@@ -79,7 +79,7 @@ are drawn to form a curve. To make VisIt draw a point glyph at the location of
 each (X,Y) point, click the **Show points** check box on the **Geometry** tab. 
 You can control the size of the points by typing a new point size into the 
 **Point size** text field.  You can choose the type of symbol used to represent
-the points by using the **Symbol** drop down.
+the points by using the **Symbol** combo box.
 
 The number of points drawn can be controlled by the **Static** or **Dynamic** 
 radio buttons.  For **Static** mode, points are drawn at regular intervals 

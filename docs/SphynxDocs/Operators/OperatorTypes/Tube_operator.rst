@@ -17,10 +17,10 @@ The Tube operator provides a few knobs that control the appearance of the
 generated tubes.  First of all, the tube radius can be set by typing a new 
 radius into the **Radius** text field in the **Tube attributes window** 
 (:numref:`Figure %s <tubewindow>`).  The specified radius can either be a
-**Fraction of Bounding Box** (default) or **Absolute** by changing the dropdown
-option next to the **Radius** text box.  If you want the radius scaled by a
+**Fraction of Bounding Box** (default) or **Absolute** by changing the combo 
+box option next to the **Radius** text box.  If you want the radius scaled by a
 variable instead, check the **Scale width by variable?** checkbox, and choose a
-variable from the **Variable** dropdown menu.
+variable from the **Variable** menu.
 
 .. _tubewindow:
 

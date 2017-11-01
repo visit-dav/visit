@@ -80,7 +80,7 @@ multi-domain database. If you want to make sure that the slice plane's origin
 is at a specific node in a mesh, click the **Node** radio button and enter a 
 new node number into the **Node** text field. Note that you must also specify a 
 domain if you are slicing a multi-domain database.  If the database contains
-multiple meshes, their will also be **Mesh** dropdown option from which to
+multiple meshes, their will also be **Mesh** combo box option from which to
 choose the mesh to use, as seen in the **Node** example in 
 :numref:`Figure %s <slicewindow_origins>`.
 
