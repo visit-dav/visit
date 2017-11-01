@@ -31,9 +31,11 @@ conn_cmfe expression can be used to map fields from one database onto a
 mesh in another database, which then allows you to create expressions
 involving the active database.
 
-There are plans to add position-based CMFE, which will resample the field
+There is also a position-based CMFE (*pos_cmfe*), which will resample the field
 from one mesh onto another mesh by calculating the values of the field on
 the first mesh using the locations of the cells or nodes in a second mesh.
+More information on CMFE expressions are found in the :ref:`Expressions` 
+chapter.
 
 Plotting the difference between two databases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

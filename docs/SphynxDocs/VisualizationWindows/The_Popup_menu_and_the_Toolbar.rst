@@ -443,7 +443,8 @@ Lock options
 The **Lock menu** and toolbar, both shown in :numref:`Figure %s <lockmenu>`,
 allow you to lock certain visualization window attributes so that when you
 change them, other locked visualization windows also update. Currently, you
-can lock the view and you can lock time.
+can lock the view, time and tools. See :ref:`Locking Windows` for more 
+information on how to use the lock options.
 
 .. image:: images/locktoolbar.png
 
@@ -453,27 +454,3 @@ can lock the view and you can lock time.
 
    Lock toolbar and menu
 
-Locking views
-"""""""""""""
-
-If you have created plots from related databases in multiple visualization
-windows, you can lock the views for the visualization windows together so
-as you change the view in one of the visualization windows with a locked
-view, the other visualization windows with locked views also update to
-have the same view. There are three types of views in VisIt: curve, 2D, and
-3D. If you have 2D plots in a visualization window, the visualization
-window is considered to be 2D. Locking that 2D visualization window's view
-will only update other visualization windows that are also 2D and vice-versa.
-The same is true for curve and 3D views. To lock a visualization window's
-view, select the **Lock->View** option from the **Main Window's Windows**
-menu or use the visualization menu's **Popup menu** or **Toolbar**.
-
-Locking time
-""""""""""""
-
-If you have created plots from related databases in multiple visualization
-windows, you can lock the visualization windows together in time so as
-you change time in one visualization window, it updates in all other
-visualization windows that are locked in time.To lock a visualization
-window in time, select the **Lock->Time** option from the
-**Main Window's Windows** menu.

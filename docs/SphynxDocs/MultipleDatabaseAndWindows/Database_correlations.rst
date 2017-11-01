@@ -6,9 +6,9 @@ Database correlations
 A database correlation is a map that relates one or more different
 time-varying databases so that when accessed with a common time state, the
 database correlation can tell VisIt which time state to use for any of the
-databases in the database correlation. Since VisIt supports multiple logical
-time sliders, so time states can be changed independently for different
-time-varying databases in the same window, no time slider for any database
+databases in the database correlation. VisIt supports multiple logical time 
+sliders, so time states can be changed independently for different
+time-varying databases in the same window. No time slider for any database
 can have any effect on another database. Sometimes when comparing two
 different, but related, time-varying databases, it is useful to make plots
 of both databases and see how they behave over time. Since changing time
@@ -238,6 +238,7 @@ create database correlations.
 .. _correlationwindow:
 
 .. figure:: images/correlationwindow.png
+   :width: 60%
 
    Database Correlation Window
 
@@ -258,6 +259,7 @@ properties for the database correlation.
 .. _createcorrelation1:
 
 .. figure:: images/createcorrelation1.png
+   :width: 60%
 
    Database Correlation Properties Window
 
@@ -273,6 +275,7 @@ index, time, and cycle.
 .. _createcorrelation3:
 
 .. figure:: images/createcorrelation3.png
+   :width: 60%
 
    Correlation methods
 
@@ -298,6 +301,7 @@ to create a new database correlation.
 .. _createcorrelation2:
 
 .. figure:: images/createcorrelation2.png
+   :width: 60%
 
    Sources list and Correlated sources list
 
@@ -322,6 +326,7 @@ Altering an existing database correlation
 .. _altercorrelation:
 
 .. figure:: images/altercorrelation.png
+   :width: 60%
 
    Altering a database correlation
 
@@ -384,6 +389,7 @@ databases listed in the **Correlation question** dialog.
 .. _correlatedialog:
 
 .. figure:: images/correlatedialog.png
+   :width: 60%
 
    Correlation question dialog
 
