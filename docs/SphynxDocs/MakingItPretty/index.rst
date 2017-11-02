@@ -13,4 +13,3 @@ Now that you know how to visualize databases, it is time to learn how to make pr
     Lighting
     Rendering_Options
     View
-    View_and_data_limits
