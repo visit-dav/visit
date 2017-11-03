@@ -3,12 +3,13 @@
 Using the Subset Window
 -----------------------
 
-You can open the **Subset Window**, shown in :numref:`Figure %s <subsetwindow>`
-, by clicking on the **Subset** option in the **Main Window's Controls** menu
-or by clicking on the **Subset** icon next to the name of a plot in the
-**Plot lists's** plot entries. VisIt's **Subset Window** displays subset
-relations and provides controls that allow you to alter a plot's SIL
-restriction by turning off parts of the database.
+Users can open the **Subset Window**, shown in
+:numref:`Figure %s <subsetwindow>`, by clicking on the **Subset** option in the
+**Main Window's Controls** menu or by clicking on the **Subset**
+Venn Diagram-looking icon next to the name of a plot in the **Plot lists's**
+plot entries. VisIt's **Subset Window** displays subset relationships and
+provides controls that allow you to alter a plot's SIL restriction by turning
+off parts of a mesh.
 
 .. _subsetwindow:
 

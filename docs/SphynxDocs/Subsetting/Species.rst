@@ -34,6 +34,7 @@ plotted variable's value in turn drops.
 .. _speciesvar:
 
 .. figure:: images/speciesvar.png
+   :scale: 50%
 
    Species variable
 

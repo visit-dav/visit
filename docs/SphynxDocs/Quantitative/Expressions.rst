@@ -1306,8 +1306,8 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    that is the ``<Target Mesh>`` and the mesh upon which the
    ``<Donor Variable>`` is defined, share *only* a common spatial (positional)
    extent. Its friend, the :ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>`
-   function is *optimized* to perform the mapping when the two meshes are
-   *topologically identical*. In other words, their *coordinate* and
+   function is *optimized* to perform the mapping when the two meshes are also
+   *topologically identical*. In other words, their *coordinate* **and**
    *connectivity* arrays are 1:1. In this case, the mapping can be performed
    with more efficiency and numerical accuracy. Therefore, when it is possible
    and makes sense to do so, it is always best to use ``conn_cmfe()``.
@@ -1452,28 +1452,34 @@ Curve CMFE Function: ``curve_cmfe()`` : ``curve_cmfe(<Donor Curve>,<Target Curve
 
 Symm Point Function: ``symm_point()`` : ``symm_point(<Scalar>,[Px,Py,Pz])``
     Return a new *scalar* variable which is the symmetric difference of
-    ``<Scalar>`` about the point ``[Px, Py, Pz]``.  If the input ``<Scalar>``
-    is indeed symmetric about the point, the result will be a constant
-    valued variable of zero.
+    ``<Scalar>`` reflected about the point ``[Px, Py, Pz]``. In 2D, ``Pz``
+    is still required but ignored. This operation involves **both** the 
+    reflection about the point **and** taking the difference. If the input
+    ``<Scalar>`` is indeed symmetric about the point, the result will be a
+    constant valued variable of zero.
 
 .. _Symm_Plane_Expression_Function:
 
 Symm Plane Function: ``symm_plane()`` : ``symm_plane(<Scalar>,[Nx,Ny,Nz,Px,Py,Pz])``
     Return a new *scalar* variable which is the symmetric difference of
-    ``<Scalar>`` about the plane defined by the point ``[Px, Py, Pz]`` and
-    normal ``[Nx, Ny, Nz]``.  In 2D, the z arguments are still required but
-    ignored. If the input ``<Scalar>`` is indeed symmetric about the plane,
-    the result will be a constant valued variable of zero.
+    ``<Scalar>`` reflected about the plane defined by the point ``[Px, Py, Pz]``
+    and normal ``[Nx, Ny, Nz]``. In 2D, the ``Nz`` and ``Pz`` arguments are
+    still required but ignored. This operation involves **both** the reflection
+    about the plane **and** taking the difference. If the input ``<Scalar>`` is
+    indeed symmetric about the plane, the result will be a constant valued
+    variable of zero.  
 
 .. _Symm_Transform_Expression_Function:
 
 Symm Transform Function: ``symm_transform()`` : ``symm_transform(<Scalar>,[T00,T01,T02,...,T22])``
     Return a new *scalar* variable which is the symmetric difference of
-    ``<Scalar>`` where each point, ``[Px,Py,Pz]``, in the mesh supporting
-    ``<Scalar>`` is transformed by the transform coefficients,
-    ``[T00, T01,...,T22]`` as shown below. If the input ``<Scalar>`` is
-    indeed symmetric through the transform, the result will be a constant valued
-    variable of zero.
+    ``<Scalar>`` reflected through the 3x3 trasformation where each point,
+    ``[Px,Py,Pz]``, in the mesh supporting ``<Scalar>`` is transformed by the
+    transform coefficients, ``[T00, T01,...,T22]`` as shown below. In 2D, all
+    9 transform coefficients are still required by the last row and column are
+    ignored. This operation involves **both** the transform **and** taking the
+    difference. If the input ``<Scalar>`` is indeed symmetric through the
+    transform, the result will be a constant valued variable of zero.
 
 .. math::
 
@@ -1498,9 +1504,9 @@ Symm Transform Function: ``symm_transform()`` : ``symm_transform(<Scalar>,[T00,T
 .. _Eval_Point_Expression_Function:
 
 Eval Point Function: ``eval_point()`` : ``eval_point(expr0)``
-    Performs only the point-symmetric mapping half of the
+    Performs only the reflection half of the
     :ref:`symm_point() <Symm_Point_Expression_Function>` operation. That is, it
-    computes a new *scalar* variable which is the input ``<Scalar>`` mapped
+    computes a new *scalar* variable which is the input ``<Scalar>`` reflected
     through the symmetric point. It does not then take the *difference* between
     with the input ``<Scalar>`` as
     :ref:`symm_point() <Symm_Point_Expression_Function>` does.
@@ -1508,9 +1514,9 @@ Eval Point Function: ``eval_point()`` : ``eval_point(expr0)``
 .. _Eval_Plane_Expression_Function:
 
 Eval Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Px,Py,Pz])``
-    Performs only the plane-symmetric mapping half of the
+    Performs only the reflection half of the
     :ref:`symm_plane() <Symm_Plane_Expression_Function>` operation. That is, it
-    computes a new *scalar* variable which is the input ``<Scalar>`` mapped
+    computes a new *scalar* variable which is the input ``<Scalar>`` reflected
     through the symmetric plane. It does not then take the *difference* between
     with the input ``<Scalar>`` as
     :ref:`symm_plane() <Symm_Plane_Expression_Function>` does.
@@ -1518,7 +1524,7 @@ Eval Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Px,Py,Pz])
 .. _Eval_Transform_Expression_Function:
 
 Eval Transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
-    Performs only the transform-symmetric mapping half of the
+    Performs only the transform half of the
     :ref:`symm_transform() <Symm_Transform_Expression_Function>` operation.
     That is, it computes a new *scalar* variable which is the input
     ``<Scalar>`` mapped through the transform. It does not then take the
@@ -1551,7 +1557,7 @@ Median Filter Function: ``median_filter()`` : ``median_filter(expr0)``
 
 .. _Abel_Inversion_Expression_Function:
 
-abel inversion Function: ``abel_inversion()`` : ``abel_inversion(expr0)``
+Abel Inversion Function: ``abel_inversion()`` : ``abel_inversion(expr0)``
     No description available.
 
 .. _Time_Expression_Function:
@@ -1563,13 +1569,13 @@ Time Function: ``time()`` : ``time(expr0)``
 .. _Cycle_Expression_Function:
 
 Cycle Function: ``cycle()`` : ``cycle(expr0)``
-    Return a *constant scalar* variable which is everywhere the cycle
+    Return an integer *constant scalar* variable which is everywhere the cycle
     of the associated input argument within its time-series.
 
 .. _Timestep_Expression_Function:
 
 Timestep Function: ``timestep()`` : ``timestep(expr0)``
-    Return a *constant scalar* variable which is everywhere the index
+    Return an integer *constant scalar* variable which is everywhere the index
     of the associated input argument within its time-series.
 
 .. _Average_Over_Time_Expression_Function:
@@ -1606,45 +1612,53 @@ Sum Over Time Function: ``sum_over_time()`` : ``sum_over_time(<Scalar>,<Start>,<
 
 .. _First_Time_When_Condition_Is_True_Expression_Function:
 
-First Time When Condition Is True Function: ``first_time_when_condition_is_true()`` : ``first_time_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+First Time When Condition Is True Function: ``first_time_when_condition_is_true()`` : ``first_time_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new *scalar* variable in which each zonal or nodal value is the
     *first* time (not cyle and not time-index, but floating point time) at which
-    the true/false condition, ``<Cond>`` is true.
+    the true/false condition, ``<Cond>`` is true. The ``<Fill>`` value is used
+    if there is no *first* time the condition is true.
 
 .. _Last_Time_When_Condition_Is_True_Expression_Function:
 
-Last Time When Condition Is True Function: ``last_time_when_condition_is_true()`` : ``last_time_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+Last Time When Condition Is True Function: ``last_time_when_condition_is_true()`` : ``last_time_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new *scalar* variable in which each zonal or nodal value is the
     *liast* time (not cyle and not time-index, but floating point time) at which
-    the true/false condition, ``<Cond>`` is true.
+    the true/false condition, ``<Cond>`` is true. The ``<Fill>`` value is used
+    if there is no *last* time the condition is true.
 
 .. _First_Cycle_When_Condition_Is_True_Expression_Function:
 
-First Cycle When Condition Is True Function: ``first_cycle_when_condition_is_true()`` : ``first_cycle_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+First Cycle When Condition Is True Function: ``first_cycle_when_condition_is_true()`` : ``first_cycle_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new integer valued *scalar* variable in which each zonal or nodal
     value is the *first* cycle (not time and not time-index, but integer cycle)
-    at which the true/false condition, ``<Cond>`` is true.
+    at which the true/false condition, ``<Cond>`` is true. The ``<Fill>`` value
+    is used if there is no *first* cycle the condition is true.
 
 .. _Last_Cycle_When_Condition_Is_True_Expression_Function:
 
-Last Cycle When Condition Is True Function: ``last_cycle_when_condition_is_true()`` : ``last_cycle_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+Last Cycle When Condition Is True Function: ``last_cycle_when_condition_is_true()`` : ``last_cycle_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new integer valued *scalar* variable in which each zonal or nodal
     value is the *last* cycle (not time and not time-index, but integer cycle)
-    at which the true/false condition, ``<Cond>`` is true.
+    at which the true/false condition, ``<Cond>`` is true. The ``<Fill>`` value
+    is used if there is no *last* cycle the condition is true.
 
 .. _First_Time_Index_When_Condition_Is_True_Expression_Function:
 
-First Time Index When Condition Is True Function: ``first_time_index_when_condition_is_true()`` : ``first_time_index_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+First Time Index When Condition Is True Function: ``first_time_index_when_condition_is_true()`` : ``first_time_index_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new integer valued *scalar* variable in which each zonal or nodal
     value is the *first* time index (not cyle and not time, but integer
     time-index) at which the true/false condition, ``<Cond>`` is true.
+    The ``<Fill>`` value is used if there is no *first* time-index the
+    condition is true.
 
 .. _Last_Time_Index_When_Condition_Is_True_Expression_Function:
 
-Last Time Index When Condition Is True Function: ``last_time_index_when_condition_is_true()`` : ``last_time_index_when_condition_is_true(<Cond>,<Start>,<Stop>,<Stride>)``
+Last Time Index When Condition Is True Function: ``last_time_index_when_condition_is_true()`` : ``last_time_index_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new integer valued *scalar* variable in which each zonal or nodal
     value is the *last* time index (not cyle and not time, but integer
     time-index) at which the true/false condition, ``<Cond>`` is true.
+    The ``<Fill>`` value is used if there is no *last* time-index the
+    condition is true.
 
 .. _Var_When_Condition_Is_First_True_Expression_Function:
 
@@ -1710,11 +1724,11 @@ Enumerate Function: ``enumerate()`` : ``enumerate(<Int-Scalar>,<[Int-List]>)``
 Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-List]>)``
     A more general form of :ref:`enumerate() <Enumerate_Expression_Function>`
     which supports non-integer input *scalar* variables and input and output
-    maps which do not include all values in the input *scalar* variable.
-    The ``[Input-Value-List]`` and ``[Output-Value-List]`` must have the same
-    number of entries. A value in the input *scalar* variable that matches
-    the *ith* entry in the ``[Input-Value-List]`` is mapped to the new value
-    at the *ith* entry in the ``[Output-Value-List]``. Values that do not
+    maps which are not required to include all values in the input *scalar*
+    variable. The ``[Input-Value-List]`` and ``[Output-Value-List]`` must have
+    the same number of entries. A value in the input *scalar* variable that
+    matches the *ith* entry in the ``[Input-Value-List]`` is mapped to the new
+    value at the *ith* entry in the ``[Output-Value-List]``. Values that do not
     match any entry in the ``[Input-Value-List]`` are mapped to ``-1``.
 
 .. _Array_Componentwise_Division_Expression_Function:
@@ -1749,11 +1763,11 @@ localized compactness Function: ``localized_compactness()`` : ``localized_compac
 Resample Function: ``resample()`` : ``resample(<Var>,Nx,Ny,Nz)``
     Resample ``<Var>`` onto a regular grid defined by taking the
     X, Y and for 3D, Z spatial extents of the mesh ``<Var>`` is defined on and
-    taking ``Nx`` samples over the spatial extents in X, and
-    taking ``Ny`` samples over the spatial extents in Y, and, for 3D,
-    taking ``Nz`` samples over the spatial extents in Z.
+    taking ``Nx`` samples over the spatial extents in X,
+    ``Ny`` samples over the spatial extents in Y, and, for 3D,
+    ``Nz`` samples over the spatial extents in Z.
     Any samples that *miss* the mesh ``<Var>`` is defined on are assigned
-    the value *-FLT_MAX*. For 2D, the ``Nz`` argument is still required but
+    the value ``-FLT_MAX``. For 2D, the ``Nz`` argument is still required but
     ignored.
 
 .. _Displacement_Expression_Function:
@@ -1982,7 +1996,7 @@ Time Iteration Expressions
 """"""""""""""""""""""""""
 
 Expression Compatability Gotchas
-""""""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 VisIt will allow you to define expressions that it winds up determining to be
 invalid later when it attempts to execute those expressions. Some common

@@ -18,8 +18,6 @@ through turning off members in various collections or turning off entire
 collections. When various subsets have been turned off in a SIL, the
 collective on/off state for each subset is known as a SIL restriction.
 
-This isn't the correct image.
-
 .. _subset1a:
 
 .. figure:: images/subset1.png
