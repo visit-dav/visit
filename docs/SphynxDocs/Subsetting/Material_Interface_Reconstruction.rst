@@ -30,7 +30,7 @@ click on the **Materials** option in the **Main Window's Controls menu**.
 .. _miroptions:
 
 .. figure:: images/miroptions.png
-    :scale: 50%
+   :scale: 50%
 
    Material Reconstruction Options Window
 
