@@ -1018,17 +1018,11 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
 //   Hank Childs, Thu Dec  4 10:17:36 PST 2008
 //   Commit fix for memory leak contributed by David Camp of UC Davis.
 //
-//   Kathleen Biagas, Wed Oct 4 11:10:32 MST 2017
-//   Removed Win32 restriction on deleting Windows.  With Qt 5, if the command
-//   window is open at exit, the gui will segv and open a windows message box
-//   stating that the gui exited abnormally.  I could only delete that window,
-//   but deleting all of them seems to cause no harm (with Qt 4 and Qt 5).
-//
 // ****************************************************************************
 
 QvisGUIApplication::~QvisGUIApplication()
 {
-#if !defined(__APPLE__)
+#if !defined(_WIN32) && !defined(__APPLE__)
     // Delete the windows.
     for(WindowBaseMap::iterator pos = otherWindows.begin();
         pos != otherWindows.end(); ++pos)
