@@ -4,7 +4,7 @@ What is a subset?
 -----------------
 
 VisIt has first-class support for four different kinds of subsets; *Domains*,
-*Groups* (also called *Blocks*) and *Materials* and material *Speices*.
+*Groups* (also called *Blocks*) and *Materials* and material *Species*.
 In particular, as currently designed, any given mesh in VisIt can have only
 **one** decomposition into each of these kinds of subsets. That is, a mesh can
 have only one *Domain* decomposition, one *Group* decomposition, one
@@ -99,12 +99,13 @@ Mesh Variables with Material Specific Properties
 """"""""""""""""""""""""""""""""""""""""""""""""
 For some mesh variables, data producers may have different values of the
 variable for each of the materials within various zones (or cells) of the mesh
-where *mixing* is occuring. When such a variable is being plotted, for example
+where *mixing* is occurring. When such a variable is being plotted, for example
 with the :ref:`Pseudocolor Plot <pseudocolor_plot_head>`, what value/color
 should VisIt show for such zones? The fact is, depending on the user's needs,
 VisIt is capable of showing either an *overall* value for the zone or showing
-the material-specific values in the zone. This can be controlled through VisIt's
-**Subset Window**.
+the material-specific values in the zone. This can be handled through
+appropriate use of VisIt's :ref:`(MIR)<Material Interface Reconstruction>`
+algorithms and **Subset Window** controls.
 
 Species Subsets
 ~~~~~~~~~~~~~~~
@@ -132,7 +133,7 @@ compositions...
 The *Materials* subsets would consist of 3 subsets for Brass, T-1 Steel
 and O-1 Steel. For *Species* subsets, Brass would be further decomposed into
 2 *Species* subsets, T-1 Steel into 5 *Species* subsets and O-1 Steel, 6
-*Spieces* subsets.
+*Species* subsets.
 
 Alternatively, one could opt to characterize both T-1 Steel
 and O-1 Steel has a single, non-specific *Steel* having

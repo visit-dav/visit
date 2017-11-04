@@ -3,7 +3,11 @@
 Material Interface Reconstruction
 ---------------------------------
 
-Many databases store out their computational meshes with associated materials.
+Many data producers create meshes with material subsets. In some cases,
+materials include *mixing* where multiple materials exist within each
+mesh zone and in other cases materials are *clean* in each zone (e.g. no
+*mixing*).
+
 The materials are often used to break meshes into subsets that correspond to
 physical parts of a model. Materials are commonly stored out as a list of
 materials and material volume fractions for each cell in the database. If a
