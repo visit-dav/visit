@@ -4,7 +4,7 @@ What is a subset?
 -----------------
 
 VisIt has first-class support for four different kinds of subsets; *Domains*,
-*Groups* (also called *Blocks*) and *Materials* and material *Species*.
+*Groups* (also called *Blocks*), *Materials* and material *Species*.
 In particular, as currently designed, any given mesh in VisIt can have only
 **one** decomposition into each of these kinds of subsets. That is, a mesh can
 have only one *Domain* decomposition, one *Group* decomposition, one
@@ -14,7 +14,7 @@ additional generality but cannot be used in combination with the other four
 or even with other *Enumerated* subsets.
 
 Data producers as well as the database plugins that read data into VisIt
-often have some flexibility in deciding how to utilize these various kinds
+often have flexibility in deciding how to utilize these various kinds
 of subsets in representing their data. We describe each of these kinds of
 subsets and constraints in their use below.
 
@@ -22,14 +22,14 @@ Domain Subsets
 ~~~~~~~~~~~~~~
 VisIt's concept of a *Domain* subset is fundamental to its
 parallel programming and execution model. A domain in VisIt represents a
-a *chunk* of mesh plus variables that is coherently **both** stored
-(in files and in memory) **and** processed as a single, self-contained unit.
+a *chunk* of mesh plus variables that is **both** stored (in files and in
+memory) **and** processed coherently as a single, self-contained unit.
 Large meshes in VisIt are typically decomposed into *Domain* subsets for
 parallel processing. In fact, except in rare cases, the maximum number of
 parallel tasks VisIt may use is determined by the number of *Domain* subsets
-created by the data producer. For this reason, VisIt's approach to processing
-a mesh in parallel is often described as *piggy-backing* off the parallel
-decomposition created by the data producer.
+created by the data producer. VisIt's approach to processing a mesh in
+parallel is often described as *piggy-backing* off of the parallel decomposition
+created by the data producer.
 
 *Domain* subsets also represent the *unit of work* VisIt allocates in its load
 balancing algorithms. If VisIt is running on *M* processors and reading a
@@ -40,14 +40,14 @@ will be assigned *k* domains and some *k+1* domains.
 In almost all cases, if a mesh is to be processed in parallel by VisIt, it must
 have been decomposed into *Domain* subsets by the data producer prior to reading
 the data into VisIt. In general, VisIt does not perform any on-the-fly domain
-decomposition of data it is reading. However, there is one, very simplified case
+decomposition of data it is reading. However, there is one, special case 
 where VisIt can perform on-the-fly domain decomposition of a large, monolithic
 mesh; a structured mesh stored in a file format that supports hyper-slabbed I/O.
 In this simple case, VisIt will try to evenly decompose the 2 or 3D mesh into
 roughly equal sized hyper-slabs whose number is determined by the number of
-processors. VisIt will also then utilize the file format's hyper-slab I/O
-routines to read into each MPI rank only the part(s) of the mesh assigned to
-that rank.
+parallel tasks. VisIt will also then utilize the file format's hyper-slab I/O
+routines to read into each parallel task only the part(s) of the mesh assigned
+to that task.
 
 A mesh is **required** to have domains if it is ever to be processed in parallel
 by VisIt.
@@ -113,8 +113,8 @@ In addition to *mixing*, another feature *Materials* subsets support is a
 notion of *Species*. For example, there are many different varieties of
 brass and steel depending on the alloys used. Neither brass nor steel are
 themselves pure elements on the periodic table. They are instead *alloys* of
-other pure metals. For example, common yellow brass is, nominally, a mixture
-of Copper (Cu) and Zinc (Zn) while tool steel is composed primarily of Iron (Fe)
+other pure metals. Common Yellow Brass is, nominally, a mixture
+of Copper (Cu) and Zinc (Zn) while Tool Steel is composed primarily of Iron (Fe)
 but mixed with some Carbon (C) and a variety of other elements.
 
 Lets suppose we are dealing with the following alloys and species
@@ -130,10 +130,10 @@ compositions...
 | O-1 Steel | Fe:96.2%, W:0.5%, Cr:0.5%, C:0.9%, Mn:1.4%, Ni:0.5% |
 +-----------+-----------------------------------------------------+
 
-The *Materials* subsets would consist of 3 subsets for Brass, T-1 Steel
-and O-1 Steel. For *Species* subsets, Brass would be further decomposed into
-2 *Species* subsets, T-1 Steel into 5 *Species* subsets and O-1 Steel, 6
-*Species* subsets.
+The *Materials* decomposition would consist of 3 subsets for Brass, T-1 Steel
+and O-1 Steel. For the *Species* decomposition, Brass would be further
+decomposed into 2 *Species* subsets, T-1 Steel into 5 *Species* subsets and
+O-1 Steel, 6 *Species* subsets.
 
 Alternatively, one could opt to characterize both T-1 Steel
 and O-1 Steel has a single, non-specific *Steel* having
@@ -143,7 +143,7 @@ is always empty. In that case, there would only be 2 *Materials* subsets
 for Brass and non-specific *Steel*.
 
 *Species* subsets are optional. A mesh does not need to have them defined.
-Note that as currently designed, a data producer cannot define *Species*
+Howevewr, as currently designed, a data producer cannot define *Species*
 subsets without also defining *Materials* subsets (even if there is only one
 material subset for the whole mesh).
 
@@ -164,7 +164,7 @@ subsets. Furthermore, VisIt's **Subset Window**  makes it possible to manipulate
 these four kinds of subset *in combination*. That is, a user can simultaneously
 control which domains, which materials and which groups VisIt should process in
 any given operation. However, manipulating subsets in combination works only
-for these four kinds of subsets. Other kinds of sub-setting, such as Enumerated
+for these kinds of subsets. Other kinds of sub-setting, such as Enumerated
 subsets which are discussed next, are not as well integrated.
 
 Enumerated Subsets

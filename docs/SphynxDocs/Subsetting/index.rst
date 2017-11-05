@@ -16,12 +16,11 @@ subsetting functionality and **Subset Window** in detail.
 What is described here is primarily about *pre-defined, first-class, named
 subsets* as created by the data producer and supported within VisIt.
 Nonetheless, It is important to keep in mind that there are *other* ways that
-the data producer can organize data within VisIt's GUI or that VisIt's
-:ref:`Expressions <Expressions>` and :ref:`Operators <Operators>` can be
-employed to create and manage subsets. However, using these other approaches
-for the sole purpose of subsetting are often cumbersome through VisIt's GUI.
-To understand why as well as read about other issues related to subsetting,
-please see
+the data producer can organize data within VisIt's GUI or that users can employ
+VisIt's :ref:`Expressions <Expressions>` and :ref:`Operators <Operators>` to
+create and manage subsets. However, using these other approaches for the sole
+purpose of subsetting is often cumbersome through VisIt's GUI. To understand
+why as well as read about other issues related to subsetting, please see
 `these developer notes <https://www.visitusers.org/index.php?title=Generalized_Subsetting>`_.
 
 .. toctree::
