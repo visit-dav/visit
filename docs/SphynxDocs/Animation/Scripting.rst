@@ -32,7 +32,7 @@ launched. When you invoke ``visit -cli`` at the command line, VisIt's CLI
 (Python interface) is launched. If you want to use both components
 simultaneously then you can use VisIt's **Command Window** . The
 **Command Window** can be opened by clicking on the **Command**
-menu option in the **Main Window's Controls menu** . The **Command Window**
+menu option from the **Controls** menu. The **Command Window**
 consists of a set of eight tabs in which you can type Python scripts. When
 you type a Python script into one of the tabs, you can then click the tab's
 **Execute** button to make VisIt try and interpret your Python code. If VisIt
@@ -80,25 +80,3 @@ you can proceed with more advanced Python scripting to alter the view or move
 slice planes, etc. Once you've completed your Python script in a text editor,
 you can pasted it into the **Command Window** to test it or you can pass it
 along to VisIt's command line movie tools to make a movie.
-
-Quitting VisIt when there are multiple user interfaces
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-.. _multiple_quit:
-
-.. figure:: images/multiplequit.png   
-
-   Quit prompt when using multiple user interfaces
-
-When you use the **Command Window** , VisIt launches the VisIt Python
-interface (CLI) to interpret the Python scripts that you enter into the
-**Command Window** . This means that you have two user interfaces attached to
-the same viewer component. When more than one user interface is attached to the
-viewer, VisIt asks you if you want to quit all user interfaces when you click
-the **Quit** option in the **Main Window's File menu** 
-(see :numref:`Figure %s<multiple_quit>`) . If you choose to quit all user
-interfaces then VisIt totally quits. If you choose instead to just quit the
-GUI then the CLI program will remain active and just the GUI will terminate.
-This allows you to selectively close user interfaces that you no longer need.
-When all of the user interface programs (GUI, CLI, Java, etc.) attached to the
-viewer have closed, the viewer itself closes down.

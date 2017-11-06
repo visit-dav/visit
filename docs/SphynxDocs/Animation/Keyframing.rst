@@ -26,7 +26,7 @@ Keyframing Window
 
 Keyframe animations are designed using VisIt's **Keyframing Window**
 (see :numref:`Figure %s<keyframe_1>`), which you can open by selecting the
-**Keyframing** option from the **Main Window's Controls menu**. The window
+**Keyframing** option from the **Controls** menu. The window
 is dominated by the **Keyframe area** , which consists of many vertical
 lines that correspond to each frame in the animation and horizontal lines, or
 **Keyframe lines** , that correspond to the state attributes that are being 

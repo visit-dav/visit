@@ -3,10 +3,6 @@
 Animation
 =========
 
-.. danger::
-
-    Review flipbook verbiage and what is the fate of keyframing support?
-
 This chapter discusses how to use VisIt to create animations. There are three
 ways of creating animations using VisIt: flipbooks, keyframing, and scripting.
 For complex animations with perhaps hundreds or thousands of database time

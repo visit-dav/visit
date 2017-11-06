@@ -28,26 +28,31 @@ conventions. While this may appear to be inconvenient, it removes the
 possibility that VisIt will include a file that is not in the database. It
 also frees VisIt from having to know about dozens of ad-hoc file naming
 conventions. Having a ``.visit`` file also allows VisIt to make certain
-optimizations when generating a visualization. VisIt provides a **Group** 
-button in the **File Selection Window** to assist in the creation of a 
-``.visit`` file for databases that have no ``.visit`` file.
+optimizations when generating a visualization. VisIt provides a **File grouping** 
+combo box in the **File open** window (see :numref:`Figure %s<file_open_fig>`) to assist in the creation of a 
+``.visit`` file for databases that have no ``.visit`` file. Selecting *On* or *Smart* 
+will create a .visit file. Selecting *Off* will not group the files.
 
 Flipbook animation
 ~~~~~~~~~~~~~~~~~~
 
+.. _file_open_fig:
+
+.. figure:: images/fileopen.png 
+
+   File open window 
+
 .. _animation_buttons:
 
-.. figure:: images/buttons.png 
-
-   Animation controls
-
 .. figure:: images/animationtoolbar.png 
+   :width: 60%
 
    Animation controls
 
 All that is needed to create a flipbook animation is a time-varying database.
 To view a flipbook animation, open a time-varying database, create plots as
-usual, and click the **Play** button in the **Main Window's File Panel** or
+usual, and click the **Play** button in the **GUI** shown in :numref:`Figure %s<animation_buttons>`
+highlighted in red or
 in the visualization window's **Animation Toolbar** . A flipbook animation
 repeatedly cycles through all of the time states in the database displaying
 the plots for the current time state in the visualization window. The result
@@ -58,9 +63,10 @@ are also used for controlling keyframe animations. Clicking the **Play**
 button causes VisIt to advance the database timestep until the **Stop**
 button is clicked. As the plots are generated for each database time state,
 the animation proceeds only as fast as the compute engine can generate plots.
-You have the option of caching the geometry for each time state so animations
-will play smoothly according to the animation playback speed once the plots
-for each database time state have been generated.
+As described in the :ref:`animation_window_section` section, you have the option of caching 
+the geometry for each time state so animations will play smoothly according 
+to the animation playback speed once the plots for each database time state have 
+been generated.
 
 Setting the time state
 """"""""""""""""""""""
@@ -82,6 +88,8 @@ cycle or time for the active database. You can also highlight a new time state
 for the active database in the **Selected files** list and then click the
 **Replace** button to make VisIt change the time state for the visualization.
 
+.. _animation_window_section:
+
 Animation Window
 ~~~~~~~~~~~~~~~~
 
@@ -92,8 +100,8 @@ Animation Window
    Animation window
 
 You can open the **Animation Window**, shown in 
-:numref:`Figure %s<animation_window>` , by clicking on the **Animation**
-option in the **Main Window's Controls** menu. The **Animation Window**
+:numref:`Figure %s<animation_window>` , by clicking on the **Animation ...**
+option from the **Controls** menu. The **Animation Window**
 contains controls that allow you to turn off pipeline caching and adjust
 the animation playback mode and speed.
 
