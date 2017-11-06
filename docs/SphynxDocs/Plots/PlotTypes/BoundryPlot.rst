@@ -24,6 +24,19 @@ the entire set of materials, each using a different color. Both plots perform
 material interface reconstruction on materials that have mixed cells,
 resulting in the material boundaries used in the plots.
 
+.. _filledboundarysubsets:
+
+.. figure:: ../images/filledboundarysubsets.png
+
+   FilledBoundary plot combined with subsets
+
+
+Combining the FilledBoundary plot with subsets (see :numref:`Figure %s <filledboundarysubsets>`) 
+can provide a insight into where each material is inside the mesh by turning off
+materials in a particular domain. For more information about subsets, see the **Subsetting**
+chapter.
+.
+
 Changing colors
 """""""""""""""
 The main portion of the **Boundary plot attributes window** and

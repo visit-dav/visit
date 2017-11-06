@@ -3,7 +3,8 @@ Subset Plot
 
 The Subset plot (example in :numref:`Figure %s <subsetplot>`) is used to display subsets.
 The typical scientific database can be decomposed into many different subsets.
-Frequently a database is decomposed into material subsets or assembly subsets.
+Frequently a database is decomposed into non-material subsets such as domains or groups.
+In AMR meshes, subsets can consist of levels or patches.
 The Subset plot draws the database with its various subsets color coded so they
 can be distinguished. For more information about subsets, see the **Subsetting**
 chapter.
@@ -12,7 +13,7 @@ chapter.
 
 .. figure:: ../images/subsetplot.png
 
-   Example of Subset plot
+   Example of Subset plot of an AMR Mesh
 
 .. _subsetplotwindow:
 

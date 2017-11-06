@@ -129,7 +129,9 @@ constructed by the **Gaussian** controls is copied to the **Freeform** control.
 Both controls pretend that the plot's data range is positioned horizontally
 such that the values on the left of the control correspond to the low data
 values while the values on the right of the control correspond to high data
-values. The vertical direction corresponds to the opacity for the given data
+values. In addition to the color map, there is a histogram of the current data
+to aide in setting opaciy of interesting values. 
+The vertical direction corresponds to the opacity for the given data
 value. Taller curves are more opaque while shorter curves are more transparent.
 
 
