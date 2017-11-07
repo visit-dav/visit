@@ -97,7 +97,7 @@ the role so looking through all of the input variable tabs to determine what
 the Scatter plot should look like is not required. Roles that have no assigned
 input variable are grayed out.
 
-Setting the mininum and maximum values
+Setting the minimum and maximum values
 """"""""""""""""""""""""""""""""""""""
 
 The Scatter plot allows you to set minimum and maximum limits on the values

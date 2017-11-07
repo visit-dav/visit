@@ -111,8 +111,8 @@ remove other operators.
 Changing the order of operators
 """""""""""""""""""""""""""""""
 
-Sometimes when you've applied several operators, it is useful to change the 
-order of the operators around. For example, you might want to apply a Slice 
+Sometimes with several operators applied, it is useful to change the 
+order of the operators. For example, you might want to apply a Slice 
 operator before a Reflect operator instead of after it so you can reduce the 
 amount of data that VisIt must process in order to draw your plot. The order in 
 which operators are applied often has a significant impact on the visualization.

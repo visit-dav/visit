@@ -4,7 +4,7 @@ Time Pane
 ---------
 
 The **Time Pane** contains controls for setting the active timestep, and
-vcr-controls for playing animations.
+VCR controls for playing animations.
 
 Setting the active time step
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~

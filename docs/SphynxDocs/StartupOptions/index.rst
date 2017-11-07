@@ -115,7 +115,7 @@ USAGE: visit [options]::
         -l    <method>       Launch in parallel using the given method.
         -pl   <method>       Launch only the engine in parallel as specified.
         -la   <args>         Additional arguments for the parallel launcher.
-        -sla  <args>         Additional arguments for the parallel sublauncher.
+        -sla  <args>         Additional arguments for the parallel sub-launcher.
         -np   <# procs>      The number of processors to use.
         -nn   <# nodes>      The number of nodes to allocate.
         -p    <part>         Partition to run in.
@@ -139,10 +139,10 @@ USAGE: visit [options]::
         switch into scalable rendering mode when rendering complexity exceeds
         a predefined limit.
 
-        VisIt can manage the creation and teardown of X servers for you.  It
+        VisIt can manage the creation and tear down of X servers for you.  It
         will do this automatically if you specify the -launch-x parameter,
         but you can customize the process with the -x-args and -display
-        parameters, which respect %l and %n formatters.
+        parameters, which respect %l and %n format specifiers.
 
         See the VisIt wiki for more information:
 
@@ -229,7 +229,7 @@ USAGE: visit [options]::
                              occuring *before* the '-diff' option are treated
                              as options to VisIt.
 
-        -diffsum <ldb> <rdb> Run only the DiffSummary() method of the
+        -diffsum <ldb> <rdb> Run only the difference summary method of the
                              'visit -diff' script, in nowin mode so its fast,
                              print the results, and immediatly exit.
 
@@ -262,7 +262,7 @@ USAGE: visit [options]::
                              May not be compatible with all window managers.
         -viewerdisplay <dpy> Have the viewer use a different display than the
                              current value of DISPLAY.  Can be useful for
-                             powerwall displays with a separate console.
+                             power wall displays with a separate console.
         -cycleregex <string> A regex-style regular expression to be used
                              in extracting cycle numbers from file names. It
                              is best to bracket this string in single
@@ -289,8 +289,8 @@ USAGE: visit [options]::
                              keeping all processors busy and can make them
                              unuseable by other processes. This is particulary
                              bad for SMPs. So, VisIt implemented its own
-                             broadcast using MPI's send/recv methods. <int1>
-                             specifies the number of nano-seconds a processor
+                             broadcast using MPI's send/receive methods. <int1>
+                             specifies the number of nanoseconds a processor
                              sleeps while polling for completion of the
                              broadcast. Specifying a value of zero (0) for <int1>
                              results in falling back to older behavior using
@@ -300,7 +300,7 @@ USAGE: visit [options]::
                              seconds all processors should spin, polling as fast
                              as possible, checking for completion of the
                              broadcast BEFORE inserting sleeps into their
-                             polling loops. <int2> effectivey controls how
+                             polling loops. <int2> effectively controls how
                              many seconds VisIt's server will be maximally
                              responsive (although also keeping all processors
                              occupied) before becoming more 'friendly' to
@@ -334,7 +334,7 @@ USAGE: visit [options]::
         -clobber             Permit xml2... tools to overwrite old files
         -noprint             Silence debugging output from xml2... tools
         -outputtoinputdir    Force xml2... tools to write output files to
-                             the directory containing the input xml file
+                             the directory containing the input XML file
         -arch                print supported architecture(s) and exit
 
     Debugging options
@@ -344,7 +344,7 @@ USAGE: visit [options]::
         -debug <level>       Run with <level> levels of output logging.
                              <level> must be between 1 and 5. This will generate
                              debug logs (called 'vlogs' for ALL components.
-                             Note that debug logs are UNbuffered. However, if
+                             Note that debug logs are unbuffered. However, if
                              you also specify 'b' immediately after the digit
                              indicating the debug level (e.g. '-debug 3b'), the
                              logs will be buffered. This can substantially improve
@@ -369,7 +369,7 @@ USAGE: visit [options]::
                              the leading letter (A-E) indicating most to least
                              recent. The clobber_vlogs flag causes VisIt to remove
                              all debug logs and begin creating them anew.
-        -vtk-debug           Turn on debugging of vtk objects used in pipelines.
+        -vtk-debug           Turn on debugging of VTK objects used in pipelines.
         -pid                 Append process ids to the names of log files.
         -timing              Save timing data to files.
         -withhold-timing-output

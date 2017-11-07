@@ -59,11 +59,11 @@ memory use.
 
 The **Volume Attributes Window**, shown in 
 (:numref:`Figure %s<volume_plot_atts_window>`), is divided into two main tabs.
-The **Rendering Options** tab constrols the rendering setting. Each volume 
+The **Rendering Options** tab controls the rendering setting. Each volume 
 rendering method has a different set of inputs. For example, splatting and
 3D Texturing both specify the total number of samples, while ray-casting 
-settings are specified in samples-per-ray. Additionlly, the **Rendering 
-Options** tab constains controls for lighting. **1D transfer function tab** 
+settings are specified in samples-per-ray. Additionally, the **Rendering 
+Options** tab contains controls for lighting. **1D transfer function tab** 
 controls how the data is mapped onto colors and the opacities to use for
 different scalar values.
 
@@ -109,7 +109,7 @@ portion of the volume transfer function determines what can be seen in the
 volume-rendered image. Data values with a lower opacity allow more to be seen
 and give the plot a gel-like appearance, while data values with higher opacity
 appear more solid and occlude objects behind them. The controls for setting
-opacities are located at the botton of the window in the **Opacity** area.
+opacities are located at the button of the window in the **Opacity** area.
 
 .. _volume_plot_opacity:
 
@@ -130,7 +130,7 @@ Both controls pretend that the plot's data range is positioned horizontally
 such that the values on the left of the control correspond to the low data
 values while the values on the right of the control correspond to high data
 values. In addition to the color map, there is a histogram of the current data
-to aide in setting opaciy of interesting values. 
+to aide in setting opacity of interesting values. 
 The vertical direction corresponds to the opacity for the given data
 value. Taller curves are more opaque while shorter curves are more transparent.
 

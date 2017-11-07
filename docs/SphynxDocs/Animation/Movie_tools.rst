@@ -1,3 +1,9 @@
+.. only:: spelling
+
+   .. spelling:
+
+      sm
+
 .. _Movie tools:
 
 Movie tools
@@ -22,7 +28,7 @@ utility. The following table lists ``visit -movie'`` s command line arguments:
 |                   | mpeg : MPEG 2 movie.                                                                                                                                                                                                                                                                              |
 |                   |                                                                                                                                                                                                                                                                                                   |
 |                   | qt                                                                                                                                                                                                                                                                                                |
-|                   | : Quicktime movie.                                                                                                                                                                                                                                                                                |
+|                   | : QuickTime movie.                                                                                                                                                                                                                                                                                |
 |                   |                                                                                                                                                                                                                                                                                                   |
 |                   | sm                                                                                                                                                                                                                                                                                                |
 |                   | : Streaming movie format.                                                                                                                                                                                                                                                                         |

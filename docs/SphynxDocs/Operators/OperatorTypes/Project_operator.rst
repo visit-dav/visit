@@ -36,12 +36,13 @@ operator, choose the appropriate option from the **Projection type** combo box.
 Choosing how vectors are treated
 """"""""""""""""""""""""""""""""
 
-The Project operator can treat vectors as instaneous directions, as coordinate 
-displacements or as point coordinates.  The Project operator can also ignore the
-vectors and not transform them at all.  To specify how you wish vectors to be 
-treated during the projection transform, choose the appropriate option from the **Vector transform method** combo box.
+The Project operator can treat vectors as instantaneous directions, as
+coordinate displacements or as point coordinates.  The Project operator can
+also ignore the vectors and not transform them at all.  To specify how you
+wish vectors to be treated during the projection transform, choose the
+appropriate option from the **Vector transform method** combo box.
 (see :numref:`Figure %s<project_vector_transform>`) The default is 
-**Treat as instaneous directions**.
+**Treat as instantaneous directions**.
 
 .. _project_vector_transform:
 

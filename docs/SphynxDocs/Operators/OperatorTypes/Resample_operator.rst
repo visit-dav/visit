@@ -28,7 +28,7 @@ plot, the Resample operator clips out any data values that are not within the
 operator's bounding box. For the data that remains inside the bounding box, 
 the operator samples it using the user-specified numbers of samples for the X, 
 Y, and Z dimensions. The default for the Resample operator is to use the entire
-exents of the dataset.  If you want to choose a smaller region, unselect the
+extents of the dataset.  If you want to choose a smaller region, unselect the
 **Resample Entire Extents** checkbox and enter new bounding box information.
 The bounding box is specified by entering new start and end values for each 
 dimension. For example, if you want to change the locations sampled in the X 
@@ -98,7 +98,7 @@ buttons and by selecting an appropriate variable using the
   Using the Resample operator to create a 2D projection
 
 When used in parallel, the resampled data is distributed across all processors.
-This can be changed by unslecting the checkbox.
+This can be changed by unselecting the checkbox.
 
 You can also force the output data to be cell centered by selecting the
 **Make output cell centered** checkbox.

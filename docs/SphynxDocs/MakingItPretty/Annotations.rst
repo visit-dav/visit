@@ -84,7 +84,7 @@ specific conventions to display the file name in an optimal fashion.
 **Smart Directory** uses simulation code specific conventions to display
 the directory name in an optimal fashion.
 
-The **Time** check box controls the display of the time associatied with
+The **Time** check box controls the display of the time associated with
 the current database. If **Time** is enabled then the **Time scale factor**
 and **Time offset** controls become active, allowing you to scale as well
 as apply an offset to the time associated with a database when displaying it.
@@ -149,7 +149,7 @@ spacing values into the **Major minimum**, **Major maximum**,
 Setting the X-Axis and Y-Axis properties
 """"""""""""""""""""""""""""""""""""""""
 
-There are tabs for seperately controlling the properties of the X and Y
+There are tabs for separately controlling the properties of the X and Y
 axes. The tab for setting the X-Axis properties is shown in
 :numref:`Figure %s <fig-MakingItPretty-Annotation2DAxes>`.
 
@@ -258,7 +258,7 @@ spacing values into the **Major minimum**, **Major maximum**,
 Setting the X-Axis, Y-Axis and Z-Axis properties
 """"""""""""""""""""""""""""""""""""""""""""""""
 
-There are tabs for seperately controlling the properties of the X, Y and Z
+There are tabs for separately controlling the properties of the X, Y and Z
 axes. The tab for setting the X-Axis properties is shown in
 :numref:`Figure %s <fig-MakingItPretty-Annotation3DAxes>`.
 
@@ -545,7 +545,7 @@ enter a new 3D coordinate into the **Position** text field.
 The size of the text can be specified in two different ways. The first is
 using a relative height, where the height is a fraction of the size of the
 simulation data. The second is a fixed size, where the size is specified
-in the coorindate system of the simulation data. If you were to specify a
+in the coordinate system of the simulation data. If you were to specify a
 relative height and apply the Transform operator to scale the data in each
 direction by a factor of 10, the size of the text would not change. If you
 were to specify a fixed height, scaling the data by a factor of 10 would
@@ -563,7 +563,7 @@ to the coordinate system of the simulation data, then rotating the image
 will change the orientation of the text. To make the orientation relative
 to the screen, select the **Preserve orientation when view changes**
 radio button. To make the orientation relative to the simulation coordinate
-system, de-select the **Preserve orientation when view changes** radio
+system, uncheck the **Preserve orientation when view changes** radio
 button. To set the orientation, set the **Rotate Y**, **Rotate X** and
 **Rotate Z** spin boxes. The rotations are applied in the left to right
 order of the spin boxes in the interface.
@@ -635,7 +635,7 @@ fill up the time that has not been reached yet (end color) is overtaken
 by the start color. To set the end color for the time slider annotation
 object, click the **End color** button and choose a new color from the
 **Popup color** menu. Normally, time slider annotation objects use the
-foreground color of the vis window when drawing the annotation's text.
+foreground color of the visualization window when drawing the annotation's text.
 If you want to make the annotation use a special color, turn off the
 **Use foreground color** check box and click the **Text color** button
 and choose a new color from the **Popup color** menu.
@@ -745,7 +745,7 @@ It is also possible to add arrows to the beginning and end of the line. These
 can be enabled with the **Begin Arrow** and **End Arrow** toggle buttons.
 For each arrow, the user can also control the resolution and radius of the
 arrows. The arrows consist of cones places at the ends of the line and are
-contructed out of triangles that approximate a cone. The number of triangles
+constructed out of triangles that approximate a cone. The number of triangles
 used is controlled by the resolution. The radius is the radius of the
 cone in the same coordinate system as the simulation data. The resolution
 can be changed using the **Resolution** spin box and the radius is changed
@@ -768,7 +768,7 @@ their size, and optional transparency color.
 
 .. figure:: images/MakingItPretty-AnnotationObjectImageExample.png
   
-   An Example of a visualization with two overlayed image annotations
+   An Example of a visualization with two overlaid image annotations
 
 The first step in incorporating an image annotation into a visualization
 is to choose the file that contains the image that will serve as the
@@ -807,7 +807,7 @@ Finally, if you are overlaying an image annotation whose image contains a
 constant background color or other area that you want to remove, you can
 pick a color that VisIt will make transparent. For example,
 :numref:`Figure %s <fig-MakingItPretty-AnnotationObjectImageExample>`
-shows an image of some Curve plots overlayed on top of the plots in the
+shows an image of some Curve plots overlaid on top of the plots in the
 visualization window and the original background color in the annotation
 object was removed to make it transparent. If you want to make a color in
 an image transparent before VisIt displays it as an image annotation

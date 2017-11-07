@@ -9,7 +9,8 @@ allows each cell in the mesh to be specified by an i,j or i,j,k index depending
 on the dimension of the mesh. The Index Select operator allows you to specify 
 different ranges for each mesh dimension. The ranges are used to select a brick 
 of cells from the mesh. In addition to indices, the Index Select operator uses 
-stride to select cells from the mesh. Stride is a value that allows the operatorto count by 2's, 3's, etc. when iterating through the range indices. Stride is 
+stride to select cells from the mesh. Stride is a value that allows the operator
+to count by 2's, 3's, etc. when iterating through the range indices. Stride is 
 set to 1 by default. When higher values are used, the resulting mesh is more 
 coarse since it contains fewer cells in each dimension. The Index Select 
 operator attempts to preserve the size of the mesh when non-unity stride values 
@@ -31,7 +32,7 @@ you to enter minimum and maximum ranges for i,j,k. To select all cells in the
 spin box in the **I** row and **Min** column. Then you would enter max into the 
 spin box in the **Max** column in the **I** row. Finally, you would enter a 
 stride of 1 into the spin box in the **Incr** column in the **I** row. If you 
-wanted to subselect cell ranges for the Y dimension, you could follow a similar 
+wanted to sub-select cell ranges for the Y dimension, you could follow a similar 
 procedure using the spin boxes in the **J** row and so forth.  To set a range, 
 first select the maximum number of dimensions to which the Index Select operator
 will apply. To set the dimension, click on the **1D** , **2D** , **3D** radio 
@@ -66,11 +67,11 @@ group, the index ranges are relative to the specified block or group.
 
 To make the Index Select operator apply to just one block or group, uncheck the 
 **Use Whole Collection** check box. The **Category** and **Set** combo boxes
-will be filled according to how the database has named the groups or submeshes.
+will be filled according to how the database has named the groups or sub-meshes.
 Choose the correct category from the **Category** combo box, and the desired 
 set from the **Set** combo box.  
 :numref:`Figure %s <indexselect_categoryselection>` shows a single mesh 
-selection for a multiple mesh database whose submeshes are called domains.
+selection for a multiple mesh database whose sub-meshes are called domains.
 
 .. _indexselect_categoryselection:
 

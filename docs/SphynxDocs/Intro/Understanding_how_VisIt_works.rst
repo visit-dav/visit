@@ -8,7 +8,7 @@ Understanding how VisIt works
    Change to 5-building blocks verbiage? (Database, Plots, Operators, Expressions and Queries )
 
 VisIt visualizes data by creating one or more plots in a visualization window,
-also known as a vis window. A plot is a visual representation of the data
+also known as a **Viewer** window. A plot is a visual representation of the data
 being examined. Examples of plots include Mesh plots, Contour plots and
 Pseudocolor plots. Plots take as input one or more scalar or vector variables,
 which you can modify, by applying operators before passing them to a plot.

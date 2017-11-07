@@ -65,7 +65,7 @@ with entering the password in the **Password Window**.
    Change Username Window
 
 VisIt uses *ssh* for authentication and you can set up ssh so that passwords
-are not required. This is called passwordless ssh and once it is set up for a
+are not required. This is called *passwordless* ssh and once it is set up for a
 computer, VisIt will no longer need to prompt for a password. 
 
 .. _SettingUpPasswordlessSSH:
@@ -126,12 +126,12 @@ Completing the Process
 """"""""""""""""""""""
 
 If you have more remote machines you want to access from the same local machine
-using passwordless ssh, repeat the process starting with copying the 
+using *passwordless* ssh, repeat the process starting with copying the 
 **~/.ssh/id_rsa.pub** file from the local machine to the remote, and 
 continuing from there.
 
 You can also repeat the above sections, reversing the local and remote 
-machines, in order to allow passwordless ssh to the local machine from the 
+machines, in order to allow *passwordless* ssh to the local machine from the 
 remote machine.
 
 
@@ -139,9 +139,9 @@ Environment
 ~~~~~~~~~~~
 
 It is important to have VisIt in your default search path instead of specifying
-the absolute path to VisIt when starting it. This isn't as important when you
+the absolute path to VisIt when starting it. This is not as important when you
 run VisIt locally, but VisIt may not run properly in client-server mode if it
-isn't in your default search path on remote machines. If you regularly run
+is not in your default search path on remote machines. If you regularly run
 VisIt using the network configurations provided for LLNL computers then VisIt
 will have host profiles, which are sets of information that tell VisIt how to
 launch its components on a remote computer. The provided host profiles have
@@ -160,7 +160,7 @@ When VisIt launches a compute engine or metadata server, it opens the
 **Launch Progress Window** when the component cannot be launched in under four
 seconds. An exception to this rule is that VisIt will always show the
 **Launch Progress Window** when launching a parallel compute engine or any
-compute engine on MacOS X. VisIt's components frequently launch fast enough
+compute engine on OSX. VisIt's components frequently launch fast enough
 that it is not necessary to show the **Launch Progress Window** but you will
 often see it if you launch compute engines using a batch system.
 

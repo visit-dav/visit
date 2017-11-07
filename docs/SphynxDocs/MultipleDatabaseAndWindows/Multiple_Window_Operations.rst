@@ -148,7 +148,7 @@ There should now be four visualization windows if you opted to keep a 3D
 view of the data. In the last visualization window, replace the database
 with another related database that you want to compare to the first database.
 
-Now that you've performed all of the setup steps, you can save a session
+Now that all of the setup steps are complete, you can save a session
 file so you can get back to this state when you run VisIt next time. Now,
 in the window that still has a slice in 3D, use the plane tool to reposition
 the slice. Both of the 2D visualization windows should also update so they

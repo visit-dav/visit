@@ -143,7 +143,7 @@ is always empty. In that case, there would only be 2 *Materials* subsets
 for Brass and non-specific *Steel*.
 
 *Species* subsets are optional. A mesh does not need to have them defined.
-Howevewr, as currently designed, a data producer cannot define *Species*
+However, as currently designed, a data producer cannot define *Species*
 subsets without also defining *Materials* subsets (even if there is only one
 material subset for the whole mesh).
 
@@ -185,7 +185,7 @@ combination with domains, groups or materials or in combination with other
 classes of *Enumerated* subsets. On the other hand, for any given mesh, there
 can be any number of enumeration classes, each defining a collection of related
 subsets. For example, if a mesh has defined two enumeration classes, one for
-*nodesets* and one for *facesets*, then different subsets of nodes can be
+*node sets* and one for *face sets*, then different subsets of nodes can be
 manipulated simultaneously or different subsets of faces can be manipulated
 simultaneously but different sets of nodes cannot simultaneously be manipulated
 in combination with different sets of faces. Finally, manipulating enumerated

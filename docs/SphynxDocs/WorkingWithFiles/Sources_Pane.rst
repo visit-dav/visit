@@ -59,7 +59,7 @@ Overlaying a database
 
 Overlaying a database is a way to duplicate every plot in the plot list using 
 a new database. To overlay plots, select a new database from the
-**Active sources** drowpdown, then click the **Overlay** button. This copies
+**Active sources** dropdown, then click the **Overlay** button. This copies
 each plot in the **Active plot list** and replaces the database with the
 specified database. If the operation succeeds, the plots are generated and
 displayed in the visualization window. It is important to remember that each

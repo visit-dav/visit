@@ -316,7 +316,7 @@ Exponent Operator (``^``) : ``exprL ^ exprR``
 
 Logical AND Operator (``&``) : ``exprL & exprR``
     Creates a new expression which is the logical *AND* of the ``exprL`` and 
-    ``exprR`` expressions treating each value as a binary bitfield. It is
+    ``exprR`` expressions treating each value as a binary bit field. It is
     probably most useful for expressions involving integer data but can be
     applied to expressions involving any type.
 
@@ -345,7 +345,7 @@ Ceiling Function (``ceil()``) : ``ceil(expr0)``
 
 Exponent Function (``exp()``) : ``exp(expr0)``
     Creates a new expression which is everywhere *e* (base of the natural
-    logorithm) raised to the power of its argument.
+    logarithm) raised to the power of its argument.
 
 .. _Floor_Expression_Function:
 
@@ -422,7 +422,7 @@ Relational, Conditional and Logical Expressions
 
 The ``if()`` conditional expression is designed to be used in concert with
 relation and logical expressions. Together, these expressions can be used to
-build up more complex expressions in which very different evalutions are
+build up more complex expressions in which very different evaluations are
 performed depending on the outcome of other evaluations. For example, the
 ``if()`` conditional expression can be used together with one or more
 relational expressions to create a new expression which evaluates to a
@@ -472,7 +472,7 @@ Less Than or Equal Function (``le()``) : ``le(exprL,exprR)``
 Equal Function (``ne()``) : ``ne(exprL,exprR)``
     Creates a new expression which is everywhere a boolean value (1 or 0)
     indicating whether its two arguments are *not* equal. A value of 1
-    is produced everywhere the argments are *not* equal and 0 otherwise.
+    is produced everywhere the arguments are *not* equal and 0 otherwise.
     
 .. _Logical_And_Expression_Function:
 
@@ -498,7 +498,7 @@ Logical Not Function (``not()``) : ``not(expr0)``
 .. _If_Expression_Function:
 
 If Function (``if()``) : ``if(exprCondition,exprTrue,exprFalse)``
-    Creates a new expression which is equal to ``exprTrue`` whereever 
+    Creates a new expression which is equal to ``exprTrue`` wherever 
     the condition, ``exprCondition`` is true (e.g. non-zero) and which
     is equal to ``exprFalse`` wherever ``exprCondition`` is false
     (e.g zero).
@@ -635,7 +635,7 @@ Color4 Function (``color4()``) : ``color4(exprR,exprG,exprB,exprA)``
 
 .. _Colorlookup_Expression_Function:
 
-Colorlookup Function (``colorlookup()``) : ``colorlookup(expr0,tabname,scalmode,skewfac)``
+Color lookup Function (``colorlookup()``) : ``colorlookup(expr0,tabname,scalmode,skewfac)``
     Creates a new *vector* expression that is the color that each value in
     ``expr0`` maps to. The ``tabname`` argument is the name of the color table.
     The ``expr0`` and ``tabname`` arguments are *required*. The ``scalmode``
@@ -882,8 +882,9 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
 .. _Array_compose_with_bins:
 
 .. figure:: images/Array_compose_with_bins.png
+   :scale: 50%
 
-    Bar graph created from picking an array variable created with array_compose_with_bins()
+   Bar graph created from picking an array variable created with array_compose_with_bins()
 
 .. _Array_Decompose_Expression_Function:
 
@@ -948,7 +949,7 @@ NMats Function: ``nmats()`` : ``nmats(<Mat>)``
 .. _Specmf_Expression_Function:
 
 Specmf Function: ``specmf()`` : ``specmf(<Spec>,<MConst>,[Const,Const,...])``
-    Performs the analagous operation to ``matvf`` for species mass fractions.
+    Performs the analogous operation to ``matvf`` for species mass fractions.
     The ``<Spec>`` argument is a *species variable* from a database. The
     ``<MConst>`` argument is a specific material within the *species variable*.
     The ``<Const>`` argument(s) identify which species within the
@@ -967,7 +968,7 @@ Specmf Function: ``specmf()`` : ``specmf(<Spec>,<MConst>,[Const,Const,...])``
 Value For Material Function: ``value_for_material()`` : ``value_for_material(<Var>,<Const>)``
     Creates a new scalar expression which is everywhere the material-specific
     value of the variable specified by ``<Var>`` for the material specified by
-    ``<Const>``. If variable specified by ``<Var>`` has no material specifc
+    ``<Const>``. If variable specified by ``<Var>`` has no material specific
     values, the values returned from this function will be just the variable's
     values.
 
@@ -977,7 +978,7 @@ Mesh Expressions
 Mesh Quality Expressions
 """"""""""""""""""""""""
 
-VisIt employes the *Verdict Mesh Quality Library* to support a number of
+VisIt employs the *Verdict Mesh Quality Library* to support a number of
 expressions related to computing cell-by-cell mesh quality metrics. The
 specific definitions of the various mesh quality metrics defined by the
 *Verdict Mesh Quality Library* are amply explained in the
@@ -1177,7 +1178,7 @@ Face Planarity Function: ``face_planarity()`` : ``face_planarity(<Mesh>)``
     cell. Planarity is measured as the maximum distance from an arbitrary plane
     defined by the first 3 points of a face of the remaining points of the face.
     Values closer to zero are *better*. A triangle face will always have a
-    planarity measure of zero. This mesh quality exprssion is not part of
+    planarity measure of zero. This mesh quality expression is not part of
     the Verdict library. 
 
 .. _Relative_Face_Planarity_Function:
@@ -1254,7 +1255,7 @@ polar phi Function: ``polar_phi()`` : ``polar_phi(expr0)``
 
 .. _Zonetype_Expression_Function:
 
-Zonetype Function: ``zonetype()`` : ``zonetype(<Mesh>)``
+Zone Type Function: ``zonetype()`` : ``zonetype(<Mesh>)``
     Return a *zone* centered, character valued variable which indicates
     the *shape type* of each zone suitable for being used within the
     *label* plot. Upper case characters generally denote 3D shapes
@@ -1263,7 +1264,7 @@ Zonetype Function: ``zonetype()`` : ``zonetype(<Mesh>)``
 
 .. _Zonetype_Rank_Expression_Function:
 
-Zonetype Rank Function: ``zonetype_rank()`` : ``zonetype_rank(<Mesh>)``
+Zone Type Rank Function: ``zonetype_rank()`` : ``zonetype_rank(<Mesh>)``
     Return a *zone* centered, integer valued variable which indicates
     the *VTK shape type* of each zone. This expression is often useful
     with the threshold operator to select only certain shapes within
@@ -1370,13 +1371,13 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    ``State Id`` substring is a square-bracket enclosed number used to identify
    *which state* from which to take the donor variable. The ``Modality``
    substring is a one- or two-character moniker. The first character indicates
-   whether the number in the the ``State Id`` substring is a (``c``)ycle,
-   a (``t``)ime, or an (``i``)ndex. The second character, if present, is a ``d``
-   character to indicate the cycle, time or index is *relative* (e.g. a *delta*)
-   to the current state. For example, the substring ``[200]c`` means to
+   whether the number in the the ``State Id`` substring is a (``c``) cycle,
+   a (``t``) time, or an (``i``) index. The second character, if present, is a
+   ``d`` character to indicate the cycle, time or index is *relative* (e.g. a
+   *delta*) to the current state. For example, the substring ``[200]c`` means to
    treat the ``200`` as a *cycle number* in the donor database whereas the
-   the substring ``[-10]id`` means to treat the ``-10`` as an (``i``)ndex
-   (``d``)elta. Note that in cases where the donor database does not have
+   the substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
+   (``d``) delta. Note that in cases where the donor database does not have
    an exact match for the specified cycle or time, VisIt will chose the state
    with the cycle or time which is closest in absolute distance. For the *index*
    modality, if there is no exact match for the specified index, an error
@@ -1387,7 +1388,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    to create an expression representing a *time derivative* of a variable in
    a database, the key insight is to realize it involves mapping a donor
    variable from one state in the database onto a mesh at another state. In
-   addition, the value in using the *relative* form of specifyin the
+   addition, the value in using the *relative* form of specifying the
    ``State Id`` of the donor variable is that as the current time is changed,
    the expression properly identifies the different states of the donor
    variable instead of always mapping a fixed state.
@@ -1450,7 +1451,7 @@ Curve CMFE Function: ``curve_cmfe()`` : ``curve_cmfe(<Donor Curve>,<Target Curve
 
 .. _Symm_Point_Expression_Function:
 
-Symm Point Function: ``symm_point()`` : ``symm_point(<Scalar>,[Px,Py,Pz])``
+Symmetric Difference By Point Function: ``symm_point()`` : ``symm_point(<Scalar>,[Px,Py,Pz])``
     Return a new *scalar* variable which is the symmetric difference of
     ``<Scalar>`` reflected about the point ``[Px, Py, Pz]``. In 2D, ``Pz``
     is still required but ignored. This operation involves **both** the 
@@ -1460,7 +1461,7 @@ Symm Point Function: ``symm_point()`` : ``symm_point(<Scalar>,[Px,Py,Pz])``
 
 .. _Symm_Plane_Expression_Function:
 
-Symm Plane Function: ``symm_plane()`` : ``symm_plane(<Scalar>,[Nx,Ny,Nz,Px,Py,Pz])``
+Symmetric Difference By Plane Function: ``symm_plane()`` : ``symm_plane(<Scalar>,[Nx,Ny,Nz,Px,Py,Pz])``
     Return a new *scalar* variable which is the symmetric difference of
     ``<Scalar>`` reflected about the plane defined by the point ``[Px, Py, Pz]``
     and normal ``[Nx, Ny, Nz]``. In 2D, the ``Nz`` and ``Pz`` arguments are
@@ -1471,9 +1472,9 @@ Symm Plane Function: ``symm_plane()`` : ``symm_plane(<Scalar>,[Nx,Ny,Nz,Px,Py,Pz
 
 .. _Symm_Transform_Expression_Function:
 
-Symm Transform Function: ``symm_transform()`` : ``symm_transform(<Scalar>,[T00,T01,T02,...,T22])``
+Symmetric Difference By Transform Function: ``symm_transform()`` : ``symm_transform(<Scalar>,[T00,T01,T02,...,T22])``
     Return a new *scalar* variable which is the symmetric difference of
-    ``<Scalar>`` reflected through the 3x3 trasformation where each point,
+    ``<Scalar>`` reflected through the 3x3 transformation where each point,
     ``[Px,Py,Pz]``, in the mesh supporting ``<Scalar>`` is transformed by the
     transform coefficients, ``[T00, T01,...,T22]`` as shown below. In 2D, all
     9 transform coefficients are still required by the last row and column are
@@ -1503,7 +1504,7 @@ Symm Transform Function: ``symm_transform()`` : ``symm_transform(<Scalar>,[T00,T
 
 .. _Eval_Point_Expression_Function:
 
-Eval Point Function: ``eval_point()`` : ``eval_point(expr0)``
+Evaluate Point Function: ``eval_point()`` : ``eval_point(expr0)``
     Performs only the reflection half of the
     :ref:`symm_point() <Symm_Point_Expression_Function>` operation. That is, it
     computes a new *scalar* variable which is the input ``<Scalar>`` reflected
@@ -1513,7 +1514,7 @@ Eval Point Function: ``eval_point()`` : ``eval_point(expr0)``
 
 .. _Eval_Plane_Expression_Function:
 
-Eval Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Px,Py,Pz])``
+Evaluate Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Px,Py,Pz])``
     Performs only the reflection half of the
     :ref:`symm_plane() <Symm_Plane_Expression_Function>` operation. That is, it
     computes a new *scalar* variable which is the input ``<Scalar>`` reflected
@@ -1523,7 +1524,7 @@ Eval Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Px,Py,Pz])
 
 .. _Eval_Transform_Expression_Function:
 
-Eval Transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
+Evaluate Transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
     Performs only the transform half of the
     :ref:`symm_transform() <Symm_Transform_Expression_Function>` operation.
     That is, it computes a new *scalar* variable which is the input
@@ -1586,8 +1587,8 @@ Average Over Time Function: ``average_over_time()`` : ``average_over_time(<Scala
 
 .. danger::
     How does this work with changing topology?
-    Also, what is the actual math of the average? Is it an update algorithm or a sum and then div
-    by num iters?
+    Also, what is the actual math of the average? Is it an update algorithm or a sum and then
+    division by number of iterations?
 
 .. _Min_Over_Time_Expression_Function:
 
@@ -1614,7 +1615,7 @@ Sum Over Time Function: ``sum_over_time()`` : ``sum_over_time(<Scalar>,<Start>,<
 
 First Time When Condition Is True Function: ``first_time_when_condition_is_true()`` : ``first_time_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new *scalar* variable in which each zonal or nodal value is the
-    *first* time (not cyle and not time-index, but floating point time) at which
+    *first* time (not cycle and not time-index, but floating point time) at which
     the true/false condition, ``<Cond>`` is true. The ``<Fill>`` value is used
     if there is no *first* time the condition is true.
 
@@ -1622,7 +1623,7 @@ First Time When Condition Is True Function: ``first_time_when_condition_is_true(
 
 Last Time When Condition Is True Function: ``last_time_when_condition_is_true()`` : ``last_time_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new *scalar* variable in which each zonal or nodal value is the
-    *liast* time (not cyle and not time-index, but floating point time) at which
+    *liast* time (not cycle and not time-index, but floating point time) at which
     the true/false condition, ``<Cond>`` is true. The ``<Fill>`` value is used
     if there is no *last* time the condition is true.
 
@@ -1646,7 +1647,7 @@ Last Cycle When Condition Is True Function: ``last_cycle_when_condition_is_true(
 
 First Time Index When Condition Is True Function: ``first_time_index_when_condition_is_true()`` : ``first_time_index_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new integer valued *scalar* variable in which each zonal or nodal
-    value is the *first* time index (not cyle and not time, but integer
+    value is the *first* time index (not cycle and not time, but integer
     time-index) at which the true/false condition, ``<Cond>`` is true.
     The ``<Fill>`` value is used if there is no *first* time-index the
     condition is true.
@@ -1655,7 +1656,7 @@ First Time Index When Condition Is True Function: ``first_time_index_when_condit
 
 Last Time Index When Condition Is True Function: ``last_time_index_when_condition_is_true()`` : ``last_time_index_when_condition_is_true(<Cond>,<Fill>,<Start>,<Stop>,<Stride>)``
     Return a new integer valued *scalar* variable in which each zonal or nodal
-    value is the *last* time index (not cyle and not time, but integer
+    value is the *last* time index (not cycle and not time, but integer
     time-index) at which the true/false condition, ``<Cond>`` is true.
     The ``<Fill>`` value is used if there is no *last* time-index the
     condition is true.
@@ -1733,13 +1734,13 @@ Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-Lis
 
 .. _Array_Componentwise_Division_Expression_Function:
 
-Array Componentwise Division Function: ``array_componentwise_division()`` : ``array_componentwise_division(<Array>,<Divisor>)``
+Array Component-wise Division Function: ``array_componentwise_division()`` : ``array_componentwise_division(<Array>,<Divisor>)``
     Return a new *array* variable which is the old input ``<Array>`` variable
     with each of its components divided by the ``<Divisor>``.
 
 .. _Array_Componentwise_Product_Expression_Function:
 
-Array Componentwise Product Function: ``array_componentwise_product()`` : ``array_componentwise_product(<Array>,<Multiplier>)``
+Array Component-wise Product Function: ``array_componentwise_product()`` : ``array_componentwise_product(<Array>,<Multiplier>)``
     Return a new *array* variable which is the old input ``<Array>`` variable
     with each of its components multiplied by the ``<Multiplier>``.
 
@@ -1830,7 +1831,7 @@ mean curvature Function: ``mean_curvature()`` : ``mean_curvature(expr0)``
 
 .. _Gauss_Curvature_Expression_Function:
 
-gauss curvature Function: ``gauss_curvature()`` : ``gauss_curvature(expr0)``
+Gauss Curvature Function: ``gauss_curvature()`` : ``gauss_curvature(expr0)``
     No description available.
 
 .. _Agrad_Expression_Function:
@@ -1845,12 +1846,12 @@ key aggregate Function: ``key_aggregate()`` : ``key_aggregate(expr0)``
 
 .. _Laplacian_Expression_Function:
 
-laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
+Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
     No description available.
 
 .. _Rectilinear_Laplacian_Expression_Function:
 
-rectilinear laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_laplacian(expr0)``
+rectilinear Laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_laplacian(expr0)``
     No description available.
 
 .. _Conn_Components_Expression_Function:
@@ -1988,14 +1989,14 @@ Recenter Expression Function : ``recenter(expr, ["nodal", "zonal", "toggle"])``
 .. _Cylindrical_Radius_Expression_Function:
 
 Cylindrical Radius : ``cylindrical_radius(<Mesh>)``
-     Converts the coordinates of the input mesh from cartesian
+     Converts the coordinates of the input mesh from Cartesian
      coordinates to cylindrical coordinates and returns the radius component of
      the cylindrical coordinates.
 
 Time Iteration Expressions
 """"""""""""""""""""""""""
 
-Expression Compatability Gotchas
+Expression Compatibility Gotchas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 VisIt will allow you to define expressions that it winds up determining to be
@@ -2014,7 +2015,7 @@ As an aside, as the user goes back and forth between the Expressions window
 creating and/or adjusting expression definitions, VisIt makes no attempt to
 keep track of all the changes made in expressions and automatically update
 plots as expressions change. Users have to manually clear or delete plots to
-force VisIt to re-draw plots in which you've changed expressions.
+force VisIt to re-draw plots in which the expressions changed.
 
 If what is really intended was a scalar mesh variable, then users must use
 one of the expression functions that converts a vector to a scalar such as

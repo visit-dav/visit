@@ -119,7 +119,7 @@ lights have no direction.
 Light color and brightness
 """"""""""""""""""""""""""
 
-VisIt allows lights to have colors as well as brightnesses. Colored lighting
+VisIt allows lights to have color as well as brightness. Colored lighting
 can produce interesting effects that may be desirable for presentations.
 To change the light color, click on the light **Color** button and select
 a new color from the **Color** menu. Once a color is picked, you can also

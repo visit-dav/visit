@@ -155,8 +155,8 @@ is made available.
 Clearing out recently visited paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The **File Open Window** maintains a list of all of the paths that you've 
-ever visited and adds those paths to the recently visited paths list, which 
+The **File Open Window** maintains a list of all of the paths that have ever
+been visited and adds those paths to the recently visited paths list, which 
 can be accessed by clicking on the down-arrow at the far right of the
 **Paths** text field. When you click on a path in the recently visited paths 
 list, VisIt sets the database server's path to the selected path retrieves the 
@@ -204,7 +204,7 @@ VisIt can potentially open. A ``.sim2`` file contains information that VisIt
 needs in order to connect via sockets to your simulation.  If you want to 
 connect to a simulation, you must select the ``.sim2`` files 
 corresponding to the simulations to which you want to connect.
-(:numref:`Figure %s<fow_sim_image>`).  Once you've done that, connecting to a 
+(:numref:`Figure %s<fow_sim_image>`).  Once that is done, connecting to a 
 simulation is the same as opening any other disk file.
 
 .. _fow_sim_image:

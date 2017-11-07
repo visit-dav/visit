@@ -4,9 +4,9 @@ Subsetting
 ==========
 
 Meshes are frequently composed of a variety of subsets that represent
-different portions of the mesh. Common examples are Domains, Groups
-(of domains), AMR patches and levels, part Assemblies, Boundary Conditions,
-Nodesets and Zonesets, Materials and even Material Species.
+different portions of the mesh. Common examples are domains, groups
+(of domains), AMR patches and levels, part assemblies, boundary conditions,
+node sets and zone sets, materials and even material species.
 
 Users often find it useful to *restrict* which subsets are used in any given
 operation to focus their analyses on only certain regions of interest. This is

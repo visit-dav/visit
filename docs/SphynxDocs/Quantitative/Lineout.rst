@@ -194,7 +194,7 @@ shown in :numref:`Figure %s <lineout_from_curve>`.
 
    Choosing lineout from the Curve plot's variable menu
 
-It is highy recommended that you modify the Lineout's endpoints before clicking
+It is highly recommended that you modify the Lineout's endpoints before clicking
 draw, as the defaults will probably not be appropriate for your data.
 
 Global lineout options
@@ -249,7 +249,7 @@ originated the lineout, will update the lineout to reflect the new variable's
 data.  When you change time states for the plot that originated the lineout, 
 the lineout will update to reflect the data at the new time state.  
 
-To make VisIt create a new Curve plot for the lineout instead of udpating when
+To make VisIt create a new Curve plot for the lineout instead of updating when
 you change time states in the originating plot, change the **Time change** 
 behavior in the **Lineout Options Window** from **updates curve** to 
 **creates new curve**. VisIt will then put a new curve in the lineout 

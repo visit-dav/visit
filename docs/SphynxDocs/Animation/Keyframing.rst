@@ -87,7 +87,7 @@ black diamond, called a **Keyframe indicator** , will appear along the
 **Keyframe line** for the plot. When you play through the animation using any
 of VisIt's animation controls, the plot attributes are calculated for each
 animation frame and they are used to influence how the plots look when they
-appear in the vis window.
+appear in the **Viewer** window.
 
 Adding a database state keyframe
 """"""""""""""""""""""""""""""""
@@ -118,10 +118,10 @@ Adding a view keyframe
 
 In addition to being able to add keyframes for plot attributes, operator
 attributes, and database states, you can also set view keyframes so you can
-create sophisticated fly-bys of your data. To create a view keyframe, you must
-interactively change the view in the vis window using the mouse or specify an
-exact view in the **View Window** . Once the view is where you want it for the
-active animation frame, open the **View Window** and click the
+create sophisticated flybys of your data. To create a view keyframe, you must
+interactively change the view in the **Viewer**  window using the mouse or
+specify an exact view in the **View Window** . Once the view is where you want
+it for the active animation frame, open the **View Window** and click the
 **Make camera keyframe from view** button on the **Advanced** tab in order to
 make a view keyframe. Once the view keyframe has been added, a keyframe
 indicator will be drawn in the **Keyframing Window** .
@@ -156,7 +156,7 @@ The plot time range determines when a plot appears or disappears in a keyframed
 animation. Since VisIt allows plots to exist over a subset of the animation
 frames, you can set a plot's plot range in the **Keyframe area** to make a plot
 appear later in an animation or be removed before the animation reaches the
-last frame. You may find it useful to set the plot range if you've increased
+last frame. You may find it useful to set the plot range if you have increased
 the number of animation frames but found that the plot range did not expand to
 fill the new frames. To change the plot time range, you left-click on the
 beginning or ending edges of the **Plot time range** (the green band on the

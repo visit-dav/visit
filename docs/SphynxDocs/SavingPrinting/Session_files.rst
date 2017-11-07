@@ -9,7 +9,7 @@ set up complex visualizations, save a session file, and then run a new VisIt
 session later and be able to pick up exactly where you left off when you saved
 the session file. If you often look at the same types of plots with the same
 complex setup then you should save a session file for your visualization once
-you've set it up so you don't have to do any manual setup in the future.
+it is set up so you don't have to do any manual setup in the future.
 
 Saving session
 ~~~~~~~~~~~~~~
@@ -34,7 +34,7 @@ in the session file. After restoring a session file, VisIt will look exactly
 like it did when the session file was saved. To restore a session file, click
 the **Restore session** option from the **Main Window's File** menu to open
 an **Open file** dialog. Choose a session file to open using the **Open file**
-dialog. Once you've chosen a file, VisIt restores the session using the
+dialog. Once a file is chosen, VisIt restores the session using the
 selected session file. If you are on the Windows platform, you can
 double-click session files (.vses files) stored on your computer in order to
 directly open them with VisIt.

@@ -77,6 +77,6 @@ For more information on functions and objects available in VisIt's Python
 interface, see the *VisIt Python Interface* manual. After using the
 *RestoreSession* function to set VisIt situated with all of the right plots, 
 you can proceed with more advanced Python scripting to alter the view or move
-slice planes, etc. Once you've completed your Python script in a text editor,
+slice planes, etc. Once you have completed your Python script in a text editor,
 you can pasted it into the **Command Window** to test it or you can pass it
 along to VisIt's command line movie tools to make a movie.

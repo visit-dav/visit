@@ -49,7 +49,7 @@ to pick the types of movies that you want to create. You can select as many
 image and movie formats as you want and you can even specify multiple
 resolutions of the same movie. VisIt allows you to order multiple versions of
 your movie because it is often easier to create different versions of the movie
-all at once as opposed to doing it later once you've discovered that you need
+all at once as opposed to doing it later once it is discovered that you need
 a new version to play on a laptop computer or a tiled display wall.
 
 The **Save movie wizard's** second screen is divided vertically into two main
@@ -110,7 +110,7 @@ Choosing movie length
    Save movie wizard (screen 3)
 
 It is possible to specify the range of time states to use for the movie, as well
-as specify a stride if you have too many time states savedi (see :numref:`Figure %s<save_movie_wizard_3>`). 
+as specify a stride if you have too many time states saved (see :numref:`Figure %s<save_movie_wizard_3>`). 
 The wizard will automatically set the range of time states.
 
 Choosing the movie name
@@ -160,7 +160,7 @@ Choosing movie generation method
    
    Save movie wizard (screen 6)
 
-After you've specified all of your movie options, VisIt prompts you how you
+After all movie options are specified, VisIt prompts you how you
 would like your movie made. At this point, you can click the **Finish**/**Done** button
 to make VisIt start generating your movie. You can change how VisIt creates
 your movie by clicking a different movie generation method on the

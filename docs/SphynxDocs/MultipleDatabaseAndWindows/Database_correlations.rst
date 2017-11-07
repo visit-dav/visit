@@ -69,49 +69,46 @@ state in each database so the time and cycle behavior of database A and
 database B will make more sense later when time database correlations and
 cycle database correlations are covered.
 
-+----------------------------------------------------------------------------+
-| **Database A**                                                             |
-|                                                                            |
-+----------------+----+------+----+------+----+------+----+------+----+------+
-| Time state     | 0  | 1    | 2  | 3    | 4  | 5    | 6  | 7    | 8  | 9    |
-|                |    |      |    |      |    |      |    |      |    |      |
-+----------------+----+------+----+------+----+------+----+------+----+------+
-| Times          | 14 | 14.5 | 15 | 15.5 | 16 | 16.5 | 17 | 17.5 | 18 | 18.5 |
-|                |    |      |    |      |    |      |    |      |    |      |
-+----------------+----+------+----+------+----+------+----+------+----+------+
-| Cycles         | 0  | 1    | 2  | 3    | 4  | 5    | 6  | 7    | 8  | 9    |
-|                |    |      |    |      |    |      |    |      |    |      |
-+----------------+----+------+----+------+----+------+----+------+----+------+
+.. table:: Database A
+
+   +----------------+----+------+----+------+----+------+----+------+----+------+
+   | Time state     | 0  | 1    | 2  | 3    | 4  | 5    | 6  | 7    | 8  | 9    |
+   |                |    |      |    |      |    |      |    |      |    |      |
+   +----------------+----+------+----+------+----+------+----+------+----+------+
+   | Times          | 14 | 14.5 | 15 | 15.5 | 16 | 16.5 | 17 | 17.5 | 18 | 18.5 |
+   |                |    |      |    |      |    |      |    |      |    |      |
+   +----------------+----+------+----+------+----+------+----+------+----+------+
+   | Cycles         | 0  | 1    | 2  | 3    | 4  | 5    | 6  | 7    | 8  | 9    |
+   |                |    |      |    |      |    |      |    |      |    |      |
+   +----------------+----+------+----+------+----+------+----+------+----+------+
 
 
-+---------------------------------------------------------------------------+
-| **Database B (part 1)**                                                   |
-|                                                                           |
-+-------------------------+----+----+----+----+----+----+----+----+----+----+
-| Time state              | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  | 8  | 9  |
-|                         |    |    |    |    |    |    |    |    |    |    |
-+-------------------------+----+----+----+----+----+----+----+----+----+----+
-| Times                   | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 |
-|                         |    |    |    |    |    |    |    |    |    |    |
-+-------------------------+----+----+----+----+----+----+----+----+----+----+
-| Cycles                  | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 |
-|                         |    |    |    |    |    |    |    |    |    |    |
-+-------------------------+----+----+----+----+----+----+----+----+----+----+
+.. table:: Database B (part 1)
+
+   +-------------------------+----+----+----+----+----+----+----+----+----+----+
+   | Time state              | 0  | 1  | 2  | 3  | 4  | 5  | 6  | 7  | 8  | 9  |
+   |                         |    |    |    |    |    |    |    |    |    |    |
+   +-------------------------+----+----+----+----+----+----+----+----+----+----+
+   | Times                   | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 | 24 | 25 |
+   |                         |    |    |    |    |    |    |    |    |    |    |
+   +-------------------------+----+----+----+----+----+----+----+----+----+----+
+   | Cycles                  | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 |
+   |                         |    |    |    |    |    |    |    |    |    |    |
+   +-------------------------+----+----+----+----+----+----+----+----+----+----+
 
 
-+---------------------------------------------------------------------------+
-| **Database B (part 2)**                                                   |
-|                                                                           |
-+-------------------------+----+----+----+----+----+----+----+----+----+----+
-| Time state              | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 |
-|                         |    |    |    |    |    |    |    |    |    |    |
-+-------------------------+----+----+----+----+----+----+----+----+----+----+
-| Times                   | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 |
-|                         |    |    |    |    |    |    |    |    |    |    |
-+-------------------------+----+----+----+----+----+----+----+----+----+----+
-| Cycles                  | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 |
-|                         |    |    |    |    |    |    |    |    |    |    |
-+-------------------------+----+----+----+----+----+----+----+----+----+----+
+.. table:: Database B (part 2)
+
+   +-------------------------+----+----+----+----+----+----+----+----+----+----+
+   | Time state              | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 |
+   |                         |    |    |    |    |    |    |    |    |    |    |
+   +-------------------------+----+----+----+----+----+----+----+----+----+----+
+   | Times                   | 26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35 |
+   |                         |    |    |    |    |    |    |    |    |    |    |
+   +-------------------------+----+----+----+----+----+----+----+----+----+----+
+   | Cycles                  | 20 | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 |
+   |                         |    |    |    |    |    |    |    |    |    |    |
+   +-------------------------+----+----+----+----+----+----+----+----+----+----+
 
 Padded index database correlation
 """""""""""""""""""""""""""""""""
@@ -284,7 +281,7 @@ databases for the correlation. The input databases, or sources as they are
 sometimes called in VisIt, are listed in the **Sources** list (see
 :numref:`Figure %s <createcorrelation2>`). The **Sources** list only
 contains the databases that you have opened so far. If you do not see a 
-atabase that you would like to have in the database correlation, you can
+database that you would like to have in the database correlation, you can
 either click the **Cancel** button to cancel creating the new database
 correlation or you can continue creating the database correlation and
 then add the other database to the correlation later after you have opened
@@ -330,13 +327,13 @@ Altering an existing database correlation
 
    Altering a database correlation
 
-Once you've created a database correlation, you can alter it at any time
+Once a database correlation has been created, you can alter it at any time
 by highlighting it in the **Correlation** list in the
 **Database Correlation Window** and clicking the **Edit** button to the
 left of the **Correlation** list. Clicking the **Edit** button opens the
 **Database Correlation Properties Window** and allows you to change the
-correlation method and the input databases. Once you've made the desired
-changes, clicking the **Alter database correlation** button will make the
+correlation method and the input databases. Once the desired changes are
+made, clicking the **Alter database correlation** button will make the
 specified database correlation use the new options and all plots in all
 vis windows that are subject to the changed database correlation will
 update to the new time states prescribed by the altered database correlation.

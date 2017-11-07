@@ -10,7 +10,7 @@ VisIt runs on the following platforms:
 * Microsoft Windows
 
 A new version of VisIt is usually released every 2-3 months, you can 
-find VisIt release exectuables at: 
+find VisIt release executables at: 
 https://wci.llnl.gov/simulation/computer-codes/visit/executables.
 
 Download a binary release compatible with the machine you want to install
@@ -22,10 +22,10 @@ VisIt on. If you are installing VisIt on Linux, also download the
 Installing on Mac OSX
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt releases include an app bundle for Mac OSX packaged in a DMG image.
-Download and open the DMG file and copy the VisIt app
-bundle to your applications directory or any other path. To run VisIt
-double click on the VisIt app bundle. The ``visit-install`` script can 
+VisIt releases include an app-bundle for Mac OSX packaged in a DMG image.
+Download and open the DMG file and copy the VisIt app-bundle to your
+applications directory or any other path. To run VisIt
+double click on the VisIt app-bundle. The ``visit-install`` script can 
 also be used to install tarball packaged OSX binaries. For this case
 follow the Linux installation instructions. 
 

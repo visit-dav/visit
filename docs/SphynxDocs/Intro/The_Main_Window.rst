@@ -31,7 +31,7 @@ Windows that have a **Post** button can be posted to the **Main window's Notepad
 area. Clicking on a window's **Post** button hides the window and adds its
 controls to a new tab in the **Notepad** area. Posting windows allows you to
 have several windows active at the same time without cluttering the screen.
-When a window is posted, its **Post** button turns to an **UnPost** button
+When a window is posted, its **Post** button turns to an **Unpost** button
 that, when clicked, removes the posted window from the **Notepad** area and
 displays the window in its own window.
 :numref:`Figure %s <Animation_window_and_Post_button>` shows an example of a
@@ -80,15 +80,15 @@ in this manual.
 
    VisIt's main menus
 
-The **Main** menu and the **Plot and operator** menu are merged in the MacOS
-X version of VisIt because MacOS X applications always have all menus in the
+The **Main** menu and the **Plot and operator** menu are merged in the OSX 
+version of VisIt because OSX applications always have all menus in the
 system menu along the top of the display.
 
 .. _Main_menu_and_Plot_and_Operator_menu_in_MacOS_X:
 
 .. figure:: images/macmainmenu.png
 
-   Main menu and Plot and Operator menu are combinded in MacOS X
+   Main menu and Plot and Operator menu are combined in OSX
 
 Viewing status messages
 ~~~~~~~~~~~~~~~~~~~~~~~ 

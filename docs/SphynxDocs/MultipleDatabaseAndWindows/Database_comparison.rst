@@ -26,7 +26,7 @@ implies, the expression takes fields from one mesh and maps the field onto
 another mesh by taking the cell or node-centered values on the donor mesh
 and mapping them onto the cells or nodes having the same indices in the
 new mesh. Mismatches in mesh sizes result in not all data values being
-used or, alternatively, VisIt can pad the remapped field with zeroes. The
+used or, alternatively, VisIt can pad the remapped field with zeros. The
 conn_cmfe expression can be used to map fields from one database onto a
 mesh in another database, which then allows you to create expressions
 involving the active database.

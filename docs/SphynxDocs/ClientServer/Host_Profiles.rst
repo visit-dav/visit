@@ -27,7 +27,7 @@ to create, delete, copy and export profiles.  The right area contains two
 vertical tabs: **Remote Profiles**, used for installing profiles retrieved 
 from a remote location; and **Machines**, which displays all attributes for 
 the selected host profile.  The **Remote Profiles** tab is useful for 
-obtaining profiles that weren't installed with VisIt.  **Machines** has two 
+obtaining profiles that were not installed with VisIt.  **Machines** has two 
 sections contained in tabs displayed horizontally across the top: 
 **Host Settings** and **Launch Profiles**.  The **Host Settings** tab displays 
 information for the selected machine, including nickname, full host name, 
@@ -77,7 +77,7 @@ Exporting a Host Profile
 The **Export host** button is useful for saving a host profile installed on 
 your machine to share with someone else.  Select the host profile you wish to 
 export, and click the checkbox. The exported host will be saved to your
-user VisIt directory (~/.visit/hosts on linux).
+user VisIt directory (~/.visit/hosts on Linux).
 
 
 .. _setting_general_options:
@@ -192,7 +192,7 @@ connection until you click the **Cancel** button in the
 **Launch progress window**.
 
 By default, VisIt tunnels data connections through SSH,  If you don't want to
-tunnel, or SSH tunneling isn't working you can turn it off by unchecking
+tunnel, or SSH tunneling is not working you can turn it off by unchecking
 **Tunnel data connections through SSH** in the **Connection** section.  If you 
 want VisIt to rely on the the name obtained from the local computer, click on 
 **Use local machine name**.  If you choose the 
@@ -238,7 +238,7 @@ Gateway
 """""""
 If access to the compute nodes on your remote cluster is controlled by a 
 gateway computer, then check the **Use gateway** checkbox, and enter the fully 
-qualified name of the gatweway computer in the text field.  In order for VisIt
+qualified name of the gateway computer in the text field.  In order for VisIt
 to tunnel SSH connections through the gateway computer, passwordless-ssh needs
 to be set up from the gateway computer to the hose where you ultimately want
 to run VisIt.  See :ref:`SettingUpPasswordlessSSH` for instructions on how
@@ -278,9 +278,9 @@ Deleting a launch profile
 """""""""""""""""""""""""
 
 Select the profile to be deleted by clicking on its name in the list, then 
-click the **Delete Profile** button. If you've made a mistake in deleting
+click the **Delete Profile** button. If you have made a mistake in deleting
 the profile, you must exit VisIt and restart.  Saving your settings will make 
-the change permament for future sessions.
+the change permanent for future sessions.
 
 
 Activating a Launch Profile
@@ -353,7 +353,8 @@ computer using the parallel options specified in the host profile. Furthermore,
 once you create a host profile that works for a computer, you rarely need to
 modify it.
 
-To enable parallel options open the **Parallel** tab of the **Launch Profiles** tab, and click the **Launch parallel engine** checkbox.
+To enable parallel options open the **Parallel** tab of the **Launch Profiles**
+tab, and click the **Launch parallel engine** checkbox.
 
 Setting the Parallel Launch Method
 """"""""""""""""""""""""""""""""""
@@ -438,8 +439,9 @@ type: *30m*.
 Specifying a machine file
 """""""""""""""""""""""""
 
-When using VisIt with MPICH on some clustered computers, it is necessary to
-specify a machine file, which is a file containing a list of the compute nodes
+When using VisIt with some versions of MPI on some clustered computers, it 
+may be necessary to specify a *machine file*, which is a file containing a
+list of the compute nodes
 where the VisIt compute engine should be executed. If you want to specify a
 machine file when you execute VisIt in parallel on a cluster that requires a
 machine file, click on the **Machine File** check box and type the name
@@ -451,7 +453,7 @@ Specifying Constraints
 """"""""""""""""""""""
 
 Some machines constrain the processor-to-node ratio.  In order to prevent 
-accidentally requesting nodes/processors outside those contraints, they can be 
+accidentally requesting nodes/processors outside those constraints, they can be
 entered in table form by clicking the **Constraints** checkbox to enable the
 controls.  Click **Add row** to add a new row to the table, and **Delete row** 
 to remove a row from the table.  For each row, enter number of nodes and
@@ -507,8 +509,9 @@ environment variables required for VisIt to execute. When the visit script is
 told to launch a parallel compute engine, it sets up the environment variables
 as it usually does and then invokes an appropriate parallel launch program that
 takes care of either spawning the VisIt parallel compute engine processes or
-scheduling them to run in a batch system. When VisIt is used with MPICH on some
-clusters, the parallel launch program does not replicate the environment
+scheduling them to run in a batch system. When VisIt is used with some versions
+of MPI on some clusters, the parallel launch program does not replicate the
+environment
 variables that the visit script set up, preventing the VisIt parallel compute
 engine from running. On clusters where the parallel launch program does not
 replicate the VisIt environment variables, VisIt provides an option to start
@@ -533,7 +536,7 @@ Setting sublauncher options
 
 To give additional command line options to the sublauncher program, click
 the **Sublauncher arguments**, **Sublauncher pre-mpi command** or
-**Sbulauncher post-mpi command** check box and type options into the text 
+**Sublauncher post-mpi command** check box and type options into the text 
 field to the right of that check box.
 
 

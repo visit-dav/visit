@@ -1,3 +1,13 @@
+.. only:: spelling
+
+   .. Note only one colon after 'spelling' so its a comment
+   .. spelling:
+
+      ytrans
+      zf
+      vp
+      wp
+
 .. _View:
 
 View
@@ -5,8 +15,8 @@ View
 
 The view is one of the most critical properties of a visualization since
 it determines what parts of the dataset are seen. The view is also one of
-the most difficult properties to set. It isn't that the act of setting
-the view is difficult, in fact, it is quit the opposite. The problem with
+the most difficult properties to set. It is not that the act of setting
+the view is difficult. In fact, it is quit the opposite. The problem with
 setting the view is finding a flattering view for a database that will
 continue to be a good view for the entire life of the visualization. Many
 plots will deform or expand over the course of an animation and you have
@@ -82,7 +92,7 @@ window in which you want the 2D plots to appear. Imagine that the lower
 left corner of the visualization window is the origin of a coordinate
 system and that the upper left and lower right corners both have values
 of 1. Every point in the visualization window can be characterized as a
-cartesian coordinate where both values in the coordinate are in the range
+Cartesian coordinate where both values in the coordinate are in the range
 [0,1]. The viewport is specified by entering four numbers in the form
 x0 x1 y0 y1 where x0 is the leftmost X value, x1 is the rightmost X value,
 y0 is the lower Y value, and y1 is the upper Y value that will be used in
@@ -101,11 +111,11 @@ fields on the **View Window's 2D view** tab
    The 2D view options
 
 Some databases yield plots that are so long and skinny that they leave
-most of the vis window blank when VisIt displays them. A common example
-is equation of state data, which often has at least 1 exponential
+most of the visualization window blank when VisIt displays them. A common
+example is equation of state data, which often has at least 1 exponential
 dimension. VisIt provides Fullframe mode to stretch long, skinny plots so
-they fill more of the vis window so it is easier to see them. It is worth
-noting that Fullframe mode does not preserve a 1:1 aspect ratio for the
+they fill more of the visualization window so it is easier to see them. It is
+worth noting that Fullframe mode does not preserve a 1:1 aspect ratio for the
 displayed plots because they are stretched in each dimension so they fit
 better in the visualization window. To activate full frame mode, click
 on the **Auto** or **On** radio buttons to the left of the **Full Frame**
@@ -279,7 +289,7 @@ window in that they effects take effect immediately, without having to
 press the **Apply** button.
 
 The **Copy view from camera** check box and the
-**Make camer keyframe from view** button are deprecated and will be
+**Make camera keyframe from view** button are deprecated and will be
 removed in the next release.
 
 The center of rotation is the point about which plots are rotated when you
@@ -316,7 +326,7 @@ the view. The following table has a description of the supported view commands:
 | panx x      | Pans the 3D view left or right. The x argument is a floating point fraction of the screen in the range [0,1].                                                                                                                                                                                                                                                                                                                         |
 |             |                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 +-------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| pany y      | Pans the 3D view up or down. The yargument is a floating point fraction of the screen in the range [0,1].                                                                                                                                                                                                                                                                                                                             |
+| pany y      | Pans the 3D view up or down. The y-argument is a floating point fraction of the screen in the range [0,1].                                                                                                                                                                                                                                                                                                                            |
 |             |                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 +-------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | ytrans y    | Same as pany.                                                                                                                                                                                                                                                                                                                                                                                                                         |

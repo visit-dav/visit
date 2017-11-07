@@ -93,7 +93,7 @@ plotted mesh is not a point mesh. The different point types are as follows:
   - Axis
   - Icosahedron
   - Octahedron
-  - Tetraahedron
+  - Tetrahedron
   - Point
   - Sphere 
 

@@ -26,7 +26,7 @@ the files in the database. By having a list of files that make up the database,
 VisIt does not have to guess database membership based on file naming
 conventions. While this may appear to be inconvenient, it removes the
 possibility that VisIt will include a file that is not in the database. It
-also frees VisIt from having to know about dozens of ad-hoc file naming
+also frees VisIt from having to know about dozens of ad hoc file naming
 conventions. Having a ``.visit`` file also allows VisIt to make certain
 optimizations when generating a visualization. VisIt provides a **File grouping** 
 combo box in the **File open** window (see :numref:`Figure %s<file_open_fig>`) to assist in the creation of a 

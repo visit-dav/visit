@@ -5,7 +5,7 @@ Plot geometry can be saved to a handful of geometric formats by saving the
 plots in the window to a format such as VTK. Often saving the plot geometry,
 which only consists of the visible faces required to draw the plot, is not
 enough. When interfacing VisIt to other tools you may want to save out the
-database that you've plotted in a different file format. For instance, you
+database in a different file format. For instance, you
 might plot a 3D database and want to export actual 3D cells for the entire
 database instead of just the externally visible geometry. You might also
 want to save out additional variables that you did not plot. VisIt allows
