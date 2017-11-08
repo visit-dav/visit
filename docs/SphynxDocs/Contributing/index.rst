@@ -3,32 +3,99 @@
 Contributing
 ============
 
-This is a short primer on the VisIt project's use of Sphinx for its
+This is a short contributing guide on the VisIt project's use of Sphinx for its
 documentation including some notes on style, word usage and grammar.
 
-Sphinx Usage
-~~~~~~~~~~~~
+Quick Reference
+~~~~~~~~~~~~~~~
 
-Note that Sphinx uses blank lines as a block separators and indentation
-for interpretation. So, be sure to pay careful attention to blank lines
-and indentation in these examples. They are not there for style.
-They **need** to be there for Sphinx to intepret the content directly.
+* Sphinx uses blank lines as a block separators and 2 or 4 spaces of
+  indentation to guide parsing and interpretation of content. So, be sure
+  to pay careful attention to blank lines and indentation. They are not
+  there for style.  They **need** to be there for Sphinx to parse and
+  intepret the content directly.
+* Creat headings by a sequence *separator characters* immediately
+  underneath and the same length as the heading text as in::
 
-Headings
-""""""""
+    Top level heading
+    =================
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 
-* Top level heading (e.g. 19), ``---``
-* Second level heading (e.g. 19.1), ``===``
-* Third level heading (e.g. 19.1.1), ``~~~``
-* Fourth level heading (e.g. 19.1.1.1), ``"""``
+    Second level heading
+    ~~~~~~~~~~~~~~~~~~~~
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 
-In addition, keep individual lines to 80 columns or less.
+    Third level heading
+    """""""""""""""""""
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 
-References
-""""""""""
+    Fourth Level Heading
+    --------------------
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 
-Images
-""""""
+yields these headings...
+
+Top level heading
+=================
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+
+Second level heading
+~~~~~~~~~~~~~~~~~~~~
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+
+Third level heading
+"""""""""""""""""""
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+
+Fourth Level Heading
+--------------------
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+
+* Wherever possible, keep lines in ``.rst`` files to 80 columns or less.
+* Avoid hyphenation of words.
+* Avoid contractions such as ``isn't``, ``couldn't`` and ``you've``.
+* Use **Bold** to refer to widget names, operator or plot names, etc.
+* Use ``.. figure::`` and not ``.. image::``, include captions and use
+  ``:scale: P %`` where needed (:ref:`see more below <contributing_images>`).
+* LaTeX-style equations can be included too
+  (:ref:`see below <contributing_math>`).
+
+.. _my_anchor:
+
+* Define anchors ahead of sections or paragraphs you want to cross-reference::
+
+    .. _my_anchor:
+
+    Section Heading
+    ---------------
+
+  Note that the leading underscore is **not** part of the anchor name.
+* Make anchors names unique over all pages of documentation by using
+  the convention of prepending heading and subheading names.
+* Link to anchors *within* this documentation like
+  :ref:`this one <my_anchor>`::
+
+    :ref:`link text <my_anchor>`
+
+* Link to other documents elsewhere online like
+  `visitusers.org <https://www.visitusers.org/>`_::
+
+    `link text <URL>`_
+
+* Link to *numbered* figures or tables *within* this documentation like
+  :numref:`Fig. %s <my_figure2>`::
+
+    :numref:`Fig. %s <my_figure2>`
+
+* Link to a downloadable file *within* this documentation like
+  :download:`this one <../Quantitative/VerdictManual-revA.pdf>`::
+
+    :download:`this one <../Quantitative/VerdictManual-revA.pdf>`
+
+.. _contributing_images:
+
+More on Images
+""""""""""""""
 
 Try to use PNG formatted images. We plan to use the Sphinx generated
 documentation both for online HTML and for printed PDF. So, images sizes
@@ -40,9 +107,13 @@ just pixel dimensions. This can have the effect of causing a nicely sized
 image (from pixel dimensions perspective anyways), to either be unusually
 large or unusually small in HTML or PDF output. In these cases, you can
 use the Sphinx ``:scale:`` and ``:width:`` or ``:height:`` options for
-a ``.. figure::``. Also, be sure to use a ``.. figure::`` directive instead
-of an ``.. image::`` directive for embedding images. This is because the
-``.. figure::`` directive also supports cross-referencing.
+a ``.. figure::`` block. Also, be sure to use a ``.. figure::`` directive
+instead of an ``.. image::`` directive for embedding images. This is because
+the ``.. figure::`` directive also supports anchoring for cross-referencing.
+
+Although all images get copied into a common directory during generation,
+Sphinx takes care of re-mapping names so there is no need to worry about
+collisions in image file names.
 
 An ordinary image...
 
@@ -76,27 +147,55 @@ Same image with an anchor for cross-referencing...
 .. figure:: ../Quantitative/images/Array_compose_with_bins.png
    :scale: 50% 
 
-which can now be cross-referenced using an inline :numref:`reference %s <my_figure>` 
+which can now be cross-referenced using an inline :numref:`Fig. %s <my_figure>` 
 like so...
 
 .. code-block:: RST
 
-  Which can now be cross-referenced using an inline :numref:`reference %s <my_figure>` 
+  Which can now be cross-referenced using an inline :numref:`Fig. %s <my_figure>` 
   like so...
 
 Note the anchor has a leading underscore which the reference does not include.
 
+Same image (different anchor though because anchors need to be unique) with
+a caption.
+
+.. code-block:: RST
+
+  .. _my_figure2:
+
+  .. figure:: ../Quantitative/images/Array_compose_with_bins.png
+     :scale: 50% 
+
+     Here is a caption for the figure.
+
+.. _my_figure2:
+
+.. figure:: ../Quantitative/images/Array_compose_with_bins.png
+   :scale: 50% 
+
+   Here is a caption for the figure.
+
+Note that the figure label (e.g. Fig 19.2) will not appear if there is no
+caption.
+
 Tables
 """"""
+Sphinx supports a variety of mechanisms for defining tables. The conversion
+tool used to convert this documentation from its original OpenOffice format
+converted all tables to the *grid* style of table which is kinda sorta like
+ascii-art. Large tables can result in individual lines that span many widths of
+the editor window. It is combersome to deal with but rich in capabilities.
 
+.. _contributing_math:
 
 Math
 """"
 
 We add the Sphinx built-in extension ``sphinx.ext.mathjax`` to the
 ``extensions`` variable in ``conf.py``. This allows Sphinx to use
-`mathjax <https://www.mathjax.org>`_ to do Latex-like math equations in our
-documentation. For example, this code
+`mathjax <https://www.mathjax.org>`_ to do LaTeX-like math equations in our
+documentation. For example, this LaTeX code
 
 .. code-block:: RST
 
@@ -106,7 +205,12 @@ produces...
 
 :math:`x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}`
 
-You can find more examples in :ref:`Expressions <Expressions>`
+You can find a few examples in :ref:`Expressions <Expressions>`. Search
+there for `:math:`. Also, this
+`LaTeX Wiki page <https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols>`_
+has a lot of useful information on various math symbols available in LaTeX
+and `this wiki book <https://en.wikibooks.org/wiki/LaTeX/Mathematics>`_ has
+a lot of guidance on constructing math equations with LaTeX.
 
 Spell Checking
 """"""""""""""
@@ -170,6 +274,9 @@ are...
 Style and Grammar
 ~~~~~~~~~~~~~~~~~
 
+Avoid Confusing Jargon
+""""""""""""""""""""""
+
 Its difficult to remember but a key purpose of this content is to educate
 *users* of VisIt and not *developers*. As developers, its far too easy to
 fall into developer-centric terminology and jargon and get too detailed in
@@ -185,8 +292,16 @@ from the *user's* perspective. For example, does a user need to know about
 a **Subset Inclusion Lattice (SIL)** in order to understand how to use the 
 **Subset Window**? Probably not.
 
+Compound Words
+""""""""""""""
+
 Should we use *timestep*, *time-step* or *time step*? Likewise for many other
-terms such as *dropdown*, *submenu*, *keyframe*, *checkbox*, etc.
+terms such as *dropdown*, *submenu*, *keyframe*, *checkbox*, etc. We do not
+necessarily need to be consistent *across* all such words. But, we should be
+consistent *within* each term.
+
+Avoid Hyphenation
+"""""""""""""""""
 
 From the point of view of quality spell checking and minimizing the need for
 special case words in the global wordlist file, it is best to minimize the
@@ -203,5 +318,3 @@ First, Second or Third Person
 Third person reads the most formal and professional. However, it does not
 always result in the greatest concision, especially when describing a long
 list of steps for the user to follow.
-
-
