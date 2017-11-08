@@ -3,11 +3,16 @@
 Contributing
 ============
 
-A short primer on the VisIt project's use of Sphinx for its documentation
-including some notes on style, word usage and grammar.
+This is a short primer on the VisIt project's use of Sphinx for its
+documentation including some notes on style, word usage and grammar.
 
 Sphinx Usage
 ~~~~~~~~~~~~
+
+Note that Sphinx uses blank lines as a block separators and indentation
+for interpretation. So, be sure to pay careful attention to blank lines
+and indentation in these examples. They are not there for style.
+They **need** to be there for Sphinx to intepret the content directly.
 
 Headings
 """"""""
@@ -16,6 +21,8 @@ Headings
 * Second level heading (e.g. 19.1), ``===``
 * Third level heading (e.g. 19.1.1), ``~~~``
 * Fourth level heading (e.g. 19.1.1.1), ``"""``
+
+In addition, keep individual lines to 80 columns or less.
 
 References
 """"""""""
@@ -69,12 +76,13 @@ Same image with an anchor for cross-referencing...
 .. figure:: ../Quantitative/images/Array_compose_with_bins.png
    :scale: 50% 
 
-Which can now be cross-referenced using an inline :numref:`reference %s <my_figure>` 
+which can now be cross-referenced using an inline :numref:`reference %s <my_figure>` 
 like so...
 
 .. code-block:: RST
 
   Which can now be cross-referenced using an inline :numref:`reference %s <my_figure>` 
+  like so...
 
 Note the anchor has a leading underscore which the reference does not include.
 
@@ -90,9 +98,9 @@ We add the Sphinx built-in extension ``sphinx.ext.mathjax`` to the
 `mathjax <https://www.mathjax.org>`_ to do Latex-like math equations in our
 documentation. For example, this code
 
-::
+.. code-block:: RST
 
-    :math:`x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}`
+  :math:`x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}`
 
 produces...
 
@@ -148,7 +156,52 @@ For the time being, the only solution is to add the words to the global
 Glossary
 ~~~~~~~~
 
-Should work to define only terms unique to VisIt
+Should work to define only terms unique to VisIt. Examples of good candidates
+are...
+
+* SIL
+* Species
+* OnionPeel
+* Mesh
+* Viewer
+* cycle
+* timestep
 
 Style and Grammar
 ~~~~~~~~~~~~~~~~~
+
+Its difficult to remember but a key purpose of this content is to educate
+*users* of VisIt and not *developers*. As developers, its far too easy to
+fall into developer-centric terminology and jargon and get too detailed in
+descriptions of things.
+
+This is not to say we could not eventually add developer-specific content here
+and use Sphinx *tagging* to filter it out when we produce the HTML for the
+*user* manual. But, if/when we do that, we'll still need to maintain a clear
+distinction between content for *users* and content for *developers*.
+
+The point of mentioning this is to remind authors to focus on describing things
+from the *user's* perspective. For example, does a user need to know about
+a **Subset Inclusion Lattice (SIL)** in order to understand how to use the 
+**Subset Window**? Probably not.
+
+Should we use *timestep*, *time-step* or *time step*? Likewise for many other
+terms such as *dropdown*, *submenu*, *keyframe*, *checkbox*, etc.
+
+From the point of view of quality spell checking and minimizing the need for
+special case words in the global wordlist file, it is best to minimize the
+use of hyphenated words. Hyphens should be used *only* when absolutely 
+necessary to ensure proper meaning.
+
+* Upper case for all letters in an acronyms (MPI, VTK)
+* Use case-conventions of product names (QuickTime, TotalView, Valgrind)
+* Do we need 
+
+First, Second or Third Person
+"""""""""""""""""""""""""""""
+
+Third person reads the most formal and professional. However, it does not
+always result in the greatest concision, especially when describing a long
+list of steps for the user to follow.
+
+
