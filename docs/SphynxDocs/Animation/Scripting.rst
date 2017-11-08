@@ -21,11 +21,6 @@ Command Window
 
    Command Window
 
-.. figure:: images/visitcliwindow.png
-
-   CLI Program Window
-
-
 It is possible for VisIt's GUI and Python Interface to share the same viewer
 component at runtime. When you invoke visit at the command line, VisIt's GUI is
 launched. When you invoke ``visit -cli`` at the command line, VisIt's CLI 

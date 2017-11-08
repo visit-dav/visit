@@ -17,7 +17,7 @@ based on visualizations that you have created while using VisIt's GUI then you
 might also want to read about the **Save movie wizard** . If the visit command
 is in your path then typing ``visit -movie`` at the command prompt, regardless
 of the platform that you are using, will launch the ``visit -movie``
-utility. The following table lists ``visit -movie'`` s command line arguments:
+utility. The following table lists ``visit -movie`` command line arguments:
 
 +-------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Argument          | Description                                                                                                                                                                                                                                                                                       |
