@@ -15,6 +15,11 @@ adopted here were driven by whatever the conversion tool produced. There are
 numerous opportunities for adjusting this to make better use of Sphinx as we
 move forward. These are discussed in
 
+* Two documents about Sphinx are useful:
+
+  * `reStructuredText Markup Specification <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_
+  * `Sphinx Documentation <http://www.sphinx-doc.org/en/stable/contents.html>`_
+
 * Sphinx uses blank lines as a block separators and 2 or 4 spaces of
   indentation to guide parsing and interpretation of content. So, be sure
   to pay careful attention to blank lines and indentation. They are not
