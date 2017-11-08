@@ -8,13 +8,19 @@ documentation including some notes on style, word usage and grammar.
 
 Quick Reference
 ~~~~~~~~~~~~~~~
+Note that the original source of most of the content here is the OpenOffice
+document produced by Brad Whitlock. A conversion tool was used to move most
+of the content there to Sphinx. As such, most of the Sphinx usage conventions
+adopted here were driven by whatever the conversion tool produced. There are
+numerous opportunities for adjusting this to make better use of Sphinx as we
+move forward. These are discussed in
 
 * Sphinx uses blank lines as a block separators and 2 or 4 spaces of
   indentation to guide parsing and interpretation of content. So, be sure
   to pay careful attention to blank lines and indentation. They are not
   there for style.  They **need** to be there for Sphinx to parse and
   intepret the content directly.
-* Creat headings by a sequence *separator characters* immediately
+* Create headings by a sequence of *separator characters* immediately
   underneath and the same length as the heading text as in::
 
     Top level heading
@@ -53,12 +59,30 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 
 * Wherever possible, keep lines in ``.rst`` files to 80 columns or less.
 * Avoid hyphenation of words.
+* Upper case for all letters in an acronyms (MPI, VTK)
+* Use case-conventions of product names (QuickTime, TotalView, Valgrind)
+* Bracket word(s) with two-stars (``**some words**``) for **bold**.
+* Bracket word(s) with one-star (``*word*``) for *italics*.
+* Bracket word(s) with two backticks (``this is three words``) for literal::
+
+    Bracket word(s) with two backticks (``this is three words``) for literal.
+
+* Line breaks in bracketed word(s) cause problems.
+* Subscripting, H\ :sub:`2`\ O, and superscripting, E = mc\ :sup:`2`, are supported::
+
+    Subscripting, H\ :sub:`2`\ O, and superscripting, E = mc\ :sup:`2`, are supported
+
 * Avoid contractions such as ``isn't``, ``couldn't`` and ``you've``.
 * Use **Bold** to refer to widget names, operator or plot names, etc.
-* Use ``.. figure::`` and not ``.. image::``, include captions and use
-  ``:scale: P %`` where needed (:ref:`see more below <contributing_images>`).
+* Use literals for code, commands, arguments, file names, etc.
+* Use ``.. figure::`` and not ``.. image::``, include captions with figures
+  and use ``:scale: P %`` to adjust image size where needed
+  (:ref:`see more below <contributing_images>`).
 * LaTeX-style equations can be included too
   (:ref:`see below <contributing_math>`).
+* Spell checking is supported too (:ref:`see below <contributing_spell>`) but
+  you need to have PyEnchant and sphinx-contrib.spelling installed.
+* Begin a line with ``..`` followed by space for single line comments.
 
 .. _my_anchor:
 
@@ -212,6 +236,8 @@ has a lot of useful information on various math symbols available in LaTeX
 and `this wiki book <https://en.wikibooks.org/wiki/LaTeX/Mathematics>`_ has
 a lot of guidance on constructing math equations with LaTeX.
 
+.. _contributing_spell:
+
 Spell Checking
 """"""""""""""
 
@@ -257,64 +283,35 @@ desired.
 For the time being, the only solution is to add the words to the global
 ``spelling_wordlist.txt`` file.
 
-Glossary
-~~~~~~~~
+Sphinx Features To Consider Adopting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Should work to define only terms unique to VisIt. Examples of good candidates
-are...
+* Do we need a glossary of VisIt-specific terms such as...
 
-* SIL
-* Species
-* OnionPeel
-* Mesh
-* Viewer
-* cycle
-* timestep
+ * SIL
+ * Species
+ * OnionPeel
+ * Mesh
+ * Viewer
+ * cycle
+ * timestep
+ * SR
 
-Style and Grammar
-~~~~~~~~~~~~~~~~~
+* ``:term:`` role for glossary terms
+* ``:abbr:`` role for abbreviations
+* ``:guilable:`` role for referring to GUI widgets
+* ``:command:`` fole for OS-level cammands
+* ``:file:`` role for referring to file names
+* ``:menuselection:`` role for referring to widget paths in GUI menus
+* ``:kdb:`` role for specifying a sequence of key strokes
+* ``.. deprecated::`` directive for deprecated functionality
+* ``.. versionadded::`` directive for new functionality
+* ``.. versionchanged::`` directive for new functionality
+* ``.. note::``, ``.. warning::`` and/or ``.. danger::`` directives to call
+  attention to the reader.
+* ``.. only::`` directives for audience specific (e.g. tagged) content
+  
+  * Could use to also include developer related content but have it
+    not appear in the user manual output
 
-Avoid Confusing Jargon
-""""""""""""""""""""""
-
-Its difficult to remember but a key purpose of this content is to educate
-*users* of VisIt and not *developers*. As developers, its far too easy to
-fall into developer-centric terminology and jargon and get too detailed in
-descriptions of things.
-
-This is not to say we could not eventually add developer-specific content here
-and use Sphinx *tagging* to filter it out when we produce the HTML for the
-*user* manual. But, if/when we do that, we'll still need to maintain a clear
-distinction between content for *users* and content for *developers*.
-
-The point of mentioning this is to remind authors to focus on describing things
-from the *user's* perspective. For example, does a user need to know about
-a **Subset Inclusion Lattice (SIL)** in order to understand how to use the 
-**Subset Window**? Probably not.
-
-Compound Words
-""""""""""""""
-
-Should we use *timestep*, *time-step* or *time step*? Likewise for many other
-terms such as *dropdown*, *submenu*, *keyframe*, *checkbox*, etc. We do not
-necessarily need to be consistent *across* all such words. But, we should be
-consistent *within* each term.
-
-Avoid Hyphenation
-"""""""""""""""""
-
-From the point of view of quality spell checking and minimizing the need for
-special case words in the global wordlist file, it is best to minimize the
-use of hyphenated words. Hyphens should be used *only* when absolutely 
-necessary to ensure proper meaning.
-
-* Upper case for all letters in an acronyms (MPI, VTK)
-* Use case-conventions of product names (QuickTime, TotalView, Valgrind)
-* Do we need 
-
-First, Second or Third Person
-"""""""""""""""""""""""""""""
-
-Third person reads the most formal and professional. However, it does not
-always result in the greatest concision, especially when describing a long
-list of steps for the user to follow.
+* ``.. seealso::`` directive for references
