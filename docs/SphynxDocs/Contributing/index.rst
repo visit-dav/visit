@@ -305,7 +305,7 @@ Sphinx Features To Consider Adopting
 * ``:term:`` role for glossary terms
 * ``:abbr:`` role for abbreviations
 * ``:guilable:`` role for referring to GUI widgets
-* ``:command:`` fole for OS-level cammands
+* ``:command:`` role for OS-level cammands
 * ``:file:`` role for referring to file names
 * ``:menuselection:`` role for referring to widget paths in GUI menus
 * ``:kdb:`` role for specifying a sequence of key strokes
