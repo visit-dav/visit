@@ -55,6 +55,29 @@ Same image with ``:scale: 50%`` option
 .. figure:: ../Quantitative/images/Array_compose_with_bins.png
    :scale: 50% 
 
+Same image with an anchor for cross-referencing...
+
+.. code-block:: RST
+
+  .. _my_figure:
+
+  .. figure:: ../Quantitative/images/Array_compose_with_bins.png
+     :scale: 50% 
+
+.. _my_figure:
+
+.. figure:: ../Quantitative/images/Array_compose_with_bins.png
+   :scale: 50% 
+
+Which can now be cross-referenced using an inline :numref:`reference %s <my_figure>` 
+like so...
+
+.. code-block:: RST
+
+  Which can now be cross-referenced using an inline :numref:`reference %s <my_figure>` 
+
+Note the anchor has a leading underscore which the reference does not include.
+
 Tables
 """"""
 
