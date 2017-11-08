@@ -42,7 +42,6 @@ Truecolor
 Ubuntu
 Uncheck
 VTK
-Viscuos
 Warpage
 Wireframe
 WxH

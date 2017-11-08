@@ -278,7 +278,7 @@ In addition, if the two expressions differ in centering (e.g. one is *zone*
 or *cell* centered or *piecewise-constant* over mesh cells while the other is
 *node* or *point* centered or *pieceiwse-linear* over mesh cells), VisIt will
 *recenter* any *node*-centered fields to *zone*-centering to compute the
-sum. This may not always be desirable. When it is not, the 
+expression. This may not always be desirable. When it is not, the 
 :ref:`recenter() <Recenter_Expression_Function>` may be used to explicitly control the
 centering of specific operands in an expression.
 
@@ -414,12 +414,6 @@ Square Root Function (``sqrt()``) : ``sqrt(expr0)``
 Relational, Conditional and Logical Expressions
 """""""""""""""""""""""""""""""""""""""""""""""
 
-.. danger::
-   Confirm relational and logical expressions produce new, boolean valued
-   expression variables which are themselves plottable in VisIt. Their
-   original intent may have been only to be used as args in the IF expression
-   and not so much be plottable outputs in their own right.
-
 The ``if()`` conditional expression is designed to be used in concert with
 relation and logical expressions. Together, these expressions can be used to
 build up more complex expressions in which very different evaluations are
@@ -428,6 +422,25 @@ performed depending on the outcome of other evaluations. For example, the
 relational expressions to create a new expression which evaluates to a
 dot-product on part of a mesh and to the magnitude of a divergence operator
 on another part of a mesh.
+
+.. _If_Expression_Function:
+
+If Function (``if()``) : ``if(exprCondition, exprTrue, exprFalse)``
+    Creates a new expression which is equal to ``exprTrue`` wherever 
+    the condition, ``exprCondition`` is non-zero and which is equal to
+    ``exprFalse`` wherever ``exprCondition`` is zero.
+
+    For example, the expression
+    ``if(and(gt(pressure, 2.0), lt(pressure, 4.0)), pressure, 0.0)``
+    combines the ``if`` expression with the ``gt`` and ``lt`` expressions
+    to create a new expression that is equal to ``pressure`` wherever it is
+    between 2.0 and 4.0 and 0 otherwise.
+
+.. danger::
+   Confirm relational and logical expressions produce new, boolean valued
+   expression variables which are themselves plottable in VisIt. Their
+   original intent may have been only to be used as args in the IF expression
+   and not so much be plottable outputs in their own right.
 
 .. _Equal_Expression_Function:
 
@@ -494,20 +507,6 @@ Logical Not Function (``not()``) : ``not(expr0)``
     Creates a new expression which is everywhere the logical *not* of its
     argument. Non-zero values are treated as true whereas zero values are
     treated as false.
-
-.. _If_Expression_Function:
-
-If Function (``if()``) : ``if(exprCondition,exprTrue,exprFalse)``
-    Creates a new expression which is equal to ``exprTrue`` wherever 
-    the condition, ``exprCondition`` is true (e.g. non-zero) and which
-    is equal to ``exprFalse`` wherever ``exprCondition`` is false
-    (e.g zero).
-
-    For example, the expression
-    ``if(and(gt(pressure, 2.0), lt(pressure, 4.0)), pressure, 0.0)``
-    combines the ``if`` expression with the ``gt`` and ``lt`` expressions
-    to create a new expression that is equal to ``pressure`` wherever it is
-    between 2.0 and 4.0 and 0 otherwise.
 
 Trigonometric Expressions
 """""""""""""""""""""""""
@@ -831,7 +830,7 @@ Trace Function: ``trace()`` : ``trace(expr0)``
 
 .. _Viscous_Stress_Expression_Function:
 
-Viscuos Stress Function: ``viscous_stress()`` : ``viscous_stress(expr0)``
+Viscous Stress Function: ``viscous_stress()`` : ``viscous_stress(expr0)``
     No description available.
 
 
@@ -891,6 +890,29 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
 Array Decompose Function: ``array_decompose()`` : ``array_decompose(Arr,Idx)``
     Creates a new *scalar* expression which is everywhere the scalar member of
     the *array* input argument at index ``Idx`` (numbered starting from zero).
+
+.. _Array_Decompose2d_Expression_Function:
+
+Array Decompose 2D Function: ``array_decompose2d()`` : ``array_decompose2d(expr0)``
+    No description available.
+
+.. _Array_Componentwise_Division_Expression_Function:
+
+Array Component-wise Division Function: ``array_componentwise_division()`` : ``array_componentwise_division(<Array>,<Divisor>)``
+    Return a new *array* variable which is the old input ``<Array>`` variable
+    with each of its components divided by the ``<Divisor>``.
+
+.. _Array_Componentwise_Product_Expression_Function:
+
+Array Component-wise Product Function: ``array_componentwise_product()`` : ``array_componentwise_product(<Array>,<Multiplier>)``
+    Return a new *array* variable which is the old input ``<Array>`` variable
+    with each of its components multiplied by the ``<Multiplier>``.
+
+.. _Array_Sum_Expression_Function:
+
+Array Sum Function: ``array_sum()`` : ``array_sum(<Array>)``
+    Return a new *scalar* variable which is the sum of the ``<Array>`` components.
+
 
 Material Expressions
 """"""""""""""""""""
@@ -975,6 +997,127 @@ Value For Material Function: ``value_for_material()`` : ``value_for_material(<Va
 Mesh Expressions
 """"""""""""""""
 
+.. _Area_Function:
+
+Area Function: ``area()`` : ``area(<Mesh>)``
+    See the Verdict Manual
+
+.. _Cylindrical_Expression_Function:
+
+cylindrical Function: ``cylindrical()`` : ``cylindrical(expr0)``
+    No description available.
+
+.. _Cylindrical_Radius_Expression_Function:
+
+Cylindrical Radius : ``cylindrical_radius(<Mesh>)``
+     Converts the coordinates of the input mesh from Cartesian
+     coordinates to cylindrical coordinates and returns the radius component of
+     the cylindrical coordinates.
+
+.. _Cylindrical_Theta_Expression_Function:
+
+cylindrical theta Function: ``cylindrical_theta()`` : ``cylindrical_theta(expr0)``
+    No description available.
+
+.. _Polar_Radius_Expression_Function:
+
+polar radius Function: ``polar_radius()`` : ``polar_radius(expr0)``
+    No description available.
+
+.. _Polar_Theta_Expression_Function:
+
+polar theta Function: ``polar_theta()`` : ``polar_theta(expr0)``
+    No description available.
+
+.. _Polar_Phi_Expression_Function:
+
+polar phi Function: ``polar_phi()`` : ``polar_phi(expr0)``
+    No description available.
+
+.. _Min_Coord_Expression_Function:
+
+min coord Function: ``min_coord()`` : ``min_coord(expr0)``
+    No description available.
+
+.. _Max_Coord_Expression_Function:
+
+max coord Function: ``max_coord()`` : ``max_coord(expr0)``
+    No description available.
+
+.. _External_Node_Expression_Function:
+
+external node Function: ``external_node()`` : ``external_node(expr0)``
+    No description available.
+
+.. _External_Cell_Expression_Function:
+
+external cell Function: ``external_cell()`` : ``external_cell(expr0)``
+    No description available.
+
+.. _Zoneid_Expression_Function:
+
+zoneid Function: ``zoneid()`` : ``zoneid(<Mesh>)``
+    Return a zone-centered *scalar* variable where the value for each zone/cell
+    is local index of a zone, staring from zero, within its domain.
+
+.. _Global_Zoneid_Expression_Function:
+
+global zoneid Function: ``global_zoneid()`` : ``global_zoneid(<Mesh>)``
+    If global zone ids are specified by the input database, return a
+    zone-centered *scalar* variable where the value for each zone/cell
+    is the *global* index of a zone, as specified by the data producer.
+
+.. _Nodeid_Expression_Function:
+
+nodeid Function: ``nodeid()`` : ``nodeid(expr0)``
+    Return a node-centered *scalar* variable where the value for each
+    node/vertex/point is local index of a node, staring from zero, within
+    its domain.
+
+.. _Global_Nodeid_Expression_Function:
+
+global nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
+    If global node ids are specified by the input database, return a
+    node-centered *scalar* variable where the value for each node/vertex/point
+    is the *global* index of a node, as specified by the data producer.
+
+.. _Volume_Function:
+
+Volume Function: ``volume()`` : ``volume(<Mesh>)``
+    No description available.
+
+.. _Volume2_Function:
+
+Volume2 Function: ``volume2()`` : ``volume2(<Mesh>)``
+    No description available.
+
+.. _Revolved_Volume_Function:
+
+Revolved Volume Function: ``revolved_volume()`` : ``revolved_volume(<Mesh>)``
+    No description available.
+
+.. _Revolved_Surface_Area_Function:
+
+Revolved Surface Area Function: ``revolved_surface_area()`` : ``revolved_surface_area(<Mesh>)``
+    No description available.
+
+.. _Zonetype_Expression_Function:
+
+Zone Type Function: ``zonetype()`` : ``zonetype(<Mesh>)``
+    Return a *zone* centered, character valued variable which indicates
+    the *shape type* of each zone suitable for being used within the
+    *label* plot. Upper case characters generally denote 3D shapes
+    (e.g. ``T`` for ``tet``) while lower case characters denote 2D shapes
+    (e.g. ``t`` for ``triangle``).
+
+.. _Zonetype_Rank_Expression_Function:
+
+Zone Type Rank Function: ``zonetype_rank()`` : ``zonetype_rank(<Mesh>)``
+    Return a *zone* centered, integer valued variable which indicates
+    the *VTK shape type* of each zone. This expression is often useful
+    with the threshold operator to select only certain shapes within
+    the mesh to be displayed.
+
 Mesh Quality Expressions
 """"""""""""""""""""""""
 
@@ -999,10 +1142,10 @@ Neighbor Function: ``neighbor()`` : ``neighbor(<Mesh>)``
 Node Degree Function: ``node_degree()`` : ``node_degree(<Mesh>)``
     See the Verdict Manual
 
-.. _Area_Function:
+.. _Degree_Expression_Function:
 
-Area Function: ``area()`` : ``area(<Mesh>)``
-    See the Verdict Manual
+degree Function: ``degree()`` : ``degree(expr0)``
+    No description available.
 
 .. _Aspect_Function:
 
@@ -1017,16 +1160,6 @@ Skew Function: ``skew()`` : ``skew(<Mesh>)``
 .. _Taper_Function:
 
 Taper Function: ``taper()`` : ``taper(<Mesh>)``
-    See the Verdict Manual
-
-.. _Volume_Function:
-
-Volume Function: ``volume()`` : ``volume(<Mesh>)``
-    See the Verdict Manual
-
-.. _Volume2_Function:
-
-Volume2 Function: ``volume2()`` : ``volume2(<Mesh>)``
     See the Verdict Manual
 
 .. _Min_Corner_Angle_Function:
@@ -1144,16 +1277,6 @@ Maximum Angle Function: ``maximum_angle()`` : ``maximum_angle(<Mesh>)``
 Minimum Angle Function: ``minimum_angle()`` : ``minimum_angle(<Mesh>)``
     See the Verdict Manual
 
-.. _Revolved_Volume_Function:
-
-Revolved Volume Function: ``revolved_volume()`` : ``revolved_volume(<Mesh>)``
-    See the Verdict Manual
-
-.. _Revolved_Surface_Area_Function:
-
-Revolved Surface Area Function: ``revolved_surface_area()`` : ``revolved_surface_area(<Mesh>)``
-    See the Verdict Manual
-
 .. _Min_Corner_Area_Function:
 
 Minimum Corner Area Function: ``min_corner_area()`` : ``min_corner_area(<Mesh>)``
@@ -1188,107 +1311,8 @@ Relative Face Planarity Function: ``relative_face_planarity()`` : ``relative_fac
     :ref:`face_planarity() <Face_Planarity_Function>`, except where each
     face's value is normalized by the average edge length of the face.
 
-Solution Transfer (Comparison) Expressions
+Comparison (Solution Transfer) Expressions
 """"""""""""""""""""""""""""""""""""""""""
-
-.. _Zoneid_Expression_Function:
-
-zoneid Function: ``zoneid()`` : ``zoneid(<Mesh>)``
-    Return a zone-centered *scalar* variable where the value for each zone/cell
-    is local index of a zone, staring from zero, within its domain.
-
-.. _Global_Zoneid_Expression_Function:
-
-global zoneid Function: ``global_zoneid()`` : ``global_zoneid(<Mesh>)``
-    If global zone ids are specified by the input database, return a
-    zone-centered *scalar* variable where the value for each zone/cell
-    is the *global* index of a zone, as specified by the data producer.
-
-.. _Nodeid_Expression_Function:
-
-nodeid Function: ``nodeid()`` : ``nodeid(expr0)``
-    Return a node-centered *scalar* variable where the value for each
-    node/vertex/point is local index of a node, staring from zero, within
-    its domain.
-
-.. _Global_Nodeid_Expression_Function:
-
-global nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
-    If global node ids are specified by the input database, return a
-    node-centered *scalar* variable where the value for each node/vertex/point
-    is the *global* index of a node, as specified by the data producer.
-
-.. _Biggest_Neighbor_Expression_Function:
-
-biggest neighbor Function: ``biggest_neighbor()`` : ``biggest_neighbor(expr0)``
-    No description available.
-
-.. _Smallest_Neighbor_Expression_Function:
-
-smallest neighbor Function: ``smallest_neighbor()`` : ``smallest_neighbor(expr0)``
-    No description available.
-
-.. _Neighbor_Average_Expression_Function:
-
-neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
-    No description available.
-
-.. _Cylindrical_Theta_Expression_Function:
-
-cylindrical theta Function: ``cylindrical_theta()`` : ``cylindrical_theta(expr0)``
-    No description available.
-
-.. _Polar_Radius_Expression_Function:
-
-polar radius Function: ``polar_radius()`` : ``polar_radius(expr0)``
-    No description available.
-
-.. _Polar_Theta_Expression_Function:
-
-polar theta Function: ``polar_theta()`` : ``polar_theta(expr0)``
-    No description available.
-
-.. _Polar_Phi_Expression_Function:
-
-polar phi Function: ``polar_phi()`` : ``polar_phi(expr0)``
-    No description available.
-
-.. _Zonetype_Expression_Function:
-
-Zone Type Function: ``zonetype()`` : ``zonetype(<Mesh>)``
-    Return a *zone* centered, character valued variable which indicates
-    the *shape type* of each zone suitable for being used within the
-    *label* plot. Upper case characters generally denote 3D shapes
-    (e.g. ``T`` for ``tet``) while lower case characters denote 2D shapes
-    (e.g. ``t`` for ``triangle``).
-
-.. _Zonetype_Rank_Expression_Function:
-
-Zone Type Rank Function: ``zonetype_rank()`` : ``zonetype_rank(<Mesh>)``
-    Return a *zone* centered, integer valued variable which indicates
-    the *VTK shape type* of each zone. This expression is often useful
-    with the threshold operator to select only certain shapes within
-    the mesh to be displayed.
-
-.. _Min_Coord_Expression_Function:
-
-min coord Function: ``min_coord()`` : ``min_coord(expr0)``
-    No description available.
-
-.. _Max_Coord_Expression_Function:
-
-max coord Function: ``max_coord()`` : ``max_coord(expr0)``
-    No description available.
-
-.. _External_Node_Expression_Function:
-
-external node Function: ``external_node()`` : ``external_node(expr0)``
-    No description available.
-
-.. _External_Cell_Expression_Function:
-
-external cell Function: ``external_cell()`` : ``external_cell(expr0)``
-    No description available.
 
 .. _Pos_Cmfe_Expression_Function:
 
@@ -1532,6 +1556,9 @@ Evaluate Transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
     *difference* between with the input ``<Scalar>`` as
     :ref:`symm_transform() <Symm_Transform_Expression_Function>` does.
 
+Image Processing Expressions
+""""""""""""""""""""""""""""
+
 .. _Conservative_Smoothing_Expression_Function:
 
 conservative smoothing Function: ``conservative_smoothing()`` : ``conservative_smoothing(expr0)``
@@ -1561,6 +1588,41 @@ Median Filter Function: ``median_filter()`` : ``median_filter(expr0)``
 Abel Inversion Function: ``abel_inversion()`` : ``abel_inversion(expr0)``
     No description available.
 
+Miscellaneous Expressions
+"""""""""""""""""""""""""
+
+.. _Zonal_Constant_Expression_Function:
+
+Zonal Constant Function: ``zonal_constant()`` : ``zonal_constant(expr0)``
+    Return a *scalar*, zone-centered field that is everywhere on ``<Mesh>``
+    the constant value ``<Const>``.
+
+.. _Zone_Constant_Expression_Function:
+
+Zone Constant Function: ``zone_constant()`` : ``zone_constant(<Mesh>,<Const>)``
+    An alias for :ref:`zonal_constant() <Zonal_Constant_Expression_Function>`
+
+.. _Cell_Constant_Expression_Function:
+
+Cell Constant Function: ``cell_constant()`` : ``cell_constant(expr0)``
+    An alias for :ref:`zonal_constant() <Zonal_Constant_Expression_Function>`
+
+.. _Nodal_Constant_Expression_Function:
+
+Nodal Constant Function: ``nodal_constant()`` : ``nodal_constant(<Mesh>,<Const>)``
+    Return a *scalar*, node-centered field that is everywhere on ``<Mesh>``
+    the constant value ``<Const>``.
+
+.. _Node_Constant_Expression_Function:
+
+Node Constant Function: ``node_constant()`` : ``node_constant(expr0)``
+    An alias for :ref:`nodal_constant() <Nodal_Constant_Expression_Function>`
+
+.. _Point_Constant_Expression_Function:
+
+Point Constant Function: ``point_constant()`` : ``point_constant(expr0)``
+    An alias for :ref:`nodal_constant() <Nodal_Constant_Expression_Function>`
+
 .. _Time_Expression_Function:
 
 Time Function: ``time()`` : ``time(expr0)``
@@ -1578,6 +1640,147 @@ Cycle Function: ``cycle()`` : ``cycle(expr0)``
 Timestep Function: ``timestep()`` : ``timestep(expr0)``
     Return an integer *constant scalar* variable which is everywhere the index
     of the associated input argument within its time-series.
+
+.. _Curve_Domain_Expression_Function:
+
+curve domain Function: ``curve_domain()`` : ``curve_domain(expr0)``
+    No description available.
+
+.. _Curve_Integrate_Expression_Function:
+
+curve integrate Function: ``curve_integrate()`` : ``curve_integrate(expr0)``
+    No description available.
+
+.. _Curve_Swapxy_Expression_Function:
+
+curve swapxy Function: ``curve_swapxy()`` : ``curve_swapxy(expr0)``
+    No description available.
+
+.. _Curve_Expression_Function:
+
+curve Function: ``curve()`` : ``curve(expr0)``
+    No description available.
+
+.. _Enumerate_Expression_Function:
+
+Enumerate Function: ``enumerate()`` : ``enumerate(<Int-Scalar>,<[Int-List]>)``
+    Map an integer valued *scalar* variable to a new set of integer values.
+    If *K* is the maximum value in the ``Int-Scalar`` input argument,
+    the ``[Int-List]`` argument must be a square bracketed list of *K+1*
+    integer values. Value *i* in the ``Int-Scalar`` input argument is used to
+    index the *ith* entry in the ``[Int-List]`` to produce mapped value.
+
+.. _Map_Expression_Function:
+
+Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-List]>)``
+    A more general form of :ref:`enumerate() <Enumerate_Expression_Function>`
+    which supports non-integer input *scalar* variables and input and output
+    maps which are not required to include all values in the input *scalar*
+    variable. The ``[Input-Value-List]`` and ``[Output-Value-List]`` must have
+    the same number of entries. A value in the input *scalar* variable that
+    matches the *ith* entry in the ``[Input-Value-List]`` is mapped to the new
+    value at the *ith* entry in the ``[Output-Value-List]``. Values that do not
+    match any entry in the ``[Input-Value-List]`` are mapped to ``-1``.
+
+.. _Resample_Expression_Function:
+
+Resample Function: ``resample()`` : ``resample(<Var>,Nx,Ny,Nz)``
+    Resample ``<Var>`` onto a regular grid defined by taking the
+    X, Y and for 3D, Z spatial extents of the mesh ``<Var>`` is defined on and
+    taking ``Nx`` samples over the spatial extents in X,
+    ``Ny`` samples over the spatial extents in Y, and, for 3D,
+    ``Nz`` samples over the spatial extents in Z.
+    Any samples that *miss* the mesh ``<Var>`` is defined on are assigned
+    the value ``-FLT_MAX``. For 2D, the ``Nz`` argument is still required but
+    ignored.
+
+.. _Recenter_Expression_Function:
+
+Recenter Expression Function : ``recenter(expr, ["nodal", "zonal", "toggle"])``
+    This function can be used to recenter ``expr``. The second argument is
+    optional and defaults to *"toggle"* if it is not specified. A value of
+    *"toggle"* for the second argument means that if ``expr`` is *node*
+    centered, it is recentered to *zone* centering and if ``expr`` is
+    *zone* centered, it is recentered to *node* centering. Note that the
+    quotes are required for the second argument. This function is typically
+    used to force a specific centering among the operands of some other
+    expression.
+
+.. _Procid_Expression_Function:
+
+Process Id Function: ``procid()`` : ``procid(<Var>)``
+    Return an integer *scalar* variable which is everywhere the MPI rank
+    associated with each of the blocks of the possibly parallel decomposed mesh
+    upon which ``<Var>`` is defined. For serial execution or for parallel
+    execution of a single-block mesh, this will produce a constant zero
+    variable. Otherwise, the values will vary block by block.
+
+.. _Threadid_Expression_Function:
+
+Thread Id Function: ``threadid()`` : ``threadid(expr0)``
+    Return an integer *scalar* variable which is everywhere the local thread id
+    associated with each of the blocks of the possibly parallel decomposed mesh
+    upon which ``<Var>`` is defined. For non-threaded execution, this will
+    produce a constant zero variable. Otherwise, the values will vary block
+    by block.
+
+.. _Isnan_Expression_Function:
+
+isnan Function: ``isnan()`` : ``isnan(expr0)``
+    No description available.
+
+.. _Q_Criterion_Expression_Function:
+
+q criterion Function: ``q_criterion()`` : ``q_criterion(expr0)``
+    No description available.
+
+.. _Lambda2_Expression_Function:
+
+lambda2 Function: ``lambda2()`` : ``lambda2(expr0)``
+    No description available.
+
+.. _Mean_Curvature_Expression_Function:
+
+mean curvature Function: ``mean_curvature()`` : ``mean_curvature(expr0)``
+    No description available.
+
+.. _Gauss_Curvature_Expression_Function:
+
+Gauss Curvature Function: ``gauss_curvature()`` : ``gauss_curvature(expr0)``
+    No description available.
+
+.. _Agrad_Expression_Function:
+
+agrad Function: ``agrad()`` : ``agrad(expr0)``
+    No description available.
+
+.. _Key_Aggregate_Expression_Function:
+
+key aggregate Function: ``key_aggregate()`` : ``key_aggregate(expr0)``
+    No description available.
+
+.. _Laplacian_Expression_Function:
+
+Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
+    No description available.
+
+.. _Rectilinear_Laplacian_Expression_Function:
+
+rectilinear Laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_laplacian(expr0)``
+    No description available.
+
+.. _Conn_Components_Expression_Function:
+
+conn components Function: ``conn_components()`` : ``conn_components(expr0)``
+    No description available.
+
+.. _Resrad_Expression_Function:
+
+resrad Function: ``resrad()`` : ``resrad(expr0)``
+    No description available.
+
+Time Iteration Expressions
+""""""""""""""""""""""""""
 
 .. _Average_Over_Time_Expression_Function:
 
@@ -1711,98 +1914,10 @@ time index at maximum Function: ``time_index_at_maximum()`` : ``time_index_at_ma
 value at maximum Function: ``value_at_maximum()`` : ``value_at_maximum(expr0)``
     No description available.
 
-.. _Enumerate_Expression_Function:
-
-Enumerate Function: ``enumerate()`` : ``enumerate(<Int-Scalar>,<[Int-List]>)``
-    Map an integer valued *scalar* variable to a new set of integer values.
-    If *K* is the maximum value in the ``Int-Scalar`` input argument,
-    the ``[Int-List]`` argument must be a square bracketed list of *K+1*
-    integer values. Value *i* in the ``Int-Scalar`` input argument is used to
-    index the *ith* entry in the ``[Int-List]`` to produce mapped value.
-
-.. _Map_Expression_Function:
-
-Map Function: ``map()`` : ``map(<Scalar>,<[Input-Value-List]>,<[Output-Value-List]>)``
-    A more general form of :ref:`enumerate() <Enumerate_Expression_Function>`
-    which supports non-integer input *scalar* variables and input and output
-    maps which are not required to include all values in the input *scalar*
-    variable. The ``[Input-Value-List]`` and ``[Output-Value-List]`` must have
-    the same number of entries. A value in the input *scalar* variable that
-    matches the *ith* entry in the ``[Input-Value-List]`` is mapped to the new
-    value at the *ith* entry in the ``[Output-Value-List]``. Values that do not
-    match any entry in the ``[Input-Value-List]`` are mapped to ``-1``.
-
-.. _Array_Componentwise_Division_Expression_Function:
-
-Array Component-wise Division Function: ``array_componentwise_division()`` : ``array_componentwise_division(<Array>,<Divisor>)``
-    Return a new *array* variable which is the old input ``<Array>`` variable
-    with each of its components divided by the ``<Divisor>``.
-
-.. _Array_Componentwise_Product_Expression_Function:
-
-Array Component-wise Product Function: ``array_componentwise_product()`` : ``array_componentwise_product(<Array>,<Multiplier>)``
-    Return a new *array* variable which is the old input ``<Array>`` variable
-    with each of its components multiplied by the ``<Multiplier>``.
-
-.. _Array_Decompose2d_Expression_Function:
-
-array decompose2d Function: ``array_decompose2d()`` : ``array_decompose2d(expr0)``
-    No description available.
-
-.. _Array_Sum_Expression_Function:
-
-Array Sum Function: ``array_sum()`` : ``array_sum(<Array>)``
-    Return a new *scalar* variable which is the sum of the ``<Array>`` components.
-
 .. _Localized_Compactness_Expression_Function:
 
 localized compactness Function: ``localized_compactness()`` : ``localized_compactness(expr0)``
     No description available.
-
-.. _Resample_Expression_Function:
-
-Resample Function: ``resample()`` : ``resample(<Var>,Nx,Ny,Nz)``
-    Resample ``<Var>`` onto a regular grid defined by taking the
-    X, Y and for 3D, Z spatial extents of the mesh ``<Var>`` is defined on and
-    taking ``Nx`` samples over the spatial extents in X,
-    ``Ny`` samples over the spatial extents in Y, and, for 3D,
-    ``Nz`` samples over the spatial extents in Z.
-    Any samples that *miss* the mesh ``<Var>`` is defined on are assigned
-    the value ``-FLT_MAX``. For 2D, the ``Nz`` argument is still required but
-    ignored.
-
-.. _Displacement_Expression_Function:
-
-Displacement Function: ``displacement()`` : ``displacement(expr0)``
-    No description available.
-
-.. _Degree_Expression_Function:
-
-degree Function: ``degree()`` : ``degree(expr0)``
-    No description available.
-
-.. _Cylindrical_Expression_Function:
-
-cylindrical Function: ``cylindrical()`` : ``cylindrical(expr0)``
-    No description available.
-
-.. _Procid_Expression_Function:
-
-Process Id Function: ``procid()`` : ``procid(<Var>)``
-    Return an integer *scalar* variable which is everywhere the MPI rank
-    associated with each of the blocks of the possibly parallel decomposed mesh
-    upon which ``<Var>`` is defined. For serial execution or for parallel
-    execution of a single-block mesh, this will produce a constant zero
-    variable. Otherwise, the values will vary block by block.
-
-.. _Threadid_Expression_Function:
-
-Thread Id Function: ``threadid()`` : ``threadid(expr0)``
-    Return an integer *scalar* variable which is everywhere the local thread id
-    associated with each of the blocks of the possibly parallel decomposed mesh
-    upon which ``<Var>`` is defined. For non-threaded execution, this will
-    produce a constant zero variable. Otherwise, the values will vary block
-    by block.
 
 .. _Merge_Tree_Expression_Function:
 
@@ -1822,46 +1937,6 @@ local threshold Function: ``local_threshold()`` : ``local_threshold(expr0)``
 .. _Python_Expression_Function:
 
 python Function: ``python()`` : ``python(expr0)``
-    No description available.
-
-.. _Mean_Curvature_Expression_Function:
-
-mean curvature Function: ``mean_curvature()`` : ``mean_curvature(expr0)``
-    No description available.
-
-.. _Gauss_Curvature_Expression_Function:
-
-Gauss Curvature Function: ``gauss_curvature()`` : ``gauss_curvature(expr0)``
-    No description available.
-
-.. _Agrad_Expression_Function:
-
-agrad Function: ``agrad()`` : ``agrad(expr0)``
-    No description available.
-
-.. _Key_Aggregate_Expression_Function:
-
-key aggregate Function: ``key_aggregate()`` : ``key_aggregate(expr0)``
-    No description available.
-
-.. _Laplacian_Expression_Function:
-
-Laplacian Function: ``laplacian()`` : ``laplacian(expr0)``
-    No description available.
-
-.. _Rectilinear_Laplacian_Expression_Function:
-
-rectilinear Laplacian Function: ``rectilinear_laplacian()`` : ``rectilinear_laplacian(expr0)``
-    No description available.
-
-.. _Conn_Components_Expression_Function:
-
-conn components Function: ``conn_components()`` : ``conn_components(expr0)``
-    No description available.
-
-.. _Resrad_Expression_Function:
-
-resrad Function: ``resrad()`` : ``resrad(expr0)``
     No description available.
 
 .. _Relative_Difference_Expression_Function:
@@ -1889,63 +1964,9 @@ distance to best fit line Function: ``distance_to_best_fit_line()`` : ``distance
 distance to best fit line2 Function: ``distance_to_best_fit_line2()`` : ``distance_to_best_fit_line2(expr0)``
     No description available.
 
-.. _min_Expression_Function:
-
 .. _Geodesic_Vector_Quantize_Expression_Function:
 
 geodesic vector quantize Function: ``geodesic_vector_quantize()`` : ``geodesic_vector_quantize(expr0)``
-    No description available.
-
-.. _Zonal_Constant_Expression_Function:
-
-Zonal Constant Function: ``zonal_constant()`` : ``zonal_constant(expr0)``
-    Return a *scalar*, zone-centered field that is everywhere on ``<Mesh>``
-    the constant value ``<Const>``.
-
-.. _Zone_Constant_Expression_Function:
-
-Zone Constant Function: ``zone_constant()`` : ``zone_constant(<Mesh>,<Const>)``
-    An alias for :ref:`zonal_constant() <Zonal_Constant_Expression_Function>`
-
-.. _Cell_Constant_Expression_Function:
-
-Cell Constant Function: ``cell_constant()`` : ``cell_constant(expr0)``
-    An alias for :ref:`zonal_constant() <Zonal_Constant_Expression_Function>`
-
-.. _Nodal_Constant_Expression_Function:
-
-Nodal Constant Function: ``nodal_constant()`` : ``nodal_constant(<Mesh>,<Const>)``
-    Return a *scalar*, node-centered field that is everywhere on ``<Mesh>``
-    the constant value ``<Const>``.
-
-.. _Node_Constant_Expression_Function:
-
-Node Constant Function: ``node_constant()`` : ``node_constant(expr0)``
-    An alias for :ref:`nodal_constant() <Nodal_Constant_Expression_Function>`
-
-.. _Point_Constant_Expression_Function:
-
-Point Constant Function: ``point_constant()`` : ``point_constant(expr0)``
-    An alias for :ref:`nodal_constant() <Nodal_Constant_Expression_Function>`
-
-.. _Curve_Domain_Expression_Function:
-
-curve domain Function: ``curve_domain()`` : ``curve_domain(expr0)``
-    No description available.
-
-.. _Curve_Integrate_Expression_Function:
-
-curve integrate Function: ``curve_integrate()`` : ``curve_integrate(expr0)``
-    No description available.
-
-.. _Curve_Swapxy_Expression_Function:
-
-curve swapxy Function: ``curve_swapxy()`` : ``curve_swapxy(expr0)``
-    No description available.
-
-.. _Curve_Expression_Function:
-
-curve Function: ``curve()`` : ``curve(expr0)``
     No description available.
 
 .. _Bin_Expression_Function:
@@ -1953,48 +1974,25 @@ curve Function: ``curve()`` : ``curve(expr0)``
 bin Function: ``bin()`` : ``bin(expr0)``
     No description available.
 
-.. _Isnan_Expression_Function:
+.. _Biggest_Neighbor_Expression_Function:
 
-isnan Function: ``isnan()`` : ``isnan(expr0)``
+biggest neighbor Function: ``biggest_neighbor()`` : ``biggest_neighbor(expr0)``
     No description available.
 
-.. _Q_Criterion_Expression_Function:
+.. _Smallest_Neighbor_Expression_Function:
 
-q criterion Function: ``q_criterion()`` : ``q_criterion(expr0)``
+smallest neighbor Function: ``smallest_neighbor()`` : ``smallest_neighbor(expr0)``
     No description available.
 
-.. _Lambda2_Expression_Function:
+.. _Neighbor_Average_Expression_Function:
 
-lambda2 Function: ``lambda2()`` : ``lambda2(expr0)``
+neighbor average Function: ``neighbor_average()`` : ``neighbor_average(expr0)``
     No description available.
 
-Image Processing Expressions
-""""""""""""""""""""""""""""
+.. _Displacement_Expression_Function:
 
-Miscellaneous Expressions
-"""""""""""""""""""""""""
-
-.. _Recenter_Expression_Function:
-
-Recenter Expression Function : ``recenter(expr, ["nodal", "zonal", "toggle"])``
-    This function can be used to recenter ``expr``. The second argument is
-    optional and defaults to *"toggle"* if it is not specified. A value of
-    *"toggle"* for the second argument means that if ``expr`` is *node*
-    centered, it is recentered to *zone* centering and if ``expr`` is
-    *zone* centered, it is recentered to *node* centering. Note that the
-    quotes are required for the second argument. This function is typically
-    used to force a specific centering among the operands of some other
-    expression.
-
-.. _Cylindrical_Radius_Expression_Function:
-
-Cylindrical Radius : ``cylindrical_radius(<Mesh>)``
-     Converts the coordinates of the input mesh from Cartesian
-     coordinates to cylindrical coordinates and returns the radius component of
-     the cylindrical coordinates.
-
-Time Iteration Expressions
-""""""""""""""""""""""""""
+Displacement Function: ``displacement()`` : ``displacement(expr0)``
+    No description available.
 
 Expression Compatibility Gotchas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

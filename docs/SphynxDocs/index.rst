@@ -31,6 +31,7 @@ Contents:
    Help/index
    StartupOptions/index
    Acknowledgements/index
+   Contributing/index
 
 .. Indices and tables
 .. ==================
