@@ -65,9 +65,9 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 * Wherever possible, keep lines in ``.rst`` files to 80 columns or less.
 * Avoid hyphenation of words.
 * Upper case for all letters in an acronyms (MPI, VTK)
-* Use case-conventions of product names (QuickTime, TotalView, Valgrind)
-* Bracket word(s) with two-stars (``**some words**``) for **bold**.
-* Bracket word(s) with one-star (``*word*``) for *italics*.
+* Use case conventions of product names (QuickTime, TotalView, Valgrind)
+* Bracket word(s) with two stars (``**some words**``) for **bold**.
+* Bracket word(s) with one star (``*word*``) for *italics*.
 * Bracket word(s) with two backticks (``this is three words``) for literal::
 
     Bracket word(s) with two backticks (``this is three words``) for literal.
@@ -83,15 +83,18 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 * Use ``.. figure::`` and not ``.. image::``, include captions with figures
   and use ``:scale: P %`` to adjust image size where needed
   (:ref:`see more below <contributing_images>`).
-* LaTeX-style equations can be included too
+* LaTeX style equations can be included too
   (:ref:`see below <contributing_math>`).
 * Spell checking is supported too (:ref:`see below <contributing_spell>`) but
-  you need to have PyEnchant and sphinx-contrib.spelling installed.
+  you need to have 
+  `PyEnchant <https://pythonhosted.org/pyenchant/>`_ and
+  `sphinx-contrib.spelling <http://sphinxcontrib-spelling.readthedocs.io/en/latest/index.html>`_
+  installed.
 * Begin a line with ``..`` followed by space for single line comments.
 
 .. _my_anchor:
 
-* Define anchors ahead of sections or paragraphs you want to cross-reference::
+* Define anchors ahead of sections or paragraphs you want to cross reference::
 
     .. _my_anchor:
 
@@ -138,10 +141,10 @@ large or unusually small in HTML or PDF output. In these cases, you can
 use the Sphinx ``:scale:`` and ``:width:`` or ``:height:`` options for
 a ``.. figure::`` block. Also, be sure to use a ``.. figure::`` directive
 instead of an ``.. image::`` directive for embedding images. This is because
-the ``.. figure::`` directive also supports anchoring for cross-referencing.
+the ``.. figure::`` directive also supports anchoring for cross referencing.
 
 Although all images get copied into a common directory during generation,
-Sphinx takes care of re-mapping names so there is no need to worry about
+Sphinx takes care of remapping names so there is no need to worry about
 collisions in image file names.
 
 An ordinary image...
@@ -162,7 +165,7 @@ Same image with ``:scale: 50%`` option
 .. figure:: ../Quantitative/images/Array_compose_with_bins.png
    :scale: 50% 
 
-Same image with an anchor for cross-referencing...
+Same image with an anchor for cross referencing...
 
 .. code-block:: RST
 
@@ -176,12 +179,12 @@ Same image with an anchor for cross-referencing...
 .. figure:: ../Quantitative/images/Array_compose_with_bins.png
    :scale: 50% 
 
-which can now be cross-referenced using an inline :numref:`Fig. %s <my_figure>` 
+which can now be cross referenced using an inline :numref:`Fig. %s <my_figure>` 
 like so...
 
 .. code-block:: RST
 
-  Which can now be cross-referenced using an inline :numref:`Fig. %s <my_figure>` 
+  Which can now be cross referenced using an inline :numref:`Fig. %s <my_figure>` 
   like so...
 
 Note the anchor has a leading underscore which the reference does not include.
@@ -213,7 +216,7 @@ Tables
 Sphinx supports a variety of mechanisms for defining tables. The conversion
 tool used to convert this documentation from its original OpenOffice format
 converted all tables to the *grid* style of table which is kinda sorta like
-ascii-art. Large tables can result in individual lines that span many widths of
+ascii art. Large tables can result in individual lines that span many widths of
 the editor window. It is combersome to deal with but rich in capabilities.
 
 .. _contributing_math:
@@ -221,9 +224,9 @@ the editor window. It is combersome to deal with but rich in capabilities.
 Math
 """"
 
-We add the Sphinx built-in extension ``sphinx.ext.mathjax`` to the
+We add the Sphinx builtin extension ``sphinx.ext.mathjax`` to the
 ``extensions`` variable in ``conf.py``. This allows Sphinx to use
-`mathjax <https://www.mathjax.org>`_ to do LaTeX-like math equations in our
+`mathjax <https://www.mathjax.org>`_ to do LaTeX like math equations in our
 documentation. For example, this LaTeX code
 
 .. code-block:: RST
@@ -248,8 +251,8 @@ Spell Checking
 
 There is a shell script, ``check_spelling.sh`` to run a spell check. However,
 this script will fail if you do not have the required Sphinx extension and
-prerequisite library.  We use a non-builtin extension to Sphinx for spell
-checking,
+prerequisite library.  We use a third party extension (e.g. not a builtin)
+to Sphinx for spell checking
 `sphinx-contrib.spelling <http://sphinxcontrib-spelling.readthedocs.io/en/latest/index.html>`_
 which requires `PyEnchant <https://pythonhosted.org/pyenchant/>`_
 
@@ -291,7 +294,7 @@ For the time being, the only solution is to add the words to the global
 Sphinx Features To Consider Adopting
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Do we need a glossary of VisIt-specific terms such as...
+* Do we need a glossary of VisIt specific terms such as...
 
  * SIL
  * Species
@@ -305,7 +308,7 @@ Sphinx Features To Consider Adopting
 * ``:term:`` role for glossary terms
 * ``:abbr:`` role for abbreviations
 * ``:guilable:`` role for referring to GUI widgets
-* ``:command:`` role for OS-level cammands
+* ``:command:`` role for OS level cammands
 * ``:file:`` role for referring to file names
 * ``:menuselection:`` role for referring to widget paths in GUI menus
 * ``:kbd:`` role for specifying a sequence of key strokes
