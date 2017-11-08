@@ -308,7 +308,7 @@ Sphinx Features To Consider Adopting
 * ``:command:`` role for OS-level cammands
 * ``:file:`` role for referring to file names
 * ``:menuselection:`` role for referring to widget paths in GUI menus
-* ``:kdb:`` role for specifying a sequence of key strokes
+* ``:kbd:`` role for specifying a sequence of key strokes
 * ``.. deprecated::`` directive for deprecated functionality
 * ``.. versionadded::`` directive for new functionality
 * ``.. versionchanged::`` directive for new functionality
