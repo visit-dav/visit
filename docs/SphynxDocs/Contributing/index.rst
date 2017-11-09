@@ -25,35 +25,35 @@ use of Sphinx as we move forward. These are discussed at the
   indentation to guide parsing and interpretation of content. So, be sure
   to pay careful attention to blank lines and indentation. They are not
   there for style.  They **need** to be there for Sphinx to parse and
-  intepret the content directly.
+  interpret the content directly.
 * Create headings by a sequence of *separator characters* immediately
   underneath and the same length as the heading text as in::
 
     Second level heading
     ~~~~~~~~~~~~~~~~~~~~
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+    This is an example of some text under the heading...
 
     Third level heading
     """""""""""""""""""
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+    This is an example of some text under the heading...
 
     Fourth Level Heading
     --------------------
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+    This is an example of some text under the heading...
 
 yields these headings...
 
 Second level heading
 ~~~~~~~~~~~~~~~~~~~~
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+This is an example of some text under the heading...
 
 Third level heading
 """""""""""""""""""
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+This is an example of some text under the heading...
 
 Fourth Level Heading
 --------------------
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
+This is an example of some text under the heading...
 
 * Wherever possible, keep lines in ``.rst`` files to 80 columns or less.
 * Avoid contractions such as ``isn't``, ``can't`` and ``you've``.
@@ -220,7 +220,7 @@ Sphinx supports a variety of mechanisms for defining tables. The conversion
 tool used to convert this documentation from its original OpenOffice format
 converted all tables to the *grid* style of table which is kinda sorta like
 ascii art. Large tables can result in individual lines that span many widths of
-the editor window. It is combersome to deal with but rich in capabilities.
+the editor window. It is cumbersome to deal with but rich in capabilities.
 
 .. _contributing_math:
 
@@ -266,6 +266,11 @@ As it runs, if it encounters any spelling errors, it will emit them along
 with the file name and line number at which they occur. It will also output
 any spelling errors to a file, ``output.txt`` in the ``_spelling`` directory.
 
+Note that the line numbers Sphinx reports for the spelling errors it encounters
+are not the input text file line numbers. They are close but rarely exactly
+the line numbers of the input text file. Its best to simply search the document
+for the flagged words.
+
 When Sphinx reports a spelling error, your options are either to correct or
 otherwise adjust the spelling issue or add the word to the
 ``spelling_wordlist.txt`` file.
@@ -286,7 +291,7 @@ directive described
 
 However, adding ``.. spelling::`` directives to our ``.rst`` files causes errors
 when doing a *normal (HTML)* Sphinx build if the ``'sphinxcontrib.spelling'`` is
-is not added to ``conf.py`` and also available in the Sphinx enviornment where
+is not added to ``conf.py`` and also available in the Sphinx environment where
 it is being built. If have tried conditioning ``.. spelling::`` directive blocks
 with ``.. only:: spelling`` and even ``.. ifconfig::``. Neither works as
 desired.
@@ -322,7 +327,7 @@ Things To Consider Going Forward
   * ``:term:`` role for glossary terms
   * ``:abbr:`` role for abbreviations
   * ``:guilable:`` role for referring to GUI widgets
-  * ``:command:`` role for OS level cammands
+  * ``:command:`` role for OS level commands
   * ``:file:`` role for referring to file names
   * ``:menuselection:`` role for referring to widget paths in GUI menus
   * ``:kbd:`` role for specifying a sequence of key strokes
@@ -360,7 +365,7 @@ Things To Consider Going Forward
 
   * With the following pieces....
 
-    * VisIt_ ptyhon CLI
+    * VisIt_ python CLI
     * `pyscreenshot <http://pyscreenshot.readthedocs.io/en/latest/>`_ 
     * A minor adjustment to VisIt_ GUI to allow a python CLI instance
       which used ``OpenGUI(args...)`` to inform the GUI that widgets

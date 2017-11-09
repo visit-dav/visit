@@ -41,6 +41,7 @@ Toolbar
 Truecolor
 Ubuntu
 Uncheck
+Valgrind
 VTK
 Warpage
 Wireframe
@@ -51,6 +52,8 @@ antialiasing
 app
 args
 bmp
+backticks
+builtin
 cancelled
 cancelling
 checkbox
@@ -63,6 +66,8 @@ darwin
 dbA
 dbB
 deviatoric
+diffs
+downloadable
 downsampling
 dropdown
 extremum
@@ -76,6 +81,7 @@ gui
 hotpoint
 hotpoints
 indices
+inline
 interactor
 ireg
 isnan
@@ -117,6 +123,7 @@ postable
 pre
 prepend
 prepended
+prepending
 pseudocoloring
 recentered
 recentering
