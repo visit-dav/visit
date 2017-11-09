@@ -371,9 +371,11 @@ Things To Consider Going Forward
       which used ``OpenGUI(args...)`` to inform the GUI that widgets
       are to be mapped on state changes.
   
-  * We can include python code directly in these ``.rst`` documents that
-    does the work and just slurp this code out of these documents to
-    actually run for automatic image generation.
+  * We can include python code directly in these ``.rst`` documents
+    (prefaced by ``.. only::`` directives to ensure the code does
+    not actually appear in the generated manual) that does the work
+    and just slurps this code out of these documents to actually run
+    for automatic image generation.
 
     * Generate and save VisIt_ visualization images.
     * Use diffs on screen captured images to grab and even annotate images
@@ -384,6 +386,8 @@ Things To Consider Going Forward
    import pyscreenshot
    import PIL
 
+   # The arg (not yet implemented) sets flag in GUI to map windows
+   # on state changes
    OpenGUI(MapWidgetsOnStateChanges=True)
    base_gui_image = pyscreenshot.grab()
 
