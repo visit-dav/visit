@@ -29,10 +29,6 @@ use of Sphinx as we move forward. These are discussed at the
 * Create headings by a sequence of *separator characters* immediately
   underneath and the same length as the heading text as in::
 
-    Top level heading
-    =================
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
-
     Second level heading
     ~~~~~~~~~~~~~~~~~~~~
     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
@@ -46,10 +42,6 @@ use of Sphinx as we move forward. These are discussed at the
     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 
 yields these headings...
-
-Top level heading
-=================
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 
 Second level heading
 ~~~~~~~~~~~~~~~~~~~~
