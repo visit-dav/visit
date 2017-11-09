@@ -56,8 +56,9 @@ Fourth Level Heading
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
 
 * Wherever possible, keep lines in ``.rst`` files to 80 columns or less.
+* Avoid contractions such as ``isn't``, ``can't`` and ``you've``.
 * Avoid hyphenation of words.
-* Upper case for all letters in an acronyms (MPI, VTK)
+* Use upper case for all letters in acronyms (MPI, VTK)
 * Use case conventions of product names (QuickTime, TotalView, Valgrind)
 * Bracket word(s) with two stars (``**some words**``) for **bold**.
 * Bracket word(s) with one star (``*word*``) for *italics*.
@@ -66,13 +67,13 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
     Bracket word(s) with two backticks (``this is three words``) for literal.
 
 * Line breaks in bracketed word(s) cause problems.
+* Use **Bold** to refer to widget names, operator or plot names, etc.
+* Use literals for code, commands, arguments, file names, etc.
 * Subscripting, H\ :sub:`2`\ O, and superscripting, E = mc\ :sup:`2`, are supported::
 
     Subscripting, H\ :sub:`2`\ O, and superscripting, E = mc\ :sup:`2`, are supported
 
-* Avoid contractions such as ``isn't``, ``couldn't`` and ``you've``.
-* Use **Bold** to refer to widget names, operator or plot names, etc.
-* Use literals for code, commands, arguments, file names, etc.
+  Note the use of backslashed spaces so Sphinx treats it all as one word.
 * Use ``.. figure::`` and not ``.. image::``, include captions with figures
   and use ``:scale: P %`` to adjust image size where needed
   (:ref:`see more below <contributing_images>`).
@@ -316,6 +317,8 @@ Things To Consider Going Forward
 
 * Additional features of Sphinx to consider adopting...
 
+  * Using ``.. spelling::`` directives to limit scope of special case words to
+    the ``.rst`` files in which they occur.
   * ``:term:`` role for glossary terms
   * ``:abbr:`` role for abbreviations
   * ``:guilable:`` role for referring to GUI widgets
