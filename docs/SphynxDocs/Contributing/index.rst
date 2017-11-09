@@ -154,7 +154,8 @@ the ``.. figure::`` directive also supports anchoring for cross referencing.
 
 Although all images get copied into a common directory during generation,
 Sphinx takes care of remapping names so there is no need to worry about
-collisions in image file names.
+collisions in image file names potentially used in different subdirectories
+within the source tree.
 
 An ordinary image...
 
@@ -217,7 +218,7 @@ a caption.
 
    Here is a caption for the figure.
 
-Note that the figure label (e.g. Fig 19.2) will not appear if there is no
+Note that the figure label (e.g. Fig 20.2) will not appear if there is no
 caption.
 
 Tables
@@ -332,7 +333,7 @@ Things To Consider Going Forward
   * ``:kbd:`` role for specifying a sequence of key strokes
   * ``.. deprecated::`` directive for deprecated functionality
   * ``.. versionadded::`` directive for new functionality
-  * ``.. versionchanged::`` directive for new functionality
+  * ``.. versionchanged::`` directive for when functionality changed
   * ``.. note::``, ``.. warning::`` and/or ``.. danger::`` directives to call
     attention to the reader.
   * ``.. only::`` directives for audience specific (e.g. tagged) content
@@ -342,21 +343,74 @@ Things To Consider Going Forward
 
   * ``.. seealso::`` directive for references
   * Substitutions for names of products and projects we refer to frequently
-    such as VTK_ or Sphinx_ or for frequently used text such as |viswin|::
-
+    such as VTK_ or VisIt_ (as is used throughout this section) or for
+    frequently used text such as |viswin|::
+  
       Substitutions for names of products and projects we refer to frequently
-      such as VTK_ or Sphinx_ or for frequently used text such as |viswin|
+      such as VTK_ or VisIt_ (as is used throughout this section) or for
+      frequently used text such as |viswin|::
 
     with the following substitutions defined::
 
       .. _VisIt: https://visit.llnl.gov
       .. _VTK: https://www.vtk.org
-      .. _Sphinx: http://www.sphinx-doc.org/en/stable
       .. |viswin| replace:: **Viewer Window**
-
 
 .. _VisIt: https://visit.llnl.gov
 .. _VTK: https://www.vtk.org
-.. _Sphinx: http://www.sphinx-doc.org/en/stable
 .. |viswin| replace:: **Viewer Window**
 
+* Possible method for embedding python code to generate and capture images
+  automatically
+
+  * With the following pieces....
+
+    * VisIt_ ptyhon CLI
+    * `pyscreenshot <http://pyscreenshot.readthedocs.io/en/latest/>`_ 
+    * A minor adjustment to VisIt_ GUI to allow a python CLI instance
+      which used ``OpenGUI(args...)`` to inform the GUI that widgets
+      are to be mapped on state changes.
+  
+  * We can include python code directly in these ``.rst`` documents that
+    does the work and just slurp this code out of these documents to
+    actually run for automatic image generation.
+
+    * Generate and save VisIt_ visualization images.
+    * Use diffs on screen captured images to grab and even annotate images
+      of GUI widgets.
+
+.. code-block:: python
+
+   import pyscreenshot
+   import PIL
+
+   OpenGUI(MapWidgetsOnStateChanges=True)
+   base_gui_image = pyscreenshot.grab()
+
+   OpenDatabase('visit_data_path()/silo_hdf5_test_data/globe.silo') 
+   AddPlot("Pseudocolor","dx")
+   DrawPlots()
+
+   # Save VisIt rendered image for manual
+   SaveWindow('Plots/PlotTypes/Pseudocolor/images/figure15.png')
+   ClearPlots()
+
+   # Change something in PC atts to force it to map
+   pcatts = PseudocolorAttributes()
+   pcatts.colorTableName = 'Blue'
+   SetPlotOptions(pcatts) # PC Attrs widget maps due to state change
+   pcatts.colorTableName = 'hot'
+   SetPlotOptions(pcatts) # PC Attrs widget maps due to state change
+   gui_image = pyscreenshot.grab()
+
+   # Save image of VisIt PC Attr window
+   #   - computes diff between gui_image and base_gui_image, bounding box
+   #   - around it and then saves that bounding box from gui_image
+   diff_bbox = BBoxedDiffImage(gui_image, gui_image_base)
+   SaveBBoxedDiffImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_window.png')
+
+   # Make a change to another PC att, capture and save it
+   pcatts.limitsMode = pcatts.CurrentPlot
+   SetPlotOptions(pcatts) # PC Attrs widget maps due to state change
+   gui_image = pyscreenshot.grab()
+   SaveBBoxedDiffImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')
