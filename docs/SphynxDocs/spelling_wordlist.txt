@@ -132,6 +132,7 @@ resampled
 resamples
 resampling
 resrad
+reStructuredText
 rgb
 rotx
 roty

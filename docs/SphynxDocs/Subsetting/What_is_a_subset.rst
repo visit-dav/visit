@@ -22,11 +22,11 @@ Domain Subsets
 ~~~~~~~~~~~~~~
 VisIt's concept of a *Domain* subset is fundamental to its
 parallel programming and execution model. A domain in VisIt represents a
-a *chunk* of mesh plus variables that is **both** stored (in files and in
-memory) **and** processed coherently as a single, self-contained unit.
+*chunk* of mesh plus its variables that is **both** stored (in files and in
+memory) **and** processed *coherently* as a single, self-contained unit.
 Large meshes in VisIt are typically decomposed into *Domain* subsets for
 parallel processing. In fact, except in rare cases, the maximum number of
-parallel tasks VisIt may use is determined by the number of *Domain* subsets
+MPI tasks VisIt may use is determined by the number of *Domain* subsets
 created by the data producer. VisIt's approach to processing a mesh in
 parallel is often described as *piggy-backing* off of the parallel decomposition
 created by the data producer.
@@ -56,11 +56,11 @@ Group or Block Subsets
 ~~~~~~~~~~~~~~~~~~~~~~
 *Groups* (or *Blocks*) are just unions of *Domains*. They are optional. A mesh
 is not **required** to have groups. On the other hand, if a mesh has *Groups*,
-then **every** domain in the mesh must be assigned to one and only one subset
-within the *Groups* collection of subsets. *Groups* may be used to represent,
-for example, the files in which multiple domains are stored or sets of
-neighboring domains that share a common logical/structured indexing arrangement
-in an otherwise globally unstructured mesh.
+then **every** domain in the mesh must be assigned to one and only one *Group*
+subset. *Groups* may be used to represent, for example, the files in which
+multiple domains are stored or sets of neighboring domains that share a common
+logical/structured indexing arrangement in an otherwise globally unstructured
+mesh.
 
 The key constraint about group subsets is that they can represent only unions
 of the *domain* subsets. Internally in VisIt, a group subset is implemented as
@@ -73,7 +73,8 @@ materials. For example, a mesh may be composed of steel, brass, and aluminum
 materials. If these materials are given integer ids 83 (``int('S')``), 66
 (``int('B')``) and 65 (``int('A')``), then each zone (or cell) in the mesh can
 be assigned a value of 83, 66 or 65 to indicate the zone is composed of steel,
-brass or aluminum.
+brass or aluminum. This would be equivalent to an integer valued (with 3 unique
+values), zone-centered variable on the mesh.
 
 For material subsets, however, VisIt also supports a notion of
 *mixing* where a single zone (or cell) can be composed of multiple materials
@@ -84,7 +85,7 @@ within a given material subset.
 
 Material subsets are optional. Furthermore, if material subsets are defined
 additionally supporting *mixing* is also optional. Only some data producers that
-require *Material* subsets also require *mixing*.
+involve *Material* subsets also involve *mixing*.
 
 When *mixing materials* are involved, VisIt can employ a variety of
 sophisticated

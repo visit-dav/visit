@@ -880,7 +880,7 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
 
 .. _Array_compose_with_bins:
 
-.. figure:: images/Array_compose_with_bins.png
+.. figure:: images/array_compose_with_bins.png
    :scale: 50%
 
    Bar graph created from picking an array variable created with array_compose_with_bins()
@@ -1311,22 +1311,32 @@ Relative Face Planarity Function: ``relative_face_planarity()`` : ``relative_fac
     :ref:`face_planarity() <Face_Planarity_Function>`, except where each
     face's value is normalized by the average edge length of the face.
 
-Comparison (Solution Transfer) Expressions
-""""""""""""""""""""""""""""""""""""""""""
+Comparison Expressions
+""""""""""""""""""""""
+Comparing variables defined on the *same* mesh is often as simple as taking
+their difference. What about comparing variables when they are defined on
+different meshes? A common example is taking the difference between results
+from two runs of the same simulation application. Even if the two runs operate
+on computationally *identical* meshes, the fact that each run involves its own
+*instance* of that mesh means that as far as VisIt is concerned, they are
+different meshes.
+
+In order to compose an expression involving variables on different meshes, the
+*first* step is to *map* the variables onto a *common* mesh. The position-based
+CMFE function and its friend, the connectivity-based CMFE function,
+:ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>` are the work-horse methods
+needed when working with variables from *different* meshes in the *same*
+expression. *CMFE* is an abbreviation for *cross-mesh field evaluation*.
+
+All of the comparison expressions involve the concepts of a *donor variable*
+and a *target mesh*. The donor variable (e.g. *pressure*) is the variable to
+be mapped. The target mesh is the mesh onto which the donor variable is to be
+mapped. In addition, the term *donor mesh* refers to the mesh upon which the
+donor variable is defined.
 
 .. _Pos_Cmfe_Expression_Function:
 
 Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Target Mesh>,<Fill>)``
-   *CMFE* is an abbreviation for *cross-mesh field evaluation*. The
-   position-based CMFE function and its friend, the connectivity-based CMFE
-   function, :ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>` are the
-   work-horse methods needed when working with variables from *different*
-   meshes in the *same* expression. A common example is taking the difference
-   between results from two simulation runs. In order to compose an expression
-   involving variables from multiple databases, the *first* step is to *map* the
-   variables onto a *common* mesh. The CMFE expressions are used perform this
-   function.
-
    The ``pos_cmfe()`` function performs the mapping assuming the two meshes,
    that is the ``<Target Mesh>`` and the mesh upon which the
    ``<Donor Variable>`` is defined, share *only* a common spatial (positional)

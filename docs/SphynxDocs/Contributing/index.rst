@@ -16,18 +16,27 @@ produced.  There are numerous opportunities for adjusting this to make better
 use of Sphinx as we move forward. These are discussed at the
 :ref:`end <contributing_forward>` of this section.
 
-* Two documents about Sphinx are useful:
+* A few documents about reStructuredText and Sphinx are useful:
 
-  * `reStructuredText Markup Specification <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_
+  * `reStructuredText Primer <http://docutils.sourceforge.net/docs/user/rst/quickref.html#field-lists>`_
   * `Sphinx Documentation <http://www.sphinx-doc.org/en/stable/contents.html>`_
+  * `reStructuredText Markup Specification <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_
+  * `reStructuredText Reference Documentation <http://docutils.sourceforge.net/rst.html#reference-documentation>`_
 
 * Sphinx uses blank lines as a block separators and 2 or 4 spaces of
   indentation to guide parsing and interpretation of content. So, be sure
   to pay careful attention to blank lines and indentation. They are not
-  there for style.  They **need** to be there for Sphinx to parse and
+  there merely for style.  They *need* to be there for Sphinx to parse and
   interpret the content directly.
+* Line breaks *within* reStructuredText inline markup constructs often cause
+  build errors. 
 * Create headings by a sequence of *separator characters* immediately
-  underneath and the same length as the heading text as in::
+  underneath and the same length as the heading. Different types of
+  separator characters define different levels of headings ::
+
+    First level heading
+    ===================
+    This is an example of some text under the heading...
 
     Second level heading
     ~~~~~~~~~~~~~~~~~~~~
@@ -41,34 +50,43 @@ use of Sphinx as we move forward. These are discussed at the
     --------------------
     This is an example of some text under the heading...
 
-yields these headings...
+  yields these headings...
 
-Second level heading
-~~~~~~~~~~~~~~~~~~~~
-This is an example of some text under the heading...
+.. figure:: images/headings.png
 
-Third level heading
-"""""""""""""""""""
-This is an example of some text under the heading...
+* If you want to divide sections and subsections across multiple ``.rst``
+  files, you can link them together using the ``.. toctree::`` directive
+  as is done for example in the section on VisIt_ **Plots** ::
 
-Fourth Level Heading
---------------------
-This is an example of some text under the heading...
+    Plots
+    =====
+ 
+    This chapter explains the concept of a plot and goes into detail
+    about each of VisIt's different plot types.
+ 
+    .. toctree::
+        :maxdepth: 1
+ 
+        Working_with_Plots
+        PlotTypes/index
+
+  Note that the files listed in the ``.. toctree::`` block do not include
+  their ``.rst`` extensions.
 
 * Wherever possible, keep lines in ``.rst`` files to 80 columns or less.
 * Avoid contractions such as ``isn't``, ``can't`` and ``you've``.
 * Avoid hyphenation of words.
 * Use upper case for all letters in acronyms (MPI, VTK)
-* Use case conventions of product names (QuickTime, TotalView, Valgrind)
+* Use case conventions of product names (QuickTime, TotalView, Valgrind).
 * Bracket word(s) with two stars (``**some words**``) for **bold**.
 * Bracket word(s) with one star (``*word*``) for *italics*.
-* Bracket word(s) with two backticks (``this is three words``) for literal::
-
-    Bracket word(s) with two backticks (``this is three words``) for literal.
-
-* Line breaks in bracketed word(s) cause problems.
-* Use **Bold** to refer to widget names, operator or plot names, etc.
-* Use literals for code, commands, arguments, file names, etc.
+* Bracket word(s) with two backticks
+  (`````\ `````\ ``this is three words``\ `````\ `````) for ``literal``.
+* Bracketed word(s) should not span line breaks.
+* Use **Bold** to refer to VisIt_ widget names, Operator or Plot names, etc.
+  Avoid using bold for other purposes.
+* Use *italics* for emphasis.
+* Use ``literals`` for code, commands, arguments, file names, etc.
 * Subscripting, H\ :sub:`2`\ O, and superscripting, E = mc\ :sup:`2`, are supported::
 
     Subscripting, H\ :sub:`2`\ O, and superscripting, E = mc\ :sup:`2`, are supported
@@ -129,7 +147,7 @@ This is an example of some text under the heading...
 .. _contributing_images:
 
 More on Images
-""""""""""""""
+~~~~~~~~~~~~~~
 
 Try to use PNG formatted images. We plan to use the Sphinx generated
 documentation both for online HTML and for printed PDF. So, images sizes
@@ -154,18 +172,18 @@ An ordinary image...
 
 .. code-block:: RST
 
-  .. figure:: ../Quantitative/images/Array_compose_with_bins.png
+  .. figure:: images/array_compose_with_bins.png
 
-.. figure:: ../Quantitative/images/Array_compose_with_bins.png
+.. figure:: images/array_compose_with_bins.png
 
 Same image with ``:scale: 50%`` option
 
 .. code-block:: RST
 
-  .. figure:: ../Quantitative/images/Array_compose_with_bins.png
+  .. figure:: images/array_compose_with_bins.png
      :scale: 50% 
 
-.. figure:: ../Quantitative/images/Array_compose_with_bins.png
+.. figure:: images/array_compose_with_bins.png
    :scale: 50% 
 
 Same image with an anchor for cross referencing...
@@ -174,12 +192,12 @@ Same image with an anchor for cross referencing...
 
   .. _my_figure:
 
-  .. figure:: ../Quantitative/images/Array_compose_with_bins.png
+  .. figure:: images/array_compose_with_bins.png
      :scale: 50% 
 
 .. _my_figure:
 
-.. figure:: ../Quantitative/images/Array_compose_with_bins.png
+.. figure:: images/array_compose_with_bins.png
    :scale: 50% 
 
 which can now be cross referenced using an inline :numref:`Fig. %s <my_figure>` 
@@ -199,23 +217,23 @@ a caption.
 
   .. _my_figure2:
 
-  .. figure:: ../Quantitative/images/Array_compose_with_bins.png
+  .. figure:: images/array_compose_with_bins.png
      :scale: 50% 
 
      Here is a caption for the figure.
 
 .. _my_figure2:
 
-.. figure:: ../Quantitative/images/Array_compose_with_bins.png
+.. figure:: images/array_compose_with_bins.png
    :scale: 50% 
 
    Here is a caption for the figure.
 
-Note that the figure label (e.g. Fig 20.2) will not appear if there is no
+Note that the figure label (e.g. Fig 19.2) will not appear if there is no
 caption.
 
 Tables
-""""""
+~~~~~~
 Sphinx supports a variety of mechanisms for defining tables. The conversion
 tool used to convert this documentation from its original OpenOffice format
 converted all tables to the *grid* style of table which is kinda sorta like
@@ -225,7 +243,7 @@ the editor window. It is cumbersome to deal with but rich in capabilities.
 .. _contributing_math:
 
 Math
-""""
+~~~~
 
 We add the Sphinx builtin extension ``sphinx.ext.mathjax`` to the
 ``extensions`` variable in ``conf.py``. This allows Sphinx to use
@@ -250,7 +268,7 @@ a lot of guidance on constructing math equations with LaTeX.
 .. _contributing_spell:
 
 Spell Checking
-""""""""""""""
+~~~~~~~~~~~~~~
 
 There is a shell script, ``check_spelling.sh`` to run a spell check. However,
 this script will fail if you do not have the required Sphinx extension and
@@ -319,7 +337,11 @@ Things To Consider Going Forward
  * timestep
  * SR
  * Client-server
+ * CMFE
+ * Zone-centering, Node-centering
 
+* Decide upon and then make consistent the usage of terms like
+  *zone*/*cell*/*element* and *node*/*point*/*vertex*
 * Additional features of Sphinx to consider adopting...
 
   * Using ``.. spelling::`` directives to limit scope of special case words to
