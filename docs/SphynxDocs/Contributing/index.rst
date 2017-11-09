@@ -9,12 +9,12 @@ documentation including some notes on style, word usage and grammar.
 Quick Reference
 ~~~~~~~~~~~~~~~
 Note that the original source of most of the content here is the OpenOffice
-document produced by Brad Whitlock. A conversion tool was used to move most
-of the content there to Sphinx. As such, most of the Sphinx usage conventions
-adopted here were driven by whatever the conversion tool produced. There are
-numerous opportunities for adjusting this to make better use of Sphinx as we
-move forward. These are discussed at the :ref:`end <contributing_forward>` of
-this section.
+document produced with heroic effort by Brad Whitlock. A conversion tool was
+used to move most of the content there to Sphinx. As such, most of the Sphinx
+usage conventions adopted here were driven by whatever the conversion tool
+produced.  There are numerous opportunities for adjusting this to make better
+use of Sphinx as we move forward. These are discussed at the
+:ref:`end <contributing_forward>` of this section.
 
 * Two documents about Sphinx are useful:
 
