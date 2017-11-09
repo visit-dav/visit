@@ -407,10 +407,10 @@ Things To Consider Going Forward
    #   - computes diff between gui_image and base_gui_image, bounding box
    #   - around it and then saves that bounding box from gui_image
    diff_bbox = BBoxedDiffImage(gui_image, gui_image_base)
-   SaveBBoxedDiffImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_window.png')
+   SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_window.png')
 
    # Make a change to another PC att, capture and save it
    pcatts.limitsMode = pcatts.CurrentPlot
    SetPlotOptions(pcatts) # PC Attrs widget maps due to state change
    gui_image = pyscreenshot.grab()
-   SaveBBoxedDiffImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')
+   SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')
