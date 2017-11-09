@@ -3,7 +3,7 @@
 Contributing
 ============
 
-This is a short contributing guide on the VisIt project's use of Sphinx for its
+This is a short contributing guide on the VisIt_ project's use of Sphinx for its
 documentation including some notes on style, word usage and grammar.
 
 Quick Reference
@@ -13,7 +13,8 @@ document produced by Brad Whitlock. A conversion tool was used to move most
 of the content there to Sphinx. As such, most of the Sphinx usage conventions
 adopted here were driven by whatever the conversion tool produced. There are
 numerous opportunities for adjusting this to make better use of Sphinx as we
-move forward. These are discussed in
+move forward. These are discussed at the :ref:`end <contributing_forward>` of
+this section.
 
 * Two documents about Sphinx are useful:
 
@@ -267,10 +268,10 @@ When Sphinx reports a spelling error, your options are either to correct or
 otherwise adjust the spelling issue or add the word to the
 ``spelling_wordlist.txt`` file.
 
-Much of the VisIt documentation includes the names of executable applications,
-their arguments, GUI widgets, VisIt components and VisIt architectural details.
+Much of the VisIt_ documentation includes the names of executable applications,
+their arguments, GUI widgets, VisIt_ components and VisIt_ architectural details.
 It is best to typeset such names *exactly* as a user might encounter them while
-using VisIt. But, this can lead to a lot of *special case words* that Sphinx
+using VisIt_. But, this can lead to a lot of *special case words* that Sphinx
 spelling does not recognize and which need to be added to
 ``spelling_wordlist.txt``. For example, ``fmt`` is a *word* in
 ``spelling_wordlist.txt``.
@@ -291,12 +292,18 @@ desired.
 For the time being, the only solution is to add the words to the global
 ``spelling_wordlist.txt`` file.
 
-Sphinx Features To Consider Adopting
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _contributing_forward:
 
-* Do we need a glossary of VisIt specific terms such as...
+Things To Consider Going Forward
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Decide what to do about compound words such as *timestep*, *time step* or
+  *time-step*. There are many instances to consider such as *keyframe*,
+  *checkbox*, *pulldown*, *submenu*, *sublauncher*, etc.
+* Do we need a glossary of VisIt_ specific terms such as...
 
  * SIL
+ * Mixed materials
  * Species
  * OnionPeel
  * Mesh
@@ -304,22 +311,44 @@ Sphinx Features To Consider Adopting
  * cycle
  * timestep
  * SR
+ * Client-server
 
-* ``:term:`` role for glossary terms
-* ``:abbr:`` role for abbreviations
-* ``:guilable:`` role for referring to GUI widgets
-* ``:command:`` role for OS level cammands
-* ``:file:`` role for referring to file names
-* ``:menuselection:`` role for referring to widget paths in GUI menus
-* ``:kbd:`` role for specifying a sequence of key strokes
-* ``.. deprecated::`` directive for deprecated functionality
-* ``.. versionadded::`` directive for new functionality
-* ``.. versionchanged::`` directive for new functionality
-* ``.. note::``, ``.. warning::`` and/or ``.. danger::`` directives to call
-  attention to the reader.
-* ``.. only::`` directives for audience specific (e.g. tagged) content
+* Additional features of Sphinx to consider adopting...
+
+  * ``:term:`` role for glossary terms
+  * ``:abbr:`` role for abbreviations
+  * ``:guilable:`` role for referring to GUI widgets
+  * ``:command:`` role for OS level cammands
+  * ``:file:`` role for referring to file names
+  * ``:menuselection:`` role for referring to widget paths in GUI menus
+  * ``:kbd:`` role for specifying a sequence of key strokes
+  * ``.. deprecated::`` directive for deprecated functionality
+  * ``.. versionadded::`` directive for new functionality
+  * ``.. versionchanged::`` directive for new functionality
+  * ``.. note::``, ``.. warning::`` and/or ``.. danger::`` directives to call
+    attention to the reader.
+  * ``.. only::`` directives for audience specific (e.g. tagged) content
   
-  * Could use to also include developer related content but have it
-    not appear in the user manual output
+    * Could use to also include developer related content but have it
+      not appear in the user manual output
 
-* ``.. seealso::`` directive for references
+  * ``.. seealso::`` directive for references
+  * Substitutions for names of products and projects we refer to frequently
+    such as VTK_ or Sphinx_ or for frequently used text such as |viswin|
+
+.. code-block:: RST
+
+    Substitutions for names of products and projects we refer to frequently
+    such as VTK_ or Sphinx_ or for frequently used text such as |viswin|
+
+    .. _VisIt: https://visit.llnl.gov
+    .. _VTK: https://www.vtk.org
+    .. _Sphinx: http://www.sphinx-doc.org/en/stable
+    .. |viswin| replace:: **Viewer Window**
+
+.. _VisIt: https://visit.llnl.gov
+.. _VTK: https://www.vtk.org
+.. _Sphinx: http://www.sphinx-doc.org/en/stable
+
+.. |viswin| replace:: **Viewer Window**
+
