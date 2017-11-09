@@ -91,7 +91,13 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
   `PyEnchant <https://pythonhosted.org/pyenchant/>`_ and
   `sphinx-contrib.spelling <http://sphinxcontrib-spelling.readthedocs.io/en/latest/index.html>`_
   installed.
-* Begin a line with ``..`` followed by space for single line comments.
+* Begin a line with ``..`` followed by space for single line comments::
+
+    .. this is a single line comment
+
+    ..
+        This is a multi-line
+        comment
 
 .. _my_anchor:
 
@@ -103,26 +109,28 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod...
     ---------------
 
   Note that the leading underscore is **not** part of the anchor name.
-* Make anchors names unique over all pages of documentation by using
+* Make anchor names unique over all pages of documentation by using
   the convention of prepending heading and subheading names.
-* Link to anchors *within* this documentation like
-  :ref:`this one <my_anchor>`::
+* Link to anchors *within* this documentation like :ref:`this one <my_anchor>`::
 
-    :ref:`link text <my_anchor>`
+    Link to anchors *within* this documentation like :ref:`this one <my_anchor>`
 
 * Link to other documents elsewhere online like
   `visitusers.org <https://www.visitusers.org/>`_::
 
-    `link text <URL>`_
+    Link to other documents elsewhere online like
+    `visitusers.org <https://www.visitusers.org/>`_
 
 * Link to *numbered* figures or tables *within* this documentation like
   :numref:`Fig. %s <my_figure2>`::
 
+    Link to *numbered* figures or tables *within* this documentation like
     :numref:`Fig. %s <my_figure2>`
 
 * Link to a downloadable file *within* this documentation like
   :download:`this one <../Quantitative/VerdictManual-revA.pdf>`::
 
+    Link to a downloadable file *within* this documentation like
     :download:`this one <../Quantitative/VerdictManual-revA.pdf>`
 
 .. _contributing_images:
@@ -334,21 +342,21 @@ Things To Consider Going Forward
 
   * ``.. seealso::`` directive for references
   * Substitutions for names of products and projects we refer to frequently
-    such as VTK_ or Sphinx_ or for frequently used text such as |viswin|
+    such as VTK_ or Sphinx_ or for frequently used text such as |viswin|::
 
-.. code-block:: RST
+      Substitutions for names of products and projects we refer to frequently
+      such as VTK_ or Sphinx_ or for frequently used text such as |viswin|
 
-    Substitutions for names of products and projects we refer to frequently
-    such as VTK_ or Sphinx_ or for frequently used text such as |viswin|
+    with the following substitutions defined::
 
-    .. _VisIt: https://visit.llnl.gov
-    .. _VTK: https://www.vtk.org
-    .. _Sphinx: http://www.sphinx-doc.org/en/stable
-    .. |viswin| replace:: **Viewer Window**
+      .. _VisIt: https://visit.llnl.gov
+      .. _VTK: https://www.vtk.org
+      .. _Sphinx: http://www.sphinx-doc.org/en/stable
+      .. |viswin| replace:: **Viewer Window**
+
 
 .. _VisIt: https://visit.llnl.gov
 .. _VTK: https://www.vtk.org
 .. _Sphinx: http://www.sphinx-doc.org/en/stable
-
 .. |viswin| replace:: **Viewer Window**
 
