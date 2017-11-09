@@ -15,7 +15,8 @@ was generated, eliminating the need to move the data to a visualization
 server. VisIt can be controlled by its Graphical User Interface (GUI),
 through the Python and Java programming languages, or from a custom user
 interface that you develop yourself. More information about VisIt can be
-found online at *https://wci.llnl.gov/codes/visit/.*
+found online at https://wci.llnl.gov/simulation/computer-codes/visit.
+
 
 This manual explains how to use the VisIt GUI. You will be given a brief
 overview on how VisIt works and then you will be shown how to start and use

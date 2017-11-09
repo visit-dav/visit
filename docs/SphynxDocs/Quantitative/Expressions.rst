@@ -880,7 +880,7 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
 
 .. _Array_compose_with_bins:
 
-.. figure:: images/array_compose_with_bins.png
+.. figure:: images/Array_compose_with_bins.png
    :scale: 50%
 
    Bar graph created from picking an array variable created with array_compose_with_bins()
