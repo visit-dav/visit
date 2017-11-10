@@ -142,7 +142,7 @@ static void InitializeCellNumPoints(int *celltype_npts)
     celltype_npts[VISIT_CELL_QUADRATIC_PYR] = 13;
     celltype_npts[VISIT_CELL_BIQUADRATIC_TRI] = 7;
     celltype_npts[VISIT_CELL_BIQUADRATIC_QUAD] = 9;
-    celltype_npts[VISIT_CELL_TRIQUADRATIC_HEX] = 26;
+    celltype_npts[VISIT_CELL_TRIQUADRATIC_HEX] = 27;
     celltype_npts[VISIT_CELL_QUADRATIC_LINEAR_QUAD] = 6;
     celltype_npts[VISIT_CELL_QUADRATIC_LINEAR_WEDGE] = 12;
     celltype_npts[VISIT_CELL_BIQUADRATIC_QUADRATIC_WEDGE] = 18;
@@ -1708,7 +1708,7 @@ SimV2_GetMesh_Unstructured(int domain, visit_handle h, avtPolyhedralSplit **phSp
     int phIndex = 0;
     const int *cell = connectivity;
     const int *end = cell + connectivityLen;
-    vtkIdType verts[8];
+    vtkIdType verts[27];
     bool noConnectivityError = true;
     while(cell < end && numCells < nzones && noConnectivityError)
     {
