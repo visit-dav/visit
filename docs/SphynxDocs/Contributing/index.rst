@@ -76,17 +76,21 @@ use of Sphinx as we move forward. These are discussed at the
 * Wherever possible, keep lines in ``.rst`` files to 80 columns or less.
 * Avoid contractions such as ``isn't``, ``can't`` and ``you've``.
 * Avoid hyphenation of words.
-* Use upper case for all letters in acronyms (MPI, VTK)
+* Use ``VisIt_`` or ``VisIt_'s`` when referring to VisIt_ by name.
+* Use upper case for all letters in acronyms (:abbr:`MPI (Message Passing Interface)`, VTK)
 * Use case conventions of product names (QuickTime, TotalView, Valgrind).
 * Bracket word(s) with two stars (``**some words**``) for **bold**.
 * Bracket word(s) with one star (``*word*``) for *italics*.
-* Bracket word(s) with two backticks
-  (`````\ `````\ ``this is three words``\ `````\ `````) for ``literal``.
+* Bracket word(s) with two backticks (:samp:`\ ``some words```) for ``literal``.
 * Bracketed word(s) should not span line breaks.
-* Use **Bold** to refer to VisIt_ widget names, Operator or Plot names, etc.
-  Avoid using bold for other purposes.
-* Use *italics* for emphasis.
+* Use **bold** to refer to VisIt_ **Widget** names, **Operator** or **Plot**
+  names and other named objects part of VisIt_'s interface.
+* Avoid use of **bold** for other purposes. Instead use *italics*.
 * Use ``literals`` for code, commands, arguments, file names, etc.
+* Use :samp:`\ :t\ erm:`glossary term`` at least for the *first* use of a
+  glossary term in a section.
+* Use :samp:`\ :a\ bbr:`ABR (Long Form)`` at least for the *first* use of an
+  acronym or abbreviation in a section.
 * Subscripting, H\ :sub:`2`\ O, and superscripting, E = mc\ :sup:`2`, are supported::
 
     Subscripting, H\ :sub:`2`\ O, and superscripting, E = mc\ :sup:`2`, are supported
@@ -229,7 +233,7 @@ a caption.
 
    Here is a caption for the figure.
 
-Note that the figure label (e.g. Fig 19.2) will not appear if there is no
+Note that the figure label (e.g. Fig 20.2) will not appear if there is no
 caption.
 
 Tables
@@ -325,20 +329,10 @@ Things To Consider Going Forward
 * Decide what to do about compound words such as *timestep*, *time step* or
   *time-step*. There are many instances to consider such as *keyframe*,
   *checkbox*, *pulldown*, *submenu*, *sublauncher*, etc.
-* Do we need a glossary of VisIt_ specific terms such as...
+* Some more VisIt_ specific terms to include in the glossary...
 
- * SIL
- * Mixed materials
- * Species
- * OnionPeel
- * Mesh
- * Viewer
- * cycle
- * timestep
- * SR
- * Client-server
- * CMFE
- * Zone-centering, Node-centering
+ * Mixed materials, Species, OnionPeel,  Mesh, Viewer, cycle, timestep
+   Client-server, CMFE, Zone-centering, Node-centering
 
 * Decide upon and then make consistent the usage of terms like
   *zone*/*cell*/*element* and *node*/*point*/*vertex*
@@ -346,8 +340,6 @@ Things To Consider Going Forward
 
   * Using ``.. spelling::`` directives to limit scope of special case words to
     the ``.rst`` files in which they occur.
-  * ``:term:`` role for glossary terms
-  * ``:abbr:`` role for abbreviations
   * ``:guilable:`` role for referring to GUI widgets
   * ``:command:`` role for OS level commands
   * ``:file:`` role for referring to file names

@@ -45,8 +45,8 @@ the right. The materials are subsets of the top level set. Double clicking on
 a set or clicking on an expand arrow lists any subset categories that can be
 used to further break down the set.
 
-Changing a SIL restriction
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Changing a :term:`SIL` restriction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each set in the **Subset Window** has a small check box next to it that
 allows users to turn the set on or off. The check box not only displays

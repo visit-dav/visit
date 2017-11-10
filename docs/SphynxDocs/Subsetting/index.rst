@@ -10,7 +10,7 @@ node sets and zone sets, materials and even material species.
 
 Users often find it useful to *restrict* which subsets are used in any given
 operation to focus their analyses on only certain regions of interest. This is
-handled through VisIt's **Subset Window**. Here, we describe VisIt's
+handled through VisIt_'s **Subset Window**. Here, we describe VisIt's
 subsetting functionality and **Subset Window** in detail.
 
 What is described here is primarily about *pre-defined, first-class, named

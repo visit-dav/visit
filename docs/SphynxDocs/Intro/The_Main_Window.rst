@@ -3,18 +3,24 @@
 The Main Window
 ---------------
 
-VisIt's **Main Window**, shown in :numref:`Figure %s <Intro-MainWindow>`,
-contains three main areas: the file area, the plot area and the notepad area.
-The file area contains controls for working with sources and selecting the
-current time state. The plot area contains controls for creating and modifying
-plots and operators. The notepad area is a region where frequently used
-windows may be posted for quick and convenient access.
+VisIt_'s **Main Window**, shown in :numref:`Figure %s <Intro-MainWindow>`,
+contains three main areas: the **File panel**, **Plot Manager**, and
+**Notepad** area. The **File panel** is located at the top of the
+**Main Window** and it allows you to open databases and set the active
+time step for animations. The middle area of the **Main Window** is the **Plot Manager**
+area. The **Plot Manager** area contains controls that allow you to create and
+modify plots and operators. The bottom area of the **Main Window** is the
+**Notepad** area. The **Notepad** area is a blank area to which various VisIt_
+windows can post. Each time a window posts to the **Notepad** area, a new tab
+is created in the **Notepad** and the posted window's contents are added to the
+new tab. Clicking on a tab in the notebook displays a posted window so that it
+can be used.
 
 .. _Intro-MainWindow:
 
 .. figure:: images/Intro-MainWindow.png
 
-   VisIt's Main window
+   VisIt_'s Main window
 
 .. _Intro_Posting_a_window:
 
@@ -45,42 +51,42 @@ posted to the notepad area.
 Using the main menu
 ~~~~~~~~~~~~~~~~~~~
 
-VisIt's **Main** Menu contains seven menu options that allow you to access
-many of VisIt's most useful features. Each menu option displays a submenu
-when you click it. The options in the submenus perform an action such as
-saving an image. Menu options that contain a name followed by ellipsis open
-another VisIt window. Some menu options have keyboard shortcuts that activate
-windows. The **File** menu contains options that deal with files and
-simulations. The **Controls** menu contains options that open VisIt windows
-that, for the most part, set the look and feel of VisIt's visualization
-windows. The **Options** menu contains options that allow you to set the
-appearance of the GUI, manage host profiles, manage VisIt plugins, set
-various preferences and save VisIt's settings to a configuration file.
-The **Windows** menu contains controls that manage visualization windows.
-The **PlotAtts** and **OpAtts** menus allow access for setting the attributes
-of all the plots and operators. The **Help** menu provides options for
-viewing online help, VisIt's copyright agreement, and release notes which
-describe the major enhancements and fixes in each new version of VisIt.
-The options for each menu except for the plot and operator attribute menus
-are shown in :numref:`Figure %s <Intro-MainMenus>` and will be described
-in detail later in this manual.
+VisIt_'s **Main** Menu contains five menu options that allow you to access many
+of VisIt_'s most useful features. Each menu option displays a submenu when you
+click it. The options in the submenus perform an action such as saving an
+image. Menu options that contain a name followed by ellipsis open another
+VisIt_ window. Some menu options have keyboard shortcuts that activate windows.
+The **File** menu contains options that open VisIt_ windows that allow you to
+open files, manage compute engines and host profiles, save images, and print
+images. The **Controls** menu contains options that open VisIt_ windows that,
+for the most part, set the look and feel of VisIt_'s visualization windows.
+The colors, annotations, lighting, and view can be set through some of the
+options available in the **Controls** menu. The **Options** menu contains
+options that allow you to set the appearance of the GUI, manage VisIt_
+plugins, and save VisIt_'s settings to a configuration file. The **Windows**
+menu contains controls that manage visualization windows. The **Help**
+menu provides options for viewing online help, VisIt_'s copyright agreement,
+and release notes which describe the major enhancements and fixes in each
+new version of VisIt_. The options for each menu are shown in
+:numref:`Figure %s <Intro-MainMenus>` and will be described in detail later
+in this manual.
 
 .. _Intro-MainMenus:
 
 .. figure:: images/Intro-MainMenus.png
 
-   VisIt's main menus
+   VisIt_'s main menus
 
-The **Main** menu and the **Plots** and **Operators** menus are merged in
-the OSX version of VisIt because OSX applications always have all menus in
-the system menu along the top of the display.
+The **Main** menu and the **Plot and operator** menu are merged in the OSX 
+version of VisIt_ because OSX applications always have all menus in the
+system menu along the top of the display.
 
 Viewing status messages
 ~~~~~~~~~~~~~~~~~~~~~~~ 
 
-VisIt informs the user of its progress as it creates a visualization. As
-work is completed, status messages are displayed in the bottom of the
-**Main Window** in the status bar. In addition to status messages, VisIt
+VisIt_ informs the user of its progress as it creates a visualization. As work
+is completed, status messages are displayed in the bottom of the
+**Main Window** in the status bar. In addition to status messages, VisIt_
 sometimes displays error or warning messages. These messages are displayed
 in the **Output Window**, shown in :numref:`Figure %s <Intro-OutputIndicator>`.
 To open the **Output Window**, click the **Output Indicator** in the
@@ -99,19 +105,19 @@ blue to red.
 Applying settings
 ~~~~~~~~~~~~~~~~~
 
-When using one of VisIt's control windows, you must click the **Apply**
+When using one of VisIt_'s control windows, you must click the **Apply**
 button for the new settings to take effect. All control windows have an
 **Apply** button in the lower left corner of the window. By default, new
 settings are not applied until the **Apply** button is clicked because it is
-more efficient to make several changes and then apply them at once. VisIt has
+more efficient to make several changes and then apply them at once. VisIt_ has
 a mode called **Auto apply** that makes all changes in settings take place
 immediately. **Auto apply** is not enabled by default because it can cause
 plots to be regenerated each time settings change and for the database sizes
-for which VisIt is designed, auto apply may not always make sense. If you
-prefer to have new settings apply immediately, you can enable auto apply by
-clicking on the **Auto apply** check box in the upper, right hand corner of
-the **Main Window**. If **Auto apply** is enabled, you do not have to
-click the **Apply** button to apply changes.
+for which VisIt_ is designed, auto update may not always make sense. If you
+prefer to have new settings apply immediately, you can enable auto update by
+clicking on the **Auto update** check box in the middle of the **Main Window**
+. If **Auto update** is enabled, you do not have to click the **Apply**
+button to apply changes.
 
 .. image:: images/Intro-ApplyButton.png
 

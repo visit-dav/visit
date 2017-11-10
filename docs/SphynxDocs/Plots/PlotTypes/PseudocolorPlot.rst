@@ -24,9 +24,10 @@ Variable centering
 Variables in a database can be associated with a mesh in various ways. Databases
 supported by VisIt allow variables to be associated with a mesh's zones (cells)
 or its nodes. When a variable is associated with a mesh's zones, the variable
-field consists of one value for each zone and is said to be *zone-centered*
-. When a variable is associated with a mesh's nodes, there are values for each
-vertex making up the zone and the variable is said to be *node-centered*.
+field consists of one value for each zone and is said to be
+*:term:`zone-centered`* . When a variable is associated with a mesh's nodes,
+there are values for each vertex making up the zone and the variable is said to
+be *:term:`node-centered`*.
 
 .. _pseudocolorwindow2:
 

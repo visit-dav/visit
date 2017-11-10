@@ -11,7 +11,7 @@ Expressions
 Scientific simulations often keep track of several dozen variables as they
 run. However, only a small subset of those variables are usually written
 to a simulation database to save disk space. Sometimes variables can be
-derived from other variables using a variable expression. VisIt provides
+derived from other variables using a variable expression. VisIt_ provides
 variable expressions to allow scientists to create derived variables using
 variables that are stored in the database. Expressions are extremely powerful
 because they allow users to analyze new data without necessarily having to
@@ -22,7 +22,7 @@ appear and can be visualized like any other database variable.
 Expression Window
 ~~~~~~~~~~~~~~~~~
 
-VisIt provides an **Expression Window**, shown in
+VisIt_ provides an **Expression Window**, shown in
 :numref:`Figure %s <expressionwindow>`, that allows users to create new
 variables that can be used in visualizations. Users can open the
 **Expression Window** by clicking on the **Expressions** option in the
@@ -40,7 +40,7 @@ definition.
 
    Expression Window
 
-Expressions in VisIt are created either manually by the user or automatically
+Expressions in VisIt_ are created either manually by the user or automatically
 by various means including...
 
 * Preferences
@@ -64,7 +64,7 @@ Creating a new expression
 """""""""""""""""""""""""
 
 Users can create a new expression by clicking on the **Expression Window's New**
-button. When the user clicks on the **New** button, VisIt adds a new expression
+button. When the user clicks on the **New** button, VisIt_ adds a new expression
 and shows its new, empty definition in the **Definitions** area. The initial
 name for a new expression is *"unnamed"* followed by some integer suffix.
 As the user types a new name for the expression into the **Name** text field,
@@ -85,13 +85,13 @@ create. The selected type determines the menu in which the variable appears
 and subsequently the plots that can operate on the variable.
 
 To edit an expression's definition, users can type a new expression
-comprised of constants, variable names, and even other VisIt expressions into
+comprised of constants, variable names, and even other VisIt_ expressions into
 the **Definition** text field. The expression definition can span multiple
-lines as the VisIt expression parser ignores whitespace. For a complete
-list of VisIt's built-in expressions, refer to the table in section
+lines as the VisIt_ expression parser ignores whitespace. For a complete
+list of VisIt_'s built-in expressions, refer to the table in section
 :ref:`Built-in_expressions`. Users can also use the **Insert Function...**
 menu, shown in :numref:`Figure %s <expressionwindow-functionmenu>`, to
-insert any of VisIt's built-in expressions directly into the expression
+insert any of VisIt_'s built-in expressions directly into the expression
 definition. The list of built-in expressions is divided into certain
 categories as shown by the structure of the **Insert Function...**
 menu.
@@ -109,7 +109,7 @@ meanings. Users can then simply edit those parts of the function template that
 need to be specified.
 
 In addition to the **Insert Function...** menu, which lets users insert built-in
-functions into the expression definition, VisIt's **Expression Window**
+functions into the expression definition, VisIt_'s **Expression Window**
 provides an **Insert Variable...** menu that allows users to insert variables
 from the active database into the expression definition. The
 **Insert Variable...** menu, shown in
@@ -136,16 +136,16 @@ Users can delete an expression by clicking on it in the **Expression list**
 and then clicking on the **Delete** button. Deleting an expression removes
 it from the list of defined expressions and will cause unresolved references
 for any other expressions that use the deleted expression. If a plot uses
-an expression with unresolved references, VisIt will not be able to generate
+an expression with unresolved references, VisIt_ will not be able to generate
 it until the user resolves the reference.
 
 Expression grammar
 ~~~~~~~~~~~~~~~~~~
 
-VisIt allows expressions to be written using a host of unary and binary
-math operators as well as built-in and user-defined functions. VisIt's
+VisIt_ allows expressions to be written using a host of unary and binary
+math operators as well as built-in and user-defined functions. VisIt_'s
 expressions follow C-language syntax, although there are a few differences.
-The following paragraphs detail the syntax of VisIt expressions.
+The following paragraphs detail the syntax of VisIt_ expressions.
 
 Math operators
 """"""""""""""
@@ -276,11 +276,11 @@ the same type field. For example, both must evaluate to a
 
 In addition, if the two expressions differ in centering (e.g. one is *zone*
 or *cell* centered or *piecewise-constant* over mesh cells while the other is
-*node* or *point* centered or *pieceiwse-linear* over mesh cells), VisIt will
-*recenter* any *node*-centered fields to *zone*-centering to compute the
+*node* or *point* centered or *pieceiwse-linear* over mesh cells), VisIt_ will
+*recenter* any :term:`node-centered` fields to *zone* centering to compute the
 expression. This may not always be desirable. When it is not, the 
-:ref:`recenter() <Recenter_Expression_Function>` may be used to explicitly control the
-centering of specific operands in an expression.
+:ref:`recenter() <Recenter_Expression_Function>` may be used to explicitly
+control the centering of specific operands in an expression.
 
 .. _Sum_Expression_Operator:
 
@@ -438,7 +438,7 @@ If Function (``if()``) : ``if(exprCondition, exprTrue, exprFalse)``
 
 .. danger::
    Confirm relational and logical expressions produce new, boolean valued
-   expression variables which are themselves plottable in VisIt. Their
+   expression variables which are themselves plottable in VisIt_. Their
    original intent may have been only to be used as args in the IF expression
    and not so much be plottable outputs in their own right.
 
@@ -859,11 +859,11 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
     This expression combines two related concepts. One is the array concept
     where a group of individual scalar mesh variables are grouped into an array
     variable. The other is a set of coordinate values (you can kinda think of
-    as bin boundaries), that should be used by VisIt for certain kinds of
+    as bin boundaries), that should be used by VisIt_ for certain kinds of
     operations involving the array variable. If there are N variables in the
     array, ``expr0``, ``expr1``, and so on, there are N+1 coordinate values
     (or bin boundaries), ``b0``, ``b1``. When such a variable is picked using
-    one of VisIt's pick operations, VisIt can display a bar-graph. Each bar in
+    one of VisIt_'s pick operations, VisIt_ can display a bar-graph. Each bar in
     the bar-graph has a height determined by the associated scalar mesh variable
     (at the picked point) and a width determined by the associated
     bin-boundaries.
@@ -880,7 +880,7 @@ Array Compose With Bins Function: ``array_compose_with_bins()`` : ``array_compos
 
 .. _Array_compose_with_bins:
 
-.. figure:: images/Array_compose_with_bins.png
+.. figure:: images/new_array_compose_with_bins.png
    :scale: 50%
 
    Bar graph created from picking an array variable created with array_compose_with_bins()
@@ -927,7 +927,7 @@ Dominant Material Function: ``dominant_mat()`` : ``domimant_mat(<Mesh>)``
 
 Material Error Function: ``materror()`` : ``materror(<Mat>,[Const,Const...])``
     Creates a new scalar expression which is everywhere the difference in
-    volume fractions as stored in the database and as computed by VisIt's
+    volume fractions as stored in the database and as computed by VisIt_'s
     material interface reconstruction (MIR) algorithm. The ``<Mat>`` argument
     is a *material variable* from a database and the ``Const`` argument is
     one of the material names as an quoted string or a material number
@@ -1056,30 +1056,31 @@ external cell Function: ``external_cell()`` : ``external_cell(expr0)``
 
 .. _Zoneid_Expression_Function:
 
-zoneid Function: ``zoneid()`` : ``zoneid(<Mesh>)``
-    Return a zone-centered *scalar* variable where the value for each zone/cell
-    is local index of a zone, staring from zero, within its domain.
+Zoneid Function: ``zoneid()`` : ``zoneid(<Mesh>)``
+    Return a :term:`zone-centered` *scalar* variable where the value for each
+    zone/cell is local index of a zone, staring from zero, within its domain.
 
 .. _Global_Zoneid_Expression_Function:
 
-global zoneid Function: ``global_zoneid()`` : ``global_zoneid(<Mesh>)``
+Global Zoneid Function: ``global_zoneid()`` : ``global_zoneid(<Mesh>)``
     If global zone ids are specified by the input database, return a
-    zone-centered *scalar* variable where the value for each zone/cell
+    :term:`zone-centered` *scalar* variable where the value for each zone/cell
     is the *global* index of a zone, as specified by the data producer.
 
 .. _Nodeid_Expression_Function:
 
-nodeid Function: ``nodeid()`` : ``nodeid(expr0)``
-    Return a node-centered *scalar* variable where the value for each
+Nodeid Function: ``nodeid()`` : ``nodeid(expr0)``
+    Return a :term:`node-centered` *scalar* variable where the value for each
     node/vertex/point is local index of a node, staring from zero, within
     its domain.
 
 .. _Global_Nodeid_Expression_Function:
 
-global nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
+Global Nodeid Function: ``global_nodeid()`` : ``global_nodeid(expr0)``
     If global node ids are specified by the input database, return a
-    node-centered *scalar* variable where the value for each node/vertex/point
-    is the *global* index of a node, as specified by the data producer.
+    :term:`node-centered` *scalar* variable where the value for each
+    node/vertex/point is the *global* index of a node, as specified by
+    the data producer.
 
 .. _Volume_Function:
 
@@ -1121,7 +1122,7 @@ Zone Type Rank Function: ``zonetype_rank()`` : ``zonetype_rank(<Mesh>)``
 Mesh Quality Expressions
 """"""""""""""""""""""""
 
-VisIt employs the *Verdict Mesh Quality Library* to support a number of
+VisIt_ employs the *Verdict Mesh Quality Library* to support a number of
 expressions related to computing cell-by-cell mesh quality metrics. The
 specific definitions of the various mesh quality metrics defined by the
 *Verdict Mesh Quality Library* are amply explained in the
@@ -1318,7 +1319,7 @@ their difference. What about comparing variables when they are defined on
 different meshes? A common example is taking the difference between results
 from two runs of the same simulation application. Even if the two runs operate
 on computationally *identical* meshes, the fact that each run involves its own
-*instance* of that mesh means that as far as VisIt is concerned, they are
+*instance* of that mesh means that as far as VisIt_ is concerned, they are
 different meshes.
 
 In order to compose an expression involving variables on different meshes, the
@@ -1350,11 +1351,11 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    We'll describe the arguments to ``pos_cmfe()`` working backwards from the
    last.
 
-   The last, ``<Fill>`` argument is a numerical constant that VisIt
+   The last, ``<Fill>`` argument is a numerical constant that VisIt_
    will use to determine the value of the result in places on the target
    mesh that do not spatially overlap with the mesh of the donor variable. Note
    that if a value is chosen within the range of the donor variable, it may
-   by difficult to distinguish regions VisIt deemed were non-overlapping.
+   by difficult to distinguish regions VisIt_ deemed were non-overlapping.
    On the other hand, if a value outside the range is chosen, it will effect
    the range of the mapped variable. A common practice is to choose a value that
    is an extremum of the donor variable's range. Another practice is to
@@ -1397,7 +1398,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    needed to specify the path to the database in the file system. The path
    to the database can be specified using either *absolute* or *relative*
    paths. *Relative* paths are interpreted relative to the current working
-   directory in which the VisIt session was started. See cases B and C
+   directory in which the VisIt_ session was started. See cases B and C
    in the examples below.
 
    When the donor variable is in a different database **and** the databases
@@ -1412,7 +1413,7 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    treat the ``200`` as a *cycle number* in the donor database whereas the
    the substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
    (``d``) delta. Note that in cases where the donor database does not have
-   an exact match for the specified cycle or time, VisIt will chose the state
+   an exact match for the specified cycle or time, VisIt_ will chose the state
    with the cycle or time which is closest in absolute distance. For the *index*
    modality, if there is no exact match for the specified index, an error
    results. See cases D-I in the examples below.
@@ -1604,8 +1605,8 @@ Miscellaneous Expressions
 .. _Zonal_Constant_Expression_Function:
 
 Zonal Constant Function: ``zonal_constant()`` : ``zonal_constant(expr0)``
-    Return a *scalar*, zone-centered field that is everywhere on ``<Mesh>``
-    the constant value ``<Const>``.
+    Return a *scalar*, :term:`zone-centered` field that is everywhere on
+    ``<Mesh>`` the constant value ``<Const>``.
 
 .. _Zone_Constant_Expression_Function:
 
@@ -1620,8 +1621,8 @@ Cell Constant Function: ``cell_constant()`` : ``cell_constant(expr0)``
 .. _Nodal_Constant_Expression_Function:
 
 Nodal Constant Function: ``nodal_constant()`` : ``nodal_constant(<Mesh>,<Const>)``
-    Return a *scalar*, node-centered field that is everywhere on ``<Mesh>``
-    the constant value ``<Const>``.
+    Return a *scalar*, :term:`node-centered` field that is everywhere on
+    ``<Mesh>`` the constant value ``<Const>``.
 
 .. _Node_Constant_Expression_Function:
 
@@ -2007,7 +2008,7 @@ Displacement Function: ``displacement()`` : ``displacement(expr0)``
 Expression Compatibility Gotchas
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-VisIt will allow you to define expressions that it winds up determining to be
+VisIt_ will allow you to define expressions that it winds up determining to be
 invalid later when it attempts to execute those expressions. Some common
 issues are the mixing of incompatible mesh variables in the same expression
 *without* the necessary additional functions to make them compatible.
@@ -2016,14 +2017,14 @@ Tensor Rank Compatibility
 """""""""""""""""""""""""
 
 For example, what happens if you mix scalar and vector mesh variables in the
-same expression? VisIt will allow users to define such an expression. But, when
+same expression? VisIt_ will allow users to define such an expression. But, when
 it is plotted, the plot will fail.
 
 As an aside, as the user goes back and forth between the Expressions window
-creating and/or adjusting expression definitions, VisIt makes no attempt to
+creating and/or adjusting expression definitions, VisIt_ makes no attempt to
 keep track of all the changes made in expressions and automatically update
 plots as expressions change. Users have to manually clear or delete plots to
-force VisIt to re-draw plots in which the expressions changed.
+force VisIt_ to re-draw plots in which the expressions changed.
 
 If what is really intended was a scalar mesh variable, then users must use
 one of the expression functions that converts a vector to a scalar such as
@@ -2033,7 +2034,7 @@ Centering Compatibility
 """""""""""""""""""""""
 
 Some variables are zone centered and some are node centered. What happens if
-a user combines these in an expression? VisIt will default to zone centering
+a user combines these in an expression? VisIt_ will default to zone centering
 for the result. If this is not the desired result, the
 :ref:`recenter() <Recenter_Expression_Function>` expression function should be
 used, where appropriate, to adjust centering of some of the
@@ -2045,7 +2046,7 @@ important. For example
     node_var + recenter(zone_var)
     recenter(zone_var + node_var)
 
-both achieve a node-centered result. But, each expression is subtly
+both achieve a :term:`node-centered` result. But, each expression is subtly
 (and numerically) different. The first recenter's `zone_var` to the
 nodes and then performs the summation operator at each node. In the
 second, there is an implied recentering of `node_var` to the zones first. Then,

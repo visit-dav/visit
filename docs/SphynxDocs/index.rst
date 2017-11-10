@@ -1,7 +1,6 @@
 .. VisIt User Manual documentation master file, created by
-   sphinx-quickstart on Thu Sep 22 14:59:45 2016.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+   sphinx-quickstart on Thu Sep 22 14:59:45 2016 from original
+   OpenOffice document created by Brad Whitlock
 
 The VisIt User Manual
 ======================
@@ -31,6 +30,7 @@ Contents:
    Help/index
    StartupOptions/index
    Acknowledgements/index
+   glossary
    Contributing/index
 
 .. Indices and tables
@@ -38,5 +38,3 @@ Contents:
 
 .. * :ref:`genindex`
 .. * :ref:`search`
-
-

@@ -3,18 +3,18 @@
 Species
 -------
 
-VisIt adds species, which are components of materials, to the SIL when they
-are defined by the data producer. Air is a common material in simulations since
-many things in the real world are surrounded by air. The chemical composition of
-air on Earth is roughly 78% Nitrogen, 21% oxygen, 1% Argon. One can say that
-if air is a material then it has species: Nitrogen, Oxygen, and Argon with
-mass fractions 78%, 21%, 2%, respectively. Suppose one of the calculated
-quantities in a database with the aforementioned air material is atmospheric
-temperature. Now suppose that we are examining one cell that contains only
-the air material from the database and its atmospheric temperature is 100
-degrees Fahrenheit. If we wanted to know how much the Nitrogen contributed
-to the atmospheric temperature, we could multiply its concentration of 78%
-times the 100 degrees Fahrenheit to yield: 78 degrees Fahrenheit. Species
+VisIt adds species, which are components of materials, to the :term:`SIL` when
+they are defined by the data producer. Air is a common material in simulations
+since many things in the real world are surrounded by air. The chemical
+composition of air on Earth is roughly 78% Nitrogen, 21% oxygen, 1% Argon.
+One can say that if air is a material then it has species: Nitrogen, Oxygen,
+and Argon with mass fractions 78%, 21%, 2%, respectively. Suppose one of the
+calculated quantities in a database with the aforementioned air material is
+atmospheric temperature. Now suppose that we are examining one cell that
+contains only the air material from the database and its atmospheric temperature
+is 100 degrees Fahrenheit. If we wanted to know how much the Nitrogen
+contributed to the atmospheric temperature, we could multiply its concentration
+of 78% times the 100 degrees Fahrenheit to yield: 78 degrees Fahrenheit. Species
 are often used to track chemical composition of materials and their effects
 on various calculated quantities.
 
@@ -38,9 +38,9 @@ plotted variable's value in turn drops.
 
    Species variable
 
-VisIt adds species to the SIL as a category that contains the various
+VisIt adds species to the :term:`SIL` as a category that contains the various
 chemical constituents for all materials that have species. Since species
-are handled using the SIL, one can use VisIt's **Subset Window** to turn
+are handled using the :term:`SIL`, one can use VisIt's **Subset Window** to turn
 off species. Turning off species has quite a different effect than turning
 off entire materials. When materials are turned off, they no longer appear
 in the visualization. When species are turned off, no parts of the
@@ -72,8 +72,8 @@ show zero for every place that had no oxygen.
 Turning off species
 ~~~~~~~~~~~~~~~~~~~
 
-VisIt adds species information to the SIL as new subsets under a category
-called: Species. Since species are part of the SIL, users can use the
+VisIt adds species information to the :term:`SIL` as new subsets under a
+category called: Species. Since species are part of the SIL, users can use the
 **Subset Window** (see :numref:`Figure %s <subsetwindow_species2>`) to turn
 off species. To access the list of species, select the Species category
 under the whole mesh. Once the Species category is clicked, the second pane

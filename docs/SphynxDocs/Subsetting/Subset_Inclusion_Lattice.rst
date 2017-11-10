@@ -4,7 +4,7 @@ Subset Inclusion Lattice
 ------------------------
 
 VisIt relates all possible subsets in a database using what is called a
-Subset Inclusion Lattice (SIL). Ultimately the subsets in a database are
+:term:`Subset Inclusion Lattice` (SIL). Ultimately the subsets in a database are
 cells that can be grouped into different categories such as material
 region, domain, patch, refinement level, etc. Each category has some
 number of possible values when taken together form a collection. A
