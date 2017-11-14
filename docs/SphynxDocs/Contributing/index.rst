@@ -3,8 +3,25 @@
 Contributing
 ============
 
-This is a short contributing guide on the VisIt_ project's use of Sphinx for its
-documentation including some notes on style, word usage and grammar.
+This is a short contributing guide on the VisIt_ project's use of
+`Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_ for
+documentation.
+
+You can check out the Sphinx manual with::
+
+    svn co svn+ssh://<USERNAME>@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/docs/SphynxDocs
+
+If you have `Sphinx <http://www.sphinx-doc.org/en/stable/tutorial.html>`_ You can
+build the html manual locally using the command::
+
+    sphinx-build -b html . _build -a
+
+You can then browse the root of the manual by pointing your browser to
+:file:`./_build/index.html`.  The ``-a`` forces a re-build of everything.
+Remove it when you are constantly revising and rebuilding.
+
+Your changes to any files in :file:`trunk/docs/SphinxDocs` will go live
+at approximately 50 minutes passed every even numbered hour.
 
 Quick Reference
 ~~~~~~~~~~~~~~~
