@@ -393,20 +393,30 @@ Things To Consider Going Forward
 * Decide what to do about compound words such as *timestep*, *time step* or
   *time-step*. There are many instances to consider such as *keyframe*,
   *checkbox*, *pulldown*, *submenu*, *sublauncher*, etc.
-* Some more VisIt_ specific terms to include in the glossary...
+* Need to populate glossary with more VisIt_ specific terms such as...
 
  * Mixed materials, Species, OnionPeel,  Mesh, Viewer, cycle, timestep
-   Client-server, CMFE, Zone-centering, Node-centering
+   Client-server, CMFE, Zone-centering, Node-centering, etc.
 
 * Decide upon and then make consistent the usage of terms like
   *zone*/*cell*/*element* and *node*/*point*/*vertex*
+* We will need to support *versions* of the manual with each release.
+  RTD can do that. We just need to implement it.
+
+  * If we have tagged content, then those would also represent different
+    *versions* of the manual.
+
+* All VisIt_ manuals should probably be hosted at a URL like
+  ``visit.readthedocs.io`` and from there users can find manuals for GUI, CLI
+  Getting Data Into VisIt_, etc.
 * Additional features of Sphinx to consider adopting...
 
-  * ``:guilable:`` role for referring to GUI widgets
-  * ``:command:`` role for OS level commands
-  * ``:file:`` role for referring to file names
-  * ``:menuselection:`` role for referring to widget paths in GUI menus
-  * ``:kbd:`` role for specifying a sequence of key strokes
+  * ``:guilable:`` role for referring to GUI widgets.
+  * ``:command:`` role for OS level commands.
+  * ``:file:`` role for referring to file names.
+  * ``:menuselection:`` role for referring to widget paths in GUI menus.
+    Example: :menuselection:`Controls --> View --> Advanced`.
+  * ``:kbd:`` role for specifying a sequence of key strokes.
   * ``.. deprecated::`` directive for deprecated functionality
   * ``.. versionadded::`` directive for new functionality
   * ``.. versionchanged::`` directive for when functionality changed
@@ -424,7 +434,7 @@ Things To Consider Going Forward
   
       Substitutions for names of products and projects we refer to frequently
       such as VTK_ or VisIt_ (as is used throughout this section) or for
-      frequently used text such as |viswin|::
+      frequently used text such as |viswin|.
 
     with the following substitutions defined::
 
@@ -432,12 +442,15 @@ Things To Consider Going Forward
       .. _VTK: https://www.vtk.org
       .. |viswin| replace:: **Viewer Window**
 
+    Note that the ``.. _VisIt: ...`` substitution is already defined for the whole
+    doctree in the ``rst_prolog`` variable in ``conf.py``.
+
 .. _VisIt: https://visit.llnl.gov
 .. _VTK: https://www.vtk.org
 .. |viswin| replace:: **Viewer Window**
 
 * Possible method for embedding python code to generate and capture images
-  automatically
+  (both of the GUI and visualization images produced by VisIt_) automatically
 
   * With the following pieces....
 
@@ -445,12 +458,12 @@ Things To Consider Going Forward
     * `pyscreenshot <http://pyscreenshot.readthedocs.io/en/latest/>`_ 
     * A minor adjustment to VisIt_ GUI to allow a python CLI instance
       which used ``OpenGUI(args...)`` to inform the GUI that widgets
-      are to be mapped on state changes.
+      are to be raised/mapped on state changes.
   
   * We can include python code directly in these ``.rst`` documents
     (prefaced by ``.. only::`` directives to ensure the code does
     not actually appear in the generated manual) that does the work
-    and just slurps this code out of these documents to actually run
+    and just slurp this code out of these documents to actually run
     for automatic image generation.
 
     * Generate and save VisIt_ visualization images.
@@ -495,4 +508,6 @@ Things To Consider Going Forward
    gui_image = pyscreenshot.grab()
    SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')
 
-.. spelling:: mc
+.. spelling::
+    mc
+    doctree
