@@ -369,8 +369,6 @@ Things To Consider Going Forward
   *zone*/*cell*/*element* and *node*/*point*/*vertex*
 * Additional features of Sphinx to consider adopting...
 
-  * Using ``.. spelling::`` directives to limit scope of special case words to
-    the ``.rst`` files in which they occur.
   * ``:guilable:`` role for referring to GUI widgets
   * ``:command:`` role for OS level commands
   * ``:file:`` role for referring to file names
