@@ -66,3 +66,6 @@ data files, make a selection from the **Export to** menu shown in
    
    Export file types
 
+
+.. spelling::
+    Xmdv

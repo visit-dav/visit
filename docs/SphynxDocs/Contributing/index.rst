@@ -273,53 +273,84 @@ a lot of guidance on constructing math equations with LaTeX.
 
 Spell Checking
 ~~~~~~~~~~~~~~
-
 There is a shell script, ``check_spelling.sh`` to run a spell check. However,
 this script will fail if you do not have the required Sphinx extension and
-prerequisite library.  We use a third party extension (e.g. not a builtin)
-to Sphinx for spell checking
+prerequisite python library.  We use a third party extension (e.g. not a
+builtin) to Sphinx for spell checking
 `sphinx-contrib.spelling <http://sphinxcontrib-spelling.readthedocs.io/en/latest/index.html>`_
-which requires `PyEnchant <https://pythonhosted.org/pyenchant/>`_
+which requires `PyEnchant <https://pythonhosted.org/pyenchant/>`_ and adds
+support for a custom ``.. spelling::`` directive.
 
-The script copies ``conf.py`` to a temporary directory and adds
-``'sphinxcontrib.spelling'`` to the ``extensions`` variable before running 
-Sphinx like so, ``sphinx-build -c <TMPDIR> -b spelling . _spelling``.
-As it runs, if it encounters any spelling errors, it will emit them along
-with the file name and line number at which they occur. It will also output
-any spelling errors to a file, ``output.txt`` in the ``_spelling`` directory.
+If a spell check encounters any spelling errors, it will emit them along
+with the file name and approximate line number at which they occur. It will
+also output any spelling errors to a file, ``output.txt`` in the ``_spelling``
+build directory. The line numbers Sphinx reports for the spelling errors it
+encounters are not the input text file line numbers. They are close but rarely
+exactly the line numbers of the input text file. Its best to simply search the
+document for the flagged words.
 
-Note that the line numbers Sphinx reports for the spelling errors it encounters
-are not the input text file line numbers. They are close but rarely exactly
-the line numbers of the input text file. Its best to simply search the document
-for the flagged words.
+Correcting Flagged Words
+""""""""""""""""""""""""
+To correct a given spelling error, your options are...
 
-When Sphinx reports a spelling error, your options are either to correct or
-otherwise adjust the spelling issue or add the word to the
-``spelling_wordlist.txt`` file.
+* Make a correction or other adjustment to the flagged word(s).
+* Add *special cases* to a ``.. spelling::`` directive at the end of the
+  ``.rst`` file.
+* Add *common* words, to the global ``spelling_wordlist.txt`` file.
 
 Much of the VisIt_ documentation includes the names of executable applications,
-their arguments, GUI widgets, VisIt_ components and VisIt_ architectural details.
-It is best to typeset such names *exactly* as a user might encounter them while
-using VisIt_. But, this can lead to a lot of *special case words* that Sphinx
-spelling does not recognize and which need to be added to
-``spelling_wordlist.txt``. For example, ``fmt`` is a *word* in
-``spelling_wordlist.txt``.
+their arguments, GUI widgets, VisIt_ components and VisIt_ architectural details
+and which are often not real words. It is best to typeset such names *exactly*
+as a user might encounter them while using VisIt_. But, adding such words to the
+global ``spelling_wordlist.txt`` makes sense only if the word is commonly used
+*throughout* VisIt_ documentation. Otherwise, it is best to treat it and other
+situations like it as a *special case* and add it *only* to a ``.. spelling::``
+directive at the end of the ``.rst`` file where it is used. For example, ``fmt``
+is a word used in describing :ref:`movie tools <Movie tools>` but not elsewhere
+in VisIt_. So, rather than add ``fmt`` to the global ``spelling_wordlist.txt``
+file, we add it at the end of :file:`../Animation/Movie_tools.rst` like so...
 
-On the other hand, it is best to avoid adding a bunch of special case words to
-``spelling_wordlist.txt`` if it can be avoided. And, it turns out there are a
-few options we should be able to use. One is the Sphinx ``.. spelling::``
-directive described
-`here <http://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html#private-dictionaries>`_
+.. code-block:: RST
 
-However, adding ``.. spelling::`` directives to our ``.rst`` files causes errors
-when doing a *normal (HTML)* Sphinx build if the ``'sphinxcontrib.spelling'`` is
-is not added to ``conf.py`` and also available in the Sphinx environment where
-it is being built. If have tried conditioning ``.. spelling::`` directive blocks
-with ``.. only:: spelling`` and even ``.. ifconfig::``. Neither works as
-desired.
+    .. spelling::
+        fmt
 
-For the time being, the only solution is to add the words to the global
-``spelling_wordlist.txt`` file.
+How Spell Check Works
+"""""""""""""""""""""
+The ``.. spelling::`` directive is a *custom* extension to Sphinx. It is not
+a builtin extension. This means that other documentation contributors wanting
+to make a local build of the documentation before committing their changes would
+be *required* to have the additional dependencies installed to support spell
+checking whether or not they ever needed to run a spell chec.
+
+To avoid this, we define a *default custom* ``.. spelling::`` directive in 
+``conf.py`` which causes Sphinx to simply ignore those directives...
+
+.. code-block:: python
+
+    def setup(app):
+        app.add_directive('spelling', SpellingDirective)
+        pass
+
+    from docutils.parsers.rst import Directive
+
+    class SpellingDirective(Directive):
+
+        has_content = True
+
+        def run(self):
+            return []
+
+The ``check_spelling.sh`` script then creates a modified ``conf.py`` file. It
+copies ``conf.py`` to a temporary directory and makes some adjustments via
+``sed`` to..
+
+* Add ``sphinxcontrib.spelling`` to the ``extensions`` variable.
+* Remove the ``app.add_directive('spelling', SpellingDirective)`` line (above).
+
+...before running a Sphinx build like so ::
+
+    sphinx-build -c <TMPDIR> -b spelling . _spelling
 
 .. _contributing_forward:
 
@@ -432,3 +463,5 @@ Things To Consider Going Forward
    SetPlotOptions(pcatts) # PC Attrs widget maps due to state change
    gui_image = pyscreenshot.grab()
    SaveBBoxedImage(gui_image, diff_bbox, 'Plots/PlotTypes/Pseudocolor/images/pcatts_limit_mode_window.png')
+
+.. spelling:: mc

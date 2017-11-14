@@ -192,3 +192,6 @@ simultaneously but different sets of nodes cannot simultaneously be manipulated
 in combination with different sets of faces. Finally, manipulating enumerated
 subsets can also incur small a computational burden due to the work involved in
 finding the mesh entities within a given subset.
+
+.. spelling::
+    kM

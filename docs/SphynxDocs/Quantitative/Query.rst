@@ -443,3 +443,6 @@ always place the new Curve plot in a specific window, turn off the
 window number into the **Window#** text field. After setting these
 options, subsequent Curve plots created by querying over time will be
 added to the specified vis window.
+
+.. spelling::
+    RZ

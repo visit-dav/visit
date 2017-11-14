@@ -111,3 +111,8 @@ Startup Options
 
 VisIt has many startup options that affect its behavior (see the
 :ref:`Startup Options <StartupOptions>` for complete documentation).
+
+.. spelling::
+    app
+    linux
+    darwin

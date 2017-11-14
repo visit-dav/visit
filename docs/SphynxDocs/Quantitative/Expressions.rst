@@ -2076,3 +2076,18 @@ onto the other variable's mesh using one of the CMFE expression functions.
 
 Automatic expressions
 ~~~~~~~~~~~~~~~~~~~~~
+
+.. spelling::
+    NMats
+    Nodeid
+    Oddy
+    Specmf
+    Warpage
+    Zoneid
+    args
+    agrad
+    coord
+    foo
+    isnan
+    resrad
+    swapxy

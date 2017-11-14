@@ -104,6 +104,8 @@ todo_include_todos = False
 
 numfig = True
 
+# Best place to put a substitution for 'VisIt'
+# Authors should use either VisIt_ or VisIt_'s
 rst_epilog = """
 .. _VisIt: https://visit.llnl.gov
 """
@@ -288,3 +290,21 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+#
+# NO-OP the .. spelling:: directive for normal use
+# spell_check.sh removes the call to app.add_directive
+# before running sphinx-build.
+#
+def setup(app):
+    app.add_directive('spelling', SpellingDirective)
+    pass # Here so line above can be removed during spell check
+
+from docutils.parsers.rst import Directive
+
+class SpellingDirective(Directive):
+
+    has_content = True
+
+    def run(self):
+        return []
