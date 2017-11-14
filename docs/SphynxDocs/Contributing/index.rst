@@ -321,7 +321,7 @@ The ``.. spelling::`` directive is a *custom* extension to Sphinx. It is not
 a builtin extension. This means that other documentation contributors wanting
 to make a local build of the documentation before committing their changes would
 be *required* to have the additional dependencies installed to support spell
-checking whether or not they ever needed to run a spell chec.
+checking whether or not they ever needed to run a spell check.
 
 To avoid this, we define a *default custom* ``.. spelling::`` directive in 
 ``conf.py`` which causes Sphinx to simply ignore those directives...
