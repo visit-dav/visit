@@ -25,7 +25,7 @@ Your changes to any files in :file:`trunk/docs/SphinxDocs` will go live
 at approximately 50 minutes passed every even numbered hour.
 
 Quick Reference
-~~~~~~~~~~~~~~~
+---------------
 Note that the original source of most of the content here is the OpenOffice
 document produced with heroic effort by Brad Whitlock. A conversion tool was
 used to move most of the content there to Sphinx. As such, most of the Sphinx
@@ -52,20 +52,20 @@ use of Sphinx as we move forward. These are discussed at the
   underneath and the same length as the heading. Different types of
   separator characters define different levels of headings ::
 
-    First level heading
+    First Level Heading
     ===================
     This is an example of some text under the heading...
 
-    Second level heading
-    ~~~~~~~~~~~~~~~~~~~~
-    This is an example of some text under the heading...
-
-    Third level heading
-    """""""""""""""""""
-    This is an example of some text under the heading...
-
-    Fourth Level Heading
+    Second Level Heading
     --------------------
+    This is an example of some text under the heading...
+
+    Third Level Heading
+    ~~~~~~~~~~~~~~~~~~~
+    This is an example of some text under the heading...
+
+    Fourth level heading
+    """"""""""""""""""""
     This is an example of some text under the heading...
 
   yields these headings...
@@ -169,7 +169,7 @@ use of Sphinx as we move forward. These are discussed at the
 .. _contributing_images:
 
 More on Images
-~~~~~~~~~~~~~~
+--------------
 
 Try to use PNG formatted images. We plan to use the Sphinx generated
 documentation both for online HTML and for printed PDF. So, images sizes
@@ -255,7 +255,7 @@ Note that the figure label (e.g. Fig 20.2) will not appear if there is no
 caption.
 
 Tables
-~~~~~~
+------
 Sphinx supports a variety of mechanisms for defining tables. The conversion
 tool used to convert this documentation from its original OpenOffice format
 converted all tables to the *grid* style of table which is kinda sorta like
@@ -265,7 +265,7 @@ the editor window. It is cumbersome to deal with but rich in capabilities.
 .. _contributing_math:
 
 Math
-~~~~
+----
 
 We add the Sphinx builtin extension ``sphinx.ext.mathjax`` to the
 ``extensions`` variable in ``conf.py``. This allows Sphinx to use
@@ -290,7 +290,7 @@ a lot of guidance on constructing math equations with LaTeX.
 .. _contributing_spell:
 
 Spell Checking
-~~~~~~~~~~~~~~
+--------------
 If you have the required Sphinx extension and prerequisite python library,
 you can run a spell check like so::
 
@@ -310,7 +310,7 @@ exactly the line numbers of the input text file. Its best to simply search the
 document for the flagged words.
 
 Correcting Flagged Words
-""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~
 To correct a given spelling error, your options are...
 
 * Make a correction or other adjustment to the flagged word(s).
@@ -336,7 +336,7 @@ file, we add it at the end of :file:`../Animation/Movie_tools.rst` like so...
         fmt
 
 How Spell Check Works
-"""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~
 The ``.. spelling::`` directive is a *custom* extension to Sphinx. It is not
 a builtin extension. This means that other documentation contributors wanting
 to make a local build of the documentation before committing their changes would
@@ -388,7 +388,7 @@ The relevant lines of ``conf.py`` are shown below.
 .. _contributing_forward:
 
 Things To Consider Going Forward
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 * Decide what to do about compound words such as *timestep*, *time step* or
   *time-step*. There are many instances to consider such as *keyframe*,
