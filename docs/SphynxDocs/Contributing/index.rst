@@ -21,6 +21,7 @@ You can then browse the root of the manual by pointing your browser to
 Remove it when you are constantly revising and rebuilding.
 
 Your changes to any files in :file:`trunk/docs/SphinxDocs` will go live
+`here <http://visit-sphinx-user-manual.readthedocs.io/en/latest/index.html>`_
 at approximately 50 minutes passed every even numbered hour.
 
 Quick Reference
