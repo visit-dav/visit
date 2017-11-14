@@ -20,19 +20,19 @@ VisIt_ on. If you are installing VisIt_ on Linux, also download the
 .. _MacOSX Installation Instructions:
 
 Installing on Mac OSX
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 VisIt_ releases include an app-bundle for Mac OSX packaged in a DMG image.
 Download and open the DMG file and copy the VisIt_ app-bundle to your
-applications directory or any other path. To run VisIt_
-double click on the VisIt_ app-bundle. The ``visit-install`` script can 
-also be used to install tarball packaged OSX binaries. For this case
-follow the Linux installation instructions. 
+applications directory or any other path. To run VisIt_ double click on
+the VisIt_ app-bundle. The ``visit-install`` script can also be used to
+install tarball packaged OSX binaries. For this case follow the Linux
+installation instructions. 
 
 .. _Linux Installation Instructions:
 
 Installing on Linux
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 Installing VisIt_ on Linux (and optionally on Mac OSX) is done using the
 ``visit-install`` script. Make sure that the ``visit-install`` script
@@ -48,30 +48,29 @@ The visit-install script has the following usage:
 
   visit-install version platform directory
 
-The **version** argument is the version of VisIt_ being installed. 
-The **platform** argument depends on the type platform VisIt_ is being
-installed for. The platform argument can be one of the following:
-linux, linux-x86_64, darwin. The **directory** argument specifies the directory
-to install VisIt_ into. If the specified directory does not exist
-then VisIt_ will create it.
+The **version** argument is the version of VisIt_ being installed.  The
+**platform** argument depends on the type platform VisIt_ is being installed
+for. The platform argument can be one of the following: linux, linux-x86_64,
+darwin. The **directory** argument specifies the directory to install VisIt_
+into. If the specified directory does not exist then VisIt_ will create it.
 
-For example, to install an x86_64 version of VisIt_ 2.12.0, use:
+For example, to install an x86_64 version of VisIt_ 2.13.0, use:
 
 .. code:: bash
   
   visit-install 2.13.0 linux-x86_64 /usr/local/visit
   
 
-This command will install the 2.12.0 version of VisIt_ into the 
-``/usr/local/visit`` directory. Note that when you enter the above
-command, the file ``visit2_12_0_linux-x86_64.tar.gz`` must be present in the
-current working directory.
+This command will install the 2.13.0 version of VisIt_ into the 
+``/usr/local/visit`` directory. Note that when you enter the above command,
+the file ``visit2_13_0_linux-x86_64.tar.gz`` must be present in the current
+working directory.
 
 The ``visit-install`` script will prompt you to choose a network configuration.
 A network configuration is a set of VisIt_ preferences that provide
-information to enable VisIt_ to identify and connect to remote
-computers and run VisIt_ in client/server mode.  VisIt_ includes network 
-configuration files for several computing centers with VisIt_ users.
+information to enable VisIt_ to identify and connect to remote computers
+and run VisIt_ in client/server mode.  VisIt_ includes network configuration
+files for several computing centers with VisIt_ users.
 
 After running ``visit-install``, you can launch VisIt_ using ``bin/visit``
 . For example, if you installed to ``/usr/local/visit``, you can 
@@ -99,17 +98,17 @@ VisIt_ release binaries for Windows are packaged in an executable installer.
 To install on Windows run the installer and follow its prompts.
 
 The VisIt_ installation program adds a VisIt_ program group to the Windows 
-Start menu and it adds a VisIt_ shortcut to the desktop.
-You can double-click on the desktop shortcut or use the Start menu's VisIt_
-program group to launch VisIt_. In addition to creating shortcuts, the VisIt_
-installation program creates file associations for ``.silo``, ``.visit``, and
+Start menu and it adds a VisIt_ shortcut to the desktop. You can double-click
+on the desktop shortcut or use the Start menu's VisIt_ program group to
+launch VisIt_. In addition to creating shortcuts, the VisIt_ installation
+program creates file associations for ``.silo``, ``.visit``, and
 ``.session/.vses`` files so double-clicking on files with those extensions
 opens them with VisIt_.
 
 Startup Options
 ~~~~~~~~~~~~~~~
 
-VisIt has many startup options that affect its behavior (see the
+VisIt_ has many startup options that affect its behavior (see the
 :ref:`Startup Options <StartupOptions>` for complete documentation).
 
 .. spelling::

@@ -3,11 +3,11 @@
 Introduction to VisIt_
 ======================
 
-VisIt is a free, open source, platform independent, distributed, parallel,
+VisIt_ is a free, open source, platform independent, distributed, parallel,
 visualization tool for visualizing data defined on two- and three-dimensional
-structured and unstructured meshes. VisIt's distributed architecture allows
+structured and unstructured meshes. VisIt_'s distributed architecture allows
 it to leverage both the compute power of a large parallel computer and the
-graphics acceleration hardware of a local workstation. VisIt's user interface
+graphics acceleration hardware of a local workstation. VisIt_'s user interface
 is often run locally on a Windows, Linux, or OSX desktop computer while
 its compute engine component runs in parallel on a remote computer. VisIt_'s
 distributed architecture allows VisIt_ to visualize simulation data where it
