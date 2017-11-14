@@ -273,10 +273,12 @@ a lot of guidance on constructing math equations with LaTeX.
 
 Spell Checking
 ~~~~~~~~~~~~~~
-There is a shell script, ``check_spelling.sh`` to run a spell check. However,
-this script will fail if you do not have the required Sphinx extension and
-prerequisite python library.  We use a third party extension (e.g. not a
-builtin) to Sphinx for spell checking
+If you have the required Sphinx extension and prerequisite python library,
+you can run a spell check like so::
+
+    sphinx-build -b spelling . _spelling
+
+We use a third party extension (e.g. not a builtin) to Sphinx for spell checking
 `sphinx-contrib.spelling <http://sphinxcontrib-spelling.readthedocs.io/en/latest/index.html>`_
 which requires `PyEnchant <https://pythonhosted.org/pyenchant/>`_ and adds
 support for a custom ``.. spelling::`` directive.
@@ -324,33 +326,46 @@ be *required* to have the additional dependencies installed to support spell
 checking whether or not they ever needed to run a spell check.
 
 To avoid this, we define a *default custom* ``.. spelling::`` directive in 
-``conf.py`` which causes Sphinx to simply ignore those directives...
+``conf.py`` which causes a normal Sphinx build to simply ignore those
+directives. In addition, we add some logic in ``conf.py`` to detect if the build
+is for doing a spell check and, if so, sets ``BuilderIsSpelling`` to ``True``.
+The relevant lines of ``conf.py`` are shown below.
+
 
 .. code-block:: python
 
+    import sys
+    .
+    .
+    .
+    # Detect if this is a spell check build
+    BuilderIsSpelling = False
+    if '-b' in sys.argv and 'spelling' in sys.argv:
+        if sys.argv.index('-b') == sys.argv.index('spelling')-1:
+            BuilderIsSpelling = True
+    .
+    .
+    .
+    # Add extension for spell checking
+    extensions = ['sphinx.ext.mathjax']
+    if BuilderIsSpelling:
+        extensions += ['sphinxcontrib.spelling']
+    .
+    .
+    .
+    # If spell check, DO NOT override .. spelling:: directive
     def setup(app):
-        app.add_directive('spelling', SpellingDirective)
-        pass
-
+        if not BuilderIsSpelling:
+            app.add_directive('spelling', SpellingDirective)
+    
+    # Override candidate for .. spelling:: directive
     from docutils.parsers.rst import Directive
-
     class SpellingDirective(Directive):
-
+    
         has_content = True
-
+    
         def run(self):
             return []
-
-The ``check_spelling.sh`` script then creates a modified ``conf.py`` file. It
-copies ``conf.py`` to a temporary directory and makes some adjustments via
-``sed`` to..
-
-* Add ``sphinxcontrib.spelling`` to the ``extensions`` variable.
-* Remove the ``app.add_directive('spelling', SpellingDirective)`` line (above).
-
-...before running a Sphinx build like so ::
-
-    sphinx-build -c <TMPDIR> -b spelling . _spelling
 
 .. _contributing_forward:
 

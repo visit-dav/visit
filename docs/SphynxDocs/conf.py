@@ -14,6 +14,14 @@
 
 import sys
 import os
+
+#
+# Some pre-liminary work to detect if we're running a spell check
+BuilderIsSpelling = False
+if '-b' in sys.argv and 'spelling' in sys.argv:
+    if sys.argv.index('-b') == sys.argv.index('spelling')-1:
+        BuilderIsSpelling = True
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -28,6 +36,8 @@ import os
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.mathjax']
+if BuilderIsSpelling:
+    extensions += ['sphinxcontrib.spelling']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -292,14 +302,16 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 #
-# NO-OP the .. spelling:: directive for normal use
-# spell_check.sh removes the call to app.add_directive
-# before running sphinx-build.
+# NO-OP the .. spelling:: directive for normal use.
+# Do NOT add the NO-OP directive if this is a spell check build
 #
 def setup(app):
-    app.add_directive('spelling', SpellingDirective)
-    pass # Here so line above can be removed during spell check
+    if not BuilderIsSpelling:
+        app.add_directive('spelling', SpellingDirective)
 
+#
+# A custom directive to NO-OP .. spelling::
+#
 from docutils.parsers.rst import Directive
 
 class SpellingDirective(Directive):
