@@ -31,7 +31,7 @@ these settings to persist across VisIt sessions, you can either
 **Save session**, and then restart from this saved session later,
 or **Save settings** and then all VisIt sessions will use those
 defaults. For more about saving sessions and settings, see
-:ref:`How_to_save_your_settings`. The **Save** and
+:ref:`How to Save Settings`. The **Save** and
 **Load** buttons give you the option of saving and loading plot
 attributes using their own separate XML. This allows users to
 easily share individual plot attributes. The reset button will

@@ -41,11 +41,11 @@ use of Sphinx as we move forward. These are discussed at the
   * `reStructuredText Markup Specification <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_
   * `reStructuredText Reference Documentation <http://docutils.sourceforge.net/rst.html#reference-documentation>`_
 
-* Sphinx uses blank lines as a block separators and 2 or 4 spaces of
+* Sphinx uses blank lines as block separators and 2 or 4 spaces of
   indentation to guide parsing and interpretation of content. So, be sure
   to pay careful attention to blank lines and indentation. They are not
   there merely for style.  They *need* to be there for Sphinx to parse and
-  interpret the content directly.
+  interpret the content correctly.
 * Line breaks *within* reStructuredText inline markup constructs often cause
   build errors. 
 * Create headings by a sequence of *separator characters* immediately

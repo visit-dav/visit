@@ -41,7 +41,7 @@ profiles: Using the :ref:`InstallProfilesConfigurationWindow` window, or using
 the :ref:`RemoteProfilesTab` in the **Host Profiles Window**.
 
 Click **Apply** when you are finished making changes in this window, and
-remember to save your settings (:ref:`How_to_save_your_settings`) before 
+remember to save your settings (:ref:`How to Save Settings`) before 
 exiting VisIt in order for your changes to be available in future sessions of
 VisIt.
 
