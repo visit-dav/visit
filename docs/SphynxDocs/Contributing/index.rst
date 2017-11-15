@@ -409,6 +409,9 @@ Things To Consider Going Forward
 * All VisIt_ manuals should probably be hosted at a URL like
   ``visit.readthedocs.io`` and from there users can find manuals for GUI, CLI
   Getting Data Into VisIt_, etc.
+* Change name of docs dir to ``Sphinx`` and not ``Sphynx``.
+* Add at least another LLNL person to RTD project so we have coverage to fix
+  issues as they come up.
 * Additional features of Sphinx to consider adopting...
 
   * ``:guilable:`` role for referring to GUI widgets.
