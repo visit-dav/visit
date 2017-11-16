@@ -103,6 +103,12 @@ use of Sphinx as we move forward. These are discussed at the
 * Bracketed word(s) should not span line breaks.
 * Use **bold** to refer to VisIt_ **Widget** names, **Operator** or **Plot**
   names and other named objects part of VisIt_'s interface.
+* Use the following terminology when referring to widget names.
+
+.. figure:: images/GUIWidgetNames.png
+
+.. figure:: images/GUIWidgetNames2.png
+
 * Avoid use of **bold** for other purposes. Instead use *italics*.
 * Use ``literals`` for code, commands, arguments, file names, etc.
 * Use :samp:`\ :t\ erm:`glossary term`` at least for the *first* use of a
