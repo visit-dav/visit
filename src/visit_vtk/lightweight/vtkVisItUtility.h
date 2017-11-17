@@ -76,6 +76,11 @@ class vtkRectilinearGrid;
 //
 //    Mark C. Miller, Wed Oct  1 19:44:34 PDT 2014
 //    Add SafeDoubleToFloat
+//
+//    Eric Brugger, Thu Nov 16 17:29:08 PST 2017
+//    I made the default data type for Create1DRGrid and CreateEmptyRGrid
+//    be VTK_DOUBLE instead of VTK_FLOAT.
+//
 // ****************************************************************************
 
 namespace vtkVisItUtility
@@ -113,12 +118,12 @@ namespace vtkVisItUtility
     VISIT_VTK_LIGHT_API void       WriteDataSet(vtkDataSet*, const char *);
     VISIT_VTK_LIGHT_API vtkRectilinearGrid *
                                    Create1DRGrid(int nXCoords,
-                                                 int type = VTK_FLOAT);
+                                                 int type = VTK_DOUBLE);
     VISIT_VTK_LIGHT_API vtkRectilinearGrid *
                                    CreateEmptyRGrid(int nXCoords,
                                                     int nYCoords = 1,
                                                     int nZCoords = 1,
-                                                    int type = VTK_FLOAT);
+                                                    int type = VTK_DOUBLE);
     VISIT_VTK_LIGHT_API bool       PointsEqual(double p1[3], double p2[3],
                                                const double *_eps = 0);
     VISIT_VTK_LIGHT_API void       RegisterStaticVTKObject(vtkObject*);
