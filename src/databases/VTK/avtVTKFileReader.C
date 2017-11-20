@@ -805,6 +805,9 @@ avtVTKFileReader::CreateCurves(vtkRectilinearGrid *rgrid)
 //    Eric Brugger, Mon Jun 18 12:28:25 PDT 2012
 //    I enhanced the reader so that it can read parallel VTK files.
 //
+//    Kathleen Biagas, Mon Nov 20 13:04:51 PST 2017
+//    Pass domain to the GetVar call when retrieving materials.
+//
 // ****************************************************************************
 
 void *
@@ -850,7 +853,7 @@ avtVTKFileReader::GetAuxiliaryData(const char *var, int domain,
             dataset = pieceDatasets[domain];
         }
 
-        vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(0, matvarname));
+        vtkIntArray *matarr = vtkIntArray::SafeDownCast(GetVar(domain, matvarname));
 
 
         // again, if we haven't called PopulateDatabaseMetaData().
