@@ -67,6 +67,9 @@
 //   Brad Whitlock, Tue Jun  3 16:12:06 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Mon Nov 20 14:18:41 PST 2017
+//   Add 'editingFinished' signal connection to the returnPressed slot.
+//
 // ****************************************************************************
 
 QvisScreenPositionEdit::QvisScreenPositionEdit(QWidget *parent) : 
@@ -76,6 +79,8 @@ QvisScreenPositionEdit::QvisScreenPositionEdit(QWidget *parent) :
     hLayout->setMargin(0);
     hLayout->setSpacing(0);
     lineEdit = new QLineEdit(this);
+    connect(lineEdit, SIGNAL(editingFinished()),
+            this, SLOT(returnPressed()));
     connect(lineEdit, SIGNAL(returnPressed()),
             this, SLOT(returnPressed()));
     hLayout->addWidget(lineEdit);
