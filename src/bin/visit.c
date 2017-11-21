@@ -305,6 +305,10 @@ static bool EndsWith(const char *s, const char *suffix)
  *   libs are in a completely different location, so don't assume mpiexec
  *   can be found from MSMPI_INC.
  *
+ *   Kathleen Biagas, Tue Nov 21 13:43:42 MST 2017
+ *   Display message box if attempting to use parallel engine but mpiexec
+ *   not found.
+ *
  *****************************************************************************/
 
 int
@@ -574,7 +578,7 @@ VisItLauncherMain(int argc, char *argv[])
             mpipath = WinGetEnv("MSMPI_BIN");
             if (!mpipath.empty())
             {
-                // found the include path, point to Bin
+                // add the executable
                 mpipath += "\\mpiexec.exe";
             }
         }
@@ -609,12 +613,17 @@ VisItLauncherMain(int argc, char *argv[])
                 }
             }
         }
-        if (mpipath.empty())
+        if (mpipath.empty() || !PathFileExists(mpipath.c_str()))
         {
-            cerr << "Could not find path to \"mpiexec\"" << endl;
-            cerr << "If it is installed on your system, please set "
-                 << "an environment variable 'VISIT_MPIEXEC' that points"
-                 << "to its location." << endl;
+            string msg("Could not find path to \"mpiexec\".\nIf it is installed on your system, please set an environment variable 'VISIT_MPIEXEC' that points to its location. VisIt will launch a serial engine for this session.");
+#ifdef VISIT_WINDOWS_APPLICATION
+            MessageBox(NULL,
+                       (LPCSTR)msg.c_str(),
+                       (LPCSTR)"Missing mpiexec",
+                       MB_ICONEXCLAMATION | MB_OK);
+#else
+            cerr << msg << endl;
+#endif
             parallel = false;
             component = "engine_ser";
         }
@@ -998,7 +1007,11 @@ ReadKey(const char *key, char **keyval)
  *
  *   Kathleen Biagas, Fri Jan 6 18:30:12 MST 2017
  *   Allow user to specify their own HOME via VISITUSERHOME env var.
- * 
+ *
+ *   Kathleen Biagas, Tue Nov 21 13:43:42 MST 2017
+ *   Display message box if VISITSSH set, but does not point
+ *   to valid executable.
+ *
  *****************************************************************************/
 
 std::string 
@@ -1271,17 +1284,62 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
      */
     { 
         char *ssh = NULL, *sshargs = NULL;
-        int haveSSH = 0, haveSSHARGS = 0, freeSSH = 0, freeSSHARGS = 0;
+        bool needVISITSSH = false;
+        bool haveSSH = false, haveSSHARGS = false, freeSSH = false, freeSSHARGS = false;
+        string errmsg;
 
-        if((ssh = getenv("VISITSSH")) == NULL)
+        ssh = getenv("VISITSSH");
+
+        if (ssh != NULL)
+        {
+            if (!PathFileExists(ssh))
+            {
+                needVISITSSH = true;
+                ssh = NULL;
+                errmsg = string("VISITSSH env var does not point to an executable.\n");
+            }
+        }
+        else
+        {
+            needVISITSSH = true;
+        }
+        if (ssh == NULL)
         {
             haveSSH = ReadKey("SSH", &ssh);
             if(haveSSH)
             {
-                sprintf(tmp, "VISITSSH=%s", ssh);
-                env.push_back(tmp);
+                if (PathFileExists(ssh))
+                {
+                    sprintf(tmp, "VISITSSH=%s", ssh);
+                    env.push_back(tmp);
+                    errmsg.clear(); 
+                }
+                else
+                {
+                    haveSSH = false;
+                    errmsg += "SSH registry key does not point to an executable.\n";
+                }
             }
             free(ssh);
+        }
+        if (needVISITSSH && !haveSSH)
+        {
+            string qpath(visitpath);
+            qpath+=string("\\qtssh.exe");
+            sprintf(tmp, "VISITSSH=%s", qpath.c_str());
+            env.push_back(tmp);
+            if (!errmsg.empty())
+            {
+                errmsg += "Using VisIt's qtssh.";
+#ifdef VISIT_WINDOWS_APPLICATION
+                MessageBox(NULL, 
+                           (LPCSTR)errmsg.c_str(), 
+                           "", 
+                           MB_ICONEXCLAMATION | MB_OK);
+#else
+                cerr << errmsg << endl;
+#endif
+            }
         }
 
         /*
