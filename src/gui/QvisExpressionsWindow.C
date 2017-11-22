@@ -1653,7 +1653,12 @@ QvisExpressionsWindow::ExpandFunction(const QString &func_name)
     }
 
 
-    if (func_name == "conn_cmfe" || func_name == "curve_cmfe")
+    if (func_name == "curve_cmfe")
+    {
+        res += QString("(<filename:curve>, <curvename>)");
+        doParens = false;
+    }
+    else if (func_name == "conn_cmfe")
     {
         res += QString("(<filename:var>, <meshname>)");
         doParens = false;
