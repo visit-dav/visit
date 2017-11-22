@@ -1348,14 +1348,15 @@ avtSAMRAIFileFormat::ReadMatSpecFractions(int patch, string mat_name,
     hsize_t *hdims = new hsize_t[hndims];
     hsize_t *max_hdims = new hsize_t[hndims];
     H5Sget_simple_extent_dims(h5d_space, hdims, max_hdims);
+    H5Sclose(h5d_space);
     hsize_t hsum = 1;
     for (i = 0; i < hndims; i++)
         hsum *= hdims[i];
     if ((hsize_t) num_data_samples != hsum)
     {
+        H5Dclose(h5d_variable);      
         EXCEPTION2(UnexpectedValueException, num_data_samples, hsum);
     }
-    H5Sclose(h5d_space);
     delete [] hdims;
     delete [] max_hdims;
 
