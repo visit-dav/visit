@@ -28,19 +28,64 @@ conventions. While this may appear to be inconvenient, it removes the
 possibility that VisIt will include a file that is not in the database. It
 also frees VisIt from having to know about dozens of ad hoc file naming
 conventions. Having a ``.visit`` file also allows VisIt to make certain
-optimizations when generating a visualization. VisIt provides a **File grouping** 
-combo box in the **File open** window (see :numref:`Figure %s<file_open_fig>`) to assist in the creation of a 
-``.visit`` file for databases that have no ``.visit`` file. Selecting *On* or *Smart* 
-will create a .visit file. Selecting *Off* will not group the files.
+optimizations when generating a visualization. 
 
-Flipbook animation
-~~~~~~~~~~~~~~~~~~
+To create a ``.visit`` file, simply make a new text file that contains the names
+of the files that you want to visualize and save the file with a ``.visit`` extension.
+
+* Visit will take the first entry in the ``.visit`` file and attempt to determine the
+  appropriate plugin to read the file.
+* Not all plugins can be used with ``.visit`` files. In general, **MD** or **MT** formats
+  sometimes do not work.
+
+  * An **MT** file is a file format that provides multiple time steps in a single file. Thus,
+    grouping multiple **MT** files to produce a time series may not be supported.
+  * An **MD** file is one that provides multiple domains in a single file. Thus, grouping 
+    multiple **MD** files to produce a view of the whole may not be supported.
+
+Here is an example ``.visit`` file that groups time steps together. These files should contain 
+1 time step per file.
+
+.. code-block:: none
+
+   timestep0.silo
+   timestep1.silo
+   timestep2.silo
+   timestep3.silo
+   ...
+
+Here is an example ``.visit`` file that groups various smaller domain files into a whole dataset 
+that VisIt can visualize. Note the use of the ``!NBLOCKS`` directive and how it designates the 
+number of files in a time step that constitute the whole domain. The ``!NBLOCKS`` directive must 
+be on the first line of the file. In this example, we have 2 time steps each composed of 4 domain 
+files.
+
+.. code-block:: none
+   :emphasize-lines: 1
+
+   !NBLOCKS 4
+   timestep0_domain0.silo
+   timestep0_domain1.silo
+   timestep0_domain2.silo
+   timestep0_domain3.silo
+   timestep1_domain0.silo
+   timestep1_domain1.silo
+   timestep1_domain2.silo
+   timestep1_domain3.silo
+   ...
+
+VisIt provides a **File grouping** combo box in the **File open** window (see :numref:`Figure %s<file_open_fig>`) to assist in the creation of a ``.visit`` file for databases that 
+have no ``.visit`` file. Selecting *On* or *Smart* will create a .visit file. Selecting *Off* 
+will not group the files.
 
 .. _file_open_fig:
 
 .. figure:: images/fileopen.png 
 
    File open window 
+
+Flipbook animation
+~~~~~~~~~~~~~~~~~~
 
 .. _animation_buttons:
 
