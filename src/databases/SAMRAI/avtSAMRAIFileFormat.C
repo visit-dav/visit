@@ -108,6 +108,8 @@
 using std::vector;
 using std::string;
 
+static const char *default_mesh_name = "amr_mesh";
+
 // the version of the SAMRAI writer the current reader code matches 
 static const float        expected_version_number[] = {2.0,3.0};
 static const char        *inferredVoidMatName = "inferred void";
@@ -608,7 +610,7 @@ avtSAMRAIFileFormat::RegisterVariableList(const char *prim_var_name,
 bool
 avtSAMRAIFileFormat::CanCacheVariable(const char *var_name)
 {
-   if (strncmp(var_name,"amr_mesh",8) == 0)
+   if (std::string(var_name) == mesh_name)
    {
       if (has_ghost == false)
           return true;
@@ -743,7 +745,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
         std::map<std::string, var_t>::const_iterator cur_var;
         cur_var = var_names_num_components.find(active_visit_var_name);
 
-        if (active_visit_var_name == "amr_mesh" ||
+        if (active_visit_var_name == mesh_name ||
             active_visit_var_name == "materials" ||
             // This fixes level boundaries "levels"
             active_visit_var_name == "levels" ||
@@ -844,7 +846,7 @@ avtSAMRAIFileFormat::ReadMesh(int patch)
     }
     else {
         char dummyVarName[128];
-        sprintf(dummyVarName,"amr_mesh, patch %d", patch);
+        sprintf(dummyVarName,"%s, patch %d", mesh_name.c_str(), patch);
         EXCEPTION1(InvalidVariableException, dummyVarName);
     }
 
@@ -2581,8 +2583,6 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     debug5 << "avtSAMRAIFileFormat::PopulateDatabaseMetaData getting data" << endl;
 
     {
-        static const char *mesh_name = "amr_mesh";
-
         ReadMetaDataFile();
 
         //
@@ -2831,6 +2831,8 @@ avtSAMRAIFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Hank Childs, Sat Mar  5 11:47:52 PST 2005
 //    Make sure we don't read the information twice.
 //
+//    Mark C. Miller, Mon Dec  4 13:30:13 PST 2017
+//    Add support for databases that specify the mesh name
 // ****************************************************************************
 void
 avtSAMRAIFileFormat::ReadMetaDataFile()
@@ -2851,6 +2853,8 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
     {
 
         ReadAndCheckVDRVersion(h5_file);
+
+        ReadMeshName(h5_file);
 
         ReadTimeStepNumber(h5_file);
         ReadTime(h5_file);
@@ -2916,6 +2920,24 @@ avtSAMRAIFileFormat::ReadMetaDataFile()
 }
 
 
+
+// ****************************************************************************
+//  Method:  ReadMeshName
+//
+//  Mark C. Miller, Mon Dec  4 13:18:33 PST 2017
+//
+// ****************************************************************************
+void 
+avtSAMRAIFileFormat::ReadMeshName(hid_t &h5_file)
+{
+    bool isOptional = true;
+    int numVals = -1;
+    string *pmname = &mesh_name;
+    ReadDataset(h5_file, "/BASIC_INFO/mesh_name", "string", 1, &numVals,
+        (void**) &pmname, isOptional);
+    if (numVals <= 0)
+        mesh_name = default_mesh_name;
+}
 
 // ****************************************************************************
 //  Method:  ReadTime
@@ -4424,7 +4446,7 @@ avtSAMRAIFileFormat::GetGhostCodeForVar(const char *visit_var_name)
     string var_name = visit_var_name;
     int num_ghosts[3];
 
-    if (var_name == "amr_mesh" ||
+    if (var_name == mesh_name ||
         var_name == "materials" ||
         var_name == "levels" ||
         var_name  == "patches")
