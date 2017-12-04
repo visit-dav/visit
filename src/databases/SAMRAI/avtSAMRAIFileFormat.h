@@ -101,6 +101,8 @@ class avtSpecies;
 //    Mark C. Miller, Mon Nov  5 19:34:12 PST 2007
 //    Added support for sparse material representation and expressions
 //
+//    Mark C. Miller, Mon Dec  4 13:29:42 PST 2017
+//    Add support for databases that specify the mesh name
 // ****************************************************************************
 
 class avtSAMRAIFileFormat : public avtSTMDFileFormat
@@ -189,6 +191,7 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     vtkDataSet                 ***cached_patches;
     std::string                   file_name;
     std::string                   dir_name;
+    std::string                   mesh_name;
     bool                          have_read_metadata_file;
 
     std::string                   grid_type;
@@ -272,6 +275,8 @@ class avtSAMRAIFileFormat : public avtSTMDFileFormat
     vtkDataArray         *ReadVar(int patch, const char *visit_var_name);
 
     void            ReadAndCheckVDRVersion(hid_t &h5_file);
+
+    void            ReadMeshName(hid_t &h5_file);
 
     void            ReadGridType(hid_t &h5_file);
 
