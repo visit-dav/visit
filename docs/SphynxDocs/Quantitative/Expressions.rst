@@ -1379,8 +1379,8 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
 
        #. ...the *Database* in which the donor variable resides,
        #. ...the *State Id* from which to take the donor variable,
-       #. ...the *Modality*, cycle, time, or index by which states are
-          identified in the *State Id* sub-string.
+       #. ...the *Modality* by which states are identified in the *State Id*
+          sub-string.
 
    Depending on circumstances, specifying the ``Donor-Variable`` argument to
    the CMFE functions can get cumbersome. For this reason, CMFE expressions
