@@ -82,7 +82,7 @@ SPCTHGeneralPluginInfo::GetName() const
 const char *
 SPCTHGeneralPluginInfo::GetVersion() const
 {
-    return "1.0";
+    return "1.1";
 }
 
 // ****************************************************************************
@@ -101,7 +101,7 @@ SPCTHGeneralPluginInfo::GetVersion() const
 const char *
 SPCTHGeneralPluginInfo::GetID() const
 {
-    return "SPCTH_1.0";
+    return "SPCTH_1.1";
 }
 // ****************************************************************************
 //  Method: SPCTHGeneralPluginInfo::EnabledByDefault

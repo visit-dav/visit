@@ -76,17 +76,20 @@ SPCTHCommonPluginInfo::GetDatabaseType()
 // ****************************************************************************
 avtDatabase *
 SPCTHCommonPluginInfo::SetupDatabase(const char *const *list,
-                                   int nList, int nBlock)
+                                     int nList, 
+                                     int nBlock)
 {
-    // ignore any nBlocks past 1
-    int nTimestepGroups = nList / nBlock;
-    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[nTimestepGroups];
-    for (int i = 0 ; i < nTimestepGroups ; i++)
+    avtMTMDFileFormat **ffl = new avtMTMDFileFormat*[1];
+    ffl[0] = new avtSPCTHFileFormat(list[0]);
+
+    if(nList > 1)
     {
-        ffl[i] = new avtSPCTHFileFormat(list[i*nBlock]);
+        avtSPCTHFileFormat *ff = dynamic_cast<avtSPCTHFileFormat *>(ffl[0]);
+        ff->SetFileList(list, nList);
     }
+
     avtMTMDFileFormatInterface *inter 
-           = new avtMTMDFileFormatInterface(ffl, nTimestepGroups);
+           = new avtMTMDFileFormatInterface(ffl, 1);
     return new avtGenericDatabase(inter);
 }
 // ****************************************************************************

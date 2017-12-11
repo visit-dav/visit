@@ -44,9 +44,12 @@
 #define AVT_SPCTH_FILE_FORMAT_H
 
 #include <avtMTMDFileFormat.h>
+
 #include <SpyFile.h>
 
 #include <vector>
+
+class vtkRectilinearGrid;
 
 
 // ****************************************************************************
@@ -70,34 +73,41 @@ class avtSPCTHFileFormat : public avtMTMDFileFormat
     // This is used to return unconvention data -- ranging from material
     // information to information about block connectivity.
     //
-    virtual void      *GetAuxiliaryData(const char *var, int timestep,
-                                        int domain, const char *type, void *args,
-                                        DestructorFunction &);
+    virtual void            *GetAuxiliaryData(const char *var, int timestep,
+                                              int domain, const char *type, void *args,
+                                              DestructorFunction &);
     //
     // If you know the cycle number, overload this function.
     // Otherwise, VisIt will make up a reasonable one for you.
     //
-    virtual void         GetCycles(std::vector<int> &);
-    virtual void         GetTimes(std::vector<double> &);
-    virtual int          GetNTimesteps(void);
+    virtual void            GetCycles(std::vector<int> &);
+    virtual void            GetTimes(std::vector<double> &);
+    virtual int             GetNTimesteps(void);
 
-    virtual const char    *GetType(void)   { return "SPCTH"; };
-    virtual void          FreeUpResources(void);
+    virtual const char      *GetType(void)   { return "SPCTH"; };
+    virtual void            FreeUpResources(void);
 
-    virtual vtkDataSet    *GetMesh(int, int, const char *);
-    virtual vtkDataArray  *GetVar(int, int, const char *);
-    virtual vtkDataArray  *GetVectorVar(int, int, const char *);
+    virtual vtkDataSet      *GetMesh(int, int, const char *);
+    virtual vtkDataArray    *GetVar(int, int, const char *);
+    virtual vtkDataArray    *GetVectorVar(int, int, const char *);
+    
+    void                    SetFileList(const char *const *, const int);
 
   protected:
-    bool                   m_initialized;
-    std::ifstream         *m_fin;
-    SpyFile               *m_spyfile;
+    bool                    m_initialized;
+    std::ifstream           **m_fin;
+    SpyFile                 **m_spyfile;
+    std::vector<std::string> *m_files;
+    int                     m_fileCnt;
+    int                     m_blocks;
+    std::vector<vtkRectilinearGrid *> *m_grids;
 
-    void                   ActivateTimestep(int);
-    void                   Initialize(void);
-    virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
-    void                  *GetMaterial(const char *, const int, const int);
-    vtkDataArray          *GetVTKVar(const int, const int, const char *);
+    void                    ActivateTimestep(int);
+    void                    Initialize(void);
+    virtual void            PopulateDatabaseMetaData(avtDatabaseMetaData *, int);
+    void                    *GetMaterial(const char *, const int, const int);
+    vtkDataArray            *GetVTKVar(const int, const int, const char *);
+    int                     GetCellCount(const int, const int);
 };
 
 
