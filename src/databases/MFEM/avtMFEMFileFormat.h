@@ -45,8 +45,11 @@
 
 #include <avtSTMDFileFormat.h>
 #include <avtDataSelection.h>
-#include <vector>
+
 #include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "mfem.hpp"
 class JSONRoot;
@@ -122,8 +125,13 @@ class avtMFEMFileFormat : public avtSTMDFileFormat
                                                                 int lod);
                                              
     JSONRoot                        *root;  
-    
-};
 
+    // For handling .mfem_cat files
+    void                             BuildCatFileMap(const std::string &cat_path);
+    void                             FetchDataFromCatFile(const std::string &cat_path,
+                                                          const std::string &mesh_path,
+                                                          std::istringstream &imeshstr);
+    std::map<std::string, std::pair<size_t,size_t> > catFileMap;
+};
 
 #endif

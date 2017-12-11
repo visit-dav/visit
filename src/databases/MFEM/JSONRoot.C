@@ -265,7 +265,8 @@ JSONRootDataSet::JSONRootDataSet()
   validCycle(false),
   cycle(0),
   validTime(false),
-  timev(0.0)
+  timev(0.0),
+  catpath()
 {};
 
 // ****************************************************************************
@@ -664,6 +665,12 @@ JSONRoot::ParseJSON(const std::string &json_root)
                 if(json_dset.HasMember("cycle"))
                 {
                    curr_dset.SetCycle(json_dset["cycle"].GetInt()); 
+                }
+                
+                if(json_dset.HasMember("catpath"))
+                {
+                   std::string cat_file_path = json_dset["catpath"].GetString();
+                   curr_dset.CatPath().Set(ResolveAbsolutePath(root_dir,cat_file_path));
                 }
                 
                 // handle # of domains, meshes w/ tags

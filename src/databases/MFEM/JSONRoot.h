@@ -154,6 +154,7 @@ class JSONRootDataSet
         void            SetTime(double value);
         bool            HasTime() const;        
         
+        JSONRootPath   &CatPath() {return catpath;};
 
         JSONRootEntry  &Mesh();          
         
@@ -171,6 +172,7 @@ class JSONRootDataSet
         
         JSONRootEntry                       mesh;
         std::map<std::string,JSONRootEntry> fields;
+        JSONRootPath                        catpath;
 };
 
 // ****************************************************************************
