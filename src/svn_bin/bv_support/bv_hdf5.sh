@@ -629,6 +629,12 @@ function build_hdf5
         sz_dir="${VISITDIR}/szip/${SZIP_VERSION}/${VISITARCH}"
         cf_szip="--with-szlib=${sz_dir}"
     fi
+    cf_zlib=""
+    if test "x${DO_ZLIB}" = "xyes"; then
+        info "ZLib requested.  Configuring HDF5 with ZLib support."
+        zlib_dir="${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
+        cf_zlib="--with-zlib=${zlib_dir}"
+    fi
 
     # Disable Fortran on Darwin since it causes HDF5 builds to fail.
     if [[ "$OPSYS" == "Darwin" ]]; then
@@ -673,14 +679,16 @@ function build_hdf5
         # In order to ensure $cf_fortranargs is expanded to build the arguments to
         # configure, we wrap the invokation in 'sh -c "..."' syntax
         info "Invoking command to configure $bt HDF5"
-        info "../configure CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-            $cf_fortranargs \
+        info "../configure CC=\"$cf_c_compiler\" \
+            CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
-            ${cf_szip} ${cf_build_type} ${cf_build_thread} ${cf_build_parallel}"
-        sh -c "../configure CC=\"$cf_c_compiler\" CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" \
-            $cf_fortranargs \
+            ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
+            ${cf_build_parallel}"
+        sh -c "../configure CC=\"$cf_c_compiler\" \
+            CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
-            ${cf_szip} ${cf_build_type} ${cf_build_thread} ${cf_build_parallel}"
+            ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
+            ${cf_build_parallel}"
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 configure failed.  Giving up"
             return 1
