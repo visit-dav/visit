@@ -82,7 +82,7 @@ SPCTHGeneralPluginInfo::GetName() const
 const char *
 SPCTHGeneralPluginInfo::GetVersion() const
 {
-    return "1.1";
+    return "1.0";
 }
 
 // ****************************************************************************
@@ -101,7 +101,7 @@ SPCTHGeneralPluginInfo::GetVersion() const
 const char *
 SPCTHGeneralPluginInfo::GetID() const
 {
-    return "SPCTH_1.1";
+    return "SPCTH_1.0";
 }
 // ****************************************************************************
 //  Method: SPCTHGeneralPluginInfo::EnabledByDefault
@@ -154,6 +154,7 @@ SPCTHGeneralPluginInfo::GetDefaultFilePatterns() const
 {
     std::vector<std::string> defaultPatterns;
     defaultPatterns.push_back("*.spcth");
+    defaultPatterns.push_back("*spcth");
     defaultPatterns.push_back("*.cth");
 
     return defaultPatterns;
