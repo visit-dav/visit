@@ -42,6 +42,7 @@
 
 #include <avtMFEMFileFormat.h>
 
+#include <cstdlib>
 #include <string>
 #include <sstream>
 
@@ -151,6 +152,13 @@ avtMFEMFileFormat::FreeUpResources(void)
 }
 
 
+// ****************************************************************************
+//  Method: avtMFEMFileFormat::BuildCatFileMap
+//
+//  Purpose: Read .mfem_cat file header for offsets/sizes of sub-files
+//
+//  Mark C. Miller, Mon Dec 11 15:48:47 PST 2017
+// ****************************************************************************
 void
 avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
 {
@@ -166,7 +174,7 @@ avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
 
     string line;
     std::getline(catfile, line);
-    size_t hdrsz = std::stoull(line);
+    size_t hdrsz = (size_t) strtoull(&line[0], 0, 10);
     catFileMap["@#@#@#"] = std::pair<size_t,size_t>(hdrsz,hdrsz);
     debug5 << "Processing mfem_cat file header..." << endl;
     debug5 << "    header size = " << hdrsz << endl;
@@ -175,14 +183,21 @@ avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
         std::getline(catfile, line);
         size_t offat = line.find_last_of(' ');
         size_t sizat = line.find_last_of(' ', offat-1);
-        size_t off = std::stoull(&line[offat+1]);
-        size_t siz = std::stoull(&line[sizat+1]);
+        size_t off = (size_t) strtoull(&line[offat+1], 0, 10);
+        size_t siz = (size_t) strtoull(&line[sizat+1], 0, 10);
         line.resize(sizat);
         debug5 << "    key=\"" << line << "\", size=" << siz << ", off=" << off << endl;
         catFileMap[line] = std::pair<size_t,size_t>(siz,off);
     }
 }
 
+// ****************************************************************************
+//  Method: avtMFEMFileFormat::FetchDataFromCatFile
+//
+//  Purpose: Read mfmem data from an mfem_cat file
+//
+//  Mark C. Miller, Mon Dec 11 15:48:47 PST 2017
+// ****************************************************************************
 void
 avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &obj_path,
     std::istringstream &istr)
@@ -548,6 +563,8 @@ avtMFEMFileFormat::GetVectorVar(int domain, const char *varname)
 //   Additional change to MFEM Mesh constructor call to resolve 
 //   coordinate system issue
 //
+//   Mark C. Miller, Mon Dec 11 15:49:34 PST 2017
+//   Add support for mfem_cat file
 // ****************************************************************************
 Mesh *
 avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
@@ -717,6 +734,8 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
 //
+//  Mark C. Miller, Mon Dec 11 15:49:34 PST 2017
+//  Add support for mfem_cat file
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,

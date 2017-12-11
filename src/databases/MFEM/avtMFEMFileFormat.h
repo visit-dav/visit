@@ -69,6 +69,8 @@ class JSONRoot;
 //   Cyrus Harrison, Wed Sep 24 10:47:00 PDT 2014
 //   Enable time varying metadata and SIL.
 //
+//   Mark C. Miller, Mon Dec 11 15:50:16 PST 2017
+//   Add support for an mfem_cat file
 // ****************************************************************************
 
 class avtMFEMFileFormat : public avtSTMDFileFormat
