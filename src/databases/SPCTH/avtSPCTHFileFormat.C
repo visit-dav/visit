@@ -176,7 +176,7 @@ avtSPCTHFileFormat::Initialize(void)
         for(int i=0; i<m_fileCnt; i++)
         {
             m_fin[i] = new ifstream;
-            m_fin[i]->open(m_files->at(i), ios::in|ios::binary);
+            m_fin[i]->open(m_files->at(i).c_str(), ios::in|ios::binary);
             m_spyfile[i] = new SpyFile(m_fin[i]);
             
             char errmsg[500];
@@ -1309,7 +1309,7 @@ avtSPCTHFileFormat::SetFileList(const char *const *list, const int nList)
     string str = string("*.visit");
     
     delete filename;
-    filename = new char[std::strlen(str.c_str())+1];
+    filename = new char[strlen(str.c_str())+1];
     strcpy(filename, str.c_str());
     
     if(m_files == NULL)
