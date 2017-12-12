@@ -184,13 +184,16 @@ avtImageTiler::GetNumberOfRowsForNTiles(int nTiles) const
 //
 // Returns:    An avtImage_p containing the new tiled image.
 //
-// Note:       
+// Note:       Zbuffer and other channels on the vtkImageData's point data are
+//             not currently tiled.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 15 17:06:50 PST 2004
 //
 // Modifications:
-//   
+//   Brad Whitlock, Tue Sep 26 11:46:43 PDT 2017
+//   Support tiling 4 channel images.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -205,12 +208,15 @@ avtImageTiler::CreateTiledImage()
     //
     int tileWidth = 0, tileHeight = 0;
     images[0]->GetImage().GetSize(&tileHeight, &tileWidth);
+    int nColorComponents = images[0]->GetImage().GetNumberOfColorChannels();
     for(int i = 1; i < nImages; ++i)
     {
         int w, h;
         images[i]->GetImage().GetSize(&h, &w);
         tileWidth = (tileWidth < w) ? w : tileWidth;
         tileHeight = (tileHeight < h) ? h : tileHeight;
+        if(images[i]->GetImage().GetNumberOfColorChannels() > nColorComponents)
+            nColorComponents = images[i]->GetImage().GetNumberOfColorChannels();
     }
 
     //
@@ -218,7 +224,6 @@ avtImageTiler::CreateTiledImage()
     //
     int totalWidth = tileWidth * tilesPerRow;
     int totalHeight = tileHeight * nRows;
-    const int nColorComponents = 3;
     vtkImageData *newImage = vtkImageData::New();
     newImage->SetDimensions(totalWidth, totalHeight, 1);
     newImage->AllocateScalars(VTK_UNSIGNED_CHAR, nColorComponents);
@@ -232,6 +237,7 @@ avtImageTiler::CreateTiledImage()
     const unsigned char bgR = 255;
     const unsigned char bgG = 255;
     const unsigned char bgB = 255;
+    const unsigned char bgA = 0;
     for(int row = 0; row < nRows; ++row)
     {
         for(int y = tileHeight-1; y >= 0; --y, ++outScanY)
@@ -249,64 +255,135 @@ avtImageTiler::CreateTiledImage()
                     vtkImageData *img = images[s]->GetImage().GetImageVTK();
 
                     int dY1 = (tileHeight - imgHeight) / 2;
-                    if(y >= dY1 && y < (dY1 + imgHeight))
+
+                    if(nColorComponents == 3)
                     {
-                        int dX1 = (tileWidth - imgWidth) / 2;
-                        int dX2 = tileWidth - imgWidth - dX1;
+                        if(y >= dY1 && y < (dY1 + imgHeight))
+                        {
+                            int dX1 = (tileWidth - imgWidth) / 2;
+                            int dX2 = tileWidth - imgWidth - dX1;
 
-                        // Pad the left side of the image.
-                        for(x = 0; x < dX1; ++x)
-                        {
-                            *p++ = bgR;
-                            *p++ = bgG;
-                            *p++ = bgB;
-                        }
+                            // Pad the left side of the image.
+                            for(x = 0; x < dX1; ++x)
+                            {
+                                *p++ = bgR;
+                                *p++ = bgG;
+                                *p++ = bgB;
+                            }
 
-                        //
-                        // Fill in the pixels.
-                        //
-                        if(img->GetNumberOfScalarComponents() == 4)
-                        {
-                             unsigned char *srcRow = 
-                                ((unsigned char *)img->GetScalarPointer()) +
-                                ((y-dY1) * imgWidth * 4);
-                             for(x = 0; x < imgWidth; ++x)
-                             {
-                                 *p++ = *srcRow++;
-                                 *p++ = *srcRow++;
-                                 *p++ = *srcRow++;
-                                 srcRow++;
-                             }
-                        }
-                        else if(img->GetNumberOfScalarComponents() == 3)
-                        {
-                             unsigned char *srcRow = 
-                                ((unsigned char *)img->GetScalarPointer()) +
-                                ((y-dY1) * imgWidth * 3);
-                             for(x = 0; x < imgWidth; ++x)
-                             {
-                                 *p++ = *srcRow++;
-                                 *p++ = *srcRow++;
-                                 *p++ = *srcRow++;
-                             }
-                        }
+                            //
+                            // Fill in the pixels.
+                            //
+                            if(img->GetNumberOfScalarComponents() == 4)
+                            {
+                                 unsigned char *srcRow = 
+                                    ((unsigned char *)img->GetScalarPointer()) +
+                                    ((y-dY1) * imgWidth * 4);
+                                 for(x = 0; x < imgWidth; ++x)
+                                 {
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                     srcRow++;
+                                 }
+                            }
+                            else if(img->GetNumberOfScalarComponents() == 3)
+                            {
+                                 unsigned char *srcRow = 
+                                    ((unsigned char *)img->GetScalarPointer()) +
+                                    ((y-dY1) * imgWidth * 3);
+                                 for(x = 0; x < imgWidth; ++x)
+                                 {
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                 }
+                            }
 
-                        // Pad the right side of the image.
-                        for(x = 0; x < dX2; ++x)
+                            // Pad the right side of the image.
+                            for(x = 0; x < dX2; ++x)
+                            {
+                                *p++ = bgR;
+                                *p++ = bgG;
+                                *p++ = bgB;
+                            }
+                        }
+                        else
                         {
-                            *p++ = bgR;
-                            *p++ = bgG;
-                            *p++ = bgB;
+                            // y is outside of the image so use bg color
+                            for(x = 0; x < tileWidth; ++x)
+                            {
+                                *p++ = bgR;
+                                *p++ = bgG;
+                                *p++ = bgB;
+                            }
                         }
                     }
-                    else
+                    else if(nColorComponents == 4)
                     {
-                        // y is outside of the image so use bg color
-                        for(x = 0; x < tileWidth; ++x)
+                        if(y >= dY1 && y < (dY1 + imgHeight))
                         {
-                            *p++ = bgR;
-                            *p++ = bgG;
-                            *p++ = bgB;
+                            int dX1 = (tileWidth - imgWidth) / 2;
+                            int dX2 = tileWidth - imgWidth - dX1;
+
+                            // Pad the left side of the image.
+                            for(x = 0; x < dX1; ++x)
+                            {
+                                *p++ = bgR;
+                                *p++ = bgG;
+                                *p++ = bgB;
+                                *p++ = bgA;
+                            }
+
+                            //
+                            // Fill in the pixels.
+                            //
+                            if(img->GetNumberOfScalarComponents() == 4)
+                            {
+                                 unsigned char *srcRow = 
+                                    ((unsigned char *)img->GetScalarPointer()) +
+                                    ((y-dY1) * imgWidth * 4);
+                                 for(x = 0; x < imgWidth; ++x)
+                                 {
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                 }
+                            }
+                            else if(img->GetNumberOfScalarComponents() == 3)
+                            {
+                                 unsigned char *srcRow = 
+                                    ((unsigned char *)img->GetScalarPointer()) +
+                                    ((y-dY1) * imgWidth * 3);
+                                 for(x = 0; x < imgWidth; ++x)
+                                 {
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                     *p++ = *srcRow++;
+                                     *p++ = 255;
+                                 }
+                            }
+
+                            // Pad the right side of the image.
+                            for(x = 0; x < dX2; ++x)
+                            {
+                                *p++ = bgR;
+                                *p++ = bgG;
+                                *p++ = bgB;
+                                *p++ = bgA;
+                            }
+                        }
+                        else
+                        {
+                            // y is outside of the image so use bg color
+                            for(x = 0; x < tileWidth; ++x)
+                            {
+                                *p++ = bgR;
+                                *p++ = bgG;
+                                *p++ = bgB;
+                                *p++ = bgA;
+                            }
                         }
                     }
                 }

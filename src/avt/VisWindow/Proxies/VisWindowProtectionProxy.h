@@ -257,6 +257,8 @@ class VISWINDOW_API VisWindowProtectionProxy
     void                ProxiedDoNextExternalRenderAsVisualQueue(
                             int w, int h, const double *c);
 
+    void                ProxiedGetExtents(double ext[2]); // TODO: remove with VTK8.
+
 };
 
 

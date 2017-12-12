@@ -1614,6 +1614,9 @@ class DebugMallocDebugger(Debugger):
 #   the "-s script_name" argument and not between the script name and the
 #   script arguments.
 #
+#   Brad Whitlock, Tue Sep 12 12:26:50 PDT 2017
+#   Added Cinema.
+#
 ###############################################################################
 
 class GeneralArguments(object):
@@ -1626,6 +1629,7 @@ class GeneralArguments(object):
             self.exe_name = "gui"
         self.dv = 0
         self.add_movie_args = 0
+        self.add_cinema_args = 0
         self.diffmode = 0        # 0 = none, 1=diff, 2=diffsum
         self.diffargs = []
         self.scriptfile = None
@@ -1664,6 +1668,12 @@ class GeneralArguments(object):
         elif args[i] == "-movie":
             self.exe_name = "cli"
             self.add_movie_args = 1
+            for j in range(i+1, len(args)):
+                self.scriptarguments = self.scriptarguments + [args[j]]
+            n = len(args) - i
+        elif args[i] == "-cinema":
+            self.exe_name = "cli"
+            self.add_cinema_args = 1
             for j in range(i+1, len(args)):
                 self.scriptarguments = self.scriptarguments + [args[j]]
             n = len(args) - i
@@ -1783,6 +1793,10 @@ class GeneralArguments(object):
             if nowin_not_added:
                 args = args + ["-nowin"]
             args = args + ["-s", os.path.join(self.launcher.visitscriptdir, "makemoviemain.py")]
+        if self.add_cinema_args:
+            if nowin_not_added:
+                args = args + ["-nowin"]
+            args = args + ["-s", os.path.join(self.launcher.visitscriptdir, "visitcinemamain.py")]
 
         args = args + self.scriptarguments
 

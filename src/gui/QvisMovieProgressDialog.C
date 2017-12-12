@@ -41,8 +41,6 @@
 #include <QPixmap>
 #include <QPushButton>
 
-#include <icons/moviereel.xpm>
-
 // Window flags to make the dialog modal.
 #define DIALOG_FLAGS (WType_Modal | WStyle_Customize | WStyle_NormalBorder | WStyle_Title)
 
@@ -68,7 +66,7 @@
 //
 // ****************************************************************************
 
-QvisMovieProgressDialog::QvisMovieProgressDialog(QWidget *parent) 
+QvisMovieProgressDialog::QvisMovieProgressDialog(QPixmap &pix, QWidget *parent) 
 : QDialog(parent)
 {
     QVBoxLayout *topLayout = new QVBoxLayout(this);
@@ -78,16 +76,15 @@ QvisMovieProgressDialog::QvisMovieProgressDialog(QWidget *parent)
     QHBoxLayout *labelLayout = new QHBoxLayout();
     topLayout->addLayout(labelLayout);
     labelLayout->setMargin(5);
-    QPixmap moviereel(moviereel_xpm);
     picture = new QLabel(this);
-    picture->setPixmap(moviereel);
-    picture->setMinimumWidth(moviereel.width());
-    picture->setMinimumHeight(moviereel.height());
+    picture->setPixmap(pix);
+    picture->setMinimumWidth(pix.width());
+    picture->setMinimumHeight(pix.height());
     labelLayout->addWidget(picture);
 
     labelTextLabel = new QLabel(this);
     labelTextLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-    labelTextLabel->setMinimumWidth(2 * moviereel.width());
+    labelTextLabel->setMinimumWidth(2 * pix.width());
     labelLayout->addWidget(labelTextLabel);
 
     progressBar = new QProgressBar(this);

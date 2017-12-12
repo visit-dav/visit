@@ -123,7 +123,7 @@ FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_DIRECTORIES})
 ENDFOREACH(VISIT_BIN_ITEM)
 
 IF (NOT WIN32)
-    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py)
+    FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py)
         EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM}
                                 ${CMAKE_CURRENT_BINARY_DIR}/${VISIT_BIN_ITEM})
@@ -167,6 +167,8 @@ ELSE (NOT WIN32)
     SET(VISIT_BIN_WIN_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/makemovie.py
         ${CMAKE_CURRENT_SOURCE_DIR}/makemoviemain.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/visitcinema.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/visitcinemamain.py
         ${CMAKE_CURRENT_SOURCE_DIR}/visitdiff.py)
 
     INSTALL(FILES ${VISIT_BIN_WIN_FILES}

@@ -60,6 +60,9 @@
 #   Added widgets for PickQuery, LineoutQuery, HohlraumFluxQuery,
 #   XRayImageQuery,  TimeQueryOtions.
 #
+#   Brad Whitlock, Thu Sep 14 16:53:41 PDT 2017
+#   Cinema support.
+#
 #****************************************************************************/
 
 SET(GUILIB_SOURCES
@@ -89,6 +92,7 @@ QvisAnnotationWindow.C
 QvisAppearanceWindow.C
 QvisApplication.C
 QvisAxisAttributesWidget.C
+QvisCinemaWizard.C
 QvisCMFEWizard.C
 QvisCollapsibleFrame.C
 QvisColorButton.C
@@ -238,6 +242,7 @@ QvisAnnotationWindow.h
 QvisAppearanceWindow.h
 QvisApplication.h
 QvisAxisAttributesWidget.h
+QvisCinemaWizard.h
 QvisColorButton.h
 QvisColorGridWidget.h
 QvisColorSelectionWidget.h

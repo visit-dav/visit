@@ -67,14 +67,19 @@
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye to support stereo SR
+//
+//    Brad Whitlock, Mon Sep 25 14:02:31 PDT 2017
+//    Added image type.
+//
 // ****************************************************************************
 
-RenderRPC::RenderRPC() : NonBlockingRPC("i*biib"), ids()
+RenderRPC::RenderRPC() : NonBlockingRPC("i*biibi"), ids()
 {
     sendZBuffer = false;
     annotMode = 0;
     windowID = 0;
     leftEye = true;
+    imageType = ColorRGBImage;
 }
 
 // ****************************************************************************
@@ -119,12 +124,18 @@ RenderRPC::~RenderRPC()
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye to support stereo SR
+//
+//    Brad Whitlock, 
+//    Added image type.
+//
 // ****************************************************************************
 
 void
-RenderRPC::operator()(const intVector& ids_, bool sendZBuffer_,
+RenderRPC::operator()(avtImageType imgT,
+    const intVector& ids_, bool sendZBuffer_, 
     int annotMode_, int windowID_, bool leftEye_)
 {
+    SetImageType(imgT);
     SetIDs(ids_);
     SetSendZBuffer(sendZBuffer_);
     SetAnnotMode(annotMode_);
@@ -165,6 +176,7 @@ RenderRPC::SelectAll()
     Select(2, (void*)&annotMode);
     Select(3, (void*)&windowID);
     Select(4, (void*)&leftEye);
+    Select(5, (void*)&imageType);
 }
 
 
@@ -232,7 +244,12 @@ RenderRPC::SetLeftEye(bool leftEye_)
     Select(4, (void*)&leftEye);
 }
 
-
+void
+RenderRPC::SetImageType(avtImageType imgT)
+{
+    imageType = (int)imgT;
+    Select(5, (void*)&imageType);
+}
 
 // ****************************************************************************
 //  Method: RenderRPC::GetXXX methods
@@ -286,4 +303,10 @@ bool
 RenderRPC::GetLeftEye() const
 {
     return leftEye;
+}
+
+avtImageType
+RenderRPC::GetImageType() const
+{
+    return (avtImageType)imageType;
 }

@@ -176,6 +176,9 @@ class VISWINDOW_API VisWindowColleagueProxy : public VisWindowProtectionProxy
     void                GetBounds(double bounds[6])
                                   { ProxiedGetBounds(bounds); };
 
+    void                GetExtents(double ext[3]) // TODO: Remove with VTK8
+                                  { ProxiedGetExtents(ext); };
+
     vtkRenderer        *GetCanvas(void)
                                   { return ProxiedGetCanvas(); };
 

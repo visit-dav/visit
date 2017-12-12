@@ -47,6 +47,7 @@
 #include <avtActor.h>
 #include <avtDataset.h>
 #include <avtImage.h>
+#include <avtImageType.h>
 #include <avtTypes.h>
 #include <avtView2D.h>
 #include <avtView3D.h>
@@ -485,6 +486,9 @@ class ViewerPlotList;
 //    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
 //    Changed the return type of GetNumberOfCells to long long
 //
+//    Brad Whitlock, Wed Sep 20 17:46:39 PDT 2017
+//    I added 2 arguments to ScreenCapture.
+//
 //    Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
 //    Added RemovePicks.
 //
@@ -557,7 +561,7 @@ public:
     void UpdateColorTable(const std::string &ctName);
     void RedrawWindow();
     void ClearWindow(bool clearAllPlots = true);
-    avtImage_p ScreenCapture();
+    avtImage_p ScreenCapture(avtImageType imgT = ColorRGBImage, bool doZBuffer = false);
     avtDataset_p GetAllDatasets();
     void InvertBackgroundColor();
     void CopyGeneralAttributes(const ViewerWindow *);
@@ -683,7 +687,8 @@ public:
     bool IsChangingScalableRenderingMode(bool toMode = false) const;
     bool DisableExternalRenderRequests(bool bClearImage = false);
     bool EnableExternalRenderRequests();
-    void ExternalRenderManual(avtDataObject_p& dob, int w, int h);
+    void ExternalRenderManual(avtDataObject_p& dob, int w, int h,
+                              avtImageType imgT, bool needZBuffer);
 
     // Rendering options.
     void SetAntialiasing(bool enabled);
@@ -799,11 +804,12 @@ protected:
              const ExternalRenderRequestInfo& thisRequest) const;
     bool ExternalRender(const ExternalRenderRequestInfo& thisRequest,
              bool& shouldTurnOffScalableRendering, bool doAllAnnotations,
+             avtImageType imgT, bool needZBuffer,
              avtDataObject_p& dob);
     void ExternalRenderAuto(avtDataObject_p& dob, bool leftEye);
     bool IssueExternalRenderRequests(const ExternalRenderRequestInfo &reqInfo,
              bool &shouldTurnOffScalableRendering,
-             bool doAllAnnotations,
+             bool doAllAnnotations, avtImageType imgT, bool needZBuffer,
              std::vector<avtImage_p> &imgList,
              int windowID);
 

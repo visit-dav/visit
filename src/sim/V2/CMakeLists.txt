@@ -76,6 +76,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_SpeciesMetaData.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_UnstructuredMesh.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_VariableData.c
 ${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_VariableMetaData.c
+${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_View2D.c
+${CMAKE_CURRENT_SOURCE_DIR}/lib/VisIt_View3D.c
 )
 
 ADD_SUBDIRECTORY(lib)

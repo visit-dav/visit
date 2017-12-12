@@ -46,6 +46,7 @@
 #include <ViewerBase.h>
 #include <avtDataObjectReader.h>
 #include <avtImage.h>
+#include <avtImageType.h>
 #include <vectortypes.h>
 #include <avtSILRestriction.h>
 
@@ -183,7 +184,8 @@ public:
                          void (*waitCB)(void*), void *waitCBData) = 0;
 
     virtual int  Render(const EngineKey &ek, avtImage_p &img,
-                        bool sendZBuffer, const intVector &networkIds, 
+                        avtImageType imgT, bool sendZBuffer, 
+                        const intVector &networkIds, 
                         int annotMode, int windowID, bool leftEye,
                         void (*waitCB)(void *), void *waitCBData) = 0;
 

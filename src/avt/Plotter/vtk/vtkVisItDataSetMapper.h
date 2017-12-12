@@ -33,6 +33,12 @@ class vtkStructuredGridMapper;
 class vtkDataSetSurfaceFilter;
 class vtkTexturedPointsPainter;
 
+#define VISIT_DATASETMAPPER_RENDER_MODE
+
+#ifdef VISIT_DATASETMAPPER_RENDER_MODE
+class vtkLookupTable;
+#endif
+
 // ****************************************************************************
 // Modifications:
 //   Dave Bremer, Wed Feb 27 15:59:48 PST 2008
@@ -68,6 +74,26 @@ public:
   // Sets/Gets the point texturing method. 
   void SetPointTextureMethod(PointTextureMode);
   vtkGetMacro(PointTextureMethod, PointTextureMode);
+
+#ifdef VISIT_DATASETMAPPER_RENDER_MODE
+   // Let's have a way of forcing the mappers to render different ways with
+   // an easy global switch.
+   // In VTK 7/8 we can dump this and force luminance and value rendering
+   // using render passes on the vtkRenderer.
+   typedef enum {
+       RENDERING_MODE_NORMAL,
+       RENDERING_MODE_LUMINANCE,
+       RENDERING_MODE_VALUE
+   } RenderingMode;
+
+   static void SetRenderingMode(RenderingMode);
+   static RenderingMode GetRenderingMode();
+protected:
+   static RenderingMode rMode;
+   vtkLookupTable *allwhite;
+   vtkLookupTable *grayscale;
+public:
+#endif
 
   vtkSetMacro(VertsReplacedWithGeomGlyphs, bool);
   vtkGetMacro(VertsReplacedWithGeomGlyphs, bool);

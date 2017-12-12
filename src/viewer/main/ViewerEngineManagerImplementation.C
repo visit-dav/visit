@@ -2368,7 +2368,8 @@ ViewerEngineManagerImplementation::Execute(const EngineKey &ek,
 int
 ViewerEngineManagerImplementation::Render(const EngineKey &ek,
    avtImage_p &img,
-   bool sendZBuffer, const intVector &networkIds, 
+   avtImageType imgT, bool sendZBuffer,
+   const intVector &networkIds, 
    int annotMode, int windowID, bool leftEye,
    void (*waitCB)(void *), void *waitCBData)
 {
@@ -2376,7 +2377,7 @@ ViewerEngineManagerImplementation::Render(const EngineKey &ek,
 
     // We get a data object reader back from the engine.
     avtDataObjectReader_p rdr = engine->GetEngineMethods()->Render(
-        sendZBuffer, networkIds, annotMode, windowID, leftEye,
+        imgT, sendZBuffer, networkIds, annotMode, windowID, leftEye,
         waitCB, waitCBData);
 
     if (*rdr == NULL)

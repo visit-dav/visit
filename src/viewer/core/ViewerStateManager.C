@@ -56,6 +56,7 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
+#include <CinemaAttributes.h>
 #include <ColorTableAttributes.h>
 #include <ExportDBAttributes.h>
 #include <FileOpenOptions.h>
@@ -233,6 +234,7 @@ ViewerStateManager::ConnectDefaultState()
     configMgr->Add(GetViewerState()->GetMovieAttributes());
     configMgr->Add(GetViewerState()->GetFileOpenOptions());
     configMgr->Add(GetViewerState()->GetSeedMeAttributes());
+    configMgr->Add(GetViewerState()->GetCinemaAttributes());
 }
 
 // ****************************************************************************

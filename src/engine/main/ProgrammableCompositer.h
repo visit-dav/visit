@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                       ProgrammableCompositer.h                              //
+//                       ProgrammableCompositer.h                            //
 // ************************************************************************* //
 
 #ifndef ProgrammableCompositer_h
@@ -49,9 +49,11 @@
 #include <avtImage.h>
 
 #ifdef _MSC_VER
-#define __restrict__ __restrict
+#define RESTRICT __restrict
 #pragma warning(disable : 4351)
 #else
+#define RESTRICT __restrict__
+//#define RESTRICT 
 #define THREADED_COMPOSITER
 #endif
 #ifdef THREADED_COMPOSITER
@@ -427,6 +429,11 @@ void writeVTK(const char *file, avtImageRepresentation &aim)
 //  Programmer: Burlen Loring
 //  Creation:   Tue Sep  1 09:34:49 PDT 2015
 //
+//  Modifications:
+//    Brad Whitlock, Mon Dec 11 14:53:33 PST 2017
+//    Added clamp method because we were calling asuchar() on floats outside
+//    of [0,1] and getting the wrong answer.
+//
 // ****************************************************************************
 
 template <typename T> struct color_tt {};
@@ -436,14 +443,15 @@ struct color_tt<float>
 {
     static float max() { return 1.0f; }
 
-    static unsigned char asuchar(const float &c) { return c*255.0f; }
-    static float asfloat(const float &c) { return c; }
+    static unsigned char asuchar(const float &c) { return clamp(c)*255.0f; }
+    static float asfloat(const float &c) { return clamp(c); }
 #ifdef PARALLEL
     static MPI_Datatype asmpi(){ return MPI_FLOAT; };
 #endif
-    static float from(const unsigned char &c) { return c*(1.0f/255.0); }
+    static float from(const unsigned char &c) { return static_cast<float>(c)*(1.0f/255.0); }
     static float from(const float &c) { return c; }
     static float from(const double &c) { return c; }
+    static float clamp(const float &c) { return (c > max()) ? max() : ((c<0)?0:c); }
 };
 
 template <>
@@ -452,7 +460,7 @@ struct color_tt<unsigned char>
     static unsigned char max() { return 255u; }
 
     static unsigned char asuchar(const unsigned char &c) { return c; }
-    static float asfloat(const unsigned char &c) { return c*(1.0f/255.0f); }
+    static float asfloat(const unsigned char &c) { return static_cast<float>(c)*(1.0f/255.0f); }
 #ifdef PARALLEL
     static MPI_Datatype asmpi(){ return MPI_BYTE; };
 #endif
@@ -485,8 +493,8 @@ struct color_tt<unsigned char>
 // cs is an int that selects the channel to split, vectorized
 template<typename T, int nc>
 void split(
-    T * __restrict__ c,
-    const unsigned char * __restrict__ rgba,
+    T * RESTRICT c,
+    const unsigned char * RESTRICT rgba,
     size_t n, size_t cs)
 {
     const unsigned char *prgba = rgba + cs;
@@ -499,8 +507,8 @@ void split(
 // cs is an int that selects the channel to merge, not vectorized
 template <typename num_t, int nc>
 void merge(
-    unsigned char * __restrict__ rgba,
-    const num_t * __restrict__ c,
+    unsigned char * RESTRICT rgba,
+    const num_t * RESTRICT c,
     size_t n,
     size_t cs)
 {
@@ -513,8 +521,8 @@ void merge(
 // from a compute 1 - a, vectorized
 template <typename num_t>
 void remainder(
-    num_t * __restrict__ r,
-    const num_t * __restrict__ a,
+    num_t * RESTRICT r,
+    const num_t * RESTRICT a,
     size_t n)
 {
     for (size_t i = 0; i < n; ++i)
@@ -526,10 +534,10 @@ void remainder(
 // here raf is 1-alpha foreground, vectorized
 template <typename f_num_t, typename b_num_t>
 void blend(
-    b_num_t * __restrict__ o,
-    const f_num_t * __restrict__ f,
-    const b_num_t * __restrict__ b,
-    const f_num_t * __restrict__ raf,
+    b_num_t * RESTRICT o,
+    const f_num_t * RESTRICT f,
+    const b_num_t * RESTRICT b,
+    const f_num_t * RESTRICT raf,
     size_t n)
 {
     for (size_t i = 0; i < n; ++i)
@@ -541,11 +549,11 @@ void blend(
 // composite a single channel, TODO -- not vectorized.
 template <typename num_t>
 void composite(
-    num_t * __restrict__ oc,
-    const num_t * __restrict__ fc,
-    const float * __restrict__ fz,
-    const num_t * __restrict__ bc,
-    const float * __restrict__ bz,
+    num_t * RESTRICT oc,
+    const num_t * RESTRICT fc,
+    const float * RESTRICT fz,
+    const num_t * RESTRICT bc,
+    const float * RESTRICT bz,
     size_t n)
 {
     for (size_t i = 0; i < n; ++i)
@@ -556,9 +564,9 @@ void composite(
 // composite z-buffer, vectorized
 inline
 void composite(
-    float * __restrict__ oz,
-    const float * __restrict__ fz,
-    const float * __restrict__ bz,
+    float * RESTRICT oz,
+    const float * RESTRICT fz,
+    const float * RESTRICT bz,
     size_t n)
 {
     for (size_t i = 0; i < n; ++i)
@@ -568,7 +576,7 @@ void composite(
 // --------------------------------------------------------------------------
 // return a mask value indicating if the fg wins the depth test, vectorized
 template <typename num_t>
-num_t *ztest(float * __restrict__ fz, float * __restrict__ bz,  size_t n)
+num_t *ztest(float * RESTRICT fz, float * RESTRICT bz,  size_t n)
 {
     num_t *m = static_cast<num_t*>(aligned_alloc(alignment, n*sizeof(num_t)));
     for (size_t i = 0; i < n; ++i)
@@ -581,10 +589,10 @@ num_t *ztest(float * __restrict__ fz, float * __restrict__ bz,  size_t n)
 // TODO -- this is vectorized in single precision but should be uchar
 template <typename num_t>
 void composite(
-    num_t * __restrict__ oc,
-    const num_t * __restrict__ fc,
-    const num_t * __restrict__ bc,
-    const num_t * __restrict__ zm,
+    num_t * RESTRICT oc,
+    const num_t * RESTRICT fc,
+    const num_t * RESTRICT bc,
+    const num_t * RESTRICT zm,
     size_t n)
 {
     for (size_t i = 0; i < n; ++i)
@@ -595,8 +603,8 @@ void composite(
 // multiply c by a in place, not vectorized (because in place)
 template <typename num_t>
 void multiply(
-    num_t * __restrict__ c,
-    const num_t * __restrict__ a,
+    num_t * RESTRICT c,
+    const num_t * RESTRICT a,
     size_t n)
 {
     for (size_t i = 0; i < n; ++i)
@@ -640,8 +648,8 @@ public:
         z(az), size(an), own(aown) {}
 
     // construct from an interleaved 4 channel buffer
-    explicit ImageBuffer(const unsigned char * __restrict__ rgba,
-        const float * __restrict__ z, size_t an, int nchani, int nchano,
+    explicit ImageBuffer(const unsigned char * RESTRICT rgba,
+        const float * RESTRICT z, size_t an, int nchani, int nchano,
         bool premul=false, bool aown=true);
 
     ~ImageBuffer();
@@ -713,8 +721,8 @@ ImageBuffer<im_t>::ImageBuffer(im_t ar, im_t ag, im_t ab, im_t aa, size_t an)
 // are multiplied by their alpha. in VTK this is not needed.
 template <typename im_t>
 ImageBuffer<im_t>::ImageBuffer(
-    const unsigned char * __restrict__ rgba,
-    const float * __restrict__ az, size_t an, int nchani, int nchano,
+    const unsigned char * RESTRICT rgba,
+    const float * RESTRICT az, size_t an, int nchani, int nchano,
     bool premulf, bool aown) : r(0), g(0), b(0), a(0), z(0),
     size(an), own(aown)
 {
@@ -1602,7 +1610,7 @@ ProgrammableCompositer<T>::SetBackgroundColor(const double rgb[3])
 // ****************************************************************************
 
 inline
-float *zmask(float * __restrict__ z, size_t n)
+float *zmask(float * RESTRICT z, size_t n)
 {
     float *m = static_cast<float*>(
         aligned_alloc(alignment, n*sizeof(float)));
@@ -1612,7 +1620,7 @@ float *zmask(float * __restrict__ z, size_t n)
 }
 
 template <typename T>
-void applyZMask(T * __restrict__ c, float * __restrict__ zm, size_t n, T bc)
+void applyZMask(T * RESTRICT c, float * RESTRICT zm, size_t n, T bc)
 {
     for (size_t i = 0; i < n; ++i)
         c[i] = color_tt<T>::from(zm[i]*color_tt<T>::asfloat(bc) +
@@ -1661,7 +1669,7 @@ ProgrammableCompositer<T>::ApplyBackgroundColor(const double argb[3])
 // ****************************************************************************
 
 template <typename T, typename U>
-void applyZMask(T * __restrict__ c, float * __restrict__ zm, size_t n, const U *bc)
+void applyZMask(T * RESTRICT c, float * RESTRICT zm, size_t n, const U *bc)
 {
     for (size_t i = 0; i < n; ++i)
         c[i] = color_tt<T>::from(zm[i]*color_tt<U>::asfloat(bc[i]) +
@@ -1709,7 +1717,7 @@ ProgrammableCompositer<T>::ApplyBackgroundImage(
 // ****************************************************************************
 
 template <typename T, int C>
-void applyZMask(T * __restrict__ c, float * __restrict__ zm, size_t n,
+void applyZMask(T * RESTRICT c, float * RESTRICT zm, size_t n,
     const unsigned char *rgba)
 {
     const unsigned char *prgba = rgba + C;
@@ -2140,9 +2148,8 @@ template <typename T>
 void Merge(avtImage_p img, T *r, T *g, T *b, T *a, float *z,
     int w, int h, bool take)
 {
-    int nchan = z&&a ? 4 : 3;
+    int nchan = a ? 4 : 3;
     size_t npix = w*h;
-
     vtkImageData *rgb = NULL;
     if (r)
     {
@@ -2157,16 +2164,13 @@ void Merge(avtImage_p img, T *r, T *g, T *b, T *a, float *z,
             merge<T,4>(prgb, r, npix, 0);
             merge<T,4>(prgb, g, npix, 1);
             merge<T,4>(prgb, b, npix, 2);
-            if (a&&z)
-                merge<T,4>(prgb, a, npix, 3);
+            merge<T,4>(prgb, a, npix, 3);
         }
         else
         {
             merge<T,3>(prgb, r, npix, 0);
             merge<T,3>(prgb, g, npix, 1);
             merge<T,3>(prgb, b, npix, 2);
-            if (a&&z)
-                merge<T,3>(prgb, a, npix, 3);
         }
     }
     else
@@ -2181,7 +2185,8 @@ void Merge(avtImage_p img, T *r, T *g, T *b, T *a, float *z,
         free(r);
         free(g);
         free(b);
-        free(a);
+        if(a)
+            free(a);
     }
 
     // pass in scalars and z-buffer, image takes ownership of z-buffer

@@ -47,6 +47,7 @@
 #include <VisWindowTypes.h>
 #include <avtTypes.h>
 #include <avtImage.h>
+#include <avtImageType.h>
 #include <avtDataset.h>
 #include <avtViewCurve.h>
 #include <avtView2D.h>
@@ -623,8 +624,13 @@ public:
     static bool SessionContainsErrors(DataNode *);
 
 public:
-    avtImage_p CreateSingleImage(int windowIndex, int width, int height,
-                                 bool screenCapture, bool leftEye);
+    avtImage_p CreateSingleImage(int pixelData, int windowIndex,
+                                 int width, int height, bool screenCapture,
+                                 bool leftEye);
+
+    avtImage_p CreateSingleImageType(avtImageType imgT, bool doZBuffer,
+                                     int windowIndex, int width, int height,
+                                     bool screenCapture, bool leftEye);
 
 public:
     static ViewerWindowManagerAttributes *GetWindowAtts();
@@ -653,7 +659,7 @@ public:
 
   protected:
     ViewerWindowManager();
-    avtImage_p CreateTiledImage(int width, int height, bool leftEye);
+    avtImage_p CreateTiledImage(int width, int height, bool leftEye, bool doAlpha);
     avtImage_p AdvancedMultiWindowSave(int width, int height, bool leftEye);
     avtDataset_p GetDataset(int windowIndex, bool&);
     bool AskForCorrelationPermission(const ViewerText &, const ViewerText &,

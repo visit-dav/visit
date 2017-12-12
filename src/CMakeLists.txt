@@ -837,6 +837,7 @@ VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
 VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
 VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
+VISIT_3RDPARTY_VAR(OPENEXR_DIR   "Path containing the OpenEXR library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
 VISIT_3RDPARTY_VAR(OPENSWR_DIR   "Path containing the OpenSWR library's include and lib")
@@ -1373,6 +1374,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure netcdf support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNetcdf.cmake)
+
+    # Configure OpenEXR support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindOpenEXR.cmake)
 
     # Configure Silo support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSilo.cmake)

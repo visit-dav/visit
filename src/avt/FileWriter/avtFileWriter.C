@@ -123,6 +123,9 @@ avtFileWriter::~avtFileWriter()
 //    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
 //    Added PLY writer.
 //
+//    Brad Whitlock, Tue Sep 19 14:36:51 PDT 2017
+//    OpenEXR writer.
+//
 // ****************************************************************************
 
 void
@@ -198,6 +201,11 @@ avtFileWriter::SetFormat(int f)
         dsFormat = VTK;
         isImage = false;
     }
+    else if (f == SaveWindowAttributes::EXR)
+    {
+        imgFormat = OPENEXR;
+        isImage = true;
+    }
     else
     {
         EXCEPTION0(ImproperUseException);
@@ -253,10 +261,11 @@ avtFileWriter::IsImageFormat(void)
 //
 // ****************************************************************************
 
-void
+std::vector<std::string>
 avtFileWriter::Write(const char *filename, avtDataObject_p dob, int quality,
                      bool progressive, int compression, bool binary)
 {
+    std::vector<std::string> fnList;
     if (IsImageFormat())
     {
         if (*dob == NULL)
@@ -267,8 +276,8 @@ avtFileWriter::Write(const char *filename, avtDataObject_p dob, int quality,
         else
         {
             imgWriter->SetInput(dob);
-            imgWriter->Write(imgFormat, filename, quality, progressive,
-                              compression);
+            fnList = imgWriter->Write(imgFormat, filename, quality, progressive,
+                                      compression);
         }
     }
     else
@@ -282,8 +291,10 @@ avtFileWriter::Write(const char *filename, avtDataObject_p dob, int quality,
         {
             dsWriter->SetInput(dob);
             dsWriter->Write(dsFormat, filename, quality, compression, binary);
+            fnList.push_back(filename);
         }
     }
+    return fnList;
 }
 
 

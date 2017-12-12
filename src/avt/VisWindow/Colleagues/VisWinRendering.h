@@ -47,6 +47,7 @@
 #include <VisWinColleague.h>
 
 #include <avtImage.h>
+#include <avtImageType.h>
 #include <ColorAttribute.h>
 
 
@@ -274,7 +275,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     void                     GetCaptureRegion(int& r0, int& c0, int& w, int& h,
                                  bool doViewportOnly);
 
-    void                     ScreenRender(bool doViewportOnly = false,
+    void                     ScreenRender(avtImageType imgT = ColorRGBImage,
+                                          bool doViewportOnly = false,
                                           bool doCanvasZBufferToo = false,
                                           bool doOpaque = true,
                                           bool doTranslucent = true,
@@ -293,6 +295,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     avtImage_p               PostProcessScreenCapture(avtImage_p capturedImage,
                                  bool doViewportOnly, bool keepZBuffer);
+
+    avtImage_p               ScreenCaptureValues(bool getZBuffer);
 
     virtual void             SetSize(int, int);
     virtual void             GetSize(int&, int&);

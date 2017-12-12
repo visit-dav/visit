@@ -98,6 +98,11 @@ SIMV2_API int     simv2_exportdatabase(void *, const char *, const char *, visit
 SIMV2_API int     simv2_exportdatabase_with_options(void *, const char *, const char *, visit_handle, visit_handle);
 SIMV2_API int     simv2_restoresession(void *, const char *);
 
+SIMV2_API int     simv2_set_view2D(void *, visit_handle);
+SIMV2_API int     simv2_get_view2D(void *, visit_handle);
+SIMV2_API int     simv2_set_view3D(void *, visit_handle);
+SIMV2_API int     simv2_get_view3D(void *, visit_handle);
+
 #ifdef __cplusplus
 }
 #endif

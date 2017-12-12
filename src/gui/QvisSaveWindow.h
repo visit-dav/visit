@@ -105,6 +105,9 @@ class QvisOpacitySlider;
 //   Eric Brugger, Mon Aug 31 10:29:30 PDT 2015
 //   I overhauled the window.
 //
+//   Brad Whitlock, Wed Sep 20 18:07:45 PDT 2017
+//   Added pixel options.
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -136,6 +139,11 @@ protected slots:
     void compressionTypeChanged(int);
     void binaryToggled(bool);
     void stereoToggled(bool);
+    void rgbToggled(bool);
+    void aToggled(bool);
+    void depthToggled(bool);
+    void luminanceToggled(bool);
+    void valueToggled(bool);
     void forceMergeToggled(bool);
     void aspectRatioChanged(int);
     void processWidthText();
@@ -183,6 +191,12 @@ private:
     QCheckBox           *binaryCheckBox;
     QCheckBox           *stereoCheckBox;
     QCheckBox           *forceMergeCheckBox;
+    QGroupBox           *pdGroup;
+    QCheckBox           *pdRGB;
+    QCheckBox           *pdA;
+    QCheckBox           *pdLuminance;
+    QCheckBox           *pdValue;
+    QCheckBox           *pdDepth;
     QGroupBox           *aspectAndResolutionBox;
     QLabel              *aspectRatioLabel;
     QComboBox           *aspectRatioComboBox;

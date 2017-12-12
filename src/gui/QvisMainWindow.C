@@ -79,6 +79,7 @@
 #include <WindowInformation.h>
 #include <ViewerProxy.h>
 #include <DebugStream.h>
+#include <InstallationFunctions.h>
 
 #include <icons/expression.xpm>
 #include <icons/computer.xpm>
@@ -379,7 +380,7 @@
 //    Add 'connect to DDT' action optionally (HAVE_DDT)
 //
 // ****************************************************************************
-
+#include <InstallationFunctions.h>
 QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     : QvisWindowBase(captionString)
 {
@@ -390,7 +391,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     QPixmap annotIcon, lightIcon, subsetIcon, selectionIcon, viewIcon;
     QPixmap exprIcon, animIcon, pluginIcon, pickIcon, copyIcon, lockIcon;
     QPixmap saveMovieIcon, commandIcon, keyframeIcon, materialIcon;
-    QPixmap globalLineoutIcon, correlationIcon;
+    QPixmap globalLineoutIcon, correlationIcon, cinemaIcon;
 
     // Make the main window observe the global status subject. This is
     // part of the mechanism that allows other windows to display status
@@ -436,6 +437,9 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     materialIcon = QPixmap(matoptions_xpm);
     globalLineoutIcon = QPixmap(globallineout_xpm);
     correlationIcon = QPixmap(correlation_xpm);
+
+    std::string cName = GetVisItResourcesFile(VISIT_RESOURCES_IMAGES, "cinema-menu.png");
+    cinemaIcon.load(cName.c_str());
 
     outputBlue = new QPixmap( output_blue_xpm );
     outputRed = new QPixmap( output_red_xpm );
@@ -528,6 +532,8 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                          QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
     filePopup->addAction(saveMovieIcon, tr("Save movie . . ."),
                          this, SIGNAL(saveMovie()));
+    filePopup->addAction(cinemaIcon, tr("Save to Cinema . . ."),
+                         this, SIGNAL(saveCinema()));
     filePopup->addAction(printIcon, tr("Print window"),
                          this, SIGNAL(printWindow()),
                          QKeySequence(Qt::CTRL + Qt::Key_P));

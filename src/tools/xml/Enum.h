@@ -62,6 +62,9 @@
 //    Brad Whitlock, Thu May  8 11:31:42 PDT 2008
 //    Qt 4. Use QTextStream.
 //
+//    Brad Whitlock, Tue Sep 26 12:12:34 PDT 2017
+//    Support adding enum int values.
+//
 // ****************************************************************************
 class EnumType
 {
@@ -84,13 +87,26 @@ class EnumType
   public:
     QString         type;
     std::vector<QString> values;
+    std::vector<int>     ivalues;
   public:
-    EnumType(const QString &s) : type(s) 
+    EnumType(const QString &s) : type(s), values(), ivalues()
     { 
     }
     void AddValue(const QString &s)
     {
-        values.push_back(s);
+        int n;
+        if((n = s.indexOf("=")) != -1)
+        {
+            values.push_back(s.left(n).simplified());
+            bool ok = false;
+            int ival = s.mid(n+1).simplified().toInt(&ok);
+            ivalues.push_back(ok ? ival : -1);
+        }
+        else
+        {
+            values.push_back(s);
+            ivalues.push_back(-1);
+        }
     }
     const QString& GetValue(size_t index)
     {
@@ -98,12 +114,21 @@ class EnumType
             throw QString("tried to access out-of-bounds enum type %1").arg(index);
         return values[index];
     }
+    const int GetIValue(size_t index)
+    {
+        if (index >= values.size())
+            throw QString("tried to access out-of-bounds enum type %1").arg(index);
+        return ivalues[index];
+    }
     void Print(QTextStream &out)
     {
         out << "Enum: " << type << endl;
         for (size_t i=0; i<values.size(); i++)
         {
-            out << "    " << values[i] << endl;
+            out << "    " << values[i];
+            if(ivalues[i] >= 0)
+                out << " = " << ivalues[i];
+            out << endl;
         }
     }
 };

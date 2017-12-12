@@ -122,7 +122,7 @@ class PIPELINE_API avtImageRepresentation
     void                 GetSize(int *rowSize, int *colSize) const;
 
     vtkImageData        *GetImageVTKDirect(){ return asVTK; }
-    vtkFloatArray       *GetZBufferVTKDirect(){ return zbuffer; }     
+    vtkFloatArray       *GetZBufferVTKDirect(){ return zbuffer; }
 
     // these aren't const, because they might call GetImageFromString
     void                 SetImageVTK(vtkImageData *src);
@@ -133,6 +133,7 @@ class PIPELINE_API avtImageRepresentation
     int                  GetNumberOfColorChannels();
     unsigned char       *GetRGBBuffer(void);
     vtkUnsignedCharArray *GetRGBBufferVTK();
+
     unsigned char       *GetImageString(int &);
     unsigned char       *GetCompressedImageString(int &);
     void                 GetSize(int *rowSize, int *colSize);
@@ -149,6 +150,7 @@ class PIPELINE_API avtImageRepresentation
     void                 ReleaseData(void);
 
     static vtkImageData *NewImage(int w, int h, int chan = 3);
+    static vtkImageData *NewValueImage(int w, int h);
 
   protected:
     vtkImageData        *asVTK;

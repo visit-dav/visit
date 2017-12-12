@@ -66,6 +66,7 @@
 #include <PlotPluginManager.h>
 #include <OperatorPluginInfo.h>
 #include <OperatorPluginManager.h>
+#include <CinemaAttributes.h>
 #include <ClientMethod.h>
 #include <ClientInformation.h>
 #include <ClientInformationList.h>
@@ -105,6 +106,7 @@
 #include <QvisAnimationWindow.h>
 #include <QvisAnnotationWindow.h>
 #include <QvisAppearanceWindow.h>
+#include <QvisCinemaWizard.h>
 #include <QvisCMFEWizard.h>
 #include <QvisColorTableWindow.h>
 #include <QvisCommandWindow.h>
@@ -169,6 +171,9 @@
 #include <Utility.h>
 #include <AccessViewerSession.h>
 
+#include <icons/moviereel.xpm>
+#include <icons/cinema.xpm>
+
 #if defined(_WIN32)
 #include <windows.h> // for LoadLibrary
 #endif
@@ -188,6 +193,7 @@
 #define DELAYED_LOAD_FILE_TAG     108
 #define REDO_PICK_TAG             109
 #define RESTORE_PICK_ATTS_TAG     110
+#define SAVE_CINEMA_SYNC_TAG      111
 
 // Note that the order of entries in the windowNames string list must match
 // the ordering here.
@@ -736,6 +742,8 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     setupCMFEWizard = 0;
     interpreter = 0;
     movieProgress = 0;
+    cinemaWizard = 0;
+    cinemaProgress = 0;
     sessionFileHelper = 0;
     savedGUIGeometry = false;
     savedGUISize[0] = 0;
@@ -1439,6 +1447,9 @@ QvisGUIApplication::Synchronize(int tag)
 //   Emit FireInit signal instead of using QTimer::singleShot to
 //   work around a Qt/Glib init problem in linux.
 //
+//   Brad Whitlock, Thu Sep 14 13:09:42 PDT 2017
+//   Cinema support.
+//
 // ****************************************************************************
 
 void
@@ -1471,6 +1482,10 @@ QvisGUIApplication::HandleSynchronize(int val)
     else if(val == SAVE_MOVIE_SYNC_TAG)
     {
         QTimer::singleShot(10, this, SLOT(SaveMovieMain()));
+    }
+    else if(val == SAVE_CINEMA_SYNC_TAG)
+    {
+        QTimer::singleShot(10, this, SLOT(SaveCinemaMain()));
     }
     else if(val == REMOVE_CRASH_RECOVERY_TAG)
     {
@@ -3103,6 +3118,9 @@ QvisGUIApplication::AddViewerSpaceArguments()
 //   Brad Whitlock, Wed Sep 22 10:58:37 PDT 2010
 //   Just do PrintWindow.
 //
+//   Brad Whitlock, Thu Sep 14 13:10:36 PDT 2017
+//   Cinema support.
+//
 // ****************************************************************************
 
 void
@@ -3133,6 +3151,7 @@ QvisGUIApplication::CreateMainWindow()
     connect(mainWin, SIGNAL(deIconifyWindows()), this, SLOT(DeIconifyWindows()));
     connect(mainWin, SIGNAL(activateAboutWindow()), this, SLOT(AboutVisIt()));
     connect(mainWin, SIGNAL(saveWindow()), this, SLOT(SaveWindow()));
+    connect(mainWin, SIGNAL(saveCinema()), this, SLOT(SaveCinema()));
     connect(mainWin, SIGNAL(saveMovie()), this, SLOT(SaveMovie()));
     connect(mainWin, SIGNAL(setupCMFE()), this, SLOT(SetupCMFE()));
     connect(mainWin, SIGNAL(printWindow()), this, SLOT(PrintWindow()));
@@ -7615,6 +7634,9 @@ QvisGUIApplication::updateVisItCompleted(const QString &program)
 //   Brad Whitlock, Fri Jun 15 09:43:02 PDT 2007
 //   Added ClearMacroButtons, AddMacroButton.
 //
+//   Brad Whitlock, Thu Sep 14 13:12:21 PDT 2017
+//   Cinema support.
+//
 // ****************************************************************************
 
 void
@@ -7637,6 +7659,8 @@ QvisGUIApplication::SendInterface()
     info->DeclareMethod("MessageBoxOk",        "s");
     info->DeclareMethod("MovieProgress",       "sii");
     info->DeclareMethod("MovieProgressEnd",    "");
+    info->DeclareMethod("CinemaProgress",       "sii");
+    info->DeclareMethod("CinemaProgressEnd",    "");
     info->DeclareMethod("AcceptRecordedMacro", "s");
     info->DeclareMethod("AddMacroButton", "s");
     info->DeclareMethod("ClearMacroButtons", "");
@@ -7679,6 +7703,9 @@ QvisGUIApplication::SendInterface()
 //
 //   Jeremy Meredith, Thu Aug  7 15:39:55 EDT 2008
 //   Removed unused vars.
+//
+//   Brad Whitlock, Thu Sep 14 13:12:21 PDT 2017
+//   Cinema support.
 //
 // ****************************************************************************
 
@@ -7812,7 +7839,8 @@ QvisGUIApplication::HandleClientMethod()
                 // Set the movie progress dialog's properties.
                 if(movieProgress == 0)
                 {
-                    movieProgress = new QvisMovieProgressDialog(mainWin);
+                    QPixmap pix(moviereel_xpm);
+                    movieProgress = new QvisMovieProgressDialog(pix, mainWin);
                     movieProgress->setWindowTitle(tr("VisIt movie progress"));
                     movieProgress->setLabelText(tr("Making movie"));
                     movieProgress->setProgress(0);
@@ -7840,6 +7868,51 @@ QvisGUIApplication::HandleClientMethod()
             {
                 if(movieProgress != 0)
                     movieProgress->hide();
+            }
+            else if(method->GetMethodName() == "CinemaProgress")
+            {
+                // Set the movie progress dialog's properties.
+                if(cinemaProgress == 0)
+                {
+                    QPixmap logo;
+                    std::string logoFilename = GetVisItResourcesFile(
+                        VISIT_RESOURCES_IMAGES, "cinema.png");
+                    if(logo.load(logoFilename.c_str()))
+                    {
+                        debug1 << "loaded file " << logoFilename << endl;
+                    }
+                    else
+                    {
+                        debug1 << "Failed to load " << logoFilename << endl;
+                    }
+                    cinemaProgress = new QvisMovieProgressDialog(logo, mainWin);
+                    cinemaProgress->setWindowTitle(tr("VisIt Cinema progress"));
+                    cinemaProgress->setLabelText(tr("Saving Cinema"));
+                    cinemaProgress->setProgress(0);
+                    connect(cinemaProgress, SIGNAL(cancelled()),
+                            this, SLOT(CancelMovie()));
+                }
+
+                if(cinemaProgress != 0)
+                {
+                    QString labelText(method->GetStringArgs()[0].c_str());
+                    int current = method->GetIntArgs()[0];
+                    int total   = method->GetIntArgs()[1];
+
+                    if(!cinemaProgress->isVisible())
+                        cinemaProgress->show();
+                    if(labelText != cinemaProgress->labelText())
+                        cinemaProgress->setLabelText(labelText);
+                    if(total != cinemaProgress->totalSteps())
+                        cinemaProgress->setTotalSteps(total);
+                    if(current != cinemaProgress->progress())
+                        cinemaProgress->setProgress(current);
+                }
+            }
+            else if(method->GetMethodName() == "CinemaProgressEnd")
+            {
+                if(cinemaProgress != 0)
+                    cinemaProgress->hide();
             }
             else if(method->GetMethodName() == "AcceptRecordedMacro")
             {
@@ -8258,6 +8331,43 @@ QvisGUIApplication::SetupCMFE()
         setupCMFEWizard->AddCMFEExpression();
 }
 
+// ****************************************************************************
+// Method: QvisGUIApplication::QueryWindowSize
+//
+// Purpose: 
+//   Query the viewer for the window size and activate a synchronize.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 2 18:58:55 PST 2006
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::QueryWindowSize(int tag)
+{
+    // Stimulate the viewer to send back its current window size so we'll have
+    // it available for the Save movie wizard.
+    const GlobalAttributes *globalAtts = GetViewerState()->GetGlobalAttributes();
+    const intVector &winids = globalAtts->GetWindows();
+    int winid = globalAtts->GetActiveWindow() + 1;
+    for(size_t i = 0; i < winids.size(); ++i)
+    {
+        if(winids[i] == winid)
+        {
+            debug5 << "QvisGUIApplication::SaveMovie: CREATE A NEW RPC TO "
+                      "SEND BACK THE WINDOW INFO!" << endl;
+            GetViewerMethods()->SetActiveWindow(winid);
+            break;
+        }
+    }
+    
+    // Activate the Save movie wizard when the sync is complete.
+    Synchronize(tag);
+}
 
 // ****************************************************************************
 // Method: QvisGUIApplication::SaveMovie
@@ -8280,24 +8390,7 @@ QvisGUIApplication::SetupCMFE()
 void
 QvisGUIApplication::SaveMovie()
 {
-    // Stimulate the viewer to send back its current window size so we'll have
-    // it available for the Save movie wizard.
-    const GlobalAttributes *globalAtts = GetViewerState()->GetGlobalAttributes();
-    const intVector &winids = globalAtts->GetWindows();
-    int winid = globalAtts->GetActiveWindow() + 1;
-    for(size_t i = 0; i < winids.size(); ++i)
-    {
-        if(winids[i] == winid)
-        {
-            debug5 << "QvisGUIApplication::SaveMovie: CREATE A NEW RPC TO "
-                      "SEND BACK THE WINDOW INFO!" << endl;
-            GetViewerMethods()->SetActiveWindow(winid);
-            break;
-        }
-    }
-    
-    // Activate the Save movie wizard when the sync is complete.
-    Synchronize(SAVE_MOVIE_SYNC_TAG);
+    QueryWindowSize(SAVE_MOVIE_SYNC_TAG);
 }
 
 // ****************************************************************************
@@ -8606,6 +8699,161 @@ QvisGUIApplication::CancelMovie()
     method->ClearArgs();
     method->SetMethodName("Interrupt");
     method->Notify();
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SaveCinema
+//
+// Purpose: 
+//   This is a Qt slot function that gets the current vis window size and
+//   initiates a set of events that eventually calls the SendCinemaMain 
+//   slot, which opens the Save Cinema wizard.
+//
+// Notes:      The code to stimulate the viewer to send its window size should
+//             be replaced with a new RPC that does the job.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 14 12:08:08 PDT 2017
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisGUIApplication::SaveCinema()
+{
+    if(GetViewerState()->GetPlotList()->GetNumPlots() > 0)
+        QueryWindowSize(SAVE_CINEMA_SYNC_TAG);
+    else
+        Warning(tr("You must create plots before saving to Cinema."));
+}
+
+// ****************************************************************************
+// Method: QvisGUIApplication::SaveCinemaMain
+//
+// Purpose: 
+//   This is Qt slot function that opens the "Save Cinema" wizard and leads 
+//   the user through setting Cinema options.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 14 12:08:08 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisGUIApplication::SaveCinemaMain()
+{
+    CinemaAttributes *cinemaAtts = GetViewerState()->GetCinemaAttributes();
+
+    // Replace the widths and heights of formats using the current window
+    // size with the current window size so the values shown will be right
+    // if the user changes the format to use a specific width, height.
+    WindowInformation *winInfo = GetViewerState()->GetWindowInformation();
+    int cw = winInfo->GetWindowSize()[0];
+    int ch = winInfo->GetWindowSize()[1];
+
+    // Prepend the current directory if the Cinema filename does not include
+    // a path.
+    QString filename(cinemaWizard->FullyQualified(cinemaAtts->GetFileName().c_str()));
+    cinemaAtts->SetFileName(filename.toStdString());
+
+    // The idea here is that I want set the start/end indices on the first
+    // call, and if the default number of frames changes.  But I want those
+    // parameters to stay the same otherwise, like when there are multiple
+    // executions of the save cinema wizard on the same data.  cinemaAtts 
+    // holds the user-requested data, and I store the default (max) run length
+    // in the wizard class.
+    int nCinemaFrames = GetNumMovieFrames();
+    if (cinemaWizard == NULL ||
+        nCinemaFrames != cinemaWizard->GetDefaultNumFrames())
+    {
+        cinemaAtts->SetFrameStart(0);
+        cinemaAtts->SetFrameEnd(nCinemaFrames-1);
+    }
+
+    if(cinemaWizard == 0)
+    {
+        cinemaWizard = new QvisCinemaWizard(cinemaAtts, mainWin);
+        cinemaWizard->SetDefaultImageSize(cw, ch);
+        cinemaWizard->SetDefaultNumFrames(nCinemaFrames);
+    }
+    else
+    {
+        cinemaWizard->SetDefaultImageSize(cw, ch);
+        cinemaWizard->SetDefaultNumFrames(nCinemaFrames);
+        cinemaWizard->UpdateAttributes();
+    }
+
+    // Execute the save movie wizard to gather the requirements for the movie.
+    if(cinemaWizard->Exec() == QDialog::Accepted)
+    {
+        // Make the wizard copy its local cinemaAtts into the viewer's cinemaAtts
+        // and send them to the viewer.
+        cinemaWizard->SendAttributes();
+
+        // Determine the location of the visitcinema script.
+#if defined(_WIN32)
+        std::string makemovie(GetVisItArchitectureDirectory() + "\\visitcinema.py");
+#else
+        std::string makemovie(GetVisItArchitectureDirectory() + "/bin/visitcinema.py");
+#endif
+
+        // Turn "\" into "\\" so the interpreter is happy.
+        QString makemovie2(MakeCodeSlashes(makemovie.c_str()));
+
+        // Assemble a string of code to execute.
+        QString code(QString("try:\n    Source('%1')\n").arg(makemovie2));
+        code += "    cinema = VisItCinema()\n";
+        code += "    cinema.sendClientFeedback = 1\n";
+        code += QString("    cinema.cameraMode = \"%1\"\n").arg(cinemaAtts->GetCameraMode().c_str());
+        code += QString("    cinema.theta = %1\n").arg(cinemaAtts->GetTheta());
+        code += QString("    cinema.phi = %1\n").arg(cinemaAtts->GetPhi());
+        int actualW = cinemaAtts->GetUseScreenCapture() ? cw : cinemaAtts->GetWidth();
+        int actualH = cinemaAtts->GetUseScreenCapture() ? ch : cinemaAtts->GetHeight();
+        code += QString("    cinema.width = %1\n").arg(actualW);
+        code += QString("    cinema.height = %1\n").arg(actualH);
+        code += QString("    cinema.format = \"%1\"\n").arg(cinemaAtts->GetFormat().c_str());
+
+        // Set the output.
+        filename = QString(cinemaAtts->GetFileName().c_str());
+        if(filename.isEmpty())
+            filename = "visit.cdb";
+        if(!filename.endsWith(".cdb"))
+            filename += ".cdb";
+        code += QString("    cinema.fileName = \"%1\"\n").arg(filename);
+        code += QString("    cinema.specification = \"%1\"\n").arg(cinemaAtts->GetSpecification().c_str());
+
+        if(cinemaAtts->GetComposite())
+            code += "    cinema.composite = True\n";
+        else
+            code += "    cinema.composite = False\n";
+
+        if (cinemaAtts->GetUseScreenCapture())
+            code += "    cinema.screenCaptureImages = 1\n";
+        else
+            code += "    cinema.screenCaptureImages = 0\n";
+
+        code += QString("    cinema.frameStart = %1\n").arg(cinemaAtts->GetFrameStart());
+        code += QString("    cinema.frameEnd = %1\n").arg(cinemaAtts->GetFrameEnd());
+        code += QString("    cinema.frameStride = %1\n").arg(cinemaAtts->GetFrameStride());
+
+        code += "    cinema.Execute()\n";
+        code += "    ClientMethod(\"CinemaProgressEnd\")\n";
+        code += "    ClientMethod(\"MessageBoxOk\", \"VisIt exported the Cinema "
+                "database to \"+cinema.fileName+\".\")\n";
+        code += "except VisItInterrupt:\n";
+        code += "    pass\n";
+        code += "except:\n";
+        code += "    ClientMethod(\"CinemaProgressEnd\")\n";
+        code += "    ClientMethod(\"MessageBoxOk\", \"VisIt could not "
+                "interpret the script to create your Cinema movie so it "
+                "was not generated.\")\n";
+        code += "    raise\n";
+
+        Interpret(code);
+    }
 }
 
 // ****************************************************************************

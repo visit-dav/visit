@@ -42,6 +42,7 @@
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
 #include <AppearanceAttributes.h>
+#include <CinemaAttributes.h>
 #include <ClientMethod.h>
 #include <ClientInformation.h>
 #include <ClientInformationList.h>

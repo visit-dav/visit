@@ -42,6 +42,7 @@
 #include <QLabel>
 #include <QProgressBar>
 
+class QPixmap;
 class QPushButton;
 
 // ****************************************************************************
@@ -65,7 +66,7 @@ class QvisMovieProgressDialog : public QDialog
 {
     Q_OBJECT
 public:
-    QvisMovieProgressDialog(QWidget *parent = 0);
+    QvisMovieProgressDialog(QPixmap &pix, QWidget *parent = 0);
     virtual ~QvisMovieProgressDialog();
 
     void setLabelText(const QString &t) { labelTextLabel->setText(t); }

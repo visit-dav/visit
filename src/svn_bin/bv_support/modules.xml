@@ -39,6 +39,7 @@
             <lib name="mxml"/>
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
+            <lib name="openexr"/>
             <lib name="pidx"/>
             <lib name="openssl"/>
             <lib name="openswr"/>
@@ -83,6 +84,7 @@
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
+            <lib name="openexr"/>
             <lib name="openssl"/>
             <lib name="openswr"/>
             <lib name="pidx"/>
@@ -123,6 +125,7 @@
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
+            <lib name="openexr"/>
             <lib name="pidx"/>
             <lib name="silo"/>
             <lib name="szip"/>

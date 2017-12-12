@@ -191,6 +191,8 @@ public class ViewerState
             Register(attsViewerClientInformation);
         attsSeedMeAttributes = new SeedMeAttributes();
             Register(attsSeedMeAttributes);
+        attsCinemaAttributes = new CinemaAttributes();
+            Register(attsCinemaAttributes);
     }
 
     //
@@ -251,6 +253,7 @@ public class ViewerState
     public ViewerClientAttributes    GetViewerClientAttributes() { return attsViewerClientAttributes; }
     public ViewerClientInformation   GetViewerClientInformation() { return attsViewerClientInformation; }
     public SeedMeAttributes          GetSeedMeAttributes() { return attsSeedMeAttributes; }
+    public CinemaAttributes          GetCinemaAttributes() { return attsCinemaAttributes; }
 
     /**
      * Returns the i'th state object.
@@ -420,6 +423,7 @@ public class ViewerState
     private ViewerClientAttributes   attsViewerClientAttributes;
     private ViewerClientInformation  attsViewerClientInformation;
     private SeedMeAttributes         attsSeedMeAttributes;
+    private CinemaAttributes         attsCinemaAttributes;
 
     private Vector objVector;
     private int nPlots;

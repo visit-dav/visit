@@ -848,7 +848,8 @@ SimEngineManager::Execute(const EngineKey &/*ek*/, avtDataObjectReader_p &rdr,
 
 int 
 SimEngineManager::Render(const EngineKey &/*ek*/, avtImage_p &img,
-                         bool sendZBuffer, const intVector &networkIds, 
+                         avtImageType imgT, bool sendZBuffer,
+                         const intVector &networkIds, 
                          int annotMode, int windowID, bool leftEye,
                          void (*waitCB)(void *), void *waitCBData)
 {
@@ -856,8 +857,9 @@ SimEngineManager::Render(const EngineKey &/*ek*/, avtImage_p &img,
     int retval = 0; // no image
 
     // Do the render
-    avtDataObject_p image = engine->GetNetMgr()->Render(true,
-        networkIds, sendZBuffer, annotMode, windowID, leftEye);
+    bool checkThreshold = true;
+    avtDataObject_p image = engine->GetNetMgr()->Render(imgT, sendZBuffer,
+        networkIds, checkThreshold, annotMode, windowID, leftEye);
 
     // Non-0 ranks will have an empty image. Share some information about
     // the image on rank 0 so we can do the right thing on other ranks.

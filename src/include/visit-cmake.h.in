@@ -25,6 +25,9 @@
 /* Define if you have the netcdf header. */
 #cmakedefine HAVE_NETCDF_H
 
+/* Define if you have the OpenEXR library. */
+#cmakedefine HAVE_LIBOPENEXR
+
 /* Define if you have pdb. */
 #cmakedefine HAVE_LIBPDB
 

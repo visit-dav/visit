@@ -2247,7 +2247,12 @@ private:
             for (size_t j = 0; j < EnumType::enums[i]->values.size(); ++j)
             {
                 QString constName(EnumType::enums[i]->type + QString("_") + EnumType::enums[i]->values[j]);
-                h << "    public final static int " << constName.toUpper() << " = " << j << ";" << endl;
+                h << "    public final static int " << constName.toUpper() << " = ";
+                if(EnumType::enums[i]->ivalues[j] >= 0)
+                    h << EnumType::enums[i]->ivalues[j];
+                else
+                    h << j;
+                h << ";" << endl;
             }
             h << endl;
         }

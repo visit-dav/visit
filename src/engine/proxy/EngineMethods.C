@@ -660,10 +660,14 @@ EngineMethods::DefineVirtualDatabase(const std::string &fileFormat,
 //    Brad Whitlock, Thu Apr  9 16:17:55 PDT 2009
 //    I added reverse launch support.
 //
+//    Brad Whitlock, Thu Sep 21 16:42:54 PDT 2017
+//    Added image type.
+//
 // ****************************************************************************
 
 avtDataObjectReader_p
-EngineMethods::Render(bool sendZBuffer, const intVector& networkIDs,
+EngineMethods::Render(avtImageType imgT, bool sendZBuffer,
+    const intVector& networkIDs,
     int annotMode, int windowID, bool leftEye,
     void (*waitCB)(void *), void *cbData)
 {
@@ -672,7 +676,7 @@ EngineMethods::Render(bool sendZBuffer, const intVector& networkIDs,
     Status("Scalable Rendering.");
 
     // Do it!
-    state->renderRPC(networkIDs, sendZBuffer, annotMode, windowID, leftEye);
+    state->renderRPC(imgT, networkIDs, sendZBuffer, annotMode, windowID, leftEye);
 
     // Get the reply and update the progress bar
     while (state->renderRPC.GetStatus() == VisItRPC::incomplete ||
@@ -710,9 +714,13 @@ EngineMethods::Render(bool sendZBuffer, const intVector& networkIDs,
     // Send a status message that indicates the output of the engine is
     // being transferred across the network.
     if (sendZBuffer)
-       Status("Reading engine output [with zbuffer]");
+    {
+        Status("Reading engine output [with zbuffer]");
+    }
     else
-       Status("Reading engine output.");
+    {
+        Status("Reading engine output.");
+    }
 
     // Read the VTK data
     long size = state->renderRPC.GetReplyLen();

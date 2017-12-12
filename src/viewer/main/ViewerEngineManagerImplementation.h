@@ -46,6 +46,7 @@
 #include <ViewerServerManager.h>
 #include <SimpleObserver.h>
 #include <avtDataObjectReader.h>
+#include <avtImageType.h>
 #include <vectortypes.h>
 #include <EngineKey.h>
 #include <EngineProperties.h>
@@ -422,7 +423,8 @@ public:
     bool Execute(const EngineKey &ek, avtDataObjectReader_p &rdr,
                  bool replyWithNullData, void (*waitCB)(void*), void *waitCBData);
     int  Render(const EngineKey &ek, avtImage_p &img,
-                bool sendZBuffer, const intVector &networkIds, 
+                avtImageType imgT, bool sendZBuffer,
+                const intVector &networkIds, 
                 int annotMode, int windowID, bool leftEye,
                 void (*waitCB)(void *), void *waitCBData);
 

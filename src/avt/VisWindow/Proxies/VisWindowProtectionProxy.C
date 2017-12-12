@@ -1190,3 +1190,9 @@ VisWindowProtectionProxy::ProxiedCreateXorGridMapper()
 {
      return viswin->CreateXorGridMapper();
 }
+
+void // TODO: Remove with VTK8
+VisWindowProtectionProxy::ProxiedGetExtents(double ext[2])
+{
+     return viswin->GetExtents(ext);
+}

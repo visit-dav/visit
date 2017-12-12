@@ -51,6 +51,10 @@
 !   Brad Whitlock, Fri Sep 19 14:05:50 PDT 2014
 !   Added visitexportdatabase, visitrestoresession.
 !
+!   Brad Whitlock
+!   Tue Jun  6 17:02:11 PDT 2017
+!   Added visitsetview3d, visitgetview3d, visitsavecinema.
+!
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 !... Commonly useful declarations
@@ -253,6 +257,20 @@
       parameter   (VISIT_IMAGEFORMAT_RGB             = 5)
       integer      VISIT_IMAGEFORMAT_TIFF
       parameter   (VISIT_IMAGEFORMAT_TIFF            = 6)
+      integer      VISIT_IMAGEFORMAT_EXR
+      parameter   (VISIT_IMAGEFORMAT_EXR             = 7)
+
+!... Cinema database types 
+      integer      VISIT_DATABASE_IMAGE
+      parameter   (VISIT_DATABASE_IMAGE = 0)
+      integer      VISIT_DATABASE_COMPOSITE
+      parameter   (VISIT_DATABASE_COMPOSITE = 1)
+
+!... Cinema camera types 
+      integer      VISIT_CAMERATYPE_STATIC
+      parameter   (VISIT_CAMERATYPE_STATIC = 0)
+      integer      VISIT_CAMERATYPE_PHI_THETA
+      parameter   (VISIT_CAMERATYPE_PHI_THETA = 1)
 
 ! Definitions for CSG boundary types 
 !   Designed so low-order 16 bits are unused
@@ -538,6 +556,36 @@
 ! visitrestoresession(string filename, int lfilename)
       external visitrestoresession
       integer  visitrestoresession
+
+! visitsetview2d(visit_handle view)
+      external visitsetview2d
+      integer  visitsetview2d
+
+! visitgetview2d(visit_handle view)
+      external visitgetview2d
+      integer  visitgetview2d
+
+! visitsetview3d(visit_handle view)
+      external visitsetview3d
+      integer  visitsetview3d
+
+! visitgetview3d(visit_handle view)
+      external visitgetview3d
+      integer  visitgetview3d
+
+! visitbegincinema(string file_cdb, int lfile_cdb, int dbtype,
+!                 int width, int height, int format,
+!                 int cameratype, int ntheta, int nphi)
+      external visitbegincinema
+      integer  visitbegincinema
+
+! visitsavecinema(string file_cdb, int lfile_cdb, double time)
+      external visitsavecinema
+      integer  visitsavecinema
+
+! visitendcinema(string file_cdb, int lfile_cdb)
+      external visitendcinema
+      integer  visitendcinema
 
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! Prototype plot attribute setting functions
@@ -1827,3 +1875,226 @@
 !                  long dest, int ldest)
       external visitvardatagetl
       integer  visitvardatagetl
+
+! VisIt_View2D functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitview2dalloc(visit_handle obj)
+      external 
+      integer
+
+! visitview2dfree(visit_handle obj)
+      external visitview2dfree
+      integer  visitview2dfree
+
+! visitview2dsetwindowcoords(visit_handle h, double val[4])
+      external visitview2dsetwindowcoords
+      integer  visitview2dsetwindowcoords
+
+! visitview2dgetwindowcoords(visit_handle h, double val[4])
+      external visitview2dgetwindowcoords
+      integer  visitview2dgetwindowcoords
+
+! visitview2dsetviewportcoords(visit_handle h, double val[4])
+      external visitview2dsetviewportcoords
+      integer  visitview2dsetviewportcoords
+
+! visitview2dgetviewportcoords(visit_handle h, double val[4])
+      external visitview2dgetviewportcoords
+      integer  visitview2dgetviewportcoords
+
+! visitview2dsetffmode(visit_handle h, int val)
+      external visitview2dsetffmode
+      integer  visitview2dsetffmode
+
+! visitview2dgetffmode(visit_handle h, int val )
+      external visitview2dgetffmode
+      integer  visitview2dgetffmode
+
+! visitview2dsetffautothreshold(visit_handle h, double val)
+      external visitview2dsetffautothreshold
+      integer  visitview2dsetffautothreshold
+
+! visitview2dgetffautothreshold(visit_handle h, double val)
+      external visitview2dgetffautothreshold
+      integer  visitview2dgetffautothreshold
+
+! visitview2dsetxscale(visit_handle h, int val)
+      external visitview2dsetxscale
+      integer  visitview2dsetxscale
+
+! visitview2dgetxscale(visit_handle h, int val)
+      external visitview2dgetxscale
+      integer  visitview2dgetxscale
+
+! visitview2dsetyscale(visit_handle h, int val)
+      external visitview2dsetyscale
+      integer  visitview2dsetyscale
+
+! visitview2dgetyscale(visit_handle h, int val)
+      external visitview2dgetyscale
+      integer  visitview2dgetyscale
+
+! visitview2dsetwindowvalid(visit_handle h, int val)
+      external visitview2dsetwindowvalid
+      integer  visitview2dsetwindowvalid
+
+! visitview2dgetwindowvalid(visit_handle h, int val)
+      external visitview2dgetwindowvalid
+      integer  visitview2dgetwindowvalid
+
+! visitview2dcopy(visit_handle dest, visit_handle src)
+      external visitview2dcopy
+      integer  visitview2dcopy
+
+
+! VisIt_View3D functions
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+! visitview3dalloc(visit_handle h)
+      external visitview3dalloc
+      integer  visitview3dalloc
+
+! visitview3dfree(visit_handle h)
+      external visitview3dfree
+      integer  visitview3dfree
+
+! visitview3dsetviewnormal(visit_handle h, double val[3])
+      external visitview3dsetviewnormal
+      integer  visitview3dsetviewnormal
+
+! visitview3dgetviewnormal(visit_handle h, double val[3])
+      external visitview3dgetviewnormal
+      integer  visitview3dgetviewnormal
+
+! visitview3dsetfocus(visit_handle h, double val[3])
+      external visitview3dsetfocus
+      integer  visitview3dsetfocus
+
+! visitview3dgetfocus(visit_handle h, double val[3])
+      external visitview3dgetfocus
+      integer  visitview3dgetfocus
+
+! visitview3dsetviewup(visit_handle h, double val[3])
+      external visitview3dsetviewup
+      integer  visitview3dsetviewup
+
+! visitview3dgetviewup(visit_handle h, double val[3])
+      external visitview3dgetviewup
+      integer  visitview3dgetviewup
+
+! visitview3dsetviewangle(visit_handle h, double val)
+      external visitview3dsetviewangle
+      integer  visitview3dsetviewangle
+
+! visitview3dgetviewangle(visit_handle h, double val)
+      external visitview3dgetviewangle
+      integer  visitview3dgetviewangle
+
+! visitview3dsetparallelscale(visit_handle h, double val)
+      external visitview3dsetparallelscale
+      integer  visitview3dsetparallelscale
+
+! visitview3dgetparallelscale(visit_handle h, double val)
+      external visitview3dgetparallelscale
+      integer  visitview3dgetparallelscale
+
+! visitview3dsetnearplane(visit_handle h, double val)
+      external visitview3dsetnearplane
+      integer  visitview3dsetnearplane
+
+! visitview3dgetnearplane(visit_handle h, double val)
+      external visitview3dgetnearplane
+      integer  visitview3dgetnearplane
+
+! visitview3dsetfarplane(visit_handle h, double val)
+      external visitview3dsetfarplane
+      integer  visitview3dsetfarplane
+
+! visitview3dgetfarplane(visit_handle h, double val)
+      external visitview3dgetfarplane
+      integer  visitview3dgetfarplane
+
+! visitview3dsetimagepan(visit_handle h, double val[2])
+      external visitview3dsetimagepan
+      integer  visitview3dsetimagepan
+
+! visitview3dgetimagepan(visit_handle h, double val[2])
+      external visitview3dgetimagepan
+      integer  visitview3dgetimagepan
+
+! visitview3dsetimagezoom(visit_handle h, double val)
+      external visitview3dsetimagezoom
+      integer  visitview3dsetimagezoom
+
+! visitview3dgetimagezoom(visit_handle h, double val)
+      external visitview3dgetimagezoom
+      integer  visitview3dgetimagezoom
+
+! visitview3dsetperspective(visit_handle h, int val)
+      external visitview3dsetperspective
+      integer  visitview3dsetperspective
+
+! visitview3dgetperspective(visit_handle h, int val)
+      external visitview3dgetperspective
+      integer  visitview3dgetperspective
+
+! visitview3dseteyeangle(visit_handle h, double val)
+      external visitview3dseteyeangle
+      integer  visitview3dseteyeangle
+
+! visitview3dgeteyeangle(visit_handle h, double val)
+      external visitview3dgeteyeangle
+      integer  visitview3dgeteyeangle
+
+! visitview3dsetcenterofrotationset(visit_handle h, int val)
+      external visitview3dsetcenterofrotationset
+      integer  visitview3dsetcenterofrotationset
+
+! visitview3dgetcenterofrotationset(visit_handle h, int val)
+      external visitview3dgetcenterofrotationset
+      integer  visitview3dgetcenterofrotationset
+
+! visitview3dsetcenterofrotation(visit_handle h, double val[3])
+      external visitview3dsetcenterofrotation
+      integer  visitview3dsetcenterofrotation
+
+! visitview3dgetcenterofrotation(visit_handle h, double val[3])
+      external visitview3dgetcenterofrotation
+      integer  visitview3dgetcenterofrotation
+
+! visitview3dsetaxis3dscaleflag(visit_handle h, int val)
+      external visitview3dsetaxis3dscaleflag
+      integer  visitview3dsetaxis3dscaleflag
+
+! visitview3dgetaxis3dscaleflag(visit_handle h, int val)
+      external visitview3dgetaxis3dscaleflag
+      integer  visitview3dgetaxis3dscaleflag
+
+! visitview3dsetaxis3dscales(visit_handle h, double val[3])
+      external visitview3dsetaxis3dscales
+      integer  visitview3dsetaxis3dscales
+
+! visitview3dgetaxis3dscales(visit_handle h, double val[3])
+      external visitview3dgetaxis3dscales
+      integer  visitview3dgetaxis3dscales
+
+! visitview3dsetshear(visit_handle h, double val[3])
+      external visitview3dsetshear
+      integer  visitview3dsetshear
+
+! visitview3dgetshear(visit_handle h, double val[3])
+      external visitview3dgetshear
+      integer  visitview3dgetshear
+
+! visitview3dsetwindowvalid(visit_handle h, int val)
+      external visitview3dsetwindowvalid
+      integer  visitview3dsetwindowvalid
+
+! visitview3dgetwindowvalid(visit_handle h, int val)
+      external visitview3dgetwindowvalid
+      integer  visitview3dgetwindowvalid
+
+! visitview3dcopy(visit_handle dest, visit_handle src)
+      external visitview3dcopy
+      integer  visitview3dcopy

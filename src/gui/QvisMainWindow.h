@@ -321,6 +321,7 @@ signals:
 
     void saveSettings();
     void saveWindow();
+    void saveCinema();
     void saveMovie();
     void setupCMFE();
     void printWindow();

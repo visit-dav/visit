@@ -105,33 +105,36 @@ class AttsGeneratorField : public virtual Field
             s += " ";
         return s;
     }
+    QString bGetCPPName() { return GetCPPName(); }
 
     virtual QString CArgument() const { return type; }
+    virtual QString CArgumentSet(const QString &var) const { return !var.isEmpty() ? (CArgument()+" "+var) : CArgument(); }
+    virtual QString CArgumentGet(const QString &var) const { return CArgument()+"*"+var; }
 
     virtual void WriteVisItFunctionPrototype(QTextStream &h, const QString &classname)
     {
         h << "int VisIt_" << classname << "_set" << Name << "(visit_handle h, "
-          << CArgument() << ");" << endl;
+          << CArgumentSet("") << ");" << endl;
         h << "int VisIt_" << classname << "_get" << Name << "(visit_handle h, "
-          << CArgument() << "*);" << endl;
+          << CArgumentGet("") << ");" << endl;
     }
 
     virtual void WriteVisItFunction(QTextStream &h, const QString &classname)
     {
         h << "int\nVisIt_" << classname << "_set" << Name
-          << "(visit_handle h, " << CArgument() << " val)" << endl;
+          << "(visit_handle h, " << CArgumentSet("val") << ")" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_set" << Name << "," << endl;
-        h << "        int, (visit_handle, " << CArgument() << ")," << endl;
+        h << "        int, (visit_handle, " << CArgumentSet("") << ")," << endl;
         h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
 
         h << "int\nVisIt_" << classname << "_get" << Name
-          << "(visit_handle h, " << CArgument() << " *val)" << endl;
+          << "(visit_handle h, " << CArgumentGet("val") + ")" << endl;
         h << "{" << endl;
         h << "    VISIT_DYNAMIC_EXECUTE(" << classname << "_get" << Name << "," << endl;
-        h << "        int, (visit_handle, " << CArgument() << "*)," << endl;
+        h << "        int, (visit_handle, " << CArgumentGet("") << ")," << endl;
         h << "        (h, val));" << endl;
         h << "}" << endl;
         h << endl;
@@ -186,9 +189,9 @@ class AttsGeneratorField : public virtual Field
     virtual void WriteSimV2FunctionPrototype(QTextStream &h, const QString &classname)
     {
         h << "SIMV2_API int simv2_" << classname << "_set" << Name
-          << "(visit_handle h, " << CArgument() << ");" << endl;
+          << "(visit_handle h, " << CArgumentSet("") << ");" << endl;
         h << "SIMV2_API int simv2_" << classname << "_get" << Name
-          << "(visit_handle h, " << CArgument() << "*);" << endl;
+          << "(visit_handle h, " << CArgumentGet("") << ");" << endl;
     }
 
     virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
@@ -216,7 +219,7 @@ class AttsGeneratorField : public virtual Field
 
         h << "int" << endl;
         h << mName
-          << "(visit_handle h, " << CArgument() << " val)" << endl;
+          << "(visit_handle h, " << CArgumentSet("val") << ")" << endl;
         h << "{" << endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
@@ -236,7 +239,7 @@ class AttsGeneratorField : public virtual Field
         mName = QString("simv2_") + classname + "_get" + Name;
         h << "int" << endl;
         h << mName
-          << "(visit_handle h, " << CArgument() << " *val)" << endl;
+          << "(visit_handle h, " << CArgumentGet(" val") << ")" << endl;
         h << "{" << endl;
         if(HasCode(mName, 0))
             PrintCode(h, mName, 0);
@@ -298,6 +301,22 @@ class AttsGeneratorIntArray : public virtual IntArray , public virtual AttsGener
   public:
     AttsGeneratorIntArray(const QString &s, const QString &n, const QString &l)
         : Field("intArray",n,l), IntArray(s,n,l), AttsGeneratorField("intArray",n,l) { }
+    virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
+    {
+        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << endl;
+    }
+
+    virtual void WriteSimV2Function_set_helper(QTextStream &h)
+    {
+        for(int i = 0; i < length; ++i)
+             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << endl;
+    }
+
+    virtual void WriteSimV2Function_get_helper(QTextStream &h)
+    {
+        for(int i = 0; i < length; ++i)
+             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << endl;
+    }
 };
 
 
@@ -530,6 +549,45 @@ class AttsGeneratorFloatArray : public virtual FloatArray , public virtual AttsG
   public:
     AttsGeneratorFloatArray(const QString &s, const QString &n, const QString &l)
         : Field("floatArray",n,l), FloatArray(s,n,l), AttsGeneratorField("floatArray",n,l) { }
+    virtual QString CArgument() const { return QString("float[%1]").arg(length); }
+    virtual QString CArgumentSet(const QString &var) const { return QString("float %1[%2]").arg(var).arg(length); }
+    virtual QString CArgumentGet(const QString &var) const { return QString("float %1[%2]").arg(var).arg(length); }
+    virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
+    {
+        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << endl;
+    }
+    virtual void WriteSimV2Function_set_helper(QTextStream &h)
+    {
+        for(int i = 0; i < length; ++i)
+             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << endl;
+    }
+
+    virtual void WriteSimV2Function_get_helper(QTextStream &h)
+    {
+        for(int i = 0; i < length; ++i)
+             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << endl;
+    }
+
+    virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
+    {
+        QString mName(FortranName(fclass, "SET"));
+
+        h << "int" << endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgumentSet("val") << ")" << endl;
+        h << "{" << endl;
+        h << "    return VisIt_" << classname << "_set" << Name << "(*h, val);" << endl;
+        h << "}" << endl;
+        h << endl;
+
+        mName = QString(FortranName(fclass, "GET"));
+        h << "int" << endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgumentGet("val") << ")" << endl;
+        h << "{" << endl;
+        h << "    return VisIt_" << classname << "_get" << Name << "(*h, val);" << endl;
+        h << "}" << endl;
+        h << endl;
+    }
+
 };
 
 
@@ -560,6 +618,44 @@ class AttsGeneratorDoubleArray : public virtual DoubleArray , public virtual Att
     AttsGeneratorDoubleArray(const QString &s, const QString &n, const QString &l)
         : Field("doubleArray",n,l), DoubleArray(s,n,l), AttsGeneratorField("doubleArray",n,l) { }
     virtual QString CArgument() const { return QString("double[%1]").arg(length); }
+    virtual QString CArgumentSet(const QString &var) const { return QString("double %1[%2]").arg(var).arg(length); }
+    virtual QString CArgumentGet(const QString &var) const { return QString("double %1[%2]").arg(var).arg(length); }
+    virtual void WriteSimV2ClassField(QTextStream &h, int maxLen)
+    {
+        h << "    " << pad(bGetCPPName(), maxLen) << " " << name << "[" << length << "];" << endl;
+    }
+    virtual void WriteSimV2Function_set_helper(QTextStream &h)
+    {
+        for(int i = 0; i < length; ++i)
+             h << "        obj->" << name << "[" << i << "] = val[" << i << "];" << endl;
+    }
+
+    virtual void WriteSimV2Function_get_helper(QTextStream &h)
+    {
+        for(int i = 0; i < length; ++i)
+             h << "        val[" << i << "] = obj->" << name << "[" << i << "];" << endl;
+    }
+
+    virtual void WriteVisItFortranFunction(QTextStream &h, const QString &classname, const QString &fclass)
+    {
+        QString mName(FortranName(fclass, "SET"));
+
+        h << "int" << endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgumentSet("val") << ")" << endl;
+        h << "{" << endl;
+        h << "    return VisIt_" << classname << "_set" << Name << "(*h, val);" << endl;
+        h << "}" << endl;
+        h << endl;
+
+        mName = QString(FortranName(fclass, "GET"));
+        h << "int" << endl;
+        h << "F_" << mName << "(visit_handle *h, " << CArgumentGet("val") << ")" << endl;
+        h << "{" << endl;
+        h << "    return VisIt_" << classname << "_get" << Name << "(*h, val);" << endl;
+        h << "}" << endl;
+        h << endl;
+    }
+
 };
 
 
@@ -1739,7 +1835,7 @@ class AttsGeneratorAttribute : public GeneratorBase
         h << "        if(obj->objectType() != VISIT_"<<name.toUpper()<<")" << endl;
         h << "        {" << endl;
         h << "            SNPRINTF(tmp, 150, \"%s: The provided handle does not point to \"" << endl;
-        h << "                \"a "<<name<<" object. (type=%d)\", fname, obj->type);" << endl;
+        h << "                \"a "<<name<<" object. (type=%d)\", fname, obj->objectType());" << endl;
         h << "            VisItError(tmp);" << endl;
         h << "            obj = NULL;" << endl;
         h << "        }" << endl;

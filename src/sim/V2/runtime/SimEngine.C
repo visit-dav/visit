@@ -1675,6 +1675,202 @@ bool SimEngine::SetOperatorOptions(const std::string &fieldName,
     return retval;
 }
 
+// ****************************************************************************
+// Method: SimEngine::SetView2D
+//
+// Purpose:
+//   Sets the 2D view.
+//
+// Arguments:
+//   view : The view object we're using to set the view.
+//
+// Returns:    true on success; false on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  1 16:25:34 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SimEngine::SetView2D(const View2DAttributes &view)
+{
+    bool retval = false;
+
+    TRY
+    {
+#ifdef SIMV2_VIEWER_INTEGRATION
+        // Viewer based method.
+        if(viewerInitialized)
+        {
+            View2DAttributes *v = GetViewerState()->GetView2DAttributes();
+            *v = view;
+            v->Notify();
+
+            GetViewerMethods()->SetView2D();
+
+            retval = true;
+        }
+        else
+        {
+#endif
+            // Send a message to the viewer indicating we want it to set the view.
+            std::stringstream cmd;
+            cmd << "SetView2D:";
+            SingleAttributeConfigManager mgr(GetViewerState()->GetView2DAttributes());
+            mgr.Export(cmd);
+            SimulationInitiateCommand(cmd.str());
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
+        }
+#endif
+    }
+    CATCHALL
+    {
+        retval = false;
+    }
+    ENDTRY
+
+    return retval;
+}
+
+bool
+SimEngine::GetView2D(View2DAttributes &view)
+{
+    bool retval = false;
+
+    TRY
+    {
+#ifdef SIMV2_VIEWER_INTEGRATION
+        // Viewer based method.
+        if(viewerInitialized)
+        {
+            View2DAttributes *v = GetViewerState()->GetView2DAttributes();
+            view = *v;
+            debug5 << view << endl;
+
+            retval = true;
+        }
+        else
+        {
+#endif
+            // TODO: get the network manager's vis window and get the view from it.
+
+            retval = false;
+#ifdef SIMV2_VIEWER_INTEGRATION
+        }
+#endif
+    }
+    CATCHALL
+    {
+        retval = false;
+    }
+    ENDTRY
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: SimEngine::SetView3D
+//
+// Purpose:
+//   Sets the 3D view.
+//
+// Arguments:
+//   view : The view object we're using to set the view.
+//
+// Returns:    true on success; false on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  1 16:25:34 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SimEngine::SetView3D(const View3DAttributes &view)
+{
+    bool retval = false;
+
+    TRY
+    {
+#ifdef SIMV2_VIEWER_INTEGRATION
+        // Viewer based method.
+        if(viewerInitialized)
+        {
+            View3DAttributes *v = GetViewerState()->GetView3DAttributes();
+            *v = view;
+            v->Notify();
+
+            GetViewerMethods()->SetView3D();
+
+            retval = true;
+        }
+        else
+        {
+#endif
+            // Send a message to the viewer indicating we want it to set the view.
+            std::stringstream cmd;
+            cmd << "SetView3D:";
+            SingleAttributeConfigManager mgr(GetViewerState()->GetView3DAttributes());
+            mgr.Export(cmd);
+            SimulationInitiateCommand(cmd.str());
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
+        }
+#endif
+    }
+    CATCHALL
+    {
+        retval = false;
+    }
+    ENDTRY
+
+    return retval;
+}
+
+bool
+SimEngine::GetView3D(View3DAttributes &view)
+{
+    bool retval = false;
+
+    TRY
+    {
+#ifdef SIMV2_VIEWER_INTEGRATION
+        // Viewer based method.
+        if(viewerInitialized)
+        {
+            View3DAttributes *v = GetViewerState()->GetView3DAttributes();
+            view = *v;
+            debug5 << view << endl;
+
+            retval = true;
+        }
+        else
+        {
+#endif
+            // TODO: get the network manager's vis window and get the view from it.
+
+            retval = false;
+#ifdef SIMV2_VIEWER_INTEGRATION
+        }
+#endif
+    }
+    CATCHALL
+    {
+        retval = false;
+    }
+    ENDTRY
+
+    return retval;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                            VIEWER-RELATED CODE
 ///////////////////////////////////////////////////////////////////////////////

@@ -41,6 +41,7 @@
 #include <EngineBase.h>
 
 #include <avtDataObjectWriter.h>
+#include <avtImageType.h>
 #include <avtPlot.h>
 #include <AnnotationAttributes.h>
 #include <AnnotationObjectList.h>
@@ -549,9 +550,12 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
                                     bool calledForRender,
                                     float *cellCountMultiplier);
 
-    virtual avtDataObject_p Render(bool checkThreshold, intVector networkIds, 
-                                   bool getZBuffer, int annotMode,
+    virtual avtDataObject_p Render(avtImageType imgT, bool getZBuffer,
+                                   intVector networkIds, 
+                                   bool checkThreshold,  int annotMode,
                                    int windowID, bool leftEye);
+
+    avtDataObject_p RenderValues(intVector plotIds, bool getZBuffer, int windowID, bool leftEye);
 
     avtDataObjectWriter_p CreateNullDataWriter() const;
 
@@ -595,8 +599,9 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
     virtual
     avtDataObject_p    RenderInternal();
 
-    void               RenderSetup(int windowId, intVector& networkIds, bool getZBuffer,
-                                   int annotMode, bool leftEye, bool checkSRThreshold);
+    void               RenderSetup(avtImageType imgT, int windowId, intVector& networkIds, 
+                                   bool getZBuffer, int annotMode, bool leftEye, 
+                                   bool checkSRThreshold);
     virtual
     avtImage_p         RenderGeometry();
 
@@ -648,6 +653,7 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
             twoD(false),
             gradientBg(false),
             getZBuffer(true),
+            getAlpha(false),
             zBufferComposite(true),
             allReducePass1(false),
             allReducePass2(false),
@@ -662,7 +668,8 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
             needZBufferToCompositeEvenIn2D(false),
             shadowMap(false),
             depthCues(false),
-            imageBasedPlots(false)
+            imageBasedPlots(false),
+            imageType(ColorRGBImage)
             {}
 
         DataNetwork *origWorkingNet;     // saves this->workingNet
@@ -682,6 +689,7 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
         bool twoD;
         bool gradientBg;                 // background mode is gradient
         bool getZBuffer;                 // should we readback Z too?
+        bool getAlpha;                   // should we read back alpha too?
         bool zBufferComposite;           // opaque composite operation (because 2d may/may not need it)
         bool allReducePass1;             // ensure all ranks have the composited image
         bool allReducePass2;             // ensure all ranks have the composited image
@@ -697,6 +705,7 @@ class ENGINE_MAIN_API NetworkManager : public EngineBase
         bool shadowMap;                  // will use a shadow map pass
         bool depthCues;                  // will use a depth que pass
         bool imageBasedPlots;            // has image based plots
+        avtImageType imageType;
     };
     friend ostream &operator<<(ostream &os, const RenderState &rs);
 

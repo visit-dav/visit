@@ -48,20 +48,21 @@ static const char *FileFormat_strings[] = {
 "OBJ", "PNG", "POSTSCRIPT", 
 "POVRAY", "PPM", "RGB", 
 "STL", "TIFF", "ULTRA", 
-"VTK", "PLY"};
+"VTK", "PLY", "EXR"
+};
 
 std::string
 SaveWindowAttributes::FileFormat_ToString(SaveWindowAttributes::FileFormat t)
 {
     int index = int(t);
-    if(index < 0 || index >= 14) index = 0;
+    if(index < 0 || index >= 15) index = 0;
     return FileFormat_strings[index];
 }
 
 std::string
 SaveWindowAttributes::FileFormat_ToString(int t)
 {
-    int index = (t < 0 || t >= 14) ? 0 : t;
+    int index = (t < 0 || t >= 15) ? 0 : t;
     return FileFormat_strings[index];
 }
 
@@ -69,7 +70,7 @@ bool
 SaveWindowAttributes::FileFormat_FromString(const std::string &s, SaveWindowAttributes::FileFormat &val)
 {
     val = SaveWindowAttributes::BMP;
-    for(int i = 0; i < 14; ++i)
+    for(int i = 0; i < 15; ++i)
     {
         if(s == FileFormat_strings[i])
         {
@@ -156,6 +157,44 @@ SaveWindowAttributes::ResConstraint_FromString(const std::string &s, SaveWindowA
     return false;
 }
 
+//
+// Enum conversion methods for SaveWindowAttributes::PixelData
+//
+
+static const char *PixelData_strings[] = {
+"ColorRGB", "ColorRGBA", "Luminance", 
+"Value", "Depth"};
+
+std::string
+SaveWindowAttributes::PixelData_ToString(SaveWindowAttributes::PixelData t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 5) index = 0;
+    return PixelData_strings[index];
+}
+
+std::string
+SaveWindowAttributes::PixelData_ToString(int t)
+{
+    int index = (t < 0 || t >= 5) ? 0 : t;
+    return PixelData_strings[index];
+}
+
+bool
+SaveWindowAttributes::PixelData_FromString(const std::string &s, SaveWindowAttributes::PixelData &val)
+{
+    val = SaveWindowAttributes::ColorRGB;
+    for(int i = 0; i < 5; ++i)
+    {
+        if(s == PixelData_strings[i])
+        {
+            val = (PixelData)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: SaveWindowAttributes::SaveWindowAttributes
 //
@@ -213,6 +252,7 @@ void SaveWindowAttributes::Init()
     compression = PackBits;
     forceMerge = false;
     resConstraint = ScreenProportions;
+    pixelData = 1;
     advancedMultiWindowSave = false;
 
     SaveWindowAttributes::SelectAll();
@@ -252,6 +292,7 @@ void SaveWindowAttributes::Copy(const SaveWindowAttributes &obj)
     compression = obj.compression;
     forceMerge = obj.forceMerge;
     resConstraint = obj.resConstraint;
+    pixelData = obj.pixelData;
     advancedMultiWindowSave = obj.advancedMultiWindowSave;
     subWindowAtts = obj.subWindowAtts;
 
@@ -428,6 +469,7 @@ SaveWindowAttributes::operator == (const SaveWindowAttributes &obj) const
             (compression == obj.compression) &&
             (forceMerge == obj.forceMerge) &&
             (resConstraint == obj.resConstraint) &&
+            (pixelData == obj.pixelData) &&
             (advancedMultiWindowSave == obj.advancedMultiWindowSave) &&
             (subWindowAtts == obj.subWindowAtts));
 }
@@ -590,6 +632,7 @@ SaveWindowAttributes::SelectAll()
     Select(ID_compression,              (void *)&compression);
     Select(ID_forceMerge,               (void *)&forceMerge);
     Select(ID_resConstraint,            (void *)&resConstraint);
+    Select(ID_pixelData,                (void *)&pixelData);
     Select(ID_advancedMultiWindowSave,  (void *)&advancedMultiWindowSave);
     Select(ID_subWindowAtts,            (void *)&subWindowAtts);
 }
@@ -726,6 +769,12 @@ SaveWindowAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         node->AddNode(new DataNode("resConstraint", ResConstraint_ToString(resConstraint)));
     }
 
+    if(completeSave || !FieldsEqual(ID_pixelData, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("pixelData", pixelData));
+    }
+
     if(completeSave || !FieldsEqual(ID_advancedMultiWindowSave, &defaultObject))
     {
         addToParent = true;
@@ -794,7 +843,7 @@ SaveWindowAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 14)
+            if(ival >= 0 && ival < 15)
                 SetFormat(FileFormat(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -856,6 +905,8 @@ SaveWindowAttributes::SetFromNode(DataNode *parentNode)
                 SetResConstraint(value);
         }
     }
+    if((node = searchNode->GetNode("pixelData")) != 0)
+        SetPixelData(node->AsInt());
     if((node = searchNode->GetNode("advancedMultiWindowSave")) != 0)
         SetAdvancedMultiWindowSave(node->AsBool());
     if((node = searchNode->GetNode("subWindowAtts")) != 0)
@@ -983,6 +1034,13 @@ SaveWindowAttributes::SetResConstraint(SaveWindowAttributes::ResConstraint resCo
 {
     resConstraint = resConstraint_;
     Select(ID_resConstraint, (void *)&resConstraint);
+}
+
+void
+SaveWindowAttributes::SetPixelData(int pixelData_)
+{
+    pixelData = pixelData_;
+    Select(ID_pixelData, (void *)&pixelData);
 }
 
 void
@@ -1123,6 +1181,12 @@ SaveWindowAttributes::GetResConstraint() const
     return ResConstraint(resConstraint);
 }
 
+int
+SaveWindowAttributes::GetPixelData() const
+{
+    return pixelData;
+}
+
 bool
 SaveWindowAttributes::GetAdvancedMultiWindowSave() const
 {
@@ -1210,6 +1274,7 @@ SaveWindowAttributes::GetFieldName(int index) const
     case ID_compression:              return "compression";
     case ID_forceMerge:               return "forceMerge";
     case ID_resConstraint:            return "resConstraint";
+    case ID_pixelData:                return "pixelData";
     case ID_advancedMultiWindowSave:  return "advancedMultiWindowSave";
     case ID_subWindowAtts:            return "subWindowAtts";
     default:  return "invalid index";
@@ -1253,6 +1318,7 @@ SaveWindowAttributes::GetFieldType(int index) const
     case ID_compression:              return FieldType_enum;
     case ID_forceMerge:               return FieldType_bool;
     case ID_resConstraint:            return FieldType_enum;
+    case ID_pixelData:                return FieldType_int;
     case ID_advancedMultiWindowSave:  return FieldType_bool;
     case ID_subWindowAtts:            return FieldType_att;
     default:  return FieldType_unknown;
@@ -1296,6 +1362,7 @@ SaveWindowAttributes::GetFieldTypeName(int index) const
     case ID_compression:              return "enum";
     case ID_forceMerge:               return "bool";
     case ID_resConstraint:            return "enum";
+    case ID_pixelData:                return "int";
     case ID_advancedMultiWindowSave:  return "bool";
     case ID_subWindowAtts:            return "att";
     default:  return "invalid index";
@@ -1409,6 +1476,11 @@ SaveWindowAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (resConstraint == obj.resConstraint);
         }
         break;
+    case ID_pixelData:
+        {  // new scope
+        retval = (pixelData == obj.pixelData);
+        }
+        break;
     case ID_advancedMultiWindowSave:
         {  // new scope
         retval = (advancedMultiWindowSave == obj.advancedMultiWindowSave);
@@ -1457,6 +1529,34 @@ SaveWindowAttributes::CurrentFormatIsImageFormat(void)
     if (ff == RGB)
         return true;
     if (ff == TIFF)
+        return true;
+    if (ff == EXR)
+        return true;
+
+    return false;
+}
+
+// ****************************************************************************
+//  Method: CurrentFormatIsImageFormat
+//
+//  Purpose:
+//      Determines if the current file format supports alpha.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Sep 20 17:57:23 PDT 2017
+
+//
+// ****************************************************************************
+
+bool
+SaveWindowAttributes::CurrentFormatSupportsAlpha()
+{
+    FileFormat ff = GetFormat();
+    if (ff == PNG)
+        return true;
+    if (ff == TIFF)
+        return true;
+    if (ff == EXR)
         return true;
 
     return false;

@@ -226,6 +226,14 @@ f_visit_internal_InstallCallbacks(void)
 #define F_VISITEXPORTDATABASEWITHOPTIONS       F77_ID(visitexportdatabasewithoptions_,visitexportdatabasewithoptions,VISITEXPORTDATABASEWITHOPTIONS)
 #define F_VISITRESTORESESSION       F77_ID(visitrestoresession_,visitrestoresession,VISITRESTORESESSION)
 
+#define F_VISITSETVIEW2D            F77_ID(visitsetview2d_,visitsetview2d,VISITSETVIEW2D)
+#define F_VISITGETVIEW2D            F77_ID(visitgetview2d_,visitgetview2d,VISITGETVIEW2D)
+#define F_VISITSETVIEW3D            F77_ID(visitsetview3d_,visitsetview3d,VISITSETVIEW3D)
+#define F_VISITGETVIEW3D            F77_ID(visitgetview3d_,visitgetview3d,VISITGETVIEW3D)
+#define F_VISITBEGINCINEMA          F77_ID(visitbegincinema,visitbegincinema,VISITBEGINCINEMA)
+#define F_VISITSAVECINEMA           F77_ID(visitsavecinema,visitsavecinema,VISITSAVECINEMA)
+#define F_VISITENDCINEMA            F77_ID(visitendcinema,visitendcinema,VISITENDCINEMA)
+
 /******************************************************************************
  * Function: F_VISITSETDIRECTORY
  *
@@ -1224,6 +1232,154 @@ F_VISITRESTORESESSION(VISIT_F77STRING filename, int *lfilename)
     retval = VisItRestoreSession(f_filename);
 
     FREE(f_filename);
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITSETVIEW2D
+ *
+ * Purpose:   Allows FORTRAN to set the view.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  6 17:00:55 PDT 2017
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITSETVIEW2D(visit_handle *view)
+{
+    return VisItSetView2D(*view);
+}
+
+/******************************************************************************
+ * Function: F_VISITGETVIEW2D
+ *
+ * Purpose:   Allows FORTRAN to get the view.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  6 17:00:55 PDT 2017
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITGETVIEW2D(visit_handle *view)
+{
+    return VisItGetView2D(*view);
+}
+
+/******************************************************************************
+ * Function: F_VISITSETVIEW3D
+ *
+ * Purpose:   Allows FORTRAN to set the view.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  6 17:00:55 PDT 2017
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITSETVIEW3D(visit_handle *view)
+{
+    return VisItSetView3D(*view);
+}
+
+/******************************************************************************
+ * Function: F_VISITGETVIEW3D
+ *
+ * Purpose:   Allows FORTRAN to get the view.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  6 17:00:55 PDT 2017
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITGETVIEW3D(visit_handle *view)
+{
+    return VisItGetView3D(*view);
+}
+
+/******************************************************************************
+ * Function: F_VISITBEGINCINEMA
+ *
+ * Purpose:   Allows FORTRAN to begin a Cinema database.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  6 17:00:55 PDT 2017
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN 
+F_VISITBEGINCINEMA(VISIT_F77STRING file_cdb, int *lfile_cdb, int *dbtype,
+    int *width, int *height, int *format, int *cameratype, int *nphi, int *ntheta)
+{
+    FORTRAN retval;
+    char *f_file_cdb = NULL;
+
+    COPY_FORTRAN_STRING(f_file_cdb, file_cdb, lfile_cdb);
+
+    retval = VisItBeginCinema(f_file_cdb, *dbtype, *width, *height, *format, *cameratype, *nphi, *ntheta);
+    FREE(f_file_cdb);
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITSAVECINEMA
+ *
+ * Purpose:   Allows FORTRAN to save the current timestep to a Cinema database.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  6 17:00:55 PDT 2017
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN 
+F_VISITSAVECINEMA(VISIT_F77STRING file_cdb, int *lfile_cdb, double *time)
+{
+    FORTRAN retval;
+    char *f_file_cdb = NULL;
+
+    COPY_FORTRAN_STRING(f_file_cdb, file_cdb, lfile_cdb);
+
+    retval = VisItSaveCinema(f_file_cdb, *time);
+    FREE(f_file_cdb);
+    return retval;
+}
+
+/******************************************************************************
+ * Function: F_VISITENDCINEMA
+ *
+ * Purpose:   Allows FORTRAN to end a Cinema database.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Tue Jun  6 17:00:55 PDT 2017
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN 
+F_VISITENDCINEMA(VISIT_F77STRING file_cdb, int *lfile_cdb)
+{
+    FORTRAN retval;
+    char *f_file_cdb = NULL;
+
+    COPY_FORTRAN_STRING(f_file_cdb, file_cdb, lfile_cdb);
+
+    retval = VisItEndCinema(f_file_cdb);
+    FREE(f_file_cdb);
     return retval;
 }
 

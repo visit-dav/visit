@@ -35,6 +35,26 @@
 
 vtkStandardNewMacro(vtkVisItDataSetMapper);
 
+#ifdef VISIT_DATASETMAPPER_RENDER_MODE
+#include <vtkLookupTable.h>
+
+vtkVisItDataSetMapper::RenderingMode vtkVisItDataSetMapper::rMode = vtkVisItDataSetMapper::RENDERING_MODE_NORMAL;
+//vtkVisItDataSetMapper::RenderingMode vtkVisItDataSetMapper::rMode = vtkVisItDataSetMapper::RENDERING_MODE_LUMINANCE;
+//vtkVisItDataSetMapper::RenderingMode vtkVisItDataSetMapper::rMode = vtkVisItDataSetMapper::RENDERING_MODE_VALUE;
+
+void
+vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RenderingMode m)
+{
+    rMode = m;
+}
+
+vtkVisItDataSetMapper::RenderingMode
+vtkVisItDataSetMapper::GetRenderingMode()
+{
+    return rMode;
+}
+#endif
+
 // ****************************************************************************
 // Modifications:
 //   Brad Whitlock, Fri Aug 26 10:07:55 PDT 2005
@@ -67,6 +87,11 @@ vtkVisItDataSetMapper::vtkVisItDataSetMapper()
   this->EnableColorTexturing = false;
   this->SceneIs3D = true;
   this->VertsReplacedWithGeomGlyphs = false;
+
+#ifdef VISIT_DATASETMAPPER_RENDER_MODE
+  this->allwhite = NULL;
+  this->grayscale = NULL;
+#endif
 }
 
 
@@ -95,6 +120,12 @@ vtkVisItDataSetMapper::~vtkVisItDataSetMapper()
     {
     this->StructuredGridMapper->Delete();
     }
+#ifdef VISIT_DATASETMAPPER_RENDER_MODE
+  if(this->allwhite)
+      this->allwhite->Delete();
+  if(this->grayscale)
+      this->grayscale->Delete();
+#endif
 }
 
 
@@ -252,7 +283,46 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
     {
     mapper->SetClippingPlanes(this->ClippingPlanes);
     }
+#ifdef VISIT_DATASETMAPPER_RENDER_MODE
+  if(this->allwhite == NULL)
+  {
+      this->allwhite = vtkLookupTable::New();
+      this->allwhite->SetNumberOfColors(10);
+      for(int i = 0; i < 10; ++i)
+          this->allwhite->SetTableValue(i, 1.,1.,1.,1.);
+      this->allwhite->SetRange(this->GetScalarRange());
+  }
+  double ambient, diffuse;
+  if(this->grayscale == NULL)
+  {
+      this->grayscale = vtkLookupTable::New();
+      this->grayscale->SetNumberOfColors(1024);
+      for(int i = 0; i < 1024; ++i)
+      {
+          double t = double(i)/double(1024-1);
+          this->grayscale->SetTableValue(i, t,t,t,1.);
+      }
+      this->grayscale->SetRange(this->GetScalarRange());
+  }
+  if(rMode == RENDERING_MODE_NORMAL)
+      mapper->SetLookupTable(this->GetLookupTable());
+  else if(rMode == RENDERING_MODE_LUMINANCE)
+      mapper->SetLookupTable(this->allwhite);
+  else if(rMode == RENDERING_MODE_VALUE)
+  {
+      mapper->SetLookupTable(this->grayscale);
+#if 0
+      vtkProperty *prop = mapper->GetActor()->GetProperty();
+      ambient = prop->GetAmbient();
+      diffuse = prop->GetDiffuse();
+      // turn light off.
+      prop->SetAmbient(1.0);
+      prop->SetDiffuse(0.0);
+#endif
+  }
+#else
   mapper->SetLookupTable(this->GetLookupTable());
+#endif
   mapper->SetScalarVisibility(this->GetScalarVisibility());
   mapper->SetUseLookupTableScalarRange(
       this->GetUseLookupTableScalarRange());
@@ -277,6 +347,17 @@ void vtkVisItDataSetMapper::Render(vtkRenderer *ren, vtkActor *act)
       }
     }
   mapper->Render(ren,act);
+
+#if 0//def VISIT_DATASETMAPPER_RENDER_MODE
+  if(rMode == RENDERING_MODE_VALUE)
+  {
+      vtkProperty *prop = mapper->GetActor()->GetProperty();
+      // Restore lighting setting
+      prop->SetAmbient(ambient);
+      prop->SetDiffuse(diffuse);
+  }
+#endif
+
   this->TimeToDraw = mapper->GetTimeToDraw();
 }
 

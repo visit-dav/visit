@@ -60,6 +60,37 @@ SaveWindowAttributes::CurrentFormatIsImageFormat(void)
         return true;
     if (ff == TIFF)
         return true;
+    if (ff == EXR)
+        return true;
+
+    return false;
+}
+
+Function: CurrentFormatSupportsAlpha
+Declaration: bool CurrentFormatSupportsAlpha();
+Definition:
+// ****************************************************************************
+//  Method: CurrentFormatIsImageFormat
+//
+//  Purpose:
+//      Determines if the current file format supports alpha.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Wed Sep 20 17:57:23 PDT 2017
+
+//
+// ****************************************************************************
+
+bool
+SaveWindowAttributes::CurrentFormatSupportsAlpha()
+{
+    FileFormat ff = GetFormat();
+    if (ff == PNG)
+        return true;
+    if (ff == TIFF)
+        return true;
+    if (ff == EXR)
+        return true;
 
     return false;
 }

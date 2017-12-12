@@ -94,7 +94,7 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
     const char *format_names = "BMP, CURVE, JPEG, OBJ, PNG, "
         "POSTSCRIPT, POVRAY, PPM, RGB, "
         "STL, TIFF, ULTRA, VTK, "
-        "PLY";
+        "PLY, EXR";
     switch (atts->GetFormat())
     {
       case SaveWindowAttributes::BMP:
@@ -151,6 +151,10 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
           break;
       case SaveWindowAttributes::PLY:
           SNPRINTF(tmpStr, 1000, "%sformat = %sPLY  # %s\n", prefix, prefix, format_names);
+          str += tmpStr;
+          break;
+      case SaveWindowAttributes::EXR:
+          SNPRINTF(tmpStr, 1000, "%sformat = %sEXR  # %s\n", prefix, prefix, format_names);
           str += tmpStr;
           break;
       default:
@@ -235,12 +239,13 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%spixelData = %d\n", prefix, atts->GetPixelData());
+    str += tmpStr;
     if(atts->GetAdvancedMultiWindowSave())
         SNPRINTF(tmpStr, 1000, "%sadvancedMultiWindowSave = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%sadvancedMultiWindowSave = 0\n", prefix);
     str += tmpStr;
-    if(atts->GetAdvancedMultiWindowSave())
     { // new scope
         std::string objPrefix(prefix);
         objPrefix += "subWindowAtts.";
@@ -364,17 +369,17 @@ SaveWindowAttributes_SetFormat(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the format in the object.
-    if(ival >= 0 && ival < 14)
+    if(ival >= 0 && ival < 15)
         obj->data->SetFormat(SaveWindowAttributes::FileFormat(ival));
     else
     {
         fprintf(stderr, "An invalid format value was given. "
-                        "Valid values are in the range of [0,13]. "
+                        "Valid values are in the range of [0,14]. "
                         "You can also use the following names: "
                         "BMP, CURVE, JPEG, OBJ, PNG, "
                         "POSTSCRIPT, POVRAY, PPM, RGB, "
                         "STL, TIFF, ULTRA, VTK, "
-                        "PLY.");
+                        "PLY, EXR.");
         return NULL;
     }
 
@@ -673,6 +678,30 @@ SaveWindowAttributes_GetResConstraint(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+SaveWindowAttributes_SetPixelData(PyObject *self, PyObject *args)
+{
+    SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the pixelData in the object.
+    obj->data->SetPixelData((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SaveWindowAttributes_GetPixelData(PyObject *self, PyObject *args)
+{
+    SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetPixelData()));
+    return retval;
+}
+
+/*static*/ PyObject *
 SaveWindowAttributes_SetAdvancedMultiWindowSave(PyObject *self, PyObject *args)
 {
     SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
@@ -768,6 +797,8 @@ PyMethodDef PySaveWindowAttributes_methods[SAVEWINDOWATTRIBUTES_NMETH] = {
     {"GetForceMerge", SaveWindowAttributes_GetForceMerge, METH_VARARGS},
     {"SetResConstraint", SaveWindowAttributes_SetResConstraint, METH_VARARGS},
     {"GetResConstraint", SaveWindowAttributes_GetResConstraint, METH_VARARGS},
+    {"SetPixelData", SaveWindowAttributes_SetPixelData, METH_VARARGS},
+    {"GetPixelData", SaveWindowAttributes_GetPixelData, METH_VARARGS},
     {"SetAdvancedMultiWindowSave", SaveWindowAttributes_SetAdvancedMultiWindowSave, METH_VARARGS},
     {"GetAdvancedMultiWindowSave", SaveWindowAttributes_GetAdvancedMultiWindowSave, METH_VARARGS},
     {"SetSubWindowAtts", SaveWindowAttributes_SetSubWindowAtts, METH_VARARGS},
@@ -838,6 +869,8 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(SaveWindowAttributes::VTK));
     if(strcmp(name, "PLY") == 0)
         return PyInt_FromLong(long(SaveWindowAttributes::PLY));
+    if(strcmp(name, "EXR") == 0)
+        return PyInt_FromLong(long(SaveWindowAttributes::EXR));
 
     if(strcmp(name, "width") == 0)
         return SaveWindowAttributes_GetWidth(self, NULL);
@@ -877,6 +910,8 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "ScreenProportions") == 0)
         return PyInt_FromLong(long(SaveWindowAttributes::ScreenProportions));
 
+    if(strcmp(name, "pixelData") == 0)
+        return SaveWindowAttributes_GetPixelData(self, NULL);
     if(strcmp(name, "advancedMultiWindowSave") == 0)
         return SaveWindowAttributes_GetAdvancedMultiWindowSave(self, NULL);
     if(strcmp(name, "subWindowAtts") == 0)
@@ -927,6 +962,8 @@ PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SaveWindowAttributes_SetForceMerge(self, tuple);
     else if(strcmp(name, "resConstraint") == 0)
         obj = SaveWindowAttributes_SetResConstraint(self, tuple);
+    else if(strcmp(name, "pixelData") == 0)
+        obj = SaveWindowAttributes_SetPixelData(self, tuple);
     else if(strcmp(name, "advancedMultiWindowSave") == 0)
         obj = SaveWindowAttributes_SetAdvancedMultiWindowSave(self, tuple);
     else if(strcmp(name, "subWindowAtts") == 0)

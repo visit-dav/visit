@@ -87,6 +87,8 @@ typedef struct
     int      render;
     int      image_width;
     int      image_height;
+    int      setview;
+    int      cinema;
     float   *x;
     float   *y;
     float   *z;
@@ -119,6 +121,8 @@ simulation_data_ctor(simulation_data *sim)
     sim->render = 0;
     sim->image_width = 1920/2;
     sim->image_height = 1080/2;
+    sim->setview = 0;
+    sim->cinema = 0;
     sim->x = NULL;
     sim->y = NULL;
     sim->z = NULL;
@@ -229,6 +233,17 @@ simulation_data_update(simulation_data *sim)
     }
 }
 
+void
+simulation_data_global_extents(simulation_data *sim, double ext[6])
+{
+    ext[0] = 0.;
+    ext[1] = (sim->extents[1] - sim->extents[0]) * sim->domains[0];
+    ext[2] = 0.;
+    ext[3] = (sim->extents[3] - sim->extents[2]) * sim->domains[1];
+    ext[4] = 0.;
+    ext[5] = (sim->extents[5] - sim->extents[4]) * sim->domains[2];
+}
+
 /******************************************************************************
  *
  * Function: mainloop_batch
@@ -246,6 +261,7 @@ void mainloop_batch(simulation_data *sim)
 {
     int err;
     char filebase[100];
+    const char *cdb = "batch.cdb";
     const char *extractvars[] = {"q", "xc", "radius", "dom", NULL};
     double origin[] = {5., 5., 5.}, normal[] = {0., 0.707, 0.707};
     double isos[] = {5., 11., 18.};
@@ -282,6 +298,13 @@ void mainloop_batch(simulation_data *sim)
         printf("Initialization time: %lg\n", init1 - init0);
     }
 #endif
+
+    if(sim->cinema)
+    {
+        VisItBeginCinema(cdb, VISIT_DATABASE_IMAGE, 
+                         sim->image_width, sim->image_height, VISIT_IMAGEFORMAT_PNG,
+                         VISIT_CAMERATYPE_PHI_THETA, 12, 7);
+    }
 
     while(sim->cycle < sim->maxcycles)
     {  
@@ -351,22 +374,55 @@ void mainloop_batch(simulation_data *sim)
         if(sim->render)
         {
             char filename[100];
-            sprintf(filename, "batch%04d.png", sim->cycle);
  
             VisItAddPlot("Contour", "d");
             VisItDrawPlots();
-            if(VisItSaveWindow(filename, sim->image_width, sim->image_height, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY)
+
+            if(sim->cinema)
             {
-                if(sim->par_rank == 0)
-                    printf("Saved %s\n", filename);
+                VisItSaveCinema(cdb, sim->time);
             }
-            else if(sim->par_rank == 0)
-                printf("The image could not be saved to %s\n", filename);
+            else
+            {
+                if(sim->setview)
+                {
+                    visit_handle view;
+                    double normal[3]={0.5422, 0.3510, 0.7633},
+                            viewUp[3]={-0.2069, 0.9363, -0.2835};
+
+                    /* Allocate a view and get the plot view.*/
+                    VisIt_View3D_alloc(&view);
+                    VisItGetView3D(view);
+ 
+                    /* Override the normal and up vectors. */
+                    VisIt_View3D_setViewNormal(view, normal);
+                    VisIt_View3D_setViewUp(view, viewUp);               
+                    VisItSetView3D(view);
+
+                    /* Free the view. */
+                    VisIt_View3D_free(view);
+                }
+
+                sprintf(filename, "batch%04d.png", sim->cycle);
+                if(VisItSaveWindow(filename, sim->image_width, sim->image_height, VISIT_IMAGEFORMAT_PNG) == VISIT_OKAY)
+                {
+                    if(sim->par_rank == 0)
+                        printf("Saved %s\n", filename);
+                }
+                else if(sim->par_rank == 0)
+                    printf("The image could not be saved to %s\n", filename);
+            }
+
             VisItDeleteActivePlots();
         }
 
         ++sim->cycle;
         sim->time += (M_PI / 10.);
+    }
+
+    if(sim->cinema)
+    {
+        VisItEndCinema(cdb);
     }
 }
 
@@ -473,6 +529,16 @@ int main(int argc, char **argv)
             else if(strcmp(argv[i], "-image-height") == 0)
             {
                 sim.image_height = atoi(argv[i+1]);
+                i++;
+            }
+            else if(strcmp(argv[i], "-setview") == 0)
+            {
+                sim.setview = 1;
+                i++;
+            }
+            else if(strcmp(argv[i], "-cinema") == 0)
+            {
+                sim.cinema = 1;
                 i++;
             }
             else

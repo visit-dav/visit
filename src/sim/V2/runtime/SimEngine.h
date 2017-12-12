@@ -48,6 +48,8 @@ class Subject;
 class ObserverToCallback;
 class DBOptionsAttributes;
 class PluginManager;
+class View2DAttributes;
+class View3DAttributes;
 
 // ****************************************************************************
 // Class: SimEngine
@@ -103,6 +105,10 @@ public:
                         int fieldType, void *fieldVal, int fieldLen);
     bool SetOperatorOptions(const std::string &fieldName, 
                             int fieldType, void *fieldVal, int fieldLen);
+    bool SetView2D(const View2DAttributes &);
+    bool GetView2D(View2DAttributes &);
+    bool SetView3D(const View3DAttributes &);
+    bool GetView3D(View3DAttributes &);
 private:
     virtual void CreatePluginManagers();
 

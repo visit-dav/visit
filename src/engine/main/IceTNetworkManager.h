@@ -94,7 +94,8 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
 
     void       TileLayout(size_t width, size_t height) const;
 
-    virtual avtDataObject_p Render(bool, intVector networkIds, bool getZBuffer,
+    virtual avtDataObject_p Render(avtImageType imgT, bool, intVector networkIds, 
+                                   bool getZBuffer, 
                                    int annotMode, int windowID, bool leftEye);
     void       RealRender(); /// OpenGL calls sourced from here
 

@@ -43,8 +43,8 @@
 #ifndef AVT_IMAGE_FILE_WRITER_H
 #define AVT_IMAGE_FILE_WRITER_H
 #include <file_writer_exports.h>
-
-
+#include <string>
+#include <vector>
 #include <avtTerminatingImageSink.h>
 
 
@@ -56,10 +56,12 @@ typedef enum
     POSTSCRIPT,       /* 3 */
     PPM,              /* 4 */
     RGB,              /* 5 */
-    TIFF              /* 6 */
+    TIFF,             /* 6 */
+    OPENEXR           /* 7 */
 } ImageFileFormat;
 
 class vtkImageWriter;
+class vtkFloatArray;
 
 // ****************************************************************************
 //  Class: avtImageFileWriter
@@ -98,6 +100,9 @@ class vtkImageWriter;
 //    Brad Whitlock, Mon Mar 6 17:35:28 PST 2006
 //    I made it reset nFilesWritten if the base changes.
 //
+//    Brad Whitlock, Tue Sep 19 14:12:37 PDT 2017
+//    OpenEXR support. Added WriteFloatImage.
+//
 // ****************************************************************************
 
 class AVTFILEWRITER_API avtImageFileWriter : public avtTerminatingImageSink
@@ -106,8 +111,8 @@ class AVTFILEWRITER_API avtImageFileWriter : public avtTerminatingImageSink
                        avtImageFileWriter();
     virtual           ~avtImageFileWriter();
 
-    void               Write(ImageFileFormat, const char *filename,
-                             int quality, bool progressive, int compression);
+    std::vector<std::string> Write(ImageFileFormat, const char *filename,
+                                   int quality, bool progressive, int compression);
     void               Write(vtkImageWriter *writer, const char *filename);
 
     char              *CreateFilename(const char *base, bool family,
@@ -126,6 +131,8 @@ class AVTFILEWRITER_API avtImageFileWriter : public avtTerminatingImageSink
   protected:
     bool               FileHasExtension(const char *filename, const char *ext)
                              const;
+    bool               WriteFloatImage(const std::string &filename, vtkFloatArray *,
+                                       bool doScale = false, float scale = 1.f);
 
     static const char *extensions[][4];
     int                nFilesWritten;

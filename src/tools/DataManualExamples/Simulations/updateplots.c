@@ -90,6 +90,7 @@ typedef struct
     int      batch;
     int      export;
     char    *sessionfile;
+    int      setview;
 
     int      echo;
 } simulation_data;
@@ -111,6 +112,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->batch = 0;
     sim->export = 0;
     sim->sessionfile = NULL;
+    sim->setview = 0;
 
     sim->echo = 0;
 }
@@ -163,6 +165,30 @@ void simulate_one_timestep(simulation_data *sim)
 
     VisItTimeStepChanged();
     VisItUpdatePlots();
+
+    if(sim->setview)
+    {
+        visit_handle view;
+        double w[4], v[4], t;
+        /* Allocate a view and get the plot view.*/
+        VisIt_View2D_alloc(&view);
+        VisItGetView2D(view);
+
+        VisIt_View2D_getWindowCoords(view, w);
+        printf("window: %lg %lg %lg %lg\n", w[0], w[1], w[2], w[3]);
+
+        /* Override the viewport. */
+        t = 0.5 * (sin(sim->time) + 1.);
+        v[0] = 0.2;
+        v[1] = 0.8;
+        v[2] = t * 0.5;
+        v[3] = v[2] + 0.5;
+        VisIt_View2D_setViewportCoords(view, v);               
+        VisItSetView2D(view);
+
+        /* Free the view. */
+        VisIt_View2D_free(view);
+    }
 
     if(sim->savingFiles)
     {
@@ -617,6 +643,16 @@ int main(int argc, char **argv)
         else if(strcmp(argv[i], "-height") == 0)
         {
             sscanf(argv[i+1], "%d", &sim.height);
+            i++;
+        }
+        else if(strcmp(argv[i], "-setview") == 0)
+        {
+            sim.setview = 1;
+            i++;
+        }
+        else if(strcmp(argv[i], "-render") == 0)
+        {
+            sim.savingFiles = atoi(argv[i+1]);
             i++;
         }
     }

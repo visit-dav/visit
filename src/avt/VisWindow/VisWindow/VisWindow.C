@@ -2135,15 +2135,24 @@ VisWindow::Realize(void)
 //   for now because previously they hadn't made use of vtk actor
 //   visibility so actors were always visibible
 //
+//   Brad Whitlock,Mon Sep 25 14:42:57 PDT 2017
+//   Pass in image type.
+//
 // ****************************************************************************
 
 void
 VisWindow::ScreenRender(
+    avtImageType imgT,
     bool doViewportOnly, bool doZBufferToo, bool doOpaque,
     bool doTranslucent, bool disableBackground, avtImage_p input)
 {
     int axesVis = axes3D->GetVisibility();
-    if (disableBackground)
+    bool disableBG = disableBackground ||
+                     (imgT == ColorRGBAImage || 
+                      imgT == LuminanceImage ||
+                      imgT == ValueImage);
+
+    if (disableBG)
     {
         // remove non-distributed geometry from the render
         if (axesVis)
@@ -2153,10 +2162,11 @@ VisWindow::ScreenRender(
     }
 
     rendering->ScreenRender(
+        imgT,
         doViewportOnly, doZBufferToo, doOpaque,
         doTranslucent, disableBackground, input);
 
-    if (disableBackground)
+    if (disableBG)
     {
         // restore non-distributed geometry
         if (axesVis)
@@ -2233,6 +2243,7 @@ VisWindow::ScreenCapture(bool doViewportOnly, bool doZBufferToo,
                          bool disableBackground, avtImage_p input)
 {
     rendering->ScreenRender(
+        captureAlpha ? ColorRGBAImage : ColorRGBImage,
         doViewportOnly, doZBufferToo, doOpaque, doTranslucent,
         disableBackground, input);
 
@@ -2264,6 +2275,30 @@ VisWindow::PostProcessScreenCapture(avtImage_p capturedImage,
     return rendering->PostProcessScreenCapture(capturedImage,
                                                doViewportOnly,
                                                keepZBuffer);
+}
+
+// ****************************************************************************
+// Method: VisWindow::ScreenCaptureValues
+//
+// Purpose:
+//   Screen captures a value image.
+//
+//
+// Returns:    an avtImage with data values.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 25 14:56:47 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtImage_p
+VisWindow::ScreenCaptureValues(bool getZBuffer)
+{
+    return rendering->ScreenCaptureValues(getZBuffer);
 }
 
 // ****************************************************************************
@@ -7650,4 +7685,10 @@ VisWindow::UpdateMouseActions(std::string action,
                                    double end_dx, double end_dy,
                                    bool ctrl, bool shift) {
     rendering->UpdateMouseActions(action, start_dx, start_dy, end_dx, end_dy, ctrl, shift);
+}
+
+void
+VisWindow::GetExtents(double ext[2]) // TODO: Remove with VTK8
+{
+    plots->GetDataRange(ext[0], ext[1]);
 }

@@ -1834,6 +1834,8 @@ class AttsGeneratorAttribute : public GeneratorBase
             for (size_t j=0; j<EnumType::enums[i]->values.size(); j++)
             {
                 h << "        " << EnumType::enums[i]->values[j];
+                if(EnumType::enums[i]->ivalues[j] >= 0)
+                    h << " = " << EnumType::enums[i]->ivalues[j];
                 if (j < EnumType::enums[i]->values.size()-1)
                     h << ",";
                 h << Endl;

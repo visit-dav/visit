@@ -312,12 +312,16 @@ IceTNetworkManager::TileLayout(size_t width, size_t height) const
 //    Burlen Loring, Tue Sep  1 14:26:30 PDT 2015
 //    sync up with network manager(base class) order compositing refactor
 //
+//    Brad Whitlock, Mon Sep 25 14:33:49 PDT 2017
+//    Added image type.
+//
 // ****************************************************************************
 
 avtDataObject_p
 IceTNetworkManager::Render(
-    bool checkThreshold, intVector networkIds,
-    bool getZBuffer, int annotMode, int windowID,
+    avtImageType imgT, bool getZBuffer,
+    intVector networkIds,
+    bool checkThreshold, int annotMode, int windowID,
     bool leftEye)
 {
     StackTimer t0("IceTNetworkManager::Render");
@@ -333,7 +337,7 @@ IceTNetworkManager::Render(
 
     TRY
     {
-        RenderSetup(windowID, networkIds, getZBuffer,
+        RenderSetup(imgT, windowID, networkIds, getZBuffer,
             annotMode, leftEye, checkThreshold);
 
         bool plotDoingTransparencyOutsideTransparencyActor = false;
@@ -363,7 +367,8 @@ IceTNetworkManager::Render(
         }
         else
         {
-            bool needZB = !imageBasedPlots.empty() ||
+            bool needZB = getZBuffer ||
+                          !imageBasedPlots.empty() ||
                           renderState.shadowMap  ||
                           renderState.depthCues;
 
@@ -570,7 +575,7 @@ IceTNetworkManager::RenderGeometry()
         return NetworkManager::RenderGeometry();
 
     CallProgressCallback("IceTNetworkManager", "Render geometry", 0, 1);
-    renderState.window->ScreenRender(renderState.viewportedMode, true);
+    renderState.window->ScreenRender(renderState.imageType, renderState.viewportedMode, true);
     CallProgressCallback("IceTNetworkManager", "Render geometry", 0, 1);
     return NULL;
 }

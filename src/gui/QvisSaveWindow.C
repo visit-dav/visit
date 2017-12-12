@@ -55,9 +55,43 @@
 #include <QvisSaveWindow.h>
 #include <QvisOpacitySlider.h>
 #include <SaveWindowAttributes.h>
+#include <StringHelpers.h>
 #include <ViewerProxy.h>
 
 #include <visit-config.h>
+
+// File formats in alphabetical order.
+static const char *fileFormats[] = {
+"bmp",
+"curve",
+#ifdef HAVE_LIBOPENEXR
+"exr",
+#endif
+"jpeg",
+"obj",
+"ply",
+"png",
+"postscript",
+"povray",
+"ppm",
+"rgb",
+"stl",
+"tiff",
+"ultra",
+"vtk"
+};
+
+// Given a SaveWindowAttributes::FileFormat string name, determine the 
+// menu index.
+int FileFormatToMenuIndex(const std::string &ext)
+{
+    for(size_t i = 0; i < sizeof(fileFormats)/sizeof(const char *); ++i)
+    {
+        if(StringHelpers::CaseInsenstiveEqual(fileFormats[i], ext))
+            return i;
+    }
+    return FileFormatToMenuIndex("png");
+}
 
 
 // ****************************************************************************
@@ -210,6 +244,9 @@ QvisSaveWindow::~QvisSaveWindow()
 //   Eric Brugger, Mon Aug 31 10:38:12 PDT 2015
 //   I overhauled the window.
 //
+//   Brad Whitlock, Tue Sep 26 13:17:30 PDT 2017
+//   I added pixel data options.
+//
 // ****************************************************************************
 
 void
@@ -264,7 +301,9 @@ QvisSaveWindow::CreateWindowContents()
                                                QSizePolicy::Minimum));
     connect(outputDirectorySelectButton, SIGNAL(clicked()),
             this, SLOT(selectOutputDirectory()));
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+
     // Create a group box for the file format.
     QGroupBox *formatBox = new QGroupBox(central);
     formatBox->setTitle(tr("Format options"));
@@ -274,20 +313,8 @@ QvisSaveWindow::CreateWindowContents()
 
     QLabel *formatLabel = new QLabel(tr("File type"),formatBox);
     fileFormatComboBox = new QComboBox(formatBox);
-    fileFormatComboBox->addItem("bmp");
-    fileFormatComboBox->addItem("curve");
-    fileFormatComboBox->addItem("jpeg");
-    fileFormatComboBox->addItem("obj");
-    fileFormatComboBox->addItem("png");
-    fileFormatComboBox->addItem("postscript");
-    fileFormatComboBox->addItem("pov");
-    fileFormatComboBox->addItem("ppm");
-    fileFormatComboBox->addItem("rgb");
-    fileFormatComboBox->addItem("stl");
-    fileFormatComboBox->addItem("tiff");
-    fileFormatComboBox->addItem("ultra");
-    fileFormatComboBox->addItem("vtk");
-    fileFormatComboBox->addItem("ply");
+    for(size_t i = 0; i < sizeof(fileFormats)/sizeof(const char *); ++i)
+        fileFormatComboBox->addItem(fileFormats[i]);
     connect(fileFormatComboBox, SIGNAL(activated(int)),
            this, SLOT(fileFormatChanged(int)));
     formatLayout->addWidget(formatLabel, 0, 0);
@@ -319,11 +346,12 @@ QvisSaveWindow::CreateWindowContents()
     //compressionTypeComboBox->addItem("LZW");
     formatLayout->addWidget(compressionTypeLabel, 2, 0);
     formatLayout->addWidget(compressionTypeComboBox, 2, 1, 1, 2);
-    
+
     connect(compressionTypeComboBox, SIGNAL(activated(int)),
             this, SLOT(compressionTypeChanged(int)));
     compressionTypeLabel->setBuddy(compressionTypeComboBox);
 
+    // Binary toggle 
     binaryCheckBox = new QCheckBox(tr("Binary"), central);
     connect(binaryCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(binaryToggled(bool)));
@@ -339,7 +367,9 @@ QvisSaveWindow::CreateWindowContents()
     forceMergeCheckBox = new QCheckBox(tr("Force parallel merge"), central);
     connect(forceMergeCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(forceMergeToggled(bool)));
-    formatLayout->addWidget(forceMergeCheckBox, 3, 2, 1, 2);
+    formatLayout->addWidget(forceMergeCheckBox, 3, 2);
+
+    ////////////////////////////////////////////////////////////////////////////
 
     // Create a group box for the image resolution.
     aspectAndResolutionBox = new QGroupBox(central);
@@ -379,6 +409,47 @@ QvisSaveWindow::CreateWindowContents()
     connect(screenCaptureCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(screenCaptureToggled(bool)));
     resolutionLayout->addWidget(screenCaptureCheckBox, 2, 0, 1, 2);
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Begin pixel data
+    pdGroup = new QGroupBox(tr("Pixel data"), central);
+    topLayout->addWidget(pdGroup);
+    QGridLayout *pdLayout = new QGridLayout(pdGroup);
+
+    pdRGB = new QCheckBox(tr("RGB"), pdGroup);
+    connect(pdRGB, SIGNAL(toggled(bool)),
+            this, SLOT(rgbToggled(bool)));
+    pdLayout->addWidget(pdRGB, 0, 0);
+    pdRGB->setToolTip(tr("Color data."));
+
+
+    pdA = new QCheckBox(tr("Alpha"), pdGroup);
+    connect(pdA, SIGNAL(toggled(bool)),
+            this, SLOT(aToggled(bool)));
+    pdLayout->addWidget(pdA, 1, 0);
+    pdA->setToolTip(tr("Add transparency to the output image."));
+
+    pdDepth = new QCheckBox(tr("Depth"), pdGroup);
+    connect(pdDepth, SIGNAL(toggled(bool)),
+            this, SLOT(depthToggled(bool)));
+    pdLayout->addWidget(pdDepth, 0, 1);
+    pdDepth->setToolTip(tr("Float32 depth data are saved to a zlib-compressed file."));
+
+    pdLuminance = new QCheckBox(tr("Luminance"), pdGroup);
+    connect(pdLuminance, SIGNAL(toggled(bool)),
+            this, SLOT(luminanceToggled(bool)));
+    pdLayout->addWidget(pdLuminance, 0, 2);
+    pdA->setToolTip(tr("Luminance indicates how plots are lit."));
+
+    pdValue = new QCheckBox(tr("Value"), pdGroup);
+    connect(pdValue, SIGNAL(toggled(bool)),
+            this, SLOT(valueToggled(bool)));
+    pdLayout->addWidget(pdValue, 1, 2);
+    pdValue->setToolTip(tr("Float32 value data are saved to a zlib-compressed file."));
+    // end pixel data.
+
+    ////////////////////////////////////////////////////////////////////////////
 
     // Create a group box for the multi window save.
     multiWindowSaveBox = new QGroupBox(central);
@@ -582,6 +653,10 @@ QvisSaveWindow::CreateWindowContents()
 //   Eric Brugger, Mon Aug 31 10:38:12 PDT 2015
 //   I overhauled the window.
 //
+//   Brad Whitlock, Tue Sep 19 13:21:02 PDT 2017
+//   I changed how the menu items are added for file formats to allow for
+//   conditionally compiled file formats. I added support for pixel data types.
+//
 // ****************************************************************************
 
 void
@@ -625,9 +700,15 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             break;
         case SaveWindowAttributes::ID_format:
         {
+            { // new scope
+            // Get the name of the file format, which is upper case.
+            std::string formatString(SaveWindowAttributes::FileFormat_ToString(saveWindowAtts->GetFormat()));
+            // Use the upper case file format to get the menu index.
+            int menuIndex = FileFormatToMenuIndex(formatString);
             fileFormatComboBox->blockSignals(true);
-            fileFormatComboBox->setCurrentIndex(saveWindowAtts->GetFormat());
+            fileFormatComboBox->setCurrentIndex(menuIndex);
             fileFormatComboBox->blockSignals(false);
+            }
 
             bool isCompressible = 
                 saveWindowAtts->GetFormat() == SaveWindowAttributes::TIFF ||
@@ -669,6 +750,7 @@ QvisSaveWindow::UpdateWindow(bool doAll)
                 stereoCheckBox->setEnabled(true);
                 aspectAndResolutionBox->setEnabled(true);
                 multiWindowSaveBox->setEnabled(true);
+                pdGroup->setEnabled(true);
             }
             else
             {
@@ -676,7 +758,11 @@ QvisSaveWindow::UpdateWindow(bool doAll)
                 stereoCheckBox->setEnabled(false);
                 aspectAndResolutionBox->setEnabled(false);
                 multiWindowSaveBox->setEnabled(false);
+                pdGroup->setEnabled(false);
             }
+
+            pdA->setEnabled(saveWindowAtts->CurrentFormatSupportsAlpha());
+
             break;
         }
         case SaveWindowAttributes::ID_width:
@@ -715,6 +801,27 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             stereoCheckBox->blockSignals(true);
             stereoCheckBox->setChecked(saveWindowAtts->GetStereo());
             stereoCheckBox->blockSignals(false);
+            break;
+        case SaveWindowAttributes::ID_pixelData:
+            pdRGB->blockSignals(true);
+            pdRGB->setChecked(saveWindowAtts->GetPixelData() & (int)SaveWindowAttributes::ColorRGB);
+            pdRGB->blockSignals(false);
+
+            pdA->blockSignals(true);
+            pdA->setChecked(saveWindowAtts->GetPixelData() & (int)SaveWindowAttributes::ColorRGBA);
+            pdA->blockSignals(false);
+
+            pdDepth->blockSignals(true);
+            pdDepth->setChecked(saveWindowAtts->GetPixelData() & (int)SaveWindowAttributes::Depth);
+            pdDepth->blockSignals(false);
+
+            pdLuminance->blockSignals(true);
+            pdLuminance->setChecked(saveWindowAtts->GetPixelData() & (int)SaveWindowAttributes::Luminance);
+            pdLuminance->blockSignals(false);
+
+            pdValue->blockSignals(true);
+            pdValue->setChecked(saveWindowAtts->GetPixelData() & (int)SaveWindowAttributes::Value);
+            pdValue->blockSignals(false);
             break;
         case SaveWindowAttributes::ID_compression:
             compressionTypeComboBox->blockSignals(true);
@@ -1344,12 +1451,21 @@ QvisSaveWindow::selectOutputDirectory()
 //   Jeremy Meredith, Thu Jul 25 11:49:41 PDT 2002
 //   Made file format be a true enum.
 //
+//   Brad Whitlock, Tue Sep 19 13:17:02 PDT 2017
+//   Changes so the menu names can have a different order than the 
+//   FileFormat enum.
+//
 // ****************************************************************************
 
 void
 QvisSaveWindow::fileFormatChanged(int index)
 {
-    saveWindowAtts->SetFormat(SaveWindowAttributes::FileFormat(index));
+    // index is a menu index. Let's convert the upper case string name for the 
+    // menu back to SaveWindowAttributes::FileFormat type.
+    SaveWindowAttributes::FileFormat val = SaveWindowAttributes::PNG;
+    SaveWindowAttributes::FileFormat_FromString(
+        StringHelpers::UpperCase(fileFormats[index]), val);
+    saveWindowAtts->SetFormat(val);
     Apply();
 }
 
@@ -1454,6 +1570,82 @@ void
 QvisSaveWindow::stereoToggled(bool val)
 {
     saveWindowAtts->SetStereo(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisSaveWindow::*Toggled
+//
+// Purpose: 
+//   Qt slot functions that control the type of pixel data we're requesting.
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Sep 20 18:13:16 PDT 2017
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisSaveWindow::rgbToggled(bool val)
+{
+    int flags = saveWindowAtts->GetPixelData();
+    if(val)
+        flags = flags | (int)SaveWindowAttributes::ColorRGB;
+    else
+        flags = flags & (~((int)SaveWindowAttributes::ColorRGB));
+    saveWindowAtts->SetPixelData(flags);
+    Apply();
+}
+
+void
+QvisSaveWindow::aToggled(bool val)
+{
+    int flags = saveWindowAtts->GetPixelData();
+    if(val)
+        flags = flags | (int)SaveWindowAttributes::ColorRGBA | (int)SaveWindowAttributes::ColorRGB;
+    else
+        flags = flags & (~((int)SaveWindowAttributes::ColorRGBA));
+    saveWindowAtts->SetPixelData(flags);
+    Apply();
+}
+
+void
+QvisSaveWindow::depthToggled(bool val)
+{
+    int flags = saveWindowAtts->GetPixelData();
+    if(val)
+        flags = flags | (int)SaveWindowAttributes::Depth;
+    else
+        flags = flags & (~((int)SaveWindowAttributes::Depth));
+    saveWindowAtts->SetPixelData(flags);
+    Apply();
+}
+
+void
+QvisSaveWindow::luminanceToggled(bool val)
+{
+    int flags = saveWindowAtts->GetPixelData();
+    if(val)
+        flags = flags | (int)SaveWindowAttributes::Luminance;
+    else
+        flags = flags & (~((int)SaveWindowAttributes::Luminance));
+    saveWindowAtts->SetPixelData(flags);
+    Apply();
+}
+
+void
+QvisSaveWindow::valueToggled(bool val)
+{
+    int flags = saveWindowAtts->GetPixelData();
+    if(val)
+        flags = flags | (int)SaveWindowAttributes::Value;
+    else
+        flags = flags & (~((int)SaveWindowAttributes::Value));
+    saveWindowAtts->SetPixelData(flags);
     Apply();
 }
 

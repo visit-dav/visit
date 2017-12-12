@@ -70,6 +70,13 @@
 #include <vtkCallbackCommand.h>
 #include <vtkSmartPointer.h>
 
+// We'd do it another way in VTK8
+#define VALUE_IMAGE_RENDERING_PRE_VTK8
+#ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
+#include <vtkVisItDataSetMapper.h>
+#include <vtkProperty.h>
+#endif
+
 #include <limits>
 using std::numeric_limits;
 
@@ -1188,13 +1195,19 @@ VisWinRendering::GetCaptureRegion(int& r0, int& c0, int& w, int& h,
 //    of the pass 1 image. these are needed for ordered
 //    compositing.
 //
+//    Brad Whitlock, Wed Sep 27 11:43:08 PDT 2017
+//    I added imgT and code that lets us render different image types.
+//    I'd do these things differently after VTK8 vs now with VTK 6.1 so
+//    that's why these things are conditionally compiled. They'll need to
+//    be changed to render passes for VTK 8.
+//
 // ****************************************************************************
 
-
 void
-VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
-                              bool doOpaque, bool doTranslucent,
-                              bool disableBackground, avtImage_p input)
+VisWinRendering::ScreenRender(avtImageType imgT,
+    bool doViewportOnly, bool doCanvasZBufferToo,
+    bool doOpaque, bool doTranslucent,
+    bool disableBackground, avtImage_p input)
 {
     avtCallback::ClearRenderingExceptions();
 
@@ -1203,7 +1216,12 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
     // If we want zbuffer for the canvas, we need to take care that
     // the canvas is rendered last. To achieve this, we temporarily
     // remove the foreground renderer.
-    if (doCanvasZBufferToo)
+    bool removeForeground = false;
+    if(imgT == LuminanceImage || imgT == ValueImage || doCanvasZBufferToo)
+        removeForeground = true;
+
+    // Remove the foreground renderer if needed.
+    if (removeForeground)
         renWin->RemoveRenderer(foreground);
 
     // hide the appropriate geometry here
@@ -1216,6 +1234,71 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
     // Set region origin/size to be captured
     int r0, c0, w, h;
     GetCaptureRegion(r0, c0, w, h, doViewportOnly);
+
+#ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
+    double oldBG[3] = {0., 0., 0.};
+    int nActors = 0;
+    double *actorColors = NULL;
+    bool *actorLighting = NULL;
+    double *actorAmbient = NULL;
+    double *actorDiffuse = NULL;
+    if(imgT == ColorRGBImage || imgT == ColorRGBAImage)
+        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_NORMAL);
+    else if(imgT == LuminanceImage)
+    {
+        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_LUMINANCE);
+        background->GetBackground(oldBG);
+        background->SetBackground(0.,0.,0.);
+        // TODO: Turn off gradient background.
+        vtkActorCollection *actors = canvas->GetActors();
+        nActors = actors->GetNumberOfItems();
+        actorColors = new double[nActors * 4];
+        int i = 0;
+        actors->InitTraversal();
+        vtkActor *actor = NULL;
+        while((actor = actors->GetNextActor()) != NULL)
+        {
+            // Save the color and opacity.
+            actor->GetProperty()->GetColor(actorColors[4*i],actorColors[4*i+1],actorColors[4*i+2]);
+            actorColors[4*i+3] = actor->GetProperty()->GetOpacity();
+
+            // Override the color with white. Make opaque.
+            actor->GetProperty()->SetColor(1., 1., 1.);
+            actor->GetProperty()->SetOpacity(1.);
+            i++;
+        }
+    }
+    else if(imgT == ValueImage)
+    {
+        vtkVisItDataSetMapper::SetRenderingMode(vtkVisItDataSetMapper::RENDERING_MODE_VALUE);
+        background->GetBackground(oldBG);
+        background->SetBackground(0.,0.,0.);
+        // TODO: Turn off gradient background.
+
+        vtkActorCollection *actors = canvas->GetActors();
+        nActors = actors->GetNumberOfItems();
+        actorLighting = new bool[nActors];
+        actorAmbient = new double[nActors];
+        actorDiffuse = new double[nActors];
+        int i = 0;
+        actors->InitTraversal();
+        vtkActor *actor = NULL;
+        while((actor = actors->GetNextActor()) != NULL)
+        {
+            // Save the lighting.
+            actor->GetProperty()->GetLighting();
+            actorLighting[i] = actor->GetProperty()->GetOpacity();
+            actorAmbient[i] = actor->GetProperty()->GetAmbient();
+            actorDiffuse[i] = actor->GetProperty()->GetDiffuse();
+
+            // Override the lighting.
+            actor->GetProperty()->SetLighting(false);
+            actor->GetProperty()->SetAmbient(1);
+            actor->GetProperty()->SetDiffuse(0.);
+            i++;
+        }
+    }
+#endif
 
     // render
     if (input)
@@ -1265,9 +1348,8 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
         RenderRenderWindow();
     }
 
-    // If we removed the foreground layers to get the canvas' zbuffer,
-    // put it back before we leave
-    if (doCanvasZBufferToo)
+    // If we removed the foreground layer, put it back before we leave
+    if (removeForeground)
        renWin->AddRenderer(foreground);
 
     // return geometry from hidden status
@@ -1275,6 +1357,48 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
         mediator.ResumeOpaqueGeometry();
     if(!doTranslucent)
         mediator.ResumeTranslucentGeometry();
+
+#ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
+    // If we changed the background color, restore it.
+    if(imgT == LuminanceImage)
+    {
+        background->SetBackground(oldBG);
+
+        vtkActorCollection *actors = canvas->GetActors();
+        int i = 0;
+        actors->InitTraversal();
+        vtkActor *actor = NULL;
+        while((actor = actors->GetNextActor()) != NULL)
+        {
+            // Restore the color.
+            actor->GetProperty()->SetColor(actorColors[4*i],actorColors[4*i+1],actorColors[4*i+2]);
+            actor->GetProperty()->SetOpacity(actorColors[4*i+3]);
+            i++;
+        }
+        delete [] actorColors;
+    }
+    else if(imgT == ValueImage)
+    {
+        background->SetBackground(oldBG);
+
+        vtkActorCollection *actors = canvas->GetActors();
+        int i = 0;
+        actors->InitTraversal();
+        vtkActor *actor = NULL;
+        while((actor = actors->GetNextActor()) != NULL)
+        {
+            // Restore the lighting.
+            actor->GetProperty()->SetLighting(actorLighting[i]);
+            actor->GetProperty()->SetAmbient(actorAmbient[i]);
+            actor->GetProperty()->SetDiffuse(actorDiffuse[i]);
+
+            i++;
+        }
+        delete [] actorLighting;
+        delete [] actorAmbient;
+        delete [] actorDiffuse;
+    }
+#endif
 
     std::string errorMsg = avtCallback::GetRenderingException();
     if (!errorMsg.empty())
@@ -1343,6 +1467,9 @@ VisWinRendering::ScreenRender(bool doViewportOnly, bool doCanvasZBufferToo,
 //    request up the stack so that render/readback sequences can occur safely
 //    without udpates.
 //
+//    Brad Whitlock, Thu Sep 21 16:01:03 PDT 2017
+//    Fix problem with zbuffer read. It wasn't setting the number of tuples.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1358,9 +1485,8 @@ VisWinRendering::ScreenReadback(
     if (readZ)
     {
         // get zbuffer data for the canvas
-        float *zb = renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1);
         zbuffer = vtkFloatArray::New();
-        zbuffer->SetArray(zb, /*keep=*/0, /*use delete []=*/1);
+        renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1, zbuffer);
     }
 
     // Read the pixels from the window and copy them over.
@@ -1443,6 +1569,9 @@ VisWinRendering::ScreenReadback(
 //    Eliminate a memcpy by reading directly into the output
 //    image buffer.
 //
+//    Brad Whitlock, Thu Sep 21 17:17:11 PDT 2017
+//    If we get 4 channel data, output 4 channel data.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -1472,8 +1601,11 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
 
     // set pixel data
     unsigned char *pixels = input->GetImage().GetRGBBuffer();
-
-    renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*front=*/1);
+    int nChannels = input->GetImage().GetNumberOfColorChannels();
+    if(nChannels == 4)
+        renWin->SetRGBACharPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*front=*/1);
+    else
+        renWin->SetPixelData(c0, r0, c0+w-1, r0+h-1, pixels, /*front=*/1);
 
     // render (foreground layer only)
     RenderRenderWindow();
@@ -1484,11 +1616,14 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     size_t npix = w*h;
 
     vtkUnsignedCharArray *pix = vtkUnsignedCharArray::New();
-    pix->SetNumberOfComponents(3);
+    pix->SetNumberOfComponents(nChannels);
     pix->SetNumberOfTuples(npix);
     pix->SetName("ImageScalars");
 
-    renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1, /*front=*/1, pix);
+    if(nChannels == 4)
+        renWin->GetRGBACharPixelData(c0,r0,c0+w-1,r0+h-1, /*front=*/1, pix);
+    else
+        renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1, /*front=*/1, pix);
 
     // construct the output image
     vtkImageData *im = vtkImageData::New();
@@ -1508,6 +1643,141 @@ VisWinRendering::PostProcessScreenCapture(avtImage_p input,
     renWin->AddRenderer(canvas);
 
     return output;
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::ScreenCaptureValues
+//
+// Purpose:
+//   Renders the window as a value image and returns the values in an avtImage.
+//
+// Returns:    A value image.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 25 15:35:27 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+//#define SCREEN_CAPTURE_VALUES_DEBUG
+#ifdef SCREEN_CAPTURE_VALUES_DEBUG
+#include <vtkPNGWriter.h>
+#endif
+
+avtImage_p
+VisWinRendering::ScreenCaptureValues(bool readZ)
+{
+#ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
+    bool doViewportOnly = false;
+    bool doCanvasZBufferToo = true;
+    bool doOpaque = 1;
+    bool doTranslucent = true;
+    bool disableBackground = true;
+    avtImage_p input = NULL;
+
+    // Render as a value image. We just install a linear gray lookup 
+    // table and render. (For now).
+    ScreenRender(ValueImage,
+        doViewportOnly, doCanvasZBufferToo,
+        doOpaque, doTranslucent,
+        disableBackground, input);
+
+    //
+    // We have to have custom read-back.
+    //
+    vtkRenderWindow *renWin = GetRenderWindow();
+
+    // read the pixels.
+    int r0, c0, w, h;
+    GetCaptureRegion(r0, c0, w, h, false);
+    size_t npix = w*h;
+    vtkUnsignedCharArray *pix = vtkUnsignedCharArray::New();
+    pix->SetNumberOfComponents(3);
+    pix->SetNumberOfTuples(npix);
+    renWin->GetPixelData(c0,r0,c0+w-1,r0+h-1, /*front=*/1, pix);
+
+#ifdef SCREEN_CAPTURE_VALUES_DEBUG
+    vtkImageData *grayImage = vtkImageData::New();
+    grayImage->SetDimensions(w,h,1);
+    pix->SetName("ImageScalars");
+    grayImage->GetPointData()->SetScalars(pix);
+
+    vtkPNGWriter *writer = vtkPNGWriter::New();
+    writer->SetFileName("screencapturevalues_gray.png");
+    writer->SetInputData(grayImage);
+    writer->Write();
+    writer->Delete(); 
+#endif
+
+    // read z back. We use it to mask.
+    vtkFloatArray *zbuffer = vtkFloatArray::New();
+    renWin->GetZbufferData(c0,r0,c0+w-1,r0+h-1, zbuffer);
+
+    // Get the minval and scale for the values. 
+    double ext[2] = {0., 1.};
+    mediator.GetExtents(ext);
+    float minval = ext[0];
+    float scale = (ext[1] - ext[0]) / 255.f;
+//cout << "ScreenCaptureValues: min=" << ext[0] << ", max=" << ext[1] << endl;
+    // Create the values. We get the grayscale image and scale the values.
+    vtkFloatArray *values = vtkFloatArray::New();
+    values->SetName("ImageScalars");
+    values->SetNumberOfTuples(npix);
+    float *v = (float *)values->GetVoidPointer(0);
+    float *z = (float *)zbuffer->GetVoidPointer(0);
+    const unsigned char *byteval = (const unsigned char *)pix->GetVoidPointer(0);
+    for(int j = 0; j < h; j++)
+    {
+        for(int i = 0; i < w; ++i)
+        {
+            if(*z >= 1.f)
+                *v = 256.f;
+            else
+                *v = minval + scale * float(*byteval);
+            z++;
+            v++;
+            byteval += 3;
+        }
+    }
+
+    // Package it up as an avtImage.
+    vtkImageData *image = vtkImageData::New();
+    image->SetDimensions(w,h,1);
+    image->GetPointData()->SetScalars(values);
+    values->Delete();
+#ifdef SCREEN_CAPTURE_VALUES_DEBUG
+    grayImage->Delete();
+#else
+    pix->Delete();
+#endif
+
+    // If don't need Z, delete it.
+    if(!readZ)
+    {
+        zbuffer->Delete();
+        zbuffer = NULL;
+    }
+
+    avtImage_p output = new avtImage(NULL);
+    output->SetImage(avtImageRepresentation(image, zbuffer));
+    image->Delete();
+    if (zbuffer)
+        zbuffer->Delete();
+
+    return output;
+#else
+    // VTK 8 has a far superior way of doing this.
+
+    // Remove bg/fg renderers
+    // Make a vtkValuePass and add it to the canvas renderer.
+    // Force a render
+    // Get the float values from the value pass.
+    // wrap up the floats as an avtImage.
+    // restore bg/fg renderers.
+#endif
 }
 
 // ****************************************************************************

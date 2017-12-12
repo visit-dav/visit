@@ -84,6 +84,8 @@ simv2_SpeciesMetaData.C
 simv2_UnstructuredMesh.C
 simv2_VariableData.C
 simv2_VariableMetaData.C
+simv2_View2D.C
+simv2_View3D.C
 )
 
 # If VisIt is static then we need some static symbol lookup functions

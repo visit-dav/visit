@@ -213,6 +213,7 @@ state/AxisRestrictionAttributes.C
 state/AxisTickMarks.C
 state/AxisTitles.C
 state/BoxExtents.C
+state/CinemaAttributes.C
 state/ClientInformation.C
 state/ClientInformationList.C
 state/ClientMethod.C

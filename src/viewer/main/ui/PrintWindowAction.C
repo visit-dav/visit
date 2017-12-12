@@ -165,9 +165,15 @@ PrintWindowAction::Execute()
     // Create an image that will fit on the printer, else scale the
     // image to fit on the printer surface.
     //
-    avtImage_p image = windowMgr->CreateSingleImage(windowIndex,
-        GetViewerState()->GetSaveWindowAttributes()->GetWidth(), GetViewerState()->GetSaveWindowAttributes()->GetHeight(),
-        GetViewerState()->GetSaveWindowAttributes()->GetScreenCapture(), true);
+    avtImageType imgT = ColorRGBImage;
+    bool doZBuffer = false;
+    bool leftEye = true;
+    avtImage_p image = windowMgr->CreateSingleImageType(imgT, doZBuffer, 
+        windowIndex,
+        GetViewerState()->GetSaveWindowAttributes()->GetWidth(), 
+        GetViewerState()->GetSaveWindowAttributes()->GetHeight(),
+        GetViewerState()->GetSaveWindowAttributes()->GetScreenCapture(),
+        leftEye);
 
     //
     // Handle failure to obtain an image

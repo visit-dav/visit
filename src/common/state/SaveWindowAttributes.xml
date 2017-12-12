@@ -15,6 +15,7 @@
       ULTRA
       VTK
       PLY
+      EXR
     </Enum>
     <Enum name="CompressionType">
       None
@@ -26,6 +27,13 @@
       NoConstraint
       EqualWidthHeight
       ScreenProportions
+    </Enum>
+    <Enum name="PixelData">
+      ColorRGB=1
+      ColorRGBA=2
+      Luminance=4
+      Value=8
+      Depth=16
     </Enum>
     <Field name="outputToCurrentDirectory" label="Output to current directory" type="bool" init="true">
       true
@@ -77,11 +85,16 @@
     <Field name="resConstraint" label="resConstraint" type="enum" subtype="ResConstraint">
       ScreenProportions
     </Field>
+    <Field name="pixelData" label="Pixel data" type="int">
+      1
+    </Field>
     <Field name="advancedMultiWindowSave" label="Do Advanced Multi-Window Save?" type="bool">
       false
     </Field>
     <Field name="subWindowAtts" label="Attributes for sub-windows" type="att" subtype="SaveSubWindowsAttributes" enabler="advancedMultiWindowSave:true">
     </Field>
     <Function name="CurrentFormatIsImageFormat" user="true" member="true">
+    </Function>
+    <Function name="CurrentFormatSupportsAlpha" user="true" member="true">
     </Function>
   </Attribute>

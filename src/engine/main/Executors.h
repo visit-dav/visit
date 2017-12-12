@@ -1508,6 +1508,9 @@ EngineRPCExecutor<DefineVirtualDatabaseRPC>::Execute(DefineVirtualDatabaseRPC *r
 //    Brad Whitlock, Mon Sep 22 21:26:20 PDT 2014
 //    Handle data writing and status differently.
 //
+//    Brad Whitlock, Thu Sep 21 16:45:34 PDT 2017
+//    Add alpha support. Add support for luminance image, value images.
+//
 // ****************************************************************************
 
 template<>
@@ -1535,10 +1538,21 @@ EngineRPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
     TRY 
     {
         // do the render
-        avtDataObject_p image = netmgr->Render(true,
-            rpc->GetIDs(),rpc->GetSendZBuffer(), rpc->GetAnnotMode(), 
-            rpc->GetWindowID(), rpc->GetLeftEye());
-        
+        avtDataObject_p image = NULL;
+
+        if(rpc->GetImageType() == ValueImage)
+        {
+            image = netmgr->RenderValues(rpc->GetIDs(),rpc->GetSendZBuffer(),
+                                         rpc->GetWindowID(), rpc->GetLeftEye());
+        }
+        else
+        {
+            bool checkThreshold = true;
+            image = netmgr->Render(rpc->GetImageType(), rpc->GetSendZBuffer(),
+                        rpc->GetIDs(), checkThreshold,
+                        rpc->GetAnnotMode(), rpc->GetWindowID(), rpc->GetLeftEye());
+        }
+
         avtDataObjectWriter_p writer;
         if(*image != NULL)
         {

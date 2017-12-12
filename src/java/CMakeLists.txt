@@ -101,6 +101,7 @@ AxisLabels.java
 AxisTickMarks.java 
 AxisTitles.java 
 BoxExtents.java 
+CinemaAttributes.java
 ClientInformation.java 
 ClientInformationList.java 
 ClientMethod.java 

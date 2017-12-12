@@ -236,10 +236,19 @@ typedef enum {
 #define VISIT_IMAGEFORMAT_PPM    4
 #define VISIT_IMAGEFORMAT_RGB    5
 #define VISIT_IMAGEFORMAT_TIFF   6
+#define VISIT_IMAGEFORMAT_EXR    7
 
 /* Export option keys */
 #define VISIT_EXPORT_WRITE_USING_GROUPS "EXPORT_WRITE_USING_GROUPS"
 #define VISIT_EXPORT_GROUP_SIZE         "EXPORT_GROUP_SIZE"
+
+/* Cinema database types */
+#define VISIT_DATABASE_IMAGE 0
+#define VISIT_DATABASE_COMPOSITE 1
+
+/* Cinema camera types */
+#define VISIT_CAMERATYPE_STATIC    0
+#define VISIT_CAMERATYPE_PHI_THETA 1
 
 #ifdef __cplusplus
 }

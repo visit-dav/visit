@@ -52,4 +52,9 @@ int VisItSetOperatorOptionsFv(const char *name,const float *v,int L);
 int VisItSetOperatorOptionsDv(const char *name,const double *v,int L);
 int VisItSetOperatorOptionsSv(const char *name,const char **sv,int L);
 
+int VisItSetView2D(visit_handle v);
+int VisItGetView2D(visit_handle v);
+int VisItSetView3D(visit_handle v);
+int VisItGetView3D(visit_handle v);
+
 #endif

@@ -113,6 +113,7 @@
 #include <avtQueryOverTimeFilter.h>
 #include <avtQueryFactory.h>
 #include <avtMultiresFilter.h>
+#include <avtValueImageCompositer.h>
 #include <CompactSILRestrictionAttributes.h>
 #include <VisWinRendering.h>
 #include <VisWindow.h>
@@ -126,7 +127,7 @@
 #include <StackTimer.h>
 #include <FileFunctions.h>
 //#define ProgrammableCompositerDEBUG
-//#define NetworkManagerDEBUG
+#define NetworkManagerDEBUG
 //#define NetworkManagerTIME
 #include <ProgrammableCompositer.h>
 
@@ -194,6 +195,7 @@ ostream &operator<<(ostream &os, const NetworkManager::RenderState &rs)
         << "twoD = " << rs.twoD << endl
         << "gradientBg = " << rs.gradientBg << endl
         << "getZBuffer = " << rs.getZBuffer << endl
+        << "getAlpha = " << rs.getAlpha << endl
         << "zBufferComposite = " << rs.zBufferComposite << endl
         << "allReducePass1 = " << rs.allReducePass1 << endl
         << "allReducePass2 = " << rs.allReducePass2 << endl
@@ -209,6 +211,18 @@ ostream &operator<<(ostream &os, const NetworkManager::RenderState &rs)
         << "shadowMap = " << rs.shadowMap << endl
         << "depthCues = " << rs.depthCues << endl
         << "imageBasedPlots = " << rs.imageBasedPlots << endl;
+
+    os << "imageType = ";
+    if(rs.imageType == ColorRGBImage)
+        os << "ColorRGBImage";
+    else if(rs.imageType == ColorRGBAImage)
+        os << "ColorRGBAImage";
+    else if(rs.imageType == LuminanceImage)
+        os << "LuminanceImage";
+    else if(rs.imageType == ValueImage)
+        os << "ValueImage" << endl;
+    os << endl;
+
     return os;
 }
 #endif
@@ -2847,11 +2861,14 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 //    to eliminate duplicated setup work when this class is called as a fallback
 //    ie currently for translucent rendering.
 //
+//    Brad Whitlock, Thu Sep 21 16:46:50 PDT 2017
+//    Added getAlpha.
+//
 // ****************************************************************************
 
 avtDataObject_p
-NetworkManager::Render(
-    bool checkThreshold, intVector plotIds, bool getZBuffer,
+NetworkManager::Render(avtImageType imgT, bool getZBuffer, 
+    intVector plotIds, bool checkThreshold, 
     int annotMode, int windowID, bool leftEye)
 {
     StackTimer t0("NetworkManager::Render");
@@ -2860,7 +2877,7 @@ NetworkManager::Render(
 
     TRY
     {
-        RenderSetup(windowID, plotIds, getZBuffer,
+        RenderSetup(imgT, windowID, plotIds, getZBuffer,
             annotMode, leftEye, checkThreshold);
 
         if (renderState.renderOnViewer)
@@ -2871,6 +2888,84 @@ NetworkManager::Render(
         }
 
         output = RenderInternal();
+        RenderCleanup();
+    }
+    CATCHALL
+    {
+        RenderCleanup();
+        RETHROW;
+    }
+    ENDTRY
+
+    workingNet = origWorkingNet;
+
+    return output;
+}
+
+// ****************************************************************************
+// Method: NetworkManager::RenderValues
+//
+// Purpose:
+//   Render the current plot(s) as a value image.
+//
+// Arguments:
+//   plotIds    : The network ids of the plots to render.
+//   getZbuffer : Whether we want the Z buffer in the returned image.
+//   windowID   : The vis window Id for the plots.
+//   leftEye    : Whether we're rendering the left eye image.
+//
+// Returns:    an avtImage containing a floating point image of the data.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 25 13:48:09 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtDataObject_p
+NetworkManager::RenderValues(intVector plotIds, bool getZBuffer, int windowID, bool leftEye)
+{
+    StackTimer t0("NetworkManager::Render");
+    DataNetwork *origWorkingNet = workingNet;
+    avtDataObject_p output;
+    avtImage_p image;
+
+    TRY
+    {
+        int annotMode = 0;
+        bool checkThreshold = false;
+        RenderSetup(ValueImage, windowID, plotIds, getZBuffer,
+            annotMode, leftEye, checkThreshold);
+
+        VisWindow *viswin = renderState.window;
+        if (PAR_Size() < 2)
+        {
+            avtImage_p image = viswin->ScreenCaptureValues(getZBuffer);
+            CopyTo(output, image);
+        }
+        else// if (renderState.zBufferComposite)
+        {
+            // We always request Z when compositing.
+            avtImage_p image = viswin->ScreenCaptureValues(true);
+
+            // need to do compositing,
+            avtValueImageCompositer *compositer;
+            compositer = new avtValueImageCompositer();
+            compositer->SetShouldOutputZBuffer(getZBuffer);
+            compositer->SetBackground(256.);
+            int imageRows, imageCols;
+            image->GetSize(&imageCols, &imageRows);
+            compositer->SetOutputImageSize(imageRows, imageCols);
+            compositer->AddImageInput(image, 0, 0);
+            compositer->Execute();
+            avtImage_p compImage = compositer->GetTypedOutput();
+            delete compositer;
+
+            CopyTo(output, compImage);
+        }
         RenderCleanup();
     }
     CATCHALL
@@ -2909,7 +3004,30 @@ NetworkManager::RenderInternal()
     // pass 1a : opaque (and translucent geometry if serial)
     // ************************************************************
     avtImage_p pass = NetworkManager::RenderGeometry();
-
+#if 0
+    int w,h;
+    if(*pass != NULL)
+    {
+        TRY
+        {
+            pass->GetImage().GetSize(&w, &h);
+            debug5 << "NetworkManager::RenderInternal: 0: w=" << w
+                   << ", h=" << h 
+                   << ", colorChannels=" << pass->GetImage().GetNumberOfColorChannels()
+                   << endl;
+            vtkFloatArray *arr = pass->GetImage().GetZBufferVTK();
+            if(arr != NULL)
+                debug5 << "We have a zbuffer with " << arr->GetNumberOfTuples() << " tuples." << endl;
+            else
+                debug5 << "We have NO zbuffer." << endl;
+        }
+        CATCH(VisItException)
+        {
+            // Catches a no input exception.
+        }
+        ENDTRY
+    }
+#endif
     // ************************************************************
     // pass 1b : shadow mapping
     // ************************************************************
@@ -2933,6 +3051,30 @@ NetworkManager::RenderInternal()
     // pass 3 : 2d overlays
     // ************************************************************
     RenderPostProcess(pass);
+
+#if 0
+    if(*pass != NULL)
+    {
+        TRY
+        {
+            pass->GetImage().GetSize(&w, &h);
+            debug5 << "NetworkManager::RenderInternal: 1: w=" << w
+                   << ", h=" << h 
+                   << ", colorChannels=" << pass->GetImage().GetNumberOfColorChannels()
+                   << endl;
+            vtkFloatArray *arr = pass->GetImage().GetZBufferVTK();
+            if(arr != NULL)
+                debug5 << "We have a zbuffer with " << arr->GetNumberOfTuples() << " tuples." << endl;
+            else
+                debug5 << "We have NO zbuffer." << endl;
+        }
+        CATCH(VisItException)
+        {
+            // Catches a no input exception.
+        }
+        ENDTRY
+    }
+#endif
 
     avtDataObject_p output;
     CopyTo(output, pass);
@@ -3707,7 +3849,13 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             //
             intVector pids;
             pids.push_back(id);
-            Render(true, pids, false, 0, winId, true);
+
+            avtImageType imgT = ColorRGBImage;
+            bool checkThreshold = true;
+            bool getZBuffer = false;
+            int annotMode = 0;
+            bool leftEye = true;
+            Render(imgT, getZBuffer, pids, checkThreshold, annotMode, winId, leftEye);
         }
         int d = -1, e = -1;
         double t = +FLT_MAX;
@@ -5750,7 +5898,12 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
 
     if (needRender)
     {
-        Render(true, validIds, false, 0, winId, true);
+        avtImageType imgT = ColorRGBImage;
+        bool checkThreshold = true;
+        bool getZBuffer = false;
+        int annotMode = 0;
+        bool leftEye = true;
+        Render(imgT, getZBuffer, validIds, checkThreshold, annotMode, winId, leftEye);
     }
     int x, y;
     double isect[3];
@@ -6319,12 +6472,17 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    refactor to so that all of the internal configuration is done
 //    from/in this method. added ordered compositing support.
 //
+//    Brad Whitlock, Thu Sep 21 16:49:49 PDT 2017
+//    Added getAlpha.
+//
 // ****************************************************************************
 
 void
-NetworkManager::RenderSetup(int windowID, intVector& plotIds, bool getZBuffer,
-                            int annotMode, bool leftEye, bool checkSRThreshold)
+NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds, 
+                            bool getZBuffer, int annotMode, bool leftEye,
+                            bool checkSRThreshold)
 {
+    renderState.imageType = imgT;
     renderState.origWorkingNet = workingNet;
     renderState.windowID = windowID;
 
@@ -6498,6 +6656,9 @@ NetworkManager::RenderSetup(int windowID, intVector& plotIds, bool getZBuffer,
         (renderState.threeD && (getZBuffer || renderState.shadowMap ||
          renderState.depthCues || renderState.imageBasedPlots));
 
+    // will need to read back alpha
+    renderState.getAlpha = imgT == ColorRGBAImage;
+
     // note : z even in 2d is determined in SetUpWindowContents
     renderState.gradientBg =
         viswin->GetBackgroundMode() == AnnotationAttributes::Gradient;
@@ -6565,7 +6726,7 @@ NetworkManager::RenderSetup(int windowID, intVector& plotIds, bool getZBuffer,
     }
 
 #ifdef NetworkManagerDEBUG
-    cerr << "NetworkManager::RenderSetup" << endl
+    debug5 << "NetworkManager::RenderSetup" << endl
         << renderState << endl << endl;
 #endif
 }
@@ -6717,6 +6878,9 @@ NetworkManager::RenderingStages()
 //    Use start/stop timer instead of TimedClodeBlock to prevent compiler
 //    error on BGQ due to #ifdef inside the code block.
 //
+//    Brad Whitlock, Thu Sep 21 16:52:41 PDT 2017
+//    Added support for returning alpha.
+//
 // ****************************************************************************
 
 avtImage_p
@@ -6745,14 +6909,18 @@ NetworkManager::RenderGeometry()
     avtImage_p output;
     if (PAR_Size() < 2)
     {
+        // If we're returning alpha then don't put the background in.
+        bool disableBackground = renderState.getAlpha;
+
         // don't bother with the compositing code if not in parallel
-        viswin->ScreenRender(renderState.viewportedMode,
-            /*disbale fg=*/true, /*opaque on=*/true,
+        viswin->ScreenRender(renderState.imageType,
+            renderState.viewportedMode,
+            /*doZBbuffer=*/true, /*opaque on=*/true,
             /*translucent on=*/renderState.transparencyInPass1,
-            /*disable bg=*/false, /*input image=*/NULL);
+            disableBackground, /*input image=*/NULL);
 
         output = viswin->ScreenReadBack(renderState.viewportedMode,
-            /*read z=*/renderState.getZBuffer, /*read a=*/false);
+            /*read z=*/renderState.getZBuffer, /*read a=*/renderState.getAlpha);
 
         CallProgressCallback("NetworkManager", "render pass 1", 1, 1);
         CallProgressCallback("NetworkManager", "composite pass 1", 0, 1);
@@ -6788,7 +6956,8 @@ NetworkManager::RenderGeometry()
                 viswin->SetBackgroundColor(0.0, 0.0, 0.0);
             }
 
-            viswin->ScreenRender(renderState.viewportedMode,
+            viswin->ScreenRender(renderState.imageType,
+                renderState.viewportedMode,
                 /*canvas z=*/true, /*opaque on=*/true,
                 /*translucent on=*/false, /*no bg=*/false,
                 /*input image=*/NULL);
@@ -6877,8 +7046,9 @@ NetworkManager::RenderGeometry()
         StackTimer t2("NonZ Compositing");
 
         // do visit's non-z-buffer composite
-        viswin->ScreenRender(renderState.viewportedMode,
-            /*disbale fg=*/true, /*opaque on=*/true,
+        viswin->ScreenRender(renderState.imageType,
+            renderState.viewportedMode,
+            /*doZBuffer=*/true, /*opaque on=*/true,
             /*translucent on=*/renderState.transparencyInPass1,
             /*disable bg=*/false, /*input image=*/NULL);
 
@@ -6998,7 +7168,7 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
         memcpy(bgColor, viswin->GetBackgroundColor(), 3*sizeof(double));
         viswin->SetBackgroundColor(0.0, 0.0, 0.0);
 
-        viswin->ScreenRender(
+        viswin->ScreenRender(renderState.imageType,
             /*mode=*/renderState.viewportedMode,
             /*canvas z=*/true, /*opaque on=*/false,
             /*translucent on=*/true, /*no bg=*/true,
@@ -7041,7 +7211,7 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
             }
             else
             {
-               viswin->ScreenRender(
+               viswin->ScreenRender(renderState.imageType,
                   /*mode=*/renderState.viewportedMode,
                   /*canvas z=*/true, /*opaque on=*/false,
                   /*translucent on=*/false, /*no bg=*/false,
@@ -7069,6 +7239,9 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
             float *ro = NULL, *go = NULL, *bo = NULL, *ao = NULL, *zo = NULL;
             acomp->GetOutput(ro,go,bo,ao, zo, true);
 
+#ifdef ProgrammableCompositerDEBUG
+            writeVTK("acomp_out.vtk", ro,go,bo,ao,zo, w,h);
+#endif
             output = new avtImage(NULL);
             Merge(output, ro,go,bo,ao, zo, w,h, true);
 
@@ -7080,7 +7253,7 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
     else
     {
         // render the translucent geometry
-        viswin->ScreenRender(
+        viswin->ScreenRender(renderState.imageType,
             /*mode=*/renderState.viewportedMode,
             /*canvas z=*/true, /*opaque on=*/false,
             /*translucent on=*/true, /*no bg=*/false,
@@ -7388,7 +7561,9 @@ NetworkManager::RenderPostProcess(avtImage_p &input)
             input = (*it)->ImageExecute(input, renderState.windowInfo->windowAttributes);
     }
 
-    if ((renderState.annotMode == 2) && (PAR_Rank() == 0))
+    if ((renderState.annotMode == 2) && (PAR_Rank() == 0) &&
+        (renderState.imageType == ColorRGBImage || renderState.imageType == ColorRGBAImage)
+       )
     {
         input = renderState.window->PostProcessScreenCapture(
             input, renderState.viewportedMode, renderState.getZBuffer);

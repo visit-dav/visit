@@ -815,6 +815,69 @@ void  VisItCloseTraceFile(void);
 int VisItSaveWindow(const char *filename, int width, int height, int format);
 
 /******************************************************************************
+ * Function: VisItBeginCinema
+ *
+ * Purpose: 
+ *   This function saves parameters for a new Cinema database. This makes it
+ *   so we don't pass contradictory parameters later on and we also allocate
+ *   some internal storage for this Cinema database.
+ *
+ * Arguments:
+ *   file_cdb : The name of the .cdb directory that contains the Cinema data.
+ *   dbtype   : The type of database to create VISIT_DATABASE_IMAGE or
+ *              VISIT_DATABASE_COMPOSITE.
+ *   width    : The width of the saved image.
+ *   height   : The height of the saved image.
+ *   imgformat: The format in which to save the image. (e.g. VISIT_IMAGEFORMAT_JPEG)
+ *   cameratype: The camera type. VISIT_CAMERATYPE_STATIC, VISIT_CAMERATYPE_PHI_THETA.
+ *   nphi      : The number of divisions in phi (for VISIT_CAMERATYPE_PHI_THETA).
+ *   ntheta    : The number of divisions in theta (for VISIT_CAMERATYPE_PHI_THETA).
+ * 
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      A plot must have already been created. Call this function on all
+ *            processors.
+ *
+ * ****************************************************************************/
+int VisItBeginCinema(const char *file_cdb, int dbtype, 
+                     int width, int height, int imgformat, 
+                     int cameratype, int nphi, int ntheta);
+
+/******************************************************************************
+ * Function: VisItSaveCinema
+ *
+ * Purpose: 
+ *   This function saves the current plots to the file_cdb Cinema database.
+ *
+ * Arguments:
+ *   file_cdb : The name of the .cdb directory that contains the Cinema data.
+ *   time     : The time value for the current time step we're saving.
+ * 
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      A plot must have already been created. Call this function on all
+ *            processors.
+ *
+ * ****************************************************************************/
+int VisItSaveCinema(const char *file_cdb,  double time);
+
+/******************************************************************************
+ * Function: VisItEndCinema
+ *
+ * Purpose: 
+ *   This function ends a Cinema database.
+ *
+ * Arguments:
+ *   file_cdb : The name of the .cdb directory that contains the Cinema data.
+ * 
+ * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
+ *
+ * Note:      
+ *
+ * ****************************************************************************/
+int VisItEndCinema(const char *file_cdb);
+
+/******************************************************************************
  * Function: VisItSetMPICommunicator
  *
  * Purpose: 

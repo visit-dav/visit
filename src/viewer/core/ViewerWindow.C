@@ -2204,17 +2204,41 @@ ViewerWindow::ClearWindow(bool clearAllPlots)
 //  Purpose: 
 //    Tells the VisWindow to do a screen capture.
 //
+//  Arguments:
+//    doZBuffer : Make sure we return the z buffer in the image.
+//    dpAlpha   : Make sure we return alpha in the pixel data.
+//
 //  Returns:    The image from the screen capture.
 //
 //  Programmer: Hank Childs
 //  Creation:   February 11, 2001
 //
+//  Modifications:
+//    Brad Whitlock, Wed Sep 20 17:43:40 PDT 2017
+//    I added args for saving the zbuffer and alpha channel.
+//
 // ****************************************************************************
 
 avtImage_p
-ViewerWindow::ScreenCapture(void)
+ViewerWindow::ScreenCapture(avtImageType imgT, bool doZBuffer)
 {
-    return visWindow->ScreenCapture();
+    // These match the default arguments for VisWindow::ScreenCapture
+    bool doViewportOnly = false;
+    bool doOpaque = true;
+    bool doTranslucent = true;
+    avtImage_p input = NULL;
+
+    // If we're getting alpha, we don't want the background pixels
+    bool doAlpha = imgT == ColorRGBAImage;
+    bool disableBackground = doAlpha;       
+
+    return visWindow->ScreenCapture(doViewportOnly,
+                                    doZBuffer,
+                                    doOpaque,
+                                    doTranslucent,
+                                    doAlpha,
+                                    disableBackground,
+                                    input);
 }
 
 // ****************************************************************************
@@ -9828,7 +9852,8 @@ ViewerWindow::GetExternalRenderRequestInfo(
 
 bool
 ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
-    bool& shouldTurnOffScalableRendering, bool doAllAnnotations,
+    bool& shouldTurnOffScalableRendering, bool doAllAnnotations, 
+    avtImageType imgT, bool needZBuffer,
     avtDataObject_p& dob)
 {
     bool success = false;
@@ -9840,6 +9865,8 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
         success = IssueExternalRenderRequests(thisRequest,
                       shouldTurnOffScalableRendering,
                       doAllAnnotations,
+                      imgT,
+                      needZBuffer,
                       imgList,
                       GetWindowId());
     }
@@ -10019,6 +10046,8 @@ ViewerWindow::IssueExternalRenderRequests(
     const ExternalRenderRequestInfo &reqInfo,
     bool &shouldTurnOffScalableRendering,
     bool doAllAnnotations,
+    avtImageType imgT,
+    bool needZBuffer,
     std::vector<avtImage_p> &imgList,
     int windowID)
 {
@@ -10073,7 +10102,7 @@ ViewerWindow::IssueExternalRenderRequests(
         }
 
         size_t numEnginesToRender = perEnginePlotIds.size();
-        bool sendZBuffer = numEnginesToRender > 1 ? true : false;
+        bool sendZBuffer = (numEnginesToRender > 1) || needZBuffer;
 
         //
         // we have to force extents when we have more than one engine
@@ -10123,7 +10152,7 @@ ViewerWindow::IssueExternalRenderRequests(
             //   2 == valid image.
             avtImage_p img;
             int ret = GetViewerEngineManager()->Render(ek, img,
-                sendZBuffer, pos->second, annotMode, windowID, leftEye,
+                imgT, sendZBuffer, pos->second, annotMode, windowID, leftEye,
                 this->ProcessEventsCB, this->ProcessEventsCBData);
 
             if(ret == 0)
@@ -10211,11 +10240,15 @@ ViewerWindow::IssueExternalRenderRequests(
 //
 //   Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //   Added leftEye arg to GetExternalRenderRequestInfo
-//  
+//
+//   Brad Whitlock, Thu Sep 21 16:32:18 PDT 2017
+//   Added zbuffer and imgT.
+//
 // ****************************************************************************
 
 void
-ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
+ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h,
+    avtImageType imgT, bool needZBuffer)
 {
     const char *mName = "ViewerWindow::ExternalRenderManual: ";
     bool dummyBool;
@@ -10237,7 +10270,8 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
             SetScalableActivationMode(RenderingAttributes::Always);
 
         debug4 << mName << "Calling ExternalRender" << endl;
-        success = ExternalRender(thisRequest, dummyBool, true, dob);
+        success = ExternalRender(thisRequest, dummyBool, true, 
+                                 imgT, needZBuffer, dob);
 
         if (!success)
         {
@@ -10277,7 +10311,12 @@ ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h)
 //
 //   Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //   Added leftEye to support stereo SR
+//
+//   Brad Whitlock, Thu Sep 21 16:32:18 PDT 2017
+//   Added zbuffer and alpha.
+//
 // ****************************************************************************
+
 void
 ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob, bool leftEye)
 {
@@ -10313,10 +10352,12 @@ ViewerWindow::ExternalRenderAuto(avtDataObject_p& dob, bool leftEye)
     const int maxTries = 3;
     int trys = 0;
     bool success = false;
+    bool needZBuffer = false;
     while (!success && trys < maxTries)
     {
         success = ExternalRender(thisRequest,
-                                 shouldTurnOffScalableRendering, false, dob);
+                                 shouldTurnOffScalableRendering, false,
+                                 ColorRGBImage, needZBuffer, dob);
         if (!success)
         {
             GetPlotList()->ClearActors();

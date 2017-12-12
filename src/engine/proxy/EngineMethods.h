@@ -63,6 +63,7 @@
 #include <ParentProcess.h>
 #include <RemoteProcess.h>
 #include <avtDataObjectReader.h>
+#include <avtImageType.h>
 
 class EngineState;
 class AttributeSubject;
@@ -155,8 +156,10 @@ public:
     void                     SetBackendType(const int);
     void                     SetRemoveDuplicateNodes(bool);
 
-    avtDataObjectReader_p    Render(bool, const intVector&, int, int, bool,
-                                 void (*waitCB)(void *), void *cbData);
+    avtDataObjectReader_p    Render(avtImageType imgT, bool sendZBuffer,
+                                    const intVector& networkIDs,
+                                    int annotMode, int windowID, bool leftEye,
+                                    void (*waitCB)(void *), void *cbData);
 
     avtDataObjectReader_p    Execute(bool replyWithNullData, void (*waitCB)(void*),void *cbData);
 

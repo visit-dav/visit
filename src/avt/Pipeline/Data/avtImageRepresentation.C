@@ -847,6 +847,37 @@ avtImageRepresentation::NewImage(int width, int height, int nchan)
     return image;
 }
 
+// ****************************************************************************
+// Method: avtImageRepresentation::NewValueImage
+//
+// Purpose:
+//   Create a new value image.
+//
+// Arguments:
+//      width    The width of the image.
+//      height   The height of the image.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Sep 25 12:56:42 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+vtkImageData *
+avtImageRepresentation::NewValueImage(int width, int height)
+{
+    vtkImageData *image = vtkImageData::New();
+    image->SetExtent(0, width-1, 0, height-1, 0, 0);
+    image->SetSpacing(1., 1., 1.);
+    image->SetOrigin(0., 0., 0.);
+    image->AllocateScalars(VTK_FLOAT, 1);
+    return image;
+}
 
 // ****************************************************************************
 //  Function: GetImageFromString

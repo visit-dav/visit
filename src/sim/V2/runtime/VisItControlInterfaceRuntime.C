@@ -51,6 +51,8 @@
 #include <avtParallel.h>
 #endif
 #include <AttributeGroup.h>
+#include <View2DAttributes.h>
+#include <View3DAttributes.h>
 #include <StackTimer.h>
 #include <TimingsManager.h>
 #include <VisItException.h>
@@ -74,6 +76,8 @@
 
 #include <simv2_NameList.h>
 #include <simv2_OptionList.h>
+#include <simv2_View2D.h>
+#include <simv2_View3D.h>
 
 extern void DataCallbacksCleanup(void);
 
@@ -999,3 +1003,100 @@ simv2_restoresession(void *e, const char *filename)
     return engine->RestoreSession(filename) ? VISIT_OKAY : VISIT_ERROR;
 }
 
+// ****************************************************************************
+// Method: simv2_set_view2D
+//
+// Purpose:
+//   Sets the view.
+//
+// Arguments:
+//   e : The engine pointer.
+//   v : A handle to a VisIt_View2D object.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  1 17:22:28 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_set_view2D(void *e, visit_handle v)
+{
+    StackTimer t0("VisItSetView2D");
+
+    int retval = VISIT_ERROR;
+    View2DAttributes *atts = simv2_View2D_GetAttributes(v);
+    if(atts != NULL)
+    {
+        SimEngine *engine = (SimEngine*)e;
+        retval = engine->SetView2D(*atts) ? VISIT_OKAY : VISIT_ERROR;
+    }
+    return retval;
+}
+
+int
+simv2_get_view2D(void *e, visit_handle v)
+{
+    int retval = VISIT_ERROR;
+    View2DAttributes *atts = simv2_View2D_GetAttributes(v);
+    if(atts != NULL)
+    {
+        SimEngine *engine = (SimEngine*)e;
+        retval = engine->GetView2D(*atts) ? VISIT_OKAY : VISIT_ERROR;
+    }
+    return retval;
+}
+
+// ****************************************************************************
+// Method: simv2_set_view3D
+//
+// Purpose:
+//   Sets the view.
+//
+// Arguments:
+//   e : The engine pointer.
+//   v : A handle to a VisIt_View3D object.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Jun  1 17:22:28 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_set_view3D(void *e, visit_handle v)
+{
+    StackTimer t0("VisItSetView3D");
+
+    int retval = VISIT_ERROR;
+    View3DAttributes *atts = simv2_View3D_GetAttributes(v);
+    if(atts != NULL)
+    {
+        SimEngine *engine = (SimEngine*)e;
+        retval = engine->SetView3D(*atts) ? VISIT_OKAY : VISIT_ERROR;
+    }
+    return retval;
+}
+
+int
+simv2_get_view3D(void *e, visit_handle v)
+{
+    int retval = VISIT_ERROR;
+    View3DAttributes *atts = simv2_View3D_GetAttributes(v);
+    if(atts != NULL)
+    {
+        SimEngine *engine = (SimEngine*)e;
+        retval = engine->GetView3D(*atts) ? VISIT_OKAY : VISIT_ERROR;
+    }
+    return retval;
+}

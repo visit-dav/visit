@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="Windows-1252" ?>
+  <Attribute name="CinemaAttributes" purpose="This class contains the attributes used for saving Cinema" persistent="true" keyframe="false" exportAPI="STATE_API" exportInclude="state_exports.h">
+    <Field name="specification" label="Specification" type="string">
+      A
+    </Field>
+    <Field name="fileName" label="File name" type="string">
+      visit.cdb
+    </Field>
+    <Field name="cameraMode" label="Camera Mode" type="string">
+      phi-theta
+    </Field>
+    <Field name="theta" label="Theta" type="int">
+      7
+    </Field>
+    <Field name="phi" label="Phi" type="int">
+      12
+    </Field>
+    <Field name="roll" label="Roll" type="int">
+      1
+    </Field>
+    <Field name="format" label="Format" type="string">
+      png
+    </Field>
+    <Field name="composite" label="Composite" type="bool">
+      false
+    </Field>
+    <Field name="useScreenCapture" label="Use screen capture" type="bool">
+      false
+    </Field>
+    <Field name="width" label="Width" type="int">
+      600
+    </Field>
+    <Field name="height" label="Height" type="int">
+      600
+    </Field>
+    <Field name="frameStart" label="Frame start" type="int">
+      0
+    </Field>
+    <Field name="frameEnd" label="Frame end" type="int">
+      -1
+    </Field>
+    <Field name="frameStride" label="Frame stride" type="int">
+      1
+    </Field>
+  </Attribute>

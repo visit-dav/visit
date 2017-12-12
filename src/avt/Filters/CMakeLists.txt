@@ -120,6 +120,7 @@ avtTiledImageCompositor.C
 avtTimeLoopCollectorFilter.C
 avtTimeLoopFilter.C
 avtTransform.C
+avtValueImageCompositer.C
 avtVertexNormalsFilter.C
 avtWarpFilter.C
 avtWholeImageCompositerNoZ.C

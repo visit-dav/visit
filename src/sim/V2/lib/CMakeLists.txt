@@ -112,6 +112,8 @@ VisIt_SpeciesMetaData.h
 VisIt_UnstructuredMesh.h
 VisIt_VariableData.h
 VisIt_VariableMetaData.h
+VisIt_View2D.h
+VisIt_View3D.h
 visitfortransimV2interface.inc
     DESTINATION ${VISIT_INSTALLED_VERSION}/libsim/V2/include
     PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ 

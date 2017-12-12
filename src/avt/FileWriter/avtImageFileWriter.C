@@ -42,6 +42,10 @@
 
 #include <avtImageFileWriter.h>
 
+#include <visit-config.h>
+
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
 #include <vtkBMPWriter.h>
 #include <vtkImageData.h>
 #include <vtkJPEGWriter.h>
@@ -50,10 +54,15 @@
 #include <vtkPPMWriter.h>
 #include <vtkRGBWriter.h>
 #include <vtkPNGWriter.h>
+#ifdef HAVE_LIBOPENEXR
+#include <vtkOpenEXRWriter.h>
+#endif
 #include <vtkUnsignedCharArray.h>
 #include <vtkBase64Utilities.h>
-#include <DebugStream.h>
 #include <vtkImageResample.h>
+#include <vtkZLibDataCompressor.h>
+
+#include <DebugStream.h>
 
 #include <snprintf.h>
 
@@ -66,7 +75,8 @@ const char *avtImageFileWriter::extensions[][4] = {
 {".ps", ".PS", NULL, NULL},
 {".ppm", ".PPM", NULL, NULL},
 {".rgb", ".RGB", NULL, NULL},
-{".tif", ".tiff", ".TIF", ".TIFF"}
+{".tif", ".tiff", ".TIF", ".TIFF"},
+{".exr", ".EXR", NULL, NULL}
 };
 
 
@@ -151,13 +161,21 @@ avtImageFileWriter::~avtImageFileWriter()
 //    Use vtkVisItTIFFWriter, which does not exhibit strangeness like
 //    vtkTIFFWriter does on the SGIs using CC.
 //
+//    Brad Whitlock, Tue Sep 19 14:15:40 PDT 2017
+//    OpenEXR support. Write ZBuffer, luminance image, value image if present.
+//    I made it return a list of filenames.
+//
 // ****************************************************************************
 
-void
+std::vector<std::string>
 avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
                           int quality, bool progressive, int compression)
 {
     vtkImageWriter *writer = NULL;
+    bool writeZ = true;
+    bool writeLuminance = true;
+    bool writeValue = true;
+    std::vector<std::string> fnList;
 
     // Create a different writer object based on the desired file type.
     switch(format)
@@ -185,6 +203,23 @@ avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
     case RGB:
         writer = vtkRGBWriter::New();
         break;
+    case OPENEXR:
+#ifdef HAVE_LIBOPENEXR
+        { // new scope
+        vtkOpenEXRWriter *exrWriter = vtkOpenEXRWriter::New();
+        // Pass the Z buffer, if there is one, to the writer.
+        exrWriter->SetZBuffer(GetImageRep().GetZBufferVTK());
+        writer = exrWriter;
+        }
+#else
+        debug1 << "VisIt was not built with OpenEXR support." << endl;
+#endif
+        // OpenEXR writer will write these images into the same file
+        // so don't let the code later on in this method execute.
+        writeZ = false;
+        writeValue = false;
+        writeLuminance = false;
+        break;
     case TIFF:
     default:
         writer = vtkVisItTIFFWriter::New();
@@ -195,11 +230,121 @@ avtImageFileWriter::Write(ImageFileFormat format, const char *filename,
     // Use the writer to write the image to a file.
     if(writer)
     {
-        writer->SetFileName(filename);
-        writer->SetInputData(GetImageRep().GetImageVTK());
-        writer->Write();
-        writer->Delete();
+        // We might have a situation where the ImageScalars are 1 channel 
+        // float as in a value image. Make sure we have a vtkUnsignedCharArray.
+        // We let this go through in case we have float data we have openexr.
+        if(GetImageRep().GetRGBBufferVTK() != NULL || writeValue == false)
+        {
+            debug5 << "Writing RGB(A) data to " << filename << endl;
+
+            // Write the image.
+            fnList.push_back(filename);
+            writer->SetFileName(filename);
+            writer->SetInputData(GetImageRep().GetImageVTK());
+            writer->Write();
+        }
     }
+
+    // If the ZBuffer is present, we made a request upstream for it. Write
+    // it out as zlib-compressed floats.
+    if(writeZ && GetImageRep().GetZBufferVTK() != NULL)
+    {
+        std::string zfilename(filename);
+        std::string::size_type dot = zfilename.rfind(".");
+        if(dot != std::string::npos)
+        {
+            zfilename = zfilename.substr(0, dot) + ".depth.Z";
+        }
+        else
+            zfilename.append(".depth.Z");
+        debug5 << "Writing Z data to " << zfilename << endl;
+        // We scale Z from [0,1] to [0,256]. The 256 value is used by Cinema to
+        // discard fragments in a shader.
+        if(WriteFloatImage(zfilename, GetImageRep().GetZBufferVTK(), true, 256.f))
+            fnList.push_back(zfilename);
+    }
+
+    // If the value array is present, write it.
+    if(writeValue)
+    {
+        vtkFloatArray *valueF = NULL;
+        if(GetImageRep().GetRGBBufferVTK() != NULL)
+        {
+            // we have uchar image data so look for "value" data.
+            vtkDataArray *value = GetImageRep().GetImageVTK()->GetPointData()->GetArray("value");
+            valueF = vtkFloatArray::SafeDownCast(value);
+            if(valueF != NULL)
+            {
+                debug5 << "Found value data in array \"value\"" << endl;
+            }
+        }
+        else
+        {
+            vtkDataArray *value = GetImageRep().GetImageVTK()->GetPointData()->GetScalars();
+            vtkFloatArray *f = vtkFloatArray::SafeDownCast(value);
+            if(f != NULL && 
+               strcmp(f->GetName(), "ImageScalars") == 0 &&
+               f->GetNumberOfComponents() == 1)
+            {
+                // It looks like a value image.
+                valueF = f;
+                debug5 << "Found value data as float ImageScalars." << endl;
+            }
+            else
+            {
+                debug5 << "Scalars were called " << value->GetName() << endl;
+            }
+        }
+
+        if(valueF != NULL)
+        {
+            std::string vfilename(filename);
+            std::string::size_type dot = vfilename.rfind(".");
+            if(dot != std::string::npos)
+            {
+                vfilename = vfilename.substr(0, dot) + ".value.Z";
+            }
+            else
+                vfilename.append(".value.Z");
+            debug5 << "Writing value data to " << vfilename << endl;
+            if(WriteFloatImage(vfilename, valueF))
+                fnList.push_back(vfilename);
+        }
+    }
+
+    // Write the luminance image. Let's write it after value because 
+    // changing the scalar this way seems flaky.
+    vtkDataArray *lum = GetImageRep().GetImageVTK()->GetPointData()->GetArray("luminance");
+    if(writer != NULL && writeLuminance && lum != NULL)
+    {
+//        vtkDataArray *scalars = GetImageRep().GetImageVTK()->GetPointData()->GetScalars();
+        // override scalars.
+        GetImageRep().GetImageVTK()->GetPointData()->SetScalars(lum);
+
+        std::string lfilename(filename);
+        std::string::size_type dot = lfilename.rfind(".");
+        std::string ext(std::string(".lum") + std::string(extensions[format][0]));
+        if(dot != std::string::npos)
+        {
+            lfilename = lfilename.substr(0, dot) + ext;
+        }
+        else
+            lfilename.append(ext);
+
+        debug5 << "Writing luminance data to " << lfilename << endl;
+        fnList.push_back(lfilename);
+        writer->SetFileName(lfilename.c_str());
+        writer->Write();
+
+        // restore scalars
+//        if(scalars != NULL)
+//            GetImageRep().GetImageVTK()->GetPointData()->SetScalars(scalars);
+    }
+
+    if(writer != NULL)
+        writer->Delete();
+
+    return fnList;
 }
 
 // ****************************************************************************
@@ -242,6 +387,120 @@ avtImageFileWriter::Write(vtkImageWriter *writer, const char *filename)
         writer->SetInputData(GetImageRep().GetImageVTK());
         writer->Write();
     }
+}
+
+// ****************************************************************************
+// Method: avtImageFileWriter::WriteFloatImage
+//
+// Purpose:
+//   Writes a float image as a zlib-compressed file.
+//
+// Arguments:
+//   filename : The name of the file to write.
+//
+// Returns:    
+//
+// Note:       This helps support Cinema.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 21 12:02:53 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+avtImageFileWriter::WriteFloatImage(const std::string &filename, vtkFloatArray *arr,
+    bool doScale, float scale)
+{
+    bool retval = false;
+    const char *mName = "avtImageFileWriter::WriteFloatImage: ";
+    debug5 << mName << "We have a arr array with "
+           << arr->GetNumberOfTuples() << " tuples." << endl;
+    vtkZLibDataCompressor *compressor = vtkZLibDataCompressor::New();
+    if(compressor != NULL)
+    {
+        debug5 << mName << "Created compressor." << endl;
+        FILE *f = fopen(filename.c_str(), "wb");
+        if(f != NULL)
+        {
+            debug5 << "Opened " << filename << " for output." << endl;
+
+            // Get the size of the image. We have to flip vertically 
+            // as we write it.
+            int width, height;
+            GetImageRep().GetSize(&height, &width);
+            debug5 << mName << "width=" << width << ", height=" << height << endl;
+
+#define VISIT_Z_FLIP
+            float *ubuf = NULL;
+            bool deleteubuf = false;
+            if(doScale)
+            {
+                // Flip the buffer.
+                const float *zbase = (const float *)arr->GetVoidPointer(0);
+                ubuf = new float[width*height];
+                deleteubuf = true;
+                float *dest = ubuf;
+                for(int j = 0; j < height; ++j)
+                {
+#ifdef  VISIT_Z_FLIP
+                    const float *src = zbase + (height-1-j) * width; // flip
+#else
+                    const float *src = zbase + j * width;
+#endif
+                    for(int i = 0; i < width; ++i)
+                        dest[i] = src[i] * scale;
+                    dest += width;
+                }
+            }
+            else
+            {
+#ifdef VISIT_Z_FLIP
+                // Flip the buffer.
+                const float *zbase = (const float *)arr->GetVoidPointer(0);
+                ubuf = new float[width*height];
+                deleteubuf = true;
+                float *dest = ubuf;
+                for(int j = 0; j < height; ++j)
+                {
+                    const float *src = zbase + (height-1-j) * width; // flip
+                    memcpy(dest, src, sizeof(float) * width);
+                    dest += width;
+                }
+#else
+                const float *ubuf = (const float *)arr->GetVoidPointer(0);
+#endif
+            }
+
+            // Compress the whole buffer at once.
+            size_t usize = sizeof(float) * width * height;
+            size_t maxSize = compressor->GetMaximumCompressionSpace(usize);
+            debug5 << mName << "usize=" << usize << ", maxSize=" << maxSize << endl;
+            unsigned char *cbuf = new unsigned char[maxSize];
+            size_t csize = compressor->Compress(
+                                   (const unsigned char *)ubuf,
+                                   usize,
+                                   cbuf,
+                                   maxSize);
+
+            // Write to the file.
+            size_t n = fwrite(cbuf, sizeof(unsigned char), csize, f);
+            debug5 << mName << "Told to write " << csize << " bytes. Wrote "
+                   << n << " bytes." << endl;
+
+            if(deleteubuf)
+                delete [] ubuf;
+
+            delete [] cbuf;
+            fclose(f);
+            retval = true;
+        }
+        compressor->Delete();
+    }
+
+    debug5 << mName << "retval=" << (retval?"true":"false") << endl;
+    return retval;
 }
 
 // ****************************************************************************

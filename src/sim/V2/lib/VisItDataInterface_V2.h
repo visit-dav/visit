@@ -68,4 +68,6 @@
 #include <VisIt_UnstructuredMesh.h>
 #include <VisIt_VariableData.h>
 
+#include <VisIt_View2D.h>
+#include <VisIt_View3D.h>
 #endif

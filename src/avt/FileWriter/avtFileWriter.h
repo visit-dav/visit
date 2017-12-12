@@ -76,8 +76,8 @@ class AVTFILEWRITER_API avtFileWriter
     void                   SetFormat(int);
     bool                   IsImageFormat(void);
 
-    void                   Write(const char *, avtDataObject_p, int, bool,
-                                 int, bool);
+    std::vector<std::string> Write(const char *, avtDataObject_p, int, bool,
+                                   int, bool);
     void                   WriteImageDirectly(vtkImageWriter *, const char *,
                                             avtDataObject_p);
   

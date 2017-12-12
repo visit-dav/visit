@@ -5451,6 +5451,40 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         }
         GetViewerMethods()->SetActivePlots(activePlots);
     }
+    else if(command.substr(0,9) == "SetView2D")
+    {
+        // The message is formatted like: SetView2D:XML
+        std::stringstream xml(command.substr(10));
+        View2DAttributes *atts = GetViewerState()->GetView2DAttributes();
+        SingleAttributeConfigManager mgr(atts);
+        if(mgr.Import(xml))
+        {
+            atts->Notify();
+            GetViewerMethods()->SetView2D();
+        }
+        else
+        {
+            debug5 << "SetView2D failed because the View2DAttributes could not "
+                      "be read from simulation." << endl;
+        }
+    }
+    else if(command.substr(0,9) == "SetView3D")
+    {
+        // The message is formatted like: SetView3D:XML
+        std::stringstream xml(command.substr(10));
+        View3DAttributes *atts = GetViewerState()->GetView3DAttributes();
+        SingleAttributeConfigManager mgr(atts);
+        if(mgr.Import(xml))
+        {
+            atts->Notify();
+            GetViewerMethods()->SetView3D();
+        }
+        else
+        {
+            debug5 << "SetView3D failed because the View3DAttributes could not "
+                      "be read from simulation." << endl;
+        }
+    }
 }
 
 // ****************************************************************************

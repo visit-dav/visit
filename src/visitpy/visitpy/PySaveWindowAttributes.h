@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SAVEWINDOWATTRIBUTES_NMETH 38
+#define SAVEWINDOWATTRIBUTES_NMETH 40
 void VISITPY_API           PySaveWindowAttributes_StartUp(SaveWindowAttributes *subj, void *data);
 void VISITPY_API           PySaveWindowAttributes_CloseDown();
 VISITPY_API PyMethodDef *  PySaveWindowAttributes_GetMethodTable(int *nMethods);

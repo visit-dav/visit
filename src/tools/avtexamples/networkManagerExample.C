@@ -19,6 +19,7 @@
 #include <WindowAttributes.h>
 
 #include <avtFileWriter.h>
+#include <avtImageType.h>
 
 #include <VisItException.h>
 #include <visitstream.h>
@@ -167,7 +168,14 @@ main(int argc, char *argv[])
     cerr << "Rendering the image." << endl;
     intVector plotIds;
     plotIds.push_back(0);
-    avtDataObject_p image = netmgr->Render(false, plotIds, false, 0, 0, false);
+    avtImageType imgT = ColorRGBImage;
+    bool checkThreshold = true;
+    bool getZBuffer = false;
+    int annotMode = 0;
+    int winId = 0;
+    bool leftEye = false;
+    avtDataObject_p image = netmgr->Render(imgT, getZBuffer, plotIds,
+        checkThreshold, annotMode, winId, leftEye);
 
     //
     // Save the image.

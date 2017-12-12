@@ -41,6 +41,7 @@
 #include <engine_rpc_exports.h>
 
 #include <VisItRPC.h>
+#include <avtImageType.h>
 
 // ****************************************************************************
 //  Class:  RenderRPC
@@ -64,7 +65,12 @@
 //
 //    Mark C. Miller, Sat Jul 22 23:21:09 PDT 2006
 //    Added leftEye to support stereo SR
+//
+//    Brad Whitlock, Thu Sep 21 16:40:58 PDT 2017
+//    Added sendAlpha.
+//
 // ****************************************************************************
+
 class ENGINE_RPC_API RenderRPC : public NonBlockingRPC
 {
 public:
@@ -74,7 +80,9 @@ public:
     virtual const std::string TypeName() const { return "RenderRPC"; }
 
     // Invokation method
-    void operator()(const intVector&,bool,int,int,bool);
+    void operator()(avtImageType imgT,
+                    const intVector& ids_, bool sendZBuffer_, 
+                    int annotMode_, int windowID_, bool leftEye_);
 
     // Property selection methods
     virtual void SelectAll();
@@ -85,6 +93,7 @@ public:
     void SetAnnotMode(int);
     void SetWindowID(int);
     void SetLeftEye(bool);
+    void SetImageType(avtImageType);
 
     // Property getting methods
     const intVector& GetIDs() const;
@@ -92,6 +101,7 @@ public:
     int  GetAnnotMode() const;
     int GetWindowID() const;
     bool GetLeftEye() const;
+    avtImageType GetImageType() const;
 
 private:
     intVector ids;
@@ -99,6 +109,7 @@ private:
     int annotMode;
     int windowID;
     bool leftEye;
+    int imageType;
 };
 
 #endif

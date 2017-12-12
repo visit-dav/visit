@@ -111,6 +111,11 @@
 #include <avtFileWriter.h>
 #include <avtToolInterface.h>
 
+#include <vtkDataArray.h>
+#include <vtkImageData.h>
+#include <vtkPointData.h>
+#include <vtkUnsignedCharArray.h>
+
 #include <DebugStream.h>
 
 #include <stdio.h> // for sscanf
@@ -1668,6 +1673,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Brad Whitlock, Tue Mar 22 19:35:40 PDT 2016
 //    Do not check permissions in CreateFilename when running in situ.
 //
+//    Brad Whitlock, Wed Sep 20 17:50:45 PDT 2017
+//    I added support for saving images with the z buffer and alpha.
+//
 // ****************************************************************************
 
 void
@@ -1915,13 +1923,16 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
             if (GetViewerState()->GetSaveWindowAttributes()->GetSaveTiled())
             {
+                bool doAlpha = GetViewerState()->GetSaveWindowAttributes()->GetPixelData() &
+                               SaveWindowAttributes::ColorRGBA;
+
                 // Create a tiled image for the left eye.
-                image = CreateTiledImage(w, h, true);
+                image = CreateTiledImage(w, h, true, doAlpha);
 
                 // Create a tiled image for the right eye.
                 if (GetViewerState()->GetSaveWindowAttributes()->GetStereo())
                 {
-                    image2 = CreateTiledImage(w, h, false);
+                    image2 = CreateTiledImage(w, h, false, doAlpha);
                 }
             }
             else if (GetViewerState()->GetSaveWindowAttributes()->GetAdvancedMultiWindowSave())
@@ -1938,16 +1949,25 @@ ViewerWindowManager::SaveWindow(int windowIndex)
             else
             {
                 // Create the left eye.
-                image = CreateSingleImage(windowIndex, w, h,
+                image = CreateSingleImage(GetViewerState()->GetSaveWindowAttributes()->GetPixelData(),
+                                          (windowIndex == -1) ? activeWindow : windowIndex, w, h,
                                           GetViewerState()->GetSaveWindowAttributes()->GetScreenCapture(),
                                           true);
 
                 // Create the right eye.
                 if (GetViewerState()->GetSaveWindowAttributes()->GetStereo())
                 {
-                    image2 = CreateSingleImage(windowIndex, w, h,
+                    image2 = CreateSingleImage(GetViewerState()->GetSaveWindowAttributes()->GetPixelData(),
+                                               (windowIndex == -1) ? activeWindow : windowIndex, w, h,
                                                GetViewerState()->GetSaveWindowAttributes()->GetScreenCapture(),
                                                false);
+                }
+
+                if(*image == NULL)
+                {
+                    GetViewerMessaging()->Error(TR("No image was saved. The combination "
+                        "of pixel data flags resulted in no image."));
+                    return;
                 }
             }
             CopyTo(dob, image);
@@ -1999,6 +2019,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
 
     // Save the window.
+    std::vector<std::string> savedFileNames;
     if(GetViewerProperties()->GetMasterProcess())
     {
         StackTimer t2("Writing image");
@@ -2009,19 +2030,23 @@ ViewerWindowManager::SaveWindow(int windowIndex)
                 if (filename != NULL)
                 {
                     // Tell the writer to save the window on the viewer.
-                    fileWriter->Write(filename, dob,GetViewerState()->GetSaveWindowAttributes()->GetQuality(),
-                                      GetViewerState()->GetSaveWindowAttributes()->GetProgressive(),
-                                      GetViewerState()->GetSaveWindowAttributes()->GetCompression(),
-                                      GetViewerState()->GetSaveWindowAttributes()->GetBinary());
+                    savedFileNames = fileWriter->Write(filename, dob,
+                        GetViewerState()->GetSaveWindowAttributes()->GetQuality(),
+                        GetViewerState()->GetSaveWindowAttributes()->GetProgressive(),
+                        GetViewerState()->GetSaveWindowAttributes()->GetCompression(),
+                        GetViewerState()->GetSaveWindowAttributes()->GetBinary());
     
                     if (*dob2 != NULL)
                     {
                         // Tell the writer to save the window on the viewer.
-                        fileWriter->Write(filename2, 
-                                          dob2,GetViewerState()->GetSaveWindowAttributes()->GetQuality(),
-                                          GetViewerState()->GetSaveWindowAttributes()->GetProgressive(),
-                                          GetViewerState()->GetSaveWindowAttributes()->GetCompression(),
-                                          GetViewerState()->GetSaveWindowAttributes()->GetBinary());
+                        std::vector<std::string> rFileNames;
+                        rFileNames = fileWriter->Write(filename2, 
+                            dob2,GetViewerState()->GetSaveWindowAttributes()->GetQuality(),
+                            GetViewerState()->GetSaveWindowAttributes()->GetProgressive(),
+                            GetViewerState()->GetSaveWindowAttributes()->GetCompression(),
+                            GetViewerState()->GetSaveWindowAttributes()->GetBinary());
+                        for(size_t q = 0; q < rFileNames.size(); ++q)
+                            savedFileNames.push_back(rFileNames[q]);
                     }
                 }
             }
@@ -2059,9 +2084,13 @@ ViewerWindowManager::SaveWindow(int windowIndex)
     }
 
     // Send a message to indicate that we're done saving the image.
-    if (savedWindow && filename != NULL)
+    if (savedWindow && filename != NULL && !savedFileNames.empty())
     {
-        message = TR("Saved %1").arg(filename);
+        std::string fnList(savedFileNames[0]);
+        for(size_t q = 1; q < savedFileNames.size(); ++q)
+            fnList = (fnList + ", ") + savedFileNames[q];
+
+        message = TR("Saved %1").arg(fnList);
         GetViewerMessaging()->Status(message);
         GetViewerMessaging()->Message(message);
         GetViewerState()->GetSaveWindowAttributes()->SetLastRealFilename(filename);
@@ -2086,6 +2115,219 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 
 // ****************************************************************************
 //  Method: ViewerWindowManager::CreateSingleImage
+//
+//  Purpose: 
+//    Returns an avtImage representation of the VisWindow. The image may have
+//    resulted from multiple renders.
+//
+//  Arguments:
+//    pixelType      The types of pixels we want to obtain.
+//    windowIndex    The window index for which we want an image.
+//    width          The desired width of the return image.
+//    height         The desired height of the return image.
+//    screenCapture  A flag indicating whether or not to do screen capture.
+//    leftEye        True if we want the left eye.
+//
+//  Returns:    An avtImage representation of the specified VisWindow.
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Thu Sep 28 10:08:25 PDT 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+//#define CREATE_SINGLE_IMAGE_DEBUG
+#ifdef CREATE_SINGLE_IMAGE_DEBUG
+#include <vtkPNGWriter.h>
+#include <vtkFloatArray.h>
+#endif
+
+avtImage_p
+ViewerWindowManager::CreateSingleImage(int pixelData, int windowIndex,
+    int width, int height, bool screenCapture, bool leftEye)
+{
+    const char *mName = "ViewerWindowManager::CreateSingleImage: ";
+    avtImage_p retval = NULL;
+    int nSrcImages = 0;
+    bool haveZ = false;
+    bool append = false;
+
+    // Do not allow screen capture of we're making multiple images.
+    bool doScreenCapture = screenCapture;
+    if((pixelData & SaveWindowAttributes::Luminance) ||
+       (pixelData & SaveWindowAttributes::Value)
+      )
+    {
+        // If we'd otherwise screen capture then get the SC window size.
+        if(screenCapture)
+            windows[windowIndex]->GetSize(width, height);
+        doScreenCapture = false;
+        debug5 << mName << "Window size: width=" << width << ", height=" << height << endl;
+    }
+
+    // Get the color data.
+    if((pixelData & SaveWindowAttributes::ColorRGB) ||
+       (pixelData & SaveWindowAttributes::ColorRGBA)
+      )
+    {
+        bool doAlpha = (pixelData & SaveWindowAttributes::ColorRGBA) &&
+                       GetViewerState()->GetSaveWindowAttributes()->CurrentFormatSupportsAlpha();
+        bool doZBuffer = pixelData & SaveWindowAttributes::Depth;
+
+        debug5 << mName << "Request RGB" << (doAlpha?"A":"") << " image. doZBuffer=" << doZBuffer << endl;
+
+        retval = CreateSingleImageType(
+            doAlpha ? ColorRGBAImage : ColorRGBImage, doZBuffer,
+            windowIndex, width, height, doScreenCapture, leftEye);
+
+#ifdef CREATE_SINGLE_IMAGE_DEBUG
+        vtkPNGWriter *writer = vtkPNGWriter::New();
+        writer->SetFileName("csi_rgb.png");
+        writer->SetInputData(retval->GetImage().GetImageVTK());
+        writer->Write();
+        writer->Delete();
+#endif
+        haveZ = true;
+        append = true;
+    }
+
+    // Get the luminance data
+    if(pixelData & SaveWindowAttributes::Luminance)
+    {
+        bool doZBuffer = false;
+        bool doAlpha = false;
+        if(!haveZ)
+            doZBuffer = pixelData & SaveWindowAttributes::Depth;
+
+        debug5 << "Request Luminance image. doZBuffer=" << doZBuffer << endl;
+
+        avtImage_p luminance = CreateSingleImageType(
+            LuminanceImage, doZBuffer, 
+            windowIndex, width, height, doScreenCapture, leftEye);
+
+#ifdef CREATE_SINGLE_IMAGE_DEBUG
+        vtkPNGWriter *writer = vtkPNGWriter::New();
+        writer->SetFileName("csi_lum.png");
+        writer->SetInputData(luminance->GetImage().GetImageVTK());
+        writer->Write();
+        writer->Delete();
+#endif
+
+        if(append)
+        {
+            // Get current scalars for the RGB image
+            vtkDataArray *scalars = retval->GetImage().GetImageVTK()->GetPointData()->GetScalars();
+            debug5 << mName << "retval scalars = " << (void*)scalars
+                   << " name=" << (scalars?scalars->GetName():"NULL") << endl;
+
+            // Add the luminance image into the VTK image data.
+            vtkUnsignedCharArray *L = luminance->GetImage().GetRGBBufferVTK();
+            if(L != NULL)
+            {
+                debug5 << mName << "Renaming " << L->GetName() << " to luminance and adding to retval image." << endl;
+                L->SetName("luminance");
+                retval->GetImage().GetImageVTK()->GetPointData()->AddArray(L);
+
+                // Now that we've added the luminance data, restore the scalar in retval.
+                if(scalars != NULL)
+                {
+                    debug5 << mName << "Resetting the scalars to " << (void*)scalars
+                           << " name=" << scalars->GetName() << endl;
+                    retval->GetImage().GetImageVTK()->GetPointData()->SetScalars(scalars);
+                }
+            }
+            else
+            {
+                debug5 << mName << "We could not get the luminance pixels." << endl;
+            }
+
+            if(!haveZ && doZBuffer)
+            {
+                // Take the image's zbuffer and store a reference into retval.
+                retval->GetImage().SetZBufferVTK(luminance->GetImage().GetZBufferVTK());
+                haveZ = true;
+            }
+        }
+        else
+        {
+            retval = luminance;
+            if(!haveZ)
+                haveZ = doZBuffer;
+        }
+
+        append = true;
+    }
+
+    // Get the value data.
+    if(pixelData & SaveWindowAttributes::Value)
+    {
+        bool doZBuffer = false;
+        if(!haveZ)
+            doZBuffer = pixelData & SaveWindowAttributes::Depth;
+
+        debug5 << mName << "Request Value image. doZBuffer=" << doZBuffer << endl;
+
+        avtImage_p value = CreateSingleImageType(
+             ValueImage, doZBuffer,
+             windowIndex, width, height, doScreenCapture, leftEye);
+
+        if(append)
+        {
+            // Get the scalars for the return image.
+            vtkDataArray *scalars = retval->GetImage().GetImageVTK()->GetPointData()->GetScalars();
+            debug5 << mName << "retval scalars = " << (void*)scalars
+                   << " name=" << (scalars?scalars->GetName():"NULL") << endl;
+
+            // Add the value image into the VTK image data.
+            vtkDataArray *v = value->GetImage().GetImageVTK()->GetPointData()->GetScalars();
+            if(v != NULL)
+            {
+                debug5 << mName << "Renaming " << v->GetName() << " to value and adding to retval image." << endl;
+                v->SetName("value");
+                retval->GetImage().GetImageVTK()->GetPointData()->AddArray(v);
+
+                // Now that we've added the luminance data, restore the scalar in retval.
+                if(scalars != NULL)
+                {
+                    debug5 << mName << "Resetting the scalars to " << (void*)scalars
+                           << " name=" << scalars->GetName() << endl;
+                    retval->GetImage().GetImageVTK()->GetPointData()->SetScalars(scalars);
+                }
+            }
+        }
+        else
+        {
+            retval = value;
+        }
+    }
+
+#ifdef CREATE_SINGLE_IMAGE_DEBUG
+    // Let's see what we made.
+    if(*retval != NULL)
+    {
+        debug5 << mName;
+        for(int i = 0; i < retval->GetImage().GetImageVTK()->GetPointData()->GetNumberOfArrays(); ++i)
+        {
+            debug5 << retval->GetImage().GetImageVTK()->GetPointData()->GetArray(i)->GetName() << ", ";
+        }
+        if(retval->GetImage().GetZBufferVTK() != NULL)
+        {
+            debug5 << "zbuffer = " << retval->GetImage().GetZBufferVTK()->GetName();
+        }
+        else
+        {
+            debug5 << "zbuffer = NULL";
+        }
+        debug5 << endl;
+    }
+#endif
+
+    return retval;
+}
+
+// ****************************************************************************
+//  Method: ViewerWindowManager::CreateSingleImageType
 //
 //  Purpose: 
 //    Returns an avtImage representation of the VisWindow.
@@ -2134,11 +2376,14 @@ ViewerWindowManager::SaveWindow(int windowIndex)
 //    Brad Whitlock, Wed Dec 10 14:50:55 PST 2008
 //    Get animation attributes directly from the plot list.
 //
+//    Brad Whitlock, Wed Sep 20 17:47:53 PDT 2017
+//    Added imgT and doZBuffer.
+//
 // ****************************************************************************
 
 avtImage_p
-ViewerWindowManager::CreateSingleImage(int windowIndex,
-    int width, int height, bool screenCapture, bool leftEye)
+ViewerWindowManager::CreateSingleImageType(avtImageType imgT, bool doZBuffer, 
+    int windowIndex,  int width, int height, bool screenCapture, bool leftEye)
 {
     int        index = (windowIndex == -1) ? activeWindow : windowIndex;
     avtImage_p retval = NULL;
@@ -2150,13 +2395,13 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
             windows[index]->ConvertFromLeftEyeToRightEye();
         }
 
-        if(screenCapture)
+        if(screenCapture && (imgT == ColorRGBImage || imgT == ColorRGBAImage))
         {
             StackTimer t0("Screen capture");
 #ifdef MESA_STUB
             if(GetViewerProperties()->GetNowin() == false)
             {
-                retval = windows[index]->ScreenCapture();
+                retval = windows[index]->ScreenCapture(imgT, doZBuffer);
             }
             else
             {
@@ -2170,7 +2415,7 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
                        " problems with some graphics drivers."));
             }
 #else
-            retval = windows[index]->ScreenCapture();
+            retval = windows[index]->ScreenCapture(imgT, doZBuffer);
 #endif
         }
         else
@@ -2186,7 +2431,8 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
             else
             {
                 avtDataObject_p extImage;
-                windows[index]->ExternalRenderManual(extImage, width, height);
+                windows[index]->ExternalRenderManual(extImage, width, height,
+                                                     imgT, doZBuffer);
                 CopyTo(retval, extImage);
             }
         }
@@ -2209,6 +2455,8 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
 //  Arguments:
 //    width     The desired width of the tiled image.
 //    height    The desired height of the tiled image.
+//    leftEye   Whether we render for the left eye.
+//    dpAlpha   Whether we should make images with alpha.
 //
 //  Returns:    A tiled image.
 //
@@ -2225,8 +2473,11 @@ ViewerWindowManager::CreateSingleImage(int windowIndex,
 // ****************************************************************************
 
 avtImage_p
-ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye)
+ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye, bool doAlpha)
 {
+    bool doZBuffer = false;
+    avtImageType imgT = doAlpha ? ColorRGBAImage : ColorRGBImage; 
+
     //
     // Determine how many windows actually have plots to save in the
     // tiled image. Also sort the windows into the sortedWindows array.
@@ -2267,7 +2518,7 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye)
     {
         delete [] sortedWindows;
         // There's just 1 window that has plots don't bother tiling.
-        return CreateSingleImage(windowWithPlot,
+        return CreateSingleImageType(imgT, doZBuffer, windowWithPlot,
                 width, height,
                 GetViewerState()->GetSaveWindowAttributes()->GetScreenCapture(),
                 leftEye);
@@ -2295,7 +2546,8 @@ ViewerWindowManager::CreateTiledImage(int width, int height, bool leftEye)
     {
         if(sortedWindows[index] != 0)
         {
-            tiler.AddImage(CreateSingleImage(sortedWindows[index]->GetWindowId(),
+            tiler.AddImage(CreateSingleImageType(imgT, doZBuffer,
+                sortedWindows[index]->GetWindowId(),
                 imageWidth, imageHeight,
                 GetViewerState()->GetSaveWindowAttributes()->GetScreenCapture(), leftEye));
             GetViewerMessaging()->Message(TR("Saving tiled image..."));
@@ -2384,6 +2636,8 @@ ViewerWindowManager::AdvancedMultiWindowSave(int width, int height,
         if(sortedWindows[index] != 0)
         {
             bool doScreenCapture = false;
+            bool doZBuffer = false;
+            avtImageType imgT = ColorRGBImage;
             int  winId = sortedWindows[index]->GetWindowId();
             SaveSubWindowsAttributes &atts = 
                                       GetViewerState()->GetSaveWindowAttributes()->GetSubWindowAtts();
@@ -2391,7 +2645,8 @@ ViewerWindowManager::AdvancedMultiWindowSave(int width, int height,
             if (winAtts.GetOmitWindow())
                 continue;
             const int *size = winAtts.GetSize();
-            mws.AddImage(CreateSingleImage(winId,
+            mws.AddImage(CreateSingleImageType(
+                imgT, doZBuffer, winId,
                 size[0], size[1],
                 doScreenCapture, leftEye), winId+1);
             GetViewerMessaging()->Message(TR("Saving tiled image..."));

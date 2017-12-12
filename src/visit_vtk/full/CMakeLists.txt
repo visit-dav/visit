@@ -48,7 +48,14 @@
 #   Burlen Loring, Sun Oct 18 00:47:57 PDT 2015
 #   Added vtkDepthSortPolyData2
 #
+#   Brad Whitlock, Tue Sep 19 14:35:20 PDT 2017
+#   OpenEXR support.
+#
 #****************************************************************************/
+
+IF(OPENEXR_FOUND)
+    SET(OPENEXR_SRC vtkOpenEXRWriter.C)
+ENDIF(OPENEXR_FOUND)
 
 SET(VISIT_VTK_SOURCES
 InitVTK.C
@@ -104,6 +111,7 @@ vtkVisItTIFFWriter.C
 vtkVisItTensorGlyph.C
 vtkVolumeFromCSGVolume.C
 vtkVolumeFromVolume.C
+${OPENEXR_SRC}
 )
 
 
@@ -118,6 +126,7 @@ ${VISIT_SOURCE_DIR}/common/utility
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
 ${VTK_INCLUDE_DIRS}
 ${BOOST_INCLUDE_DIR}
+${OPENEXR_INCLUDE_DIR}
 )
 
 IF(HAVE_BOOST)
@@ -125,14 +134,14 @@ IF(HAVE_BOOST)
 ENDIF(HAVE_BOOST)
 
 # Add link directories needed to use our libraries and VTK.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${OPENEXR_LIBRARY_DIR})
 
 ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
 
 IF(HAVE_LIB_R)
-    TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkImagingHybrid vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtktiff vtkFiltersStatisticsGnuR)
+    TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkImagingHybrid vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtktiff vtkFiltersStatisticsGnuR ${OPENEXR_LIB})
 ELSE(HAVE_LIB_R)
-    TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkImagingHybrid vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtktiff)
+    TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkImagingHybrid vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtktiff ${OPENEXR_LIB})
 ENDIF(HAVE_LIB_R)
 # Add vtk definitions
 ADD_TARGET_DEFINITIONS(visit_vtk "${VTK_DEFINITIONS}")

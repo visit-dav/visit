@@ -245,11 +245,12 @@ ViewerEngineManager::Execute(const EngineKey &ek, avtDataObjectReader_p &rdr,
 
 int 
 ViewerEngineManager::Render(const EngineKey &ek, avtImage_p &img,
-                            bool sendZBuffer, const intVector &networkIds, 
+                            avtImageType imgT, bool sendZBuffer,
+                            const intVector &networkIds, 
                             int annotMode, int windowID, bool leftEye,
                             void (*waitCB)(void *), void *waitCBData)
 {
-    return IMPL()->Render(ek, img, sendZBuffer, networkIds,
+    return IMPL()->Render(ek, img, imgT, sendZBuffer, networkIds,
                           annotMode, windowID, leftEye,
                           waitCB, waitCBData);
 }
