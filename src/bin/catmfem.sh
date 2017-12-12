@@ -1,4 +1,10 @@
-#!/bin/sh
+#!/bin/sh -x
+
+if [[ -n "$(uname | grep -i darwin)" ]]; then
+    MDCMD=md5
+else
+    MDCMD=md5sum
+fi
 
 basestr=""
 parallel=4
@@ -42,10 +48,6 @@ usage()
 
 process_args()
 {
-    if [[ $# -lt 2 ]]; then
-        usage
-    fi
-
     while [ $# -gt 0 ]
     do
         case "$1" in
@@ -55,7 +57,7 @@ process_args()
             -compress) compress=1;;
             -debug) debug=1;;
             -undo) undo=1;;
-            *) dirs="$dirs $2"; shift;;
+            *) test -d "$1" && dirs="$dirs $1"; shift;;
         esac
         shift
     done
@@ -67,6 +69,7 @@ process_args()
         echo "parallel = $parallel"
         echo "debug = $debug"
         echo "undo = $undo"
+        echo "dirs = \"$dirs\""
         xargsdbg="-t"
         set -x
     fi
@@ -113,7 +116,7 @@ process_dir() {
     # Go into the directory
     pushd $dname 1>/dev/null
 
-    if [[ -e $dname.mfem_cat ]]; then
+    if [[ -e $dname.mfem_cat && $undo -ne 0 ]]; then
         header_char_count=$(head -n 1 $dname.mfem_cat)
         header_line_count=$(head -c $header_char_count $dname.mfem_cat | wc -l)
         n=0
@@ -124,7 +127,7 @@ process_dir() {
                 size=$(echo $line | rev | cut -d' ' -f2 | rev)
                 offset=$(echo $line | rev | cut -d' ' -f1 | rev)
                 offset=$(expr $offset + $header_char_count)
-                dd bs=1 if=$dname.mfem_cat of="$file" count=$size iseek=$offset 2>/dev/null
+                dd bs=1 if=$dname.mfem_cat of="$file" count=$size skip=$offset 2>/dev/null
             fi
             n=$(expr $n + 1)
         done < $dname.mfem_cat
@@ -133,10 +136,10 @@ process_dir() {
         # Use '@' to capture spaces in filenames
         file_base_names=$(ls -1 | grep -v mfem_cat | cut -d'.' -f1 | sort | uniq | tr ' ' '@')
 
-        ck1=$((iterate_files cat_one_file) | md5)
+        ck1=$((iterate_files cat_one_file) | $MD5CMD)
 
         hs=$(expr $header_char_count + 1)
-        ck2=$(tail -c +$hs $dname.mfem_cat | md5)
+        ck2=$(tail -c +$hs $dname.mfem_cat | $MD5CMD)
 
         if [[ "$ck1" != "$ck2" ]]; then
             echo "Checksum comparison failed for $dname.mfem_cat. Removing!"
@@ -171,17 +174,17 @@ process_dir() {
     header_size_len=$(expr $header_size_len - 1)
     header_size=$(expr $header_size - 10)
     header_size=$(expr $header_size + $header_size_len)
-    sed -i '' -e "1 s/##########/$header_size/" $dname.mfem_cat
+    sed -i -e "1 s/##########/$header_size/" $dname.mfem_cat
 
     # Now, cat all the files to the mfem_cat file
     iterate_files cat_one_file >> $dname.mfem_cat
 
     # Compute checksum on all the cat'd files
-    ck1=$((iterate_files cat_one_file) | md5)
+    ck1=$((iterate_files cat_one_file) | $MD5CMD)
 
     # Compute checksum on mfem_cat file (minus header)
     hs=$(expr $header_size + 1)
-    ck2=$(tail -c +$hs $dname.mfem_cat | md5)
+    ck2=$(tail -c +$hs $dname.mfem_cat | $MD5CMD)
 
     # Fail the whole operation if checksum's don't match
     if [[ "$ck1" != "$ck2" ]]; then
