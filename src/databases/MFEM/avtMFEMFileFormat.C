@@ -42,6 +42,7 @@
 
 #include <avtMFEMFileFormat.h>
 
+#include <cstdlib>
 #include <string>
 #include <sstream>
 
@@ -55,6 +56,7 @@
 #include <DBOptionsAttributes.h>
 #include <DebugStream.h>
 #include <Expression.h>
+#include <FileFunctions.h>
 
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
@@ -147,6 +149,86 @@ avtMFEMFileFormat::FreeUpResources(void)
         delete root;
         root = NULL;
     }
+}
+
+
+// ****************************************************************************
+//  Method: avtMFEMFileFormat::BuildCatFileMap
+//
+//  Purpose: Read .mfem_cat file header for offsets/sizes of sub-files
+//
+//  Mark C. Miller, Mon Dec 11 15:48:47 PST 2017
+// ****************************************************************************
+void
+avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
+{
+    if (catFileMap.size())
+        return;
+
+    ifstream catfile(cat_path);
+    if (!catfile)
+    {
+        debug5 << "Failed to open mfem_cat file, \"" << cat_path << "\"";
+        return;
+    }
+
+    string line;
+    std::getline(catfile, line);
+    size_t hdrsz = (size_t) strtoull(&line[0], 0, 10);
+    catFileMap["@#@#@#"] = std::pair<size_t,size_t>(hdrsz,hdrsz);
+    debug5 << "Processing mfem_cat file header..." << endl;
+    debug5 << "    header size = " << hdrsz << endl;
+    while (catfile.tellg() < hdrsz)
+    {
+        std::getline(catfile, line);
+        size_t offat = line.find_last_of(' ');
+        size_t sizat = line.find_last_of(' ', offat-1);
+        size_t off = (size_t) strtoull(&line[offat+1], 0, 10);
+        size_t siz = (size_t) strtoull(&line[sizat+1], 0, 10);
+        line.resize(sizat);
+        debug5 << "    key=\"" << line << "\", size=" << siz << ", off=" << off << endl;
+        catFileMap[line] = std::pair<size_t,size_t>(siz,off);
+    }
+}
+
+// ****************************************************************************
+//  Method: avtMFEMFileFormat::FetchDataFromCatFile
+//
+//  Purpose: Read mfmem data from an mfem_cat file
+//
+//  Mark C. Miller, Mon Dec 11 15:48:47 PST 2017
+// ****************************************************************************
+void
+avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &obj_path,
+    std::istringstream &istr)
+{
+
+    BuildCatFileMap(cat_path);
+
+    string line;
+
+    // Indicate error if we are unable to locate the sub-file
+    string obj_base = FileFunctions::Basename(obj_path);
+    if (catFileMap.find(obj_base) == catFileMap.end())
+        return istr.setstate(std::ios::failbit);
+
+    // Look up the sub-file size and offset and header_size
+    size_t size = catFileMap[obj_base].first;
+    size_t offset = catFileMap[obj_base].second;
+    size_t header_size = catFileMap["@#@#@#"].first;
+
+    debug5 << "Fetching data of size " << size << " at offset " << offset+header_size << endl;
+
+    // Indicate error if we are unable to open the catfile
+    ifstream catfile(cat_path);
+    if (!catfile)
+        return istr.setstate(std::ios::failbit);
+
+    string data;
+    data.resize(size+1);
+    catfile.seekg(offset+header_size);
+    catfile.read(&data[0], size);
+    istr.str(data);
 }
 
 // ****************************************************************************
@@ -481,6 +563,8 @@ avtMFEMFileFormat::GetVectorVar(int domain, const char *varname)
 //   Additional change to MFEM Mesh constructor call to resolve 
 //   coordinate system issue
 //
+//   Mark C. Miller, Mon Dec 11 15:49:34 PST 2017
+//   Add support for mfem_cat file
 // ****************************************************************************
 Mesh *
 avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
@@ -494,10 +578,20 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
         EXCEPTION1(InvalidFilesException, msg.str());
     }
 
-    Mesh *mesh;
     string mesh_path = root->DataSet(mesh_name).Mesh().Path().Expand(domain);
-    ifstream imesh(mesh_path.c_str());
-   
+    string cat_path = root->DataSet(mesh_name).CatPath().Get();
+
+    if (cat_path != "")
+    {
+        std::istringstream imeshstr;
+        FetchDataFromCatFile(cat_path, mesh_path, imeshstr); 
+
+        // failed to get to mesh data from cat file
+        if (imeshstr)
+            return new Mesh(imeshstr, 1, 0, false);
+    }
+
+    ifstream imesh(mesh_path);
     if(!imesh)
     {
         //failed to open mesh file
@@ -505,15 +599,13 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
         msg << "Failed to open MFEM mesh:"
             << " mesh name: " << mesh_name 
             << " domain: "    << domain
-            << " mesh path: " << mesh_path;
-
+            << " mesh path: \"" << mesh_path << "\"";
+        if (cat_path != "")
+            msg << " cat path: \"" << cat_path << "\"";
         EXCEPTION1(InvalidFilesException, msg.str());
     }
    
-    mesh = new Mesh(imesh, 1, 0, false);
-    imesh.close();
-   
-    return mesh;
+    return new Mesh(imesh, 1, 0, false);
 }
 
 // ****************************************************************************
@@ -642,6 +734,8 @@ avtMFEMFileFormat::GetRefinedMesh(const std::string &mesh_name, int domain, int 
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
 //
+//  Mark C. Miller, Mon Dec 11 15:49:34 PST 2017
+//  Add support for mfem_cat file
 // ****************************************************************************
 vtkDataArray *
 avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
@@ -686,22 +780,37 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
     string field_path = field.Path().Expand(domain);
     bool var_is_nodal = field.Tag("assoc") == "nodes";
     int  ncomps       = atoi(field.Tag("comps").c_str());
-    ifstream igf(field_path.c_str());
-    if (!igf)
+    string cat_path = root->DataSet(var_name).CatPath().Get();
+
+    GridFunction *gf = 0;
+    if (cat_path != "")
     {
-        //failed to open gf file
-        ostringstream msg;
-        msg << "Failed to open MFEM grid function: "
-            << " field name: "         << mesh_name 
-            << " domain: "             << domain
-            << " grid function path: " << field_path;
+        std::istringstream igfstr;
+        FetchDataFromCatFile(cat_path, field_path, igfstr); 
 
-        EXCEPTION1(InvalidFilesException, msg.str());
+        if (igfstr)
+            gf = new GridFunction(mesh,igfstr);   
     }
-    GridFunction *gf = new GridFunction(mesh,igf);   
-    igf.close();
 
-    
+    if (!gf)
+    {
+        ifstream igf(field_path.c_str());
+        if (!igf)
+        {
+            //failed to open gf file
+            ostringstream msg;
+            msg << "Failed to open MFEM grid function: "
+                << " field name: \""       << mesh_name << "\""
+                << " domain: "             << domain
+                << " grid function path: \"" << field_path << "\"";
+            if (cat_path != "")
+                msg << " cat path: \"" << cat_path << "\"";
+
+            EXCEPTION1(InvalidFilesException, msg.str());
+        }
+        gf = new GridFunction(mesh,igf);   
+    }
+
     int npts=0;
     int neles=0;
     
