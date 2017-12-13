@@ -106,7 +106,7 @@ specification C is used. When this setting is in effect, each VisIt plot will
 be saved to a separate "layer" in the Cinema database so it can be composited
 into the scene at will. :numref:`Figure %s<save_cinema_wizard_2>` shows multiple
 VisIt plots that have been saved as separate layers to a composite image
-specification C Cinema database that enables that layers to be turned on and
+specification C Cinema database that enables layers to be turned on and
 off at view time.
 
 .. _cinemaviewer:
@@ -126,11 +126,11 @@ phi-theta camera defines 2 angles, phi and theta, that define the view direction
 as in a spherical coordinate system. When a phi-theta camera is used, the
 Cinema export will save the visualization from a multitude of different camera
 orientations. This allows the user later in the Cinema viewer to interactively
-rotate around the object much as though the object were live instead of just
+rotate around the object much as though the object was live instead of just
 a collection of image frames. The camera type can be selected using the 
 **Camera type** control in the **Save Cinema** wizard and either static or 
 phi-theta cameras can be selected. When a phi-theta camera is selected, the
-number of camera angles in the phi and theta dimensions can be selected using
+number of camera angles in the phi and theta dimensions can be set using
 the **Phi** and **Theta** controls.
 
 Frame settings
