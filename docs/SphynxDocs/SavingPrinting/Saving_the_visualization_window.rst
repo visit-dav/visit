@@ -188,6 +188,40 @@ geometry file formats support both ASCII and binary formats, the
 geometry files but you can click the **Binary** check box to make VisIt write
 binary geometry files.
 
+Selecting pixel data
+~~~~~~~~~~~~~~~~~~~~
+
+Normally when saving an image, VisIt will simply save the RGB pixel data into
+the specified image format. It is possible to request that VisIt saves additional
+pixel data when saving an image. This may result in additional files being saved
+alongside the normal image file. These additional images will share the same 
+filename root as the image file but will have suffixes such as "value", "depth", 
+or "lum", depending on their contents. Special file formats such as OpenEXR can
+contain all of these additional image channels. When OpenEXR is the selected 
+file format, a single ".exr" file will be written containing all pixel data.
+
+The **Save options** window contains a 
+**Pixel data** group that lets you request additional image channels. The **RGB**
+check box selects RGB pixel data. The **Alpha** check box tells VisIt to also 
+request transparency information and to not render with a background when saving
+an image. This lets VisIt save images with a transparent background, which makes
+compositing such an image in front of other backgrounds far easier (see 
+:numref:`Figure %s<transparent_fig>`). The **Depth**
+check box tells VisIt to export the depth buffer (Z-buffer) to a ZLib-compressed
+binary file containing 32-bit floating point numbers. The **Luminance** check box
+tells VisIt to save a luminance image, which shows how much lighting is used in
+various parts of the scene. The luminance image is saved to the selected image
+format. The **Value** check box tells VisIt to produce a rendering of the actual
+scalar values in the scene in the form of a ZLib-compressed 32-bit floating point
+buffer (same format as the depth image). 
+
+.. _transparent_fig:
+
+.. figure:: images/transparent.png 
+   :width: 60%
+
+   Partially transparent plot saved to PNG with alpha channel
+
 Saving tiled images
 ~~~~~~~~~~~~~~~~~~~
 
