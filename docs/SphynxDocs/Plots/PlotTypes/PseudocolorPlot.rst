@@ -181,3 +181,14 @@ so they look better when the plot is visualized. Geometry smoothing is not done
 by default, you must click the **Fast** or **High** radio buttons to enable it.
 The **Fast** geometry smoothing setting smooths out the geometry a little while
 the **High** setting works produces smoother surfaces.
+
+Legend Behavior
+"""""""""""""""
+
+The legend for the Pseudocolor plot is a color bar annotated with tick marks and
+numerical values. Below the color bar the minimum and maximum data values are
+also displayed. Setting the limits for the plot changes *only* the colar-bar portion
+of the plot's legend. It *does not change* the *Min* and *Max* values printed
+just below the color bar. Those values will always display the original data's 
+minimum and maximum values, regardless of the limits set for the plot or the
+effect of any operators applied to the plot.
