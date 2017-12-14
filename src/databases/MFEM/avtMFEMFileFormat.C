@@ -43,6 +43,7 @@
 #include <avtMFEMFileFormat.h>
 
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <sstream>
 
@@ -76,8 +77,11 @@
 
 #include <JSONRoot.h>
 
+#ifdef HAVE_ZLIB_H
+#include <zlib.h>
+#endif
+
 #ifdef _WIN32
-#include <string.h>
 #define strncasecmp _strnicmp
 #endif
 
@@ -158,6 +162,9 @@ avtMFEMFileFormat::FreeUpResources(void)
 //  Purpose: Read .mfem_cat file header for offsets/sizes of sub-files
 //
 //  Mark C. Miller, Mon Dec 11 15:48:47 PST 2017
+//
+//  Mark C. Miller, Wed Dec 13 16:37:35 PST 2017
+//  Add support for compression
 // ****************************************************************************
 void
 avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
@@ -175,9 +182,12 @@ avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
     string line;
     std::getline(catfile, line);
     size_t hdrsz = (size_t) strtoull(&line[0], 0, 10);
-    catFileMap["@#@#@#"] = std::pair<size_t,size_t>(hdrsz,hdrsz);
+    size_t zip = strchr(&line[0], 'z')==0?(size_t)0:(size_t)1;
+    catFileMap["@header_size@"] = std::pair<size_t,size_t>(hdrsz,hdrsz);
+    catFileMap["@compressed@"] = std::pair<size_t,size_t>(zip,zip);
     debug5 << "Processing mfem_cat file header..." << endl;
     debug5 << "    header size = " << hdrsz << endl;
+    debug5 << "    compressed  = " << zip << endl;
     while (catfile.tellg() < hdrsz)
     {
         std::getline(catfile, line);
@@ -215,11 +225,12 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
     // Look up the sub-file size and offset and header_size
     size_t size = catFileMap[obj_base].first;
     size_t offset = catFileMap[obj_base].second;
-    size_t header_size = catFileMap["@#@#@#"].first;
+    size_t header_size = catFileMap["@header_size@"].first; // special key for hdrsz
+    bool zip = catFileMap["@compressed@"].first != 0; // special key for hdrsz
 
-    debug5 << "Fetching data of size " << size << " at offset " << offset+header_size << endl;
+    debug5 << "Fetching " << (zip?"compressed":"") << " data of size " 
+           << size << " at offset " << offset+header_size << endl;
 
-    // Indicate error if we are unable to open the catfile
     ifstream catfile(cat_path);
     if (!catfile)
         return istr.setstate(std::ios::failbit);
@@ -228,7 +239,59 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
     data.resize(size+1);
     catfile.seekg(offset+header_size);
     catfile.read(&data[0], size);
-    istr.str(data);
+
+    if (!zip)
+    {
+        istr.str(data);
+        return;
+    }
+
+#ifdef HAVE_ZLIB_H
+    z_stream zstrm;
+
+    zstrm.zalloc = Z_NULL;
+    zstrm.zfree = Z_NULL;
+    zstrm.opaque = Z_NULL;
+    zstrm.next_in = Z_NULL;
+    zstrm.avail_in = 0;
+
+    if (inflateInit2(&zstrm, 15+16) != Z_OK)
+        return istr.setstate(std::ios::failbit);
+
+    string newdata;
+    zstrm.avail_in = size;
+    zstrm.next_in = (Bytef*) &data[0];
+    int sum = 0;
+    while (true)
+    {
+        int const bufsiz = 10*1024;
+        char buf[bufsiz];
+
+        zstrm.avail_out = bufsiz;
+        zstrm.next_out = (Bytef*)buf;
+        int zstatus = inflate(&zstrm, Z_NO_FLUSH);
+        if (zstatus == Z_STREAM_ERROR || zstatus == Z_NEED_DICT ||
+            zstatus == Z_DATA_ERROR || zstatus == Z_MEM_ERROR)
+        {
+            inflateEnd(&zstrm);
+            return istr.setstate(std::ios::failbit);
+        }
+        int have = bufsiz - zstrm.avail_out;
+        newdata.append(buf, have);
+        sum += have;
+        if (zstatus == Z_STREAM_END)
+            break;
+    }
+
+    if (inflateEnd(&zstrm) != Z_OK)
+        return istr.setstate(std::ios::failbit);
+
+    debug5 << "Decompressed " << size << " bytes into " << sum << " bytes." << endl;
+    istr.str(newdata);
+#else
+    debug5 << "Needed to decompress but no zlib support in this build" << endl;
+    return istr.setstate(std::ios::failbit);
+#endif
 }
 
 // ****************************************************************************
@@ -780,7 +843,7 @@ avtMFEMFileFormat::GetRefinedVar(const std::string &var_name,
     string field_path = field.Path().Expand(domain);
     bool var_is_nodal = field.Tag("assoc") == "nodes";
     int  ncomps       = atoi(field.Tag("comps").c_str());
-    string cat_path = root->DataSet(var_name).CatPath().Get();
+    string cat_path = root->DataSet(mesh_name).CatPath().Get();
 
     GridFunction *gf = 0;
     if (cat_path != "")

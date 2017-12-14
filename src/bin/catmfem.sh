@@ -1,10 +1,4 @@
-#!/bin/sh -x
-
-if [[ -n "$(uname | grep -i darwin)" ]]; then
-    MDCMD=md5
-else
-    MDCMD=md5sum
-fi
+#!/bin/sh
 
 basestr=""
 parallel=4
@@ -16,6 +10,8 @@ export debug=0
 export dontrm=0
 export compress=0
 export undo=0
+export OSTYPE="Linux"
+export MD5CMD=md5sum
 
 usage()
 {
@@ -62,6 +58,11 @@ process_args()
         shift
     done
 
+    if [[ -n "$(uname | grep -i darwin)" ]]; then
+        OSTYPE="Darwin"
+        MD5CMD=md5
+    fi
+
     if [[ $debug -ne 0 ]]; then
         echo "basestr = \"$basestr\""
         echo "dontrm = $dontrm"
@@ -70,6 +71,8 @@ process_args()
         echo "debug = $debug"
         echo "undo = $undo"
         echo "dirs = \"$dirs\""
+        echo "MD5CMD = \"$MD5CMD\""
+        echo "OSTYPE =\"$OSTYPE\""
         xargsdbg="-t"
         set -x
     fi
@@ -85,9 +88,16 @@ process_dir() {
     fi
 
     dname=$0
+    zext=""
+    if [[ $compress -ne 0 ]]; then
+        zext=".gz"
+    fi
 
     add_file_sizing() {
-        size=$(wc -c "$f" | sed -e 's/^ *//' | cut -d' ' -f1)
+        if [[ $compress -ne 0 ]]; then
+            gzip --best "$f"
+        fi
+        size=$(wc -c "$f$zext" | sed -e 's/^ *//' | cut -d' ' -f1)
         echo $f $size $size_sum
         size_sum=$(expr $size_sum + $size)
     }
@@ -111,13 +121,35 @@ process_dir() {
         done
     }
 
+    sedheader() {
+        if [[ $compress -ne 0 ]]; then
+            header_size=$(expr $header_size + $header_size_len + 1)
+            if [[ "$OSTYPE" = "Darwin" ]]; then
+                sed -i '' -e "1 s/##########/${header_size}z/" $dname.mfem_cat
+            else
+                sed -i -e "1 s/##########/${header_size}z/" $dname.mfem_cat
+            fi
+        else
+            header_size=$(expr $header_size + $header_size_len)
+            if [[ "$OSTYPE" = "Darwin" ]]; then
+                sed -i '' -e "1 s/##########/$header_size/" $dname.mfem_cat
+            else
+                sed -i -e "1 s/##########/$header_size/" $dname.mfem_cat
+            fi
+        fi
+    }
+
     echo "Processing dir $dname"
 
     # Go into the directory
     pushd $dname 1>/dev/null
 
     if [[ -e $dname.mfem_cat && $undo -ne 0 ]]; then
-        header_char_count=$(head -n 1 $dname.mfem_cat)
+        header_char_count=$(head -n 1 $dname.mfem_cat | cut -d'z' -f1)
+        is_compressed=0
+        if [[ "$(head -n 1 $dname.mfem_cat | grep z)" ]]; then
+            is_compressed=1
+        fi
         header_line_count=$(head -c $header_char_count $dname.mfem_cat | wc -l)
         n=0
         while [[ $n -lt $header_line_count ]]; do
@@ -127,7 +159,11 @@ process_dir() {
                 size=$(echo $line | rev | cut -d' ' -f2 | rev)
                 offset=$(echo $line | rev | cut -d' ' -f1 | rev)
                 offset=$(expr $offset + $header_char_count)
-                dd bs=1 if=$dname.mfem_cat of="$file" count=$size skip=$offset 2>/dev/null
+                if [[ $is_compressed -ne 0 ]]; then
+                    dd bs=1 if=$dname.mfem_cat count=$size skip=$offset 2>/dev/null | gzcat > "$file"
+                else
+                    dd bs=1 if=$dname.mfem_cat of="$file" count=$size skip=$offset 2>/dev/null
+                fi
             fi
             n=$(expr $n + 1)
         done < $dname.mfem_cat
@@ -173,8 +209,7 @@ process_dir() {
     header_size_len=$(echo $header_size | wc -c)
     header_size_len=$(expr $header_size_len - 1)
     header_size=$(expr $header_size - 10)
-    header_size=$(expr $header_size + $header_size_len)
-    sed -i -e "1 s/##########/$header_size/" $dname.mfem_cat
+    sedheader
 
     # Now, cat all the files to the mfem_cat file
     iterate_files cat_one_file >> $dname.mfem_cat
