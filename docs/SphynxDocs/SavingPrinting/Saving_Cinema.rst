@@ -152,3 +152,67 @@ time states.
 .. figure:: images/savecinemawizard2.png 
    
    Save Cinema wizard (screen 2)
+
+Saving Cinema from Libsim
+~~~~~~~~~~~~~~~~~~~~~~~~~
+It is possible to use VisIt's Libsim to directly save Cinema databases in situ 
+from an instrumented simulation. This means that the Cinema database can be generated
+incrementally as the simulation runs, making it possible to periodically check
+in on the simulation by viewing the Cinema database. To add Cinema support to
+a simulation instrumented with Libsim, there are 3 calls that need to be made. 
+First, the simulation must call ``VisItBeginCinema``, which passes the parameters 
+that describe the Cinema database format and returns a handle to a Cinema object.
+Next, the simulation must call ``VisItSaveCinema`` to make Libsim generate and
+add the appropriate images to the Cinema database, taking into account the type
+of camera being used. The ``VisItSaveCinema`` function can be called repeatedly
+to add new time states to the Cinema database. It is the simulation's responsibility
+to make Libsim calls that set up VisIt plots or restore a session so there are
+plots when ``VisItSaveCinema`` is called. Finally, the simulation must call
+``VisItEndCinema`` to close out the Cinema database context and free associated
+memory. A working example can be found in the 
+`batch simulation example <http://visit.ilight.com/svn/visit/trunk/src/tools/DataManualExamples/Simulations/batch.c>`_
+in VisIt's simulation directory. The overall call structure for creating a Cinema 
+database looks something like this: ::
+
+  visit_handle h = VISIT_INVALID_HANDLE;
+  visit_handle hvar = VISIT_INVALID_HANDLE;
+  double time_value = 0.;
+  VisItBeginCinema(&h, "visit.cdb", VISIT_CINEMA_SPEC_A, 0,
+                   VISIT_IMAGEFORMAT_PNG, 800, 800,
+                   VISIT_CINEMA_CAMERA_PHI_THETA, 12, 7,
+                   hvar);
+
+  while(1) /* Simulation main loop */
+  {
+      /* Compute... */
+
+      VisItSaveCinema(h, time_value);
+
+  }
+
+  VisItEndCinema(h);
+
+
+The above code example will generate a Cinema database using the plots that have
+been set up elsewhere using Libsim. Since Cinema output may sometimes serve
+as the only simulation data product, it can be useful to save out additional
+variables. The last argument to ``VisItBeginCinema`` is a handle to a name
+list object. When the handle is set to ``VISIT_INVALID_HANDLE``, there is 
+no name list and the argument does nothing. If instead, the name list is
+created and filled with a list of variable names from the simulation, the
+VisIt plots will have their variables changed to the variables in the name
+list and Libsim will generate a Cinema database with images for each 
+variable. The variable becomes a parameter in the Cinema viewer. A name list
+object is created and populated like this: ::
+
+  visit_handle hvar;
+  VisIt_NameList_alloc(&hvar);
+  VisIt_NameList_addName(hvar, "pressure");
+  VisIt_NameList_addName(hvar, "rho");
+  VisIt_NameList_addName(hvar, "energy");
+
+
+
+
+
+
