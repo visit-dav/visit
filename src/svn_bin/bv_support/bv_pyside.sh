@@ -218,6 +218,73 @@ function build_pyside_component
     cd ../../
 }
 
+function apply_pyside_2_0_0_patch
+{
+    info "Patching Pyside2"
+    patch -p0 << \EOF
+diff -c pyside2-combined/pyside2/orig/CMakeLists.txt pyside2-combined/pyside2/CMakeLists.txt 
+*** pyside2-combined/pyside2/orig/CMakeLists.txt        Thu Dec 14 16:03:50 2017
+--- pyside2-combined/pyside2/CMakeLists.txt     Thu Dec 14 16:06:34 2017
+***************
+*** 273,280 ****
+  COLLECT_MODULE_IF_FOUND(Xml)
+  COLLECT_MODULE_IF_FOUND(XmlPatterns opt)
+  COLLECT_MODULE_IF_FOUND(Help opt)
+! COLLECT_MODULE_IF_FOUND(Multimedia opt)
+! COLLECT_MODULE_IF_FOUND(MultimediaWidgets opt)
+  COLLECT_MODULE_IF_FOUND(OpenGL opt)
+  COLLECT_MODULE_IF_FOUND(Qml opt)
+  COLLECT_MODULE_IF_FOUND(Quick opt)
+--- 273,282 ----
+  COLLECT_MODULE_IF_FOUND(Xml)
+  COLLECT_MODULE_IF_FOUND(XmlPatterns opt)
+  COLLECT_MODULE_IF_FOUND(Help opt)
+! #COLLECT_MODULE_IF_FOUND(Multimedia opt)
+! set(DISABLE_QtMultimedia 1)
+! #COLLECT_MODULE_IF_FOUND(MultimediaWidgets opt)
+! set(DISABLE_QtMultimediaWidgets 1)
+  COLLECT_MODULE_IF_FOUND(OpenGL opt)
+  COLLECT_MODULE_IF_FOUND(Qml opt)
+  COLLECT_MODULE_IF_FOUND(Quick opt)
+***************
+*** 297,304 ****
+  # still forgotten:
+  #COLLECT_MODULE_IF_FOUND(WebEngineCore opt)
+  #COLLECT_MODULE_IF_FOUND(WebEngine opt)
+! COLLECT_MODULE_IF_FOUND(WebEngineWidgets opt)
+! COLLECT_MODULE_IF_FOUND(WebKit opt)
+  if(NOT MSVC)
+      # right now this does not build on windows
+      COLLECT_MODULE_IF_FOUND(WebKitWidgets opt)
+--- 299,306 ----
+  # still forgotten:
+  #COLLECT_MODULE_IF_FOUND(WebEngineCore opt)
+  #COLLECT_MODULE_IF_FOUND(WebEngine opt)
+! #COLLECT_MODULE_IF_FOUND(WebEngineWidgets opt)
+! #COLLECT_MODULE_IF_FOUND(WebKit opt)
+  if(NOT MSVC)
+      # right now this does not build on windows
+      COLLECT_MODULE_IF_FOUND(WebKitWidgets opt)
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Pyside2 patch failed."
+        return 1
+    fi
+
+    return 0
+}
+
+function apply_pyside_patch
+{
+    if [[ ${PYSIDE_VERSION} == 2.0.0-2017.08.30 ]] ; then
+        apply_pyside_2_0_0_patch
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
+    fi
+
+    return 0
+}
 
 function build_pyside
 {
@@ -232,6 +299,23 @@ function build_pyside
     if [[ untarred_pyside == -1 ]] ; then
         warn "Unable to prepare PySide build directory. Giving Up!"
         return 1
+    fi
+
+    ##
+    ## Apply patches
+    ##
+
+    apply_pyside_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_pyside == 1 ]] ; then
+            warn "Giving up on pyside build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing. I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
     fi
 
     cd $PYSIDE_BUILD_DIR || error "Can't cd to PySide build dir."
