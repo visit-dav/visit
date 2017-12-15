@@ -823,25 +823,31 @@ int VisItSaveWindow(const char *filename, int width, int height, int format);
  *   some internal storage for this Cinema database.
  *
  * Arguments:
+ *   h        : A pointer to the visit_handle that we'll allocate.
  *   file_cdb : The name of the .cdb directory that contains the Cinema data.
- *   dbtype   : The type of database to create VISIT_DATABASE_IMAGE or
- *              VISIT_DATABASE_COMPOSITE.
+ *   dbspec   : The database specification VISIT_CINEMA_SPEC_A, C, D.
+ *   composite : 0 for images, 1 for composite images.
+ *   imgformat: The format in which to save the image. (e.g. VISIT_IMAGEFORMAT_JPEG)
  *   width    : The width of the saved image.
  *   height   : The height of the saved image.
- *   imgformat: The format in which to save the image. (e.g. VISIT_IMAGEFORMAT_JPEG)
- *   cameratype: The camera type. VISIT_CAMERATYPE_STATIC, VISIT_CAMERATYPE_PHI_THETA.
- *   nphi      : The number of divisions in phi (for VISIT_CAMERATYPE_PHI_THETA).
- *   ntheta    : The number of divisions in theta (for VISIT_CAMERATYPE_PHI_THETA).
- * 
+ *   cameratype: The camera type. VISIT_CINEMA_CAMERA_STATIC, VISIT_CINEMA_CAMERA_PHI_THETA.
+ *   nphi      : The number of divisions in phi (for VISIT_CINEMA_CAMERA_PHI_THETA).
+ *   ntheta    : The number of divisions in theta (for VISIT_CINEMA_CAMERA_PHI_THETA).
+ *   varnames  : A namelist object containing variable names. This parameter is 
+ *               optional. If you do not want to specify additional variable
+ *               names, pass VISIT_INVALID_HANDLE.
+ *
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      A plot must have already been created. Call this function on all
  *            processors.
  *
  * ****************************************************************************/
-int VisItBeginCinema(const char *file_cdb, int dbtype, 
-                     int width, int height, int imgformat, 
-                     int cameratype, int nphi, int ntheta);
+int VisItBeginCinema(visit_handle *h,
+                     const char *file_cdb, int dbspec, int composite, 
+                     int imgformat, int width, int height,
+                     int cameratype, int nphi, int ntheta,
+                     visit_handle varnames);
 
 /******************************************************************************
  * Function: VisItSaveCinema
@@ -850,8 +856,8 @@ int VisItBeginCinema(const char *file_cdb, int dbtype,
  *   This function saves the current plots to the file_cdb Cinema database.
  *
  * Arguments:
- *   file_cdb : The name of the .cdb directory that contains the Cinema data.
- *   time     : The time value for the current time step we're saving.
+ *   h     : The handle returned from VisItBeginCinema.
+ *   time  : The time value for the current time step we're saving.
  * 
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
@@ -859,7 +865,7 @@ int VisItBeginCinema(const char *file_cdb, int dbtype,
  *            processors.
  *
  * ****************************************************************************/
-int VisItSaveCinema(const char *file_cdb,  double time);
+int VisItSaveCinema(visit_handle h,  double time);
 
 /******************************************************************************
  * Function: VisItEndCinema
@@ -868,14 +874,14 @@ int VisItSaveCinema(const char *file_cdb,  double time);
  *   This function ends a Cinema database.
  *
  * Arguments:
- *   file_cdb : The name of the .cdb directory that contains the Cinema data.
+ *   h : The handle returned from VisItBeginCinema.
  * 
  * Returns:   VISIT_OKAY on success; otherwise VISIT_ERROR
  *
  * Note:      
  *
  * ****************************************************************************/
-int VisItEndCinema(const char *file_cdb);
+int VisItEndCinema(visit_handle h);
 
 /******************************************************************************
  * Function: VisItSetMPICommunicator

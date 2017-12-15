@@ -242,13 +242,14 @@ typedef enum {
 #define VISIT_EXPORT_WRITE_USING_GROUPS "EXPORT_WRITE_USING_GROUPS"
 #define VISIT_EXPORT_GROUP_SIZE         "EXPORT_GROUP_SIZE"
 
-/* Cinema database types */
-#define VISIT_DATABASE_IMAGE 0
-#define VISIT_DATABASE_COMPOSITE 1
+/* Cinema spec types.*/
+#define VISIT_CINEMA_SPEC_A 0
+#define VISIT_CINEMA_SPEC_C 2
+#define VISIT_CINEMA_SPEC_D 3
 
 /* Cinema camera types */
-#define VISIT_CAMERATYPE_STATIC    0
-#define VISIT_CAMERATYPE_PHI_THETA 1
+#define VISIT_CINEMA_CAMERA_STATIC    0
+#define VISIT_CINEMA_CAMERA_PHI_THETA 1
 
 #ifdef __cplusplus
 }

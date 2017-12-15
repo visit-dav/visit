@@ -89,6 +89,8 @@ typedef struct
     int      image_height;
     int      setview;
     int      cinema;
+    int      cinema_spec;
+    int      cinema_camera;
     float   *x;
     float   *y;
     float   *z;
@@ -103,7 +105,7 @@ simulation_data_ctor(simulation_data *sim)
     sim->maxcycles = 1000000;
     sim->cycle = 0;
     sim->time = 0.;
-    strcpy(sim->format, "FieldViewXDB_1.0");
+    strcpy(sim->format, "VTK_1.0");
     sim->domains[0] = 1;
     sim->domains[1] = 1;
     sim->domains[2] = 1;
@@ -117,12 +119,14 @@ simulation_data_ctor(simulation_data *sim)
     sim->extents[4] = 0.f;
     sim->extents[5] = 10.f;
     sim->groupSize = -1;
-    sim->export = 1;
+    sim->export = 0;
     sim->render = 0;
     sim->image_width = 1920/2;
     sim->image_height = 1080/2;
     sim->setview = 0;
     sim->cinema = 0;
+    sim->cinema_spec = VISIT_CINEMA_SPEC_A;
+    sim->cinema_camera = VISIT_CINEMA_CAMERA_PHI_THETA;
     sim->x = NULL;
     sim->y = NULL;
     sim->z = NULL;
@@ -260,6 +264,7 @@ simulation_data_global_extents(simulation_data *sim, double ext[6])
 void mainloop_batch(simulation_data *sim)
 {
     int err;
+    visit_handle hcdb = VISIT_INVALID_HANDLE, hvar = VISIT_INVALID_HANDLE;
     char filebase[100];
     const char *cdb = "batch.cdb";
     const char *extractvars[] = {"q", "xc", "radius", "dom", NULL};
@@ -299,11 +304,20 @@ void mainloop_batch(simulation_data *sim)
     }
 #endif
 
+    /* Begin a Cinema database. */
     if(sim->cinema)
     {
-        VisItBeginCinema(cdb, VISIT_DATABASE_IMAGE, 
-                         sim->image_width, sim->image_height, VISIT_IMAGEFORMAT_PNG,
-                         VISIT_CAMERATYPE_PHI_THETA, 12, 7);
+#if 1
+        /* Make a list of vars to export to Cinema. (optional) */
+        VisIt_NameList_alloc(&hvar);
+        VisIt_NameList_addName(hvar, "d");
+        VisIt_NameList_addName(hvar, "q");
+        VisIt_NameList_addName(hvar, "radius");
+#endif
+        VisItBeginCinema(&hcdb, cdb, sim->cinema_spec, 0, 
+                         VISIT_IMAGEFORMAT_PNG, sim->image_width, sim->image_height,
+                         sim->cinema_camera, 12, 7,
+                         hvar);
     }
 
     while(sim->cycle < sim->maxcycles)
@@ -371,19 +385,15 @@ void mainloop_batch(simulation_data *sim)
             }
         }
 
-        if(sim->render)
+        if(sim->render || sim->cinema)
         {
-            char filename[100];
- 
+            /* Set up some plots. */
             VisItAddPlot("Contour", "d");
             VisItDrawPlots();
 
-            if(sim->cinema)
+            if(sim->render)
             {
-                VisItSaveCinema(cdb, sim->time);
-            }
-            else
-            {
+                char filename[100];
                 if(sim->setview)
                 {
                     visit_handle view;
@@ -413,6 +423,12 @@ void mainloop_batch(simulation_data *sim)
                     printf("The image could not be saved to %s\n", filename);
             }
 
+            if(sim->cinema)
+            {
+                /* Save the current plots to the Cinema database. */
+                VisItSaveCinema(hcdb, sim->time);
+            }
+
             VisItDeleteActivePlots();
         }
 
@@ -420,9 +436,10 @@ void mainloop_batch(simulation_data *sim)
         sim->time += (M_PI / 10.);
     }
 
+    /* End a Cinema database. */
     if(sim->cinema)
     {
-        VisItEndCinema(cdb);
+        VisItEndCinema(hcdb);
     }
 }
 
@@ -472,7 +489,17 @@ int main(int argc, char **argv)
     /* Check for command line arguments. */
     for(i = 1; i < argc; ++i)
     {
-        if((i+1) < argc)
+        /* Arguments with no values */
+        if(strcmp(argv[i], "-setview") == 0)
+        {
+            sim.setview = 1;
+        }
+        else if(strcmp(argv[i], "-cinema") == 0)
+        {
+            sim.cinema = 1;
+        }
+        /* These arguments have a value. */
+        else if((i+1) < argc)
         {
             if(strcmp(argv[i], "-dims") == 0)
             {
@@ -531,14 +558,22 @@ int main(int argc, char **argv)
                 sim.image_height = atoi(argv[i+1]);
                 i++;
             }
-            else if(strcmp(argv[i], "-setview") == 0)
+            else if(strcmp(argv[i], "-cinema-spec") == 0)
             {
-                sim.setview = 1;
+                if(strcmp(argv[i+1], "A") == 0)
+                    sim.cinema_spec = VISIT_CINEMA_SPEC_A;
+                if(strcmp(argv[i+1], "C") == 0)
+                    sim.cinema_spec = VISIT_CINEMA_SPEC_C;
+                if(strcmp(argv[i+1], "D") == 0)
+                    sim.cinema_spec = VISIT_CINEMA_SPEC_D;
                 i++;
             }
-            else if(strcmp(argv[i], "-cinema") == 0)
+            else if(strcmp(argv[i], "-cinema-camera") == 0)
             {
-                sim.cinema = 1;
+                if(strcmp(argv[i+1], "static") == 0)
+                    sim.cinema_camera = VISIT_CINEMA_CAMERA_STATIC;
+                if(strcmp(argv[i+1], "phi-theta") == 0)
+                    sim.cinema_camera = VISIT_CINEMA_CAMERA_PHI_THETA;
                 i++;
             }
             else
@@ -567,7 +602,10 @@ int main(int argc, char **argv)
     }
 
     if(strlen(options) > 0)
+    {
+        printf("options: %s\n", options);
         VisItSetOptions(options);
+    }
 
 #ifdef PARALLEL
     /* Install callback functions for global communication. */

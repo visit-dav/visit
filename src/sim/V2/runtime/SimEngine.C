@@ -786,6 +786,8 @@ SimEngine::SaveWindow(const std::string &filename, int w, int h, int format)
             fmt = SaveWindowAttributes::PPM;
         else if(format == VISIT_IMAGEFORMAT_RGB)
             fmt = SaveWindowAttributes::RGB;
+        else if(format == VISIT_IMAGEFORMAT_EXR)
+            fmt = SaveWindowAttributes::EXR;
         else
             fmt = SaveWindowAttributes::TIFF;
 
@@ -1158,6 +1160,73 @@ SimEngine::SetActivePlots(const int *ids, int nids)
                 SNPRINTF(tmp, 10, ":%d", ids[i]);
                 cmd.append(tmp);
             }
+            SimulationInitiateCommand(cmd);
+            retval = true;
+#ifdef SIMV2_VIEWER_INTEGRATION
+        }
+#endif
+    }
+    CATCHALL
+    {
+        retval = false;
+    }
+    ENDTRY
+
+    return retval;
+}
+
+// ****************************************************************************
+// Method: SimEngine::ChangePlotVar
+//
+// Purpose:
+//   Changes the plot variable.
+//
+// Arguments:
+//   var : The new plot variable.
+//   all : Whether to change the variable on all plots.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Dec 14 14:55:33 PST 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SimEngine::ChangePlotVar(const char *var, int all)
+{
+    bool retval = false;
+
+    TRY
+    {
+#ifdef SIMV2_VIEWER_INTEGRATION
+        // Viewer based method.
+        if(viewerInitialized)
+        {
+            if(var != NULL)
+            {
+                if(all)
+                {
+                    int np = GetViewerState()->GetPlotList()->GetNumPlots();
+                    intVector activePlotIds;
+                    for(int i = 0; i < np; ++i)
+                        activePlotIds.push_back(i);
+                    GetViewerMethods()->SetActivePlots(activePlotIds);
+                }
+
+                GetViewerMethods()->ChangeActivePlotsVar(var);
+            }
+            retval = true;
+        }
+        else
+        {
+#endif
+            char cmd[1000];
+            SNPRINTF(cmd, 1000, "ChangePlotVar:%s:%d", var, all);
             SimulationInitiateCommand(cmd);
             retval = true;
 #ifdef SIMV2_VIEWER_INTEGRATION

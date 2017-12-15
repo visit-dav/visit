@@ -260,17 +260,19 @@
       integer      VISIT_IMAGEFORMAT_EXR
       parameter   (VISIT_IMAGEFORMAT_EXR             = 7)
 
-!... Cinema database types 
-      integer      VISIT_DATABASE_IMAGE
-      parameter   (VISIT_DATABASE_IMAGE = 0)
-      integer      VISIT_DATABASE_COMPOSITE
-      parameter   (VISIT_DATABASE_COMPOSITE = 1)
+!... Cinema spec types 
+      integer      VISIT_CINEMA_SPEC_A
+      parameter   (VISIT_CINEMA_SPEC_A = 0)
+      integer      VISIT_CINEMA_SPEC_C
+      parameter   (VISIT_CINEMA_SPEC_C = 2)
+      integer      VISIT_CINEMA_SPEC_D
+      parameter   (VISIT_CINEMA_SPEC_D = 3)
 
 !... Cinema camera types 
-      integer      VISIT_CAMERATYPE_STATIC
-      parameter   (VISIT_CAMERATYPE_STATIC = 0)
-      integer      VISIT_CAMERATYPE_PHI_THETA
-      parameter   (VISIT_CAMERATYPE_PHI_THETA = 1)
+      integer      VISIT_CINEMA_CAMERA_STATIC
+      parameter   (VISIT_CINEMA_CAMERA_STATIC = 0)
+      integer      VISIT_CINEMA_CAMERA_PHI_THETA
+      parameter   (VISIT_CINEMA_CAMERA_PHI_THETA = 1)
 
 ! Definitions for CSG boundary types 
 !   Designed so low-order 16 bits are unused
@@ -541,6 +543,10 @@
       external visitsetactiveplots
       integer  visitsetactiveplots
 
+! visitchangeplotvar(string var, int lvar, int all)
+      external visitchangeplotvar
+      integer  visitchangeplotvar
+
 ! visitexportdatabase(string filename, int lfilename,
 !                     string format, int lformat,
 !                     visit_handle vars)
@@ -573,9 +579,11 @@
       external visitgetview3d
       integer  visitgetview3d
 
-! visitbegincinema(string file_cdb, int lfile_cdb, int dbtype,
-!                 int width, int height, int format,
-!                 int cameratype, int ntheta, int nphi)
+! visitbegincinema(visit_handle h, string file_cdb, int lfile_cdb,
+!                  int spec, int composite,
+!                  int format, int width, int height, 
+!                  int cameratype, int ntheta, int nphi,
+!                  visit_handle hvar)
       external visitbegincinema
       integer  visitbegincinema
 

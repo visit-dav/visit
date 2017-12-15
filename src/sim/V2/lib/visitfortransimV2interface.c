@@ -221,6 +221,7 @@ f_visit_internal_InstallCallbacks(void)
 #define F_VISITDRAWPLOTS            F77_ID(visitdrawplots_,visitdrawplots,VISITDRAWPLOTS)
 #define F_VISITDELETEACTIVEPLOTS    F77_ID(visitdeleteactiveplots_,visitdeleteactiveplots,VISITDELETEACTIVEPLOTS)
 #define F_VISITSETACTIVEPLOTS       F77_ID(visitsetactiveplots_,visitsetactiveplots,VISITSETACTIVEPLOTS)
+#define F_VISITCHANGEPLOTVAR        F77_ID(visitchangeplotvar_,visitchangeplotvar,VISITCHANGEPLOTVAR)
 #define F_VISITGETMEMORY            F77_ID(visitgetmemory_,visitgetmemory,VISITGETMEMORY)
 #define F_VISITEXPORTDATABASE       F77_ID(visitexportdatabase_,visitexportdatabase,VISITEXPORTDATABASE)
 #define F_VISITEXPORTDATABASEWITHOPTIONS       F77_ID(visitexportdatabasewithoptions_,visitexportdatabasewithoptions,VISITEXPORTDATABASEWITHOPTIONS)
@@ -1137,6 +1138,29 @@ F_VISITSETACTIVEPLOTS(int *ids, int *nids)
 }
 
 /******************************************************************************
+ * Function: F_VISITCHANGEPLOTVAR
+ *
+ * Purpose:   Allows FORTRAN to change the plot var.
+ *
+ * Programmer: Brad Whitlock
+ * Date:       Mon Feb  2 15:08:42 PST 2015
+ *
+ * Modifications:
+ *
+ *****************************************************************************/
+
+FORTRAN
+F_VISITCHANGEPLOTVAR(const char *var, int *lvar, int *all)
+{
+    int ret = VISIT_ERROR;
+    char *f_var = NULL;
+    COPY_FORTRAN_STRING(f_var, var, lvar);
+    ret = VisItChangePlotVar(f_var, *all);
+    FREE(f_var);
+    return ret;
+}
+
+/******************************************************************************
  * Function: F_VISITGETMEMORY
  *
  * Purpose:   Allows FORTRAN to get memory of running simulation
@@ -1320,15 +1344,20 @@ F_VISITGETVIEW3D(visit_handle *view)
  *****************************************************************************/
 
 FORTRAN 
-F_VISITBEGINCINEMA(VISIT_F77STRING file_cdb, int *lfile_cdb, int *dbtype,
-    int *width, int *height, int *format, int *cameratype, int *nphi, int *ntheta)
+F_VISITBEGINCINEMA(visit_handle *h,
+    VISIT_F77STRING file_cdb, int *lfile_cdb, int *dbspec, int *composite,
+    int *format, int *width, int *height, int *cameratype, int *nphi, int *ntheta,
+    visit_handle *hvar)
 {
     FORTRAN retval;
     char *f_file_cdb = NULL;
 
     COPY_FORTRAN_STRING(f_file_cdb, file_cdb, lfile_cdb);
 
-    retval = VisItBeginCinema(f_file_cdb, *dbtype, *width, *height, *format, *cameratype, *nphi, *ntheta);
+    retval = VisItBeginCinema(h, f_file_cdb, *dbspec, *composite,
+                              *format, *width, *height, 
+                              *cameratype, *nphi, *ntheta,
+                              *hvar);
     FREE(f_file_cdb);
     return retval;
 }
@@ -1346,16 +1375,9 @@ F_VISITBEGINCINEMA(VISIT_F77STRING file_cdb, int *lfile_cdb, int *dbtype,
  *****************************************************************************/
 
 FORTRAN 
-F_VISITSAVECINEMA(VISIT_F77STRING file_cdb, int *lfile_cdb, double *time)
+F_VISITSAVECINEMA(visit_handle *h, double *time)
 {
-    FORTRAN retval;
-    char *f_file_cdb = NULL;
-
-    COPY_FORTRAN_STRING(f_file_cdb, file_cdb, lfile_cdb);
-
-    retval = VisItSaveCinema(f_file_cdb, *time);
-    FREE(f_file_cdb);
-    return retval;
+    return VisItSaveCinema(*h, *time);
 }
 
 /******************************************************************************
@@ -1371,16 +1393,9 @@ F_VISITSAVECINEMA(VISIT_F77STRING file_cdb, int *lfile_cdb, double *time)
  *****************************************************************************/
 
 FORTRAN 
-F_VISITENDCINEMA(VISIT_F77STRING file_cdb, int *lfile_cdb)
+F_VISITENDCINEMA(visit_handle *h)
 {
-    FORTRAN retval;
-    char *f_file_cdb = NULL;
-
-    COPY_FORTRAN_STRING(f_file_cdb, file_cdb, lfile_cdb);
-
-    retval = VisItEndCinema(f_file_cdb);
-    FREE(f_file_cdb);
-    return retval;
+    return VisItEndCinema(*h);
 }
 
 /******************************************************************************

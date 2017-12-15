@@ -5451,6 +5451,23 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         }
         GetViewerMethods()->SetActivePlots(activePlots);
     }
+    else if(command.substr(0,13) == "ChangePlotVar")
+    {
+        stringVector s = SplitValues(command, ':');
+        // s[0] = ChangePlotVar
+        // s[1] = var
+        // s[2] = all
+        int all = atoi(s[2].c_str());
+        if(all)
+        {
+            int np = GetViewerState()->GetPlotList()->GetNumPlots();
+            intVector activePlots;
+            for(int i = 1; i < np; ++i)
+                activePlots.push_back(i);
+            GetViewerMethods()->SetActivePlots(activePlots);
+        }
+        GetViewerMethods()->ChangeActivePlotsVar(s[1]);
+    }
     else if(command.substr(0,9) == "SetView2D")
     {
         // The message is formatted like: SetView2D:XML

@@ -795,6 +795,36 @@ simv2_set_active_plots(void *e, const int *ids, int nids)
 }
 
 // ****************************************************************************
+// Method: simv2_change_plot_var
+//
+// Purpose:
+//   SimV2 function to change the variable on plots.
+//
+// Arguments:
+//   e    : The engine pointer.
+//   var  : The new variable.
+//   all  : Whether to do it on all plots or just the selected plots.
+//
+// Returns:    OKAY on success, FALSE on failure.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Mon Feb  2 13:57:29 PST 2015
+//
+// Modifications:
+//
+// ****************************************************************************
+
+int
+simv2_change_plot_var(void *e, const char *var, int all)
+{
+    SimEngine *engine = (SimEngine*)(e);
+    StackTimer t0("VisItChangePlotVar");
+    return engine->ChangePlotVar(var, all) ? VISIT_OKAY : VISIT_ERROR;
+}
+
+// ****************************************************************************
 // Method: simv2_set_plot_options
 //
 // Purpose:

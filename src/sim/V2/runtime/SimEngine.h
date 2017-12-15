@@ -101,6 +101,7 @@ public:
     bool DrawPlots();
     bool DeleteActivePlots();
     bool SetActivePlots(const int *ids, int nids);
+    bool ChangePlotVar(const char *var, int all);
     bool SetPlotOptions(const std::string &fieldName, 
                         int fieldType, void *fieldVal, int fieldLen);
     bool SetOperatorOptions(const std::string &fieldName, 

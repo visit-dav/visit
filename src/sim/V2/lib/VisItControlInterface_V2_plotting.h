@@ -15,6 +15,7 @@ int VisItAddOperator(const char *operatorType, int applyToAll);
 int VisItDrawPlots(void);
 int VisItDeleteActivePlots(void);
 int VisItSetActivePlots(const int *ids, int nids);
+int VisItChangePlotVar(const char *var, int all);
 
 /* Set values for the current plot */
 int VisItSetPlotOptionsC(const char *name,char v);

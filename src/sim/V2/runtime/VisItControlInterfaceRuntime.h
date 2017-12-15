@@ -90,6 +90,7 @@ SIMV2_API int     simv2_add_operator(void *, const char *, int);
 SIMV2_API int     simv2_draw_plots(void *);
 SIMV2_API int     simv2_delete_active_plots(void *);
 SIMV2_API int     simv2_set_active_plots(void *, const int *, int);
+SIMV2_API int     simv2_change_plot_var(void *, const char *, int);
 
 SIMV2_API int     simv2_set_plot_options(void *, const char *, int, void *, int);
 SIMV2_API int     simv2_set_operator_options(void *, const char *, int, void *, int);
