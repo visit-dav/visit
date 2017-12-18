@@ -172,7 +172,7 @@ avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
     if (catFileMap.size())
         return;
 
-    ifstream catfile(cat_path);
+    ifstream catfile(cat_path.c_str());
     if (!catfile)
     {
         debug5 << "Failed to open mfem_cat file, \"" << cat_path << "\"";
@@ -231,7 +231,7 @@ avtMFEMFileFormat::FetchDataFromCatFile(string const &cat_path, string const &ob
     debug5 << "Fetching " << (zip?"compressed":"") << " data of size " 
            << size << " at offset " << offset+header_size << endl;
 
-    ifstream catfile(cat_path);
+    ifstream catfile(cat_path.c_str());
     if (!catfile)
         return istr.setstate(std::ios::failbit);
 
@@ -654,7 +654,7 @@ avtMFEMFileFormat::FetchMesh(const std::string &mesh_name,int domain)
             return new Mesh(imeshstr, 1, 0, false);
     }
 
-    ifstream imesh(mesh_path);
+    ifstream imesh(mesh_path.c_str());
     if(!imesh)
     {
         //failed to open mesh file
