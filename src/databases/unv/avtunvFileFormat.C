@@ -113,36 +113,36 @@ static int nodefac2[2][4][2] =
 static int nodefac[4][6][4] =
 {
     {
-        {1, 3, 2, 0},           // 1 TET
-        {1, 2, 4, 0},           // 2
-        {2, 3, 4, 0},           // 3
+        {1, 3, 2, 0},         // 1 TET
+        {1, 2, 4, 0},         // 2
+        {2, 3, 4, 0},         // 3
         {1, 4, 3, 0},         // 4
         {0, 0, 0, 0},         // 5
-        {0, 0, 0, 0}         // 6
+        {0, 0, 0, 0}          // 6
     },
     {
-        {1, 4, 3, 2},           // 1 HEX
-        {5, 6, 7, 8},           // 2
-        {1, 2, 6, 5},           // 3
+        {1, 4, 3, 2},         // 1 HEX
+        {5, 6, 7, 8},         // 2
+        {1, 2, 6, 5},         // 3
         {2, 3, 7, 6},         // 4
         {3, 4, 8, 7},         // 5
-        {1, 5, 8, 4}         // 6
+        {1, 5, 8, 4}          // 6
     },
     {
-        {1, 3, 2, 0},           // 1 WEDGE
-        {4, 5, 6, 0},           // 2
-        {1, 2, 5, 4},           // 3
+        {1, 3, 2, 0},         // 1 WEDGE
+        {4, 5, 6, 0},         // 2
+        {1, 2, 5, 4},         // 3
         {2, 3, 6, 5},         // 4
         {1, 4, 6, 3},         // 5
-        {0, 0, 0, 0}         // 6
+        {0, 0, 0, 0}          // 6
     },
     {
-        {1, 4, 3, 2},           // 1 PYRAMID
-        {1, 2, 5, 0},           // 2
-        {2, 3, 5, 0},           // 3
+        {1, 4, 3, 2},         // 1 PYRAMID
+        {1, 2, 5, 0},         // 2
+        {2, 3, 5, 0},         // 3
         {3, 4, 5, 0},         // 4
         {4, 1, 5, 0},         // 5
-        {0, 0, 0, 0}           // 6
+        {0, 0, 0, 0}          // 6
     }
 };
 
@@ -175,10 +175,10 @@ int avtunvFileFormat::is2DKnownElt (int typelt)
     int n;
     switch (typelt)
     {
-    case 91:
+    case 91 : case 81:
         n = 0;
         break;
-    case 94:
+    case 94 : case 84:
         n = 1;
         break;
     default:
@@ -213,10 +213,10 @@ int avtunvFileFormat::getEltDim (int typelt)
     case 312:
         n = 3;
         break;
-    case 91:
+    case 91 : case 81:
         n = 2;
         break;
-    case 94:
+    case 94 : case 84:
         n = 2;
         break;
     case 21:
@@ -247,10 +247,10 @@ int avtunvFileFormat::isKnownElt (int typelt)
     case 312:
         n = 3;
         break;
-    case 91:
+    case 91 : case 81:
         n = 4;
         break;
-    case 94:
+    case 94 : case 84:
         n = 5;
         break;
     case 21:
@@ -281,10 +281,10 @@ int avtunvFileFormat::getNbnodes (int typelt)
     case 312:
         n = 5;
         break;
-    case 91:
+    case 91 : case 81:
         n = 3;
         break;
-    case 94:
+    case 94 : case 84:
         n = 4;
         break;
     case 21:
@@ -315,10 +315,10 @@ int avtunvFileFormat::getNbfaces (int typelt)
     case 312:
         n = 5;
         break;
-    case 91:
+    case 91 : case 81:
         n = 3;
         break;
-    case 94:
+    case 94 : case 84:
         n = 4;
         break;
     case 21:
@@ -583,6 +583,94 @@ avtunvFileFormat::getNormal2D (float *one_entry,
     one_entry[2] = (x1*y2-x2*y1);
 #if INTERACTIVEREAD
     if (debuglevel >= 4) fprintf(stdout,"\tResult=(%lf,%lf,%lf)\n",one_entry[0],one_entry[1],one_entry[2]);
+#endif
+}
+
+// Provides the number of nodes for 2D element:
+void
+avtunvFileFormat::getvolNormal2D (float *one_entry,
+                               set<UnvElement, UnvElement::compare_UnvElement>::iterator itre)
+{
+    double x1,x2,y1,y2,z1,z2;
+    UnvNode anUnvNode;
+    set<UnvNode, UnvNode::compare_UnvNode>::iterator itrg; // Global node iterator
+    // First compute the normal to the element:
+    int nbnos = avtunvFileFormat::getNbnodes(itre->typelt);
+    if (nbnos == 3)
+    {
+        for (int ln=0; ln<nbnos; ln++)
+        {
+            anUnvNode.label = itre->nodes[ln];
+            itrg = meshUnvNodes.find(anUnvNode);
+            if (ln == 0)
+            {
+                x1 = -itrg->x;
+                y1 = -itrg->y;
+                z1 = -itrg->z;
+                x2 = -itrg->x;
+                y2 = -itrg->y;
+                z2 = -itrg->z;
+            }
+            else if (ln == 1)
+            {
+                x1 += itrg->x;
+                y1 += itrg->y;
+                z1 += itrg->z;
+            }
+            else if (ln == 2)
+            {
+                x2 += itrg->x;
+                y2 += itrg->y;
+                z2 += itrg->z;
+            }
+        }
+        one_entry[0] = 0.5*(y1*z2-y2*z1);
+        one_entry[1] = 0.5*(z1*x2-z2*x1);
+        one_entry[2] = 0.5*(x1*y2-x2*y1);
+    }
+    else
+    {
+        for (int ln=0; ln<4; ln++)
+        {
+            anUnvNode.label = itre->nodes[ln];
+            itrg = meshUnvNodes.find(anUnvNode);
+            if (ln == 0)
+            {
+                x2 = -itrg->x;
+                y2 = -itrg->y;
+                z2 = -itrg->z;
+            }
+            else if (ln == 1)
+            {
+                x1 = itrg->x;
+                y1 = itrg->y;
+                z1 = itrg->z;
+            }
+            else if (ln == 2)
+            {
+                x2 += itrg->x;
+                y2 += itrg->y;
+                z2 += itrg->z;
+            }
+            else if (ln == 3)
+            {
+                x1 -= itrg->x;
+                y1 -= itrg->y;
+                z1 -= itrg->z;
+            }
+        }
+        one_entry[0] = (y1*z2-y2*z1);
+        one_entry[1] = (z1*x2-z2*x1);
+        one_entry[2] = (x1*y2-x2*y1);
+    }
+#if 0
+    double fac=1./sqrt(one_entry[0]*one_entry[0]+one_entry[1]*one_entry[1]+one_entry[2]*one_entry[2]);
+    one_entry[0] = fac * one_entry[0];
+    one_entry[1] = fac * one_entry[1];
+    one_entry[2] = fac * one_entry[2];
+#endif
+#if INTERACTIVEREAD
+    if (debuglevel >= 4) fprintf(stdout,"\t* 2D Element Normal=(%lf,%lf,%lf)\n",one_entry[0],one_entry[1],one_entry[2]);
 #endif
 }
 
@@ -1661,13 +1749,9 @@ int avtunvFileFormat::getNbfreeSets ()
                 for (itre = freeelts.begin(); itre != freeelts.end(); itre++)
                 {
                     if (itre->matid == iorder)
-                    {
                         itre->matid = imax;
-                    }
                     else if (itre->matid == imax)
-                    {
                         itre->matid = iorder;
-                    }
                 }
             }
         }
@@ -1825,14 +1909,31 @@ avtunvFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     AddMeshToMetaData(md, meshname, mt, extents, nblocks, block_origin,
                       spatial_dimension, topological_dimension);
-
+    if (cdim == 2) 
+    {
+        AddVectorVarToMetaData(md, "normals2d", meshname, AVT_ZONECENT, 3);
+        Expression my_expr;
+        my_expr.SetName("rev_normals2d");
+        my_expr.SetDefinition("-normals2d");
+        my_expr.SetType(Expression::VectorMeshVar);
+        md->AddExpression(&my_expr);
+    }
+    
     if (nb3dcells > 0  && (nb2dcells > 0 || nb1dcells > 0))
         AddMeshToMetaData(md, "volmesh", mt, extents, nblocks, block_origin,
                           spatial_dimension, 3);
     // In case there is a 3D mesh and a 2D one:
     if (nb3dcells > 0  && nb2dcells > 0)
+    {
         AddMeshToMetaData(md, "surfmesh", mt, extents, nblocks, block_origin,
                           spatial_dimension, 2);
+        AddVectorVarToMetaData(md, "normals2d", "surfmesh", AVT_ZONECENT, 3);
+        Expression my_expr;
+        my_expr.SetName("rev_normals2d");
+        my_expr.SetDefinition("-normals2d");
+        my_expr.SetType(Expression::VectorMeshVar);
+        md->AddExpression(&my_expr);
+    }
     if ((nb3dcells > 0 || nb2dcells > 0)  && nb1dcells > 0)
         AddMeshToMetaData(md, "wiremesh", mt, extents, nblocks, block_origin,
                           spatial_dimension, 1);
@@ -2162,7 +2263,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #endif
                 ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
                 break;
-            case 91:
+            case 91 : case 81:
                 for (int i=0; i < 3; i++)
                 {
                     anUnvNode.label = itre->nodes[i];
@@ -2174,7 +2275,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
 #endif
                 ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
                 break;
-            case 94:
+            case 94 : case 84:
                 for (int i=0; i < 4; i++)
                 {
                     anUnvNode.label = itre->nodes[i];
@@ -2271,7 +2372,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
             {
                 switch (itre->typelt)
                 {
-                case 91:
+                case 91 : case 81:
                     for (int i=0; i < 3; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2280,7 +2381,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
                     }
                     ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
                     break ;
-                case 94:
+                case 94 : case 84:
                     for (int i=0; i < 4; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2300,7 +2401,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
             {
                 switch (itre->typelt)
                 {
-                case 91:
+                case 91 : case 81:
                     for (int i=0; i < 3; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2309,7 +2410,7 @@ avtunvFileFormat::GetMesh(const char *meshname)
                     }
                     ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
                     break ;
-                case 94:
+                case 94 : case 84:
                     for (int i=0; i < 4; i++)
                     {
                         anUnvNode.label = itre->nodes[i];
@@ -2958,6 +3059,31 @@ avtunvFileFormat::GetVectorVar(const char *varname)
         delete [] one_entry;
         return rv;
     }
+    else if (strcmp(varname, "normals2d") == 0)
+    {
+        int ncomps = 3;  // Vector rank in 3D is 3
+        int ntuples = nb2dcells ; // Numbre of known faces
+        vtkFloatArray *rv = vtkFloatArray::New();
+        rv->SetNumberOfComponents(ncomps);
+        float *one_entry = new float[ncomps];
+        rv->SetNumberOfTuples(ntuples);
+        ntuples = 0 ;
+        set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
+        for (itre = meshUnvElements.begin(); itre != meshUnvElements.end(); itre++)
+            if (avtunvFileFormat::is2DKnownElt(itre->typelt) >= 0)
+            {
+                avtunvFileFormat::getvolNormal2D(one_entry, itre);
+#if INTERACTIVEPLOT
+                if (debuglevel >= 5) fprintf(stdout," Normal(%d)=(%lf,%lf,%lf)\n",
+                                             ntuples,one_entry[0],one_entry[1],one_entry[2]);
+#endif
+                rv->SetTuple(ntuples, one_entry);
+                ntuples++;
+            }
+
+        delete [] one_entry;
+        return rv;
+    }
     return NULL; ///TODO: check return type warning fix
 }
 
@@ -3011,10 +3137,10 @@ avtunvFileFormat::ReadFile()
             debug1 << "On the way to read unv file " << filename << endl;
 #endif
             int len = 2048; // Longest line length
-            char buf[2048]; // A line length
+            char buf[len]; // A line length
             int code;
             int label;
-            double fac = 1.; (void) fac;
+            double fac = 1.;
             while (fgets(buf, len, handle) != NULL)
             {
                 if (strstr(buf, "    -1") != NULL)
@@ -3055,7 +3181,7 @@ avtunvFileFormat::ReadFile()
                                 }
                                 if (fgets(buf, len, handle) != NULL)
                                 {
-                                    int ier = 0; //TODO: check on fix for uninitalized vars //  = avtunvFileFormat::isKnownElt(typelt);
+                                    int ier = 0; //  = avtunvFileFormat::isKnownElt(typelt);
                                     //if (typelt == 111) {
                                     switch (typelt)
                                     {
@@ -3086,14 +3212,14 @@ avtunvFileFormat::ReadFile()
                                         nb3dmats = max(nb3dmats, numat);
                                         ier = 3;
                                         break;
-                                    case 91:
+                                    case 91 : case 81:
                                         //} else if (typelt == 91) {
                                         sscanf(buf, "%d %d %d\n", &nod[0], &nod[1], &nod[2]);
                                         nb2dcells++;
                                         nb2dmats = max(nb2dmats, numat);
                                         ier = 4;
                                         break;
-                                    case 94:
+                                    case 94 : case 84:
                                         //} else if (typelt == 94) {
                                         sscanf(buf, "%d %d %d %d\n", &nod[0], &nod[1], &nod[2], &nod[3]);
                                         nb2dcells++;
@@ -3157,7 +3283,7 @@ avtunvFileFormat::ReadFile()
                             debug2 << "Found Node code "  << endl;
 #endif
                             int i1, i2, i3;
-                            double x, y, z; (void) x; (void) y; (void) z;
+                            double x, y, z;
                             while (fgets(buf, len, handle) != NULL)
                             {
                                 sscanf(buf, "%d%d%d%d\n", &label, &i1, &i2, &i3);
@@ -3276,7 +3402,7 @@ avtunvFileFormat::ReadFile()
                                 debug3 << "Adding a load set id=" << anfp.label << " name='" << anfp.name << "'." << endl;
 #endif
                                 UnvFace anUnvFace; // Elementary face pressure object
-                                UnvElement anUnvElement; (void) anUnvElement;// an element object, assuming already built
+                                UnvElement anUnvElement; (void) anUnvElement; // an element object, assuming already built
                                 set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
                                 while (fgets(buf, len, handle) != NULL)
                                 {
@@ -3377,10 +3503,10 @@ avtunvFileFormat::ReadFile()
             }
 
             int len = 2048; // Longest line length
-            char buf[2048]; // A line length
+            char buf[len]; // A line length
             int code;
             int label;
-            double fac = 1.; (void) fac;
+            double fac = 1.;
             while (gzgets(gzhandle, buf, len) != Z_NULL)
             {
                 if (strstr(buf, "    -1") != NULL)
@@ -3472,7 +3598,7 @@ avtunvFileFormat::ReadFile()
                                             nb3dmats = max(nb3dmats, numat);
                                             ier = 3;
                                             break;
-                                        case 91:
+                                        case 91 : case 81:
                                             //} else if (typelt == 91) {
                                             sscanf(buf, "%d %d %d\n", &nodes[0], &nodes[1], &nodes[2]);
 #if INTERACTIVEREAD
@@ -3484,7 +3610,7 @@ avtunvFileFormat::ReadFile()
                                             nb2dmats = max(nb2dmats, numat);
                                             ier = 4;
                                             break;
-                                        case 94:
+                                        case 94 : case 84:
                                             //} else if (typelt == 94) {
                                             sscanf(buf, "%d %d %d %d\n", &nodes[0], &nodes[1], &nodes[2], &nodes[3]);
 #if INTERACTIVEREAD
@@ -3574,7 +3700,7 @@ avtunvFileFormat::ReadFile()
                                 else
                                 {
                                     int i1, i2, i3;
-                                    double x, y, z; (void) x; (void) y; (void) z;
+                                    double x, y, z;
                                     sscanf(buf, "%d%d%d%d\n", &label, &i1, &i2, &i3);
                                     if (gzgets(gzhandle, buf, len) != Z_NULL)
                                     {
