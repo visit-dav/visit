@@ -118,7 +118,8 @@ SetView3D(View3DAtts)
 DrawPlots()
 Test("unv_05")
 
-CloseDatabase(pjoin(datapath,"small_vol_pyr_bor.unv"), 0)
+DeleteAllPlots()
+CloseDatabase(pjoin(datapath,"small_vol_pyr_bor.unv"))
 OpenDatabase(pjoin(datapath, "small_sur.unv"))
 
 AddPlot("Vector", "normals2d", 1, 1)
