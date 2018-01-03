@@ -355,6 +355,10 @@ class     vtkUnstructuredGrid;
 //    Cyrus Harrison, Tue Dec 22 15:29:39 PST 2015
 //    Added methods supporting local domain boundary info.
 //
+//    Alister Maguire, 
+//    Added another bool variable to MaterialSelect 
+//    for forceConstructMaterialLabels. 
+//
 // ****************************************************************************
 
 class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
@@ -482,7 +486,7 @@ class DATABASE_API avtGenericDatabase : public avtDatasetDatabase
                                               stringVector &, 
                                               stringVector &, 
                                               bool, bool, bool, bool, bool,
-                                              bool, bool, int, int,
+                                              bool, bool, bool, int, int,
                                               int, float, float, int, bool, 
                                               bool&, bool&, bool);
     void_ref_ptr               GetMIR(int, const char *, int, vtkDataSet*,

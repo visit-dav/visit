@@ -220,6 +220,11 @@ typedef ref_ptr<avtDataRequest> avtDataRequest_p;
 //
 //    Burlen Loring, Wed Aug  5 12:05:27 PDT 2015
 //    Added SetVariable method.
+//
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels to allow access to 
+//    material labels without a material variable. 
+//
 // ****************************************************************************
 
 class PIPELINE_API avtDataRequest
@@ -258,10 +263,16 @@ class PIPELINE_API avtDataRequest
 
     bool                         MustDoMaterialInterfaceReconstruction(void)
                                      { return mustDoMIR; };
+    bool                         ForceConstructMaterialLabels(void)
+                                     { return forceConstructMaterialLabels; };
     void                         ForceMaterialInterfaceReconstructionOn(void)
                                      { mustDoMIR = true; };
     void                         ForceMaterialInterfaceReconstructionOff(void)
                                      { mustDoMIR = false; };
+    void                         ForceMaterialLabelsConstructionOn(void)
+                                     { forceConstructMaterialLabels = true; };
+    void                         ForceMaterialLabelsConstructionOff(void)
+                                     { forceConstructMaterialLabels = false; };
 
     bool                         NeedInternalSurfaces(void)
                                      { return needInternalSurfaces; };
@@ -515,6 +526,7 @@ class PIPELINE_API avtDataRequest
     bool                         mayRequireZones;
     bool                         mayRequireNodes;
     bool                         mustDoMIR;
+    bool                         forceConstructMaterialLabels;
     bool                         needInternalSurfaces;
     bool                         getBoundarySurfaceRep;
     bool                         getSimplifiedNestingRep;

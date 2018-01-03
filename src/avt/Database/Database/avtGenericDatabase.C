@@ -3777,6 +3777,9 @@ avtGenericDatabase::AddOriginalNodesArray(vtkDataSet *ds, const int domain)
 //    Fix problem with subset plot with a material removed (labels weren't
 //    being passed back correctly).
 //
+//    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
+//    If materialLabelsForced is true, then create material labels. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -3789,6 +3792,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
                         bool needSmoothMaterialInterfaces,
                         bool needCleanZonesOnly,
                         bool reconstructionForced,
+                        bool materialLabelsForced,
                         bool simplifyHeavilyMixedZones,
                         int  maxMatsPerZone,
                         int  mirAlgorithm,
@@ -4007,7 +4011,7 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
     //
     stringVector labelStrings;
 
-    if (type == AVT_MATERIAL)
+    if (type == AVT_MATERIAL || materialLabelsForced) 
     {
         if (needInternalSurfaces)
         {
@@ -4083,7 +4087,6 @@ avtGenericDatabase::MaterialSelect(vtkDataSet *ds, avtMaterial *mat,
             }
         }
     }
-
     avtDataTree_p outDT = new avtDataTree(numOutput, out_ds, dom, labelStrings);
     for (int i = 0 ; i < numOutput ; i++)
     {
@@ -5170,6 +5173,12 @@ avtGenericDatabase::ActivateTimestep(int stateIndex)
 //    Mark C. Miller, Thu Dec 18 12:55:50 PST 2014
 //    Incorporated changes from Jeremy to properly pass along labels for
 //    enum scalars. Thanks Jeremy!
+//
+//    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
+//    When preparing labels, check to see if we're forcing material 
+//    labels to be created. Also, if the dataset doesn't contain 
+//    any materials, don't try and look for them.  
+//
 // ****************************************************************************
 
 void
@@ -5315,7 +5324,12 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         int nmats = (int)matnames.size();
         vtkDataSet *single_ds = NULL;
 
-        if (!doSelect || !Interface->PerformsMaterialSelection())
+        if (nmats <= 0)
+        {
+            doSelect = false;
+        }
+
+        if (!doSelect || !Interface->PerformsMaterialSelection()) 
         {
             // We know we want the dataset as a whole
             if (md->GetFormatCanDoDomainDecomposition())
@@ -5358,7 +5372,11 @@ avtGenericDatabase::ReadDataset(avtDatasetCollection &ds, intVector &domains,
         //
         //  Prepare labels; we need nmats labels.
         //
-        if (subT == AVT_DOMAIN_SUBSET)
+        if (spec->ForceConstructMaterialLabels() && nmats > 0) 
+        {
+            labels = matnames;
+        }
+        else if (subT == AVT_DOMAIN_SUBSET)
         {
             if (blockNames.empty())
             {
@@ -7940,6 +7958,10 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Jeremy Meredith, Fri Feb 13 11:22:39 EST 2009
 //    Added MIR iteration capability.
 //
+//    Alister Maguire, Mon Nov 27 15:31:54 PST 2017
+//    Added ForceConstructMaterialLabels argument to 
+//    MaterialSelect. 
+//
 // ****************************************************************************
 
 void
@@ -8011,6 +8033,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                 spec->NeedSmoothMaterialInterfaces(),
                                 spec->NeedCleanZonesOnly(),
                                 spec->MustDoMaterialInterfaceReconstruction(),
+                                spec->ForceConstructMaterialLabels(),
                                 spec->SimplifyHeavilyMixedZones(),
                                 spec->MaxMaterialsPerZone(),
                                 spec->MIRAlgorithm(),

@@ -192,6 +192,9 @@ using     std::map;
 //    Cyrus Harrison, Mon Jan 26 21:26:34 PST 2015
 //    Changed check from boost interval template lib to boost proper.
 //
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels. 
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts,
@@ -206,6 +209,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
     needInternalSurfaces = false;
     velocityMustBeContinuous = false;
     mustDoMIR = false;
+    forceConstructMaterialLabels = false;
     getBoundarySurfaceRep = false;
     getSimplifiedNestingRep = false;
     needValidFaceConnectivity = false;
@@ -366,6 +370,9 @@ avtDataRequest::avtDataRequest(const char *var, int ts,
 //    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
 //    Add missingDataBehavior.
 //
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels.
+//
 // ****************************************************************************
 
 avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
@@ -377,6 +384,7 @@ avtDataRequest::avtDataRequest(const char *var, int ts, int ch)
     needGlobalZones = false;
     needGlobalNodes = false;
     mustDoMIR = false;
+    forceConstructMaterialLabels = false;
     velocityMustBeContinuous = false;
     needInternalSurfaces = false;
     getBoundarySurfaceRep = false;
@@ -679,6 +687,9 @@ avtDataRequest::avtDataRequest(avtDataRequest_p spec)
 //    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
 //    Add missingDataBehavior.
 //
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    added forceConstructMaterialLabels.
+//
 // ****************************************************************************
 
 avtDataRequest &
@@ -714,6 +725,7 @@ avtDataRequest::operator=(const avtDataRequest &spec)
     mayRequireZones                 = spec.mayRequireZones;
     mayRequireNodes                 = spec.mayRequireNodes;
     mustDoMIR                       = spec.mustDoMIR;
+    forceConstructMaterialLabels    = spec.forceConstructMaterialLabels;
     needZones                       = spec.needZones;
     needNodes                       = spec.needNodes;
     needGlobalZones                 = spec.needGlobalZones;
@@ -872,6 +884,9 @@ avtDataRequest::operator=(const avtDataRequest &spec)
 //    Brad Whitlock, Wed Jan  4 16:52:54 PST 2012
 //    Add missingDataBehavior.
 //
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels.
+//
 // ****************************************************************************
 
 bool
@@ -920,6 +935,11 @@ avtDataRequest::operator==(const avtDataRequest &ds)
     }
 
     if (mustDoMIR != ds.mustDoMIR)
+    {
+        return false;
+    }
+
+    if (forceConstructMaterialLabels != ds.forceConstructMaterialLabels)
     {
         return false;
     }
@@ -1969,6 +1989,9 @@ avtSILSpecification::operator==(const avtSILSpecification &s)
 //    Brad Whitlock, Wed Jan  4 16:55:23 PST 2012
 //    Added missing data behavior.
 //
+//    Alister Maguire, Mon Nov 27 14:16:21 PST 2017
+//    Added forceConstructMaterialLabels.
+//
 // ****************************************************************************
 
 static const char *
@@ -2011,6 +2034,7 @@ avtDataRequest::DebugDump(avtWebpage *webpage)
     webpage->AddTableEntry2("mayRequireNodes", YesOrNo(mayRequireNodes));
     webpage->AddTableEntry2("mayRequireZones", YesOrNo(mayRequireZones));
     webpage->AddTableEntry2("mustDoMIR", YesOrNo(mustDoMIR));
+    webpage->AddTableEntry2("forceConstructMaterialLabels", YesOrNo(forceConstructMaterialLabels));
     webpage->AddTableEntry2("needInternalSurfaces", YesOrNo(needInternalSurfaces));
     webpage->AddTableEntry2("velocityMustBeContinuous", YesOrNo(velocityMustBeContinuous));
     webpage->AddTableEntry2("Get data set as only material boundaries", YesOrNo(getBoundarySurfaceRep));
