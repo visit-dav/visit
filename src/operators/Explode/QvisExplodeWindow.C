@@ -54,6 +54,7 @@
 #include <QComboBox>
 #include <QGroupBox>
 
+#include <numeric>
 
 // ****************************************************************************
 // Method: QvisExplodeWindow::QvisExplodeWindow

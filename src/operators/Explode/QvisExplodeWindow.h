@@ -90,7 +90,6 @@ class QvisExplodeWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
     void ClearLayout(QLayout *layout);
   private slots:
-    void explosionTypeChanged(int val);
     void explosionPointProcessText();
     void planePointProcessText();
     void planeNormProcessText();
