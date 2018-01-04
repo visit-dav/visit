@@ -3137,7 +3137,7 @@ avtunvFileFormat::ReadFile()
             debug1 << "On the way to read unv file " << filename << endl;
 #endif
             int len = 2048; // Longest line length
-            char buf[len]; // A line length
+            char *buf = new char[len]; // A line length
             int code;
             int label;
             double fac = 1.;
@@ -3486,6 +3486,7 @@ avtunvFileFormat::ReadFile()
                     }
                 }
             }
+            delete [] buf;
             fclose(handle);
         }
 #if GZSTUFF
@@ -3503,7 +3504,7 @@ avtunvFileFormat::ReadFile()
             }
 
             int len = 2048; // Longest line length
-            char buf[len]; // A line length
+            char *buf = new char[len]; // A line length
             int code;
             int label;
             double fac = 1.;
@@ -3891,6 +3892,7 @@ avtunvFileFormat::ReadFile()
                     }
                 }
             }
+            delete [] buf;
             gzclose(gzhandle);
 #if INTERACTIVEREAD
             if (debuglevel >= 1) fprintf(stdout,"Closing file, nbnodes=%d, nbelts=%d\n",nbnodes,nb3dcells+nb2dcells);
