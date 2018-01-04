@@ -4336,6 +4336,9 @@ GetUniqueVars(const stringVector &vars, const string &activeVar,
 //    Changed windowtype for Statistics queries to be Basic, as the actual
 //    code for the queries does not seem to make use of the 'ActualData' flag.
 //
+//    Brad Whitlock, Fri Sep  6 12:53:42 PDT 2013
+//    Add Grid Information query.
+//
 //    Kevin Griffin, Thu Aug 11 10:53:13 PDT 2016
 //    Added the GyRadius Query.
 //
@@ -4465,6 +4468,7 @@ ViewerQueryManager::InitializeQueryList()
     GetViewerState()->GetQueryList()->AddQuery("SpatialExtents", dq, mr, ad, 1, 0, qo);
     GetViewerState()->GetQueryList()->AddQuery("NumNodes", dq, mr, ad, 1, 0, qo);
     GetViewerState()->GetQueryList()->AddQuery("NumZones", dq, mr, ad, 1, 0, qo);
+    GetViewerState()->GetQueryList()->AddQuery("Grid Information", dq, mr, basic, 1, 0, qo);
     GetViewerState()->GetQueryList()->AddQuery("Zone Center", dq, mr, dz, 1, 0, qo);
     GetViewerState()->GetQueryList()->AddQuery("Node Coords", dq, mr, dn, 1, 0, qo);
     int TrajVars = QUERY_SCALAR_VAR;

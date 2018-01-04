@@ -64,6 +64,7 @@
 #include <avtEllipticalCompactnessFactorQuery.h>
 #include <avtEulerianQuery.h>
 #include <avtExpectedValueQuery.h>
+#include <avtGridInformationQuery.h>
 #include <avtHohlraumFluxQuery.h>
 #include <avtIndividualChordLengthDistributionQuery.h>
 #include <avtIndividualRayLengthDistributionQuery.h>
@@ -676,6 +677,11 @@ avtQueryFactory::CreateQuery(const QueryAttributes *qa)
     else if (CaseInsenstiveEqual(qname,"Line Sampler Info"))
     {
         query = new avtLineSamplerInfoQuery();
+    }
+
+    else if (CaseInsenstiveEqual(qname,"Grid Information"))
+    {
+        query = new avtGridInformationQuery();
     }
 
     else if (CaseInsenstiveEqual(qname,"GyRadius"))
