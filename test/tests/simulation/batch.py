@@ -370,6 +370,8 @@ def main():
     sim.addargument("5")
     sim.addargument("-render")
     sim.addargument("1")
+    sim.addargument("-export")
+    sim.addargument("1")
 
     # Test that we can start the simulation.
     sim.startsim()
