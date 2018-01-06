@@ -31,178 +31,190 @@
 #
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation
-a = AnnotationAttributes()
-TurnOffAllAnnotations(a)
+def test1(a):
+    #
+    # Start off by testing that we can bring up a normal volume plot and smooth
+    # the data.  Also test that it can interact with the bounding box correctly.
+    # 
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
-# Turn bbox on.  This tests:
-# - interaction with geometry
-# - that image based plots still get added to the vis window, causing a 
-#   bounding box to get generated.
-a.axes3D.bboxFlag = 1
-SetAnnotationAttributes(a)
+    AddPlot("Volume", "d")
+    vol_atts = VolumeAttributes()
+    vol_atts.rendererType = vol_atts.RayCasting
+    vol_atts.smoothData = 1
+    SetPlotOptions(vol_atts)
+    DrawPlots()
 
+    v = GetView3D()
+    v.viewNormal = (-0.369824, 0.535308, 0.759391)
+    v.focus = (0.5, 0.5, 0.5)
+    v.viewUp = (-0.022009, 0.812062, -0.583155)
+    v.viewAngle = 30
+    v.parallelScale = 0.866025
+    v.nearPlane = -1.73205
+    v.farPlane = 1.73205
+    v.imagePan = (0, 0)
+    v.imageZoom = 1
+    v.perspective = 1
+    v.eyeAngle = 2
+    v.centerOfRotationSet = 0
+    v.centerOfRotation = (0, 0, 0)
+    SetView3D(v)
 
-#
-# Start off by testing that we can bring up a normal volume plot and smooth
-# the data.  Also test that it can interact with the bounding box correctly.
-#
-OpenDatabase(silo_data_path("rect3d.silo"))
+    Test("ray_trace_01")
 
-AddPlot("Volume", "d")
-vol_atts = VolumeAttributes()
-vol_atts.rendererType = vol_atts.RayCasting
-vol_atts.smoothData = 1
-SetPlotOptions(vol_atts)
-DrawPlots()
+    v.imagePan = (0.1, -0.1)
+    SetView3D(v)
+    Test("ray_trace_01_pan")
+    v.imagePan = (0, 0)
+    SetView3D(v)
 
-v = GetView3D()
-v.viewNormal = (-0.369824, 0.535308, 0.759391)
-v.focus = (0.5, 0.5, 0.5)
-v.viewUp = (-0.022009, 0.812062, -0.583155)
-v.viewAngle = 30
-v.parallelScale = 0.866025
-v.nearPlane = -1.73205
-v.farPlane = 1.73205
-v.imagePan = (0, 0)
-v.imageZoom = 1
-v.perspective = 1
-v.eyeAngle = 2
-v.centerOfRotationSet = 0
-v.centerOfRotation = (0, 0, 0)
-SetView3D(v)
+    #
+    # Now test that it can play with other plots.
+    #
+    AddPlot("Pseudocolor", "d")
+    pc_atts = PseudocolorAttributes()
+    pc_atts.colorTableName = "gray"
+    SetPlotOptions(pc_atts)
+    AddOperator("Slice")
+    slice_atts = SliceAttributes()
+    slice_atts.originPercent = 90
+    slice_atts.axisType = slice_atts.ZAxis
+    slice_atts.originType = slice_atts.Percent
+    slice_atts.project2d = 0
+    SetOperatorOptions(slice_atts)
+    DrawPlots()
 
-Test("ray_trace_01")
+    Test("ray_trace_02")
 
-v.imagePan = (0.1, -0.1)
-SetView3D(v)
-Test("ray_trace_01_pan")
-v.imagePan = (0, 0)
-SetView3D(v)
+    #
+    # Test that it can play well with other plots when doin orthographic 
+    # projection.
+    #
+    v.perspective = 0
+    SetView3D(v)
 
-#
-# Now test that it can play with other plots.
-#
-AddPlot("Pseudocolor", "d")
-pc_atts = PseudocolorAttributes()
-pc_atts.colorTableName = "gray"
-SetPlotOptions(pc_atts)
-AddOperator("Slice")
-slice_atts = SliceAttributes()
-slice_atts.originPercent = 90
-slice_atts.axisType = slice_atts.ZAxis
-slice_atts.originType = slice_atts.Percent
-slice_atts.project2d = 0
-SetOperatorOptions(slice_atts)
-DrawPlots()
+    Test("ray_trace_03")
 
-Test("ray_trace_02")
+    #
+    # Now test that we handle it well when the near and far clipping planes
+    # intersect the dataset.
+    #
+    v.perspective = 1
+    v.nearPlane = -0.5
+    v.farPlane = 0.5
+    SetView3D(v)
 
-#
-# Test that it can play well with other plots when doin orthographic 
-# projection.
-#
-v.perspective = 0
-SetView3D(v)
+    Test("ray_trace_04")
 
-Test("ray_trace_03")
+    DeleteAllPlots()
 
-#
-# Now test that we handle it well when the near and far clipping planes
-# intersect the dataset.
-#
-v.perspective = 1
-v.nearPlane = -0.5
-v.farPlane = 0.5
-SetView3D(v)
+def test2(a):
+    #
+    # Test that we can do curvilinear/unstructured meshes, which do an entirely
+    # different sort of sampling.
+    #
+    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
 
-Test("ray_trace_04")
+    AddPlot("Volume", "d")
+    vol_atts = VolumeAttributes()
+    vol_atts.rendererType = vol_atts.RayCasting
+    vol_atts.smoothData = 0
+    SetPlotOptions(vol_atts)
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (-0.369824, 0.535308, 0.759391)
+    v.viewUp = (-0.022009, 0.812062, -0.583155)
+    SetView3D(v)
 
+    Test("ray_trace_05")
 
-#
-# Test that we can do curvilinear/unstructured meshes, which do an entirely
-# different sort of sampling.
-#
-DeleteAllPlots()
-OpenDatabase(silo_data_path("multi_ucd3d.silo"))
+    v.imagePan = (0.1, -0.1)
+    SetView3D(v)
+    Test("ray_trace_05_pan")
+    v.imagePan = (0, 0)
+    SetView3D(v)
 
-AddPlot("Volume", "d")
-vol_atts.rendererType = vol_atts.RayCasting
-vol_atts.smoothData = 0
-SetPlotOptions(vol_atts)
-DrawPlots()
-ResetView()
-v = GetView3D()
-v.viewNormal = (-0.369824, 0.535308, 0.759391)
-v.viewUp = (-0.022009, 0.812062, -0.583155)
-SetView3D(v)
+    DeleteAllPlots()
 
-Test("ray_trace_05")
+def test3(a):
+    #
+    # Test a multi-block rectilinear problem with ghost zones.  Use an AMR problem,
+    # because that will test the best if we are removing ghost zones correctly
+    # (ghost zone values in AMR meshes don't necessarily agree with the values of
+    #  the zones that refine them).
+    #
+    OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
 
-v.imagePan = (0.1, -0.1)
-SetView3D(v)
-Test("ray_trace_05_pan")
-v.imagePan = (0, 0)
-SetView3D(v)
+    AddPlot("Volume", "Primitive Var _number_0")
+    vol_atts = VolumeAttributes()
+    vol_atts.rendererType = vol_atts.RayCasting
+    vol_atts.smoothData = 0
+    vol_atts.useColorVarMin = 1
+    vol_atts.colorVarMin = 22
+    SetPlotOptions(vol_atts)
+    DrawPlots()
+    ResetView()
+    v = GetView3D()
+    v.viewNormal = (-0.369824, 0.535308, 0.759391)
+    v.viewUp = (-0.022009, 0.812062, -0.583155)
+    SetView3D(v)
 
-#
-# Test a multi-block rectilinear problem with ghost zones.  Use an AMR problem,
-# because that will test the best if we are removing ghost zones correctly
-# (ghost zone values in AMR meshes don't necessarily agree with the values of
-#  the zones that refine them).
-#
-DeleteAllPlots()
-OpenDatabase(data_path("samrai_test_data/sil_changes/dumps.visit"))
+    Test("ray_trace_06")
 
-AddPlot("Volume", "Primitive Var _number_0")
-vol_atts.rendererType = vol_atts.RayCasting
-vol_atts.smoothData = 0
-vol_atts.useColorVarMin = 1
-vol_atts.colorVarMin = 22
-SetPlotOptions(vol_atts)
-DrawPlots()
-ResetView()
-v = GetView3D()
-v.viewNormal = (-0.369824, 0.535308, 0.759391)
-v.viewUp = (-0.022009, 0.812062, -0.583155)
-SetView3D(v)
+    #
+    # Now do it again for another timestep.
+    #
+    SetTimeSliderState(7)
+    Test("ray_trace_07")
 
-Test("ray_trace_06")
+    # 
+    # Now go to window #2 and do some more raytracing.
+    #
+    AddWindow()
+    SetActiveWindow(2)
+    DeleteAllPlots()
+    SetAnnotationAttributes(a)
+    OpenDatabase(silo_data_path("rect3d.silo"))
 
-#
-# Now do it again for another timestep.
-#
-SetTimeSliderState(7)
-Test("ray_trace_07")
+    AddPlot("Volume", "d")
+    vol_atts = VolumeAttributes()
+    vol_atts.rendererType = vol_atts.RayCasting
+    SetPlotOptions(vol_atts)
+    DrawPlots()
+    Test("ray_trace_08")
 
-# 
-# Now go to window #2 and do some more raytracing.
-#
-AddWindow()
-SetActiveWindow(2)
-DeleteAllPlots()
-SetAnnotationAttributes(a)
-OpenDatabase(silo_data_path("rect3d.silo"))
+    #
+    # There was a bug where adding a new plot with a different variable
+    # would cause the ray tracing to fail.  Test that the fix still works.
+    #
+    AddPlot("Contour", "u")
+    DrawPlots()
+    Test("ray_trace_09")
 
-AddPlot("Volume", "d")
-vol_atts = VolumeAttributes()
-vol_atts.rendererType = vol_atts.RayCasting
-SetPlotOptions(vol_atts)
-DrawPlots()
-Test("ray_trace_08")
+    # And make sure everything is okay in window #1.
+    SetActiveWindow(1)
+    SetActivePlots(0)
+    DeleteActivePlots()
+    Test("ray_trace_10")
 
-#
-# There was a bug where adding a new plot with a different variable
-# would cause the ray tracing to fail.  Test that the fix still works.
-#
-AddPlot("Contour", "u")
-DrawPlots()
-Test("ray_trace_09")
+def main():
+    # Turn off all annotation
+    a = AnnotationAttributes()
+    TurnOffAllAnnotations(a)
 
-# And make sure everything is okay in window #1.
-SetActiveWindow(1)
-SetActivePlots(0)
-DeleteActivePlots()
-Test("ray_trace_10")
+    # Turn bbox on.  This tests:
+    # - interaction with geometry
+    # - that image based plots still get added to the vis window, causing a 
+    #   bounding box to get generated.
+    a.axes3D.bboxFlag = 1
+    SetAnnotationAttributes(a)
 
+    test1(a)
+    test2(a)
+    test3(a)
+
+main()
 Exit()
+

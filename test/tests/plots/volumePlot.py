@@ -90,6 +90,7 @@ def TestVolumeScaling():
 
     volAtts.rendererType = volAtts.RayCasting
     volAtts.scaling = volAtts.Linear
+    volAtts.lightingFlag = 0
     SetPlotOptions(volAtts)
     Test("volumeScaling_09")
 
