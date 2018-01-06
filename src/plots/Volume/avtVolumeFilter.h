@@ -44,6 +44,7 @@
 #define AVT_VOLUME_FILTER_H
 
 #include <avtDatasetToDatasetFilter.h>
+#include <avtOpacityMap.h>
 
 #include <VolumeAttributes.h>
 
@@ -96,6 +97,8 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
   protected:
     VolumeAttributes         atts;
     char                    *primaryVariable;
+
+    avtOpacityMap            CreateOpacityMap(double range[2]);
 
     virtual void             Execute(void);
     virtual avtContract_p    ModifyContract(avtContract_p);

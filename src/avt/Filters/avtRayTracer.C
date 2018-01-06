@@ -382,7 +382,9 @@ avtRayTracer::unProject(int _x, int _y, float _z, double _worldCoordinates[3], i
     invModelViewProj->MultiplyPoint(in, worldCoordinates);
 
     if (worldCoordinates[3] == 0)
+    {
         debug5 << "avtMassVoxelExtractor::unProject division by 0 error!" << endl;
+    }
 
     worldCoordinates[0] = worldCoordinates[0]/worldCoordinates[3];
     worldCoordinates[1] = worldCoordinates[1]/worldCoordinates[3];
@@ -664,12 +666,11 @@ avtRayTracer::Execute(void)
     extractor.SetKernelBasedSampling(doKernel);
     extractor.RegisterRayFunction(rayfoo);
     extractor.SetJittering(true);
+    extractor.SetTransferFn(transferFn1D);
     extractor.SetInput(trans.GetOutput());
-
 
     if (trilinearInterpolation)
         extractor.SetTrilinear(true);
-
 
     //
     // Ray casting: SLIVR ~ Before Rendering

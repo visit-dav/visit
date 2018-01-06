@@ -101,6 +101,10 @@ avtVolume::avtVolume(int sw, int sh, int sd, int nv)
     restrictedMinHeight = 0;
     restrictedMaxHeight = sh-1;
 
+    usedRays = NULL;
+    usedRayIndex = 0;
+    usedRaySize = 0;
+
     rays = new avtRay**[volumeHeight];
     for (int i = 0 ; i < volumeHeight ; i++)
     {
@@ -132,13 +136,13 @@ avtVolume::avtVolume(int sw, int sh, int sd, int nv)
 
 avtVolume::~avtVolume()
 {
-    ResetSamples();
+    DestroySamples();
     delete [] rays;
 }
 
 
 // ****************************************************************************
-//  Method: avtVolume::ResetSamples
+//  Method: avtVolume::DestroySamples
 //
 //  Purpose:
 //      Clears out all of the samples in this object.
@@ -149,8 +153,10 @@ avtVolume::~avtVolume()
 // ****************************************************************************
 
 void
-avtVolume::ResetSamples(void)
+avtVolume::DestroySamples(void)
 {
+    //cout << "avtVolume::DestroySamples: volumeWidth=" << volumeWidth << ", volumeHeight=" << volumeHeight << endl;
+    // Delete the rays themselves.
     if (rays != NULL)
     {
         for (int i = 0 ; i < volumeHeight ; i++)
@@ -160,18 +166,196 @@ avtVolume::ResetSamples(void)
                 for (int j = 0 ; j < volumeWidth ; j++)
                 {
                     if (rays[i][j] != NULL)
-                    {
                         delete rays[i][j];
-                        rays[i][j] = NULL;
-                    }
                 }
                 delete [] rays[i];
                 rays[i] = NULL;
             }
         }
+        // NOTE: we do not delete the rays "spine" array.
+    }
+
+    // Delete any rays in the used ray list.
+    if(usedRays != NULL)
+    {
+        for(int i = 0; i < usedRaySize; ++i)
+        {
+            if(usedRays[i] != NULL)
+                delete usedRays[i];
+        }
+        delete [] usedRays;
+        usedRays = NULL;
+        usedRayIndex = 0;
+        usedRaySize = 0;
+    }
+
+    // Clear out all of the memory used by the rays.
+    for(size_t i = 0; i < rayMemory.size(); ++i)
+        delete rayMemory[i];
+    rayMemory.clear();
+}
+
+// ****************************************************************************
+// Method: avtVolume::ResetSamples
+//
+// Purpose:
+//   Reset the samples, resetting the rays that we've created and placing them
+//   into an array we'll used to recycle them.
+//
+// Arguments:
+//   
+//
+// Returns:    
+//
+// Note:       We keep the arrays around since the ray tracer might be tiling
+//             and recreating these things takes a chunk of time.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 16 17:31:11 PST 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtVolume::ResetSamples(void)
+{
+    //cout << "avtVolume::ResetSamples: volumeWidth=" << volumeWidth << ", volumeHeight=" << volumeHeight << endl;
+    int nrays = 0;
+
+    // Count the rays that we have in the recycle pool.
+    if(usedRays != NULL)
+    {
+        for(int i = 0; i < usedRaySize; ++i)
+        {
+            if(usedRays[i] != NULL)
+                nrays++;
+        }
+    }
+
+    // Count the rays that we plan to recycle.
+    if (rays != NULL)
+    {
+        for (int i = 0 ; i < volumeHeight ; i++)
+        {
+            if (rays[i] != NULL)
+            {
+                for (int j = 0 ; j < volumeWidth ; j++)
+                {
+                    if (rays[i][j] != NULL)
+                        nrays++;
+                }
+            }
+        }
+    }
+
+    // If we have rays to recycle, put them into the pool.
+    if(nrays > 0)
+    {
+        avtRay **used = new avtRay*[nrays];
+        int index = 0;
+        if(usedRays != NULL)
+        {
+            // Steal the rays from usedRays and add to used.
+            for(int i = 0; i < usedRaySize; ++i)
+            {
+                if(usedRays[i] != NULL)
+                    used[index++] = usedRays[i]; // Steal
+            }
+        }
+        if(rays != NULL)
+        {
+            // Steal the rays from rays and add to used.
+            // We delete rays too to ready it for next time.
+            for (int i = 0 ; i < volumeHeight ; i++)
+            {
+                if (rays[i] != NULL)
+                {
+                    for (int j = 0 ; j < volumeWidth ; j++)
+                    {
+                        if (rays[i][j] != NULL)
+                            used[index++] = rays[i][j]; // Steal
+                    }
+                    delete [] rays[i];
+                    rays[i] = NULL;
+                }
+            }
+            // NOTE: we do not delete the rays "spine" array.
+        }
+
+        // Remember used as the new usedRays array.
+        if(usedRays != NULL)
+            delete [] usedRays;
+        usedRays = used;
+        usedRayIndex = 0;
+        usedRaySize = nrays;
+    }
+    else
+    {
+        // NOTE: we probably should not get into this branch.
+
+        if(usedRays != NULL)
+        {
+            delete [] usedRays;
+            usedRays = NULL;
+        }
+        usedRayIndex = 0;
+        usedRaySize = 0;
+
+        if(rays != NULL)
+        {
+            for (int i = 0 ; i < volumeHeight ; i++)
+            {
+                if (rays[i] != NULL)
+                {
+                    for (int j = 0 ; j < volumeWidth ; j++)
+                    {
+                        if (rays[i][j] != NULL)
+                            delete rays[i][j];
+                    }
+                    delete [] rays[i];
+                    rays[i] = NULL;
+                }
+            }
+            // NOTE: we do not delete the rays "spine" array.
+        }
     }
 }
 
+// ****************************************************************************
+// Method: avtVolume::GetUsedRay
+//
+// Purpose:
+//   Gets a used
+//
+// Arguments:
+//   
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Feb 16 17:32:52 PST 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtRay *
+avtVolume::GetUsedRay()
+{
+    avtRay *r = NULL;
+    if(usedRays != NULL && usedRayIndex < usedRaySize)
+    {
+        //cout << "GetUsedRay: usedRays = " << usedRays << ", usedRayIndex=" << usedRayIndex << ", usedRaySize=" << usedRaySize << endl;
+        r = usedRays[usedRayIndex];
+        r->Reset();
+        usedRays[usedRayIndex] = NULL; // Steal it.
+        ++usedRayIndex;
+    }
+    return r;
+}
 
 // ****************************************************************************
 //  Method: avtVolume::Restrict
@@ -771,4 +955,117 @@ avtVolume::SetProgressCallback(PixelProgressCallback pc, void *pca)
     progressCallbackArgs = pca;
 }
 
+// ****************************************************************************
+// Method: avtVolume::RayMemoryBlock::RayMemoryBlock
+//
+// Purpose:
+//   Constructor.
+//
+// Arguments:
+//   ns : Number of samples along a ray.
+//   nv : Number of variables.
+//
+// Returns:    
+//
+// Note:       We use this class to reserve memory for the samples for many
+//             avtRay objects so we have far fewer memory allocations/deallocations.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 14 13:11:21 PST 2017
+//
+// Modifications:
+//
+// ****************************************************************************
 
+avtVolume::RayMemoryBlock::RayMemoryBlock(int ns, int nv)
+{
+    nBlocks = 500; // Allocate memory for 500 rays at a time.
+    nBlocksUsed = 0;
+
+    // Allocate the samples and validSamples together.
+    int nbytes_samples = nBlocks * ns * nv * sizeof(double);
+    int nbytes_validSamples = nBlocks * ns * sizeof(bool);
+    int nbytes = nbytes_samples + nbytes_validSamples;
+    int npages = (nbytes / 4096) + (((nbytes % 4096)>0) ? 1 : 0);
+
+    block = (double*)malloc(npages * 4096);
+}
+
+avtVolume::RayMemoryBlock::~RayMemoryBlock()
+{
+    free(block);
+}
+
+bool
+avtVolume::RayMemoryBlock::Full() const
+{
+    return (nBlocksUsed+1) > nBlocks;
+}
+
+// ****************************************************************************
+// Method: avtVolume::RayMemoryBlock::GetRayMemory
+//
+// Purpose:
+//   Get memory for an avtRay's samples and validSamples.
+//
+// Arguments:
+//   
+//
+// Returns:    
+//
+// Note:       We get return pointers into our larger memory block.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 14 13:13:45 PST 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtVolume::RayMemoryBlock::GetRayMemory(int ns, int nv, double *&samples, bool *&validSamples)
+{
+    // samples start at the beginning of the buffer.
+    double *sampleBlock = (double *)block;
+    samples = sampleBlock + (nBlocksUsed * ns * nv);
+
+    // validSamples are after all of the samples.
+    bool *validSampleBlock = (bool *)(sampleBlock + nBlocks * ns * nv);
+    validSamples = validSampleBlock + (nBlocksUsed * ns);
+    nBlocksUsed++;
+}
+
+// ****************************************************************************
+// Method: avtVolume::ReserveRayMemory
+//
+// Purpose:
+//   Get memory for an avtRay's samples and validSamples.
+//
+// Arguments:
+//   samples : The return pointer for the samples.
+//   validSamples : The return pointer for the valid samples.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Feb 14 13:14:34 PST 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+avtVolume::ReserveRayMemory(double *&samples, bool *&validSamples)
+{
+    if(rayMemory.empty())
+        rayMemory.push_back(new RayMemoryBlock(volumeDepth, numVariables));
+
+    RayMemoryBlock *mem = rayMemory.back();
+    if(mem->Full())
+        rayMemory.push_back(new RayMemoryBlock(volumeDepth, numVariables));
+
+    mem = rayMemory.back();
+    mem->GetRayMemory(volumeDepth, numVariables, samples, validSamples);
+}

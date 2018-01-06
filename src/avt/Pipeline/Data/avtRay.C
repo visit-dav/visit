@@ -49,6 +49,8 @@
 avtSamplePointArbitrator   *avtRay::arbitrator = NULL;
 bool                        avtRay::kernelBasedSampling = false;
 
+static bool *staticAllFalse = NULL;
+static int   staticNumSamps = -1;
 
 // ****************************************************************************
 //  Method: avtRay constructor
@@ -71,24 +73,28 @@ bool                        avtRay::kernelBasedSampling = false;
 //    Hank Childs, Tue Sep 22 08:56:19 PDT 2009
 //    Use a static to initialize the validSample array more quickly.
 //
+//    Brad Whitlock, Tue Feb 14 13:09:55 PST 2017
+//    Pass in preallocated buffers.
+//
 // ****************************************************************************
 
-avtRay::avtRay(int ns, int nv)
+avtRay::avtRay(double *s, bool *vs, int ns, int nv)
 {
     int  i;
 
     numSamples   = ns;
     numVariables = nv;
+
+    // Get our buffers passed in.
     for (i = 0 ; i < numVariables ; i++)
     {
-        sample[i] = new double[numSamples];
+        sample[i] = s + i * numSamples;
     }
     for (i = numVariables ; i < AVT_VARIABLE_LIMIT ; i++)
     {
         sample[i] = NULL;
     }
-    static bool *staticAllFalse = NULL;
-    static int   staticNumSamps = -1;
+
     if (numSamples != staticNumSamps)
     {
         if (staticAllFalse != NULL)
@@ -101,7 +107,7 @@ avtRay::avtRay(int ns, int nv)
         staticNumSamps = numSamples;
     }
 
-    validSample = new bool[numSamples];
+    validSample = vs;
     memcpy(validSample, staticAllFalse, sizeof(bool)*numSamples);
 
     numValidSamples = 0;
@@ -120,25 +126,22 @@ avtRay::avtRay(int ns, int nv)
 //    Hank Childs, Wed Nov 14 09:33:18 PST 2001
 //    Added support for multiple variables.
 //
+//    Brad Whitlock, Tue Feb 14 13:09:55 PST 2017
+//    Buffers are preallocated. We don't need to delete them.
+//
 // ****************************************************************************
 
 avtRay::~avtRay()
 {
-    if (validSample != NULL)
-    {
-        delete [] validSample;
-        validSample = NULL;
-    }
-    for (int i = 0 ; i < AVT_VARIABLE_LIMIT ; i++)
-    {
-        if (sample[i] != NULL)
-        {
-            delete [] sample[i];
-            sample[i] = NULL;
-        }
-    }
 }
 
+void
+avtRay::Reset()
+{
+    memcpy(validSample, staticAllFalse, sizeof(bool)*numSamples);
+    numValidSamples = 0;
+    numRuns = 0;
+}
 
 // ****************************************************************************
 //  Method: avtRay::GetSample

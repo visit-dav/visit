@@ -69,6 +69,7 @@
 avtPhong::avtPhong(double gmax, double lpow)
     : gradMax(gmax), lightingPower(lpow)
 {
+    inv_gradMax = 1. / gmax;
 }
 
 
@@ -134,6 +135,8 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
             continue;
   
         double brightness = l.GetBrightness();
+        const double *l_Direction = l.GetDirection();
+
         l.GetColor().GetRgba(lc);
         if (l.GetType() == LightAttributes::Ambient)
         {
@@ -146,36 +149,30 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
             double dir[3];
             if (l.GetType() == LightAttributes::Object)
             {
-                dir[0] = l.GetDirection()[0];
-                dir[1] = l.GetDirection()[1];
-                dir[2] = l.GetDirection()[2];
+                dir[0] = l_Direction[0];
+                dir[1] = l_Direction[1];
+                dir[2] = l_Direction[2];
             }
             else // Camera light.
             {
-                double view_right[3];   // The view "right" vector.
-                                        // view_direction cross view_up
-                view_right[0] = view_direction[1]*view_up[2] - view_direction[2]*view_up[1];
-                view_right[1] = view_direction[2]*view_up[0] - view_direction[0]*view_up[2];
-                view_right[2] = view_direction[0]*view_up[1] - view_direction[1]*view_up[0];
-
                 // A camera light's components are scaling factors of
                 // view_right, view_up, and view_direction.  Scale the
                 // components and set to the dir vector.
 
                 double comp1[3];
-                comp1[0] = view_right[0] * l.GetDirection()[0];
-                comp1[1] = view_right[1] * l.GetDirection()[0];
-                comp1[2] = view_right[2] * l.GetDirection()[0];
+                comp1[0] = view_right[0] * l_Direction[0];
+                comp1[1] = view_right[1] * l_Direction[0];
+                comp1[2] = view_right[2] * l_Direction[0];
 
                 double comp2[3];
-                comp2[0] = view_up[0] * l.GetDirection()[1];
-                comp2[1] = view_up[1] * l.GetDirection()[1];
-                comp2[2] = view_up[2] * l.GetDirection()[1];
+                comp2[0] = view_up[0] * l_Direction[1];
+                comp2[1] = view_up[1] * l_Direction[1];
+                comp2[2] = view_up[2] * l_Direction[1];
 
                 double comp3[3];
-                comp3[0] = -view_direction[0] * l.GetDirection()[2];
-                comp3[1] = -view_direction[1] * l.GetDirection()[2];
-                comp3[2] = -view_direction[2] * l.GetDirection()[2];
+                comp3[0] = -view_direction[0] * l_Direction[2];
+                comp3[1] = -view_direction[1] * l_Direction[2];
+                comp3[2] = -view_direction[2] * l_Direction[2];
 
                 dir[0] = comp1[0] + comp2[0] + comp3[0];
                 dir[1] = comp1[1] + comp2[1] + comp3[1];
@@ -195,9 +192,10 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
                 b += brightness*rgb[2]*lc[2];
                 continue;
             }
-            grad[0] /= mag;
-            grad[1] /= mag;
-            grad[2] /= mag;
+            double invmag = 1. / mag;
+            grad[0] *= invmag;
+            grad[1] *= invmag;
+            grad[2] *= invmag;
 
             double diffuse = grad[0]*dir[0] + grad[1]*dir[1] + grad[2]*dir[2];
             if (diffuse < 0.)
@@ -206,7 +204,7 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
             double diffuseScale = 1.0;
             if (gradMax > 0)
             {
-                diffuseScale = mag / gradMax;
+                diffuseScale = mag * inv_gradMax;
                 if (diffuseScale < 0)
                     diffuseScale = 0;
                 if (diffuseScale > 1)
@@ -230,12 +228,13 @@ avtPhong::AddLighting(int index, const avtRay *ray, unsigned char *rgb) const
                 double mag = sqrt(reflection[0]*reflection[0] +
                                   reflection[1]*reflection[1] +
                                   reflection[2]*reflection[2]);
-                reflection[0] /= mag;
-                reflection[1] /= mag;
-                reflection[2] /= mag;
-                double dot = view_direction[0]*reflection[0]
-                           + view_direction[1]*reflection[1]
-                           + view_direction[2]*reflection[2];
+                double invmag = 1. / mag;
+                //reflection[0] /= mag;
+                //reflection[1] /= mag;
+                //reflection[2] /= mag;
+                double dot = view_direction[0]*reflection[0]*invmag
+                           + view_direction[1]*reflection[1]*invmag
+                           + view_direction[2]*reflection[2]*invmag;
                 if (dot < 0)
                     dot *= -1.;
                 double p = pow(dot, specularPower);
@@ -288,31 +287,27 @@ void avtPhong::AddLightingHeadlight(int index, const avtRay *ray, unsigned char 
         double col[3];
         for (int i=0; i<3; i++)
             col[i] = rgb[i]/255.0;
-            
-        double dir[3];      // The view "right" vector.
-        double view_right[3];   // view_direction cross view_up
-                                
-        view_right[0] = view_direction[1]*view_up[2] - view_direction[2]*view_up[1];
-        view_right[1] = view_direction[2]*view_up[0] - view_direction[0]*view_up[2];
-        view_right[2] = view_direction[0]*view_up[1] - view_direction[1]*view_up[0];
+
+        double dir[3];
+        const double *l_Direction = l.GetDirection();
 
         // A camera light's components are scaling factors of
         // view_right, view_up, and view_direction.  Scale the
         // components and set to the dir vector.
         double comp1[3];
-        comp1[0] = view_right[0] * l.GetDirection()[0];
-        comp1[1] = view_right[1] * l.GetDirection()[0];
-        comp1[2] = view_right[2] * l.GetDirection()[0];
+        comp1[0] = view_right[0] * l_Direction[0];
+        comp1[1] = view_right[1] * l_Direction[0];
+        comp1[2] = view_right[2] * l_Direction[0];
 
         double comp2[3];
-        comp2[0] = view_up[0] * l.GetDirection()[1];
-        comp2[1] = view_up[1] * l.GetDirection()[1];
-        comp2[2] = view_up[2] * l.GetDirection()[1];
+        comp2[0] = view_up[0] * l_Direction[1];
+        comp2[1] = view_up[1] * l_Direction[1];
+        comp2[2] = view_up[2] * l_Direction[1];
 
         double comp3[3];
-        comp3[0] = -view_direction[0] * l.GetDirection()[2];
-        comp3[1] = -view_direction[1] * l.GetDirection()[2];
-        comp3[2] = -view_direction[2] * l.GetDirection()[2];
+        comp3[0] = -view_direction[0] * l_Direction[2];
+        comp3[1] = -view_direction[1] * l_Direction[2];
+        comp3[2] = -view_direction[2] * l_Direction[2];
 
         dir[0] = comp1[0] + comp2[0] + comp3[0];
         dir[1] = comp1[1] + comp2[1] + comp3[1];

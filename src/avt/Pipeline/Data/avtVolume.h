@@ -48,7 +48,7 @@
 #include <avtRay.h>
 
 #include <BadIndexException.h>
-
+#include <vector>
 
 class   avtImagePartition;
 class   avtRayFunction;
@@ -137,6 +137,7 @@ class PIPELINE_API avtVolume
 
     void                      Restrict(int, int, int, int);
     void                      ResetSamples(void);
+    void                      DestroySamples(void);
 
     void                      SetUseKernel(bool uk) { useKernel = uk; };
 
@@ -147,8 +148,26 @@ class PIPELINE_API avtVolume
     void                      SetProgressCallback(PixelProgressCallback,void*);
 
   protected:
+    struct RayMemoryBlock
+    {
+        RayMemoryBlock(int ns, int nv);
+        ~RayMemoryBlock();
+        bool Full() const;
+        void GetRayMemory(int ns, int nv, double *&samples, bool *&validSamples);
+        int    nBlocks;
+        int    nBlocksUsed;
+        void  *block; 
+    };
+    void ReserveRayMemory(double *&samples, bool *&validSamples);
+    avtRay *GetUsedRay();
+
     avtRay                 ***rays;
-    
+    std::vector<RayMemoryBlock *> rayMemory;
+
+    avtRay                  **usedRays;
+    int                       usedRayIndex;
+    int                       usedRaySize;
+
     int                       volumeWidth;
     int                       volumeHeight;
     int                       volumeDepth;
@@ -165,7 +184,6 @@ class PIPELINE_API avtVolume
     PixelProgressCallback     progressCallback;
     void                     *progressCallbackArgs;
 };
-
 
 // ****************************************************************************
 //  Method: avtVolume::GetRay
@@ -215,7 +233,21 @@ avtVolume::GetRay(const int &w, const int &h)
 
     if (rays[h][w] == NULL)
     {
-        rays[h][w] = new avtRay(volumeDepth, numVariables);
+        avtRay *r = GetUsedRay();
+        if(r == NULL)
+        {
+            double *s;
+            bool *svalid;
+            ReserveRayMemory(s, svalid);
+
+            // Pass the memory to the rays.
+            rays[h][w] = new avtRay(s, svalid, volumeDepth, numVariables);
+        }
+        else
+        {
+            // Used the reclaimed ray.
+            rays[h][w] = r;
+        }
     }
 
     return rays[h][w];

@@ -199,85 +199,145 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
 
     int maxSample = IndexOfDepth(depth, numSamples);
 
-    static double threshold = 254./255.;
+    static float threshold = 254.f/255.f;
 
-    double opacity = 0.;
-    double trgb[3];
-    trgb[0] = 0.;
-    trgb[1] = 0.;
-    trgb[2] = 0.;
-    int z;
-    double distanceToReachFullOpacity = 1./250.;
-    double distanceCoveredPerSample = 1./maxSample;
-    double oneSamplesContribution = distanceCoveredPerSample/distanceToReachFullOpacity;
-    for (z = 0 ; z < maxSample ; z++)
+    float opacity = 0.;
+    float trgb[3] = {0.f, 0.f, 0.f};
+    int z = 0;
+    float distanceToReachFullOpacity = 1./250.;
+    float distanceCoveredPerSample = 1./maxSample;
+    float oneSamplesContribution = distanceCoveredPerSample/distanceToReachFullOpacity;
+
+    if(trilinearSampling)
     {
-        if (validSample[z])
+        for (z = 0 ; z < maxSample ; z++)
         {
-            float opacityValue;
-            float value;
-            float diffRGB = 0;
-            float diffAlpha = 0;
-            RGBA colorLow, colorHigh, opacLow, opacHigh;
-
-            if (trilinearSampling == true){
-                value = map->QuantizeValF(sample[z]);
-                diffRGB = value - ((int)value);
-                colorLow = table[(int)value];
-                colorHigh = table[(int)value+1];
+            if (validSample[z])
+            {
+                float value = map->QuantizeValF(sample[z]);
+                float diffRGB = value - ((int)value);
+                RGBA colorLow = table[(int)value];
+                RGBA colorHigh = table[(int)value+1];
 
                 value = secondaryMap->QuantizeValF(sample2[z]);
-                diffAlpha = value - ((int)value);
-                opacLow = secondaryTable[(int)value];
-                opacHigh = secondaryTable[(int)value+1];
-            }
+                float diffAlpha = value - ((int)value);
+                RGBA opacLow = secondaryTable[(int)value];
+                RGBA opacHigh = secondaryTable[(int)value+1];
 
-            const RGBA &color = table[map->Quantize(sample[z])];
-            const RGBA &opac = secondaryTable[secondaryMap->Quantize(sample2[z])];
+                const RGBA &color = table[map->Quantize(sample[z])];
+                const RGBA &opac = secondaryTable[secondaryMap->Quantize(sample2[z])];
 
-            if (trilinearSampling == false)
-                opacityValue = opac.A;
-            else
-                opacityValue = (1.0-diffAlpha)*opacLow.A + diffAlpha*opacHigh.A;
+                float opacityValue = (1.0-diffAlpha)*opacLow.A + diffAlpha*opacHigh.A;
 
-            //
-            // Only calculate further when we get non-zero opacity.
-            //
-            if (opacityValue > 0)
-            {
-                double tableOpac = opac.A;
-                if (weight != NULL)
+                //
+                // Only calculate further when we get non-zero opacity.
+                //
+                if (opacityValue > 0)
                 {
-                    if (weight[z] < min_weight)
-                        tableOpac *= weight[z]*min_weight_denom;
-                }
-                double samplesOpacity = tableOpac;
-                if (trilinearSampling == false){
-                    samplesOpacity = tableOpac * oneSamplesContribution;
-                    samplesOpacity = (samplesOpacity > 1. ? 1. : samplesOpacity);
-                }
-                unsigned char rgb[3] = { color.R, color.G, color.B };
-                if (trilinearSampling == false)
-                    lighting->AddLighting(z, ray, rgb);
-                else {
+                    double tableOpac = opac.A;
+                    if (weight != NULL)
+                    {
+                        if (weight[z] < min_weight)
+                            tableOpac *= weight[z]*min_weight_denom;
+                    }
+                    float samplesOpacity = static_cast<float>(tableOpac);
+                    unsigned char rgb[3] = { color.R, color.G, color.B };
                     unsigned char rgbLow[3] = { colorLow.R, colorLow.G, colorLow.B };
                     unsigned char rgbHigh[3] = { colorHigh.R, colorHigh.G, colorHigh.B };
-                    rgb[0] = (1.0-diffRGB)*rgbLow[0] + diffRGB*rgbHigh[0];
-                    rgb[1] = (1.0-diffRGB)*rgbLow[1] + diffRGB*rgbHigh[1];
-                    rgb[2] = (1.0-diffRGB)*rgbLow[2] + diffRGB*rgbHigh[2];
+                    rgb[0] = (1.f-diffRGB)*rgbLow[0] + diffRGB*rgbHigh[0];
+                    rgb[1] = (1.f-diffRGB)*rgbLow[1] + diffRGB*rgbHigh[1];
+                    rgb[2] = (1.f-diffRGB)*rgbLow[2] + diffRGB*rgbHigh[2];
                     lighting->AddLightingHeadlight(z, ray, rgb, 1.0, matProperties);
+
+                    float ff = (1.f-opacity)*samplesOpacity;
+                    trgb[0] = trgb[0] + ff*rgb[0];
+                    trgb[1] = trgb[1] + ff*rgb[1];
+                    trgb[2] = trgb[2] + ff*rgb[2];
+
+                    opacity = opacity + ff;
                 }
-
-                double ff = (1-opacity)*samplesOpacity;
-                trgb[0] = trgb[0] + ff*rgb[0];
-                trgb[1] = trgb[1] + ff*rgb[1];
-                trgb[2] = trgb[2] + ff*rgb[2];
-
-                opacity = opacity + ff;
+                if (opacity > threshold)
+                {
+                    break;
+                }
             }
-            if (opacity > threshold)
+        }
+    }
+    else
+    {
+        if(weight != NULL)
+        {
+            // Compute samples, weighting the opacity by a variable.
+            for (z = 0 ; z < maxSample ; z++)
             {
-                break;
+                if (validSample[z])
+                {
+                    const RGBA &color = table[map->Quantize(sample[z])];
+                    float opacityValue = secondaryMap->QueryAlpha(sample2[z]);
+
+                    //
+                    // Only calculate further when we get non-zero opacity.
+                    //
+                    if (opacityValue > 0)
+                    {
+                        double tableOpac = static_cast<double>(opacityValue);
+                        if (weight[z] < min_weight)
+                            tableOpac *= weight[z]*min_weight_denom;
+                        float samplesOpacity = static_cast<float>(tableOpac * oneSamplesContribution);
+                        samplesOpacity = (samplesOpacity > 1.f ? 1.f : samplesOpacity);
+
+                        unsigned char rgb[3] = { color.R, color.G, color.B };
+                        lighting->AddLighting(z, ray, rgb);
+
+                        float ff = (1.f-opacity)*samplesOpacity;
+                        trgb[0] = trgb[0] + ff*rgb[0];
+                        trgb[1] = trgb[1] + ff*rgb[1];
+                        trgb[2] = trgb[2] + ff*rgb[2];
+
+                        opacity = opacity + ff;
+
+                        if (opacity > threshold)
+                        {
+                            break; // early terminate
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // No opacity weighting.
+            for (z = 0 ; z < maxSample ; z++)
+            {
+                if (validSample[z])
+                {
+                    float opacityValue = secondaryMap->QueryAlpha(sample2[z]);
+
+                    //
+                    // Only calculate further when we get non-zero opacity.
+                    //
+                    if (opacityValue > 0)
+                    {
+                        float samplesOpacity = opacityValue * oneSamplesContribution;
+                        samplesOpacity = (samplesOpacity > 1.f ? 1.f : samplesOpacity);
+
+                        const RGBA &color = table[map->Quantize(sample[z])];
+                        unsigned char rgb[3] = { color.R, color.G, color.B };
+                        lighting->AddLighting(z, ray, rgb);
+
+                        float ff = (1.f-opacity)*samplesOpacity;
+                        trgb[0] = trgb[0] + ff*rgb[0];
+                        trgb[1] = trgb[1] + ff*rgb[1];
+                        trgb[2] = trgb[2] + ff*rgb[2];
+
+                        opacity = opacity + ff;
+
+                        if (opacity > threshold)
+                        {
+                            break; // early terminate
+                        }
+                    }
+                }
             }
         }
     }
@@ -287,9 +347,9 @@ avtCompositeRF::GetRayValue(const avtRay *ray,
         //
         // The pixel is not completely opaque, so incorporate the background.
         //
-        trgb[0] = trgb[0] + (unsigned char)((1-opacity)*rgb[0]);
-        trgb[1] = trgb[1] + (unsigned char)((1-opacity)*rgb[1]);
-        trgb[2] = trgb[2] + (unsigned char)((1-opacity)*rgb[2]);
+        trgb[0] = trgb[0] + (unsigned char)((1.f-opacity)*rgb[0]);
+        trgb[1] = trgb[1] + (unsigned char)((1.f-opacity)*rgb[1]);
+        trgb[2] = trgb[2] + (unsigned char)((1.f-opacity)*rgb[2]);
     }
 
     //

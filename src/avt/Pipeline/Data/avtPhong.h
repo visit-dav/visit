@@ -86,7 +86,7 @@ class PIPELINE_API avtPhong : public avtLightingModel
     virtual void       AddLightingHeadlight(int, const avtRay *, unsigned char *, double alpha, double matProperties[4]) 
                  const;
   private:
-    double                 gradMax, lightingPower;
+    double                 gradMax, inv_gradMax, lightingPower;
 };
 
 

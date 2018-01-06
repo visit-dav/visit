@@ -108,6 +108,9 @@ class PIPELINE_API avtRayFunction
 
     void                 SetGradientVariableIndex(int gvi);
 
+    virtual int          GetOpacityVariableIndex() const { return -1; }
+    virtual int          GetWeightVariableIndex() const { return -1; }
+
   protected:
     avtLightingModel    *lighting;
     int                  gradientVariableIndex;

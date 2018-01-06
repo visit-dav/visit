@@ -82,21 +82,33 @@ class PIPELINE_API avtLightingModel
     void              SetViewDirection(double *vd)
                              { view_direction[0] = vd[0];
                                view_direction[1] = vd[1];
-                               view_direction[2] = vd[2]; };
+                               view_direction[2] = vd[2]; 
+                               ComputeViewRight();
+                             };
     void              SetViewUp(double *vu)
                              { view_up[0] = vu[0];
                                view_up[1] = vu[1];
-                               view_up[2] = vu[2]; };
+                               view_up[2] = vu[2];
+                               ComputeViewRight(); 
+                             };
     void              SetLightInfo(const LightList &ll)
                              { lights = ll; };
     void              SetSpecularInfo(bool ds, double sc, double sp)
                              { doSpecular = ds; specularCoeff = sc;
                                specularPower = sp; };
 
+    void              ComputeViewRight()
+                             {
+                                view_right[0] = view_direction[1]*view_up[2] - view_direction[2]*view_up[1];
+                                view_right[1] = view_direction[2]*view_up[0] - view_direction[0]*view_up[2];
+                                view_right[2] = view_direction[0]*view_up[1] - view_direction[1]*view_up[0];
+                             }
+
   protected:
     int               gradientVariableIndex;
     double            view_direction[3];
     double            view_up[3];
+    double            view_right[3];
     LightList         lights;
     bool              doSpecular;
     double            specularCoeff;

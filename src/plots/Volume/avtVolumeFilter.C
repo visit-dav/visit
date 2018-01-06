@@ -259,139 +259,44 @@ avtVolumeFilter::Execute(void)
     GetOutput()->GetInfo().GetAttributes().AddPlotInformation("VolumeHistogram", vhist);
 }
 
-
 // ****************************************************************************
-//  Method: avtVolumeFilter::RenderImage
+// Method: avtVolumeFilter::CreateOpacityMap
 //
-//  Purpose:
-//      If we are supposed to do software rendering, then go ahead and do a
-//      volume plot.  If we are supposed to do the hardware accelerated then
-//      resample onto a rectilinear grid.
+// Purpose:
+//   Create the appropriate opacity map.
 //
-//  Programmer: Hank Childs
-//  Creation:   November 20, 2001
+// Arguments:
+//   
 //
-//  Modifications:
+// Returns:    
 //
-//    Hank Childs, Wed Dec  5 09:13:09 PST 2001
-//    Get extents from the actual data.  Make sure those extents are from
-//    the right variable.
+// Note:       I factored this out of the RenderImage methods.
 //
-//    Brad Whitlock, Wed Dec 5 11:16:38 PDT 2001
-//    Added code to set the window's background mode and color.
+// Programmer: Brad Whitlock
+// Creation:   Tue Aug 22 16:03:09 PDT 2017
 //
-//    Hank Childs, Wed Dec 12 10:54:58 PST 2001
-//    Allow for extents to be set artificially.
-//
-//    Hank Childs, Fri Dec 21 07:52:45 PST 2001
-//    Do a better job of using extents.
-//
-//    Hank Childs, Wed Jan 23 11:20:50 PST 2002
-//    Add support for small cells.
-//
-//    Hank Childs, Wed Feb  6 09:22:21 PST 2002
-//    Add support for running in parallel with more processors than domains.
-//
-//    Hank Childs, Fri Feb  8 19:03:49 PST 2002
-//    Add support for setting the number of samples per ray.
-//
-//    Hank Childs, Fri Mar 15 18:11:12 PST 2002
-//    Add support for dataset examiner.
-//
-//    Kathleen Bonnell, Wed Oct 23 13:27:56 PDT 2002
-//    Set queryable to false for the image and dataset object's validity.
-//
-//    Hank Childs, Mon Jul  7 22:24:26 PDT 2003
-//    If an error occurred, pass that message on.
-//
-//    Eric Brugger, Wed Aug 20 10:28:00 PDT 2003
-//    Modified to handle the splitting of the view attributes into 2d and
-//    3d parts.
-//
-//    Hank Childs, Tue Dec 16 10:43:53 PST 2003
-//    Do a better job of setting up variable names based on rules that exclude
-//    "vtk" and "avt" substrings.
-//
-//    Hank Childs, Wed Nov 24 16:23:41 PST 2004
-//    Renamed from Execute.  Also removed any logic for resampling the dataset,
-//    which is now done by the volume plot.
-//
-//    Hank Childs, Tue Nov 30 08:28:09 PST 2004
-//    Fixed problem with identifying opacity variable in relation to skipping
-//    variables with vtk and avt prefixes.
-//
-//    Hank Childs, Tue Dec 21 16:42:19 PST 2004
-//    Incorporate attenuation.
-//
-//    Hank Childs, Sat Jan 29 10:37:19 PST 2005
-//    Use opacity map sample arbitrator.
-//
-//    Hank Childs, Sat Jan  7 17:50:22 PST 2006
-//    Use weighting variable for kernel based sampling.
-//
-//    Hank Childs, Mon Sep 11 14:46:07 PDT 2006
-//    Add support for the integration ray function.
-//
-//    Hank Childs, Tue Mar 13 16:13:05 PDT 2007
-//    Pass distance to integration ray function.
-//
-//    Hank Childs, Sat Aug 30 10:51:40 PDT 2008
-//    Turn on shading.
-//
-//    Hank Childs, Fri Dec 19 15:42:39 PST 2008
-//    Fix an indexing problem with kernel based sampling combined with
-//    lighting.
-//
-//    Hank Childs, Mon Jan 26 11:44:40 PST 2009
-//    Make sure the min and max for log and skew are set right.
-//
-//    Hank Childs, Wed Aug 19 18:24:46 PDT 2009
-//    Lighting queues should be taken from the gradient of the opacity var,
-//    not the color var.
-//
-//    Jeremy Meredith, Mon Jan  4 17:09:25 EST 2010
-//    Optionally, set up the Phong shader to reduce the amount of lighting
-//    applied to low-gradient areas.
-//
-//    Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
-//    Added more settings for low-gradient-mag area lighting reduction: more
-//    curve shape power, and an optional max-grad-mag-value clamp useful both
-//    as an extra tweak and for making animations not have erratic lighting.
-//
-//    Cyrus Harrison, Wed Mar 13 08:29:11 PDT 2013
-//    We don't use lighting in the raycasting integration case.
-//    Make sure we don't require the gradient calc.
+// Modifications:
 //
 // ****************************************************************************
-extern bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth);
 
-
-avtImage_p
-avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
-                             const WindowAttributes &window)
+avtOpacityMap
+avtVolumeFilter::CreateOpacityMap(double range[2])
 {
-    //
-    // We need to create a dummy pipeline with the volume renderer that we
-    // can force to execute within our "Execute".  Start with the source.
-    //
-    avtSourceFromAVTDataset termsrc(GetTypedInput());
-
-    //
-    // Set up the volume renderer.
-    //
-    avtRayTracer *software = new avtRayTracer;
-    software->SetRayCastingSLIVR(true);
-    software->SetTrilinear(false);
-    software->SetInput(termsrc.GetOutput());
-    software->InsertOpaqueImage(opaque_image);
-
-    //
-    // Set up the transfer function
-    //
     unsigned char vtf[4*256];
     atts.GetTransferFunction(vtf);
     avtOpacityMap om(256);
-    om.SetTableFloat(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
+
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR)
+    {
+        // Set the opacity map. This modifies the opacities though.
+        om.SetTable(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
+        om.SetTableFloat(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
+    }
+    else
+    {
+        // Set the opacity map just using the transfer function.
+        om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
+    }
 
     double actualRange[2];
     bool artificialMin = atts.GetUseColorVarMin();
@@ -402,10 +307,8 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
         UnifyMinMax(actualRange, 2);
     }
 
-    double range[2];
     range[0] = (artificialMin ? atts.GetColorVarMin() : actualRange[0]);
     range[1] = (artificialMax ? atts.GetColorVarMax() : actualRange[1]);
-
 
     if (atts.GetScaling() == VolumeAttributes::Log)
     {
@@ -433,6 +336,71 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     }
     om.SetMin(range[0]);
     om.SetMax(range[1]);
+    om.computeVisibleRange();
+
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
+    {
+        if (!artificialMin)
+            range[0] = 0.;
+        if (!artificialMax)
+        {
+    /* Don't need this code, because the rays will be in depth ... 0->1.
+            double bounds[6];
+            GetSpatialExtents(bounds);
+            UnifyMinMax(bounds, 6);
+            double diag = sqrt((bounds[1]-bounds[0])*(bounds[1]-bounds[0]) +
+                               (bounds[3]-bounds[2])*(bounds[3]-bounds[2]) +
+                               (bounds[5]-bounds[4])*(bounds[5]-bounds[4]));
+            range[1] = (actualRange[1]*diag) / 2.;
+    */
+            range[1] = (actualRange[1]) / 4.;
+        }
+    }
+
+
+    return om;
+}
+
+// ****************************************************************************
+//  Method: avtVolumeFilter::RenderImageRaycastingSLIVR
+//
+//  Purpose:
+//      Do SW rendering with SLIVR.
+//
+//  Programmer: Pascal Grosset
+//  Creation:   
+//
+//  Notes: Brad thinks this is way too much code duplication.
+//
+//  Modifications:
+//
+// ****************************************************************************
+extern bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth);
+
+avtImage_p
+avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
+                             const WindowAttributes &window)
+{
+    //
+    // We need to create a dummy pipeline with the volume renderer that we
+    // can force to execute within our "Execute".  Start with the source.
+    //
+    avtSourceFromAVTDataset termsrc(GetTypedInput());
+
+    //
+    // Set up the volume renderer.
+    //
+    avtRayTracer *software = new avtRayTracer;
+    software->SetRayCastingSLIVR(true);
+    software->SetTrilinear(false);
+    software->SetInput(termsrc.GetOutput());
+    software->InsertOpaqueImage(opaque_image);
+
+    //
+    // Set up the transfer function
+    //
+    double range[2] = {0., 0.};
+    avtOpacityMap om(CreateOpacityMap(range));
     om.computeVisibleRange();
 
     avtFlatLighting fl;
@@ -626,7 +594,112 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     return  output;
 }
 
-
+// ****************************************************************************
+//  Method: avtVolumeFilter::RenderImage
+//
+//  Purpose:
+//      If we are supposed to do software rendering, then go ahead and do a
+//      volume plot.  If we are supposed to do the hardware accelerated then
+//      resample onto a rectilinear grid.
+//
+//  Programmer: Hank Childs
+//  Creation:   November 20, 2001
+//
+//  Modifications:
+//
+//    Hank Childs, Wed Dec  5 09:13:09 PST 2001
+//    Get extents from the actual data.  Make sure those extents are from
+//    the right variable.
+//
+//    Brad Whitlock, Wed Dec 5 11:16:38 PDT 2001
+//    Added code to set the window's background mode and color.
+//
+//    Hank Childs, Wed Dec 12 10:54:58 PST 2001
+//    Allow for extents to be set artificially.
+//
+//    Hank Childs, Fri Dec 21 07:52:45 PST 2001
+//    Do a better job of using extents.
+//
+//    Hank Childs, Wed Jan 23 11:20:50 PST 2002
+//    Add support for small cells.
+//
+//    Hank Childs, Wed Feb  6 09:22:21 PST 2002
+//    Add support for running in parallel with more processors than domains.
+//
+//    Hank Childs, Fri Feb  8 19:03:49 PST 2002
+//    Add support for setting the number of samples per ray.
+//
+//    Hank Childs, Fri Mar 15 18:11:12 PST 2002
+//    Add support for dataset examiner.
+//
+//    Kathleen Bonnell, Wed Oct 23 13:27:56 PDT 2002
+//    Set queryable to false for the image and dataset object's validity.
+//
+//    Hank Childs, Mon Jul  7 22:24:26 PDT 2003
+//    If an error occurred, pass that message on.
+//
+//    Eric Brugger, Wed Aug 20 10:28:00 PDT 2003
+//    Modified to handle the splitting of the view attributes into 2d and
+//    3d parts.
+//
+//    Hank Childs, Tue Dec 16 10:43:53 PST 2003
+//    Do a better job of setting up variable names based on rules that exclude
+//    "vtk" and "avt" substrings.
+//
+//    Hank Childs, Wed Nov 24 16:23:41 PST 2004
+//    Renamed from Execute.  Also removed any logic for resampling the dataset,
+//    which is now done by the volume plot.
+//
+//    Hank Childs, Tue Nov 30 08:28:09 PST 2004
+//    Fixed problem with identifying opacity variable in relation to skipping
+//    variables with vtk and avt prefixes.
+//
+//    Hank Childs, Tue Dec 21 16:42:19 PST 2004
+//    Incorporate attenuation.
+//
+//    Hank Childs, Sat Jan 29 10:37:19 PST 2005
+//    Use opacity map sample arbitrator.
+//
+//    Hank Childs, Sat Jan  7 17:50:22 PST 2006
+//    Use weighting variable for kernel based sampling.
+//
+//    Hank Childs, Mon Sep 11 14:46:07 PDT 2006
+//    Add support for the integration ray function.
+//
+//    Hank Childs, Tue Mar 13 16:13:05 PDT 2007
+//    Pass distance to integration ray function.
+//
+//    Hank Childs, Sat Aug 30 10:51:40 PDT 2008
+//    Turn on shading.
+//
+//    Hank Childs, Fri Dec 19 15:42:39 PST 2008
+//    Fix an indexing problem with kernel based sampling combined with
+//    lighting.
+//
+//    Hank Childs, Mon Jan 26 11:44:40 PST 2009
+//    Make sure the min and max for log and skew are set right.
+//
+//    Hank Childs, Wed Aug 19 18:24:46 PDT 2009
+//    Lighting queues should be taken from the gradient of the opacity var,
+//    not the color var.
+//
+//    Jeremy Meredith, Mon Jan  4 17:09:25 EST 2010
+//    Optionally, set up the Phong shader to reduce the amount of lighting
+//    applied to low-gradient areas.
+//
+//    Jeremy Meredith, Tue Jan  5 14:25:17 EST 2010
+//    Added more settings for low-gradient-mag area lighting reduction: more
+//    curve shape power, and an optional max-grad-mag-value clamp useful both
+//    as an extra tweak and for making animations not have erratic lighting.
+//
+//    Cyrus Harrison, Wed Mar 13 08:29:11 PDT 2013
+//    We don't use lighting in the raycasting integration case.
+//    Make sure we don't require the gradient calc.
+//
+//    Brad Whitlock, Tue Aug 22 16:07:45 PDT 2017
+//    Set the transfer function into the ray tracer.
+//
+// ****************************************************************************
 
 avtImage_p
 avtVolumeFilter::RenderImage(avtImage_p opaque_image,
@@ -651,69 +724,9 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     software->InsertOpaqueImage(opaque_image);
     software->SetRayCastingSLIVR(false);
 
-    unsigned char vtf[4*256];
-    atts.GetTransferFunction(vtf);
-    avtOpacityMap om(256);
-    if ((atts.GetRendererType() == VolumeAttributes::RayCasting) && (atts.GetSampling() == VolumeAttributes::Trilinear))
-        om.SetTable(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
-    else
-        om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
-    double actualRange[2];
-    bool artificialMin = atts.GetUseColorVarMin();
-    bool artificialMax = atts.GetUseColorVarMax();
-    if (!artificialMin || !artificialMax)
-    {
-        GetDataExtents(actualRange, primaryVariable);
-        UnifyMinMax(actualRange, 2);
-    }
-    double range[2];
-    range[0] = (artificialMin ? atts.GetColorVarMin() : actualRange[0]);
-    range[1] = (artificialMax ? atts.GetColorVarMax() : actualRange[1]);
-    if (atts.GetScaling() == VolumeAttributes::Log)
-    {
-        if (artificialMin)
-            if (range[0] > 0)
-                range[0] = log10(range[0]);
-        if (artificialMax)
-            if (range[1] > 0)
-                range[1] = log10(range[1]);
-    }
-    else if (atts.GetScaling() == VolumeAttributes::Skew)
-    {
-        if (artificialMin)
-        {
-            double newMin = vtkSkewValue(range[0], range[0], range[1],
-                                         atts.GetSkewFactor());
-            range[0] = newMin;
-        }
-        if (artificialMax)
-        {
-            double newMax = vtkSkewValue(range[1], range[0], range[1],
-                                         atts.GetSkewFactor());
-            range[1] = newMax;
-        }
-    }
-    om.SetMin(range[0]);
-    om.SetMax(range[1]);
-
-    if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
-    {
-        if (!artificialMin)
-            range[0] = 0.;
-        if (!artificialMax)
-        {
-    /* Don't need this code, because the rays will be in depth ... 0->1.
-            double bounds[6];
-            GetSpatialExtents(bounds);
-            UnifyMinMax(bounds, 6);
-            double diag = sqrt((bounds[1]-bounds[0])*(bounds[1]-bounds[0]) +
-                               (bounds[3]-bounds[2])*(bounds[3]-bounds[2]) +
-                               (bounds[5]-bounds[4])*(bounds[5]-bounds[4]));
-            range[1] = (actualRange[1]*diag) / 2.;
-    */
-            range[1] = (actualRange[1]) / 4.;
-        }
-    }
+    double range[2] = {0., 0.};
+    avtOpacityMap om(CreateOpacityMap(range));
+    software->SetTransferFn(&om);
 
     //
     // Determine which variables to use and tell the ray function.
@@ -878,9 +891,10 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     }
     else
     {
+        // We're using a different variable for opacity. Get its range, etc.
+        unsigned char vtf[4*256];
         om2 = new avtOpacityMap(256);
         om2->SetTable(vtf, 256, atts.GetOpacityAttenuation());
-        double range[2];
 
         bool artificialMin = atts.GetUseOpacityVarMin();
         bool artificialMax = atts.GetUseOpacityVarMax();

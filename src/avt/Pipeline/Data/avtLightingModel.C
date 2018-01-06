@@ -60,7 +60,12 @@ avtLightingModel::avtLightingModel()
     view_up[0] = 0.;
     view_up[1] = 1.;
     view_up[2] = 0.;
+    view_right[0] = 1.;
+    view_right[1] = 0.;
+    view_right[2] = 0.;
     doSpecular = false;
+    specularCoeff = 0.;
+    specularPower = 0.;
 }
 
 

@@ -82,6 +82,7 @@ class  avtMassVoxelExtractor;
 class  avtPointExtractor;
 class  avtPyramidExtractor;
 class  avtSamplePointArbitrator;
+class  avtSLIVRVoxelExtractor;
 class  avtTetrahedronExtractor;
 class  avtWedgeExtractor;
 
@@ -238,6 +239,7 @@ class AVTFILTERS_API avtSamplePointExtractor
     avtHexahedronExtractor   *hexExtractor;
     avtHexahedron20Extractor *hex20Extractor;
     avtMassVoxelExtractor    *massVoxelExtractor;
+    avtSLIVRVoxelExtractor   *slivrVoxelExtractor;
     avtPointExtractor        *pointExtractor;
     avtPyramidExtractor      *pyramidExtractor;
     avtTetrahedronExtractor  *tetExtractor;

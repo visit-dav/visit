@@ -110,6 +110,7 @@ avtSamplePointExtractor.C
 avtSamplePointToSurfaceFilter.C
 avtShiftCenteringFilter.C
 avtSimilarityTransformFilter.C
+avtSLIVRVoxelExtractor.C
 avtSmoothPolyDataFilter.C
 avtStaggeringFilter.C
 avtSubsetBlockMergeFilter.C
@@ -122,6 +123,7 @@ avtTimeLoopFilter.C
 avtTransform.C
 avtValueImageCompositer.C
 avtVertexNormalsFilter.C
+avtVoxelExtractor.C
 avtWarpFilter.C
 avtWholeImageCompositerNoZ.C
 avtWholeImageCompositerWithZ.C
