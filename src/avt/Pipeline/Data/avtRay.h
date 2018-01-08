@@ -274,27 +274,45 @@ avtRay::SetSamples(int start, int end,
 {
     if (start >= 0 && end < numSamples)
     {
-        int index = arbitrator->GetArbitrationVariable();
-        for (int i = start ; i <= end ; i++)
+        if(arbitrator != NULL)
         {
-            bool shouldOverwrite = true;
-            if (validSample[i] && arbitrator != NULL)
+            int index = arbitrator->GetArbitrationVariable();
+            for (int i = start ; i <= end ; i++)
             {
-                shouldOverwrite = arbitrator->ShouldOverwrite(sample[index][i],
-                                                              samps[i-start][index]);
-            }
-            if (shouldOverwrite)
-            {
-                for (int j = 0 ; j < numVariables ; j++)
+                bool shouldOverwrite = true;
+                if (validSample[i])
                 {
-                    sample[j][i] = samps[i-start][j];
+                    shouldOverwrite = arbitrator->ShouldOverwrite(sample[index][i],
+                                                                  samps[i-start][index]);
+                }
+                if (shouldOverwrite)
+                {
+                    for (int j = 0 ; j < numVariables ; j++)
+                    {
+                        sample[j][i] = samps[i-start][j];
+                    }
+                }
+                if (!validSample[i])
+                {
+                    validSample[i] = true;
+                    numValidSamples++;
+                    UpdateNumberOfRuns(i);
                 }
             }
-            if (!validSample[i])
+        }
+        else
+        {
+            for (int i = start ; i <= end ; i++)
             {
-                validSample[i] = true;
-                numValidSamples++;
-                UpdateNumberOfRuns(i);
+                for (int j = 0 ; j < numVariables ; j++)
+                    sample[j][i] = samps[i-start][j];
+
+                if (!validSample[i])
+                {
+                    validSample[i] = true;
+                    numValidSamples++;
+                    UpdateNumberOfRuns(i);
+                }
             }
         }
     }
