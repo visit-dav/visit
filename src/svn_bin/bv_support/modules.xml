@@ -46,6 +46,7 @@
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
+            <lib name="tbb"/>
             <lib name="tcmalloc"/>
             <lib name="uintah"/>
             <lib name="visus"/>

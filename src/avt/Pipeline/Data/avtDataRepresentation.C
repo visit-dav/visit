@@ -486,7 +486,8 @@ avtDataRepresentation::~avtDataRepresentation()
 #ifdef HAVE_LIBVTKM
     if (asVTKm)
     {
-        delete asVTKm;
+        //delete asVTKm;
+debug5 << "TODO: Not deleting asVTKm because some reference counting seems to be needed." << endl;
         asVTKm = NULL;
     }
 #endif

@@ -35,47 +35,18 @@
 * DAMAGE.
 *
 *****************************************************************************/
-    
-//
-// We first check if VTKM_DEVICE_ADAPTER is defined, so that when TBB and CUDA
-// includes this file we use the device adapter that they have set.
-//
-#ifndef VTKM_DEVICE_ADAPTER
-#define VTKM_DEVICE_ADAPTER VTKM_DEVICE_ADAPTER_SERIAL
+#ifndef VTKM_EXPRESSIONS_H
+#define VTKM_EXPRESSIONS_H
+#include <vtkm_exports.h>
+#include <string>
+
+class vtkmDataSet;
+
+VTKM_API void vtkmMagnitudeExpression(vtkmDataSet *ds,
+                                      int domain,
+                                      const std::string &activeVar,
+                                      const std::string &outputVar);
+
+// TODO: add other expressions...
+
 #endif
-
-#include <vtkmContourFilter.h>
-
-#include <vtkm/filter/MarchingCubes.h>
-
-int
-vtkmContourFilter(vtkm::cont::DataSet &input, vtkm::cont::DataSet &output,
-    const std::string &contourVar, float isoValue)
-{
-    //
-    // If we don't have any fields return.
-    //
-    if (input.GetNumberOfFields() <= 0)
-    {
-        return 0;
-    }
-
-    vtkm::filter::MarchingCubes marchingCubes;
-    marchingCubes.SetIsoValue(isoValue);
-    vtkm::filter::Result result = marchingCubes.Execute(input, contourVar);
-    if (!result.IsValid())
-    {
-        throw vtkm::cont::ErrorBadValue(" Failed to run Marching Cubes .");
-    }
-    
-    for (vtkm::IdComponent fieldIndex = 0;
-         fieldIndex < input.GetNumberOfFields();
-         fieldIndex++)
-    {
-        marchingCubes.MapFieldOntoOutput(result, input.GetField(fieldIndex));
-    }
-
-    output = result.GetDataSet();
-
-    return 0;
-}

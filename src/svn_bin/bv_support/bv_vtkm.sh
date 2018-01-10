@@ -28,7 +28,9 @@ function bv_vtkm_depends_on
         echo ""
     else
         local depends_on=""
-
+        if [[ "${DO_TBB}" == "yes" ]] ; then
+            depends_on="tbb"
+        fi
         echo $depends_on
     fi
 }
@@ -42,11 +44,11 @@ function bv_vtkm_initialize_vars
 
 function bv_vtkm_info
 {
-    export VTKM_VERSION=${VTKM_VERSION:-"763de94"}
-    export VTKM_FILE=${VTKM_FILE:-"vtkm-${VTKM_VERSION}.tar.gz"}
-    export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtkm-${VTKM_VERSION}"}
-    export VTKM_MD5_CHECKSUM="c3ed3228bf6382b4cd88de335d63ca4a"
-    export VTKM_SHA256_CHECKSUM="05c4dd03ebaa2f5be38b2e2c1d9415740b93b385fee46ca6e5df42c7fd419c25"
+    export VTKM_VERSION=${VTKM_VERSION:-"v1.1.0-5c5b3c74fa61dd5355db2623aed94323eb66faac"}
+    export VTKM_FILE=${VTKM_FILE:-"vtk-m-${VTKM_VERSION}.tar.gz"}
+    export VTKM_BUILD_DIR=${VTKM_BUILD_DIR:-"vtk-m-${VTKM_VERSION}"}
+    export VTKM_MD5_CHECKSUM="6aab1c0885f6ffaaffcf07930873d0df"
+    export VTKM_SHA256_CHECKSUM="5c5b3c74fa61dd5355db2623aed94323eb66faac"
 }
 
 function bv_vtkm_print
@@ -77,8 +79,8 @@ function bv_vtkm_host_profile
 
 function bv_vtkm_ensure
 {
-    if [[ "$DO_VTKM" == "yes" && "$USE_SYSTEM_VKTM" == "no" ]] ; then
-        ensure_built_or_ready "vtkm" $VTKM_VERSION $VTKM_BUILD_DIR $VTKM_FILE $VTKM_URL
+    if [[ "$DO_VTKM" == "yes" && "$USE_SYSTEM_VTKM" == "no" ]] ; then
+        ensure_built_or_ready "vtk-m" $VTKM_VERSION $VTKM_BUILD_DIR $VTKM_FILE $VTKM_URL
         if [[ $? != 0 ]] ; then
             ANY_ERRORS="yes"
             DO_VTKM="no"
@@ -296,8 +298,15 @@ function build_vtkm
     vopts=""
     vopts="${vopts} -DBOOST_INCLUDEDIR=${VISITDIR}/boost/${BOOST_VERSION}/${VISITARCH}/include"
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/vtkm/${VTKM_VERSION}/${VISITARCH}"
+    vopts="${vopts} -DVTKm_ENABLE_RENDERING=OFF"
     vopts="${vopts} -DVTKm_ENABLE_TESTING=OFF"
-    vopts="${vopts} -DVTKm_ENABLE_CUDA=ON"
+    if [[ "$DO_TBB" == "yes" ]] ; then
+        vopts="${vopts} -DVTKm_ENABLE_TBB=ON"
+        vopts="${vopts} -DTBB_ROOT:PATH=${VISITDIR}/tbb/$VISITARCH/$TBB_VERSION"
+    else
+        vopts="${vopts} -DVTKm_ENABLE_CUDA=ON"
+    fi
+
     #
     # Several platforms have had problems with the VTK cmake configure
     # command issued simply via "issue_command".  This was first discovered

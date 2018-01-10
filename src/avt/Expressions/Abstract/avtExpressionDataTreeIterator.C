@@ -51,9 +51,14 @@
 #include <vtkUnsignedCharArray.h>
 
 #include <avtExtents.h>
+#include <avtCallback.h>
 #include <avtCommonDataFunctions.h>
 
 #include <avtExprNode.h>
+
+#ifdef HAVE_LIBVTKM
+#include <vtkmDataSet.h>
+#endif
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
@@ -190,6 +195,29 @@ avtExpressionDataTreeIterator::~avtExpressionDataTreeIterator()
 avtDataRepresentation *
 avtExpressionDataTreeIterator::ExecuteData(avtDataRepresentation *in_dr)
 {
+    avtDataRepresentation *out_dr = NULL;
+
+#ifdef HAVE_LIBVTKM
+    // TODO: Each expression should have a SupportsVTKm() method that we can
+    //       call here to see if we should even enter the ExecuteData_VTKm
+    //       method.
+    if (in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+        avtCallback::GetBackendType() == GlobalAttributes::VTKM)
+    {
+        out_dr = this->ExecuteData_VTKm(in_dr);
+    }
+    else
+#endif
+    {
+        out_dr = this->ExecuteData_VTK(in_dr); 
+    }
+
+    return out_dr;
+}
+
+avtDataRepresentation *
+avtExpressionDataTreeIterator::ExecuteData_VTK(avtDataRepresentation *in_dr)
+{
     //
     // Get the VTK data set and domain number.
     //
@@ -306,4 +334,63 @@ avtExpressionDataTreeIterator::ExecuteData(avtDataRepresentation *in_dr)
     return out_dr;
 }
 
+// ****************************************************************************
+// Method: avtExpressionDataTreeIterator::ExecuteData_VTKm
+//
+// Purpose:
+//   Execute the expression using VTKm.
+//
+// Arguments:
+//   in_dr : The input data.
+//
+// Returns:    
+//
+// Note:       This is a little different from DeriveVariable in that we pass
+//             the vtkmDataSet and permit the expression DeriveVariableVTKm
+//             method to add the new field to the dataset directly.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar  9 17:19:29 PST 2017
+//
+// Modifications:
+//
+// ****************************************************************************
 
+avtDataRepresentation *
+avtExpressionDataTreeIterator::ExecuteData_VTKm(avtDataRepresentation *in_dr)
+{
+#ifdef HAVE_LIBVTKM
+    //
+    // Get the VTK data set and domain number.
+    //
+    vtkmDataSet *in_ds = in_dr->GetDataVTKm();
+    int domain = in_dr->GetDomain();
+
+    // Make a new vtkmDataSet and copy the VTKm part from the input to
+    // the output. Hopefully that is a shallow copy with some ref counting.
+    vtkmDataSet *out = new vtkmDataSet;
+    out->ds = in_ds->ds;
+    out->ds.PrintSummary(std::cout);
+
+    // We need to compute the field so let the derived class compute 
+    // the field and add it to the output dataset.
+    if(!in_ds->ds.HasField(outputVariableName))
+    {
+        DeriveVariableVTKm(out, domain, activeVariable, outputVariableName);
+    }
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+    return out_dr;
+#else
+    return NULL;
+#endif
+}
+
+void
+avtExpressionDataTreeIterator::DeriveVariableVTKm(vtkmDataSet *, 
+    int currentDomainsIndex, const std::string &activeVar, const std::string &outputVar)
+{
+    /* Dummy Implementation */
+}

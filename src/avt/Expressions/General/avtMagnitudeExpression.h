@@ -84,6 +84,11 @@ class EXPRESSION_API avtMagnitudeExpression : public avtSingleInputExpressionFil
                               {return "Calculating Magnitude of Each Vector";};
   protected:
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
+    virtual void              DeriveVariableVTKm(vtkmDataSet *in_ds,
+                                                 int currentDomainsIndex,
+                                                 const std::string &activeVar, 
+                                                 const std::string &outputVar);
+
     virtual int               GetVariableDimension(void) { return 1; };
     virtual bool              CanHandleSingletonConstants(void) {return true;};
 };

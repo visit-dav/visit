@@ -45,11 +45,11 @@
 
 class vtkDataSet;
 
-class vtkmDataSet
+class VTKM_API vtkmDataSet
 {
-  public:
-              vtkmDataSet() {};
-    virtual  ~vtkmDataSet() {};
+public:
+              vtkmDataSet();
+    virtual  ~vtkmDataSet();
 
     vtkm::cont::DataSet ds;
 };

@@ -35,47 +35,53 @@
 * DAMAGE.
 *
 *****************************************************************************/
-    
-//
-// We first check if VTKM_DEVICE_ADAPTER is defined, so that when TBB and CUDA
-// includes this file we use the device adapter that they have set.
-//
+
+// If we have not defined the device adaptor, use the serial device.
 #ifndef VTKM_DEVICE_ADAPTER
 #define VTKM_DEVICE_ADAPTER VTKM_DEVICE_ADAPTER_SERIAL
 #endif
 
-#include <vtkmContourFilter.h>
+#include <iostream>
+using std::cout;
+using std::endl;
 
-#include <vtkm/filter/MarchingCubes.h>
+#include <vtkmDataSet.h>
+#include <vtkm/worklet/Magnitude.h>
 
-int
-vtkmContourFilter(vtkm::cont::DataSet &input, vtkm::cont::DataSet &output,
-    const std::string &contourVar, float isoValue)
+void
+vtkmMagnitudeExpression(vtkmDataSet *ds,
+    int domain,
+    const std::string &activeVar,
+    const std::string &outputVar)
 {
-    //
-    // If we don't have any fields return.
-    //
-    if (input.GetNumberOfFields() <= 0)
+    if(ds->ds.HasField(activeVar))
     {
-        return 0;
-    }
+        try
+        {
+            // Get the active field.
+            const vtkm::cont::Field &vec = ds->ds.GetField(activeVar);
 
-    vtkm::filter::MarchingCubes marchingCubes;
-    marchingCubes.SetIsoValue(isoValue);
-    vtkm::filter::Result result = marchingCubes.Execute(input, contourVar);
-    if (!result.IsValid())
-    {
-        throw vtkm::cont::ErrorBadValue(" Failed to run Marching Cubes .");
-    }
-    
-    for (vtkm::IdComponent fieldIndex = 0;
-         fieldIndex < input.GetNumberOfFields();
-         fieldIndex++)
-    {
-        marchingCubes.MapFieldOntoOutput(result, input.GetField(fieldIndex));
-    }
+            // Try and turn the field into a vec3 of floats. (could throw)
+            vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > vectorData;
+            vec.GetData().CopyTo(vectorData);
 
-    output = result.GetDataSet();
+            // Create the output array handle for the worklet.
+            vtkm::cont::ArrayHandle<vtkm::Float32> magnitudes;
 
-    return 0;
+            // Invoke the Magnitude worklet to compute the vector magnitude.
+            vtkm::worklet::Magnitude magWorklet;
+            vtkm::worklet::DispatcherMapField<vtkm::worklet::Magnitude> dispatch(magWorklet);
+            dispatch.Invoke(vectorData, magnitudes);
+
+            // Add the new field to the output dataset.
+            ds->ds.AddField(
+                vtkm::cont::Field(
+                    outputVar, vtkm::cont::Field::ASSOC_POINTS, magnitudes));
+
+            ds->ds.PrintSummary(std::cout);
+        }
+        catch(...)
+        {
+        }
+    }
 }

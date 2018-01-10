@@ -37,5 +37,6 @@
 *****************************************************************************/
 
 #define VTKM_DEVICE_ADAPTER VTKM_DEVICE_ADAPTER_TBB
+//#define BOOST_SP_DISABLE_THREADS
 
 #include <vtkmContourFilter.C>

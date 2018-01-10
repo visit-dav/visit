@@ -50,6 +50,7 @@
 
 #include <string>
 
+class vtkmDataSet;
 
 // ****************************************************************************
 //  Class: avtExpressionDataTreeIterator
@@ -91,7 +92,15 @@ class EXPRESSION_API avtExpressionDataTreeIterator
 
   protected:
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
-    virtual vtkDataArray    *DeriveVariable(vtkDataSet *, int currentDomainsIndex) = 0;
+
+    avtDataRepresentation *        ExecuteData_VTK(avtDataRepresentation *in_dr);
+    virtual vtkDataArray          *DeriveVariable(vtkDataSet *, int currentDomainsIndex) = 0;
+
+    avtDataRepresentation *        ExecuteData_VTKm(avtDataRepresentation *in_dr);
+    virtual void                   DeriveVariableVTKm(vtkmDataSet *, 
+                                                      int currentDomainsIndex,
+                                                      const std::string &activeVar,
+                                                      const std::string &outputVar);
 };
 
 #endif

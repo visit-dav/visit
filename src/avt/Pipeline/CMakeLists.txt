@@ -260,6 +260,10 @@ IF(NOT VISIT_DBIO_ONLY)
     SET(AVTMATH avtmath)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
+IF(VTKM_FOUND)
+    SET(VISIT_VTKM_LIB visit_vtkm)
+ENDIF()
+
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
     TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts 
@@ -267,7 +271,7 @@ ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
                                            vtkCommonDataModel vtkFiltersGeometry 
                                            vtkRenderingOpenGL vtkRenderingFreeType 
                                            vtkRenderingFreeTypeOpenGL vtkInteractionStyle 
-                                           ${ZLIB_LIB} ${EAVL_LIB} ${VTKM_LIB})
+                                           ${ZLIB_LIB} ${EAVL_LIB} ${VISIT_VTKM_LIB})
 
 IF(HAVE_LIB_R)
      TARGET_LINK_LIBRARIES(avtpipeline_ser vtkFiltersStatisticsGnuR)
@@ -287,7 +291,7 @@ IF(VISIT_PARALLEL)
                                               vtkRenderingOpenGL vtkRenderingFreeType 
                                               vtkRenderingFreeTypeOpenGL 
                                               vtkInteractionStyle ${ZLIB_LIB} 
-                                              ${EAVL_LIB} ${VTKM_LIB})
+                                              ${EAVL_LIB} ${VISIT_VTKM_LIB})
     IF(HAVE_LIB_R)
         TARGET_LINK_LIBRARIES(avtpipeline_par vtkFiltersStatisticsGnuR)
     ENDIF(HAVE_LIB_R)

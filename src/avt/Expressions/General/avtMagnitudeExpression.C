@@ -50,7 +50,7 @@
 #include <vtkPointData.h>
 
 #include <ExpressionException.h>
-
+#include <StackTimer.h>
 
 // ****************************************************************************
 //  Method: avtMagnitudeExpression constructor
@@ -129,6 +129,8 @@ avtMagnitudeExpression::~avtMagnitudeExpression()
 vtkDataArray *
 avtMagnitudeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
 {
+    StackTimer t0("avtMagnitudeExpression::DeriveVariable");
+
     //
     // The base class will set the variable of interest to be the 
     // 'activeVariable'.  This is a by-product of how the base class sets its
@@ -191,4 +193,40 @@ avtMagnitudeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInde
     return results;
 }
 
+// ****************************************************************************
+// Method: avtMagnitudeExpression::DeriveVariableVTKm
+//
+// Purpose:
+//   Use VTKm to compute the vector magnitude.
+//
+// Arguments:
+//   ds                  : The VTKm dataset.
+//   currentDomainsIndex : Index of this domain.
+//   activeVar           : The active input variable.
+//   outputVar           : The name of the variable to create and add to ds.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar  9 16:52:59 PST 2017
+//
+// Modifications:
+//
+// ****************************************************************************
 
+#ifdef HAVE_LIBVTKM
+#include <vtkmExpressions.h>
+#include <StackTimer.h>
+#endif
+
+void
+avtMagnitudeExpression::DeriveVariableVTKm(vtkmDataSet *ds, int currentDomainsIndex,
+    const std::string &activeVar, const std::string &outputVar)
+{
+#ifdef HAVE_LIBVTKM
+    StackTimer t0("avtMagnitudeExpression::DeriveVariableVTKm");
+    vtkmMagnitudeExpression(ds, currentDomainsIndex, activeVar, outputVar);
+#endif
+}

@@ -35,47 +35,7 @@
 * DAMAGE.
 *
 *****************************************************************************/
-    
-//
-// We first check if VTKM_DEVICE_ADAPTER is defined, so that when TBB and CUDA
-// includes this file we use the device adapter that they have set.
-//
-#ifndef VTKM_DEVICE_ADAPTER
-#define VTKM_DEVICE_ADAPTER VTKM_DEVICE_ADAPTER_SERIAL
-#endif
 
-#include <vtkmContourFilter.h>
+#define VTKM_DEVICE_ADAPTER VTKM_DEVICE_ADAPTER_TBB
 
-#include <vtkm/filter/MarchingCubes.h>
-
-int
-vtkmContourFilter(vtkm::cont::DataSet &input, vtkm::cont::DataSet &output,
-    const std::string &contourVar, float isoValue)
-{
-    //
-    // If we don't have any fields return.
-    //
-    if (input.GetNumberOfFields() <= 0)
-    {
-        return 0;
-    }
-
-    vtkm::filter::MarchingCubes marchingCubes;
-    marchingCubes.SetIsoValue(isoValue);
-    vtkm::filter::Result result = marchingCubes.Execute(input, contourVar);
-    if (!result.IsValid())
-    {
-        throw vtkm::cont::ErrorBadValue(" Failed to run Marching Cubes .");
-    }
-    
-    for (vtkm::IdComponent fieldIndex = 0;
-         fieldIndex < input.GetNumberOfFields();
-         fieldIndex++)
-    {
-        marchingCubes.MapFieldOntoOutput(result, input.GetField(fieldIndex));
-    }
-
-    output = result.GetDataSet();
-
-    return 0;
-}
+#include <vtkmExpressions.C>

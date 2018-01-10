@@ -40,21 +40,39 @@
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
+${VISIT_COMMON_INCLUDES}
 ${VTKM_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
 
-IF(VTKm_CUDA_FOUND)
-  SET(VTKM_CUDA_SOURCES
-  vtkmContourFilter.cu
-  vtkmDataSet.cu
-  )
+# NOTE: we're not set up to do both CUDA and TBB right now the way the sources are done.
+# Q: As the code for vtkmDataSet is mainly for the control interface, do we need to worry
+#    about the device adaptor?
 
-  CUDA_ADD_LIBRARY(vtkm ${VTKM_CUDA_SOURCES})
-  TARGET_LINK_LIBRARIES(vtkm ${CUDA_CUDART_LIBRARY})
-  VISIT_INSTALL_TARGETS(vtkm)
-ENDIF(VTKm_CUDA_FOUND)
-
+IF(VTKM_FOUND)
+    IF(VTKm_CUDA_FOUND)
+        SET(VTKM_CUDA_SOURCES
+            vtkmContourFilter.cu
+            vtkmExpressions.cu
+            vtkmDataSet.cu
+        )
+        SET(OLD_CUDA_LIBRARIES ${CUDA_LIBRARIES})
+        # Make sure the new library links to VTKm and VTK.
+        SET(CUDA_LIBRARIES ${CUDA_LIBRARIES} visitcommon ${VTKM_LIB} vtkCommonCore vtkCommonDataModel)
+        CUDA_ADD_LIBRARY(visit_vtkm ${VTKM_CUDA_SOURCES})
+        SET(CUDA_LIBRARIES ${OLD_CUDA_LIBRARIES})
+    ELSE()
+        # TODO - see if TBB available, conditionally add the sources.
+        SET(VTKM_TBB_SOURCES 
+            vtkmContourFilterTBB.C
+            vtkmExpressionsTBB.C
+            vtkmDataSetTBB.C 
+        )
+        ADD_LIBRARY(visit_vtkm ${VTKM_TBB_SOURCES})
+        TARGET_LINK_LIBRARIES(visit_vtkm visitcommon ${VTKM_LIB} vtkCommonCore vtkCommonDataModel)
+    ENDIF()
+    VISIT_INSTALL_TARGETS(visit_vtkm)
+ENDIF()
