@@ -54,11 +54,18 @@
 #   Kathleen Biagas, Tue Jan 24 11:13:05 PST 2017
 #   Add support for Qt5, PySide2.
 #
+#   Kevin Griffin, Wed Jan 10 10:46:43 PST 2018
+#   Changes are for OSX and PySide2: Added the capability to optionally append 
+#   a 'v' to the Python version when creating the library names. Also 
+#   expanded the list of libraries for pyside and shiboken to include the 
+#   different naming schemes for the same library.
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
 IF(VISIT_PYSIDE_DIR)
+    OPTION(PYSIDE_LIBNAMES_AFFIX_V "Whether PySide and Shiboken base names end with v" ON)
 
     #  Find PySide 
     set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/ ${CMAKE_PREFIX_PATH})
@@ -66,6 +73,7 @@ IF(VISIT_PYSIDE_DIR)
 
     if (VISIT_QT5)
        set(PYSIDE_VERSION "2.0.0")
+       set(PYSIDE_SHORT_VERSION "2.0")
        set(pyside_suffix "2")
     else()
        set(PYSIDE_VERSION "1.2.2")
@@ -95,11 +103,31 @@ ENDIF()
 
 IF(PySide_FOUND)
     if(VISIT_QT5)
-        set(pysidename "PySide2")
-        SET_UP_THIRD_PARTY(PYSIDE lib include
-              pyside2-python${PYTHON_VERSION} shiboken2-python${PYTHON_VERSION})
+        SET(pysidename "PySide2")
+
+        IF(NOT APPLE)
+            SET_UP_THIRD_PARTY(PYSIDE lib include 
+                    pyside2-python${PYTHON_VERSION} shiboken2-python${PYTHON_VERSION})
+        ELSE(NOT APPLE)
+            IF(PYSIDE_LIBNAMES_AFFIX_V)
+                    SET(PYTHON_VERSION_V ${PYTHON_VERSION}v)
+            ELSE(PYSIDE_LIBNAMES_AFFIX_V)
+                    SET(PYTHON_VERSION_V ${PYTHON_VERSION})
+            ENDIF(PYSIDE_LIBNAMES_AFFIX_V)
+
+            SET(PySide2_LIBRARIES
+                    pyside2-python${PYTHON_VERSION_V}
+                    pyside2-python${PYTHON_VERSION_V}.${PYSIDE_VERSION}
+                    pyside2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
+                    
+            SET(Shiboken2_LIBRARIES
+                    shiboken2-python${PYTHON_VERSION_V}
+                    shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_VERSION}
+                    shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
+            SET_UP_THIRD_PARTY(PYSIDE lib include ${PySide2_LIBRARIES} ${Shiboken2_LIBRARIES})
+        ENDIF(NOT APPLE)
     else()
-        set(pysidename "PySide")
+        SET(pysidename "PySide")
         SET_UP_THIRD_PARTY(PYSIDE lib include
           pyside-python${PYTHON_VERSION} shiboken-python${PYTHON_VERSION})
     endif()
