@@ -390,6 +390,8 @@ ViewerFactory::SetActionManagerLogic(ViewerActionManager *mgr, ViewerWindow *win
     mgr->SetLogic(ViewerRPC::SetWindowLayoutRPC,            new SetWindowLayoutAction(win));
     mgr->SetLogic(ViewerRPC::SetWindowModeRPC,              new SetWindowModeAction(win));
     mgr->SetLogic(ViewerRPC::ShowAllWindowsRPC,             new ShowAllWindowsAction(win));
+    mgr->SetLogic(ViewerRPC::StartPlotAnimationRPC,         new StartPlotAnimationAction(win));
+    mgr->SetLogic(ViewerRPC::StopPlotAnimationRPC,          new StopPlotAnimationAction(win));
     mgr->SetLogic(ViewerRPC::SuppressQueryOutputRPC,        new SuppressQueryOutputAction(win));
     mgr->SetLogic(ViewerRPC::TimeSliderNextStateRPC,        new TimeSliderForwardStepAction(win));
     mgr->SetLogic(ViewerRPC::TimeSliderPreviousStateRPC,    new TimeSliderReverseStepAction(win));

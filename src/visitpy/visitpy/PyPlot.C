@@ -210,6 +210,11 @@ PyPlot_ToString(const Plot *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sselection = \"%s\"\n", prefix, atts->GetSelection().c_str());
     str += tmpStr;
+    if(atts->GetAnimatingFlag())
+        SNPRINTF(tmpStr, 1000, "%sanimatingFlag = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sanimatingFlag = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -877,6 +882,30 @@ Plot_GetSelection(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+Plot_SetAnimatingFlag(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the animatingFlag in the object.
+    obj->data->SetAnimatingFlag(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Plot_GetAnimatingFlag(PyObject *self, PyObject *args)
+{
+    PlotObject *obj = (PlotObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetAnimatingFlag()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyPlot_methods[PLOT_NMETH] = {
@@ -923,6 +952,8 @@ PyMethodDef PyPlot_methods[PLOT_NMETH] = {
     {"GetDescription", Plot_GetDescription, METH_VARARGS},
     {"SetSelection", Plot_SetSelection, METH_VARARGS},
     {"GetSelection", Plot_GetSelection, METH_VARARGS},
+    {"SetAnimatingFlag", Plot_SetAnimatingFlag, METH_VARARGS},
+    {"GetAnimatingFlag", Plot_GetAnimatingFlag, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1002,6 +1033,8 @@ PyPlot_getattr(PyObject *self, char *name)
         return Plot_GetDescription(self, NULL);
     if(strcmp(name, "selection") == 0)
         return Plot_GetSelection(self, NULL);
+    if(strcmp(name, "animatingFlag") == 0)
+        return Plot_GetAnimatingFlag(self, NULL);
 
     return Py_FindMethod(PyPlot_methods, self, name);
 }
@@ -1058,6 +1091,8 @@ PyPlot_setattr(PyObject *self, char *name, PyObject *args)
         obj = Plot_SetDescription(self, tuple);
     else if(strcmp(name, "selection") == 0)
         obj = Plot_SetSelection(self, tuple);
+    else if(strcmp(name, "animatingFlag") == 0)
+        obj = Plot_SetAnimatingFlag(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

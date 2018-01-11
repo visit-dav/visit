@@ -231,6 +231,9 @@ using std::vector;
 //   Brad Whitlock, Tue Sep 13 11:18:35 PDT 2011
 //   Change the "apply operators" and "apply selections" to read better.
 //
+//   Brad Whitlock, Fri Sep 13 12:24:36 PDT 2013
+//   Hook up plot animation.
+//
 // ****************************************************************************
 
 QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
@@ -349,6 +352,8 @@ QvisPlotManagerWidget::QvisPlotManagerWidget(QMenuBar *menuBar,QWidget *parent)
             this, SLOT(redrawThisPlot()));
     connect(plotListBox, SIGNAL(followTimeSliderThisPlot(bool)),
             this, SLOT(followTimeSliderThisPlot(bool)));
+    connect(plotListBox, SIGNAL(animateThisPlot(bool)),
+            this, SLOT(animateThisPlot(bool)));
 
     connect(plotListBox, SIGNAL(renamePlot(int, const QString &)),
             this, SLOT(setPlotDescription(int, const QString &)));
@@ -2933,6 +2938,40 @@ void
 QvisPlotManagerWidget::followTimeSliderThisPlot(bool val)
 {
     GetViewerMethods()->SetPlotFollowsTime(val);                              
+}
+
+// ****************************************************************************
+// Method: QvisPlotManagerWidget::animateThisPlot
+//
+// Purpose: 
+//   This is a Qt slot function that tells the viewer to set whether 
+//   the active plots should animate.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 12:27:50 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisPlotManagerWidget::animateThisPlot(bool val)
+{
+    intVector ids;
+
+    //
+    // Build a list of the active plots according to the plotListBox widget.
+    //
+    for(int i = 0; i < plotListBox->count(); ++i)
+    {
+        if(plotListBox->item(i)->isSelected())
+            ids.push_back(i);
+    }
+
+    if(val)
+        GetViewerMethods()->StartPlotAnimation(ids);
+    else
+        GetViewerMethods()->StopPlotAnimation(ids);
 }
 
 // ****************************************************************************

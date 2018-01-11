@@ -149,6 +149,7 @@ public:
     void SetStemWidth(double stemWidth_);
     void SetOrigOnly(bool origOnly_);
     void SetGlyphType(GlyphType glyphType_);
+    void SetAnimationStep(int animationStep_);
 
     // Property getting methods
     GlyphLocation        GetGlyphLocation() const;
@@ -180,6 +181,7 @@ public:
     double               GetStemWidth() const;
     bool                 GetOrigOnly() const;
     GlyphType            GetGlyphType() const;
+    int                  GetAnimationStep() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -225,6 +227,7 @@ public:
 
     // User-defined methods
     bool ChangesRequireRecalculation(const VectorAttributes &obj);
+    double GetAnimationScale() const;
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -255,6 +258,7 @@ public:
         ID_stemWidth,
         ID_origOnly,
         ID_glyphType,
+        ID_animationStep,
         ID__LAST
     };
 
@@ -286,11 +290,12 @@ private:
     double         stemWidth;
     bool           origOnly;
     int            glyphType;
+    int            animationStep;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VECTORATTRIBUTES_TMFS "ibiiiidbbdbbbasbibbiddiidbi"
+#define VECTORATTRIBUTES_TMFS "ibiiiidbbdbbbasbibbiddiidbii"
 
 #endif

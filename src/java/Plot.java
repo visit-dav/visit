@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class Plot extends AttributeSubject
 {
-    private static int Plot_numAdditionalAtts = 21;
+    private static int Plot_numAdditionalAtts = 22;
 
     // Enum values
     public final static int STATETYPE_NEWLYCREATED = 0;
@@ -92,6 +92,7 @@ public class Plot extends AttributeSubject
         followsTime = true;
         description = new String("");
         selection = new String("");
+        animatingFlag = false;
     }
 
     public Plot(int nMoreFields)
@@ -119,6 +120,7 @@ public class Plot extends AttributeSubject
         followsTime = true;
         description = new String("");
         selection = new String("");
+        animatingFlag = false;
     }
 
     public Plot(Plot obj)
@@ -166,6 +168,7 @@ public class Plot extends AttributeSubject
         followsTime = obj.followsTime;
         description = new String(obj.description);
         selection = new String(obj.selection);
+        animatingFlag = obj.animatingFlag;
 
         SelectAll();
     }
@@ -241,7 +244,8 @@ public class Plot extends AttributeSubject
                 (isFromSimulation == obj.isFromSimulation) &&
                 (followsTime == obj.followsTime) &&
                 (description.equals(obj.description)) &&
-                (selection.equals(obj.selection)));
+                (selection.equals(obj.selection)) &&
+                (animatingFlag == obj.animatingFlag));
     }
 
     // Property setting methods
@@ -371,6 +375,12 @@ public class Plot extends AttributeSubject
         Select(20);
     }
 
+    public void SetAnimatingFlag(boolean animatingFlag_)
+    {
+        animatingFlag = animatingFlag_;
+        Select(21);
+    }
+
     // Property getting methods
     public int     GetStateType() { return stateType; }
     public int     GetPlotType() { return plotType; }
@@ -393,6 +403,7 @@ public class Plot extends AttributeSubject
     public boolean GetFollowsTime() { return followsTime; }
     public String  GetDescription() { return description; }
     public String  GetSelection() { return selection; }
+    public boolean GetAnimatingFlag() { return animatingFlag; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -439,6 +450,8 @@ public class Plot extends AttributeSubject
             buf.WriteString(description);
         if(WriteSelect(20, buf))
             buf.WriteString(selection);
+        if(WriteSelect(21, buf))
+            buf.WriteBool(animatingFlag);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -508,6 +521,9 @@ public class Plot extends AttributeSubject
         case 20:
             SetSelection(buf.ReadString());
             break;
+        case 21:
+            SetAnimatingFlag(buf.ReadBool());
+            break;
         }
     }
 
@@ -544,6 +560,7 @@ public class Plot extends AttributeSubject
         str = str + boolToString("followsTime", followsTime, indent) + "\n";
         str = str + stringToString("description", description, indent) + "\n";
         str = str + stringToString("selection", selection, indent) + "\n";
+        str = str + boolToString("animatingFlag", animatingFlag, indent) + "\n";
         return str;
     }
 
@@ -570,5 +587,6 @@ public class Plot extends AttributeSubject
     private boolean followsTime;
     private String  description;
     private String  selection;
+    private boolean animatingFlag;
 }
 

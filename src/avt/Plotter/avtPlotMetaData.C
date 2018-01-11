@@ -41,20 +41,26 @@
 avtPlotMetaData::avtPlotMetaData(const avtDatabaseMetaData  *_md,
     const std::string          &_variableName,
     avtVarType                 _variableType,
-    avtSILRestriction_p        _silr)
+    avtSILRestriction_p        _silr,
+    const avtExtents           &_actualSpatialExt,
+    const avtExtents           &_originalSpatialExt) : 
+    md(_md),
+    variableName(_variableName),
+    variableType(_variableType),
+    silr(_silr),
+    actualSpatialExtents(_actualSpatialExt),
+    originalSpatialExtents(_originalSpatialExt)
 {
-    md = _md;
-    variableName = _variableName;
-    variableType = _variableType;
-    silr = _silr;
 }
 
-avtPlotMetaData::avtPlotMetaData(const avtPlotMetaData &obj)
+avtPlotMetaData::avtPlotMetaData(const avtPlotMetaData &obj) :
+    md(obj.md),
+    variableName(obj.variableName),
+    variableType(obj.variableType),
+    silr(obj.silr),
+    actualSpatialExtents(obj.actualSpatialExtents),
+    originalSpatialExtents(obj.originalSpatialExtents)
 {
-    md = obj.md;
-    variableName = obj.variableName;
-    variableType = obj.variableType;
-    silr = obj.silr;
 }
 
 avtPlotMetaData::~avtPlotMetaData()
@@ -68,6 +74,8 @@ avtPlotMetaData::operator = (const avtPlotMetaData &obj)
     variableName = obj.variableName;
     variableType = obj.variableType;
     silr = obj.silr;
+    actualSpatialExtents = obj.actualSpatialExtents;
+    originalSpatialExtents = obj.originalSpatialExtents;
 }
 
 const avtDatabaseMetaData *
@@ -98,4 +106,16 @@ avtSILRestriction_p
 avtPlotMetaData::GetSILRestriction() const
 {
     return silr;
+}
+
+const avtExtents &
+avtPlotMetaData::GetActualSpatialExtents() const
+{
+    return actualSpatialExtents;
+}
+
+const avtExtents &
+avtPlotMetaData::GetOriginalSpatialExtents() const
+{
+    return originalSpatialExtents;
 }

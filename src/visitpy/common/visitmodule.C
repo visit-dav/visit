@@ -7919,36 +7919,12 @@ visit_ResetPlotOptions(PyObject *self, PyObject *args)
     return IntReturnValue(errorFlag);
 }
 
-// ****************************************************************************
-// Function: visit_SetActivePlots
-//
-// Purpose:
-//   This is a Python callback that sets the active plots in the plot list.
-//
-// Note:       This function accepts a tuple or single int value.
-//
-// Programmer: John Bemis, Brad Whitlock
-// Creation:   Thu Sep 20 16:54:38 PST 2001
-//
-// Modifications:
-//   Brad Whitlock, Fri Jul 26 12:33:25 PDT 2002
-//   Made it return a success value and I made it return an error if any of
-//   the input plot indices are bad.
-//
-//   Brad Whitlock, Fri Dec 27 10:59:12 PDT 2002
-//   I passed an intVector to the viewer proxy instead of an array of ints.
-//
-// ****************************************************************************
-
-STATIC PyObject *
-visit_SetActivePlots(PyObject *self, PyObject *args)
+bool
+GetIntOrIntVector(PyObject *args, intVector &vec)
 {
-    ENSURE_VIEWER_EXISTS();
-
-    intVector  vec;
     PyObject   *tuple;
     if(!PyArg_ParseTuple(args, "O", &tuple))
-        return NULL;
+        return false;
 
     if(PyTuple_Check(tuple))
     {
@@ -7973,6 +7949,42 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
     else if(PyLong_Check(tuple))
         vec.push_back(int(PyLong_AsDouble(tuple)));
     else
+        return false;
+
+    return true;
+}
+
+// ****************************************************************************
+// Function: visit_SetActivePlots
+//
+// Purpose:
+//   This is a Python callback that sets the active plots in the plot list.
+//
+// Note:       This function accepts a tuple or single int value.
+//
+// Programmer: John Bemis, Brad Whitlock
+// Creation:   Thu Sep 20 16:54:38 PST 2001
+//
+// Modifications:
+//   Brad Whitlock, Fri Jul 26 12:33:25 PDT 2002
+//   Made it return a success value and I made it return an error if any of
+//   the input plot indices are bad.
+//
+//   Brad Whitlock, Fri Dec 27 10:59:12 PDT 2002
+//   I passed an intVector to the viewer proxy instead of an array of ints.
+//
+//   Brad Whitlock, Thu Sep 12 17:26:17 PDT 2013
+//   Move some code into GetIntOrIntVector.
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetActivePlots(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    intVector  vec;
+    if(!GetIntOrIntVector(args, vec))
         return NULL;
 
     //
@@ -7996,6 +8008,108 @@ visit_SetActivePlots(PyObject *self, PyObject *args)
     }
     if(okayToSet)
         GetViewerMethods()->SetActivePlots(activePlots);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(okayToSet ? Synchronize() : 1);
+}
+
+// ****************************************************************************
+// Function: visit_StartPlotAnimation
+//
+// Purpose:
+//   This is a Python callback that sets the plots that will animate.
+//
+// Note:       This function accepts a tuple or single int value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 12 17:26:17 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_StartPlotAnimation(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    intVector  vec;
+    if(!GetIntOrIntVector(args, vec))
+        return NULL;
+
+    //
+    // Set the active plots using the indices in the vector.
+    //
+    bool okayToSet = false;
+    MUTEX_LOCK();
+    intVector activePlots;
+    for(size_t j = 0; j < vec.size(); ++j)
+    {
+        if(vec[j] < 0 || vec[j] >= GetViewerState()->GetPlotList()->GetNumPlots())
+        {
+            okayToSet = false;
+            break;
+        }
+        else
+        {
+            okayToSet = true;
+            activePlots.push_back(vec[j]);
+        }
+    }
+    if(okayToSet)
+        GetViewerMethods()->StartPlotAnimation(activePlots);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(okayToSet ? Synchronize() : 1);
+}
+
+// ****************************************************************************
+// Function: visit_StopPlotAnimation
+//
+// Purpose:
+//   This is a Python callback that sets the plots that will animate.
+//
+// Note:       This function accepts a tuple or single int value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 12 17:26:17 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_StopPlotAnimation(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    intVector  vec;
+    if(!GetIntOrIntVector(args, vec))
+        return NULL;
+
+    //
+    // Set the active plots using the indices in the vector.
+    //
+    bool okayToSet = false;
+    MUTEX_LOCK();
+    intVector activePlots;
+    for(size_t j = 0; j < vec.size(); ++j)
+    {
+        if(vec[j] < 0 || vec[j] >= GetViewerState()->GetPlotList()->GetNumPlots())
+        {
+            okayToSet = false;
+            break;
+        }
+        else
+        {
+            okayToSet = true;
+            activePlots.push_back(vec[j]);
+        }
+    }
+    if(okayToSet)
+        GetViewerMethods()->StopPlotAnimation(activePlots);
     MUTEX_UNLOCK();
 
     // Return the success value.

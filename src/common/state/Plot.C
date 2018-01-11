@@ -108,6 +108,7 @@ void Plot::Init()
     endFrame = 999;
     isFromSimulation = false;
     followsTime = true;
+    animatingFlag = false;
 
     Plot::SelectAll();
 }
@@ -150,6 +151,7 @@ void Plot::Copy(const Plot &obj)
     followsTime = obj.followsTime;
     description = obj.description;
     selection = obj.selection;
+    animatingFlag = obj.animatingFlag;
 
     Plot::SelectAll();
 }
@@ -327,7 +329,8 @@ Plot::operator == (const Plot &obj) const
             (isFromSimulation == obj.isFromSimulation) &&
             (followsTime == obj.followsTime) &&
             (description == obj.description) &&
-            (selection == obj.selection));
+            (selection == obj.selection) &&
+            (animatingFlag == obj.animatingFlag));
 }
 
 // ****************************************************************************
@@ -492,6 +495,7 @@ Plot::SelectAll()
     Select(ID_followsTime,       (void *)&followsTime);
     Select(ID_description,       (void *)&description);
     Select(ID_selection,         (void *)&selection);
+    Select(ID_animatingFlag,     (void *)&animatingFlag);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -643,6 +647,13 @@ Plot::SetSelection(const std::string &selection_)
 {
     selection = selection_;
     Select(ID_selection, (void *)&selection);
+}
+
+void
+Plot::SetAnimatingFlag(bool animatingFlag_)
+{
+    animatingFlag = animatingFlag_;
+    Select(ID_animatingFlag, (void *)&animatingFlag);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -829,6 +840,12 @@ Plot::GetSelection()
     return selection;
 }
 
+bool
+Plot::GetAnimatingFlag() const
+{
+    return animatingFlag;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -932,6 +949,7 @@ Plot::GetFieldName(int index) const
     case ID_followsTime:       return "followsTime";
     case ID_description:       return "description";
     case ID_selection:         return "selection";
+    case ID_animatingFlag:     return "animatingFlag";
     default:  return "invalid index";
     }
 }
@@ -977,6 +995,7 @@ Plot::GetFieldType(int index) const
     case ID_followsTime:       return FieldType_bool;
     case ID_description:       return FieldType_string;
     case ID_selection:         return FieldType_string;
+    case ID_animatingFlag:     return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1022,6 +1041,7 @@ Plot::GetFieldTypeName(int index) const
     case ID_followsTime:       return "bool";
     case ID_description:       return "string";
     case ID_selection:         return "string";
+    case ID_animatingFlag:     return "bool";
     default:  return "invalid index";
     }
 }
@@ -1151,6 +1171,11 @@ Plot::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_selection:
         {  // new scope
         retval = (selection == obj.selection);
+        }
+        break;
+    case ID_animatingFlag:
+        {  // new scope
+        retval = (animatingFlag == obj.animatingFlag);
         }
         break;
     default: retval = false;

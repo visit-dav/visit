@@ -207,6 +207,116 @@ CurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 }
 
 // ****************************************************************************
+// Method: CurveViewerEnginePluginInfo::SupportsAnimation
+//
+// Purpose:
+//   Tell VisIt that this plot supports animation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+CurveViewerEnginePluginInfo::SupportsAnimation() const
+{
+cout << "CurveViewerEnginePluginInfo::SupportsAnimation" << endl;
+    return true;
+}
+
+// ****************************************************************************
+// Method: CurveViewerEnginePluginInfo::AnimationReset
+//
+// Purpose:
+//   Resets the plot's animation.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed as a result of reset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <avtPlotMetaData.h>
+
+bool
+CurveViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot)
+{
+    CurveAttributes *cAtts = (CurveAttributes *)atts;
+    bool update = false;
+    if(cAtts->GetDoBallTimeCue() || cAtts->GetDoLineTimeCue())
+    {
+        if(plot.GetActualSpatialExtents().HasExtents())
+        {
+            double ext[6] = {0., 1., 0., 1., 0., 1.};
+            plot.GetActualSpatialExtents().CopyTo(ext);
+
+            cAtts->SetTimeForTimeCue(ext[0]);
+            update = true;
+        }
+    }
+    return update;
+}
+
+// ****************************************************************************
+// Method: CurveViewerEnginePluginInfo::AnimationStep
+//
+// Purpose:
+//   Take an animation step.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+CurveViewerEnginePluginInfo::AnimationStep(AttributeSubject *atts, const avtPlotMetaData &plot)
+{
+    CurveAttributes *cAtts = (CurveAttributes *)atts;
+    bool update = false;
+    if(cAtts->GetDoBallTimeCue() || cAtts->GetDoLineTimeCue())
+    {
+        if(plot.GetActualSpatialExtents().HasExtents())
+        {
+            double ext[6] = {0., 1., 0., 1., 0., 1.};
+            plot.GetActualSpatialExtents().CopyTo(ext);
+
+            double EPS = (ext[1] - ext[0]) / 1000.;
+            double currentT = cAtts->GetTimeForTimeCue();
+            if(currentT >= ext[0]-EPS && currentT <= ext[1]+EPS)
+            {
+                double t = (currentT - ext[0]) / (ext[1] - ext[0]);
+                t += 0.01;
+                double newT = (1. - t) * ext[0] + t * ext[1];
+                if(newT > ext[1])
+                    cAtts->SetTimeForTimeCue(ext[0]);
+                else
+                    cAtts->SetTimeForTimeCue(newT);
+            }
+            else
+                cAtts->SetTimeForTimeCue(ext[0]);
+            update = true;
+        }
+    }
+    return update;
+}
+
+// ****************************************************************************
 //  Method: CurveViewerEnginePluginInfo::GetMenuName
 //
 //  Purpose:

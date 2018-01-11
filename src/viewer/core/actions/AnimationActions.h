@@ -232,4 +232,52 @@ public:
     virtual void Execute();
 };
 
+// ****************************************************************************
+// Class: StartPlotAnimationAction
+//
+// Purpose:
+//   This action turns on animation for some of the window's plots.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 12 15:29:22 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class StartPlotAnimationAction : public ViewerActionLogic
+{
+public:
+    StartPlotAnimationAction(ViewerWindow *);
+    virtual ~StartPlotAnimationAction() { }
+
+    virtual void Execute();
+};
+
+// ****************************************************************************
+// Class: StopPlotAnimationAction
+//
+// Purpose:
+//   This action turns off animation for some of the window's plots.
+//
+// Notes:      
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Sep 12 15:29:22 PDT 2013
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+class StopPlotAnimationAction : public ViewerActionLogic
+{
+public:
+    StopPlotAnimationAction(ViewerWindow *);
+    virtual ~StopPlotAnimationAction() { }
+
+    virtual void Execute();
+};
+
 #endif

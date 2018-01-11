@@ -187,6 +187,80 @@ VectorViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
     *(VectorAttributes*)atts = *defaultAtts;
 }
 // ****************************************************************************
+// Method: VectorViewerEnginePluginInfo::SupportsAnimation
+//
+// Purpose:
+//   Tell VisIt that this plot supports animation.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+VectorViewerEnginePluginInfo::SupportsAnimation() const
+{
+    return true;
+}
+
+// ****************************************************************************
+// Method: VectorViewerEnginePluginInfo::AnimationReset
+//
+// Purpose:
+//   Resets the plot's animation.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed as a result of reset.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+#include <avtPlotMetaData.h>
+
+bool
+VectorViewerEnginePluginInfo::AnimationReset(AttributeSubject *atts, const avtPlotMetaData &)
+{
+    VectorAttributes *cAtts = (VectorAttributes *)atts;
+    cAtts->SetAnimationStep(0);
+    return true;
+}
+
+// ****************************************************************************
+// Method: VectorViewerEnginePluginInfo::AnimationStep
+//
+// Purpose:
+//   Take an animation step.
+//
+// Arguments:
+//   atts : The attribute subject that we may modify.
+//   plot : The plot that we're animating.
+//
+// Returns:  True if the plot attributes changed.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Sep 13 11:29:59 PDT 2013
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+VectorViewerEnginePluginInfo::AnimationStep(AttributeSubject *atts, const avtPlotMetaData &)
+{
+    VectorAttributes *cAtts = (VectorAttributes *)atts;
+    cAtts->SetAnimationStep(cAtts->GetAnimationStep()+1);
+    return true;
+}
+
+// ****************************************************************************
 //  Method: VectorViewerEnginePluginInfo::GetMenuName
 //
 //  Purpose:

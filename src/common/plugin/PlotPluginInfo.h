@@ -209,6 +209,10 @@ public:
     virtual void ResetPlotAtts(AttributeSubject *,
                                const avtPlotMetaData &) { ; }
 
+    virtual bool SupportsAnimation() const { return false; }
+    virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &) { return false; }
+    virtual bool AnimationStep(AttributeSubject *atts, const avtPlotMetaData &) { return false; }
+
     virtual const char *GetMenuName() const = 0;
 };
 

@@ -657,6 +657,14 @@ class InfoGeneratorPlugin : public Plugin
                 h << "    virtual void ReInitializePlotAtts(AttributeSubject *atts, const avtPlotMetaData &);" << endl;
             if(OverrideBuiltin(infoName + "::ResetPlotAtts"))
                 h << "    virtual void ResetPlotAtts(AttributeSubject *atts, const avtPlotMetaData &);" << endl;
+
+            if(OverrideBuiltin(infoName + "::SupportsAnimation"))
+                h << "    virtual bool SupportsAnimation() const;" << endl;
+            if(OverrideBuiltin(infoName + "::AnimationReset"))
+                h << "    virtual bool AnimationReset(AttributeSubject *atts, const avtPlotMetaData &plot);" << endl;
+            if(OverrideBuiltin(infoName + "::AnimationStep"))
+                h << "    virtual bool AnimationStep(AttributeSubject *atts, const avtPlotMetaData  &plot);" << endl;
+
             h << "    virtual const char *GetMenuName() const;" << endl;
             h << "    static void InitializeGlobalObjects();" << endl;
             h << "  private:" << endl;
@@ -2024,6 +2032,10 @@ class InfoGeneratorPlugin : public Plugin
 
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::ReInitializePlotAtts");
             WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::ResetPlotAtts");
+
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::SupportsAnimation");
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AnimationReset");
+            WriteOverrideDefinition(c, name + "ViewerEnginePluginInfo::AnimationStep");
         }
 
         funcName = name + "ViewerEnginePluginInfo::GetMenuName";
@@ -2081,7 +2093,7 @@ class InfoGeneratorPlugin : public Plugin
             c << "#include <"<<name<<"PluginInfo.h>" << endl;
             if (haswriter)
                 c << "#include <avt"<<name<<"Writer.h>" << endl;
-            c << "" << endl;
+            c << endl;
             c << "VISIT_DATABASE_PLUGIN_ENTRY(" << name << ",Engine)" << endl;
             c << endl;
 

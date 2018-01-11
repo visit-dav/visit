@@ -62,6 +62,9 @@
     </Field>
     <Field name="selection" label="Selection" type="string">
     </Field>
+    <Field name="animatingFlag" label="Animating" type="bool">
+      false
+    </Field>
     <Function name="AddOperator" user="true" member="true">
     </Function>
     <Function name="ClearAllOperators" user="true" member="true">

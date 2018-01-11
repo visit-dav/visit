@@ -238,6 +238,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Fri Jul 23 15:23:49 PDT 2010
 //   I made the widget observe the selection list.
 //
+//   Brad Whitlock, Fri Sep 13 12:29:07 PDT 2013
+//   Add animateThisPlot method.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QGroupBox, public GUIBase,
@@ -303,6 +306,7 @@ private slots:
     void cloneThisPlot();
     void redrawThisPlot();
     void followTimeSliderThisPlot(bool);
+    void animateThisPlot(bool val);
     void setActivePlot();
 
     void setActivePlots();

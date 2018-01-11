@@ -245,6 +245,8 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
           break;
     }
 
+    SNPRINTF(tmpStr, 1000, "%sanimationStep = %d\n", prefix, atts->GetAnimationStep());
+    str += tmpStr;
     return str;
 }
 
@@ -1021,6 +1023,30 @@ VectorAttributes_GetGlyphType(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+VectorAttributes_SetAnimationStep(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the animationStep in the object.
+    obj->data->SetAnimationStep((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+VectorAttributes_GetAnimationStep(PyObject *self, PyObject *args)
+{
+    VectorAttributesObject *obj = (VectorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetAnimationStep()));
+    return retval;
+}
+
 
 
 PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
@@ -1079,6 +1105,8 @@ PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
     {"GetOrigOnly", VectorAttributes_GetOrigOnly, METH_VARARGS},
     {"SetGlyphType", VectorAttributes_SetGlyphType, METH_VARARGS},
     {"GetGlyphType", VectorAttributes_GetGlyphType, METH_VARARGS},
+    {"SetAnimationStep", VectorAttributes_SetAnimationStep, METH_VARARGS},
+    {"GetAnimationStep", VectorAttributes_GetAnimationStep, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1202,6 +1230,8 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Ellipsoid") == 0)
         return PyInt_FromLong(long(VectorAttributes::Ellipsoid));
 
+    if(strcmp(name, "animationStep") == 0)
+        return VectorAttributes_GetAnimationStep(self, NULL);
 
     // Try and handle legacy fields in VectorAttributes
     if(strcmp(name, "highQuality") == 0)
@@ -1277,6 +1307,8 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VectorAttributes_SetOrigOnly(self, tuple);
     else if(strcmp(name, "glyphType") == 0)
         obj = VectorAttributes_SetGlyphType(self, tuple);
+    else if(strcmp(name, "animationStep") == 0)
+        obj = VectorAttributes_SetAnimationStep(self, tuple);
 
    // Try and handle legacy fields in VectorAttributes
     if(obj == NULL)

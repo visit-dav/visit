@@ -43,14 +43,12 @@
 #include <QvisPlotListBoxItem.h>
 #include <PlotList.h>
 #include <Plot.h>
-#include <QvisPlotListBoxItem.h>
 #include <GUIBase.h>
 #include <QvisPlotManagerWidget.h>
 
 #include <QItemDelegate>
 #include <QLineEdit>
 #include <QPainter>
-#include <QvisPlotListBoxItem.h>
 
 // ****************************************************************************
 // Class: QPlotDelegate
@@ -566,6 +564,9 @@ QvisPlotListBox::setApplyOperators(bool val)
 //   Brad Whitlock, Tue Mar 29 12:09:12 PDT 2011
 //   Use follows time to regenerate too
 //
+//   Brad Whitlock, Fri Sep 13 12:54:08 PDT 2013
+//   Add plot animation.
+//
 // ****************************************************************************
 
 bool
@@ -601,7 +602,8 @@ QvisPlotListBox::NeedsToBeRegenerated(const PlotList *pl,
                    newPlot.GetOperators() != currentPlot.GetOperators() ||
                    newPlot.GetDescription() != currentPlot.GetDescription() ||
                    newPlot.GetSelection() != currentPlot.GetSelection() ||
-                   newPlot.GetFollowsTime() != currentPlot.GetFollowsTime();
+                   newPlot.GetFollowsTime() != currentPlot.GetFollowsTime() ||
+                   newPlot.GetAnimatingFlag() != currentPlot.GetAnimatingFlag();
 
             if(nu) return true;
         }
@@ -710,6 +712,9 @@ QvisPlotListBox::IsSelecting() const
 //   Brad Whitlock, Tue Oct 20 15:28:07 PDT 2009
 //   I added menu items that let the user change the plot list.
 //
+//   Brad Whitlock, Fri Sep 13 12:23:03 PDT 2013
+//   I added plot animation.
+//
 // ****************************************************************************
 
 void
@@ -795,6 +800,11 @@ QvisPlotListBox::contextMenuCreateActions()
      followTimeSliderAct->setStatusTip(tr("Set whether this plot follows the time slider"));
      followTimeSliderAct->setCheckable(true);
      connect( followTimeSliderAct, SIGNAL(toggled(bool)), this, SIGNAL(followTimeSliderThisPlot(bool)));
+
+     animateAct = new QAction(tr("Animate"), this);
+     animateAct->setStatusTip(tr("Set whether this plot can perform animation"));
+     animateAct->setCheckable(true);
+     connect( animateAct, SIGNAL(toggled(bool)), this, SIGNAL(animateThisPlot(bool)));
 }
 
 // ****************************************************************************
@@ -809,6 +819,8 @@ QvisPlotListBox::contextMenuCreateActions()
 // Creation:    Fri April 230 2010
 //
 // Modifications:
+//   Brad Whitlock, Fri Sep 13 12:23:32 PDT 2013
+//   Add plot animation.
 //
 // ****************************************************************************
 void
@@ -850,6 +862,7 @@ QvisPlotListBox::contextMenuCreate()
     plotContextMenu->addSeparator();
  
     plotContextMenu->addAction(followTimeSliderAct);
+    plotContextMenu->addAction(animateAct);
 }
 
 // ****************************************************************************
@@ -878,6 +891,9 @@ QvisPlotListBox::contextMenuCreate()
 //    Brad Whitlock, Tue Mar 29 11:27:54 PDT 2011
 //    Set the proper checked state for the time slider action.
 //
+//    Brad Whitlock, Fri Sep 13 12:21:13 PDT 2013
+//    Set checked state for animation action.
+//
 // ****************************************************************************
 
 void
@@ -887,6 +903,7 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
     // highlighted/selected, non-intuitive...??)
     bool anyActive = false;
     bool followTS = false;
+    bool isAnimating = false;
     for(int i = 0; i < count(); ++i)
     {
         QvisPlotListBoxItem *lbi = (QvisPlotListBoxItem *)item(i);
@@ -896,6 +913,7 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
         {
             anyActive = true;
             followTS |= currentPlot.GetFollowsTime();
+            isAnimating |= currentPlot.GetAnimatingFlag();
         }
     }
 
@@ -906,11 +924,15 @@ QvisPlotListBox::contextMenuEvent(QContextMenuEvent *e)
     cloneAct->setEnabled(anyActive);
     redrawAct->setEnabled(anyActive);
 
-
     followTimeSliderAct->blockSignals(true);
     followTimeSliderAct->setEnabled(anyActive);
     followTimeSliderAct->setChecked(followTS);
     followTimeSliderAct->blockSignals(false);
+
+    animateAct->blockSignals(true);
+    animateAct->setEnabled(anyActive);
+    animateAct->setChecked(isAnimating);
+    animateAct->blockSignals(false);
 
     makeThisPlotFirstAct->setEnabled(anyActive && count() > 1);
     moveThisPlotTowardFirstAct->setEnabled(anyActive && count() > 1);

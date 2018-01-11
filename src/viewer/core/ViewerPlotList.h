@@ -322,6 +322,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Eric Brugger, Fri Oct 28 09:52:40 PDT 2011
 //    Add a multi resolution display capability for AMR data.
 //
+//    Brad Whitlock, Thu Sep 12 16:32:35 PDT 2013
+//    Added plot animation methods.
+//
 //    Burlen Loring, Sun Sep  6 14:58:03 PDT 2015
 //    Changed the return type of GetNumberOfCells to long long
 //
@@ -366,6 +369,11 @@ public:
     void UpdateFrame(bool updatePlotStates = true);
     bool UpdateFrameForPlots(const intVector &);
     void RegenerateFrame();
+
+    bool HasAnimatingPlots() const;
+    bool AnimationStep();
+    void StartPlotAnimation(const intVector &plotIds);
+    void StopPlotAnimation(const intVector &plotIds);
 
     void SetAnimationAttributes(const AnimationAttributes &);
     const AnimationAttributes &GetAnimationAttributes() const;

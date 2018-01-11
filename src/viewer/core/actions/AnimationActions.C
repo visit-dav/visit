@@ -212,3 +212,31 @@ SetActiveTimeSliderAction::Execute()
 
     windowMgr->SetActiveTimeSlider(tsName, GetWindow()->GetWindowId());
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+StartPlotAnimationAction::StartPlotAnimationAction(ViewerWindow *win) :
+    ViewerActionLogic(win)
+{
+}
+
+void
+StartPlotAnimationAction::Execute()
+{
+    const intVector &activePlots = args.GetActivePlotIds();
+    GetWindow()->GetPlotList()->StartPlotAnimation(activePlots);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+StopPlotAnimationAction::StopPlotAnimationAction(ViewerWindow *win) :
+    ViewerActionLogic(win)
+{
+}
+
+void
+StopPlotAnimationAction::Execute()
+{
+    const intVector &activePlots = args.GetActivePlotIds();
+    GetWindow()->GetPlotList()->StopPlotAnimation(activePlots);
+}

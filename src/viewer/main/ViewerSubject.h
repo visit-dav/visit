@@ -252,7 +252,7 @@ private:
 
     QTimer            *timer;
     int               animationTimeout;
-    int               lastAnimation;
+    int               animationIndex;
 private:
     /// Experimental Web Client Stuff
     //void BroadcastAdvanced(int windowId, bool inMotion);

@@ -268,6 +268,8 @@ public:
         PlotDDTVispointVariablesRPC,
         ExportRPC,
         ExportHostProfileRPC,
+        StartPlotAnimationRPC,
+        StopPlotAnimationRPC,
         ReadHostProfilesFromDirectoryRPC,
         SetRemoveDuplicateNodesRPC,
         MaxRPC

@@ -97,6 +97,9 @@ class PlotList;
 //   Brad Whitlock, Thu Mar 14 16:22:08 PDT 2013
 //   I added setApplyOperators.
 //
+//   Brad Whitlock, Fri Sep 13 12:17:40 PDT 2013
+//   I added animateAct.
+//
 // ****************************************************************************
 
 class GUI_API QvisPlotListBox : public QListWidget
@@ -136,6 +139,7 @@ signals:
     void copyToWinThisPlot();
     void redrawThisPlot();
     void followTimeSliderThisPlot(bool);
+    void animateThisPlot(bool);
     void setActivePlot();
 
     void renamePlot(int row, const QString &);
@@ -170,6 +174,7 @@ private:
     QAction    *moveThisPlotTowardLastAct;
     QAction    *makeThisPlotFirstAct;
     QAction    *makeThisPlotLastAct;
+    QAction    *animateAct;
 
     QMenu      *copyWinSubMenu;
     QAction    *win1Act;

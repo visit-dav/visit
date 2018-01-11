@@ -39,6 +39,7 @@
 #ifndef AVT_PLOT_META_DATA_H
 #define AVT_PLOT_META_DATA_H
 #include <plotter_exports.h>
+#include <avtExtents.h>
 #include <avtSILRestriction.h>
 #include <avtTypes.h>
 #include <avtDatabaseMetaData.h>
@@ -67,7 +68,9 @@ public:
     avtPlotMetaData(const avtDatabaseMetaData  *_md,
                     const std::string          &_variableName,
                     avtVarType                  _variableType,
-                    avtSILRestriction_p         _silr);
+                    avtSILRestriction_p         _silr,
+                    const avtExtents           &_actualSpatial,
+                    const avtExtents           &_originalSpatial);
     avtPlotMetaData(const avtPlotMetaData &obj);
     ~avtPlotMetaData();
 
@@ -78,12 +81,16 @@ public:
     std::string                GetMeshName() const;
     avtVarType                 GetVariableType() const;
     avtSILRestriction_p        GetSILRestriction() const;
+    const avtExtents          &GetActualSpatialExtents() const;
+    const avtExtents          &GetOriginalSpatialExtents() const;
 
 private:
     const avtDatabaseMetaData *md;
     std::string                variableName;
     avtVarType                 variableType;
     avtSILRestriction_p        silr;
+    avtExtents                 actualSpatialExtents;
+    avtExtents                 originalSpatialExtents;
 };
 
 #endif

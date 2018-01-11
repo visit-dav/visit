@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class VectorAttributes extends AttributeSubject implements Plugin
 {
-    private static int VectorAttributes_numAdditionalAtts = 27;
+    private static int VectorAttributes_numAdditionalAtts = 28;
 
     // Enum values
     public final static int QUALITY_FAST = 0;
@@ -114,6 +114,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         stemWidth = 0.08;
         origOnly = true;
         glyphType = GLYPHTYPE_ARROW;
+        animationStep = 0;
     }
 
     public VectorAttributes(int nMoreFields)
@@ -147,6 +148,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         stemWidth = 0.08;
         origOnly = true;
         glyphType = GLYPHTYPE_ARROW;
+        animationStep = 0;
     }
 
     public VectorAttributes(VectorAttributes obj)
@@ -180,6 +182,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         stemWidth = obj.stemWidth;
         origOnly = obj.origOnly;
         glyphType = obj.glyphType;
+        animationStep = obj.animationStep;
 
         SelectAll();
     }
@@ -223,7 +226,8 @@ public class VectorAttributes extends AttributeSubject implements Plugin
                 (geometryQuality == obj.geometryQuality) &&
                 (stemWidth == obj.stemWidth) &&
                 (origOnly == obj.origOnly) &&
-                (glyphType == obj.glyphType));
+                (glyphType == obj.glyphType) &&
+                (animationStep == obj.animationStep));
     }
 
     public String GetName() { return "Vector"; }
@@ -392,6 +396,12 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         Select(26);
     }
 
+    public void SetAnimationStep(int animationStep_)
+    {
+        animationStep = animationStep_;
+        Select(27);
+    }
+
     // Property getting methods
     public int            GetGlyphLocation() { return glyphLocation; }
     public boolean        GetUseStride() { return useStride; }
@@ -420,6 +430,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public double         GetStemWidth() { return stemWidth; }
     public boolean        GetOrigOnly() { return origOnly; }
     public int            GetGlyphType() { return glyphType; }
+    public int            GetAnimationStep() { return animationStep; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -478,6 +489,8 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(origOnly);
         if(WriteSelect(26, buf))
             buf.WriteInt(glyphType);
+        if(WriteSelect(27, buf))
+            buf.WriteInt(animationStep);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -566,6 +579,9 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         case 26:
             SetGlyphType(buf.ReadInt());
             break;
+        case 27:
+            SetAnimationStep(buf.ReadInt());
+            break;
         }
     }
 
@@ -631,6 +647,7 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         if(glyphType == GLYPHTYPE_ELLIPSOID)
             str = str + "GLYPHTYPE_ELLIPSOID";
         str = str + "\n";
+        str = str + intToString("animationStep", animationStep, indent) + "\n";
         return str;
     }
 
@@ -663,5 +680,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     private double         stemWidth;
     private boolean        origOnly;
     private int            glyphType;
+    private int            animationStep;
 }
 

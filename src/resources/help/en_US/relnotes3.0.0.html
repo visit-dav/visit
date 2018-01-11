@@ -35,7 +35,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li></li>
   <li></li>
   <li></li>
-  <li></li>
+  <li>VisIt has been enhanced so plots can provide custom animation behaviors. These behaviors are plot-specific and are independent of the time slider animation controls. For example, the Vector plot can alter the length of its glyphs periodically lengthening and shortening them. Plot animation is enabled for the Curve and Vector plugins and can be activated by right-clicking on a plot in the Main window's plot list area and selecting <b>Animate</b> from the context menu. Note, this features work best for plots and data that can be rendered quickly.</li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -62,7 +62,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes to VisIt's plots in version 3.0</font></b></p>
 <ul>
   <li>The ray-casting volume renderer in VisIt's Volume plot was sped up in many instances. For rectilinear data, the speed increase can be over 2x, depending on the opacities in the transfer function.</li>
-  <li></li>
+  <li>The Vector plot supports plot animation. The vector glyphs alternate between 50% and 100% of their glyph length while the plot animates, helping to see features in the vector field.</li>
+  <li>The Curve plot supports plot animation. The line and time cue features in the plot can respond to plot animation and they advance from left to right while the plot animates.</li>
   <li></li>
   <li></li>
   <li></li>

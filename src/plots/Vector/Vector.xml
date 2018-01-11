@@ -110,7 +110,18 @@
       <Field name="glyphType" label="glyphType" type="enum" subtype="GlyphType">
         Arrow
       </Field>
+      <Field name="animationStep" label="Animation step" type="int">
+        0
+      </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
+      </Function>
+      <Function name="GetAnimationScale" user="true" member="true">
+      </Function>
+      <Function name="VectorViewerEnginePluginInfo::SupportsAnimation" user="false" member="true">
+      </Function>
+      <Function name="VectorViewerEnginePluginInfo::AnimationReset" user="false" member="true">
+      </Function>
+      <Function name="VectorViewerEnginePluginInfo::AnimationStep" user="false" member="true">
       </Function>
     </Attribute>
   </Plugin>

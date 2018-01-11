@@ -306,6 +306,9 @@ class avtToolInterface;
 //    Kathleen Biagas, Wed Feb 29 07:46:10 MST 2012
 //    Added GetExtraInfoForPick.
 //
+//    Brad Whitlock, Thu Sep 12 16:32:35 PDT 2013
+//    Added plot animation methods.
+//
 //    Burlen Loring, Wed Aug 26 14:04:16 PDT 2015
 //    clean up a compiler warning
 //
@@ -395,6 +398,14 @@ public:
     //
     bool FollowsTime() const;
     void SetFollowsTime(bool);
+
+    //
+    // Plot animation
+    //
+    bool SupportsAnimation() const;
+    bool GetAnimating() const;
+    bool SetAnimating(bool);
+    bool AnimationStep();
 
     //
     // Set/Get plot attributes and keyframes.
@@ -589,6 +600,7 @@ private:
     bool                    errorFlag;
     bool                    isMesh;
     bool                    isLabel;
+    bool                    animating;
 
     AttributeSubjectMap    *plotAtts;
     AttributeSubject       *curPlotAtts;

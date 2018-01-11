@@ -559,7 +559,7 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
 
     glyphMapper->SetScaleByMagnitude(atts.GetScaleByMagnitude());
     glyphMapper->SetAutoScale(atts.GetAutoScale());
-    glyphMapper->SetScale(atts.GetScale());
+    glyphMapper->SetScale(atts.GetScale() * atts.GetAnimationScale());
 
     SetMapperColors();
 

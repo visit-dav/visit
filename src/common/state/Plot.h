@@ -126,6 +126,7 @@ public:
     void SetFollowsTime(bool followsTime_);
     void SetDescription(const std::string &description_);
     void SetSelection(const std::string &selection_);
+    void SetAnimatingFlag(bool animatingFlag_);
 
     // Property getting methods
     StateType          GetStateType() const;
@@ -158,6 +159,7 @@ public:
           std::string  &GetDescription();
     const std::string  &GetSelection() const;
           std::string  &GetSelection();
+    bool               GetAnimatingFlag() const;
 
     // Enum conversion functions
     static std::string StateType_ToString(StateType);
@@ -203,6 +205,7 @@ public:
         ID_followsTime,
         ID_description,
         ID_selection,
+        ID_animatingFlag,
         ID__LAST
     };
 
@@ -228,11 +231,12 @@ private:
     bool         followsTime;
     std::string  description;
     std::string  selection;
+    bool         animatingFlag;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PLOT_TMFS "iisbbbssi*s*iiiiii*i*bbss"
+#define PLOT_TMFS "iisbbbssi*s*iiiiii*i*bbssb"
 
 #endif

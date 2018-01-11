@@ -161,6 +161,12 @@
       </Function>
       <Function name="CurveViewerEnginePluginInfo::PermitsCurveViewScaling" user="false" member="true">
       </Function>
+      <Function name="CurveViewerEnginePluginInfo::SupportsAnimation" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::AnimationReset" user="false" member="true">
+      </Function>
+      <Function name="CurveViewerEnginePluginInfo::AnimationStep" user="false" member="true">
+      </Function>
       <Include file="source" quoted="false">
         Line.h
       </Include>
