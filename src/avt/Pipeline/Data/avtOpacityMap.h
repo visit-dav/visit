@@ -124,7 +124,7 @@ class PIPELINE_API avtOpacityMap
     int                          QueryTF(double scalarValue, double color[4]) const;
     float                        QueryAlpha(double scalarValue) const;
 
-    friend ostream &operator << (ostream &, const avtOpacityMap &);
+    friend PIPELINE_API ostream &operator << (ostream &, const avtOpacityMap &);
   protected:
     RGBA                        *table;
     _RGBA                       *transferFn1D;
@@ -138,7 +138,6 @@ class PIPELINE_API avtOpacityMap
     void                         SetIntermediateVars(void);
 };
 
-PIPELINE_API ostream &operator << (ostream &, const avtOpacityMap &);
 
 // ****************************************************************************
 //  Method: avtOpacityMap::Quantize

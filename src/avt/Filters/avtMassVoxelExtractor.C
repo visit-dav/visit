@@ -71,7 +71,11 @@
 #include <algorithm>
 
 #define INLINE   inline
-#define RESTRICT __restrict__
+#ifdef _MSC_VER
+  #define RESTRICT __restrict
+#else
+  #define RESTRICT __restrict__
+#endif
 #define EARLY_RAY_TERMINATION
 
 // ****************************************************************************
