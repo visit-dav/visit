@@ -369,15 +369,11 @@ BoundaryViewerEnginePluginInfo::PrivateSetPlotAtts(AttributeSubject *atts,
     const avtMaterialMetaData *mat = NULL;
 
     std::string meshName = nonConstmd->MeshForVar(vn);
-    avtMeshMetaData *mesh =
-        const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
-
 
     stringVector       sv;
     stringVector::const_iterator pos;
     std::set<int> groupSet;
     std::vector<int> gIDS;
-    char temp[512];
 
     //
     // Ensure only Material subsets
