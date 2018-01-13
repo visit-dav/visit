@@ -257,7 +257,7 @@ virtual std::string toString()
 {
     char buf[1024];
 
-    sprintf(buf, "[%s@%p]", className(), this);
+    sprintf(buf, "[%s@%p]", className(), (void*)this);
 
     return buf;
 }
