@@ -642,7 +642,9 @@ avtH5PartWriter::WritePoints(vtkPoints *pts)
     {
         float *ptr = (float *) arr->GetVoidPointer(0);
 
-        h5part_float32_t *coordsWriteX, *coordsWriteY, *coordsWriteZ;
+        h5part_float32_t *coordsWriteX = NULL,
+                         *coordsWriteY = NULL,
+                         *coordsWriteZ = NULL;
         coordsWriteX = new h5part_float32_t[nparticles];
         coordsWriteY = new h5part_float32_t[nparticles];
         if( dim == 3 )
@@ -670,7 +672,9 @@ avtH5PartWriter::WritePoints(vtkPoints *pts)
     {
         double *ptr = (double *) arr->GetVoidPointer(0);
 
-        h5part_float64_t *coordsWriteX, *coordsWriteY, *coordsWriteZ;
+        h5part_float64_t *coordsWriteX = NULL,
+                         *coordsWriteY = NULL,
+                         *coordsWriteZ = NULL;
         coordsWriteX = new h5part_float64_t[nparticles];
         coordsWriteY = new h5part_float64_t[nparticles];
         if( dim == 3 )
