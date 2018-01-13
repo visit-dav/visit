@@ -112,4 +112,4 @@ supported(const char *key)
 #endif
 }
 
-}; /* glew */ }; /* avt */
+} /* glew */ } /* avt */

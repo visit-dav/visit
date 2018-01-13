@@ -72,6 +72,6 @@ namespace glew {
     bool PLOTTER_API initialize(bool force=false);
 
     bool PLOTTER_API supported(const char *);
-};
-};
+}
+}
 #endif
