@@ -61,6 +61,11 @@
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
+#include <StackTimer.h>
+
+#ifdef _OPENMP
+# include <omp.h>
+#endif
 
 #include <string>
 #include <vector>
@@ -381,6 +386,11 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
 
     if (gradientAlgo == LOGICAL)
     {
+#ifdef _OPENMP
+        StackTimer t0("CalculateGradients OpenMP");
+#else
+        StackTimer t0("CalculateGradients");
+#endif
         if (in_ds->GetDataObjectType() != VTK_STRUCTURED_GRID)
         {
             static bool haveIssuedWarning = false;
@@ -456,13 +466,12 @@ avtGradientExpression::CalculateGradient(vtkDataSet *in_ds,
         recentered = true;
         cd2pd->Delete();
     }
-    
     vtkIdType nPoints = in_ds->GetNumberOfPoints();
 
     vtkDataArray *results = CreateArrayFromMesh(in_ds);
     results->SetNumberOfComponents(3);
-    results->SetNumberOfTuples(nPoints);        
-    
+    results->SetNumberOfTuples(nPoints);
+
     for (vtkIdType nodeId = 0 ; nodeId < nPoints; nodeId++)
     {
         double xDELTA=1e6, yDELTA=1e6, zDELTA=1e6;
@@ -1199,6 +1208,10 @@ avtGradientExpression::LogicalGradient(vtkStructuredGrid *sg,
     }
     else
     {
+#ifdef _OPENMP
+#pragma message("Compiling for OpenMP.")
+#endif
+        #pragma omp parallel for private(i,j,k) shared(in,out)
         for (k = 0 ; k < dims2 ; k++)
         {
             for (j = 0 ; j < dims1 ; j++)

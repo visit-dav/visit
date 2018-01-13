@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                      avtLambda2Expression.h                         //
+//                      avtLambda2Expression.h                               //
 // ************************************************************************* //
 
 #ifndef AVT_LAMBDA2_EXPRESSION_H
@@ -74,7 +74,12 @@ class EXPRESSION_API avtLambda2Expression
     static double             Lambda2(const double *, const double *, const double *);
         
   protected:
-    static double            *EigenValues(double **);
+    static void               EigenValues(double **, double evec[3]);
+#ifdef _OPENMP
+    template <typename InputType>
+    void CalculateLambda2(const InputType *, const InputType *, const InputType *,
+                          double *lambda2, const int numTuples);
+#endif
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual int               GetVariableDimension(void) { return 1; };
     virtual bool              CanHandleSingletonConstants(void) {return true;};

@@ -53,8 +53,13 @@
 #include <vtkInformation.h>
 #include <vtkInformationDoubleVectorKey.h>
 
+#include <DebugStream.h>
 #include <ExpressionException.h>
+#include <StackTimer.h>
 
+#ifdef _OPENMP
+# include <omp.h>
+#endif
 
 // ****************************************************************************
 //  Method: avtQCriterionExpression constructor
@@ -113,32 +118,78 @@ avtQCriterionExpression::~avtQCriterionExpression()
 //  Modifications:
 //
 // ****************************************************************************
+
+#define COMPUTE_Q_CRIT(VARTYPE, VAR) \
+{ \
+    VARTYPE s1 = 0.5 * (du[1] + dv[0]); \
+    VARTYPE s2 = 0.5 * (du[2] + dw[0]); \
+    VARTYPE s3 = 0.5 * (dv[0] + du[1]); \
+\
+    VARTYPE s5 = 0.5 * (dv[2] + dw[1]); \
+    VARTYPE s6 = 0.5 * (dw[0] + du[2]); \
+    VARTYPE s7 = 0.5 * (dw[1] + dv[2]); \
+\
+    VARTYPE w1 = 0.5 * (du[1] - dv[0]); \
+    VARTYPE w2 = 0.5 * (du[2] - dw[0]); \
+    VARTYPE w3 = 0.5 * (dv[0] - du[1]); \
+\
+    VARTYPE w5 = 0.5 * (dv[2] - dw[1]); \
+    VARTYPE w6 = 0.5 * (dw[0] - du[2]); \
+    VARTYPE w7 = 0.5 * (dw[1] - dv[2]); \
+\
+    VARTYPE sNorm = du[0] * du[0] + s1 * s1 + s2 * s2 + s3 * s3 + dv[1] * dv[1] + s5 * s5 + s6 * s6 + s7 * s7 + dw[2] * dw[2]; \
+    VARTYPE wNorm = w1 * w1 + w2 * w2 + w3 * w3 + w5 * w5 + w6 * w6 + w7 * w7; \
+\
+    VAR = 0.5 * (wNorm - sNorm); \
+}
+
 double
 avtQCriterionExpression::QCriterion(const double * du, const double * dv, const double * dw)
 {
-    double s1 = 0.5 * (du[1] + dv[0]);
-    double s2 = 0.5 * (du[2] + dw[0]);
-    double s3 = 0.5 * (dv[0] + du[1]);
-    
-    double s5 = 0.5 * (dv[2] + dw[1]);
-    double s6 = 0.5 * (dw[0] + du[2]);
-    double s7 = 0.5 * (dw[1] + dv[2]);
-    
-    double w1 = 0.5 * (du[1] - dv[0]);
-    double w2 = 0.5 * (du[2] - dw[0]);
-    double w3 = 0.5 * (dv[0] - du[1]);
-    
-    double w5 = 0.5 * (dv[2] - dw[1]);
-    double w6 = 0.5 * (dw[0] - du[2]);
-    double w7 = 0.5 * (dw[1] - dv[2]);
-    
-    double sNorm = du[0] * du[0] + s1 * s1 + s2 * s2 + s3 * s3 + dv[1] * dv[1] + s5 * s5 + s6 * s6 + s7 * s7 + dw[2] * dw[2];
-    double wNorm = w1 * w1 + w2 * w2 + w3 * w3 + w5 * w5 + w6 * w6 + w7 * w7;
-    
-    double qCrit = 0.5 * (wNorm - sNorm);
-    
+    double qCrit;
+    COMPUTE_Q_CRIT(double, qCrit);
     return qCrit;
 }
+
+// ****************************************************************************
+//  Method: ompCalculateQCriterion
+//
+//  Purpose:
+//
+//  Arguments:
+//      gradX   The gradient vector of X
+//      gradY   The gradient vector of Y
+//      gradZ   The gradient vector of Z
+//      qCrit   The resulting q-criterion array
+//
+//  Returns:    None
+//
+//  Programmer:   Christopher P. Stone
+//  Creation:     Sat Apr 01 13:00:00 EDT 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+#ifdef _OPENMP
+template <typename InputType>
+static void
+ompCalculateQCriterion(const InputType * gradX, const InputType * gradY, const InputType * gradZ,
+    double *qCrit, const int numTuples)
+{
+    #pragma omp parallel for
+    for (int i = 0; i < numTuples; ++i)
+    {
+        const int offset = 3*i;
+        const InputType du[3] = { gradX[offset], gradX[offset+1], gradX[offset+2] };
+        const InputType dv[3] = { gradY[offset], gradY[offset+1], gradY[offset+2] };
+        const InputType dw[3] = { gradZ[offset], gradZ[offset+1], gradZ[offset+2] };
+
+        COMPUTE_Q_CRIT(InputType, qCrit[i]);
+    }
+    
+    return;
+}
+#endif
 
 // ****************************************************************************
 //  Method: avtQCriterionExpression::DeriveVariable
@@ -165,7 +216,9 @@ avtQCriterionExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
     {
         EXCEPTION2(ExpressionException, outputVariableName, "Expecting 3 inputs (gradX, gradY, gradZ)");
     }
-    
+
+    debug1 << "Inside avtQCriterionExpression: varnames= " << varnames[0] << ", " << varnames[1] << ", " << varnames[2] << endl;
+
     vtkDataArray *var1 = NULL;  /* du */
     vtkDataArray *var2 = NULL;  /* dv */
     vtkDataArray *var3 = NULL;  /* dw */
@@ -202,11 +255,43 @@ avtQCriterionExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInd
     vtkDataArray *results = vtkDoubleArray::New();
     results->SetNumberOfComponents(1);
     results->SetNumberOfTuples(numTuples);
-    
-    for(int i=0; i<numTuples; i++)
+
+#ifdef _OPENMP
+#pragma message("Compiling for OpenMP.")
+    bool hasValidData = (var1->GetDataType() == var2->GetDataType()) &&
+                        (var2->GetDataType() == var3->GetDataType()) &&
+                       ((var1->GetDataType() == VTK_DOUBLE) || (var1->GetDataType() == VTK_FLOAT)) &&
+                        (var1->HasStandardMemoryLayout() && var2->HasStandardMemoryLayout() && var3->HasStandardMemoryLayout());
+
+    if (hasValidData)
     {
-        results->SetTuple1(i, avtQCriterionExpression::QCriterion(var1->GetTuple(i), var2->GetTuple(i), var3->GetTuple(i)));
+        StackTimer t0("avtQCriterionExpression OpenMP");
+        if (var1->GetDataType() == VTK_DOUBLE)
+        {
+            ompCalculateQCriterion( (const double *) var1->GetVoidPointer(0),
+                                    (const double *) var2->GetVoidPointer(0),
+                                    (const double *) var3->GetVoidPointer(0),
+                                    (double *) results->GetVoidPointer(0),
+                                    numTuples);
+        }
+        else// if (var1->GetDataType() == VTK_FLOAT)
+        {
+            ompCalculateQCriterion( (const float *) var1->GetVoidPointer(0),
+                                    (const float *) var2->GetVoidPointer(0),
+                                    (const float *) var3->GetVoidPointer(0),
+                                    (double *) results->GetVoidPointer(0),
+                                     numTuples);
+        }
     }
-    
+    else
+#endif
+    {
+        StackTimer t1("avtQCriterionExpression");
+        for(int i=0; i<numTuples; i++)
+        {
+            results->SetTuple1(i, avtQCriterionExpression::QCriterion(var1->GetTuple(i), var2->GetTuple(i), var3->GetTuple(i)));
+        }
+    }
+
     return results;
 }

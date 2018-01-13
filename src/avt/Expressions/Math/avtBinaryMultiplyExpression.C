@@ -46,7 +46,10 @@
 #include <vtkDataArray.h>
 
 #include <ExpressionException.h>
-
+#ifdef _OPENMP
+#include <StackTimer.h>
+#include <omp.h>
+#endif
 
 // ****************************************************************************
 //  Method: avtBinaryMultiplyExpression constructor
@@ -114,6 +117,9 @@ avtBinaryMultiplyExpression::~avtBinaryMultiplyExpression()
 //
 //    Hank Childs, Mon Jan 14 17:58:58 PST 2008
 //    Add support for singleton constants.
+//
+//    Brad Whitlock, Fri Jan 12 13:07:04 PST 2018
+//    OpenMP.
 //
 // ****************************************************************************
  
@@ -204,18 +210,141 @@ avtBinaryMultiplyExpression::DoOperation(vtkDataArray *in1, vtkDataArray *in2,
     }
     else if (in1ncomps == in2ncomps)
     {
-        for (int i = 0 ; i < ntuples ; i++)
+        bool handled = false;
+
+        if(in1->GetDataType() == in2->GetDataType() &&
+           in1->GetDataType() == out->GetDataType() &&
+           in1->HasStandardMemoryLayout() &&
+           in2->HasStandardMemoryLayout() &&
+           // We don't want to add in these precisions because we'd probably
+           // overflow when adding. These types will be handled the SetComponent
+           // way.
+           in1->GetDataType() != VTK_BIT &&
+           in1->GetDataType() != VTK_CHAR &&
+           in1->GetDataType() != VTK_SIGNED_CHAR &&
+           in1->GetDataType() != VTK_UNSIGNED_CHAR &&
+           in1->GetDataType() != VTK_SHORT &&
+           in1->GetDataType() != VTK_UNSIGNED_SHORT)
         {
-            vtkIdType tup1 = (var1IsSingleton ? 0 : i);
-            vtkIdType tup2 = (var2IsSingleton ? 0 : i);
-            double dot = 0.;
-            for (int j = 0 ; j < in1ncomps ; j++)
+
+#define COMPUTE_MULT1(VARTYPE, LOW, HIGH) \
+{ \
+    VARTYPE *v1 = (VARTYPE *)in1->GetVoidPointer(0); \
+    VARTYPE *v2 = (VARTYPE *)in2->GetVoidPointer(0); \
+    VARTYPE *vout = (VARTYPE *)out->GetVoidPointer(0); \
+    if(!var1IsSingleton && !var2IsSingleton) \
+    { \
+        for (int j = LOW ; j < HIGH ; j++) \
+            vout[j] = v1[j] * v2[j]; \
+    } \
+    else if(!var1IsSingleton && var2IsSingleton) \
+    { \
+        for (int j = LOW ; j < HIGH ; j++) \
+            vout[j] = v1[j] * v2[0]; \
+    } \
+    else if(var1IsSingleton && !var2IsSingleton) \
+    { \
+        for (int j = LOW ; j < HIGH ; j++) \
+            vout[j] = v1[0] * v2[j]; \
+    } \
+    else/*if(var1IsSingleton && var2IsSingleton)*/ \
+    { \
+        for (int j = LOW ; j < HIGH ; j++) \
+            vout[j] = v1[0] * v2[0]; \
+    } \
+}
+
+#define COMPUTE_MULT3(VARTYPE, LOW, HIGH) \
+{ \
+    VARTYPE *v1 = (VARTYPE *)in1->GetVoidPointer(0); \
+    VARTYPE *v2 = (VARTYPE *)in2->GetVoidPointer(0); \
+    VARTYPE *vout = (VARTYPE *)out->GetVoidPointer(0); \
+    if(!var1IsSingleton && !var2IsSingleton) \
+    { \
+        for (int j = LOW ; j < HIGH ; j++) \
+        { \
+            vout[j] = v1[j*3]   * v2[j*3] + \
+                      v1[j*3+1] * v2[j*3+1] +  \
+                      v1[j*3+2] * v2[j*3+2]; \
+        } \
+    } \
+    else if(!var1IsSingleton && var2IsSingleton) \
+    { \
+        for (int j = LOW ; j < HIGH ; j++) \
+        { \
+            vout[j] = v1[j*3]   * v2[0*3] + \
+                      v1[j*3+1] * v2[0*3+1] +  \
+                      v1[j*3+2] * v2[0*3+2]; \
+        } \
+    } \
+    else if(var1IsSingleton && !var2IsSingleton) \
+    { \
+        for (int j = LOW ; j < HIGH ; j++) \
+        { \
+            vout[j] = v1[0*3]   * v2[j*3] + \
+                      v1[0*3+1] * v2[j*3+1] +  \
+                      v1[0*3+2] * v2[j*3+2]; \
+        } \
+    } \
+    else/*if(var1IsSingleton && var2IsSingleton)*/ \
+    { \
+        for (int j = LOW ; j < HIGH ; j++) \
+        { \
+            vout[j] = v1[0*3]   * v2[0*3] + \
+                      v1[0*3+1] * v2[0*3+1] +  \
+                      v1[0*3+2] * v2[0*3+2]; \
+        } \
+    } \
+}
+
+#ifdef _OPENMP
+            StackTimer t0("avtBinaryMultipleExpression OpenMP");
+            #pragma message("Compiling for OpenMP.")
+            #pragma omp parallel
             {
-                double val1 = in1->GetComponent(tup1, j);
-                double val2 = in2->GetComponent(tup2, j);
-                dot += val1*val2;
+                int threadnum = omp_get_thread_num();
+                int numthreads = omp_get_num_threads();
+                int low = ntuples*threadnum/numthreads;
+                int high = ntuples*(threadnum+1)/numthreads;
+#else
+                int low = 0, high = ntuples;
+#endif
+                if(in1ncomps == 1)
+                {
+                    switch(in1->GetDataType())
+                    {
+                        vtkTemplateMacro(COMPUTE_MULT1(VTK_TT, low, high));
+                    }
+                    handled = true;
+                }
+                else if(in1ncomps == 3)
+                {
+                    switch(in1->GetDataType())
+                    {
+                        vtkTemplateMacro(COMPUTE_MULT3(VTK_TT, low, high));
+                    }
+                    handled = true;
+                }
+#ifdef _OPENMP
             }
-            out->SetTuple1(i, dot);
+#endif
+        }
+
+        if(!handled)
+        {
+            for (int i = 0 ; i < ntuples ; i++)
+            {
+                vtkIdType tup1 = (var1IsSingleton ? 0 : i);
+                vtkIdType tup2 = (var2IsSingleton ? 0 : i);
+                double dot = 0.;
+                for (int j = 0 ; j < in1ncomps ; j++)
+                {
+                    double val1 = in1->GetComponent(tup1, j);
+                    double val2 = in2->GetComponent(tup2, j);
+                    dot += val1*val2;
+                }
+                out->SetTuple1(i, dot);
+            }
         }
     }
     else if (in1ncomps > 1 && in2ncomps == 1)

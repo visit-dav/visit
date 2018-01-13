@@ -51,6 +51,10 @@
 
 #include <ExpressionException.h>
 
+#ifdef _OPENMP
+#include <StackTimer.h>
+#include <omp.h>
+#endif
 
 // ****************************************************************************
 //  Method: avtVectorDecomposeExpression constructor
@@ -164,6 +168,10 @@ avtVectorDecomposeExpression::GetVariableDimension(void)
 //
 //    Mark C. Miller, Tue Jan  7 11:07:50 PST 2014
 //    Handle decomposing symmetric tensor data in 2 and 3D.
+//
+//    Brad Whitlock, Fri Jan 12 13:14:48 PST 2018
+//    Added some OpenMP.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -298,10 +306,45 @@ avtVectorDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomai
             //
             rv->SetNumberOfComponents(1);
             rv->SetNumberOfTuples(ntuples);
-            for (vtkIdType i = 0 ; i < ntuples ; i++)
+
+#define COMPUTE_DECOMPOSE3(VARTYPE, LOW, HIGH) \
+{ \
+     VARTYPE *arr_ptr = (VARTYPE *)arr->GetVoidPointer(0); \
+     VARTYPE *rv_ptr  = (VARTYPE *)rv->GetVoidPointer(0); \
+     for(vtkIdType i = LOW ; i < HIGH ; i++) \
+     { \
+         rv_ptr[i] = arr_ptr[i*3 + which_comp]; \
+     } \
+}
+            if(arr->HasStandardMemoryLayout())
             {
-                double val = arr->GetComponent(i, which_comp);
-                rv->SetTuple1(i, val);
+#ifdef _OPENMP
+                StackTimer t0("avtVectorDecomposeExpression OpenMP");
+                #pragma message("Compiling for OpenMP.")
+                #pragma omp parallel
+                {
+                    int threadnum = omp_get_thread_num();
+                    int numthreads = omp_get_num_threads();
+                    int low = ntuples*threadnum/numthreads;
+                    int high = ntuples*(threadnum+1)/numthreads;
+#else
+                    int low = 0, high = ntuples;
+#endif
+                    switch(arr->GetDataType())
+                    {
+                        vtkTemplateMacro(COMPUTE_DECOMPOSE3(VTK_TT, low, high));
+                    }
+#ifdef _OPENMP
+                }
+#endif
+            }
+            else
+            {
+                for (vtkIdType i = 0 ; i < ntuples ; i++)
+                {
+                    double val = arr->GetComponent(i, which_comp);
+                    rv->SetTuple1(i, val);
+                }
             }
         }
         else if (arr->GetNumberOfComponents() == 6)

@@ -36,6 +36,17 @@ enhancements and bug-fixes that were added to this release.</p>
   <li></li>
   <li></li>
   <li>VisIt has been enhanced so plots can provide custom animation behaviors. These behaviors are plot-specific and are independent of the time slider animation controls. For example, the Vector plot can alter the length of its glyphs periodically lengthening and shortening them. Plot animation is enabled for the Curve and Vector plugins and can be activated by right-clicking on a plot in the Main window's plot list area and selecting <b>Animate</b> from the context menu. Note, this features work best for plots and data that can be rendered quickly.</li>
+  <li>Some of VisIt's expressions can be built with support for OpenMP, letting them parallelize over multiple threads. This is available when passing <i>-fopenmp</i> to the C++ compiler when building VisIt. The observed speedups are between 2x and 10x when using the serial compute engine. These expressions are enhanced with OpenMP support:
+      <ul>
+         <li><i>addition +</i></li>
+         <li><i>multiplication *</i></li>
+         <li><i>vector decompose []</i></li>
+         <li><i>magnitude()</i></li>
+         <li><i>lambda2()</i></li>
+         <li><i>q_criterion()</i></li>
+         <li><i>gradient() (for logical gradient case only)</i></li>
+      </ul>
+  </li>
 </ul>
 
 <a name="GUI_changes"></a>
