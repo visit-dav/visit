@@ -172,7 +172,7 @@ avtFFTFilter::Equivalent(const AttributeGroup *a)
 
 void avtFFTFilter::Fourier(double* data, long nn, long isign)
 {
-  register int i, j, m, n;
+  int i, j, m, n;
   int  mmax, istep;
   float wtemp, wr, wpr, wpi, wi, theta;
   float tempr, tempi;
