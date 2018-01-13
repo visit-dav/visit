@@ -430,7 +430,6 @@ void
 avtH5PartWriter::WriteUnstructuredMesh(vtkUnstructuredGrid *ug, int chunk)
 {
     int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-    int npts = ug->GetNumberOfPoints();
     int nzones = ug->GetNumberOfCells();
 
     // Write the variables line
@@ -515,7 +514,6 @@ avtH5PartWriter::WritePolyData(vtkPolyData *pd, int chunk)
     }
 
     int nPoints = pd->GetVerts()->GetNumberOfCells();
-    int nlines  = pd->GetLines()->GetNumberOfCells();
 
     H5PartSetChunkSize( file, nPoints );
     // For the basic writting everything is at Step#0
