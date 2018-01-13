@@ -64,7 +64,7 @@
 
 inline color color_create(const float *c)
 {
-    color retval = {c[0], c[1], c[2]};
+    color retval = {c[0], c[1], c[2], 0.f};
     return retval;
 }
 
@@ -406,7 +406,7 @@ QvisScatterWidget::redrawScene2D(QPainter *painter)
     matrix4 r = m3du_create_RBT_matrix(vec_create(0.,0.,0.),
         vec_create(1.,0.,0.), vec_create(0.,1.,0.));
     renderer.set_world_matrix(r);
-    color c_red = {1.,0.,0.};
+    color c_red = {1.f,0.f,0.f,0.f};
     arrow.addToRenderer(renderer, c_red);
     vector3 x_label_loc = renderer.transform_world_point(
         vec_create(ARROW_LENGTH, 0., 0.));
@@ -424,7 +424,7 @@ QvisScatterWidget::redrawScene2D(QPainter *painter)
         m = mtx_mult(m, s);
     }
     renderer.set_world_matrix(m);
-    color c_green = {0., 1., 0.};
+    color c_green = {0.f, 1.f, 0.f, 0.f};
     arrow.addToRenderer(renderer, c_green);
     vector3 y_label_loc = renderer.transform_world_point(
         vec_create(0., lengthScale * ARROW_LENGTH, 0.));
@@ -486,7 +486,7 @@ QvisScatterWidget::redrawScene3D(QPainter *painter)
     matrix4 r = m3du_create_RBT_matrix(vec_create(0.,0.,0.),
         vec_create(1.,0.,0.), vec_create(0.,1.,0.));
     renderer.set_world_matrix(r);
-    color c_red = {1.,0.,0.};
+    color c_red = {1.f,0.f,0.f,0.f};
     arrow.addToRenderer(renderer, c_red);
     vector3 x_label_loc = renderer.transform_world_point(
         vec_create(ARROW_LENGTH, 0., 0.));
@@ -496,7 +496,7 @@ QvisScatterWidget::redrawScene3D(QPainter *painter)
     r = m3du_create_RBT_matrix(vec_create(0.,0.,0.),
         vec_create(0.,1.,0.), vec_create(1.,0.,0.));
     renderer.set_world_matrix(r);
-    color c_green = {0., 1., 0.};
+    color c_green = {0.f, 1.f, 0.f, 0.f};
     arrow.addToRenderer(renderer, c_green);
     vector3 y_label_loc = renderer.transform_world_point(
         vec_create(0., ARROW_LENGTH, 0.));
@@ -512,7 +512,7 @@ QvisScatterWidget::redrawScene3D(QPainter *painter)
         m = m3du_create_scaling_matrix(1.2, 1.2, lengthScale);
     }
     renderer.set_world_matrix(m);
-    color c_blue = {0., 0., 1.};
+    color c_blue = {0.f, 0.f, 1.f,0.f};
     arrow.addToRenderer(renderer, c_blue);
     vector3 z_label_loc = renderer.transform_world_point(
         vec_create(0, 0, lengthScale * ARROW_LENGTH));
