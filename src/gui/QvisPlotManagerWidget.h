@@ -330,8 +330,8 @@ private slots:
     void addPlotHelper(int plotType, const QString &varName);
     void operatorAction(QAction *);
 
-    void applyWindowChanged(int val);;
-    void applyOperatorToggled(bool val);;
+    void applyWindowChanged(int val);
+    void applyOperatorToggled(bool val);
     void applySelectionToggled(bool val);
 private:
     bool                    sourceVisible;
