@@ -128,6 +128,6 @@ std::string MISC_API  ComposeDatabaseName(const std::string &host,
                                           const std::string &db);
 
 void MISC_API  FileMatchesPatternCB(void *, const std::string &, bool, bool, long);
-};
+}
 
 #endif

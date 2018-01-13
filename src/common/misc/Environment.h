@@ -87,5 +87,5 @@ namespace Environment
     //
     // ***********************************************************************
     void MISC_API unset(const char *);
-};
+}
 #endif
