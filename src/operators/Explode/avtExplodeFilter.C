@@ -188,7 +188,6 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid)
     for (int i = 0; i < 3; ++i)
         dataCenter[i] = (bounds[i*2] + bounds[(i*2)+1]) / 2.0;
 
-    int numPoints        = ugrid->GetNumberOfPoints();
     vtkPoints *ugridPts  = ugrid->GetPoints();
     vtkPoints *newPoints = vtkPoints::New();
     vtkIdList *cellPts   = vtkIdList::New();
@@ -306,7 +305,6 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
     outCD->CopyAllocate(inCD);
     outPD->CopyAllocate(inPD);
     
-    int numPoints       = in_ds->GetNumberOfPoints();
     int numCells        = in_ds->GetNumberOfCells();
     vtkCellIterator *it = in_ds->NewCellIterator();
     vtkPoints *pts      = vtkPoints::New();
@@ -889,7 +887,6 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         vtkPointData *inPD  = in_ug->GetPointData();
         vtkCellData  *inCD  = in_ug->GetCellData();
 
-        int numPoints       = in_ug->GetNumberOfPoints();
         int numCells        = in_ug->GetNumberOfCells();
         vtkPoints *pts      = vtkPoints::New();
         vtkIdList *cellPts  = vtkIdList::New();
@@ -910,8 +907,6 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         cellPts->Allocate(numCells);
 
         int ntotalcells = in_ug->GetNumberOfCells();
-
-        vtkCellData *in_CD = in_ds->GetCellData();
 
         //
         // Determine the total number of boundarys
@@ -1206,7 +1201,7 @@ avtExplodeFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
     //
     avtDataTree_p materialTree = GetMaterialSubsets(in_dr);
    
-    if (materialTree == NULL)
+    if (*materialTree == NULL)
     {
         debug1 << "GetMaterialSubsets returned a NULL materialTree..." << endl;
         return materialTree;
@@ -1223,14 +1218,14 @@ avtExplodeFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
         return materialTree; 
     }
     
-    if (labels.size() < nLeaves)
+    if (static_cast<int>(labels.size()) < nLeaves)
     {
         char expected[256];
         char recieved[256];
         sprintf(expected, "Expected number of labels to be >= "
             "number of leaves");
         sprintf(recieved, "Num labels: %d  Num leaves: %d  ", 
-            labels.size(), nLeaves);
+            static_cast<int>(labels.size()), nLeaves);
         EXCEPTION2(UnexpectedValueException, expected, recieved);
         return materialTree;
     }
