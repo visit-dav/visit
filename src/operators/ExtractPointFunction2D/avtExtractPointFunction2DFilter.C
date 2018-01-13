@@ -378,7 +378,8 @@ avtExtractPointFunction2DFilter::Execute()
         yCoords->Delete();
         vtkDataArray *zCoords = rgrid->GetXCoordinates()->NewInstance();
         zCoords->SetNumberOfTuples(function_data.size());
-        for (int f = 0; f < function_data.size(); ++f)
+        int fd_size = static_cast<int>(function_data.size());
+        for (int f = 0; f < fd_size; ++f)
             zCoords->SetTuple1(f, f);
         ogrid->SetZCoordinates(zCoords);
         zCoords->Delete();
@@ -397,7 +398,7 @@ avtExtractPointFunction2DFilter::Execute()
         odata->SetNumberOfTuples(v_dims[0]*v_dims[1]*function_data.size());
         for (int k = 0; k < v_dims[0]; ++k)
             for (int l = 0; l < v_dims[1]; ++l)
-                for (int f = 0; f < function_data.size(); ++f)
+                for (int f = 0; f < fd_size; ++f)
                 {
                     int ijk_t[3] = { k, l, f };
                     vtkIdType id_t = ogrid->ComputeCellId(ijk_t);
