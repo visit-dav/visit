@@ -204,7 +204,7 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid)
         initialDisplacement[i] = displaceVec[i];
     }
 
-    bool normalize;
+    bool normalize = false;
     switch (explosionPattern)
     {
         case ExplodeAttributes::Impact:
