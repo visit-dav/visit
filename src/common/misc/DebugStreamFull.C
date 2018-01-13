@@ -76,11 +76,11 @@ bool IsThread0(void)
         return true;
     return false;
 }
-bool DebugStream::Level1() { return debug1_realobj.isenabled(); };
-bool DebugStream::Level2() { return debug2_realobj.isenabled(); };
-bool DebugStream::Level3() { return debug3_realobj.isenabled(); };
-bool DebugStream::Level4() { return debug4_realobj.isenabled(); };
-bool DebugStream::Level5() { return debug5_realobj.isenabled(); };
+bool DebugStream::Level1() { return debug1_realobj.isenabled(); }
+bool DebugStream::Level2() { return debug2_realobj.isenabled(); }
+bool DebugStream::Level3() { return debug3_realobj.isenabled(); }
+bool DebugStream::Level4() { return debug4_realobj.isenabled(); }
+bool DebugStream::Level5() { return debug5_realobj.isenabled(); }
 
 ostream& DebugStream::Stream1(char const *__file__, int __line__)
 {
@@ -93,10 +93,10 @@ ostream& DebugStream::Stream1(char const *__file__, int __line__)
     }
     return *((ostream*) &debug1_realobj);
 };
-ostream& DebugStream::Stream2() { return *((ostream*) &debug2_realobj); };
-ostream& DebugStream::Stream3() { return *((ostream*) &debug3_realobj); };
-ostream& DebugStream::Stream4() { return *((ostream*) &debug4_realobj); };
-ostream& DebugStream::Stream5() { return *((ostream*) &debug5_realobj); };
+ostream& DebugStream::Stream2() { return *((ostream*) &debug2_realobj); }
+ostream& DebugStream::Stream3() { return *((ostream*) &debug3_realobj); }
+ostream& DebugStream::Stream4() { return *((ostream*) &debug4_realobj); }
+ostream& DebugStream::Stream5() { return *((ostream*) &debug5_realobj); }
 
 int
 DebugStream::GetLevel()
