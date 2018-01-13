@@ -262,7 +262,7 @@ create_clo_overrides(int argc, const char *argv[])
     }
 }
 
-}; // end anon namespace.
+} // end anon namespace.
 
 namespace RuntimeSetting {
 
