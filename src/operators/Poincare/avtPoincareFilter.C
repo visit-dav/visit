@@ -2982,12 +2982,14 @@ avtPoincareFilter::SetupPlaneOrdering( avtPoincareIC *poincare_ic )
               index2 = j;
               plane2 = p;
             }
-            
+
+#if 0
             avtVector w = lastPt - planePt;
             
             double t = -Dot(planeN, w ) / dot;
              
             avtVector point = avtVector(lastPt + dir * t);
+#endif
             continue;
           }
         }
@@ -3227,7 +3229,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         avtVector lastPt = poincare_ic->points[0];
         avtVector currPt = poincare_ic->points[1];
 
-        double lastTime = poincare_ic->times[0];
+        //double lastTime = poincare_ic->times[0];
         double currTime = poincare_ic->times[1];
         
         bool CCWfieldline = FLlib.ccwXZ( currPt, lastPt );
@@ -3334,7 +3336,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         for( unsigned int j=1; j<poincare_ic->points.size(); ++j )
         {
           lastPt = currPt;
-          lastTime = currTime;
+          //lastTime = currTime;
 
           currPt = poincare_ic->points[j];
           currTime = poincare_ic->times[j];
@@ -3448,7 +3450,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         for( unsigned int j=1; j<poincare_ic->points.size(); ++j )
         {
           lastPt = currPt;
-          lastTime = currTime;
+          //lastTime = currTime;
 
           currPt = avtVector(poincare_ic->points[j]);
           currTime = poincare_ic->times[j];
