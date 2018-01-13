@@ -340,4 +340,4 @@ void parse_command_line(int argc, const char *argv[])
     create_clo_overrides(argc, argv);
 }
 
-};  /* namespace RuntimeSetting */
+}  /* namespace RuntimeSetting */

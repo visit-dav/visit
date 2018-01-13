@@ -9,7 +9,8 @@
 
 // Type of value used for the atomic functions.
 #if   defined(VISIT_ATOMIC_USE_GCC_ATOMIC) || defined(VISIT_ATOMIC_USE_ICC_ATOMIC)
-    typedef volatile int VISIT_ATOMIC_TYPE;
+    #define VISIT_ATOMIC_QUALIFIER volatile
+    typedef int VISIT_ATOMIC_TYPE;
     typedef int VISIT_ATOMIC_AMOUNT;
 
 #elif defined(VISIT_ATOMIC_USE_WIN32_ATOMIC)
@@ -23,30 +24,36 @@
     #pragma intrinsic(_InterlockedAdd)
     #define InterlockedAdd _InterlockedAdd
 
-    typedef volatile LONG VISIT_ATOMIC_TYPE;
+    #define VISIT_ATOMIC_QUALIFIER volatile
+    typedef LONG VISIT_ATOMIC_TYPE;
     typedef LONG VISIT_ATOMIC_AMOUNT;
 
 #elif defined(VISIT_ATOMIC_USE_MAC32_ATOMIC)
     #include <libkern/OSAtomic.h>
 
-    typedef volatile int32_t VISIT_ATOMIC_TYPE;
+    #define VISIT_ATOMIC_QUALIFIER volatile
+    typedef int32_t VISIT_ATOMIC_TYPE;
     typedef int32_t VISIT_ATOMIC_AMOUNT;
 
 #elif defined(VISIT_ATOMIC_USE_MIPOSPRO_ATOMIC)
-    typedef volatile unsigned int VISIT_ATOMIC_TYPE;
+    #define VISIT_ATOMIC_QUALIFIER volatile
+    typedef unsigned int VISIT_ATOMIC_TYPE;
     typedef int VISIT_ATOMIC_AMOUNT;
 
 #elif defined(VISIT_ATOMIC_USE_SUN_ATOMIC)
-    typedef volatile uint_t ATOMIC_TYPE;
+    #define VISIT_ATOMIC_QUALIFIER volatile
+    typedef uint_t ATOMIC_TYPE;
     typedef int ATOMIC_AMOUNT;
 
 #elif defined(VISIT_ATOMIC_USE_MUTEX)
     #include "vtkCriticalSection.h"
 
+    #define VISIT_ATOMIC_QUALIFIER 
     typedef int VISIT_ATOMIC_TYPE;
     typedef int VISIT_ATOMIC_AMOUNT;
 
 #else
+    #define VISIT_ATOMIC_QUALIFIER 
     typedef int VISIT_ATOMIC_TYPE;
     typedef int VISIT_ATOMIC_AMOUNT;
 #endif
@@ -69,7 +76,7 @@
 //
 // ****************************************************************************
 
-static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicInc(VISIT_ATOMIC_TYPE &_value)
+static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicInc(VISIT_ATOMIC_QUALIFIER VISIT_ATOMIC_TYPE &_value)
 {
 #if   defined(VISIT_ATOMIC_USE_GCC_ATOMIC) || defined(VISIT_ATOMIC_USE_ICC_ATOMIC)
     return( __sync_add_and_fetch(&_value, 1) );
@@ -115,7 +122,7 @@ static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicInc(VISIT_ATOMIC_TYPE &_value
 //
 // ****************************************************************************
 
-static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicAdd(VISIT_ATOMIC_TYPE &_value, VISIT_ATOMIC_AMOUNT _amount)
+static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicAdd(VISIT_ATOMIC_QUALIFIER VISIT_ATOMIC_TYPE &_value, VISIT_ATOMIC_AMOUNT _amount)
 {
 #if   defined(VISIT_ATOMIC_USE_GCC_ATOMIC)
     return( __sync_add_and_fetch(&_value, _amount) );
@@ -160,7 +167,7 @@ static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicAdd(VISIT_ATOMIC_TYPE &_value
 //
 // ****************************************************************************
 
-static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicDec(VISIT_ATOMIC_TYPE &_value)
+static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicDec(VISIT_ATOMIC_QUALIFIER VISIT_ATOMIC_TYPE &_value)
 {
 #if   defined(VISIT_ATOMIC_USE_GCC_ATOMIC) || defined(VISIT_ATOMIC_USE_ICC_ATOMIC)
     return( __sync_sub_and_fetch(&_value, 1) );
@@ -206,7 +213,7 @@ static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicDec(VISIT_ATOMIC_TYPE &_value
 //
 // ****************************************************************************
 
-static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicSub(VISIT_ATOMIC_TYPE &_value, VISIT_ATOMIC_AMOUNT _amount)
+static VISIT_ATOMIC_INLINE VISIT_ATOMIC_TYPE AtomicSub(VISIT_ATOMIC_QUALIFIER VISIT_ATOMIC_TYPE &_value, VISIT_ATOMIC_AMOUNT _amount)
 {
 #if   defined(VISIT_ATOMIC_USE_GCC_ATOMIC) || defined(VISIT_ATOMIC_USE_ICC_ATOMIC)
     return( __sync_sub_and_fetch(&_value, _amount) );

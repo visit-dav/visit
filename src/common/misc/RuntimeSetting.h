@@ -78,5 +78,5 @@ namespace RuntimeSetting
     //
     // ****************************************************************************
     void MISC_API parse_command_line(int argc, const char *argv[]);
-};
+}
 #endif // VISIT_RUNTIME_SETTING_H

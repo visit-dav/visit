@@ -92,7 +92,7 @@ ostream& DebugStream::Stream1(char const *__file__, int __line__)
         *((ostream*) &debug1_realobj) << " ";
     }
     return *((ostream*) &debug1_realobj);
-};
+}
 ostream& DebugStream::Stream2() { return *((ostream*) &debug2_realobj); }
 ostream& DebugStream::Stream3() { return *((ostream*) &debug3_realobj); }
 ostream& DebugStream::Stream4() { return *((ostream*) &debug4_realobj); }

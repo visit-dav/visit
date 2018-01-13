@@ -159,4 +159,4 @@ unset(const char *variable)
 #endif
 }
 
-};  /* namespace Environment */
+}  /* namespace Environment */
