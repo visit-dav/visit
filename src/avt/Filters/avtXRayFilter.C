@@ -2705,7 +2705,7 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     //
     if (debugRay != -1)
     {
-        double intensityBinZero;
+        double intensityBinZero(0.);
 
         prevLineId = -1;
 
