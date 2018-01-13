@@ -3271,7 +3271,7 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         // 2,1 Surface [nPlanes][STD][npoints]
         // 2,1 Island chain [nPlanes*2][STD][npoints]
 
-        unsigned int nSections, nBins;
+        unsigned int nSections(1), nBins(1);
                 
         if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN )
         {
