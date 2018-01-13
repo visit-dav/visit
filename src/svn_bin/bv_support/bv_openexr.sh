@@ -115,7 +115,7 @@ function build_ilmbase
     # Configure ILMBase
     #
     cd $ILMBASE_BUILD_DIR || error "Can't cd to ILMBase build dir."
-    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "yes" || "$OPSYS" == "Linux"  ]]; then
         DISABLE_BUILDTYPE="--disable-shared"
     else
         DISABLE_BUILDTYPE="--disable-static"
@@ -181,7 +181,7 @@ function build_openexr
     # Configure OpenEXR
     #
     cd $OPENEXR_BUILD_DIR || error "Can't cd to OpenEXR build dir."
-    if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
+    if [[ "$DO_STATIC_BUILD" == "yes" || "$OPSYS" == "Linux" ]]; then
         DISABLE_BUILDTYPE="--disable-shared"
     else
         DISABLE_BUILDTYPE="--disable-static"
