@@ -657,6 +657,7 @@ function build_hdf5
 
     for bt in $par_build_types; do
 
+        rm -rf build_$bt
         mkdir build_$bt
         pushd build_$bt
 
