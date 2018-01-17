@@ -204,6 +204,7 @@ extern const char *visit_SetActiveTimeSlider_doc;
 extern const char *visit_SetActiveWindow_doc;
 extern const char *visit_SetAnimationTimeout_doc;
 extern const char *visit_SetAnnotationAttributes_doc;
+extern const char *visit_SetBackendType_doc;
 extern const char *visit_SetCenterOfRotation_doc;
 extern const char *visit_SetColorTexturingEnabled_doc; 
 extern const char *visit_SetCreateMeshQualityExpressions_doc;

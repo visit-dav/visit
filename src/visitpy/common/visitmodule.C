@@ -2067,6 +2067,43 @@ visit_SetTryHarderCyclesTimes(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Function: visit_SetBackendType
+//
+// Purpose: Tells the viewer which compute back end to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jan 17 11:04:01 PST 2018
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_SetBackendType(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *name = NULL;
+    if(!PyArg_ParseTuple(args, "s", &name))
+        return NULL;
+
+    int index = 0;
+#if defined(HAVE_LIBEAVL)
+    if(strcmp(name, "eavl") == 0 || strcmp(name, "EAVL") == 0)
+        index = 1;
+#endif
+#if defined(HAVE_LIBVTKM)
+    if(strcmp(name, "vtkm") == 0 || strcmp(name, "VTKM") == 0 || strcmp(name, "VTKm") == 0)
+        index = 2;
+#endif
+
+    MUTEX_LOCK();
+        GetViewerMethods()->SetBackendType(index);
+    MUTEX_UNLOCK();
+
+    // Return the success value.
+    return IntReturnValue(Synchronize());
+}
+
+// ****************************************************************************
 // Function: visit_SetCreateMeshQualityExpressions
 //
 // Purpose: Tells the viewer to turn on/off automatic creation
@@ -17735,6 +17772,7 @@ AddProxyMethods()
                                                 visit_SetAnimationTimeout_doc);
     AddMethod("SetAnnotationAttributes", visit_SetAnnotationAttributes,
                                             visit_SetAnnotationAttributes_doc);
+    AddMethod("SetBackendType", visit_SetBackendType, visit_SetBackendType_doc);
     AddMethod("SetCreateMeshQualityExpressions",
                visit_SetCreateMeshQualityExpressions,
                visit_SetCreateMeshQualityExpressions_doc);
