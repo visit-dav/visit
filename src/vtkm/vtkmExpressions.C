@@ -45,6 +45,7 @@
 using std::cout;
 using std::endl;
 
+#include <vtkmExpressions.h>
 #include <vtkmDataSet.h>
 #include <vtkm/worklet/Magnitude.h>
 
