@@ -47,7 +47,7 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 # This variable MUST BE the FIRST variable in the library list.
 # Here the base name is set and passed to the third party set up
 SET(UINTAH_UDA2VIS_LIB
-  StandAlone_tools_uda2vis
+  VisIt_uda2vis
 )
 
 IF (${VISIT_USE_SYSTEM_UINTAH})
@@ -58,61 +58,27 @@ ENDIF (${VISIT_USE_SYSTEM_UINTAH})
 
 
 SET(REQ_UINTAH_MODS 
-#  CCA_Components_Arches
-#  CCA_Components_Arches_fortran
-#  CCA_Components_DataArchiver
-#  CCA_Components_Examples
-#  CCA_Components_ICE
-#  CCA_Components_LoadBalancers
-#  CCA_Components_MPM
-#  CCA_Components_MPMArches
-#  CCA_Components_MPMICE
-#  CCA_Components_Models
-#  CCA_Components_OnTheFlyAnalysis
-#  CCA_Components_Parent
-#  CCA_Components_PatchCombiner
+  CCA_Components_DataArchiver
+  CCA_Components_LoadBalancers
   CCA_Components_ProblemSpecification
-#  CCA_Components_Regridder
-#  CCA_Components_Schedulers
-#  CCA_Components_SimulationController
-#  CCA_Components_Solvers
-#  CCA_Components_SwitchingCriteria
+  CCA_Components_Schedulers
   CCA_Ports
-#  Core_Basis
   Core_Containers
   Core_DataArchive
   Core_Datatypes
   Core_Disclosure
   Core_Exceptions
   Core_Geometry
-#  Core_GeometryPiece
+  Core_GeometryPiece
   Core_Grid
-#  Core_IO
-#  Core_Labels
+  Core_IO
   Core_Malloc
   Core_Math
-#  Core_OS
+  Core_OS
   Core_Parallel
-#  Core_Persistent
   Core_ProblemSpec
-#  Core_Thread
-#  Core_Tracker
   Core_Util
-#  testprograms_TestBoxGrouper
-#  testprograms_TestConsecutiveRangeSet
-#  testprograms_TestMatrix3
-#  testprograms_TestRangeTree
-#  testprograms_TestSuite
-   )
-
-IF(DEFINED UINTAH_VERSION)
-    IF(${UINTAH_VERSION} VERSION_LESS "1.7.0")
-        SET(REQ_UINTAH_MODS ${REQ_UINTAH_MODS}
-    			    Core_Persistent
-			    Core_Thread
-			    )
-    ENDIF(${UINTAH_VERSION} VERSION_LESS "1.7.0")
-ENDIF(DEFINED UINTAH_VERSION)
+  )
 
 SET_UP_THIRD_PARTY(UINTAH lib ${INCLUDE_TMP_DIR}
   ${UINTAH_UDA2VIS_LIB}
