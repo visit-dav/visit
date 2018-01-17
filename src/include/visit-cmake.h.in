@@ -286,6 +286,11 @@
 #define VISIT_PLUGIN_VERSION(NAME, EXPORTMACRO) EXPORTMACRO const char *NAME##VisItPluginVersion = VISIT_VERSION;
 #endif
 
+/* App version check macro. Must check against the hex value.
+   Usage: #if (APP_VERSION_CHECK(4, 4, 0) <= APP_VERSION_HEX )
+*/
+#define VISIT_APP_VERSION_CHECK(major, minor, patch) ((major<<16)|(minor<<8)|(patch))
+
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #cmakedefine WORDS_BIGENDIAN 1
