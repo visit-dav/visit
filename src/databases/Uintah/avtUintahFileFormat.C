@@ -78,6 +78,7 @@
 #include <InvalidFilesException.h>
 #include <InstallationFunctions.h>
 
+
 //#ifdef PARALLEL
 // only get the option for serialized reads if compiling the parallel version
 //#  define SERIALIZED_READS
@@ -373,7 +374,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
     EXCEPTION1(InvalidDBTypeException, "The function getGridData could not be located in the library!!!");
   }
 
-#if (2 <= UINTAH_MAJOR_VERSION && 0 <= UINTAH_MINOR_VERSION )
+#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
   variableExists = (bool (*)(DataArchive*, std::string)) dlsym(libHandle, "variableExists");
   if((error = dlerror()) != NULL)
   {
@@ -695,6 +696,8 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   {
     if (stepInfo->varInfo[i].type.find("ParticleVariable") == std::string::npos)
     {
+      bool isPerPatchVar = false;
+
       std::string varname = stepInfo->varInfo[i].name;
       std::string vartype = stepInfo->varInfo[i].type;
 
@@ -733,8 +736,23 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
         cent = AVT_ZONECENT;
       }  
+      else if (vartype.find("PerPatch") != std::string::npos)
+      {  
+        if( mesh_for_patch_data.empty() )
+          continue;
+        
+        mesh_for_this_var = mesh_for_patch_data;
+
+        if( mesh_for_this_var == "NC_Mesh")
+          cent = AVT_NODECENT;
+        else
+          cent = AVT_ZONECENT;
+        
+        isPerPatchVar = true;
+      }
       else
-        debug5<<"unknown vartype: "<<vartype<<endl;
+        // debug5<< varname<<" has an unknown vartype: "<<vartype<<endl;
+        std::cerr<< varname<<" has an unknown vartype: "<<vartype<<endl;
 
       if (meshes_added.find(mesh_for_this_var) == meshes_added.end())
       {
@@ -771,14 +789,13 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         meshes_added.insert(mesh_for_this_var);
       }
 
-      // Add the mesh vars
-      for (int j=0; j<(int)stepInfo->varInfo[i].materials.size(); j++)
+      if( stepInfo->varInfo[i].materials.size() == 0 )
       {
-        char buffer[128];
         std::string newVarname = varname;
-        sprintf(buffer, "%d", stepInfo->varInfo[i].materials[j]);
-        newVarname.append("/");
-        newVarname.append(buffer);
+        if( isPerPatchVar )
+          newVarname = "patch/" + newVarname;
+        
+        newVarname.append("/0");
 
         if (mesh_vars_added.find(mesh_for_this_var+newVarname) ==
             mesh_vars_added.end())
@@ -800,6 +817,43 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
           // 1 -> scalar
           else 
             AddScalarVarToMetaData(md, newVarname, mesh_for_this_var, cent);
+        }
+      }
+      else
+      {
+        // Add the mesh vars
+        for (int j=0; j<(int)stepInfo->varInfo[i].materials.size(); j++)
+        {
+          std::string newVarname = varname;
+          if( isPerPatchVar )
+            newVarname = "patch/" + newVarname;
+
+          char buffer[128];
+          sprintf(buffer, "%d", stepInfo->varInfo[i].materials[j]);
+          newVarname.append("/");
+          newVarname.append(buffer);
+          
+          if (mesh_vars_added.find(mesh_for_this_var+newVarname) ==
+              mesh_vars_added.end())
+          {
+            mesh_vars_added.insert(mesh_for_this_var+newVarname);
+            
+            // 3 -> vector dimension
+            if (vartype.find("Vector") != std::string::npos)
+              AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 3);
+            // 9 -> tensor dimension
+            else if (vartype.find("Matrix3") != std::string::npos)
+              AddTensorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 9);
+            // 7 -> vector dimension
+            else if (vartype.find("Stencil7") != std::string::npos)
+              AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 7);
+            // 4 -> vector dimension
+            else if (vartype.find("Stencil4") != std::string::npos)
+              AddVectorVarToMetaData(md, newVarname, mesh_for_this_var, cent, 4);
+            // 1 -> scalar
+            else 
+              AddScalarVarToMetaData(md, newVarname, mesh_for_this_var, cent);
+          }
         }
       }
     }   
@@ -829,7 +883,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
     avtScalarMetaData *scalar;
 
-#if (2 <= UINTAH_MAJOR_VERSION && 1 <= UINTAH_MINOR_VERSION )
+#if (VISIT_APP_VERSION_CHECK(2, 1, 0) <= UINTAH_VERSION_HEX )
     scalar = new avtScalarMetaData();
     scalar->name = "patch/id";
     scalar->meshName = mesh_for_patch_data;
@@ -840,7 +894,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 #endif
 
     scalar = new avtScalarMetaData();
-    scalar->name = "patch/processor";
+    scalar->name = "patch/proc_rank";
     scalar->meshName = mesh_for_patch_data;
     scalar->centering = cent;
     scalar->hasDataExtents = false;
@@ -1473,7 +1527,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
 
       //todo: this returns an array of doubles. Need to return
       //expected datatype to avoid unnecessary conversion.
-#if (2 <= UINTAH_MAJOR_VERSION && 0 <= UINTAH_MINOR_VERSION )
+#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
       if( variableExists(archive, "p.particleID") )
 #endif
       {
@@ -1694,6 +1748,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
   ActivateTimestep(timestate);
 
   bool isParticleVar = false;
+  bool isInternalVar = false;
 
   // Get the var name sans the material. If a patch or processor
   // variable then the var name will be either "patch" or "processor".
@@ -1708,14 +1763,38 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 
   if( strncmp(varname, "patch/nodes", 11) == 0 )
   {
+    isInternalVar = true;
+
     varType = "NC_Mesh";
   }
-  else if (strncmp(varname, "patch/", 6) == 0)
+  else if( strcmp(varname, "patch/id") == 0 ||
+           strcmp(varname, "patch/proc_rank") == 0 ||
+           strcmp(varname, "patch/proc_node") == 0 ||
+
+           strncmp(varname, "patch/bounds/low",  16) == 0 ||
+           strncmp(varname, "patch/bounds/high", 17) == 0 )
   {
+    isInternalVar = true;
+
     varType = mesh_for_patch_data;
   }
   else
   {
+    // For PerPatch data remove the patch/ prefix and get the var
+    // name and the material.
+    if( varName == "patch" )
+    {
+      // Get the var name and material sans "patch/".
+      varName = std::string(varname);
+      found = varName.find("/");  
+      varName = varName.substr(found + 1);
+      
+      // Get the var name sans the material.
+      found = varName.find_last_of("/");
+      matl = varName.substr(found + 1);
+      varName = varName.substr(0, found);
+    }
+
     for (int k=0; k<(int)stepInfo->varInfo.size(); k++)
     {
       if (stepInfo->varInfo[k].name == varName)
@@ -1723,7 +1802,8 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         varType = stepInfo->varInfo[k].type;
 
         // Check for a particle variable
-        if (stepInfo->varInfo[k].type.find("ParticleVariable") != std::string::npos) {
+        if (stepInfo->varInfo[k].type.find("ParticleVariable") !=
+            std::string::npos) {
           isParticleVar = true;
           break;
         }
@@ -1804,33 +1884,27 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     LevelInfo &levelInfo = stepInfo->levelInfo[level];
     PatchInfo &patchInfo = levelInfo.patchInfo[local_patch];
 
-    bool nodeCentered;
-    
     // The region we're going to ask uintah for (from plow to phigh-1)
     int plow[3], phigh[3];
     patchInfo.getBounds(plow, phigh, varType);
     
     // For node based meshes add one if there is a neighbor.
-    if( varType.find("NC") != std::string::npos )
+    bool nodeCentered = (varType.find("NC") != std::string::npos);
+    
+    if( nodeCentered )
     {
-      nodeCentered = true;
-      
       int nlow[3], nhigh[3];
       patchInfo.getBounds(nlow, nhigh, "NEIGHBORS");
       
       for (int i=0; i<3; i++)
         phigh[i] += nhigh[i];
     }
-    else
-    {  
-      nodeCentered = false;      
-    }
     
     GridDataRaw *gd = NULL;
 
     // The data for these variables does not come from the data
     // warehouse but instead from internal structures.
-    if (strncmp(varname, "patch/", 6) == 0)
+    if( isInternalVar )
     {
       gd = new GridDataRaw;
 
@@ -1847,7 +1921,8 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       // The patch id and processor are scalar values while the bounds
       // are vector values.
       if (strcmp(varname, "patch/id") == 0 ||
-          strcmp(varname, "patch/processor") == 0 )     
+          strcmp(varname, "patch/proc_rank") == 0 ||
+          strcmp(varname, "patch/proc_node") == 0 )
         gd->components = 1;
       else // if( strncmp(varname, "patch/nodes",  11) == 0 ||
            //     strncmp(varname, "patch/bounds/low",  16) == 0 ||
@@ -1859,18 +1934,21 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       // Patch Id
       if (strcmp(varname, "patch/id") == 0 )
       {
-#if (2 <= UINTAH_MAJOR_VERSION && 1 <= UINTAH_MINOR_VERSION )
+#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
         double value = patchInfo.getPatchId();
         
         for (int i=0; i<gd->num; i++) 
           gd->data[i] = value;
 #endif      
       }
-      // Patch processor Id
-      else if (strcmp(varname, "patch/processor") == 0 )
+      // Patch processor rank
+      else if (strcmp(varname, "patch/proc_rank") == 0 )
       {
+#if (VISIT_APP_VERSION_CHECK(2, 2, 0) <= UINTAH_VERSION_HEX )
+        double value = patchInfo.getProcRankId();
+#else
         double value = patchInfo.getProcId();
-      
+#endif      
         for (int i=0; i<gd->num; i++) 
           gd->data[i] = value;
       }
@@ -1893,7 +1971,8 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         }
       }
       // Patch bounds
-      else
+      else if( strncmp(varname, "patch/bounds/low",  16) == 0 ||
+               strncmp(varname, "patch/bounds/high", 17) == 0 )
       {
         // Get the bounds for this mesh as a variable (not for the grid).
         std::string meshname = std::string(varname);
@@ -1913,10 +1992,26 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
           for (int c=0; c<3; c++)
             gd->data[i*gd->components+c] = value[c];
       }
+      // This should never be reached.
+      else
+      {
+        std::stringstream msg;
+        msg << "Uintah internal variable \"" << varname << "\"  "
+            << "could not be processed.";
+            
+        avtCallback::IssueWarning(msg.str().c_str());
+
+        for (int i=0; i<gd->num*gd->components; ++i)
+          gd->data[i] = 0;
+      }
     }
     // Patch data from the warehouse
     else
     {
+      int matlNo = -1;
+      if (matl.compare("All") != 0)
+        matlNo = atoi(matl.c_str());
+
 #ifdef SERIALIZED_READS
       int numProcs, rank;
       int msg = 128, tag = 256;
@@ -1946,7 +2041,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       int t2 = visitTimer->StartTimer();
 
       gd = (*getGridData)(archive, grid, level, local_patch,
-                          varName, atoi(matl.c_str()), timestate,
+                          varName, matlNo, timestate,
                           plow, phigh, nodeCentered);
 
       visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getGridData");
@@ -1959,7 +2054,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       int t2 = visitTimer->StartTimer();
       
       gd = (*getGridData)(archive, grid, level, local_patch,
-                          varName, atoi(matl.c_str()), timestate,
+                          varName, matlNo, timestate,
                           plow, phigh, nodeCentered);
 
       visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getGridData");

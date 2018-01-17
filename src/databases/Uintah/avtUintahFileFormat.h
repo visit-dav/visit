@@ -43,7 +43,13 @@
 #ifndef AVT_UINTAH_FILE_FORMAT_H
 #define AVT_UINTAH_FILE_FORMAT_H
 
+#include <visit-config.h>
+
+#if (VISIT_APP_VERSION_CHECK(2, 5, 0) <= UINTAH_VERSION_HEX )
+#include <VisIt/uda2vis/udaData.h>
+#else
 #include <StandAlone/tools/uda2vis/udaData.h>
+#endif
 
 #include <avtMTMDFileFormat.h>
 
