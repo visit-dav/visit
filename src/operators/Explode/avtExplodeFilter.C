@@ -54,10 +54,12 @@
 #include <vtkCell.h>
 #include <vtkFieldData.h>
 #include <vtkDoubleArray.h>
+#include <vtkAppendFilter.h>
 
 #include <vtkIntArray.h>
 #include <vtkCellArray.h>
 #include <vtkDataSet.h>
+#include <MapNode.h>
 
 #include <vtkVisItUtility.h>
 #include <DebugStream.h>
@@ -69,7 +71,952 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMaterialMetaData.h>
 
-#define SCALE 0.2f
+#include <avtParallelContext.h>
+#include <avtParallel.h>
+
+#ifdef PARALLEL
+#include <mpi.h>
+#endif
+
+//TODO: may want a data specific scale
+#define SCALE 0.01f
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter constructor
+//
+//  Purpose:
+//      Initialize class variables. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Oct 23 15:52:30 PST 2017
+//
+//  Modifications:
+//
+//      Alister Maguire, Wed Jan 17 15:28:46 PST 2018
+//      Added globalMatExtents.
+//
+// ****************************************************************************
+
+avtExplodeFilter::avtExplodeFilter()
+{
+    globalMatExtents = NULL;
+    explosion        = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter destructor
+//
+//  Purpose:
+//      Handle any needed memory clean-up. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Oct 23 15:52:30 PST 2017
+//
+//  Modifications:
+//
+//      Alister Maguire, Wed Jan 17 15:28:46 PST 2018
+//      Added globalMatExtents.
+//
+// ****************************************************************************
+
+avtExplodeFilter::~avtExplodeFilter()
+{
+    if (explosion != NULL)
+    {
+        delete explosion;
+    }
+    if (globalMatExtents != NULL)
+    {
+        delete [] globalMatExtents;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtExplodeFilter::Create
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Oct 23 15:52:30 PST 2017
+//
+// ****************************************************************************
+
+avtFilter *
+avtExplodeFilter::Create()
+{
+    return new avtExplodeFilter();
+}
+
+
+// ****************************************************************************
+//  Method:      avtExplodeFilter::SetAtts
+//
+//  Purpose:
+//      Sets the state of the filter based on the attribute object.
+//
+//  Arguments:
+//      a        The attributes to use.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Oct 23 15:52:30 PST 2017
+//
+// ****************************************************************************
+
+void
+avtExplodeFilter::SetAtts(const AttributeGroup *a)
+{
+    atts = *(const ExplodeAttributes*)a;
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::Equivalent
+//
+//  Purpose:
+//      Returns true if creating a new avtExplodeFilter with the given
+//      parameters would result in an equivalent avtExplodeFilter.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Oct 23 15:52:30 PST 2017
+//
+// ****************************************************************************
+
+bool
+avtExplodeFilter::Equivalent(const AttributeGroup *a)
+{
+    return (atts == *(ExplodeAttributes*)a);
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::GetMaterialIndex
+//
+//  Purpose:
+//      Retrieve the index for a particular material within
+//      gobalMatExtents. 
+//
+//  Arguments:
+//      matName    The name of the target material. 
+//
+//  Returns:
+//      If the material extents exist, the index to the start
+//      of its extents within globalMatExtents is returned. Otherwise,
+//      -1 is returned. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Jan  9 10:55:28 PST 2018
+//
+// ****************************************************************************
+
+int
+avtExplodeFilter::GetMaterialIndex(std::string matName)
+{
+    stringVector matNames = atts.GetBoundaryNames();
+    int numMat = matNames.size();
+    for (int i = 0; i < numMat; ++i)
+    {
+        if (matName == matNames[i])
+        {
+            return i * 6;
+        }
+    }
+    return -1;
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::UpdateGlobalExtents
+//
+//  Purpose:
+//      Update the material extents across all domains. 
+//
+//  Arguments:
+//      localExtents    The extents of a single material on a single domain. 
+//      matName         The name of the material. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Jan  9 10:55:28 PST 2018
+//
+// ****************************************************************************
+
+void
+avtExplodeFilter::UpdateGlobalExtents(double *localExtents, std::string matName)
+{
+    int matIdx = GetMaterialIndex(matName);
+    if (matIdx < 0)
+    {
+        //
+        // Material doesn't exist on this domain. 
+        //
+        return;
+    }
+
+    for (int i = 0; i < 3; ++i)
+    {
+        int gMatIdx = matIdx + (i*2);
+        int locIdx  = i*2;
+        if (localExtents[locIdx] < globalMatExtents[gMatIdx])
+        {
+            globalMatExtents[gMatIdx] = localExtents[locIdx];
+        }
+
+        gMatIdx += 1;
+        locIdx  += 1;
+        if (localExtents[locIdx] > globalMatExtents[gMatIdx])
+        {
+            globalMatExtents[gMatIdx] = localExtents[locIdx];
+        }
+    } 
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::ExtractMaterialsFromDomains
+//
+//  Purpose:
+//      Extract materials from all domains. 
+//
+//  Arguments:
+//      inTree    The input data tree.     
+//
+//  Returns:
+//      An avtDataTree pointer whose leaves are material
+//      datasets. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Tue Jan  9 10:55:28 PST 2018
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtExplodeFilter::ExtractMaterialsFromDomains(avtDataTree_p inTree)
+{
+    if (*inTree == NULL)
+        return NULL;
+
+    int numChildren = inTree->GetNChildren();
+
+    if (numChildren <= 0 && !inTree->HasData())
+        return NULL;
+
+    if (numChildren == 0)
+    {
+        //
+        // there is only one dataset to process
+        //
+        avtDataRepresentation domain_dr = inTree->GetDataRepresentation();
+    
+        //
+        // Create a data tree where each leaf is a 
+        // material dataset.
+        //
+        avtDataTree_p materialTree = GetMaterialSubsets(&domain_dr);
+
+        return materialTree;
+    }
+    else
+    {
+        avtDataTree_p *outDT = new avtDataTree_p[numChildren];
+        for (int j = 0; j < numChildren; j++)
+        {
+            if (inTree->ChildIsPresent(j))
+                outDT[j] = ExtractMaterialsFromDomains(inTree->GetChild(j));
+            else
+                outDT[j] = NULL;
+        }
+        avtDataTree_p outTree = new avtDataTree(numChildren, outDT);
+        delete [] outDT;
+        return outTree;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::GetMaterialSubsets
+//
+//  Purpose:
+//      Create a dataset for every material within our input data, 
+//      and create a tree whose leaves are material datasets. 
+//
+//  Arguments:
+//      in_dr    The input data representation. 
+//
+//  Returns:
+//      An avtDataTree whose leaves are material datasets. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Thu Dec 21 14:05:14 PST 2017 
+//
+//  Note:  Much of this was taken from the boundary plot filter. The 
+//         output conversion has been changed from polydata to 
+//         unstructured grid. The resulting meshes are fully disconnected. 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
+{
+    //
+    // Get the VTK data set, the domain number, and the label.
+    //
+    vtkDataSet *in_ds = in_dr->GetDataVTK();
+    int domain = in_dr->GetDomain();
+    std::string label = in_dr->GetLabel();
+
+    if (in_ds                      == NULL || 
+        in_ds->GetNumberOfPoints() == 0    ||
+        in_ds->GetNumberOfCells()  == 0)
+    {
+        return NULL;
+    }
+
+    stringVector   labels;
+    int            nDataSets     = 0;
+    vtkDataSet   **out_ds        = NULL;
+    vtkDataArray  *boundaryArray = in_ds->GetCellData()->GetArray("avtSubsets");
+
+    //
+    // If we have a boundary array, then we have materials to 
+    // work with. 
+    //
+    if (boundaryArray)
+    {
+        if (label.find(";") == std::string::npos)
+        {
+            debug1 << "POSSIBLE ERROR CONDITION:  " << endl;
+            debug1 << "    avtExplodeFilter encountered a label ("
+                   << label.c_str() << ")" << endl;
+            debug1 << "    that cannot be parsed correctly.  This can happen "
+                   << "if" << endl;
+            debug1 << "    another filter has over-written the boundary labels "
+                   << "in" << endl;
+            debug1 << "    its output data tree.  avtExplodeFilter is returning"
+                   << endl;
+            debug1 << "    an empty data tree." << endl;
+            avtDataTree_p outTree = new avtDataTree();
+            return outTree;
+        }
+
+        //
+        // Break up the dataset into a collection of datasets, one
+        // per boundary.
+        //
+        int *boundaryList = ((vtkIntArray*)boundaryArray)->GetPointer(0);
+        
+        vtkUnstructuredGrid *in_ug = vtkUnstructuredGrid::New();
+        in_ug->DeepCopy(in_ds);
+
+        //
+        // Get the data ready for transfer
+        //
+        int nCells          = in_ug->GetNumberOfCells();
+        vtkPointData *inPD  = in_ug->GetPointData();
+        vtkCellData  *inCD  = in_ug->GetCellData();
+
+        int numCells        = in_ug->GetNumberOfCells();
+        vtkPoints *pts      = vtkPoints::New();
+        vtkIdList *cellPts  = vtkIdList::New();
+        vtkIdList *ptIds    = vtkIdList::New();
+
+        // 
+        // Since we are removing connectivity between nodes, 
+        // we will need more space to store them. The following
+        // is a rough (usually over) estimation which imagines
+        // that each cell could be a  VTK VOXEL or HEXAHEDRON 
+        // type (8 nodes). We squeeze out the extra space later. 
+        // NOTE: VTK has less common cell types that can have 
+        // as many as 19 nodes, in which case this could actually 
+        // be an under-estimation...
+        //
+        pts->Allocate(numCells * 8);
+        ptIds->Allocate(numCells * 8);
+        cellPts->Allocate(numCells);
+
+        int numTotalCells = in_ug->GetNumberOfCells();
+
+        //
+        // Determine the total number of boundarys
+        // and the labels for the boundarys.
+        //
+        char *cLabelStorage = new char[label.length()+1];
+        strcpy(cLabelStorage, label.c_str());
+        char *cLabel = cLabelStorage;
+
+        int nSelectedBoundaries = 0;
+        sscanf(cLabel, "%d", &nSelectedBoundaries);
+        cLabel = strchr(cLabel, ';') + 1;
+
+        int i, *selectedBoundaries = new int[nSelectedBoundaries];
+        char **selectedBoundaryNames = new char*[nSelectedBoundaries];
+        for (i = 0; i < nSelectedBoundaries; i++)
+        {
+            sscanf(cLabel, "%d", &selectedBoundaries[i]);
+            cLabel = strchr(cLabel, ';') + 1;
+            selectedBoundaryNames[i] = cLabel;
+            cLabel = strchr(cLabel, ';');
+            cLabel[0] = '\0';
+            cLabel = cLabel + 1;
+        }
+
+        int maxBoundary = selectedBoundaries[0];
+        for (i = 1; i < nSelectedBoundaries; i++)
+        {
+            maxBoundary = selectedBoundaries[i] > maxBoundary ?
+                        selectedBoundaries[i] : maxBoundary;
+        }
+
+        //
+        // Count the number of cells of each boundary.
+        //
+        int *boundaryCounts = new int[maxBoundary+1];
+        for (int s = 0; s < maxBoundary + 1; s++)
+        {
+            boundaryCounts[s] = 0;
+        }
+        for (i = 0; i < numTotalCells; i++)
+        {
+            boundaryCounts[boundaryList[i]]++;
+        }
+
+        //
+        // Create a dataset for each boundary.
+        //
+        out_ds = new vtkDataSet *[nSelectedBoundaries];
+
+        //
+        // The following call is a workaround for a VTK bug.  It turns
+        // out that when GetCellType if called for the first time for a
+        // PolyData it calls its BuildCells method which causes the iterator
+        // used by InitTraversal and GetNextCell to be put at the end of
+        // the list.
+        //
+        in_ug->GetCellType(0);
+
+        //
+        // For each boundary, create a new unstructured grid that
+        // is fully disconnected.
+        //
+        for (i = 0; i < nSelectedBoundaries; i++)
+        {
+            int s = selectedBoundaries[i];
+
+            if (boundaryCounts[s] > 0)
+            {
+                //
+                // Create a new unstructured grid
+                //
+                vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
+                vtkPointData *outPD = out_ug->GetPointData();
+                vtkCellData  *outCD = out_ug->GetCellData();
+                vtkCellIterator *it = in_ug->NewCellIterator();
+
+                out_ug->Allocate(nCells);
+                outCD->CopyAllocate(inCD);
+                outPD->CopyAllocate(inPD);
+                outPD->Allocate(numCells * 8);
+
+                for (it->InitTraversal(); !it->IsDoneWithTraversal(); it->GoToNextCell())
+                {
+                 
+                    vtkIdType cellId = it->GetCellId();
+                    if (boundaryList[cellId] == s)
+                    {
+                        int cellType      = it->GetCellType();
+                        in_ug->GetCellPoints(cellId, cellPts);
+                        int numIds        = cellPts->GetNumberOfIds();
+
+                        for (int i = 0; i < numIds; ++i)
+                        {
+                            double point[3];
+                            in_ug->GetPoint(cellPts->GetId(i), point);
+                            int nxtPtId = pts->InsertNextPoint(point);
+                            ptIds->InsertNextId(nxtPtId);
+                            outPD->CopyData(inPD, cellPts->GetId(i), nxtPtId);
+                        }
+                        int newId = out_ug->InsertNextCell(cellType, ptIds);
+                        outCD->CopyData(inCD, cellId, newId);
+                        cellPts->Reset(); 
+                        ptIds->Reset();
+                    }
+                }
+        
+                //
+                // Reclaim unused space.
+                //
+                outPD->Squeeze();
+
+                //
+                // Remove the avtSubsets array and set the label
+                // for this dataset to be the material label. 
+                //
+                out_ug->SetPoints(pts); 
+                outCD->RemoveArray("avtSubsets");
+                labels.push_back(selectedBoundaryNames[i]);
+                out_ds[nDataSets] = out_ug;
+                nDataSets++;
+
+                //
+                // Update the extents for this material. 
+                //
+                double bounds[6];
+                out_ug->GetBounds(bounds);
+                std::string matName(selectedBoundaryNames[i]);
+                UpdateGlobalExtents(bounds, matName);
+            }
+        }
+
+        delete [] boundaryCounts;
+        delete [] selectedBoundaryNames;
+        delete [] selectedBoundaries;
+        delete [] cLabelStorage;
+
+        in_ug->Delete();
+    }
+    else
+    {
+        //
+        // The dataset represents a single boundary, so just turn it into
+        // a data tree.
+        //
+        labels.push_back(label);
+        out_ds = new vtkDataSet *[1];
+        out_ds[0] = in_ds;
+        out_ds[0]->Register(NULL);  // This makes it symmetric with the 'if'
+                                    // case so we can delete it blindly later.
+
+        nDataSets = 1;
+                
+        double bounds[6];
+        in_ds->GetBounds(bounds);
+        std::string matName(label);
+        UpdateGlobalExtents(bounds, label);
+    }
+
+    if (nDataSets == 0)
+    {
+        delete [] out_ds;
+
+        return NULL;
+    }
+
+    avtDataTree_p outDT = new avtDataTree(nDataSets, out_ds, domain, labels);
+
+    for (int i = 0 ; i < nDataSets ; i++)
+    {
+        if (out_ds[i] != NULL)
+        {
+            out_ds[i]->Delete();
+        }
+    }
+    delete [] out_ds;
+
+    return outDT;
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::PreExecute
+//
+//  Purpose:
+//      Create an Explosion that will contain all the information
+//      needed to perform our actual explosion. 
+//
+//  Programmer: Aliseter Maguire
+//  Creation:   Mon Oct 23 15:52:30 PST 2017
+//
+//  Modifications:
+//
+//      Alister Maguire, Wed Jan 17 10:06:58 PST 2018
+//      Added globalMatExtents for multi-domain data. 
+//
+// ****************************************************************************
+
+void
+avtExplodeFilter::PreExecute(void)
+{
+    //
+    // Initialize the global material extents.
+    //
+    if (globalMatExtents != NULL)
+    {
+        delete [] globalMatExtents;
+    }
+
+    int numMat       = atts.GetBoundaryNames().size();
+    int numExtents   = numMat * 6;
+    globalMatExtents = new double[numExtents];
+    for (int i = 0; i < numMat; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            int idx = i*6 + j*2;
+            globalMatExtents[idx]   = FLT_MAX;
+            globalMatExtents[idx+1] = FLT_MIN;
+        } 
+    }
+
+    //
+    // Create the explosion object.
+    //
+    switch (atts.GetExplosionType())
+    {
+        case ExplodeAttributes::Point:
+        {
+            explosion                  = new PointExplosion();
+            explosion->explosionPoint  = atts.GetExplosionPoint();
+        }
+        break;
+        case ExplodeAttributes::Plane:
+        {
+            explosion                  = new PlaneExplosion();
+            explosion->planePoint      = atts.GetPlanePoint(); 
+            explosion->planeNorm       = atts.GetPlaneNorm();
+        }
+        break;
+        case ExplodeAttributes::Cylinder:
+        {
+            explosion                  = new CylinderExplosion();
+            explosion->cylinderPoint1  = atts.GetCylinderPoint1(); 
+            explosion->cylinderPoint2  = atts.GetCylinderPoint2();
+            explosion->cylinderRadius  = atts.GetCylinderRadius(); 
+        }
+        break;
+    }
+
+    explosion->materialName         = atts.GetMaterial();
+    explosion->matExplosionFactor   = atts.GetMaterialExplosionFactor();
+    explosion->explosionPattern     = atts.GetExplosionPattern();
+
+    if (atts.GetExplodeMaterialCells() && !atts.GetExplodeAllCells())
+    {
+        explosion->explodeMaterialCells = true;
+        explosion->matExplosionFactor   = atts.GetMaterialExplosionFactor();
+        explosion->cellExplosionFactor  = atts.GetCellExplosionFactor();
+    }
+    else if (atts.GetExplodeAllCells())
+    {
+        explosion->cellExplosionFactor = atts.GetCellExplosionFactor();
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::Execute
+//
+//  Purpose:
+//      Explode a dataset based on the given attributes. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Oct 23 15:52:30 PST 2017
+//
+//  Modifications:
+//
+//      Alister Maguire, Wed Jan 17 10:06:58 PST 2018
+//      Refactored to handle multi-domain data in both serial
+//      and parallel. 
+//
+// ****************************************************************************
+
+void
+avtExplodeFilter::Execute(void)
+{
+    //
+    // Get the input data tree, domain ids, and 
+    // labels. 
+    //
+    avtDataTree_p    inTree = GetInputDataTree();
+    std::vector<int> domainIds;
+    stringVector     inLabels; 
+    inTree->GetAllDomainIds(domainIds);
+    inTree->GetAllLabels(inLabels);
+
+    //
+    // If we are exploding all cells, we don't need to 
+    // worry about materials. Also, if we don't have 
+    // any materials, cell explosion is the only option. 
+    //
+    if (atts.GetExplodeAllCells() || 
+        atts.GetBoundaryNames().empty())
+    {
+        int nLeaves;
+        vtkDataSet **inLeaves = inTree->GetAllLeaves(nLeaves);
+        avtDataRepresentation **outLeaves = 
+            new avtDataRepresentation*[nLeaves];
+        stringVector outLabels(nLeaves, "");
+
+        if (inLabels.size() == nLeaves)
+        {
+            outLabels = inLabels;
+        }
+
+        for (int i = 0; i < nLeaves; ++i)
+        {
+            vtkUnstructuredGrid *new_leaf = vtkUnstructuredGrid::New();
+            explosion->ExplodeAllCells(inLeaves[i], new_leaf);
+            avtDataRepresentation *leaf_rep = 
+                new avtDataRepresentation(new_leaf, i, outLabels[i]);
+            outLeaves[i] = leaf_rep;
+        }
+
+        avtDataTree_p outTree = new avtDataTree(nLeaves, outLeaves);
+
+        for (int i = 0; i < nLeaves; ++i)
+        {
+            if (outLeaves[i] != NULL)
+            {
+                delete outLeaves[i];
+            }
+        }
+        delete [] outLeaves;
+
+        SetOutputDataTree(outTree); 
+        return;
+    }
+
+    //
+    // We have materials => we need to extract them from
+    // all domains. 
+    //
+    avtDataTree_p materialTree = 
+        ExtractMaterialsFromDomains(inTree);
+   
+#ifdef PARALLEL
+
+    //
+    // If we're in parallel, we neeed to update 
+    // material extents across all processors.
+    //
+    if (PAR_Size() > 1)
+    {
+        int numExtents = 6 * atts.GetBoundaryNames().size();
+        int half       = numExtents / 2;
+
+        double curMinExtents[half];
+        double curMaxExtents[half];
+        for (int i = 0; i < half; ++i)
+        {
+            int idx = i*2;
+            curMinExtents[i] = globalMatExtents[idx];
+            curMaxExtents[i] = globalMatExtents[idx + 1];
+        }
+ 
+        double trueMinExtents[half];
+        double trueMaxExtents[half];
+
+        MPI_Allreduce(&curMinExtents[0], &trueMinExtents[0], half,
+            MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
+        MPI_Allreduce(&curMaxExtents[0], &trueMaxExtents[0], half,
+            MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
+        
+        for (int i = 0; i < half; ++i)
+        {
+            int idx = i*2;
+            globalMatExtents[idx]     = trueMinExtents[i];
+            globalMatExtents[idx + 1] = trueMaxExtents[i];
+        }
+    }
+
+#endif
+
+    if (materialTree == NULL)
+    {
+        debug1 << "ExtractMaterialsFromDomains returned a NULL materialTree..." 
+            << endl;
+        SetOutputDataTree(materialTree); 
+        return;
+    }
+
+    int nLeaves;
+    stringVector matLabels; 
+    materialTree->GetAllLabels(matLabels);
+    vtkDataSet **matLeaves = materialTree->GetAllLeaves(nLeaves);
+
+    if (nLeaves == 0)
+    {
+        delete [] matLeaves;
+        SetOutputDataTree(materialTree); 
+        return;
+    }
+        
+    if (matLabels.size() < nLeaves)
+    {
+        char expected[256];
+        char recieved[256];
+        sprintf(expected, "number of labels to be >= "
+            "number of leaves");
+        sprintf(recieved, "Num labels: %d  Num leaves: %d  ", 
+            matLabels.size(), nLeaves);
+        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        SetOutputDataTree(NULL); 
+        return;
+    }
+
+    avtDataRepresentation **outLeaves = new avtDataRepresentation*[nLeaves];
+
+    //
+    // Look for the material that has been selected for
+    // explosion, and blow it up. 
+    //
+    for (int i = 0; i < nLeaves; ++i)
+    {
+        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
+        ugrid->DeepCopy(matLeaves[i]);
+
+        if ( explosion->materialName == matLabels[i] )
+        {
+            double matExtents[6]; 
+            int matIdx = GetMaterialIndex(matLabels[i]);
+  
+            if (matIdx < 0)
+            {
+                SetOutputDataTree(NULL); 
+                return;
+            }
+
+            for (int i = 0; i < 6; ++i)
+            {
+                matExtents[i] = globalMatExtents[matIdx + i];
+            }
+                
+            if (explosion->explodeMaterialCells)
+            {
+                explosion->ExplodeAndDisplaceMaterial(ugrid, matExtents);
+            }
+            else
+            {
+                explosion->DisplaceMaterial(ugrid, matExtents);
+            }
+        }
+
+        //
+        //TODO: this creates a tree with more leaves than 
+        //      the original input tree (each domain is split
+        //      into material leaves). May want to merge materials
+        //      back into domains, but this will cause materials
+        //      to be re-calculated when more explosions are added... 
+        //
+        avtDataRepresentation *ugrid_rep = 
+            new avtDataRepresentation(ugrid, i, matLabels[i]);
+        outLeaves[i] = ugrid_rep;
+    }
+        
+    avtDataTree_p outTree = new avtDataTree(nLeaves, outLeaves);
+
+    //
+    // Clean up memory.
+    //
+    for (int i = 0; i < nLeaves; ++i)
+    {
+        if (outLeaves[i] != NULL)
+        {
+            delete outLeaves[i];
+        }
+    }
+    delete [] outLeaves;
+    
+    SetOutputDataTree(outTree); 
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::PostExecute
+//
+//  Purpose:
+//      Update attributes after execution. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Nov  8 10:12:34 PST 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtExplodeFilter::PostExecute(void)
+{
+    //
+    // Spatial extents could have all changed, so we 
+    // need to clear them. 
+    //
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.GetOriginalSpatialExtents()->Clear();
+    outAtts.GetDesiredSpatialExtents()->Clear();
+    outAtts.GetActualSpatialExtents()->Clear();
+    
+    //
+    // Update the spatial extents. 
+    //
+    double bounds[6];
+    avtDataset_p ds = GetTypedOutput();
+    avtDatasetExaminer::GetSpatialExtents(ds, bounds);
+    outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
+
+    stringVector treeLabels;
+    GetDataTree()->GetAllUniqueLabels(treeLabels);
+    GetOutput()->GetInfo().GetAttributes().SetLabels(treeLabels);
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::UpdateDataObjectInfo
+//
+//  Purpose:
+//      Update the information about our output. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Nov  8 10:12:34 PST 2017
+// 
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtExplodeFilter::UpdateDataObjectInfo(void)
+{
+    GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
+    GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
+
+    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
+    outAtts.SetLabels(atts.GetBoundaryNames());
+    outAtts.AddFilterMetaData("Explode");
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::ModifyContract
+//
+//  Purpose:
+//      Update the contract. In particular, we need to tell VisIt 
+//      to construct materials and material labels. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Nov  8 10:12:34 PST 2017
+//
+// ****************************************************************************
+
+avtContract_p   
+avtExplodeFilter::ModifyContract(avtContract_p contract)
+{
+    avtContract_p rv = new avtContract(contract);
+
+    rv->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
+    rv->GetDataRequest()->ForceMaterialLabelsConstructionOn();
+    rv->SetCalculateMeshExtents(true); 
+
+    if (contract->GetDataRequest()->MayRequireZones())
+    {
+        rv->GetDataRequest()->TurnZoneNumbersOn();
+    }
+    if (contract->GetDataRequest()->MayRequireNodes())
+    {
+        rv->GetDataRequest()->TurnNodeNumbersOn();
+    }
+    
+    return rv;
+}
 
 
 // ****************************************************************************
@@ -124,20 +1071,19 @@ Explosion::Explosion()
 // ****************************************************************************
 
 void
-Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid)
+Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid, 
+                            double *matExtents)
 {
-    double bounds[6];
     double dataCenter[3];
-    ugrid->GetBounds(bounds);
     for (int i = 0; i < 3; ++i)
-        dataCenter[i] = (bounds[i*2] + bounds[(i*2)+1]) / 2.0;
+        dataCenter[i] = (matExtents[i*2] + matExtents[(i*2)+1]) / 2.0;
 
     //
     // Calculate the explosion displacement. The method used
     // for displacement will depend and the child class's
     // implementation. 
     //
-    CalcDisplacement(dataCenter, matExplosionFactor, false);
+    CalcDisplacement(dataCenter, matExplosionFactor, true);
 
     int numPoints        = ugrid->GetNumberOfPoints();
     vtkPoints *ugridPts  = ugrid->GetPoints();
@@ -180,14 +1126,14 @@ Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid)
 // ****************************************************************************
 
 void
-Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid)
+Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,  
+                                      double *matExtents)
 {
-    double bounds[6];
     double dataCenter[3];
-    ugrid->GetBounds(bounds);
     for (int i = 0; i < 3; ++i)
-        dataCenter[i] = (bounds[i*2] + bounds[(i*2)+1]) / 2.0;
+        dataCenter[i] = (matExtents[i*2] + matExtents[(i*2)+1]) / 2.0;
 
+    int numPoints        = ugrid->GetNumberOfPoints();
     vtkPoints *ugridPts  = ugrid->GetPoints();
     vtkPoints *newPoints = vtkPoints::New();
     vtkIdList *cellPts   = vtkIdList::New();
@@ -204,7 +1150,7 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid)
         initialDisplacement[i] = displaceVec[i];
     }
 
-    bool normalize = false;
+    bool normalize;
     switch (explosionPattern)
     {
         case ExplodeAttributes::Impact:
@@ -271,7 +1217,6 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid)
 }
 
 
-
 // ****************************************************************************
 //  Method: Explosion::ExplodeAllCells
 //
@@ -305,6 +1250,7 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
     outCD->CopyAllocate(inCD);
     outPD->CopyAllocate(inPD);
     
+    int numPoints       = in_ds->GetNumberOfPoints();
     int numCells        = in_ds->GetNumberOfCells();
     vtkCellIterator *it = in_ds->NewCellIterator();
     vtkPoints *pts      = vtkPoints::New();
@@ -326,7 +1272,7 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
     ptIds->Allocate(numCells * 8);
     cellPts->Allocate(numCells);
 
-    bool normalize = true;
+    bool normalize;
     switch (explosionPattern)
     {
         case ExplodeAttributes::Impact:
@@ -416,7 +1362,7 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
 //  Purpose:
 //      Empty constructor. 
 //
-//  Programmer: maguire7 -- generated by xml2avt
+//  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
 //  Modifications:
@@ -446,7 +1392,7 @@ PointExplosion::PointExplosion()
 //                    Yes produces 'impact' explosion, and no produces
 //                    'scatter' explosion. 
 //
-//  Programmer: maguire7 -- generated by xml2avt
+//  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
 //  Modifications:
@@ -471,13 +1417,13 @@ PointExplosion::CalcDisplacement(double *dataCenter, double factor,
                       displaceVec[1]*displaceVec[1]+
                       displaceVec[2]*displaceVec[2]);
 
+    if (mag == 0.0)
+    {
+        mag = 1.0;
+    }
+
     if (normalize)
     {
-        if (mag == 0.0)
-        {
-            mag = 1.0;
-        }
-
         factor /= mag;
         for (int i = 0; i < 3; ++i)
         {
@@ -501,7 +1447,7 @@ PointExplosion::CalcDisplacement(double *dataCenter, double factor,
 //  Purpose:
 //      Empty constructor. 
 //
-//  Programmer: maguire7 -- generated by xml2avt
+//  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
 //  Modifications:
@@ -530,7 +1476,7 @@ PlaneExplosion::PlaneExplosion() {}
 //                    Yes produces 'impact' explosion, and no produces
 //                    'scatter' explosion. 
 //
-//  Programmer: maguire7 -- generated by xml2avt
+//  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
 //  Modifications:
@@ -566,15 +1512,14 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double factor,
                       displaceVec[1]*displaceVec[1] +
                       displaceVec[2]*displaceVec[2]);
 
+    if (mag == 0.0)
+    {
+        mag = 1.0;
+    }
+
     if (normalize)
     {
-        if (mag == 0.0)
-        {
-            mag = 1.0;
-        }
-
         factor /= mag;
-
         for (int i = 0; i < 3; ++i)
         {
             displaceVec[i] *= factor;
@@ -594,7 +1539,7 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double factor,
 // ****************************************************************************
 //  Method: CylinderExplosion constructor
 //
-//  Programmer: maguire7 -- generated by xml2avt
+//  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
 // ****************************************************************************
@@ -623,7 +1568,7 @@ CylinderExplosion::CylinderExplosion() {}
 //                    Yes produces 'impact' explosion, and no produces
 //                    'scatter' explosion. 
 //
-//  Programmer: maguire7 -- generated by xml2avt
+//  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
 //  Modifications:
@@ -685,13 +1630,13 @@ CylinderExplosion::CalcDisplacement(double *dataCenter, double factor,
                       displaceVec[1]*displaceVec[1] +
                       displaceVec[2]*displaceVec[2]);
 
+    if (mag == 0.0)
+    {
+        mag = 1.0;
+    }
+
     if (normalize)
     {
-        if (mag == 0.0)
-        {
-            mag = 1.0;
-        }
-
         factor /= mag;
         for (int i = 0; i < 3; ++i)
         {
@@ -706,661 +1651,4 @@ CylinderExplosion::CalcDisplacement(double *dataCenter, double factor,
             displaceVec[i] *= factor;
         }
     }
-}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter constructor
-//
-//  Purpose:
-//      Empty constructor.
-//
-//  Programmer: maguire7 -- generated by xml2avt
-//  Creation:   Mon Oct 23 15:52:30 PST 2017
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtExplodeFilter::avtExplodeFilter()
-{}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter destructor
-//
-//  Purpose:
-//      Handle any needed memory clean-up. 
-//
-//  Programmer: maguire7 -- generated by xml2avt
-//  Creation:   Mon Oct 23 15:52:30 PST 2017
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtExplodeFilter::~avtExplodeFilter()
-{
-    if (explosion != NULL)
-    {
-        delete explosion;
-    }
-}
-
-
-// ****************************************************************************
-//  Method:  avtExplodeFilter::Create
-//
-//  Programmer: maguire7 -- generated by xml2avt
-//  Creation:   Mon Oct 23 15:52:30 PST 2017
-//
-// ****************************************************************************
-
-avtFilter *
-avtExplodeFilter::Create()
-{
-    return new avtExplodeFilter();
-}
-
-
-// ****************************************************************************
-//  Method:      avtExplodeFilter::SetAtts
-//
-//  Purpose:
-//      Sets the state of the filter based on the attribute object.
-//
-//  Arguments:
-//      a        The attributes to use.
-//
-//  Programmer: maguire7 -- generated by xml2avt
-//  Creation:   Mon Oct 23 15:52:30 PST 2017
-//
-// ****************************************************************************
-
-void
-avtExplodeFilter::SetAtts(const AttributeGroup *a)
-{
-    atts = *(const ExplodeAttributes*)a;
-}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::Equivalent
-//
-//  Purpose:
-//      Returns true if creating a new avtExplodeFilter with the given
-//      parameters would result in an equivalent avtExplodeFilter.
-//
-//  Programmer: maguire7 -- generated by xml2avt
-//  Creation:   Mon Oct 23 15:52:30 PST 2017
-//
-// ****************************************************************************
-
-bool
-avtExplodeFilter::Equivalent(const AttributeGroup *a)
-{
-    return (atts == *(ExplodeAttributes*)a);
-}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::GetMaterialSubsets
-//
-//  Purpose:
-//      Create a dataset for every material within our input data, 
-//      and create a tree whose leaves are material datasets. 
-//
-//  Arguments:
-//      in_dr    The input data representation. 
-//
-//  Returns:
-//      An avtDataTree whose leaves are material datasets. 
-//
-//  Programmer:  Alister Maguire
-//  Creation:    Thu Dec 21 14:05:14 PST 2017 
-//
-//  Note:  Much of this was taken from the boundary plot filter. The 
-//         output conversion has been changed from polydata to 
-//         unstructured grid. The resulting meshes are fully disconnected. 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtDataTree_p
-avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
-{
-    //
-    // Get the VTK data set, the domain number, and the label.
-    //
-    vtkDataSet *in_ds = in_dr->GetDataVTK();
-    int domain = in_dr->GetDomain();
-    std::string label = in_dr->GetLabel();
-
-    if (in_ds                      == NULL || 
-        in_ds->GetNumberOfPoints() == 0    ||
-        in_ds->GetNumberOfCells()  == 0)
-    {
-        return NULL;
-    }
-
-    stringVector   labels;
-    int            nDataSets     = 0;
-    vtkDataSet   **out_ds        = NULL;
-    vtkDataArray  *boundaryArray = in_ds->GetCellData()->GetArray("avtSubsets");
-
-    //
-    // If we have a boundary array, then we have materials to 
-    // work with. 
-    //
-    if (boundaryArray)
-    {
-        if (label.find(";") == std::string::npos)
-        {
-            debug1 << "POSSIBLE ERROR CONDITION:  " << endl;
-            debug1 << "    avtExplodeFilter encountered a label ("
-                   << label.c_str() << ")" << endl;
-            debug1 << "    that cannot be parsed correctly.  This can happen "
-                   << "if" << endl;
-            debug1 << "    another filter has over-written the boundary labels "
-                   << "in" << endl;
-            debug1 << "    its output data tree.  avtExplodeFilter is returning"
-                   << endl;
-            debug1 << "    an empty data tree." << endl;
-            avtDataTree_p rv = new avtDataTree();
-            return rv;
-        }
-
-        //
-        // Break up the dataset into a collection of datasets, one
-        // per boundary.
-        //
-        int *boundaryList = ((vtkIntArray*)boundaryArray)->GetPointer(0);
-        
-        vtkUnstructuredGrid *in_ug = vtkUnstructuredGrid::New();
-        in_ug->DeepCopy(in_ds);
-
-        //
-        // Get the data ready for transfer
-        //
-        int nCells          = in_ug->GetNumberOfCells();
-        vtkPointData *inPD  = in_ug->GetPointData();
-        vtkCellData  *inCD  = in_ug->GetCellData();
-
-        int numCells        = in_ug->GetNumberOfCells();
-        vtkPoints *pts      = vtkPoints::New();
-        vtkIdList *cellPts  = vtkIdList::New();
-        vtkIdList *ptIds    = vtkIdList::New();
-
-        // 
-        // Since we are removing connectivity between nodes, 
-        // we will need more space to store them. The following
-        // is a rough (usually over) estimation which imagines
-        // that each cell could be a  VTK VOXEL or HEXAHEDRON 
-        // type (8 nodes). We squeeze out the extra space later. 
-        // NOTE: VTK has less common cell types that can have 
-        // as many as 19 nodes, in which case this could actually 
-        // be an under-estimation...
-        //
-        pts->Allocate(numCells * 8);
-        ptIds->Allocate(numCells * 8);
-        cellPts->Allocate(numCells);
-
-        int ntotalcells = in_ug->GetNumberOfCells();
-
-        //
-        // Determine the total number of boundarys
-        // and the labels for the boundarys.
-        //
-        char *cLabelStorage = new char[label.length()+1];
-        strcpy(cLabelStorage, label.c_str());
-        char *cLabel = cLabelStorage;
-
-        int nSelectedBoundaries = 0;
-        sscanf(cLabel, "%d", &nSelectedBoundaries);
-        cLabel = strchr(cLabel, ';') + 1;
-
-        int i, *selectedBoundaries = new int[nSelectedBoundaries];
-        char **selectedBoundaryNames = new char*[nSelectedBoundaries];
-        for (i = 0; i < nSelectedBoundaries; i++)
-        {
-            sscanf(cLabel, "%d", &selectedBoundaries[i]);
-            cLabel = strchr(cLabel, ';') + 1;
-            selectedBoundaryNames[i] = cLabel;
-            cLabel = strchr(cLabel, ';');
-            cLabel[0] = '\0';
-            cLabel = cLabel + 1;
-        }
-
-        int maxBoundary = selectedBoundaries[0];
-        for (i = 1; i < nSelectedBoundaries; i++)
-        {
-            maxBoundary = selectedBoundaries[i] > maxBoundary ?
-                        selectedBoundaries[i] : maxBoundary;
-        }
-
-        //
-        // Count the number of cells of each boundary.
-        //
-        int *boundaryCounts = new int[maxBoundary+1];
-        for (int s = 0; s < maxBoundary + 1; s++)
-        {
-            boundaryCounts[s] = 0;
-        }
-        for (i = 0; i < ntotalcells; i++)
-        {
-            boundaryCounts[boundaryList[i]]++;
-        }
-
-        //
-        // Create a dataset for each boundary.
-        //
-        out_ds = new vtkDataSet *[nSelectedBoundaries];
-
-        //
-        // The following call is a workaround for a VTK bug.  It turns
-        // out that when GetCellType if called for the first time for a
-        // PolyData it calls its BuildCells method which causes the iterator
-        // used by InitTraversal and GetNextCell to be put at the end of
-        // the list.
-        //
-        in_ug->GetCellType(0);
-
-        //
-        // For each boundary, create a new unstructured grid that
-        // is fully disconnected.
-        //
-        for (i = 0; i < nSelectedBoundaries; i++)
-        {
-            int s = selectedBoundaries[i];
-
-            if (boundaryCounts[s] > 0)
-            {
-                //
-                // Create a new unstructured grid
-                //
-                vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
-                vtkPointData *outPD = out_ug->GetPointData();
-                vtkCellData  *outCD = out_ug->GetCellData();
-                vtkCellIterator *it = in_ug->NewCellIterator();
-
-                out_ug->Allocate(nCells);
-                outCD->CopyAllocate(inCD);
-                outPD->CopyAllocate(inPD);
-                outPD->Allocate(numCells * 8);
-
-                for (it->InitTraversal(); !it->IsDoneWithTraversal(); it->GoToNextCell())
-                {
-                 
-                    vtkIdType cellId = it->GetCellId();
-                    if (boundaryList[cellId] == s)
-                    {
-                        int cellType      = it->GetCellType();
-                        in_ug->GetCellPoints(cellId, cellPts);
-                        int numIds        = cellPts->GetNumberOfIds();
-
-                        for (int i = 0; i < numIds; ++i)
-                        {
-                            double point[3];
-                            in_ug->GetPoint(cellPts->GetId(i), point);
-                            int nxtPtId = pts->InsertNextPoint(point);
-                            ptIds->InsertNextId(nxtPtId);
-                            outPD->CopyData(inPD, cellPts->GetId(i), nxtPtId);
-                        }
-                        int newId = out_ug->InsertNextCell(cellType, ptIds);
-                        outCD->CopyData(inCD, cellId, newId);
-                        cellPts->Reset(); 
-                        ptIds->Reset();
-                    }
-                }
-        
-                //
-                // Reclaim unused space.
-                //
-                outPD->Squeeze();
-
-                //
-                // Remove the avtSubsets array and set the label
-                // for this dataset to be the material label. 
-                //
-                out_ug->SetPoints(pts); 
-                outCD->RemoveArray("avtSubsets");
-                labels.push_back(selectedBoundaryNames[i]);
-                out_ds[nDataSets] = out_ug;
-                nDataSets++;
-            }
-        }
-
-        delete [] boundaryCounts;
-        delete [] selectedBoundaryNames;
-        delete [] selectedBoundaries;
-        delete [] cLabelStorage;
-
-        in_ug->Delete();
-    }
-    else
-    {
-        //
-        // The dataset represents a single boundary, so just turn it into
-        // a data tree.
-        //
-        labels.push_back(label);
-        out_ds = new vtkDataSet *[1];
-        out_ds[0] = in_ds;
-        out_ds[0]->Register(NULL);  // This makes it symmetric with the 'if'
-                                    // case so we can delete it blindly later.
-
-        nDataSets = 1;
-    }
-
-    if (nDataSets == 0)
-    {
-        delete [] out_ds;
-
-        return NULL;
-    }
-
-    avtDataTree_p outDT = new avtDataTree(nDataSets, out_ds, domain, labels);
-
-    for (int i = 0 ; i < nDataSets ; i++)
-    {
-        if (out_ds[i] != NULL)
-        {
-            out_ds[i]->Delete();
-        }
-    }
-    delete [] out_ds;
-
-    return outDT;
-}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::PreExecute
-//
-//  Purpose:
-//      Create an Explosion that will contain all the information
-//      needed to perform our actual explosion. 
-//
-//  Programmer: Aliseter Maguire
-//  Creation:   Mon Oct 23 15:52:30 PST 2017
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtExplodeFilter::PreExecute(void)
-{
-    //
-    // Create the explosion object 
-    //
-    switch (atts.GetExplosionType())
-    {
-        case ExplodeAttributes::Point:
-        {
-            explosion                  = new PointExplosion();
-            explosion->explosionPoint  = atts.GetExplosionPoint();
-        }
-        break;
-        case ExplodeAttributes::Plane:
-        {
-            explosion                  = new PlaneExplosion();
-            explosion->planePoint      = atts.GetPlanePoint(); 
-            explosion->planeNorm       = atts.GetPlaneNorm();
-        }
-        break;
-        case ExplodeAttributes::Cylinder:
-        {
-            explosion                  = new CylinderExplosion();
-            explosion->cylinderPoint1  = atts.GetCylinderPoint1(); 
-            explosion->cylinderPoint2  = atts.GetCylinderPoint2();
-            explosion->cylinderRadius  = atts.GetCylinderRadius(); 
-        }
-        break;
-    }
-
-    explosion->materialName         = atts.GetMaterial();
-    explosion->matExplosionFactor   = atts.GetMaterialExplosionFactor();
-    explosion->explosionPattern     = atts.GetExplosionPattern();
-
-    if (atts.GetExplodeMaterialCells() && !atts.GetExplodeAllCells())
-    {
-        explosion->explodeMaterialCells = true;
-        explosion->matExplosionFactor   = atts.GetMaterialExplosionFactor();
-        explosion->cellExplosionFactor  = atts.GetCellExplosionFactor();
-    }
-    else if (atts.GetExplodeAllCells())
-    {
-        explosion->cellExplosionFactor = atts.GetCellExplosionFactor();
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::ExecuteDataTree
-//
-//  Purpose:
-//      Explode a dataset based on the given attributes. 
-//
-//  Arguments:
-//      in_dr      The input data representation.
-//
-//  Returns:       An output data tree. 
-//
-//  Programmer: maguire7 -- generated by xml2avt
-//  Creation:   Mon Oct 23 15:52:30 PST 2017
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-avtDataTree_p
-avtExplodeFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
-{
-    //
-    // Get the VTK data set, the domain number, and the label.
-    //
-    vtkDataSet *in_ds = in_dr->GetDataVTK();
-    int domain        = in_dr->GetDomain();
-    std::string label = in_dr->GetLabel();
-
-    //
-    // If we are exploding all cells, we don't need to 
-    // worry about materials. Also, if we don't have 
-    // any materials, cell explosion is the only option. 
-    //
-    if (atts.GetExplodeAllCells() || label.empty()) 
-    {
-        vtkUnstructuredGrid *out_grid = vtkUnstructuredGrid::New();
-
-        //
-        // Do the actual explosion. 
-        //
-        explosion->ExplodeAllCells(in_ds, out_grid);
-
-        stringVector labels;
-        labels.push_back(label);
-
-        vtkDataSet **ugrids   = new vtkDataSet*[1];
-        ugrids[0]             = out_grid;
-        avtDataTree_p outTree = new avtDataTree(1, ugrids, domain, labels);
-
-        if (ugrids[0] != NULL)
-        {
-            ugrids[0]->Delete();
-        }
-        delete [] ugrids;
-
-        return outTree;
-    }
-
-    //
-    // Create a data tree where each leaf is a 
-    // material dataset. 
-    //
-    avtDataTree_p materialTree = GetMaterialSubsets(in_dr);
-   
-    if (*materialTree == NULL)
-    {
-        debug1 << "GetMaterialSubsets returned a NULL materialTree..." << endl;
-        return materialTree;
-    }
-
-    int nLeaves;
-    stringVector labels; 
-    materialTree->GetAllLabels(labels);
-    vtkDataSet **dsets = materialTree->GetAllLeaves(nLeaves);
-
-    if (nLeaves == 0)
-    {
-        delete [] dsets;
-        return materialTree; 
-    }
-    
-    if (static_cast<int>(labels.size()) < nLeaves)
-    {
-        char expected[256];
-        char recieved[256];
-        sprintf(expected, "Expected number of labels to be >= "
-            "number of leaves");
-        sprintf(recieved, "Num labels: %d  Num leaves: %d  ", 
-            static_cast<int>(labels.size()), nLeaves);
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
-        return materialTree;
-    }
-    
-    vtkDataSet **ugrids = new vtkDataSet*[nLeaves];
-
-    //
-    // Look for the material that has been selected for
-    // explosion, and blow it up. 
-    //
-    for (int i = 0; i < nLeaves; ++i)
-    {
-        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-        ugrid->DeepCopy(dsets[i]);
-
-        if ( explosion->materialName == labels[i] )
-        {
-            if ( explosion->explodeMaterialCells )
-            {
-                explosion->ExplodeAndDisplaceMaterial(ugrid);
-            }
-            else
-            {
-                explosion->DisplaceMaterial(ugrid);
-            }
-        }
-
-        ugrids[i] = ugrid;
-    }
-    
-    avtDataTree_p outTree = new avtDataTree(nLeaves, ugrids, domain, labels);
-
-    //
-    // Clean up memory.
-    //
-    for (int i = 0; i < nLeaves; ++i)
-    {
-        if (ugrids[i] != NULL)
-            ugrids[i]->Delete();
-    }
-    delete [] ugrids;
-    
-    return outTree;
-}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::PostExecute
-//
-//  Purpose:
-//      Update attributes after execution. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Wed Nov  8 10:12:34 PST 2017
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtExplodeFilter::PostExecute(void)
-{
-    // Spatial extents could have all changed, so we 
-    // need to clear them. 
-    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.GetOriginalSpatialExtents()->Clear();
-    outAtts.GetDesiredSpatialExtents()->Clear();
-    outAtts.GetActualSpatialExtents()->Clear();
-    
-    // Update the spatial extents. 
-    double bounds[6];
-    avtDataset_p ds = GetTypedOutput();
-    avtDatasetExaminer::GetSpatialExtents(ds, bounds);
-    outAtts.GetThisProcsOriginalSpatialExtents()->Set(bounds);
-
-    stringVector treeLabels;
-    GetDataTree()->GetAllUniqueLabels(treeLabels);
-    GetOutput()->GetInfo().GetAttributes().SetLabels(treeLabels);
-}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::UpdateDataObjectInfo
-//
-//  Purpose:
-//      Update the information about our output. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Wed Nov  8 10:12:34 PST 2017
-// 
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtExplodeFilter::UpdateDataObjectInfo(void)
-{
-    GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
-    GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
-
-    avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
-    outAtts.SetLabels(atts.GetBoundaryNames());
-    outAtts.AddFilterMetaData("Explode");
-}
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::ModifyContract
-//
-//  Purpose:
-//      Update the contract. In particular, we need to tell VisIt 
-//      to construct materials and material labels. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Wed Nov  8 10:12:34 PST 2017
-//
-// ****************************************************************************
-
-avtContract_p   
-avtExplodeFilter::ModifyContract(avtContract_p contract)
-{
-    avtContract_p rv = new avtContract(contract);
-
-    rv->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
-    rv->GetDataRequest()->ForceMaterialLabelsConstructionOn();
-    rv->SetCalculateMeshExtents(true); 
-
-    if (contract->GetDataRequest()->MayRequireZones())
-    {
-        rv->GetDataRequest()->TurnZoneNumbersOn();
-    }
-    if (contract->GetDataRequest()->MayRequireNodes())
-    {
-        rv->GetDataRequest()->TurnNodeNumbersOn();
-    }
-    
-    return rv;
 }

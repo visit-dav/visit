@@ -52,16 +52,72 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkDataSet.h>
 
+class Explosion;
+
+// ****************************************************************************
+//  Class: avtExplodeFilter
+//
+//  Purpose:
+//      A plugin operator for Explode.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Oct 23 15:52:30 PST 2017
+//
+//  Modifications:
+//
+//      Alister Maguire, Wed Jan 17 10:06:58 PST 2018
+//      Changed inheritance from avtSIMODataTreeIterator to
+//      avtDatasetToDatasetFilter for MPI use. Also added
+//      globalMatExtents and GetMaterialIndex(). 
+//
+// ****************************************************************************
+
+class avtExplodeFilter : public avtDatasetToDatasetFilter,
+                         public virtual avtPluginFilter
+{
+  public:
+                                   avtExplodeFilter();
+    virtual                       ~avtExplodeFilter();
+ 
+    static avtFilter              *Create();
+
+    virtual const char            *GetType(void)  { return "avtExplodeFilter"; };
+    virtual const char            *GetDescription(void) { return "Explode"; };
+
+    virtual void                   SetAtts(const AttributeGroup*);
+    virtual bool                   Equivalent(const AttributeGroup*);
+
+    virtual bool                   ThreadSafe(void) { return(false); };
+
+
+  protected:
+    void                           Execute(void);
+
+    virtual void                   PostExecute(void);
+    virtual void                   PreExecute(void);
+
+    virtual avtContract_p          ModifyContract(avtContract_p);
+    virtual void                   UpdateDataObjectInfo(void);
+
+    void                           UpdateGlobalExtents(double *, std::string);
+    int                            GetMaterialIndex(std::string);
+    avtDataTree_p                  GetMaterialSubsets(avtDataRepresentation *);
+    avtDataTree_p                  ExtractMaterialsFromDomains(avtDataTree_p);
+
+    ExplodeAttributes              atts;
+    
+    Explosion                     *explosion;
+    double                        *globalMatExtents;
+};
+
 
 // ****************************************************************************
 //  Class: Explosion
 //
 //  Purpose:
 //      This is a virtual class meant to be used for inheritance when
-//      creating different types of explosions. This allows us to 
-//      simplify the process of deciding which type of explosion to 
-//      perform when iterating through materials in a dataset. 
-//      CalcDisplacement is the method that must be overriden by
+//      creating different types of explosions. 
+//      CalcDisplacement is the method that must be overriden by 
 //      children, as it is the method that determines exactly how
 //      to explode.  
 //
@@ -76,11 +132,16 @@ class Explosion
                          Explosion();
     virtual             ~Explosion() {};
     virtual void         CalcDisplacement(double *, double, bool) = 0;
-    void                 DisplaceMaterial(vtkUnstructuredGrid *);
+    void                 DisplaceMaterial(vtkUnstructuredGrid *, 
+                                          double *);
     void                 ExplodeAllCells(vtkDataSet *,
                                          vtkUnstructuredGrid *);
-    void                 ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *);
+    void                 ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *, 
+                                                    double *);
 
+    //
+    // Variables for all types
+    //
     std::string          materialName;
     bool                 explodeMaterialCells;
     bool                 explodeAllCells;
@@ -88,9 +149,21 @@ class Explosion
     double               matExplosionFactor;
     double               cellExplosionFactor;
     double               displaceVec[3];
+
+    //
+    // Point variables
+    //
     double              *explosionPoint;
+
+    //
+    // Plane variables
+    //
     double              *planePoint;
     double              *planeNorm;
+
+    //
+    // Cylinder variables
+    //
     double              *cylinderPoint1;
     double              *cylinderPoint2;
     double               cylinderRadius;
@@ -154,50 +227,6 @@ class CylinderExplosion : virtual public Explosion
                       CylinderExplosion();
     virtual          ~CylinderExplosion() {};
     virtual void      CalcDisplacement(double *, double, bool);
-};
-
-
-// ****************************************************************************
-//  Class: avtExplodeFilter
-//
-//  Purpose:
-//      A plugin operator for Explode.
-//
-//  Programmer: Alister Maguire
-//  Creation:   Mon Oct 23 15:52:30 PST 2017
-//
-// ****************************************************************************
-
-class avtExplodeFilter : public virtual avtSIMODataTreeIterator,
-                         public virtual avtPluginFilter
-{
-  public:
-                                   avtExplodeFilter();
-    virtual                       ~avtExplodeFilter();
- 
-    static avtFilter              *Create();
-
-    virtual const char            *GetType(void)  { return "avtExplodeFilter"; };
-    virtual const char            *GetDescription(void) { return "Explode"; };
-
-    virtual void                   SetAtts(const AttributeGroup*);
-    virtual bool                   Equivalent(const AttributeGroup*);
-
-
-  protected:
-
-    virtual avtDataTree_p          ExecuteDataTree(avtDataRepresentation *);
-    virtual void                   PostExecute(void);
-    virtual void                   PreExecute(void);
-
-    virtual avtContract_p          ModifyContract(avtContract_p);
-    virtual void                   UpdateDataObjectInfo(void);
-
-    avtDataTree_p                  GetMaterialSubsets(avtDataRepresentation *);
-
-    ExplodeAttributes              atts;
-    
-    Explosion                     *explosion;
 };
 
 

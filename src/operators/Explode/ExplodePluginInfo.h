@@ -99,6 +99,8 @@ class ExplodeViewerEnginePluginInfo : public virtual ViewerEngineOperatorPluginI
                                         const bool fromDefault);
     virtual void UpdateOperatorAtts(AttributeSubject *atts,
                                     const avtPlotMetaData &plot);
+    void         PrivateSetOperatorAtts(AttributeSubject *atts,
+                                        const avtPlotMetaData &plot);
     virtual const char *GetMenuName() const;
 
     static void InitializeGlobalObjects();

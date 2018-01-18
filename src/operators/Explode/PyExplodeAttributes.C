@@ -1146,12 +1146,16 @@ PyExplodeAttributes_SetParent(PyObject *obj, PyObject *parent)
     obj2->parent = parent;
 }
 
+// ****************************************************************************
+//  Modifications:
+//    Alister Maguire, Wed Jan 10 11:29:50 PST 2018
+//    Make defaultAtts point to the passed atts directly.
+//
+// ****************************************************************************
+
 void
 PyExplodeAttributes_SetDefaults(const ExplodeAttributes *atts)
 {
-    if(defaultAtts)
-        delete defaultAtts;
-
-    defaultAtts = new ExplodeAttributes(*atts);
+    defaultAtts = const_cast<ExplodeAttributes*>(atts);
 }
 

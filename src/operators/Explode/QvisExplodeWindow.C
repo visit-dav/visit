@@ -171,7 +171,7 @@ QvisExplodeWindow::CreateWindowContents()
             this, SLOT(planeNormProcessText()));
     explodePlaneLayout->addWidget(planeNorm, 1, 1);
 
-    QLabel *cylinderPoint1Label = new QLabel(tr("Cylinder Start Point"), central);
+    QLabel *cylinderPoint1Label = new QLabel(tr("Cylinder Point 1"), central);
     explodeCylinderLayout->addWidget(cylinderPoint1Label, 0, 0);
     cylinderPoint1 = new QLineEdit(central);
     cylinderPoint1->setPlaceholderText("0.0 0.0 0.0");
@@ -179,7 +179,7 @@ QvisExplodeWindow::CreateWindowContents()
             this, SLOT(cylinderPoint1ProcessText()));
     explodeCylinderLayout->addWidget(cylinderPoint1, 0, 1);
 
-    QLabel *cylinderPoint2Label = new QLabel(tr("Cylinder End Point"), central);
+    QLabel *cylinderPoint2Label = new QLabel(tr("Cylinder Point 2"), central);
     explodeCylinderLayout->addWidget(cylinderPoint2Label, 1, 0);
     cylinderPoint2 = new QLineEdit(central);
     cylinderPoint2->setPlaceholderText("0.0 0.0 0.0");
