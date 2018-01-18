@@ -377,10 +377,10 @@ def multi_tire():
 
 def Main():
     unstructured_explosions()
-    #curvilinear_explosions()
-    #rectilinear_explosions()
-    #multi_rectilinear_explosions()
-    #multi_tire()
+    curvilinear_explosions()
+    rectilinear_explosions()
+    multi_rectilinear_explosions()
+    multi_tire()
     
 
 Main()
