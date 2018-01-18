@@ -3,7 +3,8 @@
 #
 #  Test Case:  explode.py
 #
-#  Tests:      mesh      - 3D rectilinear, single domain
+#  Tests:      mesh      - 3D rectilinear, single domain, 
+#                           multi domain
 #                          3D unstructured, single domain
 #                          3D curvilinear, single domain
 #              plots     - filled boundary, pseudocolor
@@ -13,6 +14,10 @@
 #  Date: Tue Jan  2 15:07:06 PST 2018
 #
 #  Modifications:
+#
+#      Alister Maguire, Wed Jan 17 15:28:46 PST 2018
+#      Added tests of multi-domain data.    
+#
 # ----------------------------------------------------------------------------
 
 
@@ -21,6 +26,7 @@ def unstructured_explosions():
     AddPlot("FilledBoundary", "mat1", 1, 1)
     DrawPlots()
     
+    ResetView()
     View3DAtts = View3DAttributes()
     View3DAtts.viewNormal = (0.0758172, -0.984828, -0.156097)
     View3DAtts.focus = (0, 0, 0)
@@ -103,6 +109,7 @@ def unstructured_explosions():
     DrawPlots()
     Test("explode_globe_03")
     
+    ResetView()
     DeleteAllPlots()
     
 def curvilinear_explosions(): 
@@ -111,6 +118,7 @@ def curvilinear_explosions():
     AddOperator("Explode", 1)
     DrawPlots()
     
+    ResetView()
     View3DAtts = View3DAttributes()
     View3DAtts.viewNormal = (-0.706303, 0.44773, 0.548338)
     View3DAtts.focus = (0, 3.41092, 10)
@@ -142,24 +150,24 @@ def curvilinear_explosions():
     ExplodeAtts.explodeMaterialCells = 1
     ExplodeAtts.cellExplosionFactor = 10
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact 
+    ExplodeAtts.explodeAllCells = 0
     SetOperatorOptions(ExplodeAtts, 1)
     
     Test("explode_ucd3d_00")
-    ResetOperatorOptions("Explode", 1)
     
     # Explode by plane
     ExplodeAtts = ExplodeAttributes()
     ExplodeAtts.explosionType = ExplodeAtts.Plane  
     ExplodeAtts.planePoint = (0, 2, 20)
     ExplodeAtts.planeNorm = (0, 1, 0)
-    ExplodeAtts.materialExplosionFactor = 100
+    ExplodeAtts.materialExplosionFactor = 10
     ExplodeAtts.material = "4"
     ExplodeAtts.cellExplosionFactor = 1
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact 
+    ExplodeAtts.explodeAllCells = 0
     SetOperatorOptions(ExplodeAtts, 1)
     
     Test("explode_ucd3d_02")
-    ResetOperatorOptions("Explode", 1)
 
     # Explode all cells by point (impact)
     ExplodeAtts = ExplodeAttributes()
@@ -175,7 +183,6 @@ def curvilinear_explosions():
     Test("explode_ucd3d_03")
     
     # Explode all cells by point (impact)
-    ResetOperatorOptions("Explode", 1)
     ExplodeAtts = ExplodeAttributes()
     ExplodeAtts.explosionType = ExplodeAtts.Point 
     ExplodeAtts.explosionPoint = (0, 3, 10)
@@ -194,7 +201,7 @@ def curvilinear_explosions():
     ExplodeAtts.explosionPoint = (0, 3, 10)
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "1"
-    ExplodeAtts.cellExplosionFactor = 1
+    ExplodeAtts.cellExplosionFactor = 30
     ExplodeAtts.explosionPattern = ExplodeAtts.Scatter 
     ExplodeAtts.explodeAllCells = 1
     SetOperatorOptions(ExplodeAtts, 1)
@@ -208,8 +215,9 @@ def curvilinear_explosions():
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "1"
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 0.5
+    ExplodeAtts.cellExplosionFactor = 15
     ExplodeAtts.explosionPattern = ExplodeAtts.Scatter 
+    ExplodeAtts.explodeAllCells = 0
     SetOperatorOptions(ExplodeAtts, 1)
     
     Test("explode_ucd3d_06")
@@ -222,8 +230,9 @@ def curvilinear_explosions():
     ExplodeAtts.material = "1"
     ExplodeAtts.cylinderRadius = 0
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 0.5
+    ExplodeAtts.cellExplosionFactor = 15
     ExplodeAtts.explosionPattern = ExplodeAtts.Scatter  
+    ExplodeAtts.explodeAllCells = 0
     SetOperatorOptions(ExplodeAtts, 1)
     
     Test("explode_ucd3d_07")
@@ -241,23 +250,82 @@ def curvilinear_explosions():
     
     Test("explode_ucd3d_08")
     
-    ResetOperatorOptions("Explode", 1)
+    ResetView()
     DeleteAllPlots()
 
 def rectilinear_explosions():
     OpenDatabase(silo_data_path("rect3d.silo"))
     AddPlot("FilledBoundary", "mat1")
 
+    ResetView()
+    RecenterView()
+
+    AddOperator("Explode")
+    expAtts = ExplodeAttributes()
+    expAtts.explosionPoint = (1, 0, 0)
+    expAtts.materialExplosionFactor = 2
+    expAtts.material = "7"
+    SetOperatorOptions(expAtts, 1)
+    DrawPlots()
+
+    AddOperator("Explode")
+    expAtts = ExplodeAttributes()
+    expAtts.explosionPoint = (0, 0, 1)
+    expAtts.materialExplosionFactor = 2
+    expAtts.material = "5"
+    SetOperatorOptions(expAtts, 1)
+    DrawPlots()
+
+    Test("explode_rect3d_00")
+
+    ResetView()
+    DeleteAllPlots()
+
+def multi_rectilinear_explosions():
+    OpenDatabase(silo_data_path("multi_rect3d.silo"))
+    AddPlot("FilledBoundary", "mat1")
+
+    ResetView()
+    RecenterView()
+
+    AddOperator("Explode")
+    expAtts = ExplodeAttributes()
+    expAtts.explosionPoint = (1, 0, 0)
+    expAtts.materialExplosionFactor = 2
+    expAtts.material = "2"
+    SetOperatorOptions(expAtts, 1)
+    DrawPlots()
+
+    AddOperator("Explode")
+    expAtts = ExplodeAttributes()
+    expAtts.explosionPoint = (0, 0, 1)
+    expAtts.materialExplosionFactor = 2
+    expAtts.material = "3"
+    SetOperatorOptions(expAtts, 1)
+    DrawPlots()
+
+    Test("explode_multi_rect3d_00")
+
+    ResetView()
+    DeleteAllPlots()
+
+def multi_tire():
+    OpenDatabase(silo_data_path("tire.silo"))
+    AddPlot("FilledBoundary", "Materials")
+    
+    ResetView()
+    RecenterView()
+
     View3DAtts = View3DAttributes()
-    View3DAtts.viewNormal = (0.0758172, -0.984828, -0.156097)
-    View3DAtts.focus = (0, -15, 0)
-    View3DAtts.viewUp = (-0.01047, 0.155753, -0.987741)
+    View3DAtts.viewNormal = (1.0, 0.0, 0.0)
+    View3DAtts.focus = (0, 0, 0)
+    View3DAtts.viewUp = (0, 1, 0)
     View3DAtts.viewAngle = 30
-    View3DAtts.parallelScale = 8.3205
-    View3DAtts.nearPlane = -34.641
-    View3DAtts.farPlane = 34.641
+    View3DAtts.parallelScale = 8.0
+    View3DAtts.nearPlane = -0.5
+    View3DAtts.farPlane = 0.5
     View3DAtts.imagePan = (0, 0)
-    View3DAtts.imageZoom = 1.0
+    View3DAtts.imageZoom = 0.826446
     View3DAtts.perspective = 1
     View3DAtts.eyeAngle = 2
     View3DAtts.centerOfRotationSet = 0
@@ -268,29 +336,52 @@ def rectilinear_explosions():
     View3DAtts.windowValid = 1
     SetView3D(View3DAtts)
 
+    # If domains are being treated correctly, this
+    # should not produce an explosion. 
     AddOperator("Explode")
     expAtts = ExplodeAttributes()
-    expAtts.explosionPoint = (1, 0, 0)
-    expAtts.materialExplosionFactor = 10
-    expAtts.material = "7"
+    expAtts.materialExplosionFactor = 500
+    expAtts.material = "1 Rubber"
     SetOperatorOptions(expAtts, 1)
     DrawPlots()
 
-    AddOperator("Explode")
+    Test("explode_tire_00")
+
     expAtts = ExplodeAttributes()
-    expAtts.explosionPoint = (0, 0, 1)
-    expAtts.materialExplosionFactor = 10
-    expAtts.material = "5"
+    expAtts.materialExplosionFactor = 0
+    expAtts.explodeMaterialCells = 1
+    expAtts.cellExplosionFactor = 50
+    expAtts.explosionType = expAtts.Plane 
+    expAtts.planePoint = (0, 0, 0)
+    expAtts.planeNorm = (0, 1, 0)
+    expAtts.material = "1 Rubber"
     SetOperatorOptions(expAtts, 1)
     DrawPlots()
 
-    Test("explode_rect3d_00")
+    Test("explode_tire_01")
 
+    AddOperator("Explode")
+    expAtts = ExplodeAttributes()
+    expAtts.materialExplosionFactor = 200
+    expAtts.explodeMaterialCells = 0
+    expAtts.cellExplosionFactor = 0
+    expAtts.explosionType = expAtts.Point 
+    expAtts.explosionPoint = (0, 0, 60)
+    expAtts.material = "2 Steel"
+    SetOperatorOptions(expAtts, 1)
+    DrawPlots()
+
+    Test("explode_tire_02")
+    ResetView()
+    DeleteAllPlots()
 
 def Main():
     unstructured_explosions()
-    curvilinear_explosions()
-    rectilinear_explosions()
+    #curvilinear_explosions()
+    #rectilinear_explosions()
+    #multi_rectilinear_explosions()
+    #multi_tire()
+    
 
 Main()
 Exit()
