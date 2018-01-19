@@ -83,6 +83,13 @@
 
 #ifdef _WIN32
 #define strncasecmp _strnicmp
+static unsigned long long
+v_strtoull(const char *__restrict str, char **__restrict endptr, int base)
+{
+    return (unsigned long long)strtoul(str, endptr, base);
+}
+#else
+#define v_strtoull strtoull
 #endif
 
 using     std::string;
@@ -181,7 +188,7 @@ avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
 
     string line;
     std::getline(catfile, line);
-    size_t hdrsz = (size_t) strtoull(&line[0], 0, 10);
+    size_t hdrsz = (size_t) v_strtoull(&line[0], 0, 10);
     size_t zip = strchr(&line[0], 'z')==0?(size_t)0:(size_t)1;
     catFileMap["@header_size@"] = std::pair<size_t,size_t>(hdrsz,hdrsz);
     catFileMap["@compressed@"] = std::pair<size_t,size_t>(zip,zip);
@@ -193,8 +200,8 @@ avtMFEMFileFormat::BuildCatFileMap(string const &cat_path)
         std::getline(catfile, line);
         size_t offat = line.find_last_of(' ');
         size_t sizat = line.find_last_of(' ', offat-1);
-        size_t off = (size_t) strtoull(&line[offat+1], 0, 10);
-        size_t siz = (size_t) strtoull(&line[sizat+1], 0, 10);
+        size_t off = (size_t) v_strtoull(&line[offat+1], 0, 10);
+        size_t siz = (size_t) v_strtoull(&line[sizat+1], 0, 10);
         line.resize(sizat);
         debug5 << "    key=\"" << line << "\", size=" << siz << ", off=" << off << endl;
         catFileMap[line] = std::pair<size_t,size_t>(siz,off);

@@ -73,8 +73,30 @@
 #define INLINE   inline
 #ifdef _MSC_VER
   #define RESTRICT __restrict
+inline double v_trunc(double v)
+{
+  long iv;
+  double rv;
+  static double maxlv = (double) LONG_MAX;
+
+  if (v < 0.0)
+    {
+    v  = v > -maxlv ? v : -maxlv;
+    iv = (long) fabs(v);
+    rv = -((double) iv);
+    }
+  else
+    {
+    v  = v < maxlv ? v : maxlv;
+    iv = (long) v;
+    rv = (double) iv;
+    }
+
+  return(rv);
+}
 #else
   #define RESTRICT __restrict__
+  #define v_trunc trunc
 #endif
 #define EARLY_RAY_TERMINATION
 

@@ -48,7 +48,7 @@ INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 SET(SET_UP_THIRD_PARTY_FULL_PATH ON)
 
 IF (WIN32)
-  SET_UP_THIRD_PARTY(OPENEXR lib include/OpenEXR IlmImf)
+  SET_UP_THIRD_PARTY(OPENEXR lib include/OpenEXR IlmImf-2_2 Imath-2_2 Half IlmThread-2_2 Iex-2_2)
 ELSE (WIN32)
   SET_UP_THIRD_PARTY(OPENEXR lib include/OpenEXR IlmImf Imath Half IlmThread Iex)
 ENDIF (WIN32)

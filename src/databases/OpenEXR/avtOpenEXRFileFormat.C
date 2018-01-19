@@ -52,6 +52,11 @@
 #include <InvalidVariableException.h>
 #include <DebugStream.h>
 
+#ifdef _WIN32
+// We built OpenEXR as a DLL on Windows.
+#define OPENEXR_DLL
+#endif
+
 #include <ImfInputFile.h>
 #include <ImfChannelList.h>
 #include <ImfFrameBuffer.h>

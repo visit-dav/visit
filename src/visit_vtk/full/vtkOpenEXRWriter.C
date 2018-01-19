@@ -46,6 +46,11 @@
 #include <vtkObjectFactory.h>
 #include <vtkTemplateAliasMacro.h>
 
+#ifdef _WIN32
+// We built OpenEXR as a DLL on Windows.
+#define OPENEXR_DLL
+#endif
+
 #include <ImfRgba.h>
 #include <ImfRgbaFile.h>
 #include <ImfOutputFile.h>
