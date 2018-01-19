@@ -285,6 +285,7 @@ function initialize_build_visit()
     done
 
     export DO_HOSTCONF="yes"
+    export DO_QT_SILENT="yes"
 
     export DO_DEBUG="no"
     export DO_GROUP="no"
@@ -938,6 +939,7 @@ function run_build_visit()
             --makeflags) next_arg="makeflags";;
             --no-hostconf) DO_HOSTCONF="no";;
             --no-boost) DO_BOOST="no";;
+            --no-qt-silent) DO_QT_SILENT="no";;
             --parallel) parallel="yes"; DO_ICET="yes";;
             --prefix) next_arg="prefix";;
             --print-vars) next_action="print-vars";;
