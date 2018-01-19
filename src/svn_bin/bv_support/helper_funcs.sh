@@ -1423,6 +1423,7 @@ function usage
     printf "%-15s %s [%s]\n" "--install-network" "Install specific network config files." "${VISIT_INSTALL_NETWORK}"
     printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
     printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$DO_HOSTCONF"
+    printf "%-15s %s [%s]\n" "--no-qt-silent" "Disable make silent operation for QT." "no"
     printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
     printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
     printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"

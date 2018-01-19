@@ -614,14 +614,23 @@ function build_qt
     # Build Qt4. Config options above make sure we only build the libs & tools.
     #
     info "Building ${QT_VER_MSG} . . . (~60 minutes)"
-    $MAKE $MAKE_OPT_FLAGS
+    if [[ "${DO_QT_SILENT}" == "yes" ]] ; then
+        $MAKE -s $MAKE_OPT_FLAGS
+    else
+        $MAKE $MAKE_OPT_FLAGS
+    fi
+
     if [[ $? != 0 ]] ; then
         warn "${QT_VER_MSG} build failed.  Giving up"
         return 1
     fi
 
     info "Installing ${QT_VER_MSG} . . . "
-    $MAKE install
+    if [[ "${DO_QT_SILENT}" == "yes" ]] ; then
+        $MAKE -s install
+    else
+        $MAKE install
+    fi
 
     # Qt screws up permissions in some cases.  Try to fix that.
     chmod -R a+rX ${VISITDIR}/qt/${QT_VERSION}
