@@ -70,6 +70,8 @@
 #include <avtDataTree.h>
 #include <avtDatabaseMetaData.h>
 #include <avtMaterialMetaData.h>
+#include <avtMetaData.h>
+#include <avtIntervalTree.h>
 
 #include <avtParallelContext.h>
 #include <avtParallel.h>
@@ -77,9 +79,6 @@
 #ifdef PARALLEL
 #include <mpi.h>
 #endif
-
-//TODO: may want a data specific scale
-#define SCALE 0.01f
 
 
 // ****************************************************************************
@@ -96,12 +95,16 @@
 //      Alister Maguire, Wed Jan 17 15:28:46 PST 2018
 //      Added globalMatExtents.
 //
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Added init of scaleFactor. 
+//
 // ****************************************************************************
 
 avtExplodeFilter::avtExplodeFilter()
 {
     globalMatExtents = NULL;
     explosion        = NULL;
+    scaleFactor      = 0.0;
 }
 
 
@@ -238,11 +241,25 @@ avtExplodeFilter::GetMaterialIndex(std::string matName)
 //  Programmer: Alister Maguire
 //  Creation:   Tue Jan  9 10:55:28 PST 2018
 //
+//  Modifications:
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Added a safety check for globalMatExtents. 
+//
 // ****************************************************************************
 
 void
 avtExplodeFilter::UpdateGlobalExtents(double *localExtents, std::string matName)
 {
+    if (globalMatExtents == NULL)
+    {
+        char recieved[256];
+        char expected[256];
+        sprintf(expected, "globalMatExtents to be non-NULL");
+        sprintf(recieved, "NULL globalMatExtents");
+        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        return;
+    }
+
     int matIdx = GetMaterialIndex(matName);
     if (matIdx < 0)
     {
@@ -632,11 +649,43 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
 //      Alister Maguire, Wed Jan 17 10:06:58 PST 2018
 //      Added globalMatExtents for multi-domain data. 
 //
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018 
+//      Added calculation of scaleFactor. 
+//
 // ****************************************************************************
 
 void
 avtExplodeFilter::PreExecute(void)
 {
+    //
+    // Calculate the scale factor for this dataset. 
+    // Note: this was mostly copied from avtTubeFilter.
+    //
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    double bounds[6];
+    avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
+    if (it != NULL)
+        it->GetExtents(bounds);
+    else
+        GetSpatialExtents(bounds);
+
+    int numReal   = 0;
+    double volume = 1.0;
+    for (int i = 0 ; i < dim ; i++)
+    {
+        if (bounds[2*i] != bounds[2*i+1])
+        {
+            numReal++;
+            volume *= (bounds[2*i+1]-bounds[2*i]);
+        }
+    }
+    if (volume < 0)
+        volume *= -1.;
+    if (numReal > 0)
+        scaleFactor = pow(volume, 1.0/numReal);
+    else
+        scaleFactor = 1;
+
     //
     // Initialize the global material extents.
     //
@@ -661,27 +710,48 @@ avtExplodeFilter::PreExecute(void)
     //
     // Create the explosion object.
     //
+    if (explosion != NULL)
+    {
+        delete explosion;
+    } 
+    
     switch (atts.GetExplosionType())
     {
         case ExplodeAttributes::Point:
         {
-            explosion                  = new PointExplosion();
-            explosion->explosionPoint  = atts.GetExplosionPoint();
+            explosion = new PointExplosion();
+            (dynamic_cast <PointExplosion *> 
+                (explosion))->explosionPoint = atts.GetExplosionPoint();
         }
         break;
         case ExplodeAttributes::Plane:
         {
-            explosion                  = new PlaneExplosion();
-            explosion->planePoint      = atts.GetPlanePoint(); 
-            explosion->planeNorm       = atts.GetPlaneNorm();
+            explosion = new PlaneExplosion();
+            (dynamic_cast <PlaneExplosion *> 
+                (explosion))->planePoint = atts.GetPlanePoint();
+            (dynamic_cast <PlaneExplosion *> 
+                (explosion))->planeNorm  = atts.GetPlaneNorm();
         }
         break;
         case ExplodeAttributes::Cylinder:
         {
-            explosion                  = new CylinderExplosion();
-            explosion->cylinderPoint1  = atts.GetCylinderPoint1(); 
-            explosion->cylinderPoint2  = atts.GetCylinderPoint2();
-            explosion->cylinderRadius  = atts.GetCylinderRadius(); 
+            explosion = new CylinderExplosion();
+            (dynamic_cast <CylinderExplosion *> 
+                (explosion))->cylinderPoint1 = atts.GetCylinderPoint1();
+            (dynamic_cast <CylinderExplosion *> 
+                (explosion))->cylinderPoint2 = atts.GetCylinderPoint2();
+            (dynamic_cast <CylinderExplosion *> 
+                (explosion))->cylinderRadius = atts.GetCylinderRadius();
+        }
+        break;
+        default:
+        {
+            char recieved[256];
+            char expected[256];
+            sprintf(expected, "A known explosion type (0-2)");
+            sprintf(recieved, "%d", atts.GetExplosionType());
+            EXCEPTION2(UnexpectedValueException, expected, recieved);
+            SetOutputDataTree(NULL); 
         }
         break;
     }
@@ -717,6 +787,9 @@ avtExplodeFilter::PreExecute(void)
 //      Alister Maguire, Wed Jan 17 10:06:58 PST 2018
 //      Refactored to handle multi-domain data in both serial
 //      and parallel. 
+//
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Integrated scaleFactor into execution. 
 //
 // ****************************************************************************
 
@@ -755,7 +828,7 @@ avtExplodeFilter::Execute(void)
         for (int i = 0; i < nLeaves; ++i)
         {
             vtkUnstructuredGrid *new_leaf = vtkUnstructuredGrid::New();
-            explosion->ExplodeAllCells(inLeaves[i], new_leaf);
+            explosion->ExplodeAllCells(inLeaves[i], new_leaf, scaleFactor);
             avtDataRepresentation *leaf_rep = 
                 new avtDataRepresentation(new_leaf, i, outLabels[i]);
             outLeaves[i] = leaf_rep;
@@ -883,11 +956,13 @@ avtExplodeFilter::Execute(void)
                 
             if (explosion->explodeMaterialCells)
             {
-                explosion->ExplodeAndDisplaceMaterial(ugrid, matExtents);
+                explosion->ExplodeAndDisplaceMaterial(ugrid, 
+                    matExtents, scaleFactor);
             }
             else
             {
-                explosion->DisplaceMaterial(ugrid, matExtents);
+                explosion->DisplaceMaterial(ugrid, matExtents, 
+                    scaleFactor);
             }
         }
 
@@ -1030,6 +1105,9 @@ avtExplodeFilter::ModifyContract(avtContract_p contract)
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
+//      Removed variables specific to explosion types. 
+//
 // ****************************************************************************
 
 Explosion::Explosion()
@@ -1040,12 +1118,6 @@ Explosion::Explosion()
     explosionPattern     = 0;
     matExplosionFactor   = 0.0;
     cellExplosionFactor  = 0.0;
-    cylinderRadius       = 0.0;
-    explosionPoint       = NULL;
-    planePoint           = NULL;
-    planeNorm            = NULL;
-    cylinderPoint1       = NULL;
-    cylinderPoint2       = NULL;
     for (int i = 0; i < 3; ++i)
     {
         displaceVec[i]    = 0.0;
@@ -1068,11 +1140,14 @@ Explosion::Explosion()
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Added scaleFactor argument. 
+//
 // ****************************************************************************
 
 void
 Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid, 
-                            double *matExtents)
+                            double *matExtents, double scaleFactor)
 {
     double dataCenter[3];
     for (int i = 0; i < 3; ++i)
@@ -1083,7 +1158,7 @@ Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid,
     // for displacement will depend and the child class's
     // implementation. 
     //
-    CalcDisplacement(dataCenter, matExplosionFactor, true);
+    CalcDisplacement(dataCenter, matExplosionFactor, scaleFactor, true);
 
     int numPoints        = ugrid->GetNumberOfPoints();
     vtkPoints *ugridPts  = ugrid->GetPoints();
@@ -1123,11 +1198,14 @@ Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid,
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Added scaleFactor argument. 
+//
 // ****************************************************************************
 
 void
 Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,  
-                                      double *matExtents)
+                                      double *matExtents, double scaleFactor)
 {
     double dataCenter[3];
     for (int i = 0; i < 3; ++i)
@@ -1144,7 +1222,7 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
     // entire material and copy this into a container. 
     //
     double initialDisplacement[3];
-    CalcDisplacement(dataCenter, matExplosionFactor, false);
+    CalcDisplacement(dataCenter, matExplosionFactor, scaleFactor, false);
     for (int i = 0; i < 3; ++i)
     {
         initialDisplacement[i] = displaceVec[i];
@@ -1190,7 +1268,8 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
         //
         // Calculate the displacement for this cell. 
         //
-        CalcDisplacement(cellCenter, cellExplosionFactor, normalize); 
+        CalcDisplacement(cellCenter, cellExplosionFactor, 
+            scaleFactor, normalize); 
 
         //
         // Create a new set of points that are identical to the old
@@ -1231,11 +1310,15 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Added scaleFactor argument. 
+//
 // ****************************************************************************
 
 void
 Explosion::ExplodeAllCells(vtkDataSet *in_ds,
-                           vtkUnstructuredGrid *out_grid)
+                           vtkUnstructuredGrid *out_grid, 
+                           double scaleFactor)
 {
     //
     // Get the data ready for transfer
@@ -1312,7 +1395,8 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
         //
         // Calculate the displacement for this cell. 
         //
-        CalcDisplacement(cellCenter, cellExplosionFactor, normalize); 
+        CalcDisplacement(cellCenter, cellExplosionFactor, 
+            scaleFactor, normalize); 
 
         //
         // Create a new set of points that are identical to the old
@@ -1357,6 +1441,57 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
 
 
 // ****************************************************************************
+//  Method: Explosion::ScaleExplosion
+//
+//  Purpose: 
+//      Scale and possibly normalize the displacement vector. 
+//
+//  Arguments:
+//      scaleFactor    A factor to scale by. 
+//
+//      normalize      Wheter or not we normalize the vector. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Jan 22 11:12:47 PST 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+Explosion::ScaleExplosion(double expFactor, 
+                          double scaleFactor, 
+                          bool normalize)
+{
+    double mag = sqrt(displaceVec[0]*displaceVec[0]+
+                      displaceVec[1]*displaceVec[1]+
+                      displaceVec[2]*displaceVec[2]);
+
+    if (mag == 0.0)
+    {
+        mag = 1.0;
+    }
+
+    if (normalize)
+    {
+        expFactor *= scaleFactor / mag;
+        for (int i = 0; i < 3; ++i)
+        {
+            displaceVec[i] *= expFactor;
+        }
+    }
+    else
+    {
+        expFactor *= mag / scaleFactor;
+        for (int i = 0; i < 3; ++i)
+        {
+            displaceVec[i] *= expFactor;
+        }
+    }
+}
+
+
+// ****************************************************************************
 //  Method: PointExplosion constructor
 //
 //  Purpose:
@@ -1367,10 +1502,15 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
+//      Added explosionPoint. 
+//
 // ****************************************************************************
 
 PointExplosion::PointExplosion() 
-{}
+{
+    explosionPoint = NULL;
+}
 
 
 // ****************************************************************************
@@ -1386,7 +1526,9 @@ PointExplosion::PointExplosion()
 //      dataCenter    The x,y,z coords of the center of the data
 //                    to be displaced. 
 //
-//      factor        A factor to displace the data by. 
+//      expFactor     A factor to displace the data by. 
+//
+//      scaleFactor   A factor to scale the exposion by. 
 //
 //      normalize     Should we normalize the displacement vector?
 //                    Yes produces 'impact' explosion, and no produces
@@ -1397,47 +1539,37 @@ PointExplosion::PointExplosion()
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Added scaleFactor argument, replaced scale
+//      section with class method, and added safety
+//      checks. 
+//
 // ****************************************************************************
 
 void
-PointExplosion::CalcDisplacement(double *dataCenter, double factor, 
-                                 bool normalize)
+PointExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
+                                 double scaleFactor, bool normalize)
 {
+    if (explosionPoint == NULL)
+    {
+        char recieved[256];
+        char expected[256];
+        sprintf(expected, "explosionPoint to be non-NULL");
+        sprintf(recieved, "NULL explosionPoint");
+        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        return;
+    }
+
     //
     //  Find the distance between the data center and the
-    //  explosion point. This becomes the basis for our
-    //  displacement. 
+    //  explosion point.
     //
     for (int i = 0; i < 3; ++i)
     {
         displaceVec[i] = dataCenter[i] - explosionPoint[i];
     }
 
-    double mag = sqrt(displaceVec[0]*displaceVec[0]+
-                      displaceVec[1]*displaceVec[1]+
-                      displaceVec[2]*displaceVec[2]);
-
-    if (mag == 0.0)
-    {
-        mag = 1.0;
-    }
-
-    if (normalize)
-    {
-        factor /= mag;
-        for (int i = 0; i < 3; ++i)
-        {
-            displaceVec[i] *= factor;
-        }
-    }
-    else
-    {
-        factor *= SCALE * mag;
-        for (int i = 0; i < 3; ++i)
-        {
-            displaceVec[i] *= factor;
-        }
-    }
+    ScaleExplosion(expFactor, scaleFactor, normalize);
 }
 
 
@@ -1452,9 +1584,16 @@ PointExplosion::CalcDisplacement(double *dataCenter, double factor,
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
+//      Added planePoint and planeNorm. 
+//
 // ****************************************************************************
 
-PlaneExplosion::PlaneExplosion() {}
+PlaneExplosion::PlaneExplosion() 
+{
+    planePoint = NULL;
+    planeNorm  = NULL;
+}
 
 
 // ****************************************************************************
@@ -1470,7 +1609,9 @@ PlaneExplosion::PlaneExplosion() {}
 //      dataCenter    The x,y,z coords of the center of the data
 //                    to be displaced. 
 //
-//      factor        A factor to displace the data by. 
+//      expFactor     A factor to displace the data by. 
+//
+//      scaleFactor   A factor to scale the exposion by. 
 //
 //      normalize     Should we normalize the displacement vector?
 //                    Yes produces 'impact' explosion, and no produces
@@ -1481,12 +1622,36 @@ PlaneExplosion::PlaneExplosion() {}
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Added scaleFactor argument, replaced scale
+//      section with class method, and added safety
+//      checks. 
+//
 // ****************************************************************************
 
 void
-PlaneExplosion::CalcDisplacement(double *dataCenter, double factor, 
-                                 bool normalize)
+PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
+                                 double scaleFactor, bool normalize)
 {
+    if (planePoint == NULL)
+    {
+        char recieved[256];
+        char expected[256];
+        sprintf(expected, "planePoint to be non-NULL");
+        sprintf(recieved, "NULL planePoint");
+        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        return;
+    }
+    else if (planeNorm == NULL)
+    {
+        char recieved[256];
+        char expected[256];
+        sprintf(expected, "planeNorm to be non-NULL");
+        sprintf(recieved, "NULL planeNorm");
+        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        return;
+    }
+
     //
     // Project from our data center onto a plane. 
     //
@@ -1507,32 +1672,7 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double factor,
     for (int i = 0; i < 3; ++i)
         displaceVec[i] = dataCenter[i] -(dataCenter[i] + (alpha * planeNorm[i]));
 
-
-    double mag = sqrt(displaceVec[0]*displaceVec[0] +
-                      displaceVec[1]*displaceVec[1] +
-                      displaceVec[2]*displaceVec[2]);
-
-    if (mag == 0.0)
-    {
-        mag = 1.0;
-    }
-
-    if (normalize)
-    {
-        factor /= mag;
-        for (int i = 0; i < 3; ++i)
-        {
-            displaceVec[i] *= factor;
-        }
-    }
-    else
-    {
-        factor *= SCALE * mag;
-        for (int i = 0; i < 3; ++i)
-        {
-            displaceVec[i] *= factor;
-        }
-    }
+    ScaleExplosion(expFactor, scaleFactor, normalize);
 }
 
 
@@ -1542,9 +1682,17 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double factor,
 //  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
+//      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
+//      Added cylinderPoint1, cylinderPoint2, and cylinderRadius. 
+//
 // ****************************************************************************
 
-CylinderExplosion::CylinderExplosion() {}
+CylinderExplosion::CylinderExplosion() 
+{
+    cylinderPoint1 = NULL;
+    cylinderPoint2 = NULL;
+    cylinderRadius = 0.0;
+}
 
 
 // ****************************************************************************
@@ -1562,7 +1710,9 @@ CylinderExplosion::CylinderExplosion() {}
 //      dataCenter    The x,y,z coords of the center of the data
 //                    to be displaced. 
 //
-//      factor        A factor to displace the data by. 
+//      expFactor     A factor to displace the data by. 
+//
+//      scaleFactor   A factor to scale the exposion by. 
 //
 //      normalize     Should we normalize the displacement vector?
 //                    Yes produces 'impact' explosion, and no produces
@@ -1573,12 +1723,36 @@ CylinderExplosion::CylinderExplosion() {}
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
+//      Added scaleFactor argument, replaced scale
+//      section with class method, and added safety 
+//      checks. 
+//
 // ****************************************************************************
 
 void
-CylinderExplosion::CalcDisplacement(double *dataCenter, double factor, 
-                                    bool normalize)
+CylinderExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
+                                    double scaleFactor, bool normalize)
 {
+    if (cylinderPoint1 == NULL)
+    {
+        char recieved[256];
+        char expected[256];
+        sprintf(expected, "cylinderPoint1 to be non-NULL");
+        sprintf(recieved, "NULL cylinderPoint1");
+        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        return;
+    }
+    else if (cylinderPoint2 == NULL)
+    {
+        char recieved[256];
+        char expected[256];
+        sprintf(expected, "cylinderPoint2 to be non-NULL");
+        sprintf(recieved, "NULL cylinderPoint2");
+        EXCEPTION2(UnexpectedValueException, expected, recieved);
+        return;
+    }
+
     //
     // Project from our data center to the line which runs 
     // through the center of our cylinder. 
@@ -1626,29 +1800,5 @@ CylinderExplosion::CalcDisplacement(double *dataCenter, double factor,
         displaceVec[i] = dataCenter[i] - projection[i];
     }
 
-    double mag = sqrt(displaceVec[0]*displaceVec[0] +
-                      displaceVec[1]*displaceVec[1] +
-                      displaceVec[2]*displaceVec[2]);
-
-    if (mag == 0.0)
-    {
-        mag = 1.0;
-    }
-
-    if (normalize)
-    {
-        factor /= mag;
-        for (int i = 0; i < 3; ++i)
-        {
-            displaceVec[i] *= factor;
-        }
-    }
-    else
-    {
-        factor *= SCALE * mag;
-        for (int i = 0; i < 3; ++i)
-        {
-            displaceVec[i] *= factor;
-        }
-    }
+    ScaleExplosion(expFactor, scaleFactor, normalize);
 }

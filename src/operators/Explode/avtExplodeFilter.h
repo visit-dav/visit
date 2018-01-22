@@ -105,6 +105,7 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
     avtDataTree_p                  ExtractMaterialsFromDomains(avtDataTree_p);
 
     ExplodeAttributes              atts;
+    double                         scaleFactor;
     
     Explosion                     *explosion;
     double                        *globalMatExtents;
@@ -124,6 +125,12 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
 //  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
+//  Modifications:
+//      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
+//      Moved variables specific to explosion types from
+//      this base class to the children and added 
+//      ScaleExplosion(). 
+//
 // ****************************************************************************
 
 class Explosion
@@ -131,17 +138,18 @@ class Explosion
   public:
                          Explosion();
     virtual             ~Explosion() {};
-    virtual void         CalcDisplacement(double *, double, bool) = 0;
-    void                 DisplaceMaterial(vtkUnstructuredGrid *, 
-                                          double *);
-    void                 ExplodeAllCells(vtkDataSet *,
-                                         vtkUnstructuredGrid *);
-    void                 ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *, 
-                                                    double *);
 
-    //
-    // Variables for all types
-    //
+    virtual void         CalcDisplacement(double *, double, 
+                                          double, bool) = 0;
+    void                 DisplaceMaterial(vtkUnstructuredGrid *, 
+                                          double *, double);
+    void                 ExplodeAllCells(vtkDataSet *,
+                                         vtkUnstructuredGrid *, 
+                                         double);
+    void                 ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *, 
+                                                    double *, double);
+    void                 ScaleExplosion(double, double, bool);
+
     std::string          materialName;
     bool                 explodeMaterialCells;
     bool                 explodeAllCells;
@@ -149,24 +157,6 @@ class Explosion
     double               matExplosionFactor;
     double               cellExplosionFactor;
     double               displaceVec[3];
-
-    //
-    // Point variables
-    //
-    double              *explosionPoint;
-
-    //
-    // Plane variables
-    //
-    double              *planePoint;
-    double              *planeNorm;
-
-    //
-    // Cylinder variables
-    //
-    double              *cylinderPoint1;
-    double              *cylinderPoint2;
-    double               cylinderRadius;
 };
 
 
@@ -179,6 +169,10 @@ class Explosion
 //  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
+//  Modifications:
+//      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
+//      Added explosionPoint. 
+//
 // ****************************************************************************
 
 class PointExplosion : virtual public Explosion
@@ -186,7 +180,10 @@ class PointExplosion : virtual public Explosion
   public:
                       PointExplosion();
     virtual          ~PointExplosion() {};
-    virtual void      CalcDisplacement(double *, double, bool);
+    virtual void      CalcDisplacement(double *, double, 
+                                       double, bool);
+
+    double           *explosionPoint;
 };
 
 
@@ -199,6 +196,10 @@ class PointExplosion : virtual public Explosion
 //  Programmer: Alister Maguire 
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
+//  Modifications:
+//      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
+//      Added planePoint and planeNorm.
+//
 // ****************************************************************************
 
 class PlaneExplosion : virtual public Explosion
@@ -206,7 +207,11 @@ class PlaneExplosion : virtual public Explosion
   public:
                       PlaneExplosion();
     virtual          ~PlaneExplosion() {};
-    virtual void      CalcDisplacement(double *, double, bool);
+    virtual void      CalcDisplacement(double *, double, 
+                                       double, bool);
+
+    double           *planePoint;
+    double           *planeNorm;
 };
 
 
@@ -219,6 +224,10 @@ class PlaneExplosion : virtual public Explosion
 //  Programmer: Alister Maguire 
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
 //
+//  Modifications:
+//      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
+//      Added cylinderPoint1, cylinderPoint2, and cylinderRadius. 
+//
 // ****************************************************************************
 
 class CylinderExplosion : virtual public Explosion
@@ -226,7 +235,12 @@ class CylinderExplosion : virtual public Explosion
   public:
                       CylinderExplosion();
     virtual          ~CylinderExplosion() {};
-    virtual void      CalcDisplacement(double *, double, bool);
+    virtual void      CalcDisplacement(double *, double, 
+                                       double, bool);
+
+    double           *cylinderPoint1;
+    double           *cylinderPoint2;
+    double            cylinderRadius;
 };
 
 
