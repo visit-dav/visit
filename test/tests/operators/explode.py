@@ -18,6 +18,9 @@
 #      Alister Maguire, Wed Jan 17 15:28:46 PST 2018
 #      Added tests of multi-domain data.    
 #
+#      Alister Maguire, Mon Jan 22 11:00:51 PST 2018
+#      Changed explosion factors to account of scale update. 
+#
 # ----------------------------------------------------------------------------
 
 
@@ -56,7 +59,7 @@ def unstructured_explosions():
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "4"
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 10
+    ExplodeAtts.cellExplosionFactor = .8
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact 
     SetOperatorOptions(ExplodeAtts, 1)
     DrawPlots()
@@ -72,7 +75,7 @@ def unstructured_explosions():
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "3"
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 10
+    ExplodeAtts.cellExplosionFactor = .8
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact  
     SetOperatorOptions(ExplodeAtts, 1)
     DrawPlots()
@@ -88,7 +91,7 @@ def unstructured_explosions():
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "1"
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 5
+    ExplodeAtts.cellExplosionFactor = .3
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact  
     SetOperatorOptions(ExplodeAtts, 2)
     DrawPlots()
@@ -103,7 +106,7 @@ def unstructured_explosions():
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "2"
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 3
+    ExplodeAtts.cellExplosionFactor = .1
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact  # Impact, Scatter
     SetOperatorOptions(ExplodeAtts, 3)
     DrawPlots()
@@ -148,7 +151,7 @@ def curvilinear_explosions():
     ExplodeAtts.material = "1"
     ExplodeAtts.cylinderRadius = 0
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 10
+    ExplodeAtts.cellExplosionFactor = 1
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact 
     ExplodeAtts.explodeAllCells = 0
     SetOperatorOptions(ExplodeAtts, 1)
@@ -158,11 +161,11 @@ def curvilinear_explosions():
     # Explode by plane
     ExplodeAtts = ExplodeAttributes()
     ExplodeAtts.explosionType = ExplodeAtts.Plane  
+    ExplodeAtts.explodeMaterialCells = 0
     ExplodeAtts.planePoint = (0, 2, 20)
     ExplodeAtts.planeNorm = (0, 1, 0)
-    ExplodeAtts.materialExplosionFactor = 10
+    ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "4"
-    ExplodeAtts.cellExplosionFactor = 1
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact 
     ExplodeAtts.explodeAllCells = 0
     SetOperatorOptions(ExplodeAtts, 1)
@@ -175,7 +178,7 @@ def curvilinear_explosions():
     ExplodeAtts.explosionPoint = (0, 0, 0)
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "1"
-    ExplodeAtts.cellExplosionFactor = 10
+    ExplodeAtts.cellExplosionFactor = 1
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact 
     ExplodeAtts.explodeAllCells = 1
     SetOperatorOptions(ExplodeAtts, 1)
@@ -188,7 +191,7 @@ def curvilinear_explosions():
     ExplodeAtts.explosionPoint = (0, 3, 10)
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "1"
-    ExplodeAtts.cellExplosionFactor = 10
+    ExplodeAtts.cellExplosionFactor = 1
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact  
     ExplodeAtts.explodeAllCells = 1
     SetOperatorOptions(ExplodeAtts, 1)
@@ -201,7 +204,7 @@ def curvilinear_explosions():
     ExplodeAtts.explosionPoint = (0, 3, 10)
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "1"
-    ExplodeAtts.cellExplosionFactor = 30
+    ExplodeAtts.cellExplosionFactor = 3
     ExplodeAtts.explosionPattern = ExplodeAtts.Scatter 
     ExplodeAtts.explodeAllCells = 1
     SetOperatorOptions(ExplodeAtts, 1)
@@ -215,7 +218,7 @@ def curvilinear_explosions():
     ExplodeAtts.materialExplosionFactor = 1
     ExplodeAtts.material = "1"
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 15
+    ExplodeAtts.cellExplosionFactor = 1.5
     ExplodeAtts.explosionPattern = ExplodeAtts.Scatter 
     ExplodeAtts.explodeAllCells = 0
     SetOperatorOptions(ExplodeAtts, 1)
@@ -230,7 +233,7 @@ def curvilinear_explosions():
     ExplodeAtts.material = "1"
     ExplodeAtts.cylinderRadius = 0
     ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = 15
+    ExplodeAtts.cellExplosionFactor = 1.5
     ExplodeAtts.explosionPattern = ExplodeAtts.Scatter  
     ExplodeAtts.explodeAllCells = 0
     SetOperatorOptions(ExplodeAtts, 1)
@@ -243,7 +246,7 @@ def curvilinear_explosions():
     ExplodeAtts.cylinderPoint1 = (0, 1, 10)
     ExplodeAtts.cylinderPoint2 = (0, 0, 10)
     ExplodeAtts.cylinderRadius = 4
-    ExplodeAtts.cellExplosionFactor = 4
+    ExplodeAtts.cellExplosionFactor = .4
     ExplodeAtts.explosionPattern = ExplodeAtts.Impact
     ExplodeAtts.explodeAllCells = 1
     SetOperatorOptions(ExplodeAtts, 1)
@@ -350,7 +353,7 @@ def multi_tire():
     expAtts = ExplodeAttributes()
     expAtts.materialExplosionFactor = 0
     expAtts.explodeMaterialCells = 1
-    expAtts.cellExplosionFactor = 50
+    expAtts.cellExplosionFactor = 1
     expAtts.explosionType = expAtts.Plane 
     expAtts.planePoint = (0, 0, 0)
     expAtts.planeNorm = (0, 1, 0)
@@ -362,7 +365,7 @@ def multi_tire():
 
     AddOperator("Explode")
     expAtts = ExplodeAttributes()
-    expAtts.materialExplosionFactor = 200
+    expAtts.materialExplosionFactor = 1
     expAtts.explodeMaterialCells = 0
     expAtts.cellExplosionFactor = 0
     expAtts.explosionType = expAtts.Point 
