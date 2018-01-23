@@ -346,6 +346,7 @@ static std::string log_CheckForNewStatesRPC(ViewerRPC *rpc)
 
 static std::string log_CreateDatabaseCorrelationRPC(ViewerRPC *rpc)
 {
+    std::string q("\"");
     char str[SLEN];
     std::string s("CreateDatabaseCorrelation(\"");
     s += EscapeFilename(rpc->GetDatabase());
@@ -353,7 +354,7 @@ static std::string log_CreateDatabaseCorrelationRPC(ViewerRPC *rpc)
     const stringVector &dbs = rpc->GetProgramOptions();
     for(unsigned int i = 0; i < dbs.size(); ++i)
     {
-        s += EscapeFilename(dbs[i]);
+        s += (q + EscapeFilename(dbs[i]) + q);
         if(i < dbs.size() - 1)
             s += ", ";
     }
