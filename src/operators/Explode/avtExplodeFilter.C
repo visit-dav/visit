@@ -869,8 +869,8 @@ avtExplodeFilter::Execute(void)
         int numExtents = 6 * atts.GetBoundaryNames().size();
         int half       = numExtents / 2;
 
-        double curMinExtents[half];
-        double curMaxExtents[half];
+        double *curMinExtents = new double[half];
+        double *curMaxExtents = new double[half];
         for (int i = 0; i < half; ++i)
         {
             int idx = i*2;
@@ -878,8 +878,8 @@ avtExplodeFilter::Execute(void)
             curMaxExtents[i] = globalMatExtents[idx + 1];
         }
  
-        double trueMinExtents[half];
-        double trueMaxExtents[half];
+        double *trueMinExtents = new double[half];
+        double *trueMaxExtents = new double[half];
 
         MPI_Allreduce(&curMinExtents[0], &trueMinExtents[0], half,
             MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
@@ -892,6 +892,10 @@ avtExplodeFilter::Execute(void)
             globalMatExtents[idx]     = trueMinExtents[i];
             globalMatExtents[idx + 1] = trueMaxExtents[i];
         }
+        delete [] curMinExtents;
+        delete [] curMaxExtents;
+        delete [] trueMinExtents;
+        delete [] trueMaxExtents;
     }
 
 #endif
