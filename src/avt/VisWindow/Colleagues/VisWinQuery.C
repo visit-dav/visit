@@ -439,6 +439,10 @@ VisWinQuery::QueryIsValid(const VisualCueInfo *vqPoint, const VisualCueInfo *vqL
 //    Now passing in a highlight color to the pick actor's 
 //    AddLine method. 
 //
+//    Matt Larsen, Mon Jan 22 11:11:11 PST 2018
+//    Correcting error where zone pick highlighing information
+//    leaked over to the next node pick
+//
 // ****************************************************************************
 
 void 
@@ -463,8 +467,8 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
         pp->SetAttachmentPoint(pt[0], pt[1], distance);
     }
 
-    pp->UseGlyph(vq->GetGlyphType() != "");
-    
+    bool useGlyph = vq->GetGlyphType() != "";
+    pp->UseGlyph(useGlyph);
     pp->SetDesignator(vq->GetLabel());
 
     double fg[3];
@@ -478,7 +482,7 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
     if(numPoints > 1 && (numPoints % 2 == 0))
         linesExist = true;
     const int numLines = numPoints / 2;
-    if(linesExist)
+    if(linesExist && !useGlyph)
     {  
         for(int i = 0; i < numLines; ++i)
         {
