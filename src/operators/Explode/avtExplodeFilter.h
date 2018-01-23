@@ -43,8 +43,7 @@
 #ifndef AVT_Explode_FILTER_H
 #define AVT_Explode_FILTER_H
 
-#include <avtPluginDataTreeIterator.h>
-#include <avtSIMODataTreeIterator.h>
+#include <avtDatasetToDatasetFilter.h>
 #include <avtPluginFilter.h>
 
 #include <ExplodeAttributes.h>
@@ -69,6 +68,9 @@ class Explosion;
 //      Changed inheritance from avtSIMODataTreeIterator to
 //      avtDatasetToDatasetFilter for MPI use. Also added
 //      globalMatExtents and GetMaterialIndex(). 
+//
+//      Alister Maguire, Mon Jan 22 16:16:27 PST 2018
+//      Added scaleFactor. 
 //
 // ****************************************************************************
 
@@ -105,10 +107,10 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
     avtDataTree_p                  ExtractMaterialsFromDomains(avtDataTree_p);
 
     ExplodeAttributes              atts;
-    double                         scaleFactor;
     
     Explosion                     *explosion;
     double                        *globalMatExtents;
+    double                         scaleFactor;
 };
 
 

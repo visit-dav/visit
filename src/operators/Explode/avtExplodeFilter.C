@@ -393,7 +393,8 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
     stringVector   labels;
     int            nDataSets     = 0;
     vtkDataSet   **out_ds        = NULL;
-    vtkDataArray  *boundaryArray = in_ds->GetCellData()->GetArray("avtSubsets");
+    vtkDataArray  *boundaryArray = 
+        in_ds->GetCellData()->GetArray("avtSubsets");
 
     //
     // If we have a boundary array, then we have materials to 
@@ -408,9 +409,9 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
                    << label.c_str() << ")" << endl;
             debug1 << "    that cannot be parsed correctly.  This can happen "
                    << "if" << endl;
-            debug1 << "    another filter has over-written the boundary labels "
+            debug1 << "   another filter has over-written the boundary labels "
                    << "in" << endl;
-            debug1 << "    its output data tree.  avtExplodeFilter is returning"
+            debug1 << "   its output data tree.  avtExplodeFilter is returning"
                    << endl;
             debug1 << "    an empty data tree." << endl;
             avtDataTree_p outTree = new avtDataTree();
@@ -535,7 +536,8 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
                 outPD->CopyAllocate(inPD);
                 outPD->Allocate(numCells * 8);
 
-                for (it->InitTraversal(); !it->IsDoneWithTraversal(); it->GoToNextCell())
+                for (it->InitTraversal(); !it->IsDoneWithTraversal(); 
+                    it->GoToNextCell())
                 {
                  
                     vtkIdType cellId = it->GetCellId();
@@ -859,7 +861,7 @@ avtExplodeFilter::Execute(void)
 #ifdef PARALLEL
 
     //
-    // If we're in parallel, we neeed to update 
+    // If we're in parallel, we need to update 
     // material extents across all processors.
     //
     if (PAR_Size() > 1)
@@ -1151,7 +1153,9 @@ Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid,
 {
     double dataCenter[3];
     for (int i = 0; i < 3; ++i)
+    {
         dataCenter[i] = (matExtents[i*2] + matExtents[(i*2)+1]) / 2.0;
+    }
 
     //
     // Calculate the explosion displacement. The method used
@@ -1205,7 +1209,8 @@ Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid,
 
 void
 Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,  
-                                      double *matExtents, double scaleFactor)
+                                      double *matExtents, 
+                                      double scaleFactor)
 {
     double dataCenter[3];
     for (int i = 0; i < 3; ++i)
@@ -1447,6 +1452,8 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
 //      Scale and possibly normalize the displacement vector. 
 //
 //  Arguments:
+//      expFactor      A factor to explode by. 
+//
 //      scaleFactor    A factor to scale by. 
 //
 //      normalize      Wheter or not we normalize the vector. 
@@ -1659,18 +1666,22 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor,
     double alpha = 0.0;
     for (int i = 0; i < 3; ++i)
     {
-        alpha += (planeNorm[i] * planePoint[i]) - (planeNorm[i] * dataCenter[i]);
+        alpha += (planeNorm[i] * planePoint[i]) - 
+            (planeNorm[i] * dataCenter[i]);
         denom += planeNorm[i] * planeNorm[i];
     }
 
     alpha /= denom;
 
     //
-    // Subtract the projection from the cell center
+    // Subtract the projection from the data center
     // to get the distance from the plane. 
     //
     for (int i = 0; i < 3; ++i)
-        displaceVec[i] = dataCenter[i] -(dataCenter[i] + (alpha * planeNorm[i]));
+    {
+        displaceVec[i] = dataCenter[i] - 
+            (dataCenter[i] + (alpha * planeNorm[i]));
+    }
 
     ScaleExplosion(expFactor, scaleFactor, normalize);
 }
@@ -1783,7 +1794,10 @@ CylinderExplosion::CalcDisplacement(double *dataCenter, double expFactor,
     //
     double dist = 0.0;
     for (int i = 0; i < 3; ++i)
-        dist += (dataCenter[i] - projection[i]) * (dataCenter[i] - projection[i]);
+    {
+        dist += (dataCenter[i] - projection[i]) * 
+            (dataCenter[i] - projection[i]);
+    }
     if (dist <= cylinderRadius)
     {
         for (int i = 0; i < 3; ++i)
