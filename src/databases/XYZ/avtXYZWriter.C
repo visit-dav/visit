@@ -123,13 +123,17 @@ avtXYZWriter::WriteHeaders(const avtDatabaseMetaData *md,
 //
 //    Mark C. Miller, Thu Aug 28 15:41:12 PDT 2014
 //    Made it less strict about type of vtk dataset that arrives here.
+//
+//    Mark C. Miller, Wed Jan 24 12:26:30 PST 2018
+//    Added logic to output only points referenced by cells of non-zero size.    
 // ****************************************************************************
 
 void
 avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
 {
     int natoms = ds->GetNumberOfPoints();
-    if (natoms == 0)
+    int ncells = ds->GetNumberOfCells();
+    if (natoms == 0 || ncells == 0)
         return;
 
     std::string filename;
@@ -166,11 +170,26 @@ avtXYZWriter::WriteChunk(vtkDataSet *ds, int chunk)
         }
     }
 
+    // Tag which points are used by cells
+    vector<bool> usedpoints(natoms, false);
+    for (int c = 0; c < ncells; c++)
+    {
+        vtkCell *cell = ds->GetCell(c);
+        for (int j = 0 ; j < cell->GetNumberOfPoints() ; j++)
+            usedpoints[cell->GetPointId(j)] = true;
+    }
+
+    int nused = 0;
+    for (int a = 0; a < natoms; a++)
+        if (usedpoints[a]) nused++;
+
     // Write out the atoms.
-    out << "  "<< natoms << endl;
+    out << "  "<< nused << endl;
     out << "visit export chunk "<<chunk<<endl;
     for (int a = 0; a < natoms; a++)
     {
+        if (!usedpoints[a]) continue;
+
         double *coord = ds->GetPoint((vtkIdType)a);
 
         // Get a viable atomic number
