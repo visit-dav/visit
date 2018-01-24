@@ -8,7 +8,7 @@
 # Date:   October 26, 1996
 #
 # Usage
-#    visit-install    [-c anag | anl | arl | asu | awe | clemson | cscs |"
+#    visit-install    [-c anl | arl | asu | awe | chombo | clemson | cscs |"
 #                         eth_zurich | llnl_open | llnl_open_rz |"
 #                         llnl_open_cz | llnl_closed | lsu | ncar |"
 #                         nersc | nics | ohio | ornl | princeton |"
@@ -474,7 +474,7 @@ while [ "$option_found" = "true" ]; do
 done
 
 if [ "$#" != "3" ]; then
-   echo "Usage: visit-install [-c anag | anl | arl | asu | awe | clemson | cscs |"
+   echo "Usage: visit-install [-c anl | arl | asu | awe | chombo | clemson | cscs |"
    echo "                         eth_zurich | llnl_open | llnl_open_rz |"
    echo "                         llnl_open_cz | llnl_closed | lsu | ncar |"
    echo "                         nersc | nics | ohio | ornl | princeton | "
@@ -595,9 +595,9 @@ if [ "$test" = "true" ]; then
        echo "failed"
        exit 1
     fi
-    echo "Testing anag configuration..."
+    echo "Testing chombo configuration..."
     rm -rf $dir
-    $0 -c anag $version $platform $dir > /dev/null 2>&1
+    $0 -c chombo $version $platform $dir > /dev/null 2>&1
     files=`ls $dir/$version/bin/customlauncher` 
     if [ "$files" == "" ]; then
        echo "failed"
@@ -821,7 +821,7 @@ while [ "$config" = "prompt" ]; do
          config=none
          ;;
       2)
-         config=anag
+         config=chombo
          ;;
       3)
          config=anl
@@ -892,7 +892,7 @@ done
 case "$config" in
    none)
       ;;
-   anag)
+   chombo)
       ;;
    anl)
       ;;
@@ -939,7 +939,7 @@ case "$config" in
    utah)
       ;;
    *)
-      echo "Illegal configuration option, choices are none, anag, anl,"
+      echo "Illegal configuration option, choices are none, chombo, anl,"
       echo "arl, asu, awe, clemson, cscs, eth_zurich, llnl_open, llnl_open_rz,"
       echo "llnl_open_cz, llnl_closed, lsu, ncar, nersc, nics, ohio, ornl,"
       echo "princeton, sandia, sandia_closed, umich, utah"
@@ -1052,11 +1052,11 @@ echo "1;$config;$bank;$platform" > "$dir"/$version+/$platformDir/.installinfo
 rm -rf "$dir"/$version+/.visit
 mkdir  "$dir"/$version+/.visit
 mkdir  "$dir"/$version+/.visit/hosts
-if [ "$config" = "anag" ]; then
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/config                 "$dir"/$version+/.visit/
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/guiconfig              "$dir"/$version+/.visit/
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/visitrc                "$dir"/$version+/.visit/
-   cp "$dir"/$version+/$platformDir/resources/hosts/anag/customlauncher         "$dir"/$version+/bin/
+if [ "$config" = "chombo" ]; then
+   cp "$dir"/$version+/$platformDir/resources/hosts/chombo/config               "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/chombo/guiconfig            "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/chombo/visitrc              "$dir"/$version+/.visit/
+   cp "$dir"/$version+/$platformDir/resources/hosts/chombo/customlauncher       "$dir"/$version+/bin/
 elif [ "$config" = "anl" ]; then
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/*.xml               "$dir"/$version+/.visit/hosts/
    cp "$dir"/$version+/$platformDir/resources/hosts/$config/customlauncher      "$dir"/$version+/bin/
