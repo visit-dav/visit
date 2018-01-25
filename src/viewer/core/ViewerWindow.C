@@ -4451,23 +4451,22 @@ ViewerWindow::RecenterView3d(const double *limits)
     //
     // Determine the zoom factor.
     //
-    double    oldWidth;
-    double    zoomFactor;
+    double oldWidth = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
+                                  (boundingBox3d[1] - boundingBox3d[0])) +
+                                 ((boundingBox3d[3] - boundingBox3d[2]) *
+                                  (boundingBox3d[3] - boundingBox3d[2])) +
+                                 ((boundingBox3d[5] - boundingBox3d[4]) *
+                                  (boundingBox3d[5] - boundingBox3d[4])));
+    
+    if( oldWidth == 0.0 )
+      oldWidth = 0.001;
 
-    oldWidth = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                           (boundingBox3d[1] - boundingBox3d[0])) +
-                          ((boundingBox3d[3] - boundingBox3d[2]) *
-                           (boundingBox3d[3] - boundingBox3d[2])) +
-                          ((boundingBox3d[5] - boundingBox3d[4]) *
-                           (boundingBox3d[5] - boundingBox3d[4])));
-    zoomFactor = oldWidth / view3D.parallelScale;
+    double zoomFactor = oldWidth / view3D.parallelScale;
 
     //
     // Set the new window.
     //
-    int       i;
-
-    for (i = 0; i < 6; i++)
+    for (int i = 0; i < 6; i++)
     {
         boundingBox3d[i] = limits[i];
     }
@@ -4499,10 +4498,12 @@ ViewerWindow::RecenterView3d(const double *limits)
     //
     // Calculate the new parallel scale.
     //
-    double newWidth;
-    newWidth = 0.5 * sqrt(sizeOrig[0]*sizeOrig[0] +
-                          sizeOrig[1]*sizeOrig[1] +
-                          sizeOrig[2]*sizeOrig[2]);
+    double newWidth = 0.5 * sqrt(sizeOrig[0]*sizeOrig[0] +
+                                 sizeOrig[1]*sizeOrig[1] +
+                                 sizeOrig[2]*sizeOrig[2]);
+    
+    if( newWidth == 0.0 )
+      newWidth = 0.001;
 
     view3D.parallelScale = newWidth / zoomFactor;
 
@@ -4990,18 +4991,19 @@ ViewerWindow::ResetView3d()
     // with orthographic projections, whereas the distance controls the
     // scale with perspective projections.
     //
-    double    width;
-    double    distance;
-
-    width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                        (boundingBox3d[1] - boundingBox3d[0])) +
-                       ((boundingBox3d[3] - boundingBox3d[2]) *
-                        (boundingBox3d[3] - boundingBox3d[2])) +
-                       ((boundingBox3d[5] - boundingBox3d[4]) *
-                        (boundingBox3d[5] - boundingBox3d[4])));
+    double width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
+                               (boundingBox3d[1] - boundingBox3d[0])) +
+                              ((boundingBox3d[3] - boundingBox3d[2]) *
+                               (boundingBox3d[3] - boundingBox3d[2])) +
+                              ((boundingBox3d[5] - boundingBox3d[4]) *
+                               (boundingBox3d[5] - boundingBox3d[4])));
+    
+    if( width == 0.0 )
+      width = 0.001;
 
     view3D.viewAngle = 30.;
-    distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
+
+    double distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
 
     if (navigationMode == InteractorAttributes::Flythrough)
     {
@@ -5192,16 +5194,17 @@ ViewerWindow::AdjustView3d(const double *limits)
     //
     // Determine the zoom factor.
     //
-    double    width;
-    double    zoomFactor;
+    double width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
+                               (boundingBox3d[1] - boundingBox3d[0])) +
+                              ((boundingBox3d[3] - boundingBox3d[2]) *
+                               (boundingBox3d[3] - boundingBox3d[2])) +
+                              ((boundingBox3d[5] - boundingBox3d[4]) *
+                               (boundingBox3d[5] - boundingBox3d[4])));
+    
+    if( width == 0.0 )
+      width = 0.001;
 
-    width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                        (boundingBox3d[1] - boundingBox3d[0])) +
-                       ((boundingBox3d[3] - boundingBox3d[2]) *
-                        (boundingBox3d[3] - boundingBox3d[2])) +
-                       ((boundingBox3d[5] - boundingBox3d[4]) *
-                        (boundingBox3d[5] - boundingBox3d[4])));
-    zoomFactor = width / view3D.parallelScale;
+    double zoomFactor = width / view3D.parallelScale;
 
     //
     // Determine the pan factor.
@@ -5218,9 +5221,7 @@ ViewerWindow::AdjustView3d(const double *limits)
     //
     // Set the new window.
     //
-    int       i;
-
-    for (i = 0; i < 6; i++)
+    for (int i = 0; i < 6; i++)
     {
         boundingBox3d[i] = limits[i];
     }
@@ -5235,6 +5236,10 @@ ViewerWindow::AdjustView3d(const double *limits)
                        ((boundingBox3d[5] - boundingBox3d[4]) *
                         (boundingBox3d[5] - boundingBox3d[4])));
 
+    if( width == 0.0 )
+      width = 0.001;
+
+    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
     view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2. +
                       panFactor[0] * width;
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2. +
@@ -5323,16 +5328,16 @@ ViewerWindow::SetInitialView3d()
     //
     // Calculate the new parallel scale.
     //
-    double    width;
-    double    distance;
+    double width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
+                               (boundingBox3d[1] - boundingBox3d[0])) +
+                              ((boundingBox3d[3] - boundingBox3d[2]) *
+                               (boundingBox3d[3] - boundingBox3d[2])) +
+                              ((boundingBox3d[5] - boundingBox3d[4]) *
+                               (boundingBox3d[5] - boundingBox3d[4])));
+    if( width == 0.0 )
+      width = 0.001;
 
-    width = 0.5 * sqrt(((boundingBox3d[1] - boundingBox3d[0]) *
-                        (boundingBox3d[1] - boundingBox3d[0])) +
-                       ((boundingBox3d[3] - boundingBox3d[2]) *
-                        (boundingBox3d[3] - boundingBox3d[2])) +
-                       ((boundingBox3d[5] - boundingBox3d[4]) *
-                        (boundingBox3d[5] - boundingBox3d[4])));
-    distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
+    double distance = width / tan (view3D.viewAngle * 3.1415926535 / 360.);
 
     if (navigationMode == InteractorAttributes::Flythrough)
     {

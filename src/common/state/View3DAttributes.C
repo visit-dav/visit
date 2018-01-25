@@ -1663,18 +1663,18 @@ View3DAttributes::ResetView(const double *bbox)
     // with orthographic projections, whereas the distance controls the
     // scale with perspective projections.
     //
-    double    width;
-
-    width = 0.5 * sqrt(((bbox[1] - bbox[0]) *
-                        (bbox[1] - bbox[0])) +
-                       ((bbox[3] - bbox[2]) *
-                        (bbox[3] - bbox[2])) +
-                       ((bbox[5] - bbox[4]) *
-                        (bbox[5] - bbox[4])));
-
-    view3D.viewAngle = 30.;
+    double width = 0.5 * sqrt(((bbox[1] - bbox[0]) *
+                               (bbox[1] - bbox[0])) +
+                              ((bbox[3] - bbox[2]) *
+                               (bbox[3] - bbox[2])) +
+                              ((bbox[5] - bbox[4]) *
+                               (bbox[5] - bbox[4])));
+    
+    if( width == 0.0 )
+      width = 0.001;
 
     view3D.parallelScale = width;
+    view3D.viewAngle = 30.;
 
     //
     // Set the view up vector, the focal point and the camera position.
@@ -1724,4 +1724,3 @@ View3DAttributes::ResetView(const double *bbox)
     // Copy the object into this.
     *this = view3D;
 }
-

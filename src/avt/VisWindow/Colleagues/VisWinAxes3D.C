@@ -483,31 +483,32 @@ VisWinAxes3D::SetBounds(double bounds[6], double scales[3])
         currentScaleFactors[1] = scales[1];
         currentScaleFactors[2] = scales[2];
         
-
+        //
+        // Add a fudge-factor to prevent axes from being obscured by plots
+        // that fill their full extents.
+        //
+        
         double fudgeX;
         double fudgeY;
         double fudgeZ;
 
-       //
-       // Add a fudge-factor to prevent axes from being obscured by plots
-       // that fill their full extents.
-       //
-       // if the limits are initialized to +- DBL_MAX then doing math
-       // with them will cause an excepton so check them first.
-       if ( (bounds[1] == -DBL_MAX  && bounds[0] ==  DBL_MAX) ||
-            (bounds[3] == -DBL_MAX  && bounds[2] ==  DBL_MAX) ||
-            (bounds[5] == -DBL_MAX  && bounds[4] ==  DBL_MAX))
-       {
-         fudgeX = 0.001;
-         fudgeY = 0.001;
-         fudgeZ = 0.001;
-        }
+        // If the limits are initialized to +- DBL_MAX, negative, or
+        // zero then doing math with them will cause an excepton.       
+        if (bounds[1] > bounds[0])
+          fudgeX = (bounds[1] - bounds[0]) * 0.001;
         else
-        {
-           fudgeX = (bounds[1] - bounds[0]) * 0.001;
-           fudgeY = (bounds[3] - bounds[2]) * 0.001;
-           fudgeZ = (bounds[5] - bounds[4]) * 0.001;
-        }
+          fudgeX = 0.00001;
+          
+        if (bounds[3] > bounds[2])
+          fudgeY = (bounds[3] - bounds[2]) * 0.001;
+        else
+          fudgeY = 0.00001;
+
+        if (bounds[5] > bounds[4])
+          fudgeZ = (bounds[5] - bounds[4]) * 0.001;
+        else
+          fudgeZ = 0.00001;
+        
         //
         // Add a fudge-factor to prevent axes from being obscured by plots
         // that fill their full extents. 
@@ -1484,4 +1485,3 @@ VisWinAxes3D::Set3DAxisScalingFactors(bool scale,
         SetBounds(currentBounds, newS);
     }
 }
-
