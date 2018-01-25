@@ -5239,7 +5239,6 @@ ViewerWindow::AdjustView3d(const double *limits)
     if( width == 0.0 )
       width = 0.001;
 
-    std::cerr << __FILE__ << "  " << __FUNCTION__ << "  " << __LINE__ << std::endl;
     view3D.focus[0] = (boundingBox3d[1] + boundingBox3d[0]) / 2. +
                       panFactor[0] * width;
     view3D.focus[1] = (boundingBox3d[3] + boundingBox3d[2]) / 2. +
@@ -5334,6 +5333,7 @@ ViewerWindow::SetInitialView3d()
                                (boundingBox3d[3] - boundingBox3d[2])) +
                               ((boundingBox3d[5] - boundingBox3d[4]) *
                                (boundingBox3d[5] - boundingBox3d[4])));
+
     if( width == 0.0 )
       width = 0.001;
 

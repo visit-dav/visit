@@ -348,9 +348,8 @@ View3DAttributes::ResetView(const double *bbox)
     if( width == 0.0 )
       width = 0.001;
 
-    view3D.viewAngle = 30.;
-
     view3D.parallelScale = width;
+    view3D.viewAngle = 30.;
 
     //
     // Set the view up vector, the focal point and the camera position.
