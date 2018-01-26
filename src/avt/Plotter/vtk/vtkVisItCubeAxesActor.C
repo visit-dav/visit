@@ -1107,7 +1107,7 @@ Digits(double min, double max )
     int    ipow10  = (int)floor(pow10);
     int    digitsPastDecimal = -ipow10;
 
-    if (!isfinite(pow10) || digitsPastDecimal < 0) 
+    if (!std::isfinite(pow10) || digitsPastDecimal < 0) 
     {
         //
         // The range is more than 10, but not so big we need scientific
