@@ -118,6 +118,9 @@ QvisExplodeWindow::~QvisExplodeWindow()
 //    Alister Maguire, Thu Dec 21 15:46:39 PST 2017
 //    Completely refactored for a better looking/acting gui. 
 //
+//    Alister Maguire, Mon Jan 29 10:12:44 PST 2018
+//    Changed 'Explosions' title to 'Origin'. 
+//
 // ****************************************************************************
 
 void
@@ -127,7 +130,7 @@ QvisExplodeWindow::CreateWindowContents()
     topLayout->addLayout(mainLayout);
 
     QGroupBox *typeGroup = new QGroupBox(central);
-    typeGroup->setTitle(tr("Explosions"));
+    typeGroup->setTitle(tr("Origin"));
     mainLayout->addWidget(typeGroup);
 
     QGridLayout *typeLayout = new QGridLayout(typeGroup);

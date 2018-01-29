@@ -72,6 +72,9 @@ class Explosion;
 //      Alister Maguire, Mon Jan 22 16:16:27 PST 2018
 //      Added scaleFactor. 
 //
+//      Alister Maguire, Mon Jan 29 10:12:44 PST 2018
+//      Added MergeDomains().
+//
 // ****************************************************************************
 
 class avtExplodeFilter : public avtDatasetToDatasetFilter,
@@ -105,6 +108,7 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
     int                            GetMaterialIndex(std::string);
     avtDataTree_p                  GetMaterialSubsets(avtDataRepresentation *);
     avtDataTree_p                  ExtractMaterialsFromDomains(avtDataTree_p);
+    avtDataTree_p                  MergeDomains(avtDataTree_p, stringVector);
 
     ExplodeAttributes              atts;
     

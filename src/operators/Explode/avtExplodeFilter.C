@@ -289,6 +289,136 @@ avtExplodeFilter::UpdateGlobalExtents(double *localExtents, std::string matName)
 
 
 // ****************************************************************************
+//  Method: avtExplodeFilter::MergeDomains
+//
+//  Purpose:
+//      Given an input tree, merge all leaves that have identical
+//      domain ids. 
+//
+//  Arguments:
+//      inTree    The input data tree.
+//      labels    The original input labels. 
+//
+//  Returns:
+//      An avtDataTree pointer whose leaves all have unique domain
+//      ids. 
+//
+//  Programmer: Alister Maguire
+//  Creation: Thu Jan 25 11:33:44 PST 2018
+//
+// ****************************************************************************
+
+avtDataTree_p
+avtExplodeFilter::MergeDomains(avtDataTree_p inTree, stringVector labels)
+{
+    vtkAppendFilter *appendFilter = vtkAppendFilter::New(); 
+    std::vector<int> domainIds;
+    std::vector<int> uniqueDomainIds;
+    inTree->GetAllDomainIds(domainIds);
+
+    int numInputLeaves;
+    vtkDataSet **inLeaves = inTree->GetAllLeaves(numInputLeaves);
+
+    //
+    // We need the min and max domains so that we can map
+    // them to their merged indices. 
+    //
+    int maxDomain = INT_MIN;
+    int minDomain = INT_MAX;
+    for (std::vector<int>::iterator it = domainIds.begin();
+        it != domainIds.end(); ++it)
+    {
+        maxDomain = maxDomain > (*it) ? maxDomain : (*it);
+        minDomain = minDomain < (*it) ? minDomain : (*it);
+    }
+
+    int mergeMaxIdx = maxDomain - minDomain;
+    if (mergeMaxIdx < 0)
+    {
+        debug1 << "avtExplodeFilter: mergeMaxIdx < 0!!" << endl;
+        return NULL;
+    }
+
+    for (std::vector<int>::iterator it = domainIds.begin();
+         it != domainIds.end(); ++it)
+    {
+        if (std::find(uniqueDomainIds.begin(), uniqueDomainIds.end(), (*it))
+            == uniqueDomainIds.end())
+        {
+            uniqueDomainIds.push_back(*it);
+        } 
+    }
+
+    int numUniqueDomains = uniqueDomainIds.size();
+
+    vtkDataSet **mergedDomains = new vtkDataSet *[numUniqueDomains];
+    for (int i = 0; i < numUniqueDomains; ++i)
+    {
+        mergedDomains[i] = NULL;
+    }
+
+    for (int i = 0; i < numInputLeaves; ++i)
+    {
+        int mdIdx = domainIds[i] - minDomain;
+
+        if (inLeaves[i] == NULL)
+        {
+            continue;
+        }
+        else if (mergedDomains[mdIdx] == NULL)
+        {
+            vtkUnstructuredGrid *fromLeaf = vtkUnstructuredGrid::New();
+            fromLeaf->DeepCopy(inLeaves[i]);
+            mergedDomains[mdIdx] = fromLeaf;
+        }
+        else
+        {
+            appendFilter->AddInputData(mergedDomains[mdIdx]);
+            appendFilter->AddInputData(inLeaves[i]);
+            appendFilter->Update();
+            vtkUnstructuredGrid *combined = vtkUnstructuredGrid::New();
+            combined->DeepCopy(appendFilter->GetOutput());
+            mergedDomains[mdIdx] = combined;
+            appendFilter->RemoveAllInputs();            
+        }
+    }
+   
+    avtDataTree_p outTree = NULL;
+
+    //
+    // If we only have one leaf, we need to construct a tree with
+    // a single domain. Otherwise, we construct with a list of domains.  
+    //
+    if (numUniqueDomains == 1)
+    {
+        outTree = new avtDataTree(1, mergedDomains,
+            uniqueDomainIds[0], labels);
+    }
+    else
+    {
+        outTree = new avtDataTree(numUniqueDomains, mergedDomains,
+            uniqueDomainIds, labels);
+    }
+
+    for (int i = 0; i < numUniqueDomains; ++i)
+    {
+        if (mergedDomains[i] != NULL)
+        {
+            mergedDomains[i]->Delete();
+        }
+    }
+    delete [] mergedDomains;
+
+    if (appendFilter != NULL)
+    {
+        appendFilter->Delete();
+    }
+
+    return outTree;
+}
+
+
+// ****************************************************************************
 //  Method: avtExplodeFilter::ExtractMaterialsFromDomains
 //
 //  Purpose:
@@ -342,6 +472,7 @@ avtExplodeFilter::ExtractMaterialsFromDomains(avtDataTree_p inTree)
             else
                 outDT[j] = NULL;
         }
+
         avtDataTree_p outTree = new avtDataTree(numChildren, outDT);
         delete [] outDT;
         return outTree;
@@ -371,6 +502,12 @@ avtExplodeFilter::ExtractMaterialsFromDomains(avtDataTree_p inTree)
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jan 29 10:12:44 PST 2018 
+//      When the in_ds has no points or cells, return a tree with
+//      that empty ds instead of NULL (NULL causes domain merging 
+//      issues). Also, don't remove the avtSubsets array as it 
+//      may be needed in future explosions.  
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -383,18 +520,32 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
     int domain = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
 
-    if (in_ds                      == NULL || 
-        in_ds->GetNumberOfPoints() == 0    ||
-        in_ds->GetNumberOfCells()  == 0)
+    if (in_ds == NULL)
     {
         return NULL;
     }
 
     stringVector   labels;
     int            nDataSets     = 0;
-    vtkDataSet   **out_ds        = NULL;
+    vtkDataSet   **outDS        = NULL;
     vtkDataArray  *boundaryArray = 
         in_ds->GetCellData()->GetArray("avtSubsets");
+
+    //
+    // If our dataset has no points or cells, no extraction
+    // is needed. 
+    //
+    if (in_ds->GetNumberOfPoints() == 0 ||
+        in_ds->GetNumberOfCells()  == 0)
+    {
+        outDS    = new vtkDataSet *[1];
+        outDS[0] = in_ds;
+        outDS[0]->Register(NULL); 
+        stringVector labels;
+        labels.push_back(label);
+        avtDataTree_p outDT = new avtDataTree(1, outDS, domain, labels);
+        return outDT;
+    }
 
     //
     // If we have a boundary array, then we have materials to 
@@ -502,7 +653,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         //
         // Create a dataset for each boundary.
         //
-        out_ds = new vtkDataSet *[nSelectedBoundaries];
+        outDS = new vtkDataSet *[nSelectedBoundaries];
 
         //
         // The following call is a workaround for a VTK bug.  It turns
@@ -572,9 +723,8 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
                 // for this dataset to be the material label. 
                 //
                 out_ug->SetPoints(pts); 
-                outCD->RemoveArray("avtSubsets");
                 labels.push_back(selectedBoundaryNames[i]);
-                out_ds[nDataSets] = out_ug;
+                outDS[nDataSets] = out_ug;
                 nDataSets++;
 
                 //
@@ -601,9 +751,9 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         // a data tree.
         //
         labels.push_back(label);
-        out_ds = new vtkDataSet *[1];
-        out_ds[0] = in_ds;
-        out_ds[0]->Register(NULL);  // This makes it symmetric with the 'if'
+        outDS = new vtkDataSet *[1];
+        outDS[0] = in_ds;
+        outDS[0]->Register(NULL);  // This makes it symmetric with the 'if'
                                     // case so we can delete it blindly later.
 
         nDataSets = 1;
@@ -616,21 +766,21 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
 
     if (nDataSets == 0)
     {
-        delete [] out_ds;
+        delete [] outDS;
 
         return NULL;
     }
 
-    avtDataTree_p outDT = new avtDataTree(nDataSets, out_ds, domain, labels);
+    avtDataTree_p outDT = new avtDataTree(nDataSets, outDS, domain, labels);
 
     for (int i = 0 ; i < nDataSets ; i++)
     {
-        if (out_ds[i] != NULL)
+        if (outDS[i] != NULL)
         {
-            out_ds[i]->Delete();
+            outDS[i]->Delete();
         }
     }
-    delete [] out_ds;
+    delete [] outDS;
 
     return outDT;
 }
@@ -793,6 +943,9 @@ avtExplodeFilter::PreExecute(void)
 //      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
 //      Integrated scaleFactor into execution. 
 //
+//      Alister Maguire, Mon Jan 29 10:12:44 PST 2018
+//      Keeping track of original domains now. 
+//
 // ****************************************************************************
 
 void
@@ -910,6 +1063,8 @@ avtExplodeFilter::Execute(void)
 
     int nLeaves;
     stringVector matLabels; 
+    std::vector<int> materialDomains;
+    materialTree->GetAllDomainIds(materialDomains);
     materialTree->GetAllLabels(matLabels);
     vtkDataSet **matLeaves = materialTree->GetAllLeaves(nLeaves);
 
@@ -980,7 +1135,7 @@ avtExplodeFilter::Execute(void)
         //      to be re-calculated when more explosions are added... 
         //
         avtDataRepresentation *ugrid_rep = 
-            new avtDataRepresentation(ugrid, i, matLabels[i]);
+            new avtDataRepresentation(ugrid, materialDomains[i], inLabels[0]);
         outLeaves[i] = ugrid_rep;
     }
         
@@ -997,8 +1152,9 @@ avtExplodeFilter::Execute(void)
         }
     }
     delete [] outLeaves;
-    
-    SetOutputDataTree(outTree); 
+
+    avtDataTree_p mergedDomainTree = MergeDomains(outTree, inLabels);
+    SetOutputDataTree(mergedDomainTree);
 }
 
 
