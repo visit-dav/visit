@@ -4409,23 +4409,67 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
     }
 
     // If time data is present, tell VisIt
+    // if (registry->hasTime()) {
+    //     VsLog::debugLog() << CLASSFUNCLINE << "  "
+    //     << "This file supplies time: "
+    //     << registry->getTime() << std::endl;
+
+    //     md->SetTime(timeStep, registry->getTime());
+    //     md->SetTimeIsAccurate(true, registry->getTime());
+
+    //  // md->SetTimesAreAccurate(true);
+    // }
+
+    // If time cycle is present, tell VisIt
+    // if (registry->hasCycle()) {
+    //     VsLog::debugLog() << CLASSFUNCLINE << "  "
+    //     << "This file supplies cycle: "
+    //     << registry->getCycle() << std::endl;
+
+    //     md->SetCycle(timeStep, registry->getCycle());
+    //     md->SetCycleIsAccurate(true, registry->getCycle());
+
+    //  // md->SetCyclesAreAccurate(true);
+    // }
+
+    // If time data is present, tell VisIt
     if (registry->hasTime()) {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
         << "This file supplies time: "
         << registry->getTime() << std::endl;
 
-        md->SetTime(timeStep, registry->getTime());
-        md->SetTimeIsAccurate(true, registry->getTime());
-    }
+        std::vector<double> times;
+        times.resize( 1 );
+        times[0] = registry->getTime();
 
-    // If time cycle is present, tell VisIt
+        md->SetTimesAreAccurate(true);
+        md->SetTimes( times );
+    }
+    
+    // If cycle data is present, tell VisIt
     if (registry->hasCycle()) {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
         << "This file supplies cycle: "
         << registry->getCycle() << std::endl;
 
-        md->SetCycle(timeStep, registry->getCycle());
-        md->SetCycleIsAccurate(true, registry->getCycle());
+        std::vector<int> cycles;
+        cycles.resize( 1 );
+        cycles[0] = registry->getCycle();
+
+        md->SetCyclesAreAccurate(true);
+        md->SetCycles( cycles );
+    }
+
+    if (registry->hasLowerBounds() && registry->hasUpperBounds()) {
+
+      VsLog::debugLog() << CLASSFUNCLINE << "  "
+                        << "Getting bounds for mesh." << std::endl;
+      
+      std::vector<float> lowerBounds;
+      registry->getLowerBounds(&lowerBounds);
+
+      std::vector<float> upperBounds;
+      registry->getUpperBounds(&upperBounds);
     }
 }
 
@@ -4535,7 +4579,7 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
     }
 
     //VsLog::debugLog() <<"Calling UpdateCyclesAndTimes for file: " <<dataFileName <<std::endl;
-    //UpdateCyclesAndTimes(md);
+    UpdateCyclesAndTimes(md);
 
     VsLog::debugLog() << CLASSFUNCLINE << "  "
     << "Exiting normally." << std::endl;
