@@ -76,7 +76,8 @@
 #include <ViewerWindowManager.h> 
 #include <VisItException.h>
 #include <VisWindow.h>
-#include <VisualCueInfo.h>
+#include <VisWindow.h>
+#include <VisWinAxes3D.h>
 
 #include <DebugStream.h>
 #include <LostConnectionException.h>
@@ -1123,7 +1124,12 @@ ViewerWindow::RecenterView()
         RecenterView2d(limits);
         break;
       case WINMODE_3D:
-        GetExtents(3, limits);
+        // If the user has overridden the bounds via the annotation
+        // use it instead.
+        if( visWindow->GetAxes3D()->GetBoundsOverridden() )
+          visWindow->GetAxes3D()->GetOverrideBounds( limits );
+        else
+          GetExtents(3, limits);
         RecenterView3d(limits);
         break;
       case WINMODE_AXISARRAY:
@@ -2660,7 +2666,17 @@ ViewerWindow::UpdateView(const WINDOW_MODE mode, const double *limits)
         UpdateView2d(limits);
         break;
       case WINMODE_3D:
-        UpdateView3d(limits);
+        // If the user has overridden the bounds via the annotation
+        // use it instead.
+        if( visWindow->GetAxes3D()->GetBoundsOverridden() ) {
+          double bounds[6];
+          visWindow->GetAxes3D()->GetOverrideBounds( bounds );
+          UpdateView3d(bounds);
+        }
+        else
+        {
+          UpdateView3d(limits);
+        }
         break;
       case WINMODE_AXISARRAY:
       case WINMODE_PARALLELAXES:
@@ -4444,7 +4460,7 @@ ViewerWindow::RecenterView3d(const double *limits)
     //
     for (int i = 0; i < 6; i++)
     {
-        boundingBox3d[i] = limits[i];
+      boundingBox3d[i] = limits[i];
     }
 
     // Get the actual sizes
@@ -4457,12 +4473,12 @@ ViewerWindow::RecenterView3d(const double *limits)
                                            view3D.axis3DScales[1] : 1.0),
                             sizeOrig[2] * (view3D.axis3DScaleFlag ?
                                            view3D.axis3DScales[2] : 1.0)};
-    double startScaled[3] ={boundingBox3d[0] * (view3D.axis3DScaleFlag ?
-                                                view3D.axis3DScales[0] : 1.0),
-                            boundingBox3d[2] * (view3D.axis3DScaleFlag ?
-                                                view3D.axis3DScales[1] : 1.0),
-                            boundingBox3d[4] * (view3D.axis3DScaleFlag ?
-                                                view3D.axis3DScales[2] : 1.0)};
+    double startScaled[3] = {boundingBox3d[0] * (view3D.axis3DScaleFlag ?
+                                                 view3D.axis3DScales[0] : 1.0),
+                             boundingBox3d[2] * (view3D.axis3DScaleFlag ?
+                                                 view3D.axis3DScales[1] : 1.0),
+                             boundingBox3d[4] * (view3D.axis3DScaleFlag ?
+                                                 view3D.axis3DScales[2] : 1.0)};
 
     //
     // Calculate the new focal point.
@@ -4933,7 +4949,12 @@ ViewerWindow::ResetView3d()
     //
     // Set the bounding box based on the plot limits.
     //
-    GetExtents(3, boundingBox3d);
+    // If the user has overridden the bounds via the annotation
+    // use it instead.
+    if( visWindow->GetAxes3D()->GetBoundsOverridden() )
+      visWindow->GetAxes3D()->GetOverrideBounds( boundingBox3d );
+    else
+      GetExtents(3, boundingBox3d);
 
     //
     // If the plot limits are invalid then there are no plots so mark the
