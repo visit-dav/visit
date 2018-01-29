@@ -110,15 +110,20 @@ struct VsSchema {
     static std::string vsPoints2; //points
   };
 
-  //time
+  // Time
   static std::string timeKey;
   static std::string timeAtt;
   static std::string cycleAtt;
   static std::string timeGroupAtt;
   
-  //run info
+  // Run info
   static std::string runInfoKey;
   static std::string softwareAtt;
+
+  // GlobalGridGlobalLimits
+  static std::string globalGridGlobalLimitsKey;
+  static std::string lowerBoundsAtt;
+  static std::string upperBoundsAtt;
 };
 
 #endif
