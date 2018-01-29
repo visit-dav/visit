@@ -263,6 +263,7 @@ int VsUniformMesh::getLowerBounds(std::vector<float>* fVals) {
   
   VsLog::debugLog() << "VsUniformMesh::getLowerBounds() - Returning " << err
                     << "." <<  std::endl;
+  
   return err;
 }
 
@@ -289,6 +290,9 @@ int VsUniformMesh::getUpperBounds(std::vector<float>* fVals) {
                       << upperBoundsAtt->getShortName() << "'." <<  std::endl;
   }
   
+  VsLog::debugLog() << "VsUniformMesh::getUpperBounds() - Returning " << err
+                    << "." <<  std::endl;
+
   return err;
 }
 
