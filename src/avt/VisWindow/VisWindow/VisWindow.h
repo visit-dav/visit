@@ -768,14 +768,15 @@ public:
     void                 GlyphPick(const double*, const double*, int&, int&, 
                                    bool&, double &, const bool = false);
 
-
-
     virtual void UpdateMouseActions(std::string action,
                             double start_dx, double start_dy,
                             double end_dx, double end_dy,
                             bool ctrl, bool shift);
 
+    VisWinAxes3D *GetAxes3D() const { return axes3D; }
+
     void GetExtents(double ext[2]); // TODO: Remove with VTK8
+
 protected:
     VisWindowColleagueProxy            colleagueProxy;
     VisWindowInteractorProxy           interactorProxy;

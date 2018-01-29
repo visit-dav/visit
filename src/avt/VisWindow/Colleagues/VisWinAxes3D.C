@@ -1485,3 +1485,40 @@ VisWinAxes3D::Set3DAxisScalingFactors(bool scale,
         SetBounds(currentBounds, newS);
     }
 }
+
+// ****************************************************************************
+// Method:  VisWinAxes3D::GetBoundsOverridden
+//
+// Purpose:
+//   Returns whether the user has set a specific bounding box
+//
+// Arguments:
+//
+// Programmer:  Allen Sanderson
+// Creation:    Jan 25, 2017
+//
+// ****************************************************************************
+bool
+VisWinAxes3D::GetBoundsOverridden() const
+{
+  return boundsOverridden;
+}
+
+// ****************************************************************************
+// Method:  VisWinAxes3D::GetOverrideBounds
+//
+// Purpose:
+//   Returns the user specific bounding box
+//
+// Arguments:
+//
+// Programmer:  Allen Sanderson
+// Creation:    Jan 25, 2017
+//
+// ****************************************************************************
+void
+VisWinAxes3D::GetOverrideBounds( double *bounds ) const
+{
+  for( int i=0; i<6; ++i )
+    bounds[i] = overrideBounds[i];
+}
