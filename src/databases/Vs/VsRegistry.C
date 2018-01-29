@@ -21,10 +21,14 @@
 
 #include <sstream>
 
+#define __CLASS__ "VsRegistry::"
+
 VsRegistry::VsRegistry() {
   deletingObjects = false;
   timeValue = -1;
   cycle = -1;
+  lowerBoundsAtt = NULL;
+  upperBoundsAtt = NULL;
 }
 
 VsRegistry::~VsRegistry() {
@@ -141,6 +145,8 @@ void VsRegistry::buildGroupObjects() {
       loadTime(group);
     } else if (type == VsSchema::runInfoKey) {
       loadRunInfo(group);
+    } else if (type == VsSchema::globalGridGlobalLimitsKey) {
+      loadGlobalGridGlobalLimits(group);
     } else {
       VsLog::debugLog() <<"VsRegistry::buildGroupObjects - object is of unrecognized type " <<type <<std::endl;
     }
@@ -207,6 +213,38 @@ void VsRegistry::loadRunInfo(VsGroup* group) {
   }
 
   VsLog::debugLog() <<"VsRegistry::loadRunInfo() - not loading any information at this time." <<std::endl;
+}
+
+void VsRegistry::loadGlobalGridGlobalLimits(VsGroup* group) {
+  VsLog::debugLog() <<"VsRegistry::loadGlobalGridGlobalLimits() - Group is NULL?" << "'" << group << "'" <<std::endl;
+  if (!group) {
+    VsLog::debugLog() <<"VsRegistry::loadGlobalGridGlobalLimits() - Group is NULL?" <<std::endl;
+    return;
+  }
+
+  //try to load a value for "lowerBounds"
+  lowerBoundsAtt = group->getAttribute(VsSchema::lowerBoundsAtt);
+  if (lowerBoundsAtt) {
+    std::vector<float> in;
+    int err = lowerBoundsAtt->getFloatVectorValue(&in);
+    if (err < 0) {
+      VsLog::debugLog() <<"VsRegistry::loadGlobalGridGlobalLimits(): Error " <<err <<" while trying to load lowerBounds attribute." <<std::endl;
+    } else {
+      VsLog::debugLog() <<"VsRegistry::loadGlobalGridGlobalLimits() - loaded lowerBounds: " << in[0] << "  " << in[1] << "  " << in[2] << std::endl;
+    }
+  }
+
+  //try to load a value for "upperBounds"
+  upperBoundsAtt = group->getAttribute(VsSchema::upperBoundsAtt);
+  if (upperBoundsAtt) {
+    std::vector<float> in;
+    int err = upperBoundsAtt->getFloatVectorValue(&in);
+    if (err < 0) {
+      VsLog::debugLog() <<"VsRegistry::loadGlobalGridGlobalLimits(): Error " <<err <<" while trying to load upperBounds attribute." <<std::endl;
+    } else {
+      VsLog::debugLog() <<"VsRegistry::loadGlobalGridGlobalLimits() - loaded upperBounds: " << in[0] << "  " << in[1] << "  " << in[2] << std::endl;
+    }
+  }
 }
 
 /*********** VsDatasets***********/
@@ -1152,3 +1190,60 @@ std::string VsRegistry::getOldComponentName(const std::string& varName,
   return compName;
 }
 
+int VsRegistry::getLowerBounds(std::vector<float>* fVals) {
+  hid_t type = lowerBoundsAtt->getType();
+
+  int err = 0;
+  
+  if (isDoubleType(type)) {
+    std::vector<double> dVals;
+    err = lowerBoundsAtt->getDoubleVectorValue(&dVals);
+    fVals->resize(dVals.size());
+    for (size_t i = 0; i < dVals.size(); i++) {
+      (*fVals)[i] = (float)(dVals[i]);
+    }
+  } else if (isFloatType(type)) {
+    err = lowerBoundsAtt->getFloatVectorValue(fVals);
+  }
+  
+  if (err < 0) {
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Error " << err
+                      << " in reading attribute '"
+                      << lowerBoundsAtt->getShortName() << "'." <<  std::endl;
+  }
+  
+  VsLog::debugLog() << "VsRegistry::getLowerBounds() - Returning " << err
+                    << "." <<  std::endl;
+
+  return err;
+}
+
+
+int VsRegistry::getUpperBounds(std::vector<float>* fVals) {
+  hid_t type = upperBoundsAtt->getType();
+
+  int err = 0;
+  if (isDoubleType(type)) {
+    std::vector<double> dVals;
+    err = upperBoundsAtt->getDoubleVectorValue(&dVals);
+    fVals->resize(dVals.size());
+    for (size_t i = 0; i < dVals.size(); i++) {
+      (*fVals)[i] = (float)(dVals[i]);
+    }
+  } else if (isFloatType(type)) {
+    err = upperBoundsAtt->getFloatVectorValue(fVals);
+  }
+  
+  if (err < 0) {
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Error " << err
+                      << " in reading attribute '"
+                      << upperBoundsAtt->getShortName() << "'." <<  std::endl;
+  }
+  
+  VsLog::debugLog() << "VsRegistry::getUpperBounds() - Returning " << err
+                    << "." <<  std::endl;
+
+  return err;
+}

@@ -16,7 +16,7 @@
 #include <map>
 #include <vector>
 
-#define __CLASS__ "VsStructuredMesh::"
+#define __CLASS__ "VsVariableWithMesh::"
 
 
 VsVariableWithMesh::VsVariableWithMesh(VsDataset* data):

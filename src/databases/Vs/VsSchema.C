@@ -106,12 +106,18 @@ std::string VsSchema::Unstructured::vsPoints0 = "vsPoints0";
 std::string VsSchema::Unstructured::vsPoints1 = "vsPoints1";
 std::string VsSchema::Unstructured::vsPoints2 = "vsPoints2";
 
-//Time
+// Time
 std::string VsSchema::timeKey = "time";
 std::string VsSchema::timeAtt = "vsTime";
 std::string VsSchema::cycleAtt = "vsStep";
 std::string VsSchema::timeGroupAtt = "vsTimeGroup";
 
-//Run info
+// Run info
 std::string VsSchema::runInfoKey = "runInfo";
 std::string VsSchema::softwareAtt = "vsSoftware";
+
+// GlobalGridGlobalLimits
+std::string VsSchema::globalGridGlobalLimitsKey = "limits";
+std::string VsSchema::lowerBoundsAtt = "vsLowerBounds";
+std::string VsSchema::upperBoundsAtt = "vsUpperBounds";
+

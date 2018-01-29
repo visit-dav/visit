@@ -17,6 +17,7 @@
 #ifndef VSREGISTRY_H_
 #define VSREGISTRY_H_
 
+class VsAttribute;
 class VsDataset;
 class VsGroup;
 class VsMesh;
@@ -56,6 +57,7 @@ public:
   void buildGroupObjects();
   void loadTime(VsGroup* group);
   void loadRunInfo(VsGroup* group);
+  void loadGlobalGridGlobalLimits(VsGroup* group);
   
   //MESHES
   void add(VsMesh* mesh);
@@ -138,12 +140,18 @@ public:
                          const std::string& userSuppliedName);
   void createComponents();
 
-  //Time
+  // Time
   bool hasTime() { return (timeValue != -1); }
   double getTime() { return timeValue; }
   bool hasCycle() { return (cycle != -1); }
   double getCycle() { return cycle; }
-    
+
+  // GlobalGridGlobalLimits
+  bool hasLowerBounds() { return (lowerBoundsAtt != NULL); }
+  bool hasUpperBounds() { return (upperBoundsAtt != NULL); }
+  int getLowerBounds(std::vector<float>* fVals);
+  int getUpperBounds(std::vector<float>* fVals);
+
 private:
   /**
    * A boolean flag for when objects are being deleted.
@@ -180,6 +188,9 @@ private:
   double timeValue;
   int cycle;
   
+  VsAttribute* lowerBoundsAtt;
+  VsAttribute* upperBoundsAtt;
+
   // a registry of user-specified component names and their mappings
   // first element of pair is the user-specified name
   // second element of pair is "true" component name
