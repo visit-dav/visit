@@ -760,12 +760,13 @@ public:
     void                 GlyphPick(const double*, const double*, int&, int&, 
                                    bool&, double &, const bool = false);
 
-
-
     virtual void UpdateMouseActions(std::string action,
                             double start_dx, double start_dy,
                             double end_dx, double end_dy,
                             bool ctrl, bool shift);
+
+    VisWinAxes3D *GetAxes3D() const { return axes3D; }
+
 protected:
     VisWindowColleagueProxy            colleagueProxy;
     VisWindowInteractorProxy           interactorProxy;
@@ -776,6 +777,7 @@ protected:
     VisWinBackground                  *windowBackground;
     VisWinAxes                        *axes;
     VisWinAxes3D                      *axes3D;
+
     VisWinFrame                       *frame;
     VisWinAxesArray                   *axesArray;
     VisWinParallelAxes                *parallelAxes;
