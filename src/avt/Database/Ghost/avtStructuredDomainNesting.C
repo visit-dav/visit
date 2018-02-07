@@ -650,6 +650,14 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
         }
 
         vector<int> &extents = domainNesting[domains[i]].logicalExtents;
+        
+        if (extents.size() != 6)
+        {
+            debug1 << "Warning: avtStructuredDomainNesting failing ConfirmMesh"
+                   << " because the extents for domain number " << domains[i]
+                   << " did not have the correct size (6) " << extents.size() << endl;
+            return false;
+        }
         if ((extents[3]-extents[0]+2) != dims[0])
         {
             debug1 << "Warning: avtStructuredDomainNesting failing "
