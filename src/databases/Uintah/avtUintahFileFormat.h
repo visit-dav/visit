@@ -53,9 +53,9 @@
 
 #include <avtMTMDFileFormat.h>
 
-#include <vector>
 #include <map>
 #include <string>
+#include <vector>
 
 // ****************************************************************************
 //  Class: avtUintahFileFormat
@@ -102,7 +102,8 @@ protected:
 
   void             GetLevelAndLocalPatchNumber(int, int&, int&);
   int              GetGlobalDomainNumber(int, int);
-  void             CalculateDomainNesting(int, const std::string&);
+  
+  void             GetDomainBoundariesAndNesting(int, const std::string&);
         
   virtual bool     HasInvariantMetaData(void) const { return !dataVariesOverTime; };
   virtual bool     HasInvariantSIL(void) const { return !dataVariesOverTime; };
@@ -113,7 +114,7 @@ protected:
                              const int level, const int patch);
 
   // DATA MEMBERS
-  bool useExtraCells;
+  int  useExtraCells;
   bool dataVariesOverTime;
   int currTimeStep;
   bool forceMeshReload;
@@ -142,13 +143,15 @@ protected:
   void             (*releaseGrid)(GridP*);
 
   std::vector<double>   (*getCycleTimes)(DataArchive*);
-  TimeStepInfo*    (*getTimeStepInfo)(DataArchive*, GridP*, int, bool);
+  TimeStepInfo*    (*getTimeStepInfo)(DataArchive*, GridP*, int, int);
 
-  GridDataRaw*     (*getGridData)(DataArchive*, GridP*, int, int, std::string, int, int, int[3], int[3], bool);
+  GridDataRaw*     (*getGridData)(DataArchive*, GridP*, int, int,
+                                  std::string, int, int, int[3], int[3], int);
 
   bool             (*variableExists)(DataArchive*, std::string);
 
-  ParticleDataRaw* (*getParticleData)(DataArchive*, GridP*, int, int, std::string, int, int);
+  ParticleDataRaw* (*getParticleData)(DataArchive*, GridP*, int, int,
+                                      std::string, int, int);
 
   std::string      (*getParticlePositionName)(DataArchive*);
 };

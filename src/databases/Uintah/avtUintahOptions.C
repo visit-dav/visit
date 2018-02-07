@@ -45,14 +45,23 @@
 #include <DBOptionsAttributes.h>
 
 #include <string>
+#include <vector>
 
+using namespace UintahDBOptions;
 
 DBOptionsAttributes *
 GetUintahReadOptions(void)
 {
     DBOptionsAttributes *rv = new DBOptionsAttributes;
-    rv->SetBool("Load extra cells", true);
-    rv->SetBool("Data varies over time", true);
+    std::vector<std::string> extraOpts;
+    extraOpts.push_back(UINTAH_LOAD_EXTRA_NONE);    // 0
+    extraOpts.push_back(UINTAH_LOAD_EXTRA_CELLS);   // 1
+    // extraOpts.push_back(UINTAH_LOAD_EXTRA_PATCHES); // 2
+
+    rv->SetEnum(       UINTAH_LOAD_EXTRA, 1);
+    rv->SetEnumStrings(UINTAH_LOAD_EXTRA, extraOpts);
+
+    rv->SetBool(UINTAH_DATA_VARIES_OVER_TIME, true);
     return rv;
 }
 
