@@ -60,6 +60,8 @@
       </Field>
       <Field name="boundaryNames" label="boundaryNames" type="stringVector" access="protected">
       </Field>
+      <Field name="explosions" label="explosions" type="attVector" subtype="ExplodeAttributes" access="protected">
+      </Field>
       <Include file="header" quoted="false">
         MapNode.h
       </Include>

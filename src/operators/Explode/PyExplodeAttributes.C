@@ -40,6 +40,7 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <snprintf.h>
+#include <PyExplodeAttributes.h>
 
 // ****************************************************************************
 // Module: PyExplodeAttributes
@@ -223,6 +224,19 @@ PyExplodeAttributes_ToString(const ExplodeAttributes *atts, const char *prefix)
         }
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
+    }
+    { // new scope
+        int index = 0;
+        // Create string representation of explosions from atts.
+        for(AttributeGroupVector::const_iterator pos = atts->GetExplosions().begin(); pos != atts->GetExplosions().end(); ++pos, ++index)
+        {
+            const ExplodeAttributes *current = (const ExplodeAttributes *)(*pos);
+            SNPRINTF(tmpStr, 1000, "GetExplosions(%d).", index);
+            std::string objPrefix(prefix + std::string(tmpStr));
+            str += PyExplodeAttributes_ToString(current, objPrefix.c_str());
+        }
+        if(index == 0)
+            str += "#explosions does not contain any ExplodeAttributes objects.\n";
     }
     return str;
 }
@@ -765,6 +779,123 @@ ExplodeAttributes_GetBoundaryNames(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ExplodeAttributes_GetExplosions(PyObject *self, PyObject *args)
+{
+    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    int index;
+    if(!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+    if(index < 0 || (size_t)index >= obj->data->GetExplosions().size())
+    {
+        char msg[400] = {'\0'};
+        if(obj->data->GetExplosions().size() == 0)
+            SNPRINTF(msg, 400, "In ExplodeAttributes::GetExplosions : The index %d is invalid because explosions is empty.", index);
+        else
+            SNPRINTF(msg, 400, "In ExplodeAttributes::GetExplosions : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetExplosions().size());
+        PyErr_SetString(PyExc_IndexError, msg);
+        return NULL;
+    }
+
+    // Since the new object will point to data owned by the this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PyExplodeAttributes_Wrap(&obj->data->GetExplosions(index));
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyExplodeAttributes_SetParent(retval, self);
+
+    return retval;
+}
+
+PyObject *
+ExplodeAttributes_GetNumExplosions(PyObject *self, PyObject *args)
+{
+    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    return PyInt_FromLong((long)obj->data->GetExplosions().size());
+}
+
+PyObject *
+ExplodeAttributes_AddExplosions(PyObject *self, PyObject *args)
+{
+    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    PyObject *element = NULL;
+    if(!PyArg_ParseTuple(args, "O", &element))
+        return NULL;
+    if(!PyExplodeAttributes_Check(element))
+    {
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "The ExplodeAttributes::AddExplosions method only accepts ExplodeAttributes objects.");
+        PyErr_SetString(PyExc_TypeError, msg);
+        return NULL;
+    }
+    ExplodeAttributes *newData = PyExplodeAttributes_FromPyObject(element);
+    obj->data->AddExplosions(*newData);
+    obj->data->SelectExplosions();
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
+ExplodeAttributes_Remove_One_Explosions(PyObject *self, int index)
+{
+    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    // Remove in the AttributeGroupVector instead of calling RemoveExplosions() because we don't want to delete the object; just remove it.
+    AttributeGroupVector &atts = obj->data->GetExplosions();
+    AttributeGroupVector::iterator pos = atts.begin();
+    // Iterate through the vector "index" times. 
+    for(int i = 0; i < index; ++i)
+        ++pos;
+
+    // If pos is still a valid iterator, remove that element.
+    if(pos != atts.end())
+    {
+        // NOTE: Leak the object since other Python objects may reference it. Ideally,
+        // we would put the object into some type of pool to be cleaned up later but
+        // this will do for now.
+        //
+        // delete *pos;
+        atts.erase(pos);
+    }
+
+    obj->data->SelectExplosions();
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+PyObject *
+ExplodeAttributes_RemoveExplosions(PyObject *self, PyObject *args)
+{
+    int index;
+    if(!PyArg_ParseTuple(args, "i", &index))
+        return NULL;
+    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    if(index < 0 || index >= obj->data->GetNumExplosions())
+    {
+        char msg[400] = {'\0'};
+        SNPRINTF(msg, 400, "In ExplodeAttributes::RemoveExplosions : Index %d is out of range", index);
+        PyErr_SetString(PyExc_IndexError, msg);
+        return NULL;
+    }
+
+    return ExplodeAttributes_Remove_One_Explosions(self, index);
+}
+
+PyObject *
+ExplodeAttributes_ClearExplosions(PyObject *self, PyObject *args)
+{
+    ExplodeAttributesObject *obj = (ExplodeAttributesObject *)self;
+    int n = obj->data->GetNumExplosions();
+    for(int i = 0; i < n; ++i)
+    {
+        ExplodeAttributes_Remove_One_Explosions(self, 0);
+        Py_DECREF(Py_None);
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 
 
 PyMethodDef PyExplodeAttributes_methods[EXPLODEATTRIBUTES_NMETH] = {
@@ -797,6 +928,11 @@ PyMethodDef PyExplodeAttributes_methods[EXPLODEATTRIBUTES_NMETH] = {
     {"GetExplodeAllCells", ExplodeAttributes_GetExplodeAllCells, METH_VARARGS},
     {"SetBoundaryNames", ExplodeAttributes_SetBoundaryNames, METH_VARARGS},
     {"GetBoundaryNames", ExplodeAttributes_GetBoundaryNames, METH_VARARGS},
+    {"GetExplosions", ExplodeAttributes_GetExplosions, METH_VARARGS},
+    {"GetNumExplosions", ExplodeAttributes_GetNumExplosions, METH_VARARGS},
+    {"AddExplosions", ExplodeAttributes_AddExplosions, METH_VARARGS},
+    {"RemoveExplosions", ExplodeAttributes_RemoveExplosions, METH_VARARGS},
+    {"ClearExplosions", ExplodeAttributes_ClearExplosions, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -865,6 +1001,8 @@ PyExplodeAttributes_getattr(PyObject *self, char *name)
         return ExplodeAttributes_GetExplodeAllCells(self, NULL);
     if(strcmp(name, "boundaryNames") == 0)
         return ExplodeAttributes_GetBoundaryNames(self, NULL);
+    if(strcmp(name, "explosions") == 0)
+        return ExplodeAttributes_GetExplosions(self, NULL);
 
     return Py_FindMethod(PyExplodeAttributes_methods, self, name);
 }
@@ -1146,13 +1284,12 @@ PyExplodeAttributes_SetParent(PyObject *obj, PyObject *parent)
     obj2->parent = parent;
 }
 
-// ****************************************************************************
+//****************************************************************************
 //  Modifications:
 //    Alister Maguire, Wed Jan 10 11:29:50 PST 2018
 //    Make defaultAtts point to the passed atts directly.
 //
-// ****************************************************************************
-
+//****************************************************************************
 void
 PyExplodeAttributes_SetDefaults(const ExplodeAttributes *atts)
 {

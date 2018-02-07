@@ -42,6 +42,7 @@ import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
 import java.util.Vector;
+import llnl.visit.ExplodeAttributes;
 
 // ****************************************************************************
 // Class: ExplodeAttributes
@@ -60,7 +61,7 @@ import java.util.Vector;
 
 public class ExplodeAttributes extends AttributeSubject implements Plugin
 {
-    private static int ExplodeAttributes_numAdditionalAtts = 14;
+    private static int ExplodeAttributes_numAdditionalAtts = 15;
 
     // Enum values
     public final static int EXPLODETYPE_POINT = 0;
@@ -104,6 +105,7 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
         explosionPattern = EXPLOSIONPATTERN_IMPACT;
         explodeAllCells = false;
         boundaryNames = new Vector();
+        explosions = new Vector();
     }
 
     public ExplodeAttributes(int nMoreFields)
@@ -139,6 +141,7 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
         explosionPattern = EXPLOSIONPATTERN_IMPACT;
         explodeAllCells = false;
         boundaryNames = new Vector();
+        explosions = new Vector();
     }
 
     public ExplodeAttributes(ExplodeAttributes obj)
@@ -183,6 +186,14 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
         boundaryNames = new Vector(obj.boundaryNames.size());
         for(i = 0; i < obj.boundaryNames.size(); ++i)
             boundaryNames.addElement(new String((String)obj.boundaryNames.elementAt(i)));
+
+        // *** Copy the explosions field ***
+        explosions = new Vector(obj.explosions.size());
+        for(i = 0; i < obj.explosions.size(); ++i)
+        {
+            ExplodeAttributes oldObj = (ExplodeAttributes)obj.explosions.elementAt(i);
+            explosions.addElement(new ExplodeAttributes(oldObj));
+        }
 
 
         SelectAll();
@@ -236,6 +247,15 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
             String boundaryNames2 = (String)obj.boundaryNames.elementAt(i);
             boundaryNames_equal = boundaryNames1.equals(boundaryNames2);
         }
+        // Compare the elements in the explosions vector.
+        boolean explosions_equal = (obj.explosions.size() == explosions.size());
+        for(i = 0; (i < explosions.size()) && explosions_equal; ++i)
+        {
+            // Make references to ExplodeAttributes from Object.
+            ExplodeAttributes explosions1 = (ExplodeAttributes)explosions.elementAt(i);
+            ExplodeAttributes explosions2 = (ExplodeAttributes)obj.explosions.elementAt(i);
+            explosions_equal = explosions1.equals(explosions2);
+        }
         // Create the return value
         return ((explosionType == obj.explosionType) &&
                 explosionPoint_equal &&
@@ -250,7 +270,8 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
                 (cellExplosionFactor == obj.cellExplosionFactor) &&
                 (explosionPattern == obj.explosionPattern) &&
                 (explodeAllCells == obj.explodeAllCells) &&
-                boundaryNames_equal);
+                boundaryNames_equal &&
+                explosions_equal);
     }
 
     public String GetName() { return "Explode"; }
@@ -406,6 +427,7 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
     public int      GetExplosionPattern() { return explosionPattern; }
     public boolean  GetExplodeAllCells() { return explodeAllCells; }
     public Vector   GetBoundaryNames() { return boundaryNames; }
+    public Vector   GetExplosions() { return explosions; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -438,6 +460,15 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
             buf.WriteBool(explodeAllCells);
         if(WriteSelect(13, buf))
             buf.WriteStringVector(boundaryNames);
+        if(WriteSelect(14, buf))
+        {
+            buf.WriteInt(explosions.size());
+            for(int i = 0; i < explosions.size(); ++i)
+            {
+                ExplodeAttributes tmp = (ExplodeAttributes)explosions.elementAt(i);
+                tmp.Write(buf);
+            }
+        }
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -486,6 +517,19 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
         case 13:
             SetBoundaryNames(buf.ReadStringVector());
             break;
+        case 14:
+            {
+                int len = buf.ReadInt();
+                explosions.clear();
+                for(int j = 0; j < len; ++j)
+                {
+                    ExplodeAttributes tmp = new ExplodeAttributes();
+                    tmp.Read(buf);
+                    explosions.addElement(tmp);
+                }
+            }
+            Select(14);
+            break;
         }
     }
 
@@ -518,7 +562,50 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + boolToString("explodeAllCells", explodeAllCells, indent) + "\n";
         str = str + stringVectorToString("boundaryNames", boundaryNames, indent) + "\n";
+        str = str + indent + "explosions = {\n";
+        for(int i = 0; i < explosions.size(); ++i)
+        {
+            AttributeSubject s = (AttributeSubject)explosions.elementAt(i);
+            str = str + s.toString(indent + "    ");
+            if(i < explosions.size()-1)
+                str = str + ", ";
+            str = str + "\n";
+        }
+        str = str + "}\n";
         return str;
+    }
+
+    // Attributegroup convenience methods
+    public void AddExplosions(ExplodeAttributes obj)
+    {
+        explosions.addElement(new ExplodeAttributes(obj));
+        Select(14);
+    }
+
+    public void ClearExplosions()
+    {
+        explosions.clear();
+        Select(14);
+    }
+
+    public void RemoveExplosions(int index)
+    {
+        if(index >= 0 && index < explosions.size())
+        {
+            explosions.remove(index);
+            Select(14);
+        }
+    }
+
+    public int GetNumExplosions()
+    {
+        return explosions.size();
+    }
+
+    public ExplodeAttributes GetExplosions(int i)
+    {
+        ExplodeAttributes tmp = (ExplodeAttributes)explosions.elementAt(i);
+        return tmp;
     }
 
 
@@ -537,5 +624,6 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
     private int      explosionPattern;
     private boolean  explodeAllCells;
     private Vector   boundaryNames; // vector of String objects
+    private Vector   explosions; // vector of ExplodeAttributes objects
 }
 

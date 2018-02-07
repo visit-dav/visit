@@ -108,7 +108,10 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
     int                            GetMaterialIndex(std::string);
     avtDataTree_p                  GetMaterialSubsets(avtDataRepresentation *);
     avtDataTree_p                  ExtractMaterialsFromDomains(avtDataTree_p);
-    avtDataTree_p                  MergeDomains(avtDataTree_p, stringVector);
+    avtDataTree_p                  CreateDomainTree(vtkDataSet **, 
+                                                    int,
+                                                    std::vector<int>, 
+                                                    stringVector);
 
     ExplodeAttributes              atts;
     

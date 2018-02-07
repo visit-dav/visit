@@ -41,6 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
+class ExplodeAttributes;
 #include <MapNode.h>
 
 // ****************************************************************************
@@ -105,6 +106,7 @@ public:
     void SelectCylinderPoint2();
     void SelectMaterial();
     void SelectBoundaryNames();
+    void SelectExplosions();
     void SetExplosionType(ExplodeType explosionType_);
     void SetExplosionPoint(const double *explosionPoint_);
     void SetPlanePoint(const double *planePoint_);
@@ -140,10 +142,24 @@ public:
     bool               GetExplodeAllCells() const;
     const stringVector &GetBoundaryNames() const;
           stringVector &GetBoundaryNames();
+    const AttributeGroupVector &GetExplosions() const;
+          AttributeGroupVector &GetExplosions();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
+
+
+    // Attributegroup convenience methods
+    void AddExplosions(const ExplodeAttributes &);
+    void ClearExplosions();
+    void RemoveExplosions(int i);
+    int  GetNumExplosions() const;
+    ExplodeAttributes &GetExplosions(int i);
+    const ExplodeAttributes &GetExplosions(int i) const;
+
+    ExplodeAttributes &operator [] (int i);
+    const ExplodeAttributes &operator [] (int i) const;
 
     // Enum conversion functions
     static std::string ExplodeType_ToString(ExplodeType);
@@ -180,30 +196,34 @@ public:
         ID_explosionPattern,
         ID_explodeAllCells,
         ID_boundaryNames,
+        ID_explosions,
         ID__LAST
     };
 
 protected:
-    int          explosionType;
-    double       explosionPoint[3];
-    double       planePoint[3];
-    double       planeNorm[3];
-    double       cylinderPoint1[3];
-    double       cylinderPoint2[3];
-    double       materialExplosionFactor;
-    std::string  material;
-    double       cylinderRadius;
-    bool         explodeMaterialCells;
-    double       cellExplosionFactor;
-    int          explosionPattern;
-    bool         explodeAllCells;
-    stringVector boundaryNames;
+    AttributeGroup *CreateSubAttributeGroup(int index);
+protected:
+    int                  explosionType;
+    double               explosionPoint[3];
+    double               planePoint[3];
+    double               planeNorm[3];
+    double               cylinderPoint1[3];
+    double               cylinderPoint2[3];
+    double               materialExplosionFactor;
+    std::string          material;
+    double               cylinderRadius;
+    bool                 explodeMaterialCells;
+    double               cellExplosionFactor;
+    int                  explosionPattern;
+    bool                 explodeAllCells;
+    stringVector         boundaryNames;
+    AttributeGroupVector explosions;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXPLODEATTRIBUTES_TMFS "iDDDDDdsdbdibs*"
+#define EXPLODEATTRIBUTES_TMFS "iDDDDDdsdbdibs*a*"
 
 #endif

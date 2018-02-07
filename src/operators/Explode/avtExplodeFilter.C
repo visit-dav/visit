@@ -53,7 +53,6 @@
 #include <vtkSmartPointer.h>
 #include <vtkCell.h>
 #include <vtkFieldData.h>
-#include <vtkDoubleArray.h>
 #include <vtkAppendFilter.h>
 
 #include <vtkIntArray.h>
@@ -289,14 +288,16 @@ avtExplodeFilter::UpdateGlobalExtents(double *localExtents, std::string matName)
 
 
 // ****************************************************************************
-//  Method: avtExplodeFilter::MergeDomains
+//  Method: avtExplodeFilter::CreateDomainTree
 //
 //  Purpose:
-//      Given an input tree, merge all leaves that have identical
-//      domain ids. 
+//      Merge all datasets that reside on the same domain, and
+//      create an avtDataTree whose leaves are domain datasets. 
 //
 //  Arguments:
-//      inTree    The input data tree.
+//      dsets     Input datasets. 
+//      numDSets  The number of datasets. 
+//      domainIds All domain ids for the given datasets. 
 //      labels    The original input labels. 
 //
 //  Returns:
@@ -306,18 +307,20 @@ avtExplodeFilter::UpdateGlobalExtents(double *localExtents, std::string matName)
 //  Programmer: Alister Maguire
 //  Creation: Thu Jan 25 11:33:44 PST 2018
 //
+//  Modifications: 
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed name and input args. 
+//
 // ****************************************************************************
 
 avtDataTree_p
-avtExplodeFilter::MergeDomains(avtDataTree_p inTree, stringVector labels)
+avtExplodeFilter::CreateDomainTree(vtkDataSet **dsets,
+                               int numDSets,
+                               std::vector<int> domainIds, 
+                               stringVector labels)
 {
     vtkAppendFilter *appendFilter = vtkAppendFilter::New(); 
-    std::vector<int> domainIds;
     std::vector<int> uniqueDomainIds;
-    inTree->GetAllDomainIds(domainIds);
-
-    int numInputLeaves;
-    vtkDataSet **inLeaves = inTree->GetAllLeaves(numInputLeaves);
 
     //
     // We need the min and max domains so that we can map
@@ -357,28 +360,36 @@ avtExplodeFilter::MergeDomains(avtDataTree_p inTree, stringVector labels)
         mergedDomains[i] = NULL;
     }
 
-    for (int i = 0; i < numInputLeaves; ++i)
+    for (int i = 0; i < numDSets; ++i)
     {
         int mdIdx = domainIds[i] - minDomain;
 
-        if (inLeaves[i] == NULL)
+        if (dsets[i] == NULL)
         {
             continue;
         }
         else if (mergedDomains[mdIdx] == NULL)
         {
-            vtkUnstructuredGrid *fromLeaf = vtkUnstructuredGrid::New();
-            fromLeaf->DeepCopy(inLeaves[i]);
-            mergedDomains[mdIdx] = fromLeaf;
+            vtkUnstructuredGrid *dsetCpy = vtkUnstructuredGrid::New();
+            dsetCpy->DeepCopy(dsets[i]);
+            mergedDomains[mdIdx] = dsetCpy;
         }
         else
         {
+            vtkUnstructuredGrid *dsetCpy = vtkUnstructuredGrid::New();
+            dsetCpy->DeepCopy(dsets[i]);
+
             appendFilter->AddInputData(mergedDomains[mdIdx]);
-            appendFilter->AddInputData(inLeaves[i]);
+            appendFilter->AddInputData(dsetCpy);
+
             appendFilter->Update();
+
             vtkUnstructuredGrid *combined = vtkUnstructuredGrid::New();
             combined->DeepCopy(appendFilter->GetOutput());
+
+            mergedDomains[mdIdx]->Delete(); 
             mergedDomains[mdIdx] = combined;
+         
             appendFilter->RemoveAllInputs();            
         }
     }
@@ -508,6 +519,9 @@ avtExplodeFilter::ExtractMaterialsFromDomains(avtDataTree_p inTree)
 //      issues). Also, don't remove the avtSubsets array as it 
 //      may be needed in future explosions.  
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Fixed bug with point data extraction. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -517,7 +531,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
     // Get the VTK data set, the domain number, and the label.
     //
     vtkDataSet *in_ds = in_dr->GetDataVTK();
-    int domain = in_dr->GetDomain();
+    int domain        = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
 
     if (in_ds == NULL)
@@ -527,7 +541,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
 
     stringVector   labels;
     int            nDataSets     = 0;
-    vtkDataSet   **outDS        = NULL;
+    vtkDataSet   **outDS         = NULL;
     vtkDataArray  *boundaryArray = 
         in_ds->GetCellData()->GetArray("avtSubsets");
 
@@ -575,8 +589,15 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         //
         int *boundaryList = ((vtkIntArray*)boundaryArray)->GetPointer(0);
         
-        vtkUnstructuredGrid *in_ug = vtkUnstructuredGrid::New();
-        in_ug->DeepCopy(in_ds);
+        vtkAppendFilter *appendFilter = NULL;
+        if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+        {
+            vtkAppendFilter *appendFilter = vtkAppendFilter::New();
+            appendFilter->SetInputData(in_ds);
+            appendFilter->Update();
+        }
+
+        vtkUnstructuredGrid *in_ug = (vtkUnstructuredGrid*)in_ds;
 
         //
         // Get the data ready for transfer
@@ -584,27 +605,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         int nCells          = in_ug->GetNumberOfCells();
         vtkPointData *inPD  = in_ug->GetPointData();
         vtkCellData  *inCD  = in_ug->GetCellData();
-
-        int numCells        = in_ug->GetNumberOfCells();
-        vtkPoints *pts      = vtkPoints::New();
-        vtkIdList *cellPts  = vtkIdList::New();
-        vtkIdList *ptIds    = vtkIdList::New();
-
-        // 
-        // Since we are removing connectivity between nodes, 
-        // we will need more space to store them. The following
-        // is a rough (usually over) estimation which imagines
-        // that each cell could be a  VTK VOXEL or HEXAHEDRON 
-        // type (8 nodes). We squeeze out the extra space later. 
-        // NOTE: VTK has less common cell types that can have 
-        // as many as 19 nodes, in which case this could actually 
-        // be an under-estimation...
-        //
-        pts->Allocate(numCells * 8);
-        ptIds->Allocate(numCells * 8);
-        cellPts->Allocate(numCells);
-
-        int numTotalCells = in_ug->GetNumberOfCells();
+        int numTotalCells   = in_ug->GetNumberOfCells();
 
         //
         // Determine the total number of boundarys
@@ -675,17 +676,19 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
             if (boundaryCounts[s] > 0)
             {
                 //
-                // Create a new unstructured grid
+                // Create a new, fully disconnected, unstructured grid.
                 //
-                vtkUnstructuredGrid *out_ug = vtkUnstructuredGrid::New();
-                vtkPointData *outPD = out_ug->GetPointData();
-                vtkCellData  *outCD = out_ug->GetCellData();
-                vtkCellIterator *it = in_ug->NewCellIterator();
+                vtkPoints *pts               = vtkPoints::New();
+                vtkIdList *cellPts           = vtkIdList::New();
+                vtkIdList *ptIds             = vtkIdList::New();
+                vtkUnstructuredGrid *out_ug  = vtkUnstructuredGrid::New();
+                vtkPointData *outPD          = out_ug->GetPointData();
+                vtkCellData  *outCD          = out_ug->GetCellData();
+                vtkCellIterator *it          = in_ug->NewCellIterator();
 
-                out_ug->Allocate(nCells);
-                outCD->CopyAllocate(inCD);
+                outCD->CopyAllocate(inCD, boundaryCounts[s]);
+                out_ug->Allocate(boundaryCounts[s]);
                 outPD->CopyAllocate(inPD);
-                outPD->Allocate(numCells * 8);
 
                 for (it->InitTraversal(); !it->IsDoneWithTraversal(); 
                     it->GoToNextCell())
@@ -698,34 +701,45 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
                         in_ug->GetCellPoints(cellId, cellPts);
                         int numIds        = cellPts->GetNumberOfIds();
 
-                        for (int i = 0; i < numIds; ++i)
+                        for (int m = 0; m < numIds; ++m)
                         {
                             double point[3];
-                            in_ug->GetPoint(cellPts->GetId(i), point);
-                            int nxtPtId = pts->InsertNextPoint(point);
+                            vtkIdType prevPtId = cellPts->GetId(m);
+                            in_ug->GetPoint(prevPtId, point);
+                            vtkIdType nxtPtId = pts->InsertNextPoint(point);
                             ptIds->InsertNextId(nxtPtId);
-                            outPD->CopyData(inPD, cellPts->GetId(i), nxtPtId);
+                            outPD->CopyData(inPD, prevPtId, nxtPtId);
                         }
+
                         int newId = out_ug->InsertNextCell(cellType, ptIds);
                         outCD->CopyData(inCD, cellId, newId);
                         cellPts->Reset(); 
                         ptIds->Reset();
                     }
                 }
-        
+
                 //
                 // Reclaim unused space.
                 //
                 outPD->Squeeze();
 
-                //
-                // Remove the avtSubsets array and set the label
-                // for this dataset to be the material label. 
-                //
                 out_ug->SetPoints(pts); 
                 labels.push_back(selectedBoundaryNames[i]);
                 outDS[nDataSets] = out_ug;
                 nDataSets++;
+
+                if (pts != NULL)
+                {
+                    pts->Delete();
+                }
+                if (cellPts != NULL)
+                {
+                    cellPts->Delete();
+                }
+                if (ptIds != NULL)
+                {
+                    ptIds->Delete();
+                }
 
                 //
                 // Update the extents for this material. 
@@ -742,7 +756,10 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         delete [] selectedBoundaries;
         delete [] cLabelStorage;
 
-        in_ug->Delete();
+        if (appendFilter != NULL)
+        {
+            appendFilter->Delete();
+        }
     }
     else
     {
@@ -946,6 +963,9 @@ avtExplodeFilter::PreExecute(void)
 //      Alister Maguire, Mon Jan 29 10:12:44 PST 2018
 //      Keeping track of original domains now. 
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed output leaves from data rep to vtk datasets. 
+//
 // ****************************************************************************
 
 void
@@ -1088,7 +1108,13 @@ avtExplodeFilter::Execute(void)
         return;
     }
 
-    avtDataRepresentation **outLeaves = new avtDataRepresentation*[nLeaves];
+    vtkDataSet **outLeaves = new vtkDataSet *[nLeaves];
+    for (int i = 0; i < nLeaves; ++i)
+    {
+        vtkUnstructuredGrid *leaf = vtkUnstructuredGrid::New();
+        leaf->DeepCopy(matLeaves[i]);
+        outLeaves[i] = leaf;
+    }
 
     //
     // Look for the material that has been selected for
@@ -1096,9 +1122,7 @@ avtExplodeFilter::Execute(void)
     //
     for (int i = 0; i < nLeaves; ++i)
     {
-        vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New();
-        ugrid->DeepCopy(matLeaves[i]);
-
+        
         if ( explosion->materialName == matLabels[i] )
         {
             double matExtents[6]; 
@@ -1110,36 +1134,30 @@ avtExplodeFilter::Execute(void)
                 return;
             }
 
-            for (int i = 0; i < 6; ++i)
+            for (int j = 0; j < 6; ++j)
             {
-                matExtents[i] = globalMatExtents[matIdx + i];
+                matExtents[j] = globalMatExtents[matIdx + j];
             }
                 
             if (explosion->explodeMaterialCells)
             {
-                explosion->ExplodeAndDisplaceMaterial(ugrid, 
-                    matExtents, scaleFactor);
+                explosion->ExplodeAndDisplaceMaterial(
+                    (vtkUnstructuredGrid *)outLeaves[i], 
+                    matExtents, 
+                    scaleFactor);
             }
             else
             {
-                explosion->DisplaceMaterial(ugrid, matExtents, 
+                explosion->DisplaceMaterial(
+                    (vtkUnstructuredGrid *)outLeaves[i],
+                    matExtents, 
                     scaleFactor);
             }
         }
-
-        //
-        //TODO: this creates a tree with more leaves than 
-        //      the original input tree (each domain is split
-        //      into material leaves). May want to merge materials
-        //      back into domains, but this will cause materials
-        //      to be re-calculated when more explosions are added... 
-        //
-        avtDataRepresentation *ugrid_rep = 
-            new avtDataRepresentation(ugrid, materialDomains[i], inLabels[0]);
-        outLeaves[i] = ugrid_rep;
     }
-        
-    avtDataTree_p outTree = new avtDataTree(nLeaves, outLeaves);
+
+    avtDataTree_p outTree = CreateDomainTree(outLeaves, nLeaves, 
+        materialDomains, inLabels);
 
     //
     // Clean up memory.
@@ -1148,13 +1166,12 @@ avtExplodeFilter::Execute(void)
     {
         if (outLeaves[i] != NULL)
         {
-            delete outLeaves[i];
+            outLeaves[i]->Delete();
         }
     }
     delete [] outLeaves;
 
-    avtDataTree_p mergedDomainTree = MergeDomains(outTree, inLabels);
-    SetOutputDataTree(mergedDomainTree);
+    SetOutputDataTree(outTree);
 }
 
 
@@ -1215,6 +1232,14 @@ avtExplodeFilter::UpdateDataObjectInfo(void)
 {
     GetOutput()->GetInfo().GetValidity().InvalidateDataMetaData();
     GetOutput()->GetInfo().GetValidity().InvalidateSpatialMetaData();
+
+    //
+    // The dataset has become disconnected and reorganized. 
+    //
+    GetOutput()->GetInfo().GetValidity().InvalidateZones();
+    GetOutput()->GetInfo().GetValidity().InvalidateNodes();
+    GetOutput()->GetInfo().GetValidity().ZonesSplit();
+    
 
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetLabels(atts.GetBoundaryNames());
@@ -1504,21 +1529,6 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
     vtkPoints *pts      = vtkPoints::New();
     vtkIdList *cellPts  = vtkIdList::New();
     vtkIdList *ptIds    = vtkIdList::New();
-
-    // 
-    // Since we are removing connectivity between nodes, 
-    // we will need more space to store them. The following
-    // is a rough (usually over) estimation which imagines
-    // that each cell could be a  VTK VOXEL or HEXAHEDRON 
-    // type (8 nodes). We squeeze out the extra space later. 
-    // NOTE: VTK has less common cell types that can have 
-    // as many as 19 nodes, in which case this could actually 
-    // be an under-estimation...
-    //
-    outPD->Allocate(numCells * 8);
-    pts->Allocate(numCells * 8);
-    ptIds->Allocate(numCells * 8);
-    cellPts->Allocate(numCells);
 
     bool normalize;
     switch (explosionPattern)
