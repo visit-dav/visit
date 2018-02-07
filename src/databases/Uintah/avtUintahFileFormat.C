@@ -103,7 +103,7 @@ const double NAN_REPLACE_VAL=1.0E9;
 avtUintahFileFormat::avtUintahFileFormat(const char *filename,
                                          DBOptionsAttributes* attrs) :
   avtMTMDFileFormat(filename),
-  useExtraCells(1),
+  loadExtraElements(1),
   dataVariesOverTime(true),
   forceMeshReload(true),
   mesh_for_patch_data(""),
@@ -116,7 +116,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   {
     if (attrs->GetName(i) == UINTAH_LOAD_EXTRA)
     {
-      useExtraCells = attrs->GetEnum(UINTAH_LOAD_EXTRA);
+      loadExtraElements = attrs->GetEnum(UINTAH_LOAD_EXTRA);
     }
     else if (attrs->GetName(i) == UINTAH_DATA_VARIES_OVER_TIME)
     {
@@ -508,7 +508,7 @@ avtUintahFileFormat::ActivateTimestep(int ts)
   if (stepInfo)
     delete stepInfo;
 
-  stepInfo = (*getTimeStepInfo)(archive, grid, ts, useExtraCells);
+  stepInfo = (*getTimeStepInfo)(archive, grid, ts, loadExtraElements);
 
   currTimeStep = ts; 
   forceMeshReload = true;
@@ -2059,7 +2059,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       gd = (*getGridData)(archive, grid, level, local_patch,
                           varName, matlNo, timestate,
                           plow, phigh,
-                          (nodeCentered ? 0 : useExtraCells));
+                          (nodeCentered ? 0 : loadExtraElements));
 
       visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getGridData");
       
@@ -2072,7 +2072,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       gd = (*getGridData)(archive, grid, level, local_patch,
                           varName, matlNo, timestate,
                           plow, phigh,
-                          (nodeCentered ? 0 : useExtraCells));
+                          (nodeCentered ? 0 : loadExtraElements));
 
       visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getGridData");
 #endif

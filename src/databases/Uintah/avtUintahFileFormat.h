@@ -113,8 +113,8 @@ protected:
                              const char* varname,
                              const int level, const int patch);
 
-  // DATA MEMBERS
-  int  useExtraCells;
+  // Data members
+  int  loadExtraElements;
   bool dataVariesOverTime;
   int currTimeStep;
   bool forceMeshReload;
