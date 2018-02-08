@@ -39,6 +39,8 @@ def TestLength(testname):
 
 TurnOnAllAnnotations()
 
+ra1 = GetRenderingAttributes()
+
 #
 # Restore the session file and make sure that it at the right time step
 # and has the right time slider.
@@ -47,6 +49,12 @@ RestoreSessionWithDifferentSources(tests_path("session","correlationsession.sess
                                    [data_path("pdb_test_data","dbA00.pdb"),
                                     data_path("pdb_test_data","dbB00.pdb"),
                                     data_path("pdb_test_data","dbC00.pdb")])
+
+# Restore the scalable rendering mode for the tests.
+ra2 = GetRenderingAttributes()
+ra2.scalableActivationMode = ra1.scalableActivationMode
+ra2.scalableAutoThreshold = ra1.scalableActivationMode
+SetRenderingAttributes(ra2)
 
 Test("correlationsession00")
 TestLength("correlationsession01")
