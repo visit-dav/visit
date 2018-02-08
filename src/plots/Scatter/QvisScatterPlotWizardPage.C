@@ -65,6 +65,10 @@
 // Note: Refactored from QvisScatterPlotWizardPage.
 //
 // Modifications:
+//    Kevin Griffin, Thu Feb  8 15:29:39 PST 2018
+//    Set the "usePlot" parameter to false for all the QvisVariableButton
+//    buttons so that the scatter plot setup wizard always uses the active
+//    source to populate the variable menus. This resolves Bug #2866.
 //
 // ****************************************************************************
 
@@ -96,7 +100,7 @@ QvisScatterPlotWizardPage::QvisScatterPlotWizardPage(AttributeSubject *s,
 
     QGridLayout *grid_layout= new QGridLayout();
     right_layout->addLayout(grid_layout);
-    xVarButton = new QvisVariableButton(true, false, true,
+    xVarButton = new QvisVariableButton(true, false, false,
                      QvisVariableButton::Scalars | QvisVariableButton::Curves, this);
 
     xVarButton->setText(QString(xvar_name.c_str()));
@@ -110,7 +114,7 @@ QvisScatterPlotWizardPage::QvisScatterPlotWizardPage(AttributeSubject *s,
     grid_layout->addWidget(xVarButton,0,2);
 
 
-    yVarButton = new QvisVariableButton(true, false, true,
+    yVarButton = new QvisVariableButton(true, false, false,
         QvisVariableButton::Scalars | QvisVariableButton::Curves, this);
 
     QLabel *yvar_label = new QLabel(tr("Y Variable"),this);
@@ -122,7 +126,7 @@ QvisScatterPlotWizardPage::QvisScatterPlotWizardPage(AttributeSubject *s,
 
     yVarButton->setText(unselected_text);
 
-    zVarButton = new QvisVariableButton(true, false, true,
+    zVarButton = new QvisVariableButton(true, false, false,
                       QvisVariableButton::Scalars | QvisVariableButton::Curves,this);
 
     zVarButton->setEnabled(false);
@@ -140,7 +144,7 @@ QvisScatterPlotWizardPage::QvisScatterPlotWizardPage(AttributeSubject *s,
     grid_layout->addWidget(zvar_label,2,1);
     grid_layout->addWidget(zVarButton,2,2);
 
-    colorVarButton = new QvisVariableButton(true, false, true,
+    colorVarButton = new QvisVariableButton(true, false, false,
         QvisVariableButton::Scalars | QvisVariableButton::Curves, this);
     colorVarButton->setEnabled(false);
     colorVarCheck= new QCheckBox(tr(""),this);
