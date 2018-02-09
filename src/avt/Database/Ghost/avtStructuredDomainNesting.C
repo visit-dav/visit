@@ -491,17 +491,35 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
             // Compute min/max extents in the current patch's level by mapping
             // the selected descendent's indexing scheme onto this level
             //
-            int i0 = domainNesting[descDom].logicalExtents[0] / ratio[0];
-            int i1 = (domainNesting[descDom].logicalExtents[3] + 1) / ratio[0];
-            if ((domainNesting[descDom].logicalExtents[3] + 1) % ratio[0]) 
+
+            // In some rare cases the logical extents can be
+            // negative. When that happens the extents need to be
+            // shifted to be positive so the modulo calcultions are correct.
+            int ioffset = 0;
+            while(domainNesting[descDom].logicalExtents[0] + ioffset < 0)
+                ioffset += ratio[0];
+            
+            int i0 = (domainNesting[descDom].logicalExtents[0] + ioffset  ) / ratio[0] - ioffset / ratio[0];
+            int i1 = (domainNesting[descDom].logicalExtents[3] + ioffset+1) / ratio[0] - ioffset / ratio[0];
+            if ((domainNesting[descDom].logicalExtents[3] + ioffset + 1) % ratio[0]) 
                 i1++;
-            int j0 = domainNesting[descDom].logicalExtents[1] / ratio[1];
-            int j1 = (domainNesting[descDom].logicalExtents[4] + 1) / ratio[1];
-            if ((domainNesting[descDom].logicalExtents[4] + 1) % ratio[1]) 
+
+            int joffset = 0;
+            while(domainNesting[descDom].logicalExtents[1] + joffset < 0)
+                joffset += ratio[1];
+            
+            int j0 = (domainNesting[descDom].logicalExtents[1] + joffset  ) / ratio[1] - joffset / ratio[1];
+            int j1 = (domainNesting[descDom].logicalExtents[4] + joffset+1) / ratio[1] - joffset / ratio[1];
+            if ((domainNesting[descDom].logicalExtents[4] + joffset+1) % ratio[1]) 
                 j1++;
-            int k0 = domainNesting[descDom].logicalExtents[2] / ratio[2];
-            int k1 = (domainNesting[descDom].logicalExtents[5] + 1) / ratio[2];
-            if ((domainNesting[descDom].logicalExtents[5] + 1) % ratio[2]) 
+
+            int koffset = 0;
+            while(domainNesting[descDom].logicalExtents[2] + koffset < 0)
+                koffset += ratio[2];
+            
+            int k0 = (domainNesting[descDom].logicalExtents[2] + koffset  ) / ratio[2] - koffset / ratio[2];
+            int k1 = (domainNesting[descDom].logicalExtents[5] + koffset+1) / ratio[2] - koffset / ratio[2];
+            if ((domainNesting[descDom].logicalExtents[5] + koffset+1) % ratio[2]) 
                 k1++;
 
             //
@@ -650,6 +668,14 @@ avtStructuredDomainNesting::ConfirmMesh(vector<int> &domains,
         }
 
         vector<int> &extents = domainNesting[domains[i]].logicalExtents;
+        
+        if (extents.size() != 6)
+        {
+            debug1 << "Warning: avtStructuredDomainNesting failing ConfirmMesh"
+                   << " because the extents for domain number " << domains[i]
+                   << " did not have the correct size (6) " << extents.size() << endl;
+            return false;
+        }
         if ((extents[3]-extents[0]+2) != dims[0])
         {
             debug1 << "Warning: avtStructuredDomainNesting failing "
@@ -1147,7 +1173,7 @@ bool avtStructuredDomainNesting::InsideChildBoundingBox(int domain, int ijk[6])
     if(domainNesting[domain].childDomains.size() == 0)
       return false;
 
-    if((domainNesting[domain].childBoundingBox[3]) < ijk[0] ||
+    if((domainNesting[domain].childBoundingBox[3] < ijk[0]) ||
        (domainNesting[domain].childBoundingBox[0] > ijk[1]))
       return false;
 
