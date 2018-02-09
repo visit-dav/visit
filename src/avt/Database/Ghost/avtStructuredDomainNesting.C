@@ -491,35 +491,37 @@ avtStructuredDomainNesting::ApplyGhost(vector<int> domainList,
             // Compute min/max extents in the current patch's level by mapping
             // the selected descendent's indexing scheme onto this level
             //
+            const std::vector<int>& descExts =
+              domainNesting[descDom].logicalExtents;
 
             // In some rare cases the logical extents can be
             // negative. When that happens the extents need to be
-            // shifted to be positive so the modulo calcultions are correct.
+            // shifted to be positive so the modulo calculations are correct.
             int ioffset = 0;
-            while(domainNesting[descDom].logicalExtents[0] + ioffset < 0)
+            while(descExts[0] + ioffset < 0)
                 ioffset += ratio[0];
             
-            int i0 = (domainNesting[descDom].logicalExtents[0] + ioffset  ) / ratio[0] - ioffset / ratio[0];
-            int i1 = (domainNesting[descDom].logicalExtents[3] + ioffset+1) / ratio[0] - ioffset / ratio[0];
-            if ((domainNesting[descDom].logicalExtents[3] + ioffset + 1) % ratio[0]) 
+            int i0 = (descExts[0] + ioffset  ) / ratio[0] - ioffset / ratio[0];
+            int i1 = (descExts[3] + ioffset+1) / ratio[0] - ioffset / ratio[0];
+            if ((descExts[3] + ioffset + 1) % ratio[0]) 
                 i1++;
 
             int joffset = 0;
-            while(domainNesting[descDom].logicalExtents[1] + joffset < 0)
+            while(descExts[1] + joffset < 0)
                 joffset += ratio[1];
             
-            int j0 = (domainNesting[descDom].logicalExtents[1] + joffset  ) / ratio[1] - joffset / ratio[1];
-            int j1 = (domainNesting[descDom].logicalExtents[4] + joffset+1) / ratio[1] - joffset / ratio[1];
-            if ((domainNesting[descDom].logicalExtents[4] + joffset+1) % ratio[1]) 
+            int j0 = (descExts[1] + joffset  ) / ratio[1] - joffset / ratio[1];
+            int j1 = (descExts[4] + joffset+1) / ratio[1] - joffset / ratio[1];
+            if ((descExts[4] + joffset+1) % ratio[1]) 
                 j1++;
 
             int koffset = 0;
-            while(domainNesting[descDom].logicalExtents[2] + koffset < 0)
+            while(descExts[2] + koffset < 0)
                 koffset += ratio[2];
             
-            int k0 = (domainNesting[descDom].logicalExtents[2] + koffset  ) / ratio[2] - koffset / ratio[2];
-            int k1 = (domainNesting[descDom].logicalExtents[5] + koffset+1) / ratio[2] - koffset / ratio[2];
-            if ((domainNesting[descDom].logicalExtents[5] + koffset+1) % ratio[2]) 
+            int k0 = (descExts[2] + koffset  ) / ratio[2] - koffset / ratio[2];
+            int k1 = (descExts[5] + koffset+1) / ratio[2] - koffset / ratio[2];
+            if ((descExts[5] + koffset+1) % ratio[2]) 
                 k1++;
 
             //
@@ -813,12 +815,30 @@ avtStructuredDomainNesting::GetNestingForDomain(int domain,
     {
         vector<int> ratios = GetRatiosForLevel(info.level, children[i]);
         vector<int> rawExts = domainNesting[children[i]].logicalExtents;
-        childExts[6*i+0] = rawExts[0] / ratios[0];
-        childExts[6*i+3] = rawExts[3] / ratios[0];
-        childExts[6*i+1] = rawExts[1] / ratios[1];
-        childExts[6*i+4] = rawExts[4] / ratios[1];
-        childExts[6*i+2] = rawExts[2] / ratios[2];
-        childExts[6*i+5] = rawExts[5] / ratios[2];
+
+        // In some rare cases the logical extents can be
+        // negative. When that happens the extents need to be
+        // shifted to be positive so the modulo calculations are correct.
+        int ioffset = 0;
+        while(rawExts[0] + ioffset < 0)
+          ioffset += ratios[0];
+        
+        childExts[6*i+0] = (rawExts[0]+ioffset) / ratios[0] - (ioffset / ratios[0]);
+        childExts[6*i+3] = (rawExts[3]+ioffset) / ratios[0] - (ioffset / ratios[0]);
+
+        int joffset = 0;
+        while(rawExts[1] + joffset < 0)
+          joffset += ratios[1];
+        
+        childExts[6*i+1] = (rawExts[1]+joffset) / ratios[1] - (joffset / ratios[1]);
+        childExts[6*i+4] = (rawExts[4]+joffset) / ratios[1] - (joffset / ratios[1]);
+
+        int koffset = 0;
+        while(rawExts[2] + koffset < 0)
+          koffset += ratios[2];
+        
+        childExts[6*i+2] = (rawExts[2]+koffset) / ratios[2] - (koffset / ratios[2]);
+        childExts[6*i+5] = (rawExts[5]+koffset) / ratios[2] - (koffset / ratios[2]);
     }
 }
 
@@ -880,18 +900,33 @@ avtStructuredDomainNesting::GetChildrenForLogicalIndex(int domain, int ijk[3],
         const std::vector<int>& logiExts =
           domainNesting[domainNesting[domain].childDomains[i]].logicalExtents;
 
-        child_ext[0] = logiExts[0] / ratios[0];
-        child_ext[3] = logiExts[3] / ratios[0];
+        // In some rare cases the logical extents can be
+        // negative. When that happens the extents need to be
+        // shifted to be positive so the modulo calculations are correct.
+        int ioffset = 0;
+        while(logiExts[0] + ioffset < 0)
+          ioffset += ratios[0];
+
+        child_ext[0] = (logiExts[0]+ioffset) / ratios[0] - (ioffset / ratios[0]);
+        child_ext[3] = (logiExts[3]+ioffset) / ratios[0] - (ioffset / ratios[0]);
         if((ijk[0] < child_ext[0]) || (ijk[0] > child_ext[3]))
             continue;
 
-        child_ext[1] = logiExts[1] / ratios[1];
-        child_ext[4] = logiExts[4] / ratios[1];
+        int joffset = 0;
+        while(logiExts[1] + joffset < 0)
+          joffset += ratios[1];
+
+        child_ext[1] = (logiExts[1]+joffset) / ratios[1] - (joffset / ratios[1]);
+        child_ext[4] = (logiExts[4]+joffset) / ratios[1] - (joffset / ratios[1]);
         if((ijk[1] < child_ext[1]) || (ijk[1] > child_ext[4]))
             continue;
 
-        child_ext[2] = logiExts[2] / ratios[2];
-        child_ext[5] = logiExts[5] / ratios[2];
+        int koffset = 0;
+        while(logiExts[2] + koffset < 0)
+          koffset += ratios[2];
+
+        child_ext[2] = (logiExts[2]+koffset) / ratios[2] - (koffset / ratios[2]);
+        child_ext[5] = (logiExts[5]+koffset) / ratios[2] - (koffset / ratios[2]);
         if((ijk[2] < child_ext[2]) || (ijk[2] > child_ext[5]))
             continue;
 
@@ -937,21 +972,37 @@ avtStructuredDomainNesting::GetChildrenForLogicalRange(int domain, int ijk[6],
     {
         ratios = GetRatiosForLevel(domainNesting[domain].level,
                                    domainNesting[domain].childDomains[i]);
+
         const std::vector<int>& logiExts =
           domainNesting[domainNesting[domain].childDomains[i]].logicalExtents;
 
-        child_ext[0] = logiExts[0] / ratios[0];
-        child_ext[3] = logiExts[3] / ratios[0];
+        // In some rare cases the logical extents can be
+        // negative. When that happens the extents need to be
+        // shifted to be positive so the modulo calculations are correct.
+        int ioffset = 0;
+        while(logiExts[0] + ioffset < 0)
+          ioffset += ratios[0];
+
+        child_ext[0] = (logiExts[0]+ioffset) / ratios[0] - (ioffset / ratios[0]);
+        child_ext[3] = (logiExts[3]+ioffset) / ratios[0] - (ioffset / ratios[0]);
         if((child_ext[3]) < ijk[0] || (child_ext[0] > ijk[1]))
             continue;
 
-        child_ext[1] = logiExts[1] / ratios[1];
-        child_ext[4] = logiExts[4] / ratios[1];
+        int joffset = 0;
+        while(logiExts[1] + joffset < 0)
+          joffset += ratios[1];
+
+        child_ext[1] = (logiExts[1]+joffset) / ratios[1] - (joffset / ratios[1]);
+        child_ext[4] = (logiExts[4]+joffset) / ratios[1] - (joffset / ratios[1]);
         if((child_ext[4] < ijk[2]) || (child_ext[1] > ijk[3]))
             continue;
 
-        child_ext[2] = logiExts[2] / ratios[2];
-        child_ext[5] = logiExts[5] / ratios[2];
+        int koffset = 0;
+        while(logiExts[2] + koffset < 0)
+          koffset += ratios[2];
+
+        child_ext[2] = (logiExts[2]+koffset) / ratios[2] - (koffset / ratios[2]);
+        child_ext[5] = (logiExts[5]+koffset) / ratios[2] - (koffset / ratios[2]);
         if((child_ext[5] < ijk[4]) || (child_ext[2] > ijk[5]))
             continue;
 
@@ -1111,30 +1162,48 @@ void avtStructuredDomainNesting::ComputeChildBoundingBox(int domain)
         {
             ratios = GetRatiosForLevel(domainNesting[domain].level,
                                        domainNesting[domain].childDomains[i]);
+
             const std::vector<int>& logiExts =
               domainNesting[domainNesting[domain].childDomains[i]].logicalExtents;
 
-            ext = logiExts[0] / ratios[0];
+            // In some rare cases the logical extents can be
+            // negative. When that happens the extents need to be
+            // shifted to be positive so the modulo calculations are correct.
+            int ioffset = 0;
+            while(logiExts[0] + ioffset < 0)
+              ioffset += ratios[0];
+
+            ext = (logiExts[0]+ioffset) / ratios[0] - (ioffset / ratios[0]);
             if(ext < imin)
                 imin = ext;
 
-            ext = logiExts[3] / ratios[0];
+            ext = (logiExts[3]+ioffset) / ratios[0] - (ioffset / ratios[0]);
             if(ext > imax)
                 imax = ext;
 
-            ext = logiExts[1] / ratios[1];
+
+            int joffset = 0;
+            while(logiExts[1] + joffset < 0)
+              joffset += ratios[1];
+
+            ext = (logiExts[1]+joffset) / ratios[1] - (joffset / ratios[1]);
             if(ext < jmin)
                 jmin = ext;
 
-            ext = logiExts[4] / ratios[1];
+            ext = (logiExts[4]+joffset) / ratios[1] - (joffset / ratios[1]);
             if(ext > jmax)
                 jmax = ext;
 
-            ext = logiExts[2] / ratios[2];
+
+            int koffset = 0;
+            while(logiExts[2] + koffset < 0)
+              koffset += ratios[2];
+
+            ext = (logiExts[2]+koffset) / ratios[2] - (koffset / ratios[2]);
             if(ext < kmin)
                 kmin = ext;
 
-            ext = logiExts[5] / ratios[2];
+            ext = (logiExts[5]+koffset) / ratios[2] - (koffset / ratios[2]);
             if(ext > kmax)
                 kmax = ext;
         }
