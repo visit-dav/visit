@@ -97,8 +97,8 @@ function bv_uintah_host_profile
         echo "##" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_UINTAH" == "yes" ]]; then
-            warn "Assuming version 2.1.0 for Uintah"
-            echo "SETUP_APP_VERSION(UINTAH 2.1.0)" >> $HOSTCONF
+            warn "Assuming version 2.5.1 for Uintah"
+            echo "SETUP_APP_VERSION(UINTAH 2.5.1)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR $UINTAH_INSTALL_DIR)" >> $HOSTCONF 
             echo "SET(VISIT_USE_SYSTEM_UINTAH TRUE)" >> $HOSTCONF
         else
