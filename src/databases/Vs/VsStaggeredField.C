@@ -26,13 +26,10 @@ VsStaggeredField<TYPE>::VsStaggeredField(size_t subRes) {
   this->indexOrder = VsSchema::compMajorCKey;
   this->centering = VsSchema::nodalCenteringKey;
 
-#if 0
-  // There is no clear method under GCC 7. What good would it do here anyway?
   this->oriCellDims.clear();
   this->oriCellDimProd.clear();
   this->newCellDims.clear();
   this->newCellDimProd.clear();
-#endif
 }
 
 template<class TYPE>

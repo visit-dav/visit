@@ -65,6 +65,11 @@ public:
    * @return type
    */
   hid_t getType() const { return this->dataType; }
+
+  /** 
+   * List of attributes
+   */
+  void getAttributesNames();
   
 private:
   std::vector<int> dims;

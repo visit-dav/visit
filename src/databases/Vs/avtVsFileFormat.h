@@ -229,8 +229,15 @@ class avtVsFileFormat: public avtSTMDFileFormat {
    *
    * @param mmd a pointer to the object that needs the axis labels.
    */
-  void setAxisLabels(avtMeshMetaData* mmd);
+  void setAxisLabels(avtMeshMetaData* mmd, bool transform = false);
 
+  /**
+   * Set the global extents for a mesh.
+   *
+   * @param mmd a pointer to the object that needs the axis labels.
+   */
+  void setGlobalExtents(avtMeshMetaData* mmd);
+  
   /**
    * Create various meshes.
    */

@@ -1806,62 +1806,11 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     << haveConnectivityCount
     << std::endl;
 
-    VsDataset* connectivityDataset =
-    registry->getDataset(connectivityDatasetName);
-
     std::vector<int> connectivityDims = connectivityMeta->getDims();
 
-    size_t numCells, numVerts;
-    if( unstructuredMesh->isCompMajor() )
-    {
-        numCells = connectivityDims[1];
-        numVerts = connectivityDims[0];
-    }
-    else
-    {
-        numCells = connectivityDims[0];
-        numVerts = connectivityDims[1];
-    }
-
-    // Adjust for the data selections which are ZONAL which will limit
-    // which connections are read in.
-    if( haveDataSelections )
-    {
-        if( maxs[0] < 0 || numCells - 1 < (size_t)maxs[0] )
-        maxs[0] = (int)numCells - 1; // numCells - 1 = last cell index,
-                                // not number of cells
-
-        if( maxs[0] < mins[0] )
-        mins[0] = 0;
-
-        VsLog::debugLog() << CLASSFUNCLINE << "  "
-        << "Have a zonal inclusive selection for unstructured mesh cells "
-        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
-        << std::endl;
-
-                                // New number of cells based on the above.
-        numCells = (maxs[0]-mins[0]) / strides[0] + 1;
-    }
-
-    VsLog::debugLog() << CLASSFUNCLINE << "  "
-    << "numCells = " << numCells
-    << ", numVerts = " << numVerts << "." << std::endl;
-
     size_t datasetLength = 1;
-    for (size_t i =0; i< connectivityDims.size(); ++i)
-    datasetLength *= connectivityDims[i];
-
-    // Check for connectivity list type
-    if (!isIntType( connectivityMeta->getType() )) {
-        VsLog::debugLog() << CLASSFUNCLINE << "  "
-        << "Indices are not integers. Cleaning up" << std::endl;
-
-        ugridPtr->Delete();
-
-        VsLog::debugLog() << CLASSFUNCLINE << "  "
-        << "Returning NULL" << std::endl;
-
-        return NULL;
+    for (size_t i = 0; i < connectivityDims.size(); ++i) {
+        datasetLength *= connectivityDims[i];
     }
 
     // Vertices
@@ -1881,29 +1830,109 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         return NULL;
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE << "  "
-    << "Reading connectivity list data." << std::endl;
+    VsDataset* connectivityDataset =
+        registry->getDataset(connectivityDatasetName);
 
-    herr_t err;
+    // Adjust for the data selections which are ZONAL which will limit
+    // which connections are read in.
+    size_t numCells, numVerts;
+    if( unstructuredMesh->isCompMajor() ) {
+        numCells = connectivityDims[1];
+        numVerts = connectivityDims[0];
+    }
+    else {
+        numCells = connectivityDims[0];
+        numVerts = connectivityDims[1];
+    }
+
+    // Adjust for the data selections which are ZONAL which will limit
+    // which connections are read in.
+    if (haveDataSelections) {
+        if( maxs[0] < 0 || numCells - 1 < (size_t)maxs[0] )
+          maxs[0] = (int) numCells - 1; // numCells - 1 = last cell index,
+                                        // not number of cells
+
+        if( maxs[0] < mins[0] )
+            mins[0] = 0;
+
+        VsLog::debugLog() << CLASSFUNCLINE << "  "
+        << "Have a zonal inclusive selection for unstructured mesh cells "
+        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+        << std::endl;
+
+        // New number of cells based on the above.
+        numCells = (maxs[0]-mins[0]) / strides[0] + 1;
+    }
+
+    // Polyhedra load as 1D packed array
+    // Polygons support old 2D array and new 1D packed array format
+    // Determine if we are packing
+    // For polygons we detect backwards compatibility by checking
+    // if connectivityDims[0] = 1 or connectivityDims[1] = 1 (means it is a packed 1D array)
+
+    bool bUseCompressedPolygonsOrPolyhedraFormat =
+        (haveConnectivityCount == 0) && // this means Polygons or Polyhedra
+        !haveDataSelections && // only use this when haveDataSelections is false
+        ((numTopologicalDims != 2) || (connectivityDims[0] == 1) || (connectivityDims[1] == 1)); // to support backwards compatibility for polygons
 
     // Here the connections are being read. So sub select if needed.
-    if( haveDataSelections )
-    {
+    size_t k = 0;
+    herr_t loadDataErr;
+    if (haveDataSelections) {
         int srcMins[1] = {mins[0]};
-        int srcMaxs[1] = {(int)numCells};
+        int srcMaxs[1] = {numCells};
         int srcStrides[1] = {strides[0]};
 
-        err = reader->getData( connectivityDataset, vertices,
+        loadDataErr = reader->getData( connectivityDataset, vertices,
                 // -1 read all coordinate components
                 unstructuredMesh->getIndexOrder(), -1,
                 &(srcMins[0]), &(srcMaxs[0]), &(srcStrides[0]) );
     }
-    else
-    err = reader->getData(connectivityDataset, vertices);
+    else {
+        loadDataErr = reader->getData(connectivityDataset, vertices);
 
-    if (err < 0) {
+        // There is 1 awkward edge case we can only determine now that we loaded data
+        // Old format polygons which were just 1 polygon. That would make above
+        // bUseCompressedPolygonsOrPolyhedraFormat be set true incorrectly.
+        // This can be safely detected by checking if the first element
+        // is equal to the data length + 1. Then logically it must be old format.
+        // Note this works and was tested but for some reason visit loaded a single poly
+        // with a long delay (after this function exits) and did not investigate that yet
+        if ((haveConnectivityCount == 0) && (numTopologicalDims == 2) && (datasetLength == vertices[0]+1)) {
+            bUseCompressedPolygonsOrPolyhedraFormat = false; // cancel compression
+        }
+
+        if (bUseCompressedPolygonsOrPolyhedraFormat) {
+            numCells = vertices[k++];  // numCells is packed array 1st element
+            numVerts = -1;  // special handling
+        }
+    }
+
+
+    // Log some debug info
+    VsLog::debugLog() << CLASSFUNCLINE << "  "
+    << "numCells = " << numCells
+    << ", numVerts = " << numVerts << "." << std::endl;
+
+    // Check for connectivity list type
+    if (!isIntType( connectivityMeta->getType() )) {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
-        << "Call to getDataSet returned error: " << err
+        << "Indices are not integers. Cleaning up" << std::endl;
+
+        ugridPtr->Delete();
+
+        VsLog::debugLog() << CLASSFUNCLINE << "  "
+        << "Returning NULL" << std::endl;
+
+        return NULL;
+    }
+
+    VsLog::debugLog() << CLASSFUNCLINE << "  "
+    << "Reading connectivity list data." << std::endl;
+
+    if (loadDataErr < 0) {
+        VsLog::debugLog() << CLASSFUNCLINE << "  "
+        << "Call to getDataSet returned error: " << loadDataErr
         << "Returning NULL." << std::endl;
         return NULL;
     }
@@ -1944,7 +1973,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         VsDataset* correctionDataset = registry->getDataset(unstructuredMesh->getNodeCorrectionDatasetName());
         if (correctionDataset) {
             correctionListSize = correctionDataset->getLength();
-            int* localToGlobalNodeMapping = new int[correctionListSize];
+            int* localToGlobalNodeMapping = new int[correctionListSize]; // Memory leak?
             reader->getData(correctionDataset, localToGlobalNodeMapping);
 
             //Build up a list of which global ids are "taken" by more than one node
@@ -1974,10 +2003,10 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
     VsLog::debugLog() << CLASSFUNCLINE << "  "
     << "Inserting cells into grid." << std::endl;
-    size_t k = 0;
     int warningCount = 0;
     int cellCount = 0;
-    unsigned int cellVerts = 0;// cell's connected node indices
+    unsigned int cellVerts = 0; // total verts (for VTK_POLYHEDRON this value is not topologically meaningful - see below)
+    unsigned int cellFaces = 0; // VTK_POLYHEDRON calls InsertNextCell passing face count, not vertex count
     int cellType;
 
     // Dealing with fixed length connectivity lists.
@@ -2002,17 +2031,34 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         ++cellCount;
 
         // Dealing with cells with variable number of vertices.
-        if( haveConnectivityCount == 0 )
-        cellVerts = vertices[k++];
+        if (haveConnectivityCount == 0) {
+            // Polygons are loaded as a list C N1 i j k N2 i j k l N3 ...
+            // but may also be loaded as old 2D array for backwards compatibility
+            // Polyhedra are loaded as list C F1 L1 N1 i j k N2 i j k l F2 L2 N1 i j k l m N2 i j k ...
+            // C is the number of cells for packed mode
+            // Polyhedra have F1, F2 etc to indicate number of faces which is passed to InsertNextCell, not vertex count
+            if (numTopologicalDims == 3) {  // Polyhedra always use the compressed 1D array
+                cellFaces = vertices[k++];  // Read in the face count (F1, F2, ...)
+            }
+            cellVerts = vertices[k++]; // This is correct for Polyhedra and Polygons (old and new format)
+        }
 
         if (cellVerts > numVerts) {
-            //funny, the number of cells exceeds the length of the line
+            // funny, the number of cells exceeds the length of the line
             // this must be an error
             // we will drop back to adding individual vertices
             cellVerts = 0;
         }
 
-        switch (cellVerts) {
+        // for the special case of VTK_POLYHEDRON do not run the switch on cellVerts
+        // cellVerts is an array length which does not correspond to any topology
+        // For numTopologicalDims = 2 (VTK_POLYGON) cellVerts is ok
+        if (haveConnectivityCount == 0 && numTopologicalDims == 3) {
+            cellType = VTK_POLYHEDRON;
+        }
+        else
+        {
+          switch (cellVerts) {
             case 1:
             cellType = VTK_VERTEX;
             break;
@@ -2055,6 +2101,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                 cellType = VTK_EMPTY_CELL;
             }
             break;
+            }
         }
 
         //create cell and insert into mesh
@@ -2087,13 +2134,15 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             }
             //end tweak
 
-            // insert cell into mesh
-            ugridPtr->InsertNextCell(cellType, cellVerts, &verts[0]);
+            if ((haveConnectivityCount == 0) && !bUseCompressedPolygonsOrPolyhedraFormat) {
+                k += (numVerts - 1 - cellVerts);  // backwards compatibility mode for Polygons
+            }
 
-            if( haveConnectivityCount == 0 )
-            k += numVerts - 1 - cellVerts;
-
-        } else {
+            // insert cell into mesh - note that for InsertNextCell, VTK_POLYHEDRON type takes face count, not vertex count
+            vtkIdType cellOrFaceCount = (cellType == VTK_POLYHEDRON) ? cellFaces : cellVerts;
+            ugridPtr->InsertNextCell(cellType, cellOrFaceCount, &verts[0]);
+        }
+        else {
             // There was some error so add each vertex as a single point.
             // NO!  Unless we've registered as a pointmesh, adding single
             // points won't work so we treat the entire row of the dataset
@@ -2120,6 +2169,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
     VsLog::debugLog() << CLASSFUNCLINE << "  "
     << "Returning data." << std::endl;
+
     return ugridPtr;
 }
 
@@ -3824,7 +3874,8 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                         (int)spatialDims, (int)topologicalDims, meshType);
                 vmd->SetBounds( bounds );
                 vmd->SetNumberCells( (int)numCells );
-                setAxisLabels(vmd);
+                setAxisLabels(vmd, rectMesh->hasTransform());
+                setGlobalExtents(vmd);
                 md->Add(vmd);
             }
         }
@@ -3989,8 +4040,8 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
             vmd->SetBounds( bounds );
             vmd->SetNumberCells( (int)numCells );
             setAxisLabels(vmd);
+            setGlobalExtents(vmd);
             md->Add(vmd);
-
         }
     }
 
@@ -4171,6 +4222,7 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
                 (int)meta->getNumSpatialDims(),
                 (int)meta->getNumSpatialDims(), meshType);
         setAxisLabels(vmd);
+        setGlobalExtents(vmd);
         md->Add(vmd);
     }
 
@@ -4297,9 +4349,10 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
         << "Adding point mesh for this variable." << std::endl;
         avtMeshMetaData* vmd = new avtMeshMetaData(it->c_str(),
                 1, 1, 1, 0, spatialDims, 0, AVT_POINT_MESH);
-        vmd->SetBounds( bounds );
-        vmd->SetNumberCells( numCells );
+        vmd->SetBounds(bounds);
+        vmd->SetNumberCells(numCells);
         setAxisLabels(vmd);
+        setGlobalExtents(vmd);
         md->Add(vmd);
 
         // Register the transformed mesh (if this variable has a transform)
@@ -4313,7 +4366,10 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
             avtMeshMetaData* vmd_transform = new avtMeshMetaData(transformMeshName.c_str(),
                     1, 1, 1, 0, spatialDims, 0, AVT_POINT_MESH);
             vmd_transform->SetBounds(bounds);
-            setAxisLabels(vmd_transform);
+// This is the change for ticket 3340: the transformed vars with mesh use r,z, phi.
+// To revert, use false in the next call.
+            setAxisLabels(vmd_transform, true);
+            setGlobalExtents(vmd_transform);
             md->Add(vmd_transform);
         }
     }
@@ -4575,6 +4631,7 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
         new avtMeshMetaData("ERROR_READING_FILE", 1, 1, 1, 0, 3, 3,
                 AVT_RECTILINEAR_MESH);
         setAxisLabels(mmd);
+        setGlobalExtents(mmd);
         md->Add(mmd);
     }
 
@@ -4597,33 +4654,78 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 //  Modifications:
 //
 
-void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd)
+void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd, bool transform)
 {
-    VsLog::debugLog() << CLASSFUNCLINE << "  "
-    << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "  " << "Entering function." << std::endl;
 
     if (mmd == NULL) {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
         << "Input pointer was NULL?" << std::endl;
         return;
-    } else {
-        VsMesh* mesh = registry->getMesh(mmd->name);
-        if (!mesh) {
-            //default to x, y, z
-            mmd->xLabel = "x";
-            mmd->yLabel = "y";
-            mmd->zLabel = "z";
-        } else {
-            mmd->xLabel = mesh->getAxisLabel(0);
-            mmd->yLabel = mesh->getAxisLabel(1);
-            mmd->zLabel = mesh->getAxisLabel(2);
-        }
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE << "  "
-    << "Exiting normally." << std::endl;
+    VsMesh* mesh = registry->getMesh(mmd->name);
+    VsVariableWithMesh* vwm = registry->getVariableWithMesh(mmd->name);
+    if (mesh) {
+       mmd->xLabel = mesh->getAxisLabel(0);
+       mmd->yLabel = mesh->getAxisLabel(1);
+       mmd->zLabel = mesh->getAxisLabel(2);
+       VsLog::debugLog() << CLASSFUNCLINE << "  " << "Exiting normally." << std::endl;
+       return;
+    }
+    if (vwm) {
+       mmd->xLabel = vwm->getAxisLabel(0);
+       mmd->yLabel = vwm->getAxisLabel(1);
+       mmd->zLabel = vwm->getAxisLabel(2);
+       VsLog::debugLog() << CLASSFUNCLINE << "  " << "Exiting normally." << std::endl;
+       return;
+    }
+// Both are zero, do default
+    if (transform) {
+       mmd->xLabel = "z";
+       mmd->yLabel = "r";
+       mmd->zLabel = "phi";
+    } else {
+       mmd->xLabel = "x";
+       mmd->yLabel = "y";
+       mmd->zLabel = "z";
+    }
+
+    VsLog::debugLog() << CLASSFUNCLINE << "  "<< "Exiting normally." << std::endl;
 }
 
+// *****************************************************************************
+//  Method: avtVsFileFormat::setGlobablExtents
+//
+//  Purpose:
+//      How do you do the voododo that you do
+//
+//  Programmer: Allen Sanderson
+//  Creation:   January, 2018
+//
+//  Modifications:
+//
+void avtVsFileFormat::setGlobalExtents(avtMeshMetaData* mmd)
+{
+  // If there are global bounds use them.
+  if (registry->hasLowerBounds() && registry->hasUpperBounds()) {
+
+    VsLog::debugLog() << CLASSFUNCLINE << "  "
+                      << "Getting bounds for mesh." << std::endl;
+          
+    std::vector<float> lowerBounds;
+    registry->getLowerBounds(&lowerBounds);
+
+    std::vector<float> upperBounds;
+    registry->getUpperBounds(&upperBounds);
+
+    double extents[6] = { lowerBounds[0], upperBounds[0],
+                          lowerBounds[1],       upperBounds[1],
+                          lowerBounds[2],       upperBounds[2] };
+
+    mmd->SetExtents( extents );
+  }
+}
 
 // *****************************************************************************
 //  Method: avtVsFileFormat::GetCycle
@@ -4831,15 +4933,13 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
 
     splitAxis = 0;
 
-    // Number of cells along the splot axis. For zonal data, dims already is the number of cells.
-    // For nodal data, dims is the number of nodes and we need to substract one to obtain the number of cells.
-    size_t numCells = dims[splitAxis] - (isNodal ? 1 : 0);
-    // Adjust for stride
-    size_t numCell = (numCells + strides[splitAxis] - 1) / strides[splitAxis];
-    size_t numCellsPerProc = numCells / PAR_Size();
-    size_t numProcsWithExtraCell = numCells % PAR_Size();
+    // Integer number of nodes processor - note subtract off one node
+    // because to join sections the "next" node is always added in. Thus
+    // by default the last node will be added in.
+    size_t numNodes = dims[splitAxis];
+    size_t numNodesPerProc = (numNodes-1) / PAR_Size();
+    size_t numProcsWithExtraNode = (numNodes-1) % PAR_Size();
 
-#if 0
     if( PAR_Rank() == 0 )
     {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -4847,36 +4947,46 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
         << "min = " << mins[splitAxis] << "  "
         << "max = " << maxs[splitAxis] << "  "
         << "strides = " << strides[splitAxis] << "  "
-        << "numCells = " << numCells << "  "
-        << "numCellsPerProc = " << numCellsPerProc << "  "
-        << "numProcsWithExtraCell = " << numProcsWithExtraCell
+        << "numNodes = " << numNodes << "  "
+        << "numNodesPerProc = " << numNodesPerProc << "  "
+        << "numProcsWithExtraNode = " << numProcsWithExtraNode
         << std::endl;
 
         for( int i=0; i<PAR_Size(); ++i )
         {
-            size_t minCell, maxCell;
+            size_t min, max;
 
             // To get all of the nodes adjust the count by one for those
             // processors that need an extra node.
-            if (i < numProcsWithExtraCell)
+            if (i < numProcsWithExtraNode)
             {
-                minCell = i * (numCellsPerProc + 1) * strides[splitAxis];
-                maxCell = min + (numCellsPerProc + 1) * strides[splitAxis] - 1;
-           }
+                min = i * (numNodesPerProc + 1) * strides[splitAxis];
+                max = min + (numNodesPerProc + 1) * strides[splitAxis] +
+                // To get the complete mesh (i.e. the overlay between one
+                // section to the next) add one more node. But for zonal and
+                // point based meshes it is not necessary.
+                (isNodal ? 0 : -1);
+            }
             else
             {
                 // Processors w/extra node plus processors without extra node.
-                minCell = (numProcsWithExtraCell * (numCellsPerProc + 1) +
-                        (i - numProcsWithExtraCell) * numNodesPerProc) * strides[splitAxis];
-                maxCell = min + (numNodesPerProc) * strides[splitAxis] - 1;
+                min = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                        (i - numProcsWithExtraNode) * numNodesPerProc) *
+                strides[splitAxis];
+
+                max = min + (numNodesPerProc) * strides[splitAxis] +
+                // To get the complete mesh (i.e. the overlay between one
+                // section to the next) add one more node. But for zonal and
+                // point based meshes it is not necessary.
+                (isNodal ? 0 : -1);
             }
 
             // Number of nodes plus one if the node topology is greater than one.
-            size_t numNodes = (maxCell-minCell+1) / strides[splitAxis] + 1;
+            numNodes = (max-min) / strides[splitAxis] + 1;
             if( i == 0 || (i && numNodes > 1) )
             VsLog::debugLog() << CLASSFUNCLINE << "  "
             << "Predicted bounds for processor " << i << "  "
-            << "minCell = " << minCell << "  maxCell = " << maxCell << "  "
+            << "min = " << min << "  max = " << max << "  "
             << "strides = " << strides[splitAxis] << "  "
             << "nodes = " << numNodes << std::endl;
             else
@@ -4884,44 +4994,39 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
             << "No work for processor " << i << std::endl;
         }
     }
-#endif
 
     // To get all of the nodes adjust the count by one for those
     // processors that need an extra node.
-    size_t minCell, maxCell;
-    if (PAR_Rank() < numProcsWithExtraCell)
+    if (PAR_Rank() < numProcsWithExtraNode)
     {
-        minCell = PAR_Rank() * (numCellsPerProc + 1);
-        maxCell = minCell + (numCellsPerProc + 1) - 1;
+        mins[splitAxis] = PAR_Rank() * (numNodesPerProc + 1) * strides[splitAxis];
+        maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc +1) * strides[splitAxis] +
+        // To get the complete mesh (i.e. the overlay between one
+        // section to the next) add one more node. But for zonal and
+        // point based meshes it is not necessary.
+        (isNodal ? 0 : -1);
     }
     else
     {
-        minCell = (numProcsWithExtraCell * (numCellsPerProc + 1) +
-                  (PAR_Rank() - numProcsWithExtraCell) * numCellsPerProc);
-        maxCell = minCell + numCellsPerProc - 1;
+        // Processors w/extra node plus processors without extra node.
+        mins[splitAxis] = (numProcsWithExtraNode * (numNodesPerProc + 1) +
+                (PAR_Rank() - numProcsWithExtraNode) * numNodesPerProc) *
+        strides[splitAxis];
+
+        maxs[splitAxis] = mins[splitAxis] + (numNodesPerProc) * strides[splitAxis] +
+
+        (isNodal ? 0 : -1);
     }
-
-    // Adjust for strides
-    minCell = minCell * strides[splitAxis];
-    maxCell = maxCell * strides[splitAxis] + strides[splitAxis] - 1;
-
-    std::cout << PAR_Rank() << ": " << numCellsPerProc << " " << numProcsWithExtraCell << " " << minCell << " " << maxCell << std::endl;
-    mins[splitAxis] = minCell;
-    maxs[splitAxis] = maxCell + (isNodal ? 1 : 0);
 
     // Number of nodes plus one if the node topology is greater than
     // one.  Point data meshes or for zonal variable data are the
     // cases where one does need to adjust for nodes.
-    size_t numNodes = (maxCell - minCell + 1 + strides[splitAxis] - 1) / strides[splitAxis] + (isNodal ? 1 : 0);
+    numNodes = (maxs[splitAxis]-mins[splitAxis]) / strides[splitAxis] + 1;
+
     dims[splitAxis] = numNodes;
 
-    std::cout << CLASSFUNCLINE << "  "
-     << "Actual bounds for processor " << PAR_Rank() << "  "
-     << "min = " << mins[splitAxis] << "  "
-     << "max = " << maxs[splitAxis] << "  "
-     << "strides = " << strides[splitAxis] << "  "
-     << "nodes = " << numNodes << std::endl;
- 
+    bool work;
+
     if( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) )
     {
         VsLog::debugLog() << CLASSFUNCLINE << "  "
@@ -4944,13 +5049,7 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
     // If not on processor 0 and if the porcessor has only one node
     // skip it as it is slice which will have been drawn by the previous
     // processor.
-    bool hasWork;
-    if (isNodal)
-        hasWork = (numNodes > 1);
-    else
-        hasWork = (numNodes > 0);
-
-    return ( (PAR_Rank() == 0) || hasWork );
+    return( (PAR_Rank() == 0) || (PAR_Rank() && numNodes > 1) );
 
 #endif
     return false;
@@ -5052,6 +5151,5 @@ void avtVsFileFormat::setStructuredMeshCoords(const std::vector<int>& gdims,
         int kF = index[0] + gdims[0] * (index[1] + gdims[1] * index[2]);
 
         vpoints->SetPoint(kF, xyz);
-
     }
 }
