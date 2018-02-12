@@ -123,8 +123,8 @@ set(QT_QTOPENGL_LIBRARY ${Qt5OpenGL_LIBRARIES})
 
 # if/when we drop support for qt 4, perhaps leave these split and
 # add Widgets or PrintSupport only where needed
-set(QT_QTGUI_LIBRARY ${Qt5Gui_LIBRARIES} 
-                     ${Qt5Widgets_LIBRARIES} 
+set(QT_QTGUI_LIBRARY ${Qt5Gui_LIBRARIES}
+                     ${Qt5Widgets_LIBRARIES}
                      ${Qt5PrintSupport_LIBRARIES})
 set(QT_QTNETWORK_LIBRARY ${Qt5Network_LIBRARIES})
 set(QT_QTXML_LIBRARY ${Qt5Xml_LIBRARIES})
@@ -242,7 +242,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
                             WORLD_READ
       )
       foreach(CFG ${CMAKE_CONFIGURATION_TYPES})
-          file(WRITE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}/qt.conf 
+          file(WRITE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CFG}/qt.conf
                "[Paths]\nPlugins=../ThirdParty/qtplugins\n")
       endforeach()
   elseif(APPLE)
