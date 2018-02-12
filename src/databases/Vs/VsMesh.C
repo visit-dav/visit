@@ -299,7 +299,7 @@ std::string VsMesh::getAxisLabel(size_t axis) const {
   std::string axisNames;
   this->getStringAttribute(VsSchema::axisLabelsAtt, &axisNames);
  
-  //axisNames must be a comma-delimited string
+  // axisNames must be a comma-delimited string
   if (!axisNames.empty()) {
     std::vector<std::string> names;
     tokenize(axisNames, ',', names);
@@ -308,18 +308,20 @@ std::string VsMesh::getAxisLabel(size_t axis) const {
     }
   }
 
-  //the default values
-  std::string answer = "?";
-  switch (axis) {
-    case 0: answer = "x"; break;
-    case 1: answer = "y"; break;
-    case 2: answer = "z"; break;
-    default:
-      VsLog::warningLog()
-        << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-        << "Requested axis  (" <<axis <<") number must be 0, 1, or 2."
-        << std::endl;
-      break;
+  // the default values
+  std::string answer = "";
+  if (axisNames.empty()) {
+    switch (axis) {
+      case 0: answer = "x"; break;
+      case 1: answer = "y"; break;
+      case 2: answer = "z"; break;
+      default:
+        VsLog::warningLog()
+            << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+            << "Requested axis  (" <<axis <<") number must be 0, 1, or 2."
+            << std::endl;
+        break;
+    }
   }
   
   return answer;

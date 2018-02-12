@@ -76,3 +76,10 @@ void VsDataset::write() const {
   }
   VsLog::debugLog() << offset << getFullName() <<"(" <<getId() <<")" << std::endl;
 }
+
+void VsDataset::getAttributesNames() {
+  for (size_t i = 0; attributes.size(); ++i) {
+    std::cout <<"short name = " << attributes[i]->getShortName() << std::endl;
+    std::cout <<"long name = " << attributes[i]->getFullName() << std::endl;
+  }
+}

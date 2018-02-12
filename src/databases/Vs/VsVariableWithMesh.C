@@ -62,6 +62,30 @@ bool VsVariableWithMesh::isCompMajor() const {
       (indexOrder == VsSchema::compMajorFKey));
 }
 
+std::string VsVariableWithMesh::getAxisLabel(size_t axis) const {
+//  return this->axisLabels[axis];
+  if (axisLabels.size() > axis) {
+    return axisLabels[axis];
+  }
+
+  std::string answer = "";
+  if (axisLabels.empty()) {
+    switch (axis) {
+      case 0: answer = "x"; break;
+      case 1: answer = "y"; break;
+      case 2: answer = "z"; break;
+      default:
+        VsLog::warningLog()
+            << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+            << "Requested axis  (" <<axis <<") number must be 0, 1, or 2."
+            << std::endl;
+        break;
+    }
+  }
+
+  return answer;
+}
+
 std::string VsVariableWithMesh::getFullTransformedName() const {
   return getFullName() + "_transform";
 }
@@ -190,6 +214,7 @@ VsAttribute* VsVariableWithMesh::getAttribute(const std::string& name) const {
   return dataset->getAttribute(name);
 }
 
+/*
 std::string VsVariableWithMesh::getStringAttribute(const std::string& name) const {
 
   std::string result("");
@@ -200,6 +225,17 @@ std::string VsVariableWithMesh::getStringAttribute(const std::string& name) cons
 
   return result;
 }
+*/
+
+void VsVariableWithMesh::getStringAttribute(std::string attName, std::string* value) const {
+  VsAttribute* att = getAttribute(attName);
+  if (att) {
+    att->getStringValue(value);
+  } else {
+    value->clear();
+  }
+}
+
 //retrieve a particular spatial dimension index from the list
 //returns -1 on failure
 int VsVariableWithMesh::getSpatialDim(size_t index) const {
@@ -349,13 +385,23 @@ bool VsVariableWithMesh::initialize() {
 
     tokenize(names, ',', this->labelNames);
   }
-  
+ 
+  //Get user-specified labels of axis
+  VsAttribute* axisLabelsAtt = dataset->getAttribute(VsSchema::axisLabelsAtt);
+  if (axisLabelsAtt) {
+    std::string axlabels;
+    axisLabelsAtt->getStringValue(&axlabels);
+
+    tokenize(axlabels, ',', this->axisLabels);
+  }
+  else {
+    tokenize("x,y,z", ',', this->axisLabels);
+  }
   return true;
 }
 
 // Get user-specified component names
 std::string VsVariableWithMesh::getLabel (size_t i) const {
-//  if ((i >= 0) && (i < labelNames.size()) && !labelNames[i].empty()) {
   if ((i < labelNames.size()) && !labelNames[i].empty()) {
     return makeCanonicalName(getPath(), labelNames[i]);
   } 
