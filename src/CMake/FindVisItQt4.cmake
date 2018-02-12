@@ -81,7 +81,7 @@
 
 IF(NOT "${QT_BIN}" MATCHES "OFF")
   IF(WIN32)
-    IF(VISIT_MSVC_VERSION AND EXISTS ${QT_DIR}/lib)
+    IF(VISIT_MSVC_VERSION AND QT_DIR AND EXISTS ${QT_DIR}/lib)
       # using VisIt's windowsbuild Qt
       SET(USE_CMAKE_FIND OFF)
     ELSE()
