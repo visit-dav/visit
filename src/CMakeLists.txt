@@ -1733,6 +1733,11 @@ if(HAVE_ZLIB_H)
     list(APPEND VISIT_COMMON_INCLUDES ${ZLIB_INCLUDE_DIR})
 endif()
 
+# macros/defines needed by CMake/VisItMacros.cmake
+if (NOT DEFINED VISIT_REPLACE_DEBUG_FLAGS)
+  set(VISIT_REPLACE_DEBUG_FLAGS TRUE)
+endif ()
+
 # macros/defines also needed by PluginVsInstall.cmake.in
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake)
 
