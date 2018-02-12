@@ -388,6 +388,7 @@ avtExplodeFilter::CreateDomainTree(vtkDataSet **dsets,
             combined->DeepCopy(appendFilter->GetOutput());
 
             mergedDomains[mdIdx]->Delete(); 
+            dsetCpy->Delete();
             mergedDomains[mdIdx] = combined;
          
             appendFilter->RemoveAllInputs();            
@@ -592,9 +593,10 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         vtkAppendFilter *appendFilter = NULL;
         if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
         {
-            vtkAppendFilter *appendFilter = vtkAppendFilter::New();
+            appendFilter = vtkAppendFilter::New();
             appendFilter->SetInputData(in_ds);
             appendFilter->Update();
+            in_ds = appendFilter->GetOutput();
         }
 
         vtkUnstructuredGrid *in_ug = (vtkUnstructuredGrid*)in_ds;
@@ -739,6 +741,10 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
                 if (ptIds != NULL)
                 {
                     ptIds->Delete();
+                }
+                if (it != NULL)
+                {
+                    it->Delete();
                 }
 
                 //
@@ -990,35 +996,39 @@ avtExplodeFilter::Execute(void)
         atts.GetBoundaryNames().empty())
     {
         int nLeaves;
-        vtkDataSet **inLeaves = inTree->GetAllLeaves(nLeaves);
-        avtDataRepresentation **outLeaves = 
-            new avtDataRepresentation*[nLeaves];
-        stringVector outLabels(nLeaves, "");
-
-        if (inLabels.size() == nLeaves)
-        {
-            outLabels = inLabels;
-        }
-
+        vtkDataSet **inLeaves  = inTree->GetAllLeaves(nLeaves);
+        vtkDataSet **outLeaves = new vtkDataSet *[nLeaves];
+        
         for (int i = 0; i < nLeaves; ++i)
         {
             vtkUnstructuredGrid *new_leaf = vtkUnstructuredGrid::New();
             explosion->ExplodeAllCells(inLeaves[i], new_leaf, scaleFactor);
-            avtDataRepresentation *leaf_rep = 
-                new avtDataRepresentation(new_leaf, i, outLabels[i]);
-            outLeaves[i] = leaf_rep;
+            outLeaves[i] = (vtkDataSet *)new_leaf;
         }
 
-        avtDataTree_p outTree = new avtDataTree(nLeaves, outLeaves);
+        avtDataTree_p outTree = NULL;
+        if (nLeaves > 1)
+        {
+            outTree = new avtDataTree(nLeaves, outLeaves, domainIds, inLabels);
+        }
+        else if (nLeaves == 1)
+        {
+            outTree = new avtDataTree(nLeaves, outLeaves, domainIds[0], inLabels);
+        }
+        else 
+        {
+            outTree = inTree;
+        }
 
         for (int i = 0; i < nLeaves; ++i)
         {
             if (outLeaves[i] != NULL)
             {
-                delete outLeaves[i];
+                outLeaves[i]->Delete();
             }
         }
         delete [] outLeaves;
+        delete [] inLeaves;
 
         SetOutputDataTree(outTree); 
         return;
@@ -1104,16 +1114,8 @@ avtExplodeFilter::Execute(void)
         sprintf(recieved, "Num labels: %d  Num leaves: %d  ", 
             matLabels.size(), nLeaves);
         EXCEPTION2(UnexpectedValueException, expected, recieved);
-        SetOutputDataTree(NULL); 
+        SetOutputDataTree(materialTree); 
         return;
-    }
-
-    vtkDataSet **outLeaves = new vtkDataSet *[nLeaves];
-    for (int i = 0; i < nLeaves; ++i)
-    {
-        vtkUnstructuredGrid *leaf = vtkUnstructuredGrid::New();
-        leaf->DeepCopy(matLeaves[i]);
-        outLeaves[i] = leaf;
     }
 
     //
@@ -1142,34 +1144,30 @@ avtExplodeFilter::Execute(void)
             if (explosion->explodeMaterialCells)
             {
                 explosion->ExplodeAndDisplaceMaterial(
-                    (vtkUnstructuredGrid *)outLeaves[i], 
+                    (vtkUnstructuredGrid *)matLeaves[i], 
                     matExtents, 
                     scaleFactor);
             }
             else
             {
                 explosion->DisplaceMaterial(
-                    (vtkUnstructuredGrid *)outLeaves[i],
+                    (vtkUnstructuredGrid *)matLeaves[i],
                     matExtents, 
                     scaleFactor);
             }
         }
     }
 
-    avtDataTree_p outTree = CreateDomainTree(outLeaves, nLeaves, 
+    avtDataTree_p outTree = CreateDomainTree(matLeaves, nLeaves, 
         materialDomains, inLabels);
 
     //
     // Clean up memory.
     //
-    for (int i = 0; i < nLeaves; ++i)
+    if (matLeaves != NULL)
     {
-        if (outLeaves[i] != NULL)
-        {
-            outLeaves[i]->Delete();
-        }
+        delete [] matLeaves;
     }
-    delete [] outLeaves;
 
     SetOutputDataTree(outTree);
 }
