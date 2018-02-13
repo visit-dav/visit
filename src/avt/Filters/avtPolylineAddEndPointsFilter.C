@@ -145,16 +145,14 @@ avtPolylineAddEndPointsFilter::ExecuteData(avtDataRepresentation *inDR)
     vtkAppendPolyData *append = vtkAppendPolyData::New();
 
     vtkDataArray *activeScalars = inDS->GetPointData()->GetScalars();
-    vtkDataArray *activeRadius;
+    vtkDataArray *activeRadius = activeScalars;
 
-    double range[2], scale;
+    double range[2] = {0,1}, scale = 1;
 
     if (varyRadius && radiusVar != "" && radiusVar != "\0")
     {
         if (radiusVar != "default" && radiusVar != activeScalars->GetName())
             activeRadius = inDS->GetPointData()->GetArray(radiusVar.c_str());
-        else
-            activeRadius = activeScalars;
 
         activeRadius->GetRange(range, 0);
 

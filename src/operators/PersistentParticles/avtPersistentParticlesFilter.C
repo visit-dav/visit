@@ -444,10 +444,9 @@ avtPersistentParticlesFilter::IterateMergeData(int ts, avtDataTree_p tree)
         return;
     }
 
+    vtkDataSet *currDs = dsets[0];
     // Free the memory from the GetAllLeaves function call.
     delete [] dsets;
-
-    vtkDataSet *currDs = dsets[0];
     vtkPointSet *uGrid = vtkPointSet::SafeDownCast(currDs);
 
     if (uGrid == 0)

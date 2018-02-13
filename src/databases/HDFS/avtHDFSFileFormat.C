@@ -628,7 +628,7 @@ avtHDFSFileFormat::GetVar(int timestate, int domain, const char *varname)
     {
         int i, eIdx;
         char *p, vkey[32];
-        double val;
+        double val = 0;
 
         vfile().getline(line, sizeof(line));
         if (vfile().eof()) break;

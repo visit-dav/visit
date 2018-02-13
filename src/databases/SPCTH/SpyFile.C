@@ -1587,7 +1587,7 @@ SpyFile::GetFieldName(const int fieldId)
     else
     {
         // Derived Field
-        int matId;
+        int matId = -1;
         int caseId = fieldId;
         
         if((fieldId <= STM_TKM_1) && (fieldId >= STM_TKM))

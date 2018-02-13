@@ -189,4 +189,6 @@ int main()
 
     // This is only necessary if you wanna run valgrind and confirm no leaks
     Namescheme::FreeClassStaticResources();
+
+    return 0;
 }

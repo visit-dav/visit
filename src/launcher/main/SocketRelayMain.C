@@ -107,4 +107,5 @@ int main(int argc, const char* argv[])
             // The odds of this happening are low, but it should be fixed.
             break;
     }
+    return 0;
 }
