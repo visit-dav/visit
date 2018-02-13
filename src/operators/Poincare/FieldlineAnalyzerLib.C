@@ -5088,7 +5088,7 @@ FieldlineLib::
 removeOverlap( std::vector< std::vector< std::vector < Point > > > &bins,
                unsigned int windingGroupOffset )
 {
-  unsigned int nnodes;
+  unsigned int nnodes = 0;
   unsigned int nSections = bins.size();
   
   for( unsigned int s=0; s<nSections; ++s )
