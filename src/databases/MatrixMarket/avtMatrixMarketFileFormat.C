@@ -266,7 +266,7 @@ avtMatrixMarketFileFormat::ReadData()
     TRY
     {
         // Get the matrix type
-        MM_typecode matcode = "\n\n\n\n";
+        MM_typecode matcode = "\n\n";
         if (mm_read_banner(f, &matcode) != 0)
             EXCEPTION2(InvalidFilesException, filename,
                        "Header was malformed.");
