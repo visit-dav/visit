@@ -96,7 +96,7 @@ class     vtkThreshold;
 //
 //    Kevin Griffin, Thu Mar 23 08:25:21 PDT 2017
 //    Feature #2646: Allow a list of threshold ranges for each variable.
-//    An input of "1-10, 12, 20-30" would threshold a variable, var, as
+//    An input of "1:10, 12, 20:30" would threshold a variable, var, as
 //    such: 1 <= var <= 10 OR var == 12 OR 20 <= var <= 30.
 //
 // ****************************************************************************
