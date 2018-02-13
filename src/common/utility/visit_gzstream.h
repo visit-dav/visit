@@ -539,6 +539,9 @@ That's all there is to it!
      with or without zlib
    * Other notes:
        * consider mode char options for zlib's internal buffer sizes
+
+Mark C. Miller, Tue Feb 13 09:40:04 PST 2018
+   * explicitly disallow copy constructors on visit_ofstream and visit_ifstream
 */
 #endif
 
@@ -682,6 +685,7 @@ public:
     };
    ~visit_ifstream() { delete strm; };
 private:
+   visit_ifstream(const visit_ifstream&);
    std::istream *strm;
    std::ifstream *ifstrm;
 #ifdef HAVE_LIBZ
@@ -766,6 +770,7 @@ public:
     std::ostream &operator()(void) const { return *strm; };
    ~visit_ofstream() { delete strm; };
 private:
+   visit_ofstream(const visit_ofstream &);
    std::ostream *strm;
 };
 
