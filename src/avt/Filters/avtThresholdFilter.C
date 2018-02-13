@@ -283,11 +283,14 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Kevin Griffin, Thu Mar 23 08:25:21 PDT 2017
 //    Add capability to threshold on multiple ranges (Feature #2646).
 //
+//    Kevin Griffin, Tue Feb 13 09:31:21 PDT 2018
+//    Added check for incoming datasets with point or unknown mesh types
+//    so they can be processed as point meshes. Fixes Bug #2505.
+//
 // ****************************************************************************
 
 avtDataRepresentation *
-avtThresholdFilter::ProcessOneChunk(
-    avtDataRepresentation *in_dr, bool fromChunker)
+avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunker)
 {
     //
     // Get the VTK data set.
@@ -303,20 +306,25 @@ avtThresholdFilter::ProcessOneChunk(
         in_ds->Register(NULL);
         return in_dr;
     }
+    
+    avtMeshType inputMeshType = GetInput()->GetInfo().GetAttributes().GetMeshType();
 
-    if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh)
+    if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh ||
+        inputMeshType == AVT_POINT_MESH ||
+        inputMeshType == AVT_UNKNOWN_MESH)
     {
         vtkDataSet *out_ds = ThresholdToPointMesh(in_ds);
 
         avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
-            in_dr->GetDomain(), in_dr->GetLabel());
+                                                                  in_dr->GetDomain(),
+                                                                  in_dr->GetLabel());
 
         out_ds->Delete();
 
         return out_dr;
     }
 
-    if (fromChunker) 
+    if (fromChunker)
     {
         //
         // If in_ds is from the chunker, then the zones in in_ds are all
@@ -326,7 +334,6 @@ avtThresholdFilter::ProcessOneChunk(
         return in_dr;
     }
     
-
     vtkDataSet *curOutDataSet = in_ds;
 
     const stringVector curVariables    = atts.GetListedVarNames();
