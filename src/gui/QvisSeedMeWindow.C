@@ -955,7 +955,14 @@ QvisSeedMeWindow::GetCurrentValues(int which_widget)
     if(which_widget == SeedMeAttributes::ID_frameRate || doAll)
     {
         int val;
-        atts->SetFrameRate(val);
+        if(LineEditGetInt(frameRate, val))
+            atts->SetFrameRate(val);
+        else
+        {
+            ResettingError(tr("frame rate"),
+                IntToQString(atts->GetFrameRate()));
+            atts->SetFrameRate(atts->GetFrameRate());
+        }
     }
 
     // Do queryColID

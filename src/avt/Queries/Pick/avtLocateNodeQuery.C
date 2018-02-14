@@ -535,7 +535,7 @@ avtLocateNodeQuery::FindClosestPointOnLine(vtkDataSet *ds, double &dist,
     vtkIdType foundPoint = -1;
     double pt[3] = {rayPt1[0], rayPt1[1], 0.};
     double dist2, rad = dist;
-    foundPoint = pointLocator->FindClosestPointWithinRadius(rad, pt, dist);
+    foundPoint = pointLocator->FindClosestPointWithinRadius(rad, pt, dist2);
 
     if (foundPoint >= 0 && dist2 < dist)
     {
