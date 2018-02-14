@@ -284,7 +284,7 @@ avtThresholdFilter::Equivalent(const AttributeGroup *a)
 //    Add capability to threshold on multiple ranges (Feature #2646).
 //
 //    Kevin Griffin, Tue Feb 13 09:31:21 PDT 2018
-//    Added check for incoming datasets with point or unknown mesh types
+//    Added check for incoming datasets with unknown mesh types
 //    so they can be processed as point meshes. Fixes Bug #2505.
 //
 // ****************************************************************************
@@ -309,18 +309,14 @@ avtThresholdFilter::ProcessOneChunk(avtDataRepresentation *in_dr, bool fromChunk
     
     avtMeshType inputMeshType = GetInput()->GetInfo().GetAttributes().GetMeshType();
 
-    if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh ||
-        inputMeshType == AVT_POINT_MESH ||
-        inputMeshType == AVT_UNKNOWN_MESH)
+    if (atts.GetOutputMeshType() == ThresholdOpAttributes::PointMesh || inputMeshType == AVT_UNKNOWN_MESH)
     {
         vtkDataSet *out_ds = ThresholdToPointMesh(in_ds);
 
         avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
                                                                   in_dr->GetDomain(),
                                                                   in_dr->GetLabel());
-
         out_ds->Delete();
-
         return out_dr;
     }
 
