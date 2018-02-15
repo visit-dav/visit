@@ -43,14 +43,14 @@
 # Ice-T provides an ICETConfig.cmake file that we could include but it appears 
 # to have errors in the computed library and include paths. If those problems
 # get resolved, we can uncomment these lines and remove our own detection code.
-#IF(ICET_DIR)
-#INCLUDE(${ICET_DIR}/lib/ICETConfig.cmake)
-#ENDIF(ICET_DIR)
+#IF(VISIT_ICET_DIR)
+#    INCLUDE(${VISIT_ICET_DIR}/lib/ICETConfig.cmake)
+#ENDIF(VISIT_ICET_DIR)
 
 # Use the ICET_DIR hint from the config-site .cmake file 
 # Except on windows, where it is part of the repo.
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-SET_UP_THIRD_PARTY(ICET lib include icet icet_strategies icet_mpi)
+SET_UP_THIRD_PARTY(ICET lib include IceTCore IceTGL IceTMPI)
 

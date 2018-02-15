@@ -47,6 +47,7 @@
 
 class SimEngine;
 class avtDataObjectString;
+class VisWindow;
 
 // ****************************************************************************
 //  Class: SimEngineManager

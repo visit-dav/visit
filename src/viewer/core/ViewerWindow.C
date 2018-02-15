@@ -62,6 +62,7 @@
 #include <PickAttributes.h>
 #include <PickPointInfo.h>
 #include <RenderingAttributes.h>
+#include <StackTimer.h>
 
 #include <ViewerActionManager.h>
 #include <ViewerEngineManagerInterface.h>
@@ -485,6 +486,29 @@ ViewerWindow::SetVisWindow(VisWindow *vw)
     processingViewChanged = false;
     if (visWindow->GetMultiresolutionMode())
         visWindow->SetViewChangedCB(ViewChangedCallback, (void*)this);
+}
+
+// ****************************************************************************
+// Method: ViewerWindow::GetVisWindow
+//
+// Purpose:
+//   Get the vis window.
+//
+// Returns:    The vis window.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 16 13:21:13 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+VisWindow *
+ViewerWindow::GetVisWindow()
+{
+    return visWindow;
 }
 
 // ****************************************************************************
@@ -6332,6 +6356,7 @@ ViewerWindow::GetWindowAttributes() const
     int size[2];
     visWindow->GetSize(size[0], size[1]);
     winAtts.SetSize(size);
+debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 
     //
     // Set the background colors
@@ -9882,6 +9907,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
     avtImageType imgT, bool needZBuffer,
     avtDataObject_p& dob)
 {
+    StackTimer t0("ViewerWindow::ExternalRender");
     bool success = false;
     std::vector<avtImage_p> imgList;
 
@@ -9934,6 +9960,7 @@ ViewerWindow::ExternalRender(const ExternalRenderRequestInfo& thisRequest,
         // NOTE: YOU NEED TO MAKE SURE ALL ENGINES HAVE USED
         // SAME BACKGROUND COLOR IN ORDER FOR THIS TO WORK
         //
+        StackTimer t1("Image Compositing");
         avtWholeImageCompositerWithZ imageCompositer;
         int numRows = thisRequest.winAtts.GetSize()[1];
         int numCols = thisRequest.winAtts.GetSize()[0];
@@ -10077,6 +10104,8 @@ ViewerWindow::IssueExternalRenderRequests(
     std::vector<avtImage_p> &imgList,
     int windowID)
 {
+    StackTimer t0("ViewerWindow::IssueExternalRenderRequests");
+
     // break-out individual members of the request info
     const std::vector<const char*> &pluginIDsList         = reqInfo.pluginIDsList;
     const std::vector<EngineKey> &engineKeysList          = reqInfo.engineKeysList;
@@ -10276,6 +10305,7 @@ void
 ViewerWindow::ExternalRenderManual(avtDataObject_p& dob, int w, int h,
     avtImageType imgT, bool needZBuffer)
 {
+    StackTimer t0("ViewerWindow::ExternalRenderManual");
     const char *mName = "ViewerWindow::ExternalRenderManual: ";
     bool dummyBool;
     int tries = 0;

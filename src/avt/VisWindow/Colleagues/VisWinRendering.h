@@ -293,6 +293,8 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                             bool doViewportOnly, bool readZ,
                                             bool readAlpha);
 
+    avtImage_p               BackgroundReadback(bool doViewportOnly = false);
+
     avtImage_p               PostProcessScreenCapture(avtImage_p capturedImage,
                                  bool doViewportOnly, bool keepZBuffer);
 

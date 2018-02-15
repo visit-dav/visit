@@ -66,7 +66,10 @@ class VisWindowColleagueProxy;
 // Modifications:
 //    Brad Whitlock, Wed Nov 14 15:23:23 PST 2007
 //    Added background image support.
-//   
+//
+//    Brad Whitlock, Mon Feb 12 17:46:06 PST 2018
+//    Added methods to set/get visibility.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinBackground : public VisWinColleague
@@ -81,6 +84,9 @@ class VISWINDOW_API VisWinBackground : public VisWinColleague
     virtual void              SetBackgroundMode(int);
     virtual void              SetBackgroundImage(const std::string &,int,int);
     virtual void              UpdatePlotList(std::vector<avtActor_p> &);
+
+    void SetVisibility(int);
+    int  GetVisibility() const;
   protected:
     static bool                 sphereModeError1;
     static bool                 sphereModeError2;
@@ -88,6 +94,7 @@ class VISWINDOW_API VisWinBackground : public VisWinColleague
     vtkBackgroundActor         *bgActor;
     vtkTexturedBackgroundActor *textureActor;
     bool                        addedBackground;
+    bool                        visible;
 
     void                        AddBackgroundToWindow(int);
     void                        RemoveBackgroundFromWindow();

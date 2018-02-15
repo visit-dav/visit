@@ -48,6 +48,8 @@ class Subject;
 class ObserverToCallback;
 class DBOptionsAttributes;
 class PluginManager;
+
+class VisWindow;
 class View2DAttributes;
 class View3DAttributes;
 
@@ -124,6 +126,9 @@ private:
     void AddInitialWindows();
     void RestrictPlugins(PluginManager *mgr,
                          const std::vector<std::string> &idsOrNames);
+
+    void CreateVisWindow(int winID, VisWindow *&viswindow, bool &owns);
+    static void CreateVisWindowCB(int winID, VisWindow *&viswindow, bool &owns, void*);
 #endif
 
 private:

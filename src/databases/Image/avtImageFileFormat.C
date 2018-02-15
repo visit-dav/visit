@@ -78,9 +78,13 @@
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
 
+#define EXPOSE_DEPTH
+#ifdef EXPOSE_DEPTH
+#include <vtkZLibDataCompressor.h>
+#include <FileFunctions.h>
+#endif
 using     std::vector;
 using     std::string;
-
 
 // ****************************************************************************
 //  Method: avtImage constructor
@@ -871,7 +875,10 @@ avtImageFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         AddVectorVarToMetaData(md, "color_nodal", "ImageMesh_nodal",
                                AVT_NODECENT, 4);
     }
-
+#ifdef EXPOSE_DEPTH
+    AddScalarVarToMetaData(md, "depth", "ImageMesh", AVT_ZONECENT);
+    AddScalarVarToMetaData(md, "normalized_depth", "ImageMesh", AVT_ZONECENT);
+#endif
     if (fext == "imgvol")
     {
         md->SetFormatCanDoDomainDecomposition(true);
@@ -1266,6 +1273,9 @@ avtImageFileFormat::GetImageVolumeVar(const char *varname)
 //    Brad Whitlock, Thu Sep 29 15:39:14 PDT 2011
 //    I added support for returning a 4-component color vector.
 //
+//    Brad Whitlock, Wed Feb  7 16:48:09 PST 2018
+//    Read Z buffer if requested.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1284,6 +1294,77 @@ avtImageFileFormat::GetOneVar(const char *varname)
     //int xmax = extents[1];
     int ymin = extents[2];
     //int ymax = extents[3];
+
+#ifdef EXPOSE_DEPTH
+    if(strcmp(varname, "depth") == 0 || strcmp(varname, "normalized_depth") == 0)
+    {
+        bool failed = true;
+        vtkFloatArray *farr = vtkFloatArray::New();
+        farr->SetNumberOfTuples(dims[0]*dims[1]);
+
+        std::string zfile(fname);
+        zfile = zfile.substr(0, zfile.size()-image_fext.size()-1) + std::string(".depth.Z");
+        FileFunctions::VisItStat_t props;
+        if(FileFunctions::VisItStat(zfile, &props) == 0)
+        {
+            vtkZLibDataCompressor *compressor = vtkZLibDataCompressor::New();
+            if(compressor != NULL)
+            {
+                FILE *f = fopen(zfile.c_str(), "rb");
+                if(f != NULL)
+                {
+                    unsigned char *cd = new unsigned char[props.st_size];
+                    fread(cd, props.st_size, sizeof(unsigned char), f);
+                    fclose(f);
+
+                    compressor->Uncompress(cd, props.st_size,
+                        (unsigned char *)farr->GetVoidPointer(0),
+                        dims[0]*dims[1]*sizeof(float));
+
+                    float *tmp = new float[dims[0]];
+                    for(int j = 0; j < dims[1]/2; ++j)
+                    {
+                        float *a = ((float*)farr->GetVoidPointer(0)) + j*dims[0];
+                        float *b = ((float*)farr->GetVoidPointer(0)) + (dims[1]-1-j)*dims[0];
+                        memcpy(tmp, a, dims[0]*sizeof(float));
+                        memcpy(a, b, dims[0]*sizeof(float));
+                        memcpy(b, tmp, dims[0]*sizeof(float));
+                    }
+
+                    if(strcmp(varname, "normalized_depth") == 0)
+                    {
+                        int n = dims[0]*dims[1];
+                        float *fptr = (float *)farr->GetVoidPointer(0);
+                        for(int i = 0; i < n; ++i)
+                        {
+                            if(fptr[i] >= 256.f)
+                                fptr[i] = 1.f;
+                            else if(fptr[i] < 0.f)
+                                fptr[i] = 0.f;
+                            else
+                                fptr[i] = fptr[i] / 256.f;
+                        }
+                    }
+
+                    compressor->Delete();
+                    delete [] cd;
+                    delete [] tmp;
+                    failed = false;
+                }
+            }
+        }
+
+        if(failed)
+        {
+            float *fptr = (float *)farr->GetVoidPointer(0);
+            int n = dims[0]*dims[1];
+            for(int i = 0; i < n; ++i)
+                fptr[i] = 1.f;
+        }
+
+        return farr;
+    }
+#endif
 
     int nChannels = image->GetNumberOfScalarComponents();
 

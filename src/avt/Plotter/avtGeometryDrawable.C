@@ -605,7 +605,7 @@ avtGeometryDrawable::SetColorTexturingFlag(bool val)
 void
 avtGeometryDrawable::SetImmediateModeRendering(bool val)
 {
-    if(mapper->GetImmediateModeRendering() != val)
+    if(mapper != NULL && mapper->GetImmediateModeRendering() != val)
         mapper->SetImmediateModeRendering(val);
 }
 

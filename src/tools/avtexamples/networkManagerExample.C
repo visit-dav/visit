@@ -168,6 +168,7 @@ main(int argc, char *argv[])
     cerr << "Rendering the image." << endl;
     intVector plotIds;
     plotIds.push_back(0);
+    int outW = 0, outH = 0;
     avtImageType imgT = ColorRGBImage;
     bool checkThreshold = true;
     bool getZBuffer = false;
@@ -175,7 +176,7 @@ main(int argc, char *argv[])
     int winId = 0;
     bool leftEye = false;
     avtDataObject_p image = netmgr->Render(imgT, getZBuffer, plotIds,
-        checkThreshold, annotMode, winId, leftEye);
+        checkThreshold, annotMode, winId, leftEye, outW, outH);
 
     //
     // Save the image.

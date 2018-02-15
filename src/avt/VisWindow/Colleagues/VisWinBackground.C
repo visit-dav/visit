@@ -81,6 +81,7 @@ VisWinBackground::VisWinBackground(VisWindowColleagueProxy &p) :
     bgActor = vtkBackgroundActor::New();
     textureActor = vtkTexturedBackgroundActor::New();
     addedBackground = false;
+    visible = true;
 }
 
 // ****************************************************************************
@@ -375,3 +376,20 @@ VisWinBackground::RemoveBackgroundFromWindow()
     addedBackground = false;
 }
 
+void
+VisWinBackground::SetVisibility(int vis)
+{
+    bool bvis = vis > 0;
+    if(bvis != visible)
+    {
+        bgActor->SetVisibility(bvis);
+        textureActor->SetVisibility(bvis);
+        visible = bvis;
+    }
+}
+
+int
+VisWinBackground::GetVisibility() const
+{
+    return visible ? 1 : 0;
+}

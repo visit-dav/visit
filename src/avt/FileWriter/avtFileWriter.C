@@ -270,8 +270,8 @@ avtFileWriter::Write(const char *filename, avtDataObject_p dob, int quality,
     {
         if (*dob == NULL)
         {
-            avtCallback::IssueWarning("The file writer was not able to save "
-                  "out a NULL image.");
+            avtCallback::IssueWarning((std::string("The file writer was not able to save "
+                  "out a NULL image for ")+std::string(filename) + std::string(".")).c_str());
         }
         else
         {

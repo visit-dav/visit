@@ -159,6 +159,25 @@ avtImageRepresentation::avtImageRepresentation()
     Initialize();
 }
 
+// ****************************************************************************
+//  Method: avtImageRepresentation constructor
+//
+//  Programmer: Brad Whitlock
+//  Creation:  Thu Feb  1 16:27:29 PST 2018
+//
+// ****************************************************************************
+
+avtImageRepresentation::avtImageRepresentation(int w, int h, int ncomp)
+{
+    Initialize();
+
+    asVTK = NewImage(w, h, ncomp);
+
+    zbuffer = vtkFloatArray::New();
+    zbuffer->SetNumberOfTuples(w*h);
+    zbuffer->SetName("zbuffer");
+}
+
 
 // ****************************************************************************
 //  Method: avtImageRepresentation constructor

@@ -98,6 +98,7 @@ SimEngineManager::SimEngineManager(SimEngine *e) : ViewerEngineManagerInterface(
     engineKey(), engine(e)
 {
 }
+
 // ****************************************************************************
 // Method: SimEngineManager::SimEngineManager
 //
@@ -857,10 +858,38 @@ SimEngineManager::Render(const EngineKey &/*ek*/, avtImage_p &img,
     int retval = 0; // no image
 
     // Do the render
+    int outImgWidth = 0, outImgHeight = 0;
     bool checkThreshold = true;
     avtDataObject_p image = engine->GetNetMgr()->Render(imgT, sendZBuffer,
-        networkIds, checkThreshold, annotMode, windowID, leftEye);
+        networkIds, checkThreshold, annotMode, windowID, leftEye,
+        outImgWidth, outImgHeight);
 
+#if 1
+    // We're doing in situ. Let's always return an image. If we don't have one,
+    // make one. We know how big it would be. We do this because the status
+    // broadcast may be affecting scalability.
+
+    if(*image == NULL)
+    {
+        debug5 << "Making blank image " << outImgWidth << "x" << outImgHeight << endl;
+        // Make an image. This is just to make the viewer pieces
+        // happy so we can make basically a blank image.
+        int npix = outImgWidth*outImgHeight;
+        vtkImageData *rgb = avtImageRepresentation::NewImage(outImgWidth, outImgHeight);
+        float *z = new float[npix];
+        memset(rgb->GetScalarPointer(0,0,0), 0, sizeof(unsigned char) * npix * 3);
+        memset(z, 0, sizeof(float) * npix);
+        img = new avtImage(NULL);
+        img->SetImage(avtImageRepresentation(rgb, z, true));
+        rgb->Delete();
+    }
+    else
+    {
+        CopyTo(img, image);
+    }
+
+    retval = 2; // we have an image.
+#else
     // Non-0 ranks will have an empty image. Share some information about
     // the image on rank 0 so we can do the right thing on other ranks.
     int data[3] = {0,0,0};
@@ -897,6 +926,7 @@ SimEngineManager::Render(const EngineKey &/*ek*/, avtImage_p &img,
 
         retval = 2; // we have an image.
     }
+#endif
 
     debug5 << "SimEngineManager::Render: retval = " << retval << endl;
     return retval;
@@ -1622,5 +1652,3 @@ SimEngineManager::SetFromNode(DataNode *parent, const std::string &configVersion
 {
     // Does nothing.
 }
-
-

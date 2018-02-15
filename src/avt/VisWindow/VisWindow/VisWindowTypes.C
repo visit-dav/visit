@@ -38,6 +38,75 @@
 
 #include <VisWindowTypes.h>
 
+static const char *WINDOW_MODE_strings[] = {
+    "WINMODE_2D",
+    "WINMODE_3D",
+    "WINMODE_CURVE",
+    "WINMODE_AXISARRAY",
+    "WINMODE_PARALLELAXES",
+    "WINMODE_VERTPARALLELAXES",
+    "WINMODE_NONE"
+};
+
+// ****************************************************************************
+// Function: WINDOW_MODE_ToString
+//
+// Purpose: 
+//   Returns a string version of WINDOW_MODE.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 15 16:44:12 PST 2003
+//
+// Modifications:
+//
+// ****************************************************************************
+
+std::string
+WINDOW_MODE_ToString(WINDOW_MODE m)
+{
+    int index = int(m);
+    if(m < WINMODE_2D || m > WINMODE_NONE) index = 0;
+    return WINDOW_MODE_strings[index];
+}
+
+std::string
+WINDOW_MODE_ToString(int m)
+{
+    int index = m;
+    if(index < 0 || index > 6) index = 0;
+    return WINDOW_MODE_strings[index];
+}
+
+// ****************************************************************************
+// Function: WINDOW_MODE_FromString
+//
+// Purpose: 
+//   Returns an WINDOW_MODE associated with a string value.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 15 16:44:44 PST 2003
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+WINDOW_MODE_FromString(const std::string &s, WINDOW_MODE &m)
+{
+    m = WINMODE_NONE;
+
+    for(int i = 0; i < 6; ++i)
+    {
+        if(s == WINDOW_MODE_strings[i])
+        {
+            m = WINDOW_MODE(i);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static const char *INTERACTION_MODE_strings[] = {"NAVIGATE", "ZONE_PICK",
     "NODE_PICK", "ZOOM", "LINEOUT", "SPREADSHEET_PICK"};
 

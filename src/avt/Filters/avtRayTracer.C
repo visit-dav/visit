@@ -1396,9 +1396,6 @@ avtRayTracer::Execute(void)
             float *opaqueImageZB  = opaqueImage->GetImage().GetZBuffer();
             const int numpixels = screen[0]*screen[1];
 
-            vtkImageData  *_opaqueImageVTK = opaqueImage->GetImage().GetImageVTK();
-            unsigned char *_opaqueImageData = (unsigned char *)_opaqueImageVTK->GetScalarPointer(0, 0, 0);
-
             for (int p = 0 ; p < numpixels ; p++)
             {
                 // The z value in clip space in the depth buifer is between 0 and 1 while it is normal for that

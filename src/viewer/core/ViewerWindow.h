@@ -505,6 +505,7 @@ public:
     int  GetWindowId() const;
 
     void SetVisWindow(VisWindow *);
+    VisWindow *GetVisWindow();
     void SetActionManager(ViewerActionManager *);
 
     void CreateNode(DataNode *parentNode, 

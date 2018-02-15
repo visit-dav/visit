@@ -2138,6 +2138,10 @@ VisWindow::Realize(void)
 //   Brad Whitlock,Mon Sep 25 14:42:57 PDT 2017
 //   Pass in image type.
 //
+//   Brad Whitlock, Mon Feb 12 17:45:01 PST 2018
+//   Selectively disable the background colleague so we get a clear 
+//   background.
+//
 // ****************************************************************************
 
 void
@@ -2146,7 +2150,7 @@ VisWindow::ScreenRender(
     bool doViewportOnly, bool doZBufferToo, bool doOpaque,
     bool doTranslucent, bool disableBackground, avtImage_p input)
 {
-    int axesVis = axes3D->GetVisibility();
+    int bgVis = windowBackground->GetVisibility();
     bool disableBG = disableBackground ||
                      (imgT == ColorRGBAImage || 
                       imgT == LuminanceImage ||
@@ -2155,8 +2159,8 @@ VisWindow::ScreenRender(
     if (disableBG)
     {
         // remove non-distributed geometry from the render
-        if (axesVis)
-            axes3D->SetVisibility(0);
+        if (bgVis)
+            windowBackground->SetVisibility(0);
         tools->SetVisibility(0);
         annotations->SetVisibility(0);
     }
@@ -2169,8 +2173,8 @@ VisWindow::ScreenRender(
     if (disableBG)
     {
         // restore non-distributed geometry
-        if (axesVis)
-            axes3D->SetVisibility(1);
+        if (bgVis)
+            windowBackground->SetVisibility(1);
         tools->SetVisibility(1);
         annotations->SetVisibility(1);
     }
@@ -2195,6 +2199,25 @@ VisWindow::ScreenReadBack(bool doViewportOnly, bool doZBufferToo,
 {
     return rendering->ScreenReadback(
         doViewportOnly, doZBufferToo, captureAlpha);
+}
+
+// ****************************************************************************
+//  Method: VisWindow::BackgroundReadBack
+//
+//  Purpose:
+//      Render the background and read it back into an avtImage
+//
+//  Programmer: Brad Whitlock
+//  Creation:   Tue Mar 14 19:48:23 PDT 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtImage_p
+VisWindow::BackgroundReadback(bool doViewportOnly)
+{
+    return rendering->BackgroundReadback(doViewportOnly);
 }
 
 

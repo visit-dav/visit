@@ -498,6 +498,8 @@ public:
     avtImage_p           ScreenReadBack(bool doViewportOnly = false,
                              bool doZBufferToo = false, bool captureAlpha = false);
 
+    avtImage_p           BackgroundReadback(bool doViewportOnly = false);
+
     template <typename T>
     void                 ScreenReadBack(T *&r, T *&g, T *&b,
                              T *&a, float *&z, int &w, int &h,

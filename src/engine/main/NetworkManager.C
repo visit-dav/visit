@@ -127,11 +127,15 @@
 #include <StackTimer.h>
 #include <FileFunctions.h>
 //#define ProgrammableCompositerDEBUG
-#define NetworkManagerDEBUG
+//#define NetworkManagerDEBUG
 //#define NetworkManagerTIME
 #include <ProgrammableCompositer.h>
 
 #include <vtkImageData.h>
+#include <vtkRectilinearGrid.h>
+#include <vtkFloatArray.h>
+#include <vtkDataSetWriter.h>
+#include <vtkCellData.h>
 
 #ifdef PARALLEL
 #include <mpi.h>
@@ -199,7 +203,7 @@ ostream &operator<<(ostream &os, const NetworkManager::RenderState &rs)
         << "zBufferComposite = " << rs.zBufferComposite << endl
         << "allReducePass1 = " << rs.allReducePass1 << endl
         << "allReducePass2 = " << rs.allReducePass2 << endl
-        << "handledAnnotations = " << rs.handledAnnotations << endl
+//        << "handledAnnotations = " << rs.handledAnnotations << endl
         << "handledCues = " << rs.handledCues << endl
         << "transparency = " << rs.transparency << endl
         << "transparencyInPass1 = " << rs.transparencyInPass1 << endl
@@ -259,6 +263,14 @@ void                      *NetworkManager::initializeProgressCallbackArgs=NULL;
 ProgressCallback           NetworkManager::progressCallback = NULL;
 void                      *NetworkManager::progressCallbackArgs = NULL;
 
+
+// Create vis window objects.
+static void
+NetworkManager_CreateVisWindow(int winID, VisWindow *&viswindow, bool &owns, void *)
+{
+    viswindow = new VisWindow;
+    owns = true;
+}
 
 // ****************************************************************************
 //  Method: NetworkManager default constructor
@@ -346,6 +358,9 @@ NetworkManager::NetworkManager(void) : EngineBase(), virtualDatabases()
 
     acomp = new ProgrammableCompositer<float>;
     acomp->SetThreadPoolSize(2);
+
+    CreateVisWindowCB = NetworkManager_CreateVisWindow;
+    CreateVisWindowCBData = (void*)this;
 }
 
 // ****************************************************************************
@@ -586,6 +601,10 @@ NetworkManager::GetPlotPluginManager() const
 //    Burlen Loring, Thu Aug 20 10:18:50 PDT 2015
 //    eliminate temporaries and function call in loops condition
 //
+//    Brad Whitlock, Fri Feb  9 15:54:19 PST 2018
+//    Check that we own the vis window before deleting it. We may have
+//    borrowed it from the viewer when running in situ.
+//
 // ****************************************************************************
 
 void
@@ -616,7 +635,9 @@ NetworkManager::ClearAllNetworks(void)
         it->second.viswin->ClearPlots();
         it->second.plotsCurrentlyInWindow.clear();
         it->second.imageBasedPlots.clear();
-        delete it->second.viswin;
+        // Only delete the vis window if we own it.
+        if(it->second.owns)
+            delete it->second.viswin;
     }
     viswinMap.clear();
 
@@ -2869,7 +2890,8 @@ NetworkManager::NeedZBufferToCompositeEvenIn2D(const intVector plotIds)
 avtDataObject_p
 NetworkManager::Render(avtImageType imgT, bool getZBuffer, 
     intVector plotIds, bool checkThreshold, 
-    int annotMode, int windowID, bool leftEye)
+    int annotMode, int windowID, bool leftEye,
+    int &outImgWidth, int &outImgHeight)
 {
     StackTimer t0("NetworkManager::Render");
     DataNetwork *origWorkingNet = workingNet;
@@ -2879,6 +2901,9 @@ NetworkManager::Render(avtImageType imgT, bool getZBuffer,
     {
         RenderSetup(imgT, windowID, plotIds, getZBuffer,
             annotMode, leftEye, checkThreshold);
+
+        // Return the window size in case the image we make is empty.
+        renderState.window->GetSize(outImgHeight, outImgWidth);
 
         if (renderState.renderOnViewer)
         {
@@ -3003,7 +3028,7 @@ NetworkManager::RenderInternal()
     // ************************************************************
     // pass 1a : opaque (and translucent geometry if serial)
     // ************************************************************
-    avtImage_p pass = NetworkManager::RenderGeometry();
+    avtImage_p pass = RenderGeometry();
 #if 0
     int w,h;
     if(*pass != NULL)
@@ -3020,6 +3045,9 @@ NetworkManager::RenderInternal()
                 debug5 << "We have a zbuffer with " << arr->GetNumberOfTuples() << " tuples." << endl;
             else
                 debug5 << "We have NO zbuffer." << endl;
+
+            if(avtDebugDumpOptions::DumpEnabled())
+                this->DumpImage(pass, "render-geom");
         }
         CATCH(VisItException)
         {
@@ -3067,6 +3095,8 @@ NetworkManager::RenderInternal()
                 debug5 << "We have a zbuffer with " << arr->GetNumberOfTuples() << " tuples." << endl;
             else
                 debug5 << "We have NO zbuffer." << endl;
+            if(avtDebugDumpOptions::DumpEnabled())
+                this->DumpImage(pass, "render-geom-final");
         }
         CATCH(VisItException)
         {
@@ -3181,186 +3211,214 @@ NetworkManager::SetWindowAttributes(const WindowAttributes &atts,
     SetWindowAttributes(viswinInfo, atts, extstr, vexts, ctName);
 }
 
+
+
+
 void
 NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
     const WindowAttributes &atts, const std::string& extstr,
     const double *vexts, const std::string& ctName)
 {
+    StackTimer t0("NetworkManager::SetWindowAttributes");
     VisWindow *viswin = viswinInfo.viswin;
     WindowAttributes &windowAttributes = viswinInfo.windowAttributes;
     std::string &extentTypeString = viswinInfo.extentTypeString;
     std::string &changedCtName = viswinInfo.changedCtName;
 
-    // do nothing if nothing changed
-    if ((windowAttributes == atts) && (extentTypeString == extstr) &&
-        (changedCtName == ctName))
-    {
-        bool extsAreDifferent = false;
-        static double curexts[6];
-        viswin->GetBounds(curexts);
-        for (int i = 0; i < 6; ++i)
+    { // New scope
+        StackTimer t("SetBounds");
+        // do nothing if nothing changed
+        if ((windowAttributes == atts) && (extentTypeString == extstr) &&
+            (changedCtName == ctName))
         {
-            if (curexts[i] != (double) vexts[i])
+            bool extsAreDifferent = false;
+            static double curexts[6];
+            viswin->GetBounds(curexts);
+            for (int i = 0; i < 6; ++i)
             {
-                extsAreDifferent = true;
-                break;
+                if (curexts[i] != (double) vexts[i])
+                {
+                    extsAreDifferent = true;
+                    break;
+                }
+            }
+
+            if (extsAreDifferent == false)
+               return;
+        }
+ 
+        avtExtentType extType = AVT_UNKNOWN_EXTENT_TYPE;
+        avtExtentType_FromString(extstr, extType);
+        viswin->SetViewExtentsType(extType);
+        double fexts[6];
+        for (int i = 0; i < 6; i ++)
+            fexts[i] = vexts[i];
+        viswin->SetBounds(fexts);
+    }
+
+    { // New scope
+        StackTimer t("SetSize");
+        // only update size if its different
+        int s0,s1;
+        viswin->GetSize(s0,s1);
+        if ((s0 != atts.GetSize()[0]) || (s1 != atts.GetSize()[1]))
+        {
+            {
+                StackTimer t1("viswin->SetSize"); 
+                viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
+            }
+            {
+                StackTimer t1("viswin->UpdateView");
+                viswin->UpdateView();
             }
         }
-
-        if (extsAreDifferent == false)
-           return;
     }
 
-    avtExtentType extType = AVT_UNKNOWN_EXTENT_TYPE;
-    avtExtentType_FromString(extstr, extType);
-    viswin->SetViewExtentsType(extType);
-    double fexts[6];
-    for (int i = 0; i < 6; i ++)
-        fexts[i] = vexts[i];
-    viswin->SetBounds(fexts);
+    { // New scope
+        StackTimer t("SetView");
 
-    // only update size if its different
-    int s0,s1;
-    viswin->GetSize(s0,s1);
-    if ((s0 != atts.GetSize()[0]) || (s1 != atts.GetSize()[1]))
-    {
-       viswin->SetSize(atts.GetSize()[0], atts.GetSize()[1]);
-       viswin->UpdateView();
+        const ViewCurveAttributes& viewCurveAtts = atts.GetViewCurve();
+        avtViewCurve viewCurve;
+        viewCurve.SetFromViewCurveAttributes(&viewCurveAtts);
+        viswin->SetViewCurve(viewCurve);
+
+        const View2DAttributes& view2DAtts = atts.GetView2D();
+        avtView2D view2D;
+        view2D.SetFromView2DAttributes(&view2DAtts);
+        if (view2DAtts.GetFullFrameActivationMode() == View2DAttributes::Auto)
+        {
+            double extents[6];
+            viswin->GetBounds(extents);
+            bool newFullFrameMode = view2DAtts.GetUseFullFrame(extents);
+            if (!viswin->DoAllPlotsAxesHaveSameUnits())
+                newFullFrameMode = true;
+            view2D.fullFrame = newFullFrameMode;
+        }
+        viswin->SetView2D(view2D);
+
+        const View3DAttributes& view3DAtts = atts.GetView3D();
+        avtView3D view3D;
+        view3D.SetFromView3DAttributes(&view3DAtts);
+        viswin->SetView3D(view3D);
+
+        const ViewAxisArrayAttributes& viewAxisArrayAtts = atts.GetViewAxisArray();
+        avtViewAxisArray viewAxisArray;
+        viewAxisArray.SetFromViewAxisArrayAttributes(&viewAxisArrayAtts);
+        viswin->SetViewAxisArray(viewAxisArray);
     }
 
-    //
-    // Set the view information.
-    //
-    const ViewCurveAttributes& viewCurveAtts = atts.GetViewCurve();
-    avtViewCurve viewCurve;
-    viewCurve.SetFromViewCurveAttributes(&viewCurveAtts);
-    viswin->SetViewCurve(viewCurve);
+    { // New scope
+        StackTimer t("Set lights and colors");
+        // Set the color tables
+        avtColorTables::Instance()->SetColorTables(atts.GetColorTables());
 
-    const View2DAttributes& view2DAtts = atts.GetView2D();
-    avtView2D view2D;
-    view2D.SetFromView2DAttributes(&view2DAtts);
-    if (view2DAtts.GetFullFrameActivationMode() == View2DAttributes::Auto)
-    {
-        double extents[6];
-        viswin->GetBounds(extents);
-        bool newFullFrameMode = view2DAtts.GetUseFullFrame(extents);
-        if (!viswin->DoAllPlotsAxesHaveSameUnits())
-            newFullFrameMode = true;
-        view2D.fullFrame = newFullFrameMode;
-    }
-    viswin->SetView2D(view2D);
-
-    const View3DAttributes& view3DAtts = atts.GetView3D();
-    avtView3D view3D;
-    view3D.SetFromView3DAttributes(&view3DAtts);
-    viswin->SetView3D(view3D);
-
-    const ViewAxisArrayAttributes& viewAxisArrayAtts = atts.GetViewAxisArray();
-    avtViewAxisArray viewAxisArray;
-    viewAxisArray.SetFromViewAxisArrayAttributes(&viewAxisArrayAtts);
-    viswin->SetViewAxisArray(viewAxisArray);
-
-    // Set the color tables
-    avtColorTables::Instance()->SetColorTables(atts.GetColorTables());
-
-    // Set the lights.
-    const LightList& lights = atts.GetLights();
-    viswin->SetLightList(&lights);
-
-    const RenderingAttributes &renderAtts = atts.GetRenderAtts();
-
-    // Set the specular properties.
-    viswin->SetSpecularProperties(renderAtts.GetSpecularFlag(),
-                                  renderAtts.GetSpecularCoeff(),
-                                  renderAtts.GetSpecularPower(),
-                                  renderAtts.GetSpecularColor());
-
-    // Set the color texturing flag.
-    viswin->SetColorTexturingFlag(renderAtts.GetColorTexturingFlag());
-
-    // Set the background/foreground colors
-    const unsigned char *bg = atts.GetBackground();
-    viswin->SetBackgroundColor(bg[0]/255.0, bg[1]/255.0, bg[2]/255.0);
-
-    const unsigned char *fg = atts.GetForeground();
-    viswin->SetForegroundColor(fg[0]/255.0, fg[1]/255.0, fg[2]/255.0);
-
-    // Set the background mode and gradient colors if necessary
-    // Yes, these are WindowAttributes, but this particular attribute should
-    // match the annotation attribute values; it is hard to make the types
-    // agree as the classes are autogenerated.
-    int bgm = atts.GetBackgroundMode();
-    AnnotationAttributes::BackgroundMode bgMode =
-        static_cast<AnnotationAttributes::BackgroundMode>(bgm);
-    viswin->SetBackgroundMode(bgMode);
-    if (bgMode == AnnotationAttributes::Gradient)
-    {
-        const double *gbg1 = atts.GetGradBG1();
-        const double *gbg2 = atts.GetGradBG2();
-        viswin->SetGradientBackgroundColors(atts.GetGradientBackgroundStyle(),
-           gbg1[0], gbg1[1], gbg1[2], gbg2[0], gbg2[1], gbg2[2]);
-    }
-    else if(bgm >= AnnotationAttributes::Image)
-    {
-       viswin->SetBackgroundImage(atts.GetBackgroundImage(),
-           atts.GetImageRepeatX(), atts.GetImageRepeatY());
+        // Set the lights.
+        const LightList& lights = atts.GetLights();
+        viswin->SetLightList(&lights);
     }
 
-    if (viswin->GetAntialiasing() != renderAtts.GetAntialiasing())
-        viswin->SetAntialiasing(renderAtts.GetAntialiasing());
+    { // New scope
+        StackTimer t("Set fore/background");
 
-    if (viswin->GetOrderComposite() != renderAtts.GetOrderComposite())
-        viswin->SetOrderComposite(renderAtts.GetOrderComposite());
+        // Set the background/foreground colors
+        const unsigned char *bg = atts.GetBackground();
+        viswin->SetBackgroundColor(bg[0]/255.0, bg[1]/255.0, bg[2]/255.0);
 
-    if (viswin->GetDepthCompositeThreads() !=
-        static_cast<size_t>(renderAtts.GetDepthCompositeThreads()))
-        viswin->SetDepthCompositeThreads(renderAtts.GetDepthCompositeThreads());
+        const unsigned char *fg = atts.GetForeground();
+        viswin->SetForegroundColor(fg[0]/255.0, fg[1]/255.0, fg[2]/255.0);
 
-    if (viswin->GetAlphaCompositeThreads() !=
-        static_cast<size_t>(renderAtts.GetAlphaCompositeThreads()))
-        viswin->SetAlphaCompositeThreads(renderAtts.GetAlphaCompositeThreads());
+        // Set the background mode and gradient colors if necessary
+        // Yes, these are WindowAttributes, but this particular attribute should
+        // match the annotation attribute values; it is hard to make the types
+        // agree as the classes are autogenerated.
+        int bgm = atts.GetBackgroundMode();
+        AnnotationAttributes::BackgroundMode bgMode =
+            static_cast<AnnotationAttributes::BackgroundMode>(bgm);
+        viswin->SetBackgroundMode(bgMode);
+        if (bgMode == AnnotationAttributes::Gradient)
+        {
+            const double *gbg1 = atts.GetGradBG1();
+            const double *gbg2 = atts.GetGradBG2();
+            viswin->SetGradientBackgroundColors(atts.GetGradientBackgroundStyle(),
+               gbg1[0], gbg1[1], gbg1[2], gbg2[0], gbg2[1], gbg2[2]);
+        }
+        else if(bgm >= AnnotationAttributes::Image)
+        {
+           viswin->SetBackgroundImage(atts.GetBackgroundImage(),
+               atts.GetImageRepeatX(), atts.GetImageRepeatY());
+        }
+    }
 
-    if (viswin->GetDepthCompositeBlocking() !=
-        static_cast<size_t>(renderAtts.GetDepthCompositeBlocking()))
-        viswin->SetDepthCompositeBlocking(renderAtts.GetDepthCompositeBlocking());
+    { // New scope
+       StackTimer t("Set rendering properties");
 
-    if (viswin->GetAlphaCompositeBlocking() !=
-        static_cast<size_t>(renderAtts.GetAlphaCompositeBlocking()))
-        viswin->SetAlphaCompositeBlocking(renderAtts.GetAlphaCompositeBlocking());
+        const RenderingAttributes &renderAtts = atts.GetRenderAtts();
 
-    if (viswin->GetDepthPeeling() != renderAtts.GetDepthPeeling())
-        viswin->SetDepthPeeling(renderAtts.GetDepthPeeling());
+        // Set the specular properties.
+        viswin->SetSpecularProperties(renderAtts.GetSpecularFlag(),
+                                      renderAtts.GetSpecularCoeff(),
+                                      renderAtts.GetSpecularPower(),
+                                      renderAtts.GetSpecularColor());
 
-    if (viswin->GetOcclusionRatio() != renderAtts.GetOcclusionRatio())
-        viswin->SetOcclusionRatio(renderAtts.GetOcclusionRatio());
+        // Set the color texturing flag.
+        viswin->SetColorTexturingFlag(renderAtts.GetColorTexturingFlag());
 
-    if (viswin->GetNumberOfPeels() != renderAtts.GetNumberOfPeels())
-        viswin->SetNumberOfPeels(renderAtts.GetNumberOfPeels());
+        if (viswin->GetAntialiasing() != renderAtts.GetAntialiasing())
+            viswin->SetAntialiasing(renderAtts.GetAntialiasing());
 
-    if (viswin->GetMultiresolutionMode() != renderAtts.GetMultiresolutionMode())
-        viswin->SetMultiresolutionMode(renderAtts.GetMultiresolutionMode());
+        if (viswin->GetOrderComposite() != renderAtts.GetOrderComposite())
+            viswin->SetOrderComposite(renderAtts.GetOrderComposite());
 
-    if (viswin->GetMultiresolutionCellSize() != renderAtts.GetMultiresolutionCellSize())
-        viswin->SetMultiresolutionCellSize(renderAtts.GetMultiresolutionCellSize());
+        if (viswin->GetDepthCompositeThreads() !=
+            static_cast<size_t>(renderAtts.GetDepthCompositeThreads()))
+            viswin->SetDepthCompositeThreads(renderAtts.GetDepthCompositeThreads());
 
-    if (viswin->GetSurfaceRepresentation() != renderAtts.GetGeometryRepresentation())
-        viswin->SetSurfaceRepresentation(renderAtts.GetGeometryRepresentation());
+        if (viswin->GetAlphaCompositeThreads() !=
+            static_cast<size_t>(renderAtts.GetAlphaCompositeThreads()))
+            viswin->SetAlphaCompositeThreads(renderAtts.GetAlphaCompositeThreads());
 
-    // TODO -- why??
-    viswin->SetDisplayListMode(1);  // never
+        if (viswin->GetDepthCompositeBlocking() !=
+            static_cast<size_t>(renderAtts.GetDepthCompositeBlocking()))
+            viswin->SetDepthCompositeBlocking(renderAtts.GetDepthCompositeBlocking());
 
-    // handle stereo rendering settings
-    bool stereo = renderAtts.GetStereoRendering();
-    int stereoType = renderAtts.GetStereoType();
-    if ((viswin->GetStereo() != stereo) || (viswin->GetStereoType() != stereoType))
-        viswin->SetStereoRendering(stereo, stereoType);
+        if (viswin->GetAlphaCompositeBlocking() !=
+            static_cast<size_t>(renderAtts.GetAlphaCompositeBlocking()))
+            viswin->SetAlphaCompositeBlocking(renderAtts.GetAlphaCompositeBlocking());
 
-    // update compositer thread pool size and blocking parameters
-    zcomp->SetThreadPoolSize(renderAtts.GetDepthCompositeThreads());
-    zcomp->SetBlocking(renderAtts.GetDepthCompositeBlocking());
+        if (viswin->GetDepthPeeling() != renderAtts.GetDepthPeeling())
+            viswin->SetDepthPeeling(renderAtts.GetDepthPeeling());
 
-    acomp->SetThreadPoolSize(renderAtts.GetAlphaCompositeThreads());
-    acomp->SetBlocking(renderAtts.GetAlphaCompositeBlocking());
+        if (viswin->GetOcclusionRatio() != renderAtts.GetOcclusionRatio())
+            viswin->SetOcclusionRatio(renderAtts.GetOcclusionRatio());
+
+        if (viswin->GetNumberOfPeels() != renderAtts.GetNumberOfPeels())
+            viswin->SetNumberOfPeels(renderAtts.GetNumberOfPeels());
+
+        if (viswin->GetMultiresolutionMode() != renderAtts.GetMultiresolutionMode())
+            viswin->SetMultiresolutionMode(renderAtts.GetMultiresolutionMode());
+
+        if (viswin->GetMultiresolutionCellSize() != renderAtts.GetMultiresolutionCellSize())
+            viswin->SetMultiresolutionCellSize(renderAtts.GetMultiresolutionCellSize());
+
+        if (viswin->GetSurfaceRepresentation() != renderAtts.GetGeometryRepresentation())
+            viswin->SetSurfaceRepresentation(renderAtts.GetGeometryRepresentation());
+
+        // TODO -- why??
+        viswin->SetDisplayListMode(1);  // never
+
+        // handle stereo rendering settings
+        bool stereo = renderAtts.GetStereoRendering();
+        int stereoType = renderAtts.GetStereoType();
+        if ((viswin->GetStereo() != stereo) || (viswin->GetStereoType() != stereoType))
+            viswin->SetStereoRendering(stereo, stereoType);
+ 
+        // update compositer thread pool size and blocking parameters
+        zcomp->SetThreadPoolSize(renderAtts.GetDepthCompositeThreads());
+        zcomp->SetBlocking(renderAtts.GetDepthCompositeBlocking());
+
+        acomp->SetThreadPoolSize(renderAtts.GetAlphaCompositeThreads());
+        acomp->SetBlocking(renderAtts.GetAlphaCompositeBlocking());
+    }
 
     windowAttributes = atts;
     extentTypeString = extstr;
@@ -3478,6 +3536,9 @@ NetworkManager::UpdateVisualCues()
 //    use some previously cached values rather than recompute them.
 //    I also fixed the indentation.
 //
+//    Brad Whitlock, Thu Mar 16 16:03:29 PDT 2017
+//    Just remember the original annotations rather than apply them here.
+//
 // ****************************************************************************
 
 void
@@ -3491,87 +3552,162 @@ NetworkManager::SetAnnotationAttributes(const AnnotationAttributes &atts,
     EngineVisWinInfo &viswinInfo = viswinMap[windowID];
     viswinInfo.markedForDeletion = false;
 
-    SetAnnotationAttributes(viswinInfo, atts, aolist, visCues, fns, annotMode);
+    // Save the desired annotations.
+    viswinInfo.annotationAttributes = atts;
+    viswinInfo.annotationObjectList = aolist;
+
+    // defer processing of visual cues until rendering time
+    if (visCues != viswinInfo.visualCueList)
+    {
+        viswinInfo.visualCuesNeedUpdate = true;
+        viswinInfo.visualCueList = visCues;
+    }
+
+    for (int i = 0; i < 7; ++i)
+        viswinInfo.frameAndState[i] = fns[i];
+    viswinInfo.viswin->SetFrameAndState(fns[0],
+                                        fns[1],fns[2],fns[3],
+                                        fns[4],fns[5],fns[6]);
 }
 
-void
-NetworkManager::SetAnnotationAttributes(EngineVisWinInfo &viswinInfo,
-     const AnnotationAttributes &atts, const AnnotationObjectList &aolist,
-     const VisualCueList &visCues, const int *fns, int annotMode)
+// ****************************************************************************
+// Method: NetworkManager::AnnotationAttributesForRender
+//
+// Purpose:
+//   Return an annotation object list suitable for the annotation mode.
+//
+// Arguments:
+//   atts     : The input annotations.
+//   annotMode: The annotation mode.
+//
+// Returns:    An annotation object suitable for the annotation mode.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 16 16:01:50 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+AnnotationAttributes
+NetworkManager::AnnotationAttributesForRender(const AnnotationAttributes &atts,
+    int annotMode) const
 {
-    AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
-    AnnotationObjectList &annotationObjectList = viswinInfo.annotationObjectList;
+    AnnotationAttributes newAtts(atts);
 
-    bool &visualCuesNeedUpdate = viswinInfo.visualCuesNeedUpdate;
-    VisualCueList &visualCueList = viswinInfo.visualCueList;
-    int *const &frameAndState = viswinInfo.frameAndState;
-
-    if (PAR_Rank() == 0)
+    switch (annotMode)
     {
-        // copy the attributes and disable all non-3D attributes
-        AnnotationAttributes newAtts = atts;
+    case 0: // no annotations
+        newAtts.SetUserInfoFlag(false);
+        newAtts.SetDatabaseInfoFlag(false);
+        newAtts.SetLegendInfoFlag(false);
+        newAtts.GetAxes3D().SetTriadFlag(false);
+        newAtts.GetAxes3D().SetBboxFlag(false);
+        newAtts.GetAxes3D().SetVisible(false);
+        newAtts.GetAxes2D().SetVisible(false);
+        break;
 
-        VisWindow *viswin = viswinInfo.viswin;
-        switch (annotMode)
+    case 1: // 3D annotations only
+        newAtts.SetUserInfoFlag(false);
+        newAtts.SetDatabaseInfoFlag(false);
+        newAtts.SetLegendInfoFlag(false);
+        newAtts.GetAxes3D().SetTriadFlag(false);
+        newAtts.GetAxes2D().SetVisible(false);
+        break;
+
+    case 2: // all annotations
+        // no changes needed.
+        break;
+    }
+
+    return newAtts;
+}
+
+// ****************************************************************************
+// Method: NetworkManager::AnnotationObjectListForRender
+//
+// Purpose:
+//   Return an annotation object list suitable for the annotation mode.
+//
+// Arguments:
+//   aolist : The input annotation object list.
+//   annotMode: The annotation mode.
+//
+// Returns:    An annotation object list suitable for the annotation mode.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 16 16:01:50 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+AnnotationObjectList
+NetworkManager::AnnotationObjectListForRender(const AnnotationObjectList &aolist, 
+    int annotMode) const
+{
+    AnnotationObjectList newList;
+    switch (annotMode)
+    {
+    case 0: // no annotations
+        // leave the list empty.
+        break;
+
+    case 1: // 3D annotations only
+        // Add back in the 3D annotation objects.
+        for(int aIndex = 0; aIndex < aolist.GetNumAnnotations(); ++aIndex)
         {
-            case 0: // no annotations
-                newAtts.SetUserInfoFlag(false);
-                newAtts.SetDatabaseInfoFlag(false);
-                newAtts.SetLegendInfoFlag(false);
-                newAtts.GetAxes3D().SetTriadFlag(false);
-                newAtts.GetAxes3D().SetBboxFlag(false);
-                newAtts.GetAxes3D().SetVisible(false);
-                newAtts.GetAxes2D().SetVisible(false);
-                viswin->DeleteAllAnnotationObjects();
-                break;
-
-            case 1: // 3D annotations only
-                newAtts.SetUserInfoFlag(false);
-                newAtts.SetDatabaseInfoFlag(false);
-                newAtts.SetLegendInfoFlag(false);
-                newAtts.GetAxes3D().SetTriadFlag(false);
-                newAtts.GetAxes2D().SetVisible(false);
-                viswin->DeleteAllAnnotationObjects();
-                { // Add back in the 3D annotation objects.
-                AnnotationObjectList aolist2;
-                for(int aIndex = 0; aIndex < aolist.GetNumAnnotations(); ++aIndex)
-                {
-                    if(aolist[aIndex].GetObjectType() == AnnotationObject::Text3D)
-                        aolist2.AddAnnotation(aolist[aIndex]);
-                    else if(aolist[aIndex].GetObjectType() == AnnotationObject::Line3D)
-                        aolist2.AddAnnotation(aolist[aIndex]);
-                }
-                viswin->CreateAnnotationObjectsFromList(aolist2);
-                }
-                break;
-
-            case 2: // all annotations
-                viswin->DeleteAllAnnotationObjects();
-                viswin->CreateAnnotationObjectsFromList(aolist);
-                viswin->SetFrameAndState(fns[0],
-                                       fns[1],fns[2],fns[3],
-                                       fns[4],fns[5],fns[6]);
-                break;
-
-            default:
-                { EXCEPTION0(ImproperUseException); }
-                break;
+            if(aolist[aIndex].GetObjectType() == AnnotationObject::Text3D)
+                newList.AddAnnotation(aolist[aIndex]);
+            else if(aolist[aIndex].GetObjectType() == AnnotationObject::Line3D)
+                newList.AddAnnotation(aolist[aIndex]);
         }
+        break;
 
-        viswin->SetAnnotationAtts(&newAtts);
-   }
+    case 2: // all annotations
+        newList = aolist;
+        break;
+    }
 
-   // defer processing of visual cues until rendering time
-   if (visCues != visualCueList)
-   {
-       visualCuesNeedUpdate = true;
-       visualCueList = visCues;
-   }
+    return newList;
+}
 
-   annotationAttributes = atts;
-   annotationObjectList = aolist;
-   for (int i = 0; i < 7; ++i)
-       frameAndState[i] = fns[i];
+// ****************************************************************************
+// Method: NetworkManager::ApplyAnnotations
+//
+// Purpose:
+//   Apply annotation and annotation object list to the vis window.
+//
+// Arguments:
+//   viswindow : The vis window that we're using.
+//   atts      : The new annotation attributes.
+//   aolist    : The new annotation object list.
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 16 16:00:53 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+NetworkManager::ApplyAnnotations(VisWindow *viswin, 
+    const AnnotationAttributes &atts, const AnnotationObjectList &aolist)
+{
+    // Set the annotation attributes.
+    viswin->SetAnnotationAtts(&atts, true);
+
+    // Set the annotation objects.
+    viswin->DeleteAllAnnotationObjects();
+    viswin->CreateAnnotationObjectsFromList(aolist);
 }
 
 // ****************************************************************************
@@ -3849,13 +3985,13 @@ NetworkManager::Pick(const int id, const int winId, PickAttributes *pa)
             //
             intVector pids;
             pids.push_back(id);
-
+            int outW = 0, outH = 0;
             avtImageType imgT = ColorRGBImage;
             bool checkThreshold = true;
             bool getZBuffer = false;
             int annotMode = 0;
             bool leftEye = true;
-            Render(imgT, getZBuffer, pids, checkThreshold, annotMode, winId, leftEye);
+            Render(imgT, getZBuffer, pids, checkThreshold, annotMode, winId, leftEye, outW, outH);
         }
         int d = -1, e = -1;
         double t = +FLT_MAX;
@@ -5218,7 +5354,8 @@ NetworkManager::NewVisWindow(int winID)
     for (size_t i = 0; i < idsToDelete.size(); i++)
     {
         debug2 << "Deleting VisWindow for id=" << idsToDelete[i] << endl;
-        delete viswinMap[idsToDelete[i]].viswin;
+        if(viswinMap[idsToDelete[i]].owns)
+            delete viswinMap[idsToDelete[i]].viswin;
         viswinMap.erase(idsToDelete[i]);
     }
 
@@ -5227,7 +5364,13 @@ NetworkManager::NewVisWindow(int winID)
     TRY
     {
         StackTimer t1("Create new vis window");
-        viswinMap[winID].viswin = new VisWindow();
+        // Call a creation callback to make the vis window for winID.
+        VisWindow *viswin = NULL;
+        bool owns = true;
+        (*CreateVisWindowCB)(winID, viswin, owns, CreateVisWindowCBData);
+
+        viswinMap[winID].viswin = viswin;
+        viswinMap[winID].owns = owns;
         viswinMap[winID].visualCuesNeedUpdate = false;
         viswinMap[winID].markedForDeletion = false;
         viswinMap[winID].viswin->Realize();
@@ -5239,18 +5382,6 @@ NetworkManager::NewVisWindow(int winID)
         RETHROW;
     }
     ENDTRY
-
-    AnnotationAttributes &annotAtts = viswinMap[winID].annotationAttributes;
-
-    annotAtts = *(viswinMap[winID].viswin->GetAnnotationAtts());
-    annotAtts.SetUserInfoFlag(false);
-    annotAtts.SetDatabaseInfoFlag(false);
-    annotAtts.SetLegendInfoFlag(false);
-    annotAtts.GetAxes3D().SetTriadFlag(false);
-    annotAtts.GetAxes3D().SetBboxFlag(false);
-    annotAtts.GetAxes3D().SetVisible(false);
-    annotAtts.GetAxes2D().SetVisible(false);
-    viswinMap[winID].viswin->SetAnnotationAtts(&annotAtts);
 
     viswinMap[winID].viswin->DisableUpdates();
 }
@@ -5373,6 +5504,7 @@ NetworkManager::CallProgressCallback(const char *module, const char *msg,
 //    Promote to a class method, simplify a bit.
 //
 // ****************************************************************************
+
 void
 NetworkManager::DumpImage(avtDataObject_p img, const char *fmt)
 const
@@ -5392,6 +5524,43 @@ const
     int compress = 1;
     fileWriter->Write(dump_image.c_str(), img, 100, false, compress, false);
     delete fileWriter;
+
+#if 0
+    // Write the zbuffer as a VTK dataset.
+    avtImage_p image;
+    CopyTo(image, img);
+    if(image->GetImage().GetZBufferVTK() != NULL)
+    {
+        vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
+        int dims[3] = {1,1,1};
+        image->GetImage().GetSize(&dims[0], &dims[1]);
+        dims[0]++; dims[1]++;
+
+        vtkFloatArray *x = vtkFloatArray::New();
+        x->SetNumberOfTuples(dims[0]);
+        for(int i = 0; i < dims[0]; ++i)
+            x->SetTuple1(i,i);
+        vtkFloatArray *y = vtkFloatArray::New();
+        y->SetNumberOfTuples(dims[1]);
+        for(int i = 0; i < dims[1]; ++i)
+            y->SetTuple1(i,i);
+        rgrid->SetDimensions(dims);
+        rgrid->SetXCoordinates(x);
+        rgrid->SetYCoordinates(y);
+        x->Delete();
+        y->Delete();
+
+        rgrid->GetCellData()->AddArray(image->GetImage().GetZBufferVTK());
+
+        vtkDataSetWriter *writer = vtkDataSetWriter::New();
+        writer->SetFileName((std::string(dump_image) + ".vtk").c_str());
+        writer->SetInputData(rgrid);
+        writer->Update();
+
+        writer->Delete();
+        rgrid->Delete();
+    }
+#endif
 }
 
 // ****************************************************************************
@@ -5903,7 +6072,8 @@ NetworkManager::PickForIntersection(const int winId, PickAttributes *pa)
         bool getZBuffer = false;
         int annotMode = 0;
         bool leftEye = true;
-        Render(imgT, getZBuffer, validIds, checkThreshold, annotMode, winId, leftEye);
+        int outW = 0, outH = 0;
+        Render(imgT, getZBuffer, validIds, checkThreshold, annotMode, winId, leftEye, outW, outH);
     }
     int x, y;
     double isect[3];
@@ -6155,6 +6325,10 @@ NetworkManager::ViewerExecute(const VisWindow * const viswin,
 //    go into scalable rendering mode and immediately go back out and
 //    a blank image would get displayed.
 //
+//    Brad Whitlock, Tue Feb 13 15:23:13 PST 2018
+//    Make parallel axis window modes be considered 2D so we use viewported 
+//    mode to composite images to avoid an offset.
+//
 // ****************************************************************************
 
 void
@@ -6172,23 +6346,6 @@ NetworkManager::SetUpWindowContents(const intVector &plotIds,
 
     viswin->ClearPlots();
     viswinInfo->imageBasedPlots.clear();
-
-    // If we're doing all annotations on the engine then we need to add
-    // the annotations to the window before we add plots so the
-    // annotations that depend on the plot list being updated in order
-    // to change their text with respect to time can update.
-    //
-    // However: visual cues (i.e. reflines) need to be added after the
-    // plots are added.
-    if(renderState.annotMode == 2)
-    {
-        SetAnnotationAttributes(*viswinInfo,
-            viswinInfo->annotationAttributes, viswinInfo->annotationObjectList,
-            viswinInfo->visualCueList, viswinInfo->frameAndState,
-            renderState.annotMode);
-
-        renderState.handledAnnotations = true;
-    }
 
     // see if there are any non-mesh plots in the list
     // If there's both mesh and non-mesh plots, we don't make the mesh opaque
@@ -6276,7 +6433,9 @@ NetworkManager::SetUpWindowContents(const intVector &plotIds,
             renderState.twoD =
                 (viswin->GetWindowMode() == WINMODE_2D) ||
                 (viswin->GetWindowMode() == WINMODE_CURVE) ||
-                (viswin->GetWindowMode() == WINMODE_AXISARRAY);
+                (viswin->GetWindowMode() == WINMODE_AXISARRAY) ||
+                (viswin->GetWindowMode() == WINMODE_PARALLELAXES) ||
+                (viswin->GetWindowMode() == WINMODE_VERTPARALLELAXES);
 
             determinedWindowMode = true;
 
@@ -6472,6 +6631,10 @@ NetworkManager::CalculateCellCountTotal(vector<long long> &cellCounts,
 //    refactor to so that all of the internal configuration is done
 //    from/in this method. added ordered compositing support.
 //
+//    Brad Whitlock, Thu Mar 16 16:04:03 PDT 2017
+//    Apply annotations here and remember whether we'll need to change them
+//    back in order to not hose the vis window state.
+//
 //    Brad Whitlock, Thu Sep 21 16:49:49 PDT 2017
 //    Added getAlpha.
 //
@@ -6508,15 +6671,25 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     renderState.window = viswin;
     renderState.windowInfo = &viswinInfo;
     renderState.renderOnViewer = false;
-    renderState.annotMode = annotMode;
-
     renderState.needToSetUpWindowContents = false;
 
     size_t nPlots = plotIds.size();
     renderState.cellCounts.resize(nPlots, 0);
-    renderState.handledAnnotations = false;
     renderState.handledCues = false;
     renderState.stereoType = -1;
+
+    // Apply any rendering-related changes to the annotation attributes.
+    // This may mean turning some of them off, etc. Keep track of whether
+    // we need to restore them later.
+    renderState.annotMode = annotMode;
+    debug5 << "NetworkManager::RenderSetup: annotMode=" << annotMode << endl;
+    AnnotationAttributes annot(AnnotationAttributesForRender(
+        viswinInfo.annotationAttributes, renderState.annotMode));
+    AnnotationObjectList aolist(AnnotationObjectListForRender(
+        viswinInfo.annotationObjectList, renderState.annotMode));
+    renderState.restoreAnnotations = (annot  != viswinInfo.annotationAttributes) ||
+                                     (aolist != viswinInfo.annotationObjectList);
+    ApplyAnnotations(viswin, annot, aolist);
 
     // Explicitly specify left / right eye, for stereo rendering.
     if(viswin->GetStereo())
@@ -6606,8 +6779,7 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
     // are unchanged
     double bg[4] = {1.,0.,0.,0.};
     double fg[4] = {0.,0.,1.,0.};
-    AnnotationAttributes &annotationAttributes =
-        viswinInfo.annotationAttributes;
+    const AnnotationAttributes &annotationAttributes = viswinInfo.annotationAttributes;
 
     annotationAttributes.GetForegroundColor().GetRgba(fg);
     annotationAttributes.GetDiscernibleBackgroundColor().GetRgba(bg);
@@ -6620,17 +6792,6 @@ NetworkManager::RenderSetup(avtImageType imgT, int windowID, intVector& plotIds,
         if (changedCtName != "")
             workingNet->GetPlot()->SetColorTable(changedCtName.c_str());
         workingNet = NULL;
-    }
-
-    // Add annotations if necessary
-    if (!renderState.handledAnnotations)
-    {
-        SetAnnotationAttributes(viswinInfo,
-            viswinInfo.annotationAttributes, viswinInfo.annotationObjectList,
-            viswinInfo.visualCueList, viswinInfo.frameAndState,
-            renderState.annotMode);
-
-        renderState.handledAnnotations = true;
     }
 
     if (!renderState.handledCues)
@@ -6766,6 +6927,7 @@ NetworkManager::RenderCleanup()
     // return viswindow to its true stereo mode
     if(renderState.stereoType != -1)
         renderState.window->SetStereoRendering(true, renderState.stereoType);
+
     this->StopTimer();
 }
 
@@ -7553,6 +7715,17 @@ void
 NetworkManager::RenderPostProcess(avtImage_p &input)
 {
     StackTimer t0("NetworkManager::RenderPostProcess");
+
+    // If we had modified annotations prior to rendering, restore them. This is
+    // needed for in situ where the viewer and engine code share a vis window.
+    if(renderState.restoreAnnotations)
+    {
+        debug5 << "NetworkManager::RenderPostProcess: Restoring annotations." << endl;
+        ApplyAnnotations(renderState.window,
+                         renderState.windowInfo->annotationAttributes,
+                         renderState.windowInfo->annotationObjectList);
+    }
+
     if (renderState.imageBasedPlots)
     {
         std::vector<avtPlot_p>::iterator it = renderState.windowInfo->imageBasedPlots.begin();
@@ -7565,6 +7738,10 @@ NetworkManager::RenderPostProcess(avtImage_p &input)
         (renderState.imageType == ColorRGBImage || renderState.imageType == ColorRGBAImage)
        )
     {
+        // Make sure that the vis window has the right attributes that include the pieces of legend we want.
+        renderState.window->SetAnnotationAtts(&renderState.windowInfo->annotationAttributes, true);
+
+        // Render the vis window by inserting the composited image plus any annotations we draw in the foreground.
         input = renderState.window->PostProcessScreenCapture(
             input, renderState.viewportedMode, renderState.getZBuffer);
     }
@@ -7591,4 +7768,11 @@ std::string
 NetworkManager::GetQueryParameters(const std::string &qName)
 {
     return avtQueryFactory::Instance()->GetDefaultInputParams(qName);
+}
+
+void
+NetworkManager::SetCreateVisWindow(void (*cb)(int, VisWindow *&, bool &, void *), void *cbdata)
+{
+    CreateVisWindowCB = cb;
+    CreateVisWindowCBData = cbdata;
 }

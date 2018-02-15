@@ -844,16 +844,16 @@ VisWinRendering::EnableUpdates(void)
 void
 VisWinRendering::Render()
 {
-    const bool forceTiming = true;
-    const bool timingEnabled = visitTimer->Enabled(); 
-    const int timingsIndex = visitTimer->StartTimer(forceTiming);
-    double rt = 0.;
-
     if (realized)
     {
         if (mediator.UpdatesEnabled() && (!avtCallback::GetNowinMode() ||
                                            avtCallback::GetNowinInteractionMode()))
         {
+            const bool forceTiming = true;
+            const bool timingEnabled = visitTimer->Enabled(); 
+            const int timingsIndex = visitTimer->StartTimer(forceTiming);
+            double rt = 0.;
+
             // Do an extra render for 'in progress' visual queue if
             // average time to ender is more than 2 seconds
             if (mediator.IsMakingExternalRenderRequests() &&
@@ -875,37 +875,37 @@ VisWinRendering::Render()
             {
                 EXCEPTION1(VisItException, errorMsg.c_str());
             }
+
+            // Determine the time taken to render the image.
+            rt = (double)visitTimer->StopTimer(timingsIndex, "Render one frame", forceTiming);
+            if(timingEnabled)
+            {
+                // VisIt's timer is going so use its return value.
+                // Dump the timings to the timings file.
+                visitTimer->DumpTimings();
+            }
+
+            // Update the render times and call the renderer information callback
+            // if we need to.
+            summedRenderTime += (rt >= 0.) ? rt : 0.;
+            minRenderTime = (rt < minRenderTime) ? rt : minRenderTime;
+            maxRenderTime = (rt > maxRenderTime) ? rt : maxRenderTime;
+            curRenderTimes[2] = curRenderTimes[1];
+            curRenderTimes[1] = curRenderTimes[0];
+            curRenderTimes[0] = (rt >= 0.) ? rt : 0.;
+            ++nRenders;
+
+            // Call the rendering information callback
+            if(notifyForEachRender && !inMotion && renderInfo != 0)
+            {
+                (*renderInfo)(renderInfoData);
+                ResetCounters();
+            }
         }
         else
         {
             needsUpdate = true;
         }
-    }
-
-    // Determine the time taken to render the image.
-    rt = (double)visitTimer->StopTimer(timingsIndex, "Render one frame", forceTiming);
-    if(timingEnabled)
-    {
-        // VisIt's timer is going so use its return value.
-        // Dump the timings to the timings file.
-        visitTimer->DumpTimings();
-    }
-
-    // Update the render times and call the renderer information callback
-    // if we need to.
-    summedRenderTime += (rt >= 0.) ? rt : 0.;
-    minRenderTime = (rt < minRenderTime) ? rt : minRenderTime;
-    maxRenderTime = (rt > maxRenderTime) ? rt : maxRenderTime;
-    curRenderTimes[2] = curRenderTimes[1];
-    curRenderTimes[1] = curRenderTimes[0];
-    curRenderTimes[0] = (rt >= 0.) ? rt : 0.;
-    ++nRenders;
-
-    // Call the rendering information callback
-    if(notifyForEachRender && !inMotion && renderInfo != 0)
-    {
-        (*renderInfo)(renderInfoData);
-        ResetCounters();
     }
 }
 
@@ -1350,7 +1350,7 @@ VisWinRendering::ScreenRender(avtImageType imgT,
 
     // If we removed the foreground layer, put it back before we leave
     if (removeForeground)
-       renWin->AddRenderer(foreground);
+        renWin->AddRenderer(foreground);
 
     // return geometry from hidden status
     if(!doOpaque)
@@ -1538,6 +1538,46 @@ VisWinRendering::ScreenReadback(
         zbuffer->Delete();
 
     return output;
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::BackgroundReadback
+//
+// Purpose:
+//   Reads back the window's background as an avtImage.
+//
+// Arguments:
+//   doViewportOnly : Whether to read for viewport only.
+//
+// Returns:    An avtImage containing the background.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Mar 14 19:46:53 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtImage_p
+VisWinRendering::BackgroundReadback(bool doViewportOnly)
+{
+    // temporarily remove canvas and foreground renderers
+    vtkRenderWindow *renWin = GetRenderWindow();
+    renWin->RemoveRenderer(canvas);
+    renWin->RemoveRenderer(foreground);
+
+    // render (background layer only)
+    RenderRenderWindow();
+
+    avtImage_p img = ScreenReadback(doViewportOnly, false, false);
+
+    // add canvas and foreground renderers back in
+    renWin->AddRenderer(canvas);
+    renWin->AddRenderer(foreground);
+
+    return img;
 }
 
 // ****************************************************************************

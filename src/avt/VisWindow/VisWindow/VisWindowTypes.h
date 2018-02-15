@@ -179,6 +179,12 @@ struct VisWinTextAttributes
     bool   italic;
 };
 
+// Functions to convert WINDOW_MODE to/from string.
+VISWINDOW_API std::string WINDOW_MODE_ToString(WINDOW_MODE);
+VISWINDOW_API std::string WINDOW_MODE_ToString(int);
+VISWINDOW_API bool        WINDOW_MODE_FromString(const std::string &,
+                                                 WINDOW_MODE &);
+
 // Functions to convert INTERACTION_MODE to/from string.
 VISWINDOW_API std::string INTERACTION_MODE_ToString(INTERACTION_MODE);
 VISWINDOW_API std::string INTERACTION_MODE_ToString(int);

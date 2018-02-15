@@ -110,6 +110,7 @@ class PIPELINE_API avtImageRepresentation
 {
   public:
                          avtImageRepresentation();
+                         avtImageRepresentation(int w, int h, int chan = 3);
                          avtImageRepresentation(vtkImageData *);
                          avtImageRepresentation(vtkImageData *, vtkFloatArray *);
                          avtImageRepresentation(vtkImageData *, float *, bool = false);

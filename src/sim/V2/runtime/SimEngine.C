@@ -84,6 +84,8 @@
 #include <ViewerWindowManager.h>
 #include <ViewerQueryManager.h>
 
+#include <VisWindow.h>
+
 #include <SimEngineManager.h>
 #include <SimFileServer.h>
 #include <SimPlotPluginManager.h>
@@ -249,6 +251,13 @@ SimEngine::InitializeViewer(const std::vector<std::string> &plotPlugins,
 
         // Install a custom factory for viewer object creation.
         SetViewerFactory(new SimViewerFactory(this));
+
+        // Since we're initializing via the viewer, force the network manager
+        // to obtain its vis window pointer from the ViewerWindow objects that 
+        // will be created from the viewer side. This way, the viewer and engine
+        // pieces of VisIt will share the same vis window object, which prevents
+        // some weirdness like having to set the vis window size each time we render.
+        GetNetMgr()->SetCreateVisWindow(CreateVisWindowCB, this);
 
         GetViewerProperties()->SetNowin(true);
         GetViewerProperties()->SetNoConfig(noconfig);
@@ -2287,4 +2296,44 @@ SimEngine::HandleViewerRPCCallback(Subject *, void *)
             HandleAction(*GetViewerState()->GetViewerRPC());
     }
 }
+
+// ****************************************************************************
+// Method: SimEngineManager::CreateVisWindow
+//
+// Purpose:
+//   This method is called when the sim engine's network manager wants to create
+//   a vis window. From the viewer side of the sim runtime, we 
+//
+// Arguments:
+//   
+//
+// Returns:    
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Mar 16 13:11:55 PDT 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+SimEngine::CreateVisWindowCB(int winID, VisWindow *&viswindow, bool &owns, void *cbdata)
+{
+    SimEngine *s = (SimEngine *)cbdata;
+    s->CreateVisWindow(winID, viswindow, owns);
+}
+
+void
+SimEngine::CreateVisWindow(int winID, VisWindow *&viswindow, bool &owns)
+{
+    debug5 << "SimEngine::CreateVisWindow: winID = " << winID << endl;
+    ViewerWindow *w = ViewerWindowManager::Instance()->GetWindow(winID);
+    if(w != NULL)
+        viswindow = w->GetVisWindow();
+    else
+        viswindow = NULL;
+    owns = false;
+}
+
 #endif

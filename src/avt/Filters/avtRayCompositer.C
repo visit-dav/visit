@@ -521,11 +521,12 @@ avtRayCompositer::Execute(void)
         int restrictedHeight = i / width;
         int realWidth  = restrictedWidth + minWidth;
         int realHeight = restrictedHeight + minHeight;
-        int indexIntoFullData = realHeight*fullWidth + realWidth;
-        for (j = 0 ; j < 3 ; j++)
-        {
-            data[3*i+j] = fulldata[3*indexIntoFullData+j];
-        }
+        int indexIntoFullData = (realHeight*fullWidth + realWidth)*3;
+        int index = i*3;
+
+        data[index]   = fulldata[indexIntoFullData];
+        data[index+1] = fulldata[indexIntoFullData+1];
+        data[index+2] = fulldata[indexIntoFullData+2];
     }
 
     //

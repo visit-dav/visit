@@ -1547,10 +1547,12 @@ EngineRPCExecutor<RenderRPC>::Execute(RenderRPC *rpc)
         }
         else
         {
+            int outImgWidth = 0, outImgHeight = 0;
             bool checkThreshold = true;
             image = netmgr->Render(rpc->GetImageType(), rpc->GetSendZBuffer(),
                         rpc->GetIDs(), checkThreshold,
-                        rpc->GetAnnotMode(), rpc->GetWindowID(), rpc->GetLeftEye());
+                        rpc->GetAnnotMode(), rpc->GetWindowID(), rpc->GetLeftEye(),
+                        outImgWidth, outImgHeight);
         }
 
         avtDataObjectWriter_p writer;

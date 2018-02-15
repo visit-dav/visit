@@ -40,7 +40,7 @@
 #define ICET_NETWORK_MANAGER_H
 
 #include <NetworkManager.h>
-#include <GL/ice-t.h>
+#include <IceT.h>
 #include <engine_main_exports.h>
 
 class Engine;
@@ -92,36 +92,38 @@ class ENGINE_MAIN_API IceTNetworkManager: public NetworkManager
                IceTNetworkManager(void);
     virtual   ~IceTNetworkManager(void);
 
-    void       TileLayout(size_t width, size_t height) const;
-
-    virtual avtDataObject_p Render(avtImageType imgT, bool, intVector networkIds, 
-                                   bool getZBuffer, 
-                                   int annotMode, int windowID, bool leftEye);
-    void       RealRender(); /// OpenGL calls sourced from here
-
-    static Engine *engine_for_render;
-
+    virtual avtDataObject_p Render(avtImageType imgT,
+                                   bool getZBuffer,
+                                   intVector networkIds,
+                                   bool checkThreshold,
+                                   int annotMode,
+                                   int windowID,
+                                   bool leftEye,
+                                   int &outImgWidth,
+                                   int &outImgHeight);
  protected:
+    virtual avtImage_p RenderGeometry();
 
-    virtual
-    avtImage_p         RenderGeometry();
+    void         ShrinkValidPixelsViewport(avtImage_p img, 
+                                           IceTInt valid_pixels_viewport[4]) const;
+    void         BroadcastFinishedImage(avtImage_p img, 
+                                        int ncomps, 
+                                        int width, 
+                                        int height) const;
+    void         CompositeBackground(avtImage_p img, avtImage_p bgImage) const;
+    void         CompositeSolidBackground(avtImage_p img,  
+                                          unsigned char bgColor[3]) const;
+    void         ConvertChannels4to3(avtImage_p img) const;
 
-    /*virtual
-    avtImage_p         RenderTranslucent(int windowID,
-                           const avtImage_p& input);*/
-
-    virtual avtImage_p Readback(VisWindow * const, bool) const;
-
-    virtual void       StopTimer();
-    virtual void       FormatDebugImage(char*, size_t, const char*) const;
+    virtual void StopTimer();
+    virtual void FormatDebugImage(char*, size_t, const char*) const;
 
  private:
-
-    void  VerifyColorFormat() const;
-
- private:
+    bool useIceTRenderGeometry;
+    unsigned int renderings; ///< counts how many renderings we've done.
+    int *compositeOrder;
+    int batonTag;
     IceTCommunicator comm;
     IceTContext context;
-    unsigned int renderings; ///< counts how many renderings we've done.
-};
+ };
 #endif /* ICET_NETWORK_MANAGER_H */

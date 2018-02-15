@@ -456,10 +456,11 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,double *zbuffer)
                     int w = j-restrictedMinWidth;
                     int h = i-restrictedMinHeight;
                     int index = h*fullwidth + w;
+                    int index3 = 3*index;
                     unsigned char rgb[3];
-                    rgb[0] = data[3*index];
-                    rgb[1] = data[3*index+1];
-                    rgb[2] = data[3*index+2];
+                    rgb[0] = data[index3];
+                    rgb[1] = data[index3+1];
+                    rgb[2] = data[index3+2];
 
                     //
                     // Get the value of the ray.
@@ -472,9 +473,9 @@ avtVolume::GetPixels(avtRayFunction *rayfoo,unsigned char *data,double *zbuffer)
                     //
                     // Copy the pixel onto the image.
                     //
-                    data[3*index    ] = rgb[0];
-                    data[3*index + 1] = rgb[1];
-                    data[3*index + 2] = rgb[2];
+                    data[index3    ] = rgb[0];
+                    data[index3 + 1] = rgb[1];
+                    data[index3 + 2] = rgb[2];
                 }
                 if (progressCallback != NULL)
                 {
