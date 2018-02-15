@@ -64,6 +64,8 @@ def TestBigSil():
     s = SubsetAttributes()
     s.legendFlag = 0
     s.wireframe = 1
+    s.colorType = s.ColorBySingleColor
+    s.singleColor = (100,100,100,255)
     SetPlotOptions(s)
 
     SetActivePlots(0)
@@ -122,6 +124,8 @@ def TestGlobalZoneId():
     s = SubsetAttributes()
     s.legendFlag = 0
     s.wireframe = 1
+    s.colorType = s.ColorBySingleColor
+    s.singleColor = (100,100,100,255)
     SetPlotOptions(s)
     AddPlot("Pseudocolor", "dist")
     AddOperator("OnionPeel")

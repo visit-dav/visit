@@ -12,6 +12,7 @@
 #  Modifications:
 #
 # ----------------------------------------------------------------------------
+import time
 
 # Create our simulation object.
 sim = TestSimulation("ucdcurve", "ucdcurve.sim2")
@@ -42,6 +43,7 @@ if connected:
         sim.consolecommand("step")
         # Read from stderr to look for the echoed command.
         buf = sim.p.stderr.readline()
+        time.sleep(1)
     Test("ucdcurve03")
 
     Query("Time")
@@ -52,6 +54,7 @@ if connected:
     for i in range(10):
         sim.consolecommand("step")
         buf = sim.p.stderr.readline()
+        time.sleep(1)
     Test("ucdcurve04")
 
     Query("Time")

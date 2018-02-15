@@ -14,6 +14,7 @@
 #  Modifications:
 #
 # ----------------------------------------------------------------------------
+import time
 
 # Create our simulation object.
 sim = TestSimulation("mandelbrot", "mandelbrot.sim2")
@@ -43,6 +44,7 @@ if connected:
         # Read from stderr to look for the echoed command.
         buf = sim.p.stderr.readline()
         print buf
+        time.sleep(1)
     # Update the data for the new time step.
     sim.consolecommand("update")
     Test("mandelbrot03")

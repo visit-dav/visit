@@ -1408,7 +1408,10 @@ def DiffUsingPIL(case_name, cur, diff, baseline, altbase):
 
 
     # create the difference image
-    diffimg = ImageChops.difference(oldimg, newimg)
+    try:
+        diffimg = ImageChops.difference(oldimg, newimg)
+    except:
+        diffimg = oldimg
     #dstatc = ImageStat.Stat(diffimg) # stats of color image
 
     mdiffimg, dmin, dmax, dmean, dmedian, drms, dstddev, \
