@@ -31,7 +31,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="General_features"></a>
 <p><b><font size="4">General features added in version 3.0</font></b></p>
 <ul>
-  <li></li>
+  <li>VisIt has been enhanced with support for Cinema. Cinema is an image-based database that offers low-cost interaction with simulation data. Images can consist of RGB pixel images and composite images that enable VisIt to bring together multiple plots independently in the Cinema viewer.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -52,8 +52,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="GUI_changes"></a>
 <p><b><font size="4">Changes in GUI behavior for version 3.0</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
+  <li>The <b>Set Save options</b> window has been enhanced with a section that lets the user select which pixel data will be saved when an image is saved. The usual RGB data can be selected as well as alpha, depth, luminance, and value data. When alpha data are requested, VisIt's images will feature a transparent background that simplifies compositing of VisIt-generated images in other tools. Depth information results in a <i>filename.depth.Z</i> file being saved. Luminance information saves a separate image file with gray-scale luminance values. Value images save a 32-bit floating point image with plot scalars; this works with Pseudocolor plots.</li>
+  <li>VisIt can now save images into OpenEXR format via the <b>Set save options</b> window. OpenEXR files save additional precision and let images contain RGBA data and other image data such as depth, value, and luminance.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -62,8 +62,8 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="File_format"></a>
 <p><b><font size="4">File format reader changes in version 3.0</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
+  <li>The Image reader plug-in was extended to expose a <i>depth</i> variable. The depth variable serves up data from the <i>filename.depth.Z</i> file if it exists, enabling depth data to be plotted in addition to color data. A depth file is a zlib-compressed file of 32-bit floating point numbers storing the Z-buffer for the image. The depth file can be requested by selecting depth pixel data in the <b>Set save options</b> window.</li>
+  <li>VisIt has been enhanced with an OpenEXR plugin that can </li>
   <li></li>
   <li></li>
   <li></li>
@@ -134,7 +134,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Changes for VisIt developers in version 3.0</font></b></p>
 <ul>
   <li>VisIt's VTK-m infrastructure has been updated to work with VTK-m 1.1.0. In addition, the VisIt expression infrastructure was enhanced to allow VisIt expressions to be written using VTK-m.</li>
-  <li></li>
+  <li>VisIt has been ported to use the git/master branch of the IceT compositing library.</li>
   <li></li>
   <li></li>
   <li></li>
