@@ -70,7 +70,6 @@
 #include <avtDatabaseMetaData.h>
 #include <avtMaterialMetaData.h>
 #include <avtMetaData.h>
-#include <avtIntervalTree.h>
 
 #include <avtParallelContext.h>
 #include <avtParallel.h>
@@ -97,13 +96,24 @@
 //      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
 //      Added init of scaleFactor. 
 //
+//      Alister Maguire, Wed Feb 14 14:36:02 PST 2018
+//      Added hasMaterials, onlyCellExp, and init of 
+//      datasetExtents. 
+//
 // ****************************************************************************
 
 avtExplodeFilter::avtExplodeFilter()
 {
-    globalMatExtents = NULL;
-    explosion        = NULL;
-    scaleFactor      = 0.0;
+    materialExtents    = NULL;
+    explosions         = NULL;
+    scaleFactor        = 0.0;
+    numExplosions      = 0;
+    hasMaterials       = false;
+    onlyCellExp        = true;
+    for (int i = 0; i < 6; ++i)
+    {
+        datasetExtents[i] = 0.0;
+    }
 }
 
 
@@ -125,13 +135,18 @@ avtExplodeFilter::avtExplodeFilter()
 
 avtExplodeFilter::~avtExplodeFilter()
 {
-    if (explosion != NULL)
+    if (explosions != NULL)
     {
-        delete explosion;
+        for (int i = 0; i < numExplosions; ++i)
+        {
+            if (explosions[i] != NULL)
+                delete explosions[i];
+        }
+        delete [] explosions;
     }
-    if (globalMatExtents != NULL)
+    if (materialExtents != NULL)
     {
-        delete [] globalMatExtents;
+        delete [] materialExtents;
     }
 }
 
@@ -228,7 +243,94 @@ avtExplodeFilter::GetMaterialIndex(std::string matName)
 
 
 // ****************************************************************************
-//  Method: avtExplodeFilter::UpdateGlobalExtents
+//  Method: avtExplodeFilter::UpdateExtentsAcrossProcs
+//
+//  Purpose:
+//      Update the material extents across all processors. 
+//
+//  Arguments:
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Feb  7 10:26:21 PST 2018
+//
+//  Modifications:
+//
+//      Alister Maguire, Wed Feb 14 14:36:02 PST 2018
+//      Added updating of dataset extents. 
+//
+// ****************************************************************************
+
+void
+avtExplodeFilter::UpdateExtentsAcrossProcs()
+{
+    #ifdef PARALLEL
+    if (materialExtents == NULL)
+    {
+        ResetMaterialExtents(true);
+    }
+    
+    int numMat     = atts.GetBoundaryNames().size();
+    int numExtents = numMat * 6;
+    int half       = numExtents / 2;
+
+    double *curMinExtents = new double[half];
+    double *curMaxExtents = new double[half];
+    for (int i = 0; i < half; ++i)
+    {
+        int idx = i*2;
+        curMinExtents[i] = materialExtents[idx];
+        curMaxExtents[i] = materialExtents[idx + 1];
+    }
+ 
+    double *trueMinExtents = new double[half];
+    double *trueMaxExtents = new double[half];
+
+    MPI_Allreduce(&curMinExtents[0], &trueMinExtents[0], half,
+        MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
+    MPI_Allreduce(&curMaxExtents[0], &trueMaxExtents[0], half,
+        MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
+    
+    //
+    // Update the global material extents from across all procs. 
+    //
+    for (int i = 0; i < half; ++i)
+    {
+        int idx = i*2;
+        materialExtents[idx]     = trueMinExtents[i];
+        materialExtents[idx + 1] = trueMaxExtents[i];
+    }
+
+    //
+    // Update the dataset extents from across all procs. 
+    //
+    for (int i = 0; i < numMat; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
+        {
+            int matIdx = i*6 + j*2;
+            int dsIdx  = j*2;
+
+            if (materialExtents[matIdx] < datasetExtents[dsIdx])
+            {
+                datasetExtents[dsIdx] = materialExtents[matIdx];
+            }
+            if (materialExtents[matIdx+1] > datasetExtents[dsIdx+1])
+            {
+                datasetExtents[dsIdx+1] = materialExtents[matIdx+1];
+            }
+        } 
+    }
+
+    delete [] curMinExtents;
+    delete [] curMaxExtents;
+    delete [] trueMinExtents;
+    delete [] trueMaxExtents;
+    #endif
+}
+ 
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::UpdateExtentsAcrossDomains
 //
 //  Purpose:
 //      Update the material extents across all domains. 
@@ -241,22 +343,24 @@ avtExplodeFilter::GetMaterialIndex(std::string matName)
 //  Creation:   Tue Jan  9 10:55:28 PST 2018
 //
 //  Modifications:
+//
 //      Alister Maguire, Mon Jan 22 11:12:47 PST 2018
 //      Added a safety check for globalMatExtents. 
+//
+//      Alister Maguire, Wed Feb 14 14:36:02 PST 2018
+//      Altered safety check to init the extents if 
+//      they are null. Also added a section to update
+//      the dataset extents. 
 //
 // ****************************************************************************
 
 void
-avtExplodeFilter::UpdateGlobalExtents(double *localExtents, std::string matName)
+avtExplodeFilter::UpdateExtentsAcrossDomains(double *localExtents, 
+                                             std::string matName)
 {
-    if (globalMatExtents == NULL)
+    if (materialExtents == NULL)
     {
-        char recieved[256];
-        char expected[256];
-        sprintf(expected, "globalMatExtents to be non-NULL");
-        sprintf(recieved, "NULL globalMatExtents");
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
-        return;
+        ResetMaterialExtents(true);
     }
 
     int matIdx = GetMaterialIndex(matName);
@@ -268,22 +372,107 @@ avtExplodeFilter::UpdateGlobalExtents(double *localExtents, std::string matName)
         return;
     }
 
+    //
+    // Update material extents. 
+    //
     for (int i = 0; i < 3; ++i)
     {
         int gMatIdx = matIdx + (i*2);
         int locIdx  = i*2;
-        if (localExtents[locIdx] < globalMatExtents[gMatIdx])
+        if (localExtents[locIdx] < materialExtents[gMatIdx])
         {
-            globalMatExtents[gMatIdx] = localExtents[locIdx];
+            materialExtents[gMatIdx] = localExtents[locIdx];
         }
 
         gMatIdx += 1;
         locIdx  += 1;
-        if (localExtents[locIdx] > globalMatExtents[gMatIdx])
+        if (localExtents[locIdx] > materialExtents[gMatIdx])
         {
-            globalMatExtents[gMatIdx] = localExtents[locIdx];
+            materialExtents[gMatIdx] = localExtents[locIdx];
         }
     } 
+
+    //
+    // Update dataset extents. 
+    //
+    for (int i = 0; i < 3; ++i)
+    {
+        int idx  = i*2;
+        if (localExtents[idx] < datasetExtents[idx])
+        {
+            datasetExtents[idx] = localExtents[idx];
+        }
+
+        idx  += 1;
+        if (localExtents[idx] > datasetExtents[idx])
+        {
+            datasetExtents[idx] = localExtents[idx];
+        }
+    } 
+}
+
+
+// ****************************************************************************
+//  Method: avtExplodeFilter::ResetMaterialExtents
+//
+//  Purpose:
+//      Reset the materialExtents. 
+//
+//  Arguments:
+//
+//      fullReset    If true, reset all of the material extents. If false, 
+//                   only reset a specified material. 
+//
+//      matIdx       The index to the material to reset when fullReset is 
+//                   false. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Feb 12 15:54:41 PST 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtExplodeFilter::ResetMaterialExtents(bool fullReset, int matIdx)
+{
+    if (!fullReset && (matIdx > 0))
+    {
+        if (materialExtents == NULL)
+        {
+            fullReset = true;
+        }
+        else
+        {
+            for (int j = 0; j < 3; ++j)
+            {
+                int idx = matIdx + (j*2);
+                materialExtents[idx]   = DBL_MAX;
+                materialExtents[idx+1] = DBL_MIN;
+            } 
+        }
+    }
+
+    if (fullReset)
+    {
+        int numMat       = atts.GetBoundaryNames().size();
+        int numExtents   = numMat * 6;
+
+        if (materialExtents == NULL)
+        {
+            materialExtents = new double[numExtents];
+        }
+
+        for (int i = 0; i < numMat; ++i)
+        {
+            for (int j = 0; j < 3; ++j)
+            {
+                int idx = i*6 + j*2;
+                materialExtents[idx]   = DBL_MAX;
+                materialExtents[idx+1] = DBL_MIN;
+            } 
+        }
+    }
 }
 
 
@@ -315,9 +504,9 @@ avtExplodeFilter::UpdateGlobalExtents(double *localExtents, std::string matName)
 
 avtDataTree_p
 avtExplodeFilter::CreateDomainTree(vtkDataSet **dsets,
-                               int numDSets,
-                               std::vector<int> domainIds, 
-                               stringVector labels)
+                                   int numDSets,
+                                   std::vector<int> domainIds, 
+                                   stringVector labels)
 {
     vtkAppendFilter *appendFilter = vtkAppendFilter::New(); 
     std::vector<int> uniqueDomainIds;
@@ -397,10 +586,6 @@ avtExplodeFilter::CreateDomainTree(vtkDataSet **dsets,
    
     avtDataTree_p outTree = NULL;
 
-    //
-    // If we only have one leaf, we need to construct a tree with
-    // a single domain. Otherwise, we construct with a list of domains.  
-    //
     if (numUniqueDomains == 1)
     {
         outTree = new avtDataTree(1, mergedDomains,
@@ -452,12 +637,16 @@ avtDataTree_p
 avtExplodeFilter::ExtractMaterialsFromDomains(avtDataTree_p inTree)
 {
     if (*inTree == NULL)
+    { 
         return NULL;
+    }
 
     int numChildren = inTree->GetNChildren();
 
     if (numChildren <= 0 && !inTree->HasData())
+    {
         return NULL;
+    }
 
     if (numChildren == 0)
     {
@@ -534,7 +723,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
     vtkDataSet *in_ds = in_dr->GetDataVTK();
     int domain        = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
-
+    
     if (in_ds == NULL)
     {
         return NULL;
@@ -591,6 +780,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         int *boundaryList = ((vtkIntArray*)boundaryArray)->GetPointer(0);
         
         vtkAppendFilter *appendFilter = NULL;
+
         if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
         {
             appendFilter = vtkAppendFilter::New();
@@ -678,7 +868,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
             if (boundaryCounts[s] > 0)
             {
                 //
-                // Create a new, fully disconnected, unstructured grid.
+                // Create the unstructured grid.
                 //
                 vtkPoints *pts               = vtkPoints::New();
                 vtkIdList *cellPts           = vtkIdList::New();
@@ -729,7 +919,6 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
                 labels.push_back(selectedBoundaryNames[i]);
                 outDS[nDataSets] = out_ug;
                 nDataSets++;
-
                 if (pts != NULL)
                 {
                     pts->Delete();
@@ -747,13 +936,13 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
                     it->Delete();
                 }
 
-                //
+                // 
                 // Update the extents for this material. 
-                //
+                // 
                 double bounds[6];
                 out_ug->GetBounds(bounds);
                 std::string matName(selectedBoundaryNames[i]);
-                UpdateGlobalExtents(bounds, matName);
+                UpdateExtentsAcrossDomains(bounds, matName);
             }
         }
 
@@ -774,7 +963,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         // a data tree.
         //
         labels.push_back(label);
-        outDS = new vtkDataSet *[1];
+        outDS    = new vtkDataSet *[1];
         outDS[0] = in_ds;
         outDS[0]->Register(NULL);  // This makes it symmetric with the 'if'
                                     // case so we can delete it blindly later.
@@ -784,7 +973,7 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         double bounds[6];
         in_ds->GetBounds(bounds);
         std::string matName(label);
-        UpdateGlobalExtents(bounds, label);
+        UpdateExtentsAcrossDomains(bounds, label);
     }
 
     if (nDataSets == 0)
@@ -810,6 +999,47 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
 
 
 // ****************************************************************************
+//  Method: avtExplodeFilter::ComputeScaleFactor
+//
+//  Purpose:
+//      Compute the scale factor. 
+//
+//  Programmer: Aliseter Maguire
+//  Creation:   Tue Feb 13 13:32:18 PST 2018
+//
+//     Note: this was mostly copied from avtTubeFilter.
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtExplodeFilter::ComputeScaleFactor()
+{
+    //
+    // Calculate the scale factor for this dataset. 
+    //
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    int numReal   = 0;
+    double volume = 1.0;
+    for (int i = 0 ; i < dim ; i++)
+    {
+        if (datasetExtents[2*i] != datasetExtents[2*i+1])
+        {
+            numReal++;
+            volume *= (datasetExtents[2*i+1] - datasetExtents[2*i]);
+        }
+    }
+    if (volume < 0)
+        volume *= -1.;
+    if (numReal > 0)
+        scaleFactor = pow(volume, 1.0/numReal);
+    else
+        scaleFactor = 1;
+}
+
+
+// ****************************************************************************
 //  Method: avtExplodeFilter::PreExecute
 //
 //  Purpose:
@@ -827,123 +1057,163 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
 //      Alister Maguire, Mon Jan 22 11:12:47 PST 2018 
 //      Added calculation of scaleFactor. 
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Refactored for multiple explosions. 
+//
 // ****************************************************************************
 
 void
 avtExplodeFilter::PreExecute(void)
 {
     //
-    // Calculate the scale factor for this dataset. 
-    // Note: this was mostly copied from avtTubeFilter.
+    // Set the initial spatial extents. 
     //
-    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-    double bounds[6];
-    avtIntervalTree *it = GetMetaData()->GetSpatialExtents();
-    if (it != NULL)
-        it->GetExtents(bounds);
-    else
-        GetSpatialExtents(bounds);
-
-    int numReal   = 0;
-    double volume = 1.0;
-    for (int i = 0 ; i < dim ; i++)
-    {
-        if (bounds[2*i] != bounds[2*i+1])
-        {
-            numReal++;
-            volume *= (bounds[2*i+1]-bounds[2*i]);
-        }
-    }
-    if (volume < 0)
-        volume *= -1.;
-    if (numReal > 0)
-        scaleFactor = pow(volume, 1.0/numReal);
-    else
-        scaleFactor = 1;
+    GetSpatialExtents(datasetExtents);
 
     //
     // Initialize the global material extents.
     //
-    if (globalMatExtents != NULL)
+    if (materialExtents != NULL)
     {
-        delete [] globalMatExtents;
+        delete [] materialExtents;
     }
 
-    int numMat       = atts.GetBoundaryNames().size();
-    int numExtents   = numMat * 6;
-    globalMatExtents = new double[numExtents];
-    for (int i = 0; i < numMat; ++i)
+    ResetMaterialExtents(true);
+
+    if (!atts.GetBoundaryNames().empty())
     {
-        for (int j = 0; j < 3; ++j)
+        hasMaterials = true;
+    }
+
+    numExplosions = atts.GetNumExplosions(); 
+
+    if (explosions != NULL)
+    {
+        for (int i = 0; i < numExplosions; ++i)
         {
-            int idx = i*6 + j*2;
-            globalMatExtents[idx]   = FLT_MAX;
-            globalMatExtents[idx+1] = FLT_MIN;
-        } 
-    }
+            delete explosions[i];
+        }
 
-    //
-    // Create the explosion object.
-    //
-    if (explosion != NULL)
-    {
-        delete explosion;
+        delete [] explosions;
     } 
-    
-    switch (atts.GetExplosionType())
+
+    std::vector<ExplodeAttributes> expsAtts;
+
+    //
+    // If the explosion list is empty, we just
+    // use the current attributes as our single
+    // explosion. 
+    //
+    if (numExplosions == 0)
     {
-        case ExplodeAttributes::Point:
+        ExplodeAttributes attsCpy = ExplodeAttributes(atts);
+        expsAtts.push_back(attsCpy);
+        numExplosions++;
+    }
+    else
+    {
+        for (int i = 0; i < atts.GetNumExplosions(); ++i)
         {
-            explosion = new PointExplosion();
-            (dynamic_cast <PointExplosion *> 
-                (explosion))->explosionPoint = atts.GetExplosionPoint();
+            ExplodeAttributes attsCpy = 
+                ExplodeAttributes(atts.GetExplosions(i));
+            expsAtts.push_back(attsCpy);
         }
-        break;
-        case ExplodeAttributes::Plane:
-        {
-            explosion = new PlaneExplosion();
-            (dynamic_cast <PlaneExplosion *> 
-                (explosion))->planePoint = atts.GetPlanePoint();
-            (dynamic_cast <PlaneExplosion *> 
-                (explosion))->planeNorm  = atts.GetPlaneNorm();
-        }
-        break;
-        case ExplodeAttributes::Cylinder:
-        {
-            explosion = new CylinderExplosion();
-            (dynamic_cast <CylinderExplosion *> 
-                (explosion))->cylinderPoint1 = atts.GetCylinderPoint1();
-            (dynamic_cast <CylinderExplosion *> 
-                (explosion))->cylinderPoint2 = atts.GetCylinderPoint2();
-            (dynamic_cast <CylinderExplosion *> 
-                (explosion))->cylinderRadius = atts.GetCylinderRadius();
-        }
-        break;
-        default:
-        {
-            char recieved[256];
-            char expected[256];
-            sprintf(expected, "A known explosion type (0-2)");
-            sprintf(recieved, "%d", atts.GetExplosionType());
-            EXCEPTION2(UnexpectedValueException, expected, recieved);
-            SetOutputDataTree(NULL); 
-        }
-        break;
     }
 
-    explosion->materialName         = atts.GetMaterial();
-    explosion->matExplosionFactor   = atts.GetMaterialExplosionFactor();
-    explosion->explosionPattern     = atts.GetExplosionPattern();
+    explosions = new Explosion *[numExplosions];
 
-    if (atts.GetExplodeMaterialCells() && !atts.GetExplodeAllCells())
+    //
+    // Create the explosions. 
+    //
+    for (int i = 0; i < numExplosions; ++i)
     {
-        explosion->explodeMaterialCells = true;
-        explosion->matExplosionFactor   = atts.GetMaterialExplosionFactor();
-        explosion->cellExplosionFactor  = atts.GetCellExplosionFactor();
-    }
-    else if (atts.GetExplodeAllCells())
-    {
-        explosion->cellExplosionFactor = atts.GetCellExplosionFactor();
+        int explosionType = expsAtts[i].GetExplosionType();
+
+        switch (explosionType)
+        {
+            case ExplodeAttributes::Point:
+            {
+                PointExplosion *pointExp = new PointExplosion();
+                double *expPoint         = expsAtts[i].GetExplosionPoint();
+
+                for (int  j = 0;  j < 3; ++j)
+                {
+                    pointExp->explosionPoint[j] = expPoint[j]; 
+                }
+
+                explosions[i] = pointExp;
+            }
+            break;
+            case ExplodeAttributes::Plane:
+            {
+                PlaneExplosion *planeExp = new PlaneExplosion();
+                double *planePoint       = expsAtts[i].GetPlanePoint();
+                double *planeNorm        = expsAtts[i].GetPlaneNorm();
+
+                for (int  j = 0;  j < 3; ++j)
+                {
+                    planeExp->planePoint[j] = planePoint[j];
+                    planeExp->planeNorm[j]  = planeNorm[j];
+                }
+ 
+                explosions[i] = planeExp;
+            }
+            break;
+            case ExplodeAttributes::Cylinder:
+            {
+                CylinderExplosion *cylExp = new CylinderExplosion();
+                double *cylinderPoint1    = expsAtts[i].GetCylinderPoint1();
+                double *cylinderPoint2    = expsAtts[i].GetCylinderPoint2();
+
+                for (int  j = 0;  j < 3; ++j)
+                {
+                    cylExp->cylinderPoint1[j] = cylinderPoint1[j];
+                    cylExp->cylinderPoint2[j] = cylinderPoint2[j];
+ 
+                }
+
+                cylExp->cylinderRadius = expsAtts[i].GetCylinderRadius();
+                explosions[i]          = cylExp;
+            }
+            break;
+            default:
+            {
+                char recieved[256];
+                char expected[256];
+                int expType = expsAtts[i].GetExplosionType();
+                sprintf(expected, "A known explosion type (0-2)");
+                sprintf(recieved, "%d", expType);
+                EXCEPTION2(UnexpectedValueException, expected, recieved);
+                avtDataTree_p emptyTree = new avtDataTree(); 
+                SetOutputDataTree(emptyTree); 
+                return;
+            }
+            break;
+        }
+
+        explosions[i]->materialName       = expsAtts[i].GetMaterial();
+        explosions[i]->matExplosionFactor = 
+            expsAtts[i].GetMaterialExplosionFactor();
+        explosions[i]->explosionPattern   = expsAtts[i].GetExplosionPattern();
+
+        bool expAllCells = expsAtts[i].GetExplodeAllCells();
+        bool expMatCells = expsAtts[i].GetExplodeMaterialCells();
+        onlyCellExp      = expAllCells && onlyCellExp;
+
+        if (expMatCells && !expAllCells)
+        {
+            explosions[i]->explodeMaterialCells = true;
+            explosions[i]->matExplosionFactor   = 
+                expsAtts[i].GetMaterialExplosionFactor();
+            explosions[i]->cellExplosionFactor  = 
+                expsAtts[i].GetCellExplosionFactor();
+        }
+        else if (expAllCells)
+        {
+            explosions[i]->explodeAllCells     = true; 
+            explosions[i]->cellExplosionFactor = 
+                expsAtts[i].GetCellExplosionFactor();
+        }
     }
 }
 
@@ -972,6 +1242,9 @@ avtExplodeFilter::PreExecute(void)
 //      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
 //      Changed output leaves from data rep to vtk datasets. 
 //
+//      Alister Maguire, Tue Feb 13 14:58:23 PST 2018
+//      Refactored for multiple explosions. 
+//
 // ****************************************************************************
 
 void
@@ -992,18 +1265,23 @@ avtExplodeFilter::Execute(void)
     // worry about materials. Also, if we don't have 
     // any materials, cell explosion is the only option. 
     //
-    if (atts.GetExplodeAllCells() || 
-        atts.GetBoundaryNames().empty())
+    if (!hasMaterials || onlyCellExp)
     {
         int nLeaves;
         vtkDataSet **inLeaves  = inTree->GetAllLeaves(nLeaves);
         vtkDataSet **outLeaves = new vtkDataSet *[nLeaves];
-        
-        for (int i = 0; i < nLeaves; ++i)
+
+        ComputeScaleFactor(); 
+
+        for (int expIdx = 0; expIdx < numExplosions; ++expIdx)
         {
-            vtkUnstructuredGrid *new_leaf = vtkUnstructuredGrid::New();
-            explosion->ExplodeAllCells(inLeaves[i], new_leaf, scaleFactor);
-            outLeaves[i] = (vtkDataSet *)new_leaf;
+            for (int i = 0; i < nLeaves; ++i)
+            {
+                vtkUnstructuredGrid *newLeaf = vtkUnstructuredGrid::New();
+                explosions[expIdx]->ExplodeAllCells(inLeaves[i], 
+                    newLeaf, scaleFactor);
+                outLeaves[i] = (vtkDataSet *)newLeaf;
+            }
         }
 
         avtDataTree_p outTree = NULL;
@@ -1041,49 +1319,18 @@ avtExplodeFilter::Execute(void)
     avtDataTree_p materialTree = 
         ExtractMaterialsFromDomains(inTree);
    
-#ifdef PARALLEL
-
     //
     // If we're in parallel, we need to update 
     // material extents across all processors.
     //
+    #ifdef PARALLEL
     if (PAR_Size() > 1)
     {
-        int numExtents = 6 * atts.GetBoundaryNames().size();
-        int half       = numExtents / 2;
-
-        double *curMinExtents = new double[half];
-        double *curMaxExtents = new double[half];
-        for (int i = 0; i < half; ++i)
-        {
-            int idx = i*2;
-            curMinExtents[i] = globalMatExtents[idx];
-            curMaxExtents[i] = globalMatExtents[idx + 1];
-        }
- 
-        double *trueMinExtents = new double[half];
-        double *trueMaxExtents = new double[half];
-
-        MPI_Allreduce(&curMinExtents[0], &trueMinExtents[0], half,
-            MPI_DOUBLE, MPI_MIN, VISIT_MPI_COMM);
-        MPI_Allreduce(&curMaxExtents[0], &trueMaxExtents[0], half,
-            MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
-        
-        for (int i = 0; i < half; ++i)
-        {
-            int idx = i*2;
-            globalMatExtents[idx]     = trueMinExtents[i];
-            globalMatExtents[idx + 1] = trueMaxExtents[i];
-        }
-        delete [] curMinExtents;
-        delete [] curMaxExtents;
-        delete [] trueMinExtents;
-        delete [] trueMaxExtents;
+        UpdateExtentsAcrossProcs();
     }
+    #endif
 
-#endif
-
-    if (materialTree == NULL)
+    if (*materialTree == NULL)
     {
         debug1 << "ExtractMaterialsFromDomains returned a NULL materialTree..." 
             << endl;
@@ -1093,18 +1340,11 @@ avtExplodeFilter::Execute(void)
 
     int nLeaves;
     stringVector matLabels; 
-    std::vector<int> materialDomains;
-    materialTree->GetAllDomainIds(materialDomains);
+    std::vector<int> matDomains;
+    materialTree->GetAllDomainIds(matDomains);
     materialTree->GetAllLabels(matLabels);
     vtkDataSet **matLeaves = materialTree->GetAllLeaves(nLeaves);
 
-    if (nLeaves == 0)
-    {
-        delete [] matLeaves;
-        SetOutputDataTree(materialTree); 
-        return;
-    }
-        
     if (matLabels.size() < nLeaves)
     {
         char expected[256];
@@ -1118,48 +1358,129 @@ avtExplodeFilter::Execute(void)
         return;
     }
 
-    //
-    // Look for the material that has been selected for
-    // explosion, and blow it up. 
-    //
+    bool materialsExploded[nLeaves];
     for (int i = 0; i < nLeaves; ++i)
+        materialsExploded[i] = 0;
+
+    //
+    // Iterate through all explosions. 
+    //
+    for (int expIdx = 0; expIdx < numExplosions; ++expIdx)
     {
-        
-        if ( explosion->materialName == matLabels[i] )
+        //
+        // Look for the material that has been selected for
+        // explosion, and blow it up. 
+        //
+        for (int i = 0; i < nLeaves; ++i)
         {
-            double matExtents[6]; 
-            int matIdx = GetMaterialIndex(matLabels[i]);
-  
-            if (matIdx < 0)
+            if (explosions[expIdx]->explodeAllCells)
             {
-                SetOutputDataTree(NULL); 
-                return;
+                ComputeScaleFactor();
+
+                vtkUnstructuredGrid *newLeaf = 
+                    vtkUnstructuredGrid::New();
+                explosions[expIdx]->ExplodeAllCells(
+                    (vtkUnstructuredGrid *)matLeaves[i], 
+                    newLeaf, 
+                    scaleFactor);
+
+                //TODO: is there a cleaner way to do this?
+                ((vtkUnstructuredGrid *)matLeaves[i])->Reset();
+                ((vtkUnstructuredGrid *)matLeaves[i])->DeepCopy(newLeaf);
+                newLeaf->Delete();
+
+                materialsExploded[i] = 1;
+            }                    
+
+            else if (explosions[expIdx]->materialName == matLabels[i])
+            {
+                double matExtents[6]; 
+                int matIdx = GetMaterialIndex(matLabels[i]);
+  
+                if (matIdx < 0)
+                {
+                    SetOutputDataTree(materialTree); 
+                    return;
+                }
+
+                for (int j = 0; j < 6; ++j)
+                {
+                    matExtents[j] = materialExtents[matIdx + j];
+                }
+ 
+                ComputeScaleFactor();
+
+                if (explosions[expIdx]->explodeMaterialCells)
+                {
+                    explosions[expIdx]->ExplodeAndDisplaceMaterial(
+                        (vtkUnstructuredGrid *)matLeaves[i], 
+                        matExtents, 
+                        scaleFactor);
+                }
+                else
+                {
+                    explosions[expIdx]->DisplaceMaterial(
+                        (vtkUnstructuredGrid *)matLeaves[i], 
+                        matExtents, 
+                        scaleFactor);
+                }
+
+                double bounds[6];
+                matLeaves[i]->GetBounds(bounds);
+
+                materialsExploded[i] = 1;
+            }
+        }
+
+        //
+        // If we have multiple explosions, we need
+        // to update the extents each time. 
+        //
+        if ( (expIdx + 1) < numExplosions)
+        {
+            for (int i = 0; i < nLeaves; ++i)
+            {
+                //
+                // We only need to update for materials that
+                // have been exploded. 
+                //
+                if (materialsExploded[i])
+                {
+                    int matIdx = GetMaterialIndex(matLabels[i]);
+                    ResetMaterialExtents(false, matIdx);
+
+                    double bounds[6];
+                    matLeaves[i]->GetBounds(bounds);
+                    std::string matName(matLabels[i]);
+                    UpdateExtentsAcrossDomains(bounds, matName);
+                }
             }
 
-            for (int j = 0; j < 6; ++j)
+            #ifdef PARALLEL
+            if (PAR_Size() > 1)
             {
-                matExtents[j] = globalMatExtents[matIdx + j];
+                UpdateExtentsAcrossProcs();
             }
-                
-            if (explosion->explodeMaterialCells)
-            {
-                explosion->ExplodeAndDisplaceMaterial(
-                    (vtkUnstructuredGrid *)matLeaves[i], 
-                    matExtents, 
-                    scaleFactor);
-            }
-            else
-            {
-                explosion->DisplaceMaterial(
-                    (vtkUnstructuredGrid *)matLeaves[i],
-                    matExtents, 
-                    scaleFactor);
-            }
+            #endif
         }
     }
 
+    //
+    // Note: when in parallel, we cannot safely return until
+    //       we reach this point. 
+    //
+    if (nLeaves == 0)
+    {
+        if (matLeaves != NULL)
+        {
+            delete [] matLeaves;
+        }
+        SetOutputDataTree(materialTree); 
+        return;
+    }
+
     avtDataTree_p outTree = CreateDomainTree(matLeaves, nLeaves, 
-        materialDomains, inLabels);
+        matDomains, inLabels);
 
     //
     // Clean up memory.
@@ -1397,7 +1718,9 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
 {
     double dataCenter[3];
     for (int i = 0; i < 3; ++i)
+    {
         dataCenter[i] = (matExtents[i*2] + matExtents[(i*2)+1]) / 2.0;
+    }
 
     int numPoints        = ugrid->GetNumberOfPoints();
     vtkPoints *ugridPts  = ugrid->GetPoints();
@@ -1680,11 +2003,17 @@ Explosion::ScaleExplosion(double expFactor,
 //      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
 //      Added explosionPoint. 
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed pointers to lists. 
+//
 // ****************************************************************************
 
 PointExplosion::PointExplosion() 
 {
-    explosionPoint = NULL;
+    for (int i = 0; i < 3; ++i)
+    {
+        explosionPoint[i] = 0.0;
+    }
 }
 
 
@@ -1725,16 +2054,6 @@ void
 PointExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
                                  double scaleFactor, bool normalize)
 {
-    if (explosionPoint == NULL)
-    {
-        char recieved[256];
-        char expected[256];
-        sprintf(expected, "explosionPoint to be non-NULL");
-        sprintf(recieved, "NULL explosionPoint");
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
-        return;
-    }
-
     //
     //  Find the distance between the data center and the
     //  explosion point.
@@ -1762,12 +2081,18 @@ PointExplosion::CalcDisplacement(double *dataCenter, double expFactor,
 //      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
 //      Added planePoint and planeNorm. 
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed pointers to lists. 
+//
 // ****************************************************************************
 
 PlaneExplosion::PlaneExplosion() 
 {
-    planePoint = NULL;
-    planeNorm  = NULL;
+    for (int i = 0; i < 3; ++i)
+    {
+        planePoint[i] = 0.0;
+        planeNorm[i]  = 0.0;
+    }
 }
 
 
@@ -1808,25 +2133,6 @@ void
 PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
                                  double scaleFactor, bool normalize)
 {
-    if (planePoint == NULL)
-    {
-        char recieved[256];
-        char expected[256];
-        sprintf(expected, "planePoint to be non-NULL");
-        sprintf(recieved, "NULL planePoint");
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
-        return;
-    }
-    else if (planeNorm == NULL)
-    {
-        char recieved[256];
-        char expected[256];
-        sprintf(expected, "planeNorm to be non-NULL");
-        sprintf(recieved, "NULL planeNorm");
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
-        return;
-    }
-
     //
     // Project from our data center onto a plane. 
     //
@@ -1864,12 +2170,18 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor,
 //      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
 //      Added cylinderPoint1, cylinderPoint2, and cylinderRadius. 
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed pointers to lists. 
+//
 // ****************************************************************************
 
 CylinderExplosion::CylinderExplosion() 
 {
-    cylinderPoint1 = NULL;
-    cylinderPoint2 = NULL;
+    for (int i = 0; i < 3; ++i)
+    {
+        cylinderPoint1[i] = 0.0;
+        cylinderPoint2[i] = 0.0;
+    }
     cylinderRadius = 0.0;
 }
 
@@ -1913,25 +2225,6 @@ void
 CylinderExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
                                     double scaleFactor, bool normalize)
 {
-    if (cylinderPoint1 == NULL)
-    {
-        char recieved[256];
-        char expected[256];
-        sprintf(expected, "cylinderPoint1 to be non-NULL");
-        sprintf(recieved, "NULL cylinderPoint1");
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
-        return;
-    }
-    else if (cylinderPoint2 == NULL)
-    {
-        char recieved[256];
-        char expected[256];
-        sprintf(expected, "cylinderPoint2 to be non-NULL");
-        sprintf(recieved, "NULL cylinderPoint2");
-        EXCEPTION2(UnexpectedValueException, expected, recieved);
-        return;
-    }
-
     //
     // Project from our data center to the line which runs 
     // through the center of our cylinder. 

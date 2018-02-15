@@ -75,6 +75,15 @@ class Explosion;
 //      Alister Maguire, Mon Jan 29 10:12:44 PST 2018
 //      Added MergeDomains().
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed MergeDomains to CreateDomainTree, made
+//      explosions a double pointer, and added numExplosions. 
+//
+//      Alister Maguire, Wed Feb 14 14:36:02 PST 2018
+//      Added datasetExtents, hasMaterials, onlyCellExp, 
+//      ResetMaterialExtents, ComputeScaleFactor,
+//      and changed globalMatExtents to materialExtents. 
+//
 // ****************************************************************************
 
 class avtExplodeFilter : public avtDatasetToDatasetFilter,
@@ -104,7 +113,8 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
     virtual avtContract_p          ModifyContract(avtContract_p);
     virtual void                   UpdateDataObjectInfo(void);
 
-    void                           UpdateGlobalExtents(double *, std::string);
+    void                           UpdateExtentsAcrossDomains(double *, std::string);
+    void                           UpdateExtentsAcrossProcs();
     int                            GetMaterialIndex(std::string);
     avtDataTree_p                  GetMaterialSubsets(avtDataRepresentation *);
     avtDataTree_p                  ExtractMaterialsFromDomains(avtDataTree_p);
@@ -112,12 +122,18 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
                                                     int,
                                                     std::vector<int>, 
                                                     stringVector);
+    void                           ResetMaterialExtents(bool, int matIdx=-1);
+    void                           ComputeScaleFactor();
 
     ExplodeAttributes              atts;
-    
-    Explosion                     *explosion;
-    double                        *globalMatExtents;
+    Explosion                    **explosions;
+    double                        *materialExtents;
     double                         scaleFactor;
+    double                         datasetExtents[6];
+    int                            numExplosions;
+    bool                           hasMaterials;
+    bool                           onlyCellExp;
+    
 };
 
 
@@ -182,6 +198,9 @@ class Explosion
 //      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
 //      Added explosionPoint. 
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed pointers to lists. 
+//
 // ****************************************************************************
 
 class PointExplosion : virtual public Explosion
@@ -192,7 +211,7 @@ class PointExplosion : virtual public Explosion
     virtual void      CalcDisplacement(double *, double, 
                                        double, bool);
 
-    double           *explosionPoint;
+    double            explosionPoint[3];
 };
 
 
@@ -209,6 +228,9 @@ class PointExplosion : virtual public Explosion
 //      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
 //      Added planePoint and planeNorm.
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed pointers to lists. 
+//
 // ****************************************************************************
 
 class PlaneExplosion : virtual public Explosion
@@ -219,8 +241,8 @@ class PlaneExplosion : virtual public Explosion
     virtual void      CalcDisplacement(double *, double, 
                                        double, bool);
 
-    double           *planePoint;
-    double           *planeNorm;
+    double            planePoint[3];
+    double            planeNorm[3];
 };
 
 
@@ -237,6 +259,9 @@ class PlaneExplosion : virtual public Explosion
 //      Alister Maguire, Mon Jan 22 09:38:39 PST 2018
 //      Added cylinderPoint1, cylinderPoint2, and cylinderRadius. 
 //
+//      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
+//      Changed pointers to lists. 
+//
 // ****************************************************************************
 
 class CylinderExplosion : virtual public Explosion
@@ -247,8 +272,8 @@ class CylinderExplosion : virtual public Explosion
     virtual void      CalcDisplacement(double *, double, 
                                        double, bool);
 
-    double           *cylinderPoint1;
-    double           *cylinderPoint2;
+    double            cylinderPoint1[3];
+    double            cylinderPoint2[3];
     double            cylinderRadius;
 };
 
