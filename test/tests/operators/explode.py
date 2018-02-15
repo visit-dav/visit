@@ -21,6 +21,10 @@
 #      Alister Maguire, Mon Jan 22 11:00:51 PST 2018
 #      Changed explosion factors to account of scale update. 
 #
+#      Alister Maguire, Wed Feb 14 16:07:51 PST 2018
+#      Updated tests with multiple explosions to be perfomed
+#      by a single operator.   
+#
 # ----------------------------------------------------------------------------
 
 
@@ -49,66 +53,69 @@ def unstructured_explosions():
     View3DAtts.shear = (0, 0, 1)
     View3DAtts.windowValid = 1
     SetView3D(View3DAtts)
+
+    AddOperator("Explode")
+    mainAtts = ExplodeAttributes()
     
     # Explode one material by a plane
-    AddOperator("Explode")
-    ExplodeAtts = ExplodeAttributes()
-    ExplodeAtts.explosionType = ExplodeAtts.Plane 
-    ExplodeAtts.planePoint = (0, 0, 0)
-    ExplodeAtts.planeNorm = (1, 0, 0)
-    ExplodeAtts.materialExplosionFactor = 1
-    ExplodeAtts.material = "4"
-    ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = .8
-    ExplodeAtts.explosionPattern = ExplodeAtts.Impact 
-    SetOperatorOptions(ExplodeAtts, 1)
+    atts1 = ExplodeAttributes()
+    atts1.explosionType = atts1.Plane 
+    atts1.planePoint = (0, 0, 0)
+    atts1.planeNorm = (1, 0, 0)
+    atts1.materialExplosionFactor = 1
+    atts1.material = "4"
+    atts1.explodeMaterialCells = 1
+    atts1.cellExplosionFactor = .8
+    atts1.explosionPattern = atts1.Impact 
+    mainAtts.AddExplosions(atts1)
+    SetOperatorOptions(mainAtts, 1)
     DrawPlots()
     
     Test("explode_globe_00")
     
     # Explode second material by plane
-    AddOperator("Explode")
-    ExplodeAtts = ExplodeAttributes()
-    ExplodeAtts.explosionType = ExplodeAtts.Plane  
-    ExplodeAtts.planePoint = (0, 0, 0)
-    ExplodeAtts.planeNorm = (0, 0, 1)
-    ExplodeAtts.materialExplosionFactor = 1
-    ExplodeAtts.material = "3"
-    ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = .8
-    ExplodeAtts.explosionPattern = ExplodeAtts.Impact  
-    SetOperatorOptions(ExplodeAtts, 1)
+    atts2 = ExplodeAttributes()
+    atts2.explosionType = atts2.Plane  
+    atts2.planePoint = (0, 0, 0)
+    atts2.planeNorm = (0, 0, 1)
+    atts2.materialExplosionFactor = 1
+    atts2.material = "3"
+    atts2.explodeMaterialCells = 1
+    atts2.cellExplosionFactor = .8
+    atts2.explosionPattern = atts2.Impact  
+    mainAtts.AddExplosions(atts2)
+    SetOperatorOptions(mainAtts, 1)
     DrawPlots()
 
     Test("explode_globe_01")
     
     # Explode third material by plane
-    AddOperator("Explode")
-    ExplodeAtts = ExplodeAttributes()
-    ExplodeAtts.explosionType = ExplodeAtts.Plane  
-    ExplodeAtts.planePoint = (0, 0, 0)
-    ExplodeAtts.planeNorm = (0, 0, 1)
-    ExplodeAtts.materialExplosionFactor = 1
-    ExplodeAtts.material = "1"
-    ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = .3
-    ExplodeAtts.explosionPattern = ExplodeAtts.Impact  
-    SetOperatorOptions(ExplodeAtts, 2)
+    atts3 = ExplodeAttributes()
+    atts3.explosionType = atts3.Plane  
+    atts3.planePoint = (0, 0, 0)
+    atts3.planeNorm = (0, 0, 1)
+    atts3.materialExplosionFactor = 1
+    atts3.material = "1"
+    atts3.explodeMaterialCells = 1
+    atts3.cellExplosionFactor = .3
+    atts3.explosionPattern = atts3.Impact  
+    mainAtts.AddExplosions(atts3)
+    SetOperatorOptions(mainAtts, 1)
     DrawPlots()
     
     Test("explode_globe_02")
     
     # Explode material by point
-    AddOperator("Explode")
-    ExplodeAtts = ExplodeAttributes()
-    ExplodeAtts.explosionType = ExplodeAtts.Point  
-    ExplodeAtts.explosionPoint = (0, 0, 0)
-    ExplodeAtts.materialExplosionFactor = 1
-    ExplodeAtts.material = "2"
-    ExplodeAtts.explodeMaterialCells = 1
-    ExplodeAtts.cellExplosionFactor = .1
-    ExplodeAtts.explosionPattern = ExplodeAtts.Impact  # Impact, Scatter
-    SetOperatorOptions(ExplodeAtts, 3)
+    atts4 = ExplodeAttributes()
+    atts4.explosionType = atts4.Point  
+    atts4.explosionPoint = (0, 0, 0)
+    atts4.materialExplosionFactor = 1
+    atts4.material = "2"
+    atts4.explodeMaterialCells = 1
+    atts4.cellExplosionFactor = .1
+    atts4.explosionPattern = atts4.Impact  # Impact, Scatter
+    mainAtts.AddExplosions(atts4)
+    SetOperatorOptions(mainAtts, 1)
     DrawPlots()
     Test("explode_globe_03")
     
@@ -264,20 +271,22 @@ def rectilinear_explosions():
     RecenterView()
 
     AddOperator("Explode")
-    expAtts = ExplodeAttributes()
-    expAtts.explosionPoint = (1, 0, 0)
-    expAtts.materialExplosionFactor = 2
-    expAtts.material = "7"
-    SetOperatorOptions(expAtts, 1)
+    mainAtts = ExplodeAttributes()
     DrawPlots()
 
-    AddOperator("Explode")
-    expAtts = ExplodeAttributes()
-    expAtts.explosionPoint = (0, 0, 1)
-    expAtts.materialExplosionFactor = 2
-    expAtts.material = "5"
-    SetOperatorOptions(expAtts, 1)
-    DrawPlots()
+    atts1 = ExplodeAttributes()
+    atts1.explosionPoint = (1, 0, 0)
+    atts1.materialExplosionFactor = 2
+    atts1.material = "7"
+    mainAtts.AddExplosions(atts1)
+    SetOperatorOptions(mainAtts, 1)
+
+    atts2 = ExplodeAttributes()
+    atts2.explosionPoint = (0, 0, 1)
+    atts2.materialExplosionFactor = 2
+    atts2.material = "5"
+    mainAtts.AddExplosions(atts2)
+    SetOperatorOptions(mainAtts, 1)
 
     Test("explode_rect3d_00")
 
@@ -292,20 +301,22 @@ def multi_rectilinear_explosions():
     RecenterView()
 
     AddOperator("Explode")
-    expAtts = ExplodeAttributes()
-    expAtts.explosionPoint = (1, 0, 0)
-    expAtts.materialExplosionFactor = 2
-    expAtts.material = "2"
-    SetOperatorOptions(expAtts, 1)
     DrawPlots()
+    mainAtts = ExplodeAttributes()
 
-    AddOperator("Explode")
-    expAtts = ExplodeAttributes()
-    expAtts.explosionPoint = (0, 0, 1)
-    expAtts.materialExplosionFactor = 2
-    expAtts.material = "3"
-    SetOperatorOptions(expAtts, 1)
-    DrawPlots()
+    atts1 = ExplodeAttributes()
+    atts1.explosionPoint = (1, 0, 0)
+    atts1.materialExplosionFactor = 2
+    atts1.material = "2"
+    mainAtts.AddExplosions(atts1)
+    SetOperatorOptions(mainAtts, 1)
+
+    atts2 = ExplodeAttributes()
+    atts2.explosionPoint = (0, 0, 1)
+    atts2.materialExplosionFactor = 2
+    atts2.material = "3"
+    mainAtts.AddExplosions(atts2)
+    SetOperatorOptions(mainAtts, 1)
 
     Test("explode_multi_rect3d_00")
 
@@ -339,40 +350,43 @@ def multi_tire():
     View3DAtts.windowValid = 1
     SetView3D(View3DAtts)
 
+    
+    AddOperator("Explode")
+    DrawPlots()
+    mainAtts = ExplodeAttributes()
+
     # If domains are being treated correctly, this
     # should not produce an explosion. 
-    AddOperator("Explode")
-    expAtts = ExplodeAttributes()
-    expAtts.materialExplosionFactor = 500
-    expAtts.material = "1 Rubber"
-    SetOperatorOptions(expAtts, 1)
-    DrawPlots()
+    atts1 = ExplodeAttributes()
+    atts1.materialExplosionFactor = 500
+    atts1.material = "1 Rubber"
+    mainAtts.AddExplosions(atts1)
+    SetOperatorOptions(mainAtts, 1)
 
     Test("explode_tire_00")
 
-    expAtts = ExplodeAttributes()
-    expAtts.materialExplosionFactor = 0
-    expAtts.explodeMaterialCells = 1
-    expAtts.cellExplosionFactor = 1
-    expAtts.explosionType = expAtts.Plane 
-    expAtts.planePoint = (0, 0, 0)
-    expAtts.planeNorm = (0, 1, 0)
-    expAtts.material = "1 Rubber"
-    SetOperatorOptions(expAtts, 1)
-    DrawPlots()
+    atts2 = ExplodeAttributes()
+    atts2.materialExplosionFactor = 0
+    atts2.explodeMaterialCells = 1
+    atts2.cellExplosionFactor = 1
+    atts2.explosionType = atts2.Plane 
+    atts2.planePoint = (0, 0, 0)
+    atts2.planeNorm = (0, 1, 0)
+    atts2.material = "1 Rubber"
+    mainAtts.AddExplosions(atts2)
+    SetOperatorOptions(mainAtts, 1)
 
     Test("explode_tire_01")
 
-    AddOperator("Explode")
-    expAtts = ExplodeAttributes()
-    expAtts.materialExplosionFactor = 1
-    expAtts.explodeMaterialCells = 0
-    expAtts.cellExplosionFactor = 0
-    expAtts.explosionType = expAtts.Point 
-    expAtts.explosionPoint = (0, 0, 60)
-    expAtts.material = "2 Steel"
-    SetOperatorOptions(expAtts, 1)
-    DrawPlots()
+    atts3 = ExplodeAttributes()
+    atts3.materialExplosionFactor = 1
+    atts3.explodeMaterialCells = 0
+    atts3.cellExplosionFactor = 0
+    atts3.explosionType = atts3.Point 
+    atts3.explosionPoint = (0, 0, 60)
+    atts3.material = "2 Steel"
+    mainAtts.AddExplosions(atts3)
+    SetOperatorOptions(mainAtts, 1)
 
     Test("explode_tire_02")
     ResetView()
