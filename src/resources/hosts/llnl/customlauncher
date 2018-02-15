@@ -24,6 +24,25 @@ class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
         self.usettc = self.sectorname() in ("agate", "borax", "rzalastor")
         self.useppn = (self.sectorname() == "graph") or (self.sectorname() == "tr-fe")
 
+###############################################################################
+# Class: JobSubmitter_mpirun_LLNL
+#
+# Purpose:    Custom "mpirun" job submitter for LLNL.
+#
+# Programmer: Eric Brugger
+# Date:       Thu Feb 15 09:38:48 PST 2018
+#
+###############################################################################
+
+class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
+    def __init__(self, launcher):
+        super(JobSubmitter_mpirun_LLNL, self).__init__(launcher)
+
+    def Executable(self):
+        if self.sectorname() in ("quartz", "borax"):
+            return ["/usr/tce/packages/openmpi/openmpi-2.1.0-gcc-4.9.3/bin/mpirun"]
+        return super(JobSubmitter_mpirun_LLNL, self).Executable()
+
 
 ###############################################################################
 # Class: LLNLLauncher
@@ -143,6 +162,8 @@ class LLNLLauncher(MainLauncher):
     def JobSubmitterFactory(self, launch):
         if launch[:4] == "qsub" or launch[:4] == "msub":
             return JobSubmitter_qsub_LLNL(self)
+        if launch[:6] == "mpirun":
+            return JobSubmitter_mpirun_LLNL(self)
         return super(LLNLLauncher, self).JobSubmitterFactory(launch)
 
 # Launcher creation function
