@@ -522,8 +522,8 @@ avtSliceFilter::ModifyContract(avtContract_p contract)
     {
         avtSpatialBoxSelection *sel = new avtSpatialBoxSelection;
         sel->SetInclusionMode(avtSpatialBoxSelection::Partial);
-        double origin[3];
-        double mins[3], maxs[3];
+        double origin[3] = {0., 0., 0.};
+        double mins[3] = {0., 0., 0.}, maxs[3] = {0., 0., 0.};
         GetOrigin(origin[0], origin[1], origin[2]);
         if (atts.GetAxisType() == SliceAttributes::XAxis)
         {
@@ -578,7 +578,7 @@ avtSliceFilter::ModifyContract(avtContract_p contract)
     {
         double normal[3]
              = {cachedNormal[0], cachedNormal[1], cachedNormal[2]};
-        double origin[3];
+        double origin[3] = {0., 0., 0.};
         if (atts.GetOriginType() == SliceAttributes::Percent)
         {
             double percent = atts.GetOriginPercent() / 100.;
@@ -962,7 +962,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
       }
       case SliceAttributes::Percent:
       {
-          double bounds[6];
+          double bounds[6] = {0.,0.,0.,0.,0.,0.};
           double percent = atts.GetOriginPercent() / 100.;
           GetSpatialExtents(bounds);
           ox = (bounds[1] - bounds[0])*percent + bounds[0];
@@ -993,7 +993,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           //  return the same results.  In case they don't (e.g. one proc
           //  failed for some reason), Unify the results.
           //
-          double buff[6];
+          double buff[6] = {0.,0.,0.,0.,0.,0.};
           if (success)
           {
               buff[0] = point[0];
@@ -1054,7 +1054,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
           bool success = src->QueryCoords(var, domain, node, ts, point, false,
                          false, atts.GetMeshName().c_str());
 
-          double buff[6];
+          double buff[6] = {0.,0.,0.,0.,0.,0.};
           if (success)
           {
               buff[0] = point[0];
@@ -2109,7 +2109,7 @@ avtSliceFilter::UpdateDataObjectInfo(void)
 
     // Add some metadata that we can use later.
     char tmpstr[200];
-    double ox, oy, oz;
+    double ox = 0., oy = 0., oz = 0.;
     GetOrigin(ox, oy, oz);
     SNPRINTF(tmpstr, 200, ", origin=%lg,%lg,%lg", ox, oy, oz);
     std::string originStr(tmpstr);
