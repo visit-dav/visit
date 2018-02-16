@@ -34,7 +34,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt has been enhanced with support for Cinema. Cinema is an image-based database that offers low-cost interaction with simulation data. Images can consist of RGB pixel images and composite images that enable VisIt to bring together multiple plots independently in the Cinema viewer.</li>
   <li></li>
   <li></li>
-  <li></li>
+  <li>The CLI now provides a <i>DatabasePlugins()</i> function that returns a dictionary containing a tuple of the available database plugins for a host. </li>
   <li>VisIt has been enhanced so plots can provide custom animation behaviors. These behaviors are plot-specific and are independent of the time slider animation controls. For example, the Vector plot can alter the length of its glyphs periodically lengthening and shortening them. Plot animation is enabled for the Curve and Vector plugins and can be activated by right-clicking on a plot in the Main window's plot list area and selecting <b>Animate</b> from the context menu. Note, this features work best for plots and data that can be rendered quickly.</li>
   <li>Some of VisIt's expressions can be built with support for OpenMP, letting them parallelize over multiple threads. This is available when passing <i>-fopenmp</i> to the C++ compiler when building VisIt. The observed speedups are between 2x and 10x when using the serial compute engine. These expressions are enhanced with OpenMP support:
       <ul>

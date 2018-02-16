@@ -63,6 +63,7 @@ extern const char *visit_Copy_doc;
 extern const char *visit_CreateAnnotationObject_doc;
 extern const char *visit_CreateDatabaseCorrelation_doc;
 extern const char *visit_CreateNamedSelection_doc;
+extern const char *visit_DatabasePlugins_doc;
 extern const char *visit_DeIconifyAllWindows_doc;
 extern const char *visit_DebugLevel_doc;
 extern const char *visit_DefineExpression_doc;

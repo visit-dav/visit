@@ -6465,6 +6465,69 @@ visit_GetExportOptions(PyObject *self, PyObject *args)
 }
 
 // ****************************************************************************
+// Method: visit_DatabasePlugins
+//
+// Purpose:
+//   Gets the list of database plugins for a host.
+//
+// Programmer: Brad Whitlock
+// Creation:   Fri Feb 16 10:14:44 PST 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+STATIC PyObject *
+visit_DatabasePlugins(PyObject *self, PyObject *args)
+{
+    ENSURE_VIEWER_EXISTS();
+
+    char *host = NULL;
+    // Try and get the export attributes and database options.
+    if(!PyArg_ParseTuple(args,"s",&host))
+    {
+        PyErr_Clear();
+    }
+
+    // Get a pointer to the atts.
+    DBPluginInfoAttributes *dbplugininfo =
+                        GetViewerState()->GetDBPluginInfoAttributes();
+
+    // Open an mdserver if host was not empty or it does not look like
+    // we have an mdserver.
+    std::string hostStr((host == NULL) ? "localhost" : host);
+    if(host != NULL || dbplugininfo->GetHost().empty())
+    {
+        PyObject *hargs = PyTuple_New(1);
+        PyTuple_SET_ITEM(hargs, 0, PyString_FromString(hostStr.c_str()));
+        PyObject *ret = visit_OpenMDServer(self, hargs);
+        Py_DECREF(hargs);
+        if(ret == NULL)
+            return NULL;
+        Py_DECREF(ret);
+    }
+
+    MUTEX_LOCK();
+        GetViewerMethods()->UpdateDBPluginInfo(hostStr);
+    MUTEX_UNLOCK();
+
+    const stringVector &types = dbplugininfo->GetTypes();
+    PyObject *plugins = PyTuple_New(types.size());
+    for(int i = 0; i < types.size(); ++i)
+    {
+        PyObject *dval = PyString_FromString(types[i].c_str());
+        if(dval == NULL)
+            continue;
+        PyTuple_SET_ITEM(plugins, i, dval);
+    }
+    PyObject *dict = PyDict_New();
+    PyDict_SetItemString(dict,"host",PyString_FromString(dbplugininfo->GetHost().c_str()));
+    PyDict_SetItemString(dict,"plugins",plugins);
+
+    return dict;
+}
+
+// ****************************************************************************
 //  Method:  visit_GetDefaultFileOpenOptions
 //
 //  Purpose:
@@ -17556,6 +17619,8 @@ AddProxyMethods()
                                           visit_CreateDatabaseCorrelation_doc);
     AddMethod("CreateNamedSelection", visit_CreateNamedSelection,
                                            visit_CreateNamedSelection_doc);
+    AddMethod("DatabasePlugins", visit_DatabasePlugins,
+                                               visit_DatabasePlugins_doc);
     AddMethod("DefineArrayExpression", visit_DefineArrayExpression,
                                                visit_DefineExpression_doc);
     AddMethod("DefineCurveExpression", visit_DefineCurveExpression,
