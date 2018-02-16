@@ -61,6 +61,7 @@
 #    Added TestPickRangeTimeQuery
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
 def InitAnnotation():
     # Turn off most annotations

@@ -32,6 +32,7 @@
 #    Removed pjoin so that tests can run on Windows.
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("NETCDF")
 
 def test0():
     TestSection("ADAPT files")

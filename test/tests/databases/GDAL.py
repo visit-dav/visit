@@ -12,6 +12,7 @@
 #  Modifications:
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("GDAL")
 
 def test0_and_1(db, prefix):
     OpenDatabase(db)

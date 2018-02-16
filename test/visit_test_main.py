@@ -2002,6 +2002,57 @@ def Exit(excode=0):
     sys.exit(rcode)
 
 # ----------------------------------------------------------------------------
+# Function: RequiredPlotPlugin
+#
+# ----------------------------------------------------------------------------
+def RequiredPlotPlugin(name):
+    """
+    Checks that the specified plot plugins are available and exits if not.
+    """
+    P = PlotPlugins()
+    if type(name) is tuple or type(name) is list:
+        for n in name:
+            if n not in P:
+                Exit(122)
+    else:
+        if name not in P:
+            Exit(122)
+
+# ----------------------------------------------------------------------------
+# Function: RequiredOperatorPlugin
+#
+# ----------------------------------------------------------------------------
+def RequiredOperatorPlugin(name):
+    """
+    Checks that the specified operator plugins are available and exits if not.
+    """
+    P = OperatorPlugins()
+    if type(name) is tuple or type(name) is list:
+        for n in name:
+            if n not in P:
+                Exit(123)
+    else:
+        if name not in P:
+            Exit(123)
+
+# ----------------------------------------------------------------------------
+# Function: RequiredDatabasePlugin
+#
+# ----------------------------------------------------------------------------
+def RequiredDatabasePlugin(name):
+    """
+    Checks that the specified database plugins are available and exits if not.
+    """
+    P = DatabasePlugins(TestEnv.params["data_host"])["plugins"]
+    if type(name) is tuple or type(name) is list:
+        for n in name:
+            if n not in P:
+                Exit(124)
+    else:
+        if name not in P:
+            Exit(124)
+
+# ----------------------------------------------------------------------------
 # Function: TurnOnAllAnnotations
 #
 # ----------------------------------------------------------------------------

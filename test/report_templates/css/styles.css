@@ -71,6 +71,18 @@ background: #eee;
     background: #00ffff;
 }
 
+.plot_plugin {
+    background: #aa00aa;
+}
+
+.operator_plugin {
+    background: #cc00cc;
+}
+
+.database_plugin {
+    background: #ff00ff;
+}
+
 .na {
     background: #008000;
 }

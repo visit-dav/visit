@@ -9,6 +9,7 @@
 #  Date:       Thu Jun 16 10:56:37 PDT 2016
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("Blueprint")
 
 from os.path import join as pjoin
 

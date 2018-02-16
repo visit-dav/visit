@@ -214,6 +214,7 @@
 #    Added test for removing a list of labeled picks. 
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin(("Boxlib2D","SAMRAI","Mili"))
 
 def Pick3DTo2D():
     # Testing pick on 3d plots projected to 2d via Slice and Cone operators

@@ -30,7 +30,7 @@
 #    Change set ids due to SIL generation change.
 #
 # ----------------------------------------------------------------------------
-
+RequiredDatabasePlugin("Mili")
 
 OpenDatabase(data_path("mili_test_data/m_plot.mili"))
 

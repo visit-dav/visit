@@ -11,6 +11,7 @@
 #  Modifications:
 # 
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("OpenEXR")
 
 def test0():
     DefineScalarExpression("masked_value", "if(gt(A, 0), value, 0)")

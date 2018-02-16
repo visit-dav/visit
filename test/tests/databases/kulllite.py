@@ -21,6 +21,7 @@
 #    behavior when an operator is added.
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("KullLite")
 
 OpenDatabase(data_path("KullLite_test_data/tagtest_xy_3.pdb"))
 

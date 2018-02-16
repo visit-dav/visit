@@ -29,6 +29,7 @@
 #    Test file that has boundaries.
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("CGNS")
 
 def test0(datapath):
     TestSection("Structured files")

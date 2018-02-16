@@ -8,6 +8,7 @@
 #  Programmer: Allen Sanderson
 #  Date:       August 25, 2015
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("PICS_Tester")
 
 #-vargs="-debug 5"
 

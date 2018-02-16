@@ -9,7 +9,7 @@
 #  Date:       October 12, 2006 
 #
 # ----------------------------------------------------------------------------
-
+RequiredDatabasePlugin("SAMI")
 
 # test the main mesh
 OpenDatabase(data_path("sami_test_data/bdw.sami"))

@@ -18,6 +18,7 @@
 #    Reflect change in variable names.
 #    
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("FITS")
 
 def test0(datapath):
     TestSection("2D truecolor images")

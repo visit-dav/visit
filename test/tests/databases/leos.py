@@ -17,6 +17,8 @@
 #    I replaced OpenDatabase with FindAnd... variant to deal with data
 #    we don't keep in repo.
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("PDB")
+
 OpenMDServer("localhost")
 readOptions=GetDefaultFileOpenOptions("PDB")
 readOptions["LEOS try harder level [set to 0, 1 or 2]"] = 1 

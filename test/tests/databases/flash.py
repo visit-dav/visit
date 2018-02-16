@@ -19,6 +19,7 @@
 # ----------------------------------------------------------------------------
 import os, string
 
+RequiredDatabasePlugin("FLASH")
 
 SetTryHarderCyclesTimes(1)
 # the following open command doesn't work (#7873)

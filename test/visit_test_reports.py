@@ -182,6 +182,15 @@ class HTMLIndex(object):
         elif rcode  == 121:
             mapping["result_color"] = "na"
             mapping["result_text"]  = "Not Applicable"
+        elif rcode  == 122:
+            mapping["result_color"] = "plot_plugin"
+            mapping["result_text"]  = "Plot plugin requirements not met"
+        elif rcode  == 123:
+            mapping["result_color"] = "operator_plugin"
+            mapping["result_text"]  = "Operator plugin requirements not met"
+        elif rcode  == 124:
+            mapping["result_color"] = "database_plugin"
+            mapping["result_text"]  = "Database plugin requirements not met"
         else:
             mapping["result_color"] = "failed"
             mapping["result_text"]  = "Failed: exit == %s  unknown" % str(rcode)
@@ -265,6 +274,9 @@ class TestScriptResult(object):
                   119:"succeeded with skips",
                   120:"acceptable with skips",
                   121:"na",
+                  122:"plot plugin requirement not met",
+                  123:"operator plugin requirement not met",
+                  124:"database plugin requirement not met",
                    -1:"failed"}
         rcode = self.return_code
         if not rcode in codes.keys():
@@ -280,6 +292,9 @@ class TestScriptResult(object):
                   119:"+ Succeeded with partial skips in test file:",
                   120:"- Acceptable with partial skips in test file:",
                   121:"> Not applicable in this mode for test file:",
+                  122:"! Plot plugin requirement not met",
+                  123:"! Operator plugin requirement not met",
+                  124:"! Database plugin requirement not met",
                    -1:"! ERROR: Missing Exit() when running test file:"}
         rcode =self.return_code
         if not rcode in codes.keys():

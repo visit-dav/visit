@@ -86,6 +86,7 @@
 #    Add QueryArbPoly.
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin(("SAMRAI", "Silo", "VTK"))
 
 def QueryRect2d():
     OpenDatabase(silo_data_path("rect2d.silo"))

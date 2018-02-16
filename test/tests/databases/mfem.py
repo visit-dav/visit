@@ -9,7 +9,7 @@
 #  Date:       Thu Jun 12 14:58:03 PDT 2014
 #
 # ----------------------------------------------------------------------------
-
+RequiredDatabasePlugin("MFEM")
 
 mfem_roots  = glob.glob(data_path("mfem_test_data/*.mfem_root"))
 input_meshs  = [ f for f in mfem_roots if f.count("ex0") == 0]

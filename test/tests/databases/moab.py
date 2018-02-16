@@ -9,6 +9,7 @@
 #  Programmer: Mark C Miller
 #  Date:       August 10, 2016
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("MOAB")
 
 OpenDatabase(data_path("moab_test_data/64bricks_12ktet.h5m"))
 

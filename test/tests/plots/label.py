@@ -44,6 +44,7 @@
 #    behavior when an operator is added.
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin(("Boxlib2D", "SAMRAI", "VTK"))
 
 
 # Create label attributes with somewhat larger text.

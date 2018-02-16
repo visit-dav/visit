@@ -30,6 +30,7 @@
 #    Use FilledBoundary plot for materials instead of Subset.
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("PDB")
 
 ##
 ## This creates a name for a test.

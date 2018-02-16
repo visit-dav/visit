@@ -11,6 +11,8 @@
 #    Took Gunther's original code and integrated it with test suite.
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("H5Part")
+
 TurnOffAllAnnotations()
 
 OpenDatabase(data_path("h5part_test_data/sample.h5part"), 0)

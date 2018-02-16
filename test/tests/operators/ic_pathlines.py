@@ -11,6 +11,7 @@
 #  Date:       March 10, 2016
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("PICS_Tester")
 
 OpenDatabase(data_path("pics_test_data/pathline_test.pics"))
 AddPlot("Pseudocolor", "operators/IntegralCurve/velocity", 1, 0)

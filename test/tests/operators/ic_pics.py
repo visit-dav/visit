@@ -11,6 +11,7 @@
 #  Date:       March 10, 2016
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("PICS_Tester")
 
 IntegralCurveAtts = IntegralCurveAttributes()
 databases=["MB_2D_rect", "MB_2D_ugrid", "MB_3D_rect", "MB_3D_ugrid"]

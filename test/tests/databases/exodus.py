@@ -29,6 +29,7 @@
 #    behavior when an operator is added.
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("Exodus")
 
 OpenDatabase(data_path("exodus_test_data/balls.e.4.* database"))
 

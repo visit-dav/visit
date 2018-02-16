@@ -9,6 +9,7 @@
 #  Modifications:
 #
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin("Xdmf")
 
 def test0(datapath):
     TestSection("Structured (no hdf5)")

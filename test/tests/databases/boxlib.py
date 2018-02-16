@@ -16,6 +16,7 @@
 #    Mark C. Miller, Mon Sep 15 12:05:44 PDT 2008
 #    Added 3D test
 # ----------------------------------------------------------------------------
+RequiredDatabasePlugin(("Boxlib2D", "Boxlib3D"))
 
 
 OpenDatabase(data_path("boxlib_test_data/2D/plt0822/Header"))
