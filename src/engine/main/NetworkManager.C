@@ -126,7 +126,7 @@
 #include <PlotPluginInfo.h>
 #include <StackTimer.h>
 #include <FileFunctions.h>
-//#define ProgrammableCompositerDEBUG
+#define ProgrammableCompositerDEBUG
 //#define NetworkManagerDEBUG
 //#define NetworkManagerTIME
 #include <ProgrammableCompositer.h>
