@@ -1,9 +1,10 @@
 -specification
-A
+C
+-docomposite
 -scriptfile
-test1.py
+test3.py
 -output
-test1.cdb
+test3.cdb
 -format
 png
 -geometry
@@ -14,5 +15,7 @@ phi-theta
 6
 -theta
 5
--stride
-3
+-var
+pressure
+-var
+v

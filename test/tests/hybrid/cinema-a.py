@@ -37,7 +37,7 @@ def GetFileList(path0):
     lpath0 = len(path0)
     return gfl(path0)
 
-def FileListToString(files):
+def ListToString(files):
     s = ""
     for f in files:
         s += f
@@ -93,15 +93,17 @@ def test0(db):
     f.close()
 
     cdb = "test0.cdb"
-    sz = "%dx%x" % (TestEnv.params["width"], TestEnv.params["height"])
+    sz = "%dx%d" % (TestEnv.params["width"], TestEnv.params["height"])
     args = ["-specification", "A", "-scriptfile", "test0.py", "-output", cdb, "-format", "png", "-geometry", sz, "-camera", "static"]
+    TestText("cinema_0_00", ListToString(args))
+
     output = GenerateCinema(args)
 
     files = GetFileList(cdb)
-    TestText("cinema_0_00", FileListToString(files))
+    TestText("cinema_0_01", ListToString(files))
 
     json = ReadTextFile(os.path.join(cdb, GetFile(files, "info.json")))
-    TestText("cinema_0_01", json)
+    TestText("cinema_0_02", json)
 
     firstimg = os.path.join(cdb, GetFile(files, ".png"))
     OpenDatabase(firstimg)
@@ -110,7 +112,7 @@ def test0(db):
     v = GetView2D()
     v.viewportCoords = (0,1,0,1)
     SetView2D(v)
-    Test("cinema_0_02")
+    Test("cinema_0_03")
     DeleteAllPlots()
     CloseDatabase(firstimg)
 
@@ -131,15 +133,17 @@ def test1(db):
     f.close()
 
     cdb = "test1.cdb"
-    sz = "%dx%x" % (TestEnv.params["width"], TestEnv.params["height"])
-    args = ["-specification", "A", "-scriptfile", "test1.py", "-output", cdb, "-format", "png", "-geometry", sz, "-camera", "phi-theta", "-nphi", "6", "-ntheta", "5", "-stride", "3"]
+    sz = "%dx%d" % (TestEnv.params["width"], TestEnv.params["height"])
+    args = ["-specification", "A", "-scriptfile", "test1.py", "-output", cdb, "-format", "png", "-geometry", sz, "-camera", "phi-theta", "-phi", "6", "-theta", "5", "-stride", "3"]
+    TestText("cinema_1_00", ListToString(args))
+
     output = GenerateCinema(args)
 
     files = GetFileList(cdb)
-    TestText("cinema_1_00", FileListToString(files))
+    TestText("cinema_1_01", ListToString(files))
 
     json = ReadTextFile(os.path.join(cdb, GetFile(files, "info.json")))
-    TestText("cinema_1_01", json)
+    TestText("cinema_1_02", json)
 
     # Use the JSON to come up with some filenames to plot. We will vary phi.
     params = eval(json)
@@ -149,7 +153,7 @@ def test1(db):
 
     theta = theta_values[len(theta_values)/4]
     time = time_values[0]
-    i = 2
+    i = 3
     for phi in phi_values:
         pattern = params["name_pattern"]
         name = string.replace(pattern, "{phi}", phi)
