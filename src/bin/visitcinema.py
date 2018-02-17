@@ -320,6 +320,17 @@ class VisItCinema(object):
                 else:
                     self.PrintUsage()
                     sys.exit(-1)
+            elif(commandLine[i] == "-geometry"):
+                if((i+1) < len(commandLine)):
+                    try:
+                        geom = [int(x) for x in string.split(commandLine[i+1], "x")]
+                        self.width,self.height = geom
+                    except:
+                        pass
+                    i = i + 1
+                else:
+                    self.PrintUsage()
+                    sys.exit(-1)
             elif(commandLine[i] == "-start"):
                 if((i+1) < len(commandLine)):
                     try:
