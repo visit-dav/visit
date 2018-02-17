@@ -377,8 +377,7 @@ class VisItCinema(object):
                         if(self.theta < 1):
                             self.theta = 1
                     except ValueError:
-                        self.theta = 1
-                        print "A bad value was provided for theta. Using a theta of 1."
+                        print "A bad value was provided for theta. ", commandLine[i+1]
                     i = i + 1
             elif(commandLine[i] == "-phi"):
                 if((i+1) < len(commandLine)):
@@ -387,8 +386,7 @@ class VisItCinema(object):
                         if(self.phi < 1):
                             self.phi = 1
                     except ValueError:
-                        self.theta = 1
-                        print "A bad value was provided for phi. Using a phi of 1."
+                        print "A bad value was provided for phi. ", commandLine[i+1]
                     i = i + 1
             elif(commandLine[i] == "-camera"):
                 if((i+1) < len(commandLine)):
