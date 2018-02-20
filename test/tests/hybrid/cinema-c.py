@@ -75,6 +75,8 @@ def write_setup_plot(f):
     f.write('a.legendInfoFlag = 0\n')
     f.write('a.databaseInfoFlag = 0\n')
     f.write('a.userInfoFlag = 0\n')
+    f.write('a.backgroundColor=(0,0,0,255)\n')
+    f.write('a.backgroundMode=a.Solid\n')
     f.write('SetAnnotationAttributes(a)\n')
 
 def test_Z_file(testname, varname, imagefilename, domask):
