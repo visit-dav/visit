@@ -7,6 +7,7 @@
 #                           multi domain
 #                          3D unstructured, single domain
 #                          3D curvilinear, single domain
+#                          2D unstructured, single domain
 #              plots     - filled boundary, pseudocolor
 #              operators - explode
 #
@@ -24,6 +25,9 @@
 #      Alister Maguire, Wed Feb 14 16:07:51 PST 2018
 #      Updated tests with multiple explosions to be perfomed
 #      by a single operator.   
+#
+#      Alister Maguire, Tue Feb 20 16:22:05 PST 2018
+#      Added a 2d test with no materials. 
 #
 # ----------------------------------------------------------------------------
 
@@ -392,12 +396,33 @@ def multi_tire():
     ResetView()
     DeleteAllPlots()
 
+def TwoDimNoMat():
+    OpenDatabase(silo_data_path("quad_disk.silo"))
+    AddPlot("Pseudocolor", "sphElevD_on_mesh")
+    
+    ResetView()
+    RecenterView()
+
+    AddOperator("Explode")
+    DrawPlots()
+
+    atts = ExplodeAttributes()
+    atts.explodeAllCells      = 1
+    atts.explosionPattern = atts.Scatter
+    SetOperatorOptions(atts)
+    
+    Test("explode_quad_disk_00")
+    ResetView()
+    DeleteAllPlots()
+
+
 def Main():
     unstructured_explosions()
     curvilinear_explosions()
     rectilinear_explosions()
     multi_rectilinear_explosions()
     multi_tire()
+    TwoDimNoMat()
     
 
 Main()
