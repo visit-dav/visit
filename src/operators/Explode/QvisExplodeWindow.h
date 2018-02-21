@@ -43,16 +43,19 @@
 #include <AttributeSubject.h>
 #include <MapNode.h>
 
+#include "ExplodeAttributes.h"
+
 class ExplodeAttributes;
 class QCheckBox;
 class QLineEdit;
 class QSpinBox;
-class QButtonGroup;
-class QvisVariableButton;
 class QGridLayout;
 class QTabWidget;
 class QComboBox;
 class QGroupBox;
+class QListWidget;
+class QPushButton;
+class QListWidgetItem;
 
 // ****************************************************************************
 // Class: QvisExplodeWindow
@@ -71,6 +74,13 @@ class QGroupBox;
 //   Added explosionTabsChangedIndex(), ClearLayout(), 
 //   ExplosionType, and materialCheckBoxes. Also 
 //   removed boundary names.
+//
+//   Alister Maguire, Wed Feb 21 11:20:52 PST 2018
+//   Added addExplosionToList(), removeExplosionFromList(),
+//   clearExplosionList(), switchCurrentExplosion(), updateExplosion(),
+//   windowAtts, origAtts, explosionList, addExplosionButton,
+//   removeExplosionButton, clearExplosionsButton, 
+//   updateExplosionsButton, all for handling multiple explosions. 
 //
 // ****************************************************************************
 
@@ -103,6 +113,11 @@ class QvisExplodeWindow : public QvisOperatorWindow
     void explosionPatternChangedIndex(int type);
     void explodeMaterialCellsToggled(bool val);
     void explodeAllCellsToggled(bool val);
+    void addExplosionToList();
+    void removeExplosionFromList();
+    void clearExplosionList();
+    void switchCurrentExplosion(QListWidgetItem *);
+    void updateExplosion();
   private:
     enum ExplosionTypes
     {
@@ -133,10 +148,15 @@ class QvisExplodeWindow : public QvisOperatorWindow
     QCheckBox    *explodeAllCells;
     QGroupBox    *materialGroup;
     QComboBox    *explosionPattern;
+    QListWidget  *explosionList;
+    QPushButton  *addExplosionButton;
+    QPushButton  *removeExplosionButton;
+    QPushButton  *clearExplosionsButton;
+    QPushButton  *updateExplosionButton;
 
     ExplodeAttributes *atts;
+    ExplodeAttributes  windowAtts;
+    ExplodeAttributes  origAtts;
 };
-
-
 
 #endif

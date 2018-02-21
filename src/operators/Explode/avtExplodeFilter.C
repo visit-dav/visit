@@ -42,7 +42,6 @@
 
 #include <avtExplodeFilter.h>
 
-#include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
@@ -50,15 +49,11 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkIdList.h>
 #include <vtkPoints.h>
-#include <vtkSmartPointer.h>
 #include <vtkCell.h>
-#include <vtkFieldData.h>
 #include <vtkAppendFilter.h>
 
 #include <vtkIntArray.h>
-#include <vtkCellArray.h>
 #include <vtkDataSet.h>
-#include <MapNode.h>
 
 #include <vtkVisItUtility.h>
 #include <DebugStream.h>
@@ -218,7 +213,7 @@ avtExplodeFilter::Equivalent(const AttributeGroup *a)
 //
 //  Returns:
 //      If the material extents exist, the index to the start
-//      of its extents within globalMatExtents is returned. Otherwise,
+//      of its extents within materialExtents is returned. Otherwise,
 //      -1 is returned. 
 //
 //  Programmer: Alister Maguire
@@ -247,8 +242,6 @@ avtExplodeFilter::GetMaterialIndex(std::string matName)
 //
 //  Purpose:
 //      Update the material extents across all processors. 
-//
-//  Arguments:
 //
 //  Programmer: Alister Maguire
 //  Creation:   Wed Feb  7 10:26:21 PST 2018
@@ -291,7 +284,7 @@ avtExplodeFilter::UpdateExtentsAcrossProcs()
         MPI_DOUBLE, MPI_MAX, VISIT_MPI_COMM);
     
     //
-    // Update the global material extents from across all procs. 
+    // Update the material extents from across all procs. 
     //
     for (int i = 0; i < half; ++i)
     {
@@ -419,10 +412,8 @@ avtExplodeFilter::UpdateExtentsAcrossDomains(double *localExtents,
 //      Reset the materialExtents. 
 //
 //  Arguments:
-//
 //      fullReset    If true, reset all of the material extents. If false, 
 //                   only reset a specified material. 
-//
 //      matIdx       The index to the material to reset when fullReset is 
 //                   false. 
 //
@@ -497,6 +488,7 @@ avtExplodeFilter::ResetMaterialExtents(bool fullReset, int matIdx)
 //  Creation: Thu Jan 25 11:33:44 PST 2018
 //
 //  Modifications: 
+//
 //      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
 //      Changed name and input args. 
 //
@@ -557,12 +549,21 @@ avtExplodeFilter::CreateDomainTree(vtkDataSet **dsets,
         {
             continue;
         }
+        //
+        // A NULL position implies we need to place the
+        // first dataset at this index into mergedDomains. 
+        //
         else if (mergedDomains[mdIdx] == NULL)
         {
             vtkUnstructuredGrid *dsetCpy = vtkUnstructuredGrid::New();
             dsetCpy->DeepCopy(dsets[i]);
             mergedDomains[mdIdx] = dsetCpy;
         }
+        //
+        // If there's already a dataset at this index, 
+        // we need to merge our current dataset with the one 
+        // already in the mergedDomains array. 
+        //
         else
         {
             vtkUnstructuredGrid *dsetCpy = vtkUnstructuredGrid::New();
@@ -863,9 +864,9 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         //
         for (i = 0; i < nSelectedBoundaries; i++)
         {
-            int s = selectedBoundaries[i];
+            int boundary = selectedBoundaries[i];
 
-            if (boundaryCounts[s] > 0)
+            if (boundaryCounts[boundary] > 0)
             {
                 //
                 // Create the unstructured grid.
@@ -878,16 +879,16 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
                 vtkCellData  *outCD          = out_ug->GetCellData();
                 vtkCellIterator *it          = in_ug->NewCellIterator();
 
-                outCD->CopyAllocate(inCD, boundaryCounts[s]);
-                out_ug->Allocate(boundaryCounts[s]);
+                outCD->CopyAllocate(inCD, boundaryCounts[boundary]);
+                out_ug->Allocate(boundaryCounts[boundary]);
                 outPD->CopyAllocate(inPD);
 
                 for (it->InitTraversal(); !it->IsDoneWithTraversal(); 
                     it->GoToNextCell())
                 {
-                 
                     vtkIdType cellId = it->GetCellId();
-                    if (boundaryList[cellId] == s)
+
+                    if (boundaryList[cellId] == boundary)
                     {
                         int cellType      = it->GetCellType();
                         in_ug->GetCellPoints(cellId, cellPts);
@@ -1287,11 +1288,17 @@ avtExplodeFilter::Execute(void)
         avtDataTree_p outTree = NULL;
         if (nLeaves > 1)
         {
-            outTree = new avtDataTree(nLeaves, outLeaves, domainIds, inLabels);
+            if (inLabels.empty())
+                outTree = new avtDataTree(nLeaves, outLeaves, domainIds);
+            else
+                outTree = new avtDataTree(nLeaves, outLeaves, domainIds, inLabels);
         }
         else if (nLeaves == 1)
         {
-            outTree = new avtDataTree(nLeaves, outLeaves, domainIds[0], inLabels);
+            if (inLabels.empty())
+                outTree = new avtDataTree(nLeaves, outLeaves, domainIds[0]);
+            else
+                outTree = new avtDataTree(nLeaves, outLeaves, domainIds[0], inLabels);
         }
         else 
         {
@@ -1384,7 +1391,6 @@ avtExplodeFilter::Execute(void)
                     newLeaf, 
                     scaleFactor);
 
-                //TODO: is there a cleaner way to do this?
                 ((vtkUnstructuredGrid *)matLeaves[i])->Reset();
                 ((vtkUnstructuredGrid *)matLeaves[i])->DeepCopy(newLeaf);
                 newLeaf->Delete();
@@ -1425,9 +1431,6 @@ avtExplodeFilter::Execute(void)
                         scaleFactor);
                 }
 
-                double bounds[6];
-                matLeaves[i]->GetBounds(bounds);
-
                 materialsExploded[i] = 1;
             }
         }
@@ -1455,14 +1458,13 @@ avtExplodeFilter::Execute(void)
                     UpdateExtentsAcrossDomains(bounds, matName);
                 }
             }
-
-            #ifdef PARALLEL
-            if (PAR_Size() > 1)
-            {
-                UpdateExtentsAcrossProcs();
-            }
-            #endif
         }
+        #ifdef PARALLEL
+        if (PAR_Size() > 1)
+        {
+            UpdateExtentsAcrossProcs();
+        }
+        #endif
     }
 
     //
@@ -1699,7 +1701,9 @@ Explosion::DisplaceMaterial(vtkUnstructuredGrid *ugrid,
 //      within that material. 
 //
 //  Arguments:
-//      ugrid    An unstructured grid to be displaced/translated. 
+//      ugrid          An unstructured grid to be displaced/translated. 
+//      matExtents     The extents of of the input material. 
+//      scaleFactor    A factor to scale the explosion by. 
 //
 //  Programmer: Alister Maguire
 //  Creation:   Mon Oct 23 15:52:30 PST 2017
@@ -1722,7 +1726,6 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
         dataCenter[i] = (matExtents[i*2] + matExtents[(i*2)+1]) / 2.0;
     }
 
-    int numPoints        = ugrid->GetNumberOfPoints();
     vtkPoints *ugridPts  = ugrid->GetPoints();
     vtkPoints *newPoints = vtkPoints::New();
     vtkIdList *cellPts   = vtkIdList::New();
@@ -1732,11 +1735,11 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
     // First, we need to calculate a displacement of the
     // entire material and copy this into a container. 
     //
-    double initialDisplacement[3];
+    double matDisplacement[3];
     CalcDisplacement(dataCenter, matExplosionFactor, scaleFactor, false);
     for (int i = 0; i < 3; ++i)
     {
-        initialDisplacement[i] = displaceVec[i];
+        matDisplacement[i] = displaceVec[i];
     }
 
     bool normalize;
@@ -1793,7 +1796,7 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
             ugrid->GetPoint(cellPts->GetId(i), point);
             for (int j = 0; j < 3; ++j)
             {
-               point[j] += displaceVec[j] + initialDisplacement[j];
+               point[j] += displaceVec[j] + matDisplacement[j];
             }
             newPoints->SetPoint(cellPts->GetId(i), point);
         }
@@ -1814,7 +1817,9 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
 //      Explode all of the cells within a dataset. 
 //
 //  Arguments:
-//      ugrid      The output dataset. 
+//      in_ds          The input dataset. 
+//      out_grid       The output dataset. 
+//      scaleFactor    A factor to scale the explosion by. 
 //
 //  Programmer: Alister Maguire
 //  Creation:   Tue Nov 21 11:19:55 PST 2017
@@ -1844,8 +1849,6 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
     outCD->CopyAllocate(inCD);
     outPD->CopyAllocate(inPD);
     
-    int numPoints       = in_ds->GetNumberOfPoints();
-    int numCells        = in_ds->GetNumberOfCells();
     vtkCellIterator *it = in_ds->NewCellIterator();
     vtkPoints *pts      = vtkPoints::New();
     vtkIdList *cellPts  = vtkIdList::New();
@@ -1944,9 +1947,7 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
 //
 //  Arguments:
 //      expFactor      A factor to explode by. 
-//
 //      scaleFactor    A factor to scale by. 
-//
 //      normalize      Wheter or not we normalize the vector. 
 //
 //  Programmer: Alister Maguire
@@ -2029,11 +2030,8 @@ PointExplosion::PointExplosion()
 //  Arguments:
 //      dataCenter    The x,y,z coords of the center of the data
 //                    to be displaced. 
-//
 //      expFactor     A factor to displace the data by. 
-//
 //      scaleFactor   A factor to scale the exposion by. 
-//
 //      normalize     Should we normalize the displacement vector?
 //                    Yes produces 'impact' explosion, and no produces
 //                    'scatter' explosion. 
@@ -2108,11 +2106,8 @@ PlaneExplosion::PlaneExplosion()
 //  Arguments:
 //      dataCenter    The x,y,z coords of the center of the data
 //                    to be displaced. 
-//
 //      expFactor     A factor to displace the data by. 
-//
 //      scaleFactor   A factor to scale the exposion by. 
-//
 //      normalize     Should we normalize the displacement vector?
 //                    Yes produces 'impact' explosion, and no produces
 //                    'scatter' explosion. 
@@ -2200,11 +2195,8 @@ CylinderExplosion::CylinderExplosion()
 //  Arguments:
 //      dataCenter    The x,y,z coords of the center of the data
 //                    to be displaced. 
-//
 //      expFactor     A factor to displace the data by. 
-//
 //      scaleFactor   A factor to scale the exposion by. 
-//
 //      normalize     Should we normalize the displacement vector?
 //                    Yes produces 'impact' explosion, and no produces
 //                    'scatter' explosion. 

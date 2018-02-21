@@ -46,13 +46,13 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QSpinBox>
-#include <QButtonGroup>
-#include <QRadioButton>
 #include <QTabWidget>
-#include <QvisVariableButton.h>
-
+#include <QListWidget>
 #include <QComboBox>
 #include <QGroupBox>
+#include <QPushButton>
+#include <QList>
+#include <QModelIndexList>
 
 #include <numeric>
 
@@ -78,7 +78,11 @@ QvisExplodeWindow::QvisExplodeWindow(const int type,
                          QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
-    atts = subj;
+    atts       = subj;
+    windowAtts = ExplodeAttributes();
+    origAtts   = ExplodeAttributes();
+    windowAtts.CopyAttributes(atts);
+    origAtts.CopyAttributes(atts);
 }
 
 
@@ -101,7 +105,6 @@ QvisExplodeWindow::~QvisExplodeWindow()
 {
 }
 
-
 // ****************************************************************************
 // Method: QvisExplodeWindow::CreateWindowContents
 //
@@ -121,6 +124,9 @@ QvisExplodeWindow::~QvisExplodeWindow()
 //    Alister Maguire, Mon Jan 29 10:12:44 PST 2018
 //    Changed 'Explosions' title to 'Origin'. 
 //
+//    Alister Maguire, Wed Feb 21 11:20:52 PST 2018
+//    Refactored to handle multiple explosions. 
+//
 // ****************************************************************************
 
 void
@@ -129,9 +135,49 @@ QvisExplodeWindow::CreateWindowContents()
     QGridLayout *mainLayout = new QGridLayout(0);
     topLayout->addLayout(mainLayout);
 
+    //
+    // Explosions Group
+    //
+    QGroupBox *listGroup = new QGroupBox(central);
+    listGroup->setTitle(tr("Explosions"));
+    mainLayout->addWidget(listGroup, 0, 0, 3, 1);
+
+    QGridLayout *listLayout = new QGridLayout(listGroup);
+
+    //
+    // Explosion List
+    //
+    explosionList = new QListWidget(central);
+    listLayout->addWidget(explosionList, 0, 0, 2, 4); 
+    connect(explosionList, SIGNAL(itemClicked(QListWidgetItem *)),
+        this, SLOT(switchCurrentExplosion(QListWidgetItem *)));
+
+    addExplosionButton = new QPushButton("Add", central);
+    listLayout->addWidget(addExplosionButton, 1, 0);
+    connect(addExplosionButton, SIGNAL(clicked()),
+            this, SLOT(addExplosionToList()));
+
+    removeExplosionButton = new QPushButton("Remove", central);
+    listLayout->addWidget(removeExplosionButton, 1, 1);
+    connect(removeExplosionButton, SIGNAL(clicked()),
+            this, SLOT(removeExplosionFromList()));
+
+    updateExplosionButton = new QPushButton("Update", central);
+    listLayout->addWidget(updateExplosionButton, 1, 2);
+    connect(updateExplosionButton, SIGNAL(clicked()), 
+            this, SLOT(updateExplosion()));
+
+    clearExplosionsButton = new QPushButton("Clear", central);
+    listLayout->addWidget(clearExplosionsButton, 1, 3);
+    connect(clearExplosionsButton, SIGNAL(clicked()),
+            this, SLOT(clearExplosionList()));
+
+    //
+    // Origin
+    //
     QGroupBox *typeGroup = new QGroupBox(central);
     typeGroup->setTitle(tr("Origin"));
-    mainLayout->addWidget(typeGroup);
+    mainLayout->addWidget(typeGroup, 0, 1);
 
     QGridLayout *typeLayout = new QGridLayout(typeGroup);
     
@@ -149,7 +195,6 @@ QvisExplodeWindow::CreateWindowContents()
     QGridLayout *explodePlaneLayout    = new QGridLayout(explodePlaneTab);
     QGridLayout *explodeCylinderLayout = new QGridLayout(explodeCylinderTab);
 
-   
     QLabel *explosionPointLabel = new QLabel(tr("Explosion Point"), central);
     explosionPointLayout->addWidget(explosionPointLabel, 0, 0);
     explosionPoint = new QLineEdit(central);
@@ -198,9 +243,12 @@ QvisExplodeWindow::CreateWindowContents()
             this, SLOT(cylinderRadiusProcessText()));
     explodeCylinderLayout->addWidget(cylinderRadius, 2, 1);
 
+    //
+    // Material Options
+    //
     materialGroup = new QGroupBox(central);
     materialGroup->setTitle(tr("Material Explosion"));
-    mainLayout->addWidget(materialGroup);
+    mainLayout->addWidget(materialGroup, 1, 1);
 
     QGridLayout *materialLayout = new QGridLayout(materialGroup);
     
@@ -218,9 +266,12 @@ QvisExplodeWindow::CreateWindowContents()
     materialsCombo  = new QComboBox(materialsWidget);
     materialLayout->addWidget(materialsCombo, 3, 1);
 
+    //
+    // Cell Options
+    //
     QGroupBox *cellGroup = new QGroupBox(central);
     cellGroup->setTitle(tr("Cell Explosion"));
-    mainLayout->addWidget(cellGroup);
+    mainLayout->addWidget(cellGroup, 2, 1);
 
     QGridLayout *cellLayout = new QGridLayout(cellGroup);
 
@@ -233,7 +284,6 @@ QvisExplodeWindow::CreateWindowContents()
     cellLayout->addWidget(explodeAllCells, 1, 0);
     connect(explodeAllCells, SIGNAL(toggled(bool)),
             this, SLOT(explodeAllCellsToggled(bool)));
-
    
     QLabel *cellExplosionFactorLabel = new QLabel(tr("Explosion Factor"), central);
     cellLayout->addWidget(cellExplosionFactorLabel, 2, 0);
@@ -276,16 +326,25 @@ QvisExplodeWindow::CreateWindowContents()
 //    Changed the way boundary names are updated as 
 //    well as explosion type and explosion pattern. 
 //   
+//    Alister Maguire, Wed Feb 21 11:20:52 PST 2018
+//    Added case for updating the list of explosions. 
+//
 // ****************************************************************************
 
 void
 QvisExplodeWindow::UpdateWindow(bool doAll)
 {
-    for(int i = 0; i < atts->NumAttributes(); ++i)
+    if (!origAtts.AttributesMatch(*atts))
+    {
+        origAtts.CopyAttributes(atts);
+        windowAtts.CopyAttributes(atts);
+    }
+
+    for(int i = 0; i < windowAtts.NumAttributes(); ++i)
     {
         if(!doAll)
         {
-            if(!atts->IsSelected(i))
+            if(!windowAtts.IsSelected(i))
             {
                 continue;
             }
@@ -295,7 +354,7 @@ QvisExplodeWindow::UpdateWindow(bool doAll)
         {
             case ExplodeAttributes::ID_boundaryNames:
             {
-                stringVector materials = atts->GetBoundaryNames();
+                stringVector materials = windowAtts.GetBoundaryNames();
                 std::string tmp;
                 tmp = std::accumulate(materials.begin(), materials.end(), tmp);
 
@@ -310,7 +369,7 @@ QvisExplodeWindow::UpdateWindow(bool doAll)
                     explodeMaterialCells->setEnabled(true);
 
                     boundaryString = tmp;
-                    int numMaterials = atts->GetBoundaryNames().size();          
+                    int numMaterials = windowAtts.GetBoundaryNames().size();          
           
                     materialsCombo->blockSignals(true);
                     materialsCombo->clear();
@@ -318,7 +377,7 @@ QvisExplodeWindow::UpdateWindow(bool doAll)
 
                     for(size_t idx = 0; idx < numMaterials; ++idx)
                     {
-                        const char *name = atts->GetBoundaryNames()[idx].c_str();
+                        const char *name = windowAtts.GetBoundaryNames()[idx].c_str();
                         materialsCombo->blockSignals(true);
                         materialsCombo->addItem(name);
                         materialsCombo->blockSignals(false);
@@ -327,11 +386,11 @@ QvisExplodeWindow::UpdateWindow(bool doAll)
                 else
                 {
                     int selectedIdx    = 0;
-                    std::string selectedMat = atts->GetMaterial();
-                    int numMaterials = atts->GetBoundaryNames().size();          
+                    std::string selectedMat = windowAtts.GetMaterial();
+                    int numMaterials = windowAtts.GetBoundaryNames().size();          
                     for(size_t idx = 0; idx < numMaterials; ++idx)
                     {
-                        const char *name = atts->GetBoundaryNames()[idx].c_str();
+                        const char *name = windowAtts.GetBoundaryNames()[idx].c_str();
                         if (name == selectedMat)
                         {
                             selectedIdx = idx;
@@ -342,38 +401,38 @@ QvisExplodeWindow::UpdateWindow(bool doAll)
             }
             break;
           case ExplodeAttributes::ID_explosionPoint:
-              explosionPoint->setText(DoublesToQString(atts->GetExplosionPoint(), 3));
+              explosionPoint->setText(DoublesToQString(windowAtts.GetExplosionPoint(), 3));
               break;
           case ExplodeAttributes::ID_planePoint:
-              planePoint->setText(DoublesToQString(atts->GetPlanePoint(), 3));
+              planePoint->setText(DoublesToQString(windowAtts.GetPlanePoint(), 3));
               break;
           case ExplodeAttributes::ID_planeNorm:
-              planeNorm->setText(DoublesToQString(atts->GetPlaneNorm(), 3));
+              planeNorm->setText(DoublesToQString(windowAtts.GetPlaneNorm(), 3));
               break;
           case ExplodeAttributes::ID_cylinderPoint1:
-              cylinderPoint1->setText(DoublesToQString(atts->GetCylinderPoint1(), 3));
+              cylinderPoint1->setText(DoublesToQString(windowAtts.GetCylinderPoint1(), 3));
               break;
           case ExplodeAttributes::ID_cylinderPoint2:
-              cylinderPoint2->setText(DoublesToQString(atts->GetCylinderPoint2(), 3));
+              cylinderPoint2->setText(DoublesToQString(windowAtts.GetCylinderPoint2(), 3));
               break;
           case ExplodeAttributes::ID_materialExplosionFactor:
-              materialExplosionFactor->setText(DoubleToQString(atts->GetMaterialExplosionFactor()));
+              materialExplosionFactor->setText(DoubleToQString(windowAtts.GetMaterialExplosionFactor()));
               break;
           case ExplodeAttributes::ID_explodeMaterialCells:
-              explodeMaterialCells->setChecked(atts->GetExplodeMaterialCells());
+              explodeMaterialCells->setChecked(windowAtts.GetExplodeMaterialCells());
               break;
           case ExplodeAttributes::ID_explodeAllCells:
-              explodeAllCells->setChecked(atts->GetExplodeAllCells());
+              explodeAllCells->setChecked(windowAtts.GetExplodeAllCells());
               break;
           case ExplodeAttributes::ID_cellExplosionFactor:
-              cellExplosionFactor->setText(DoubleToQString(atts->GetCellExplosionFactor()));
+              cellExplosionFactor->setText(DoubleToQString(windowAtts.GetCellExplosionFactor()));
               break;
           case ExplodeAttributes::ID_cylinderRadius:
-              cylinderRadius->setText(DoubleToQString(atts->GetCylinderRadius()));
+              cylinderRadius->setText(DoubleToQString(windowAtts.GetCylinderRadius()));
               break;
           case ExplodeAttributes::ID_explosionPattern:
           {
-              int patternID = atts->GetExplosionPattern();
+              int patternID = windowAtts.GetExplosionPattern();
               switch (patternID)
               {
                   case ExplodeAttributes::Impact:
@@ -391,7 +450,7 @@ QvisExplodeWindow::UpdateWindow(bool doAll)
           }
           case ExplodeAttributes::ID_explosionType:
           {
-              int typeID = atts->GetExplosionType();
+              int typeID = windowAtts.GetExplosionType();
               switch (typeID)
               {
                   case ExplodeAttributes::Point:
@@ -410,6 +469,19 @@ QvisExplodeWindow::UpdateWindow(bool doAll)
                   }
                   break;
               }
+          }
+          case ExplodeAttributes::ID_explosions:
+          {
+              int curRow; 
+              curRow = explosionList->currentRow();    
+              explosionList->clear();
+              
+              for (int i = 0; i < atts->GetNumExplosions(); ++i)
+              {
+                  QString rename = QString("Explosion %1").arg(i);
+                  explosionList->addItem(rename); 
+              }
+              explosionList->setCurrentRow(curRow);
           }
       }
    }
@@ -434,7 +506,6 @@ QvisExplodeWindow::UpdateWindow(bool doAll)
 void
 QvisExplodeWindow::GetCurrentValues(int which_widget)
 {
-
     bool doAll = (which_widget == -1);
 
     // Do explosionPoint
@@ -442,12 +513,12 @@ QvisExplodeWindow::GetCurrentValues(int which_widget)
     {
         double val[3];
         if(LineEditGetDoubles(explosionPoint, val, 3))
-            atts->SetExplosionPoint(val);
+            windowAtts.SetExplosionPoint(val);
         else
         {
             ResettingError(tr("explosionPoint"),
-                DoublesToQString(atts->GetExplosionPoint(),3));
-            atts->SetExplosionPoint(atts->GetExplosionPoint());
+                DoublesToQString(windowAtts.GetExplosionPoint(),3));
+            windowAtts.SetExplosionPoint(windowAtts.GetExplosionPoint());
         }
     }
 
@@ -456,12 +527,12 @@ QvisExplodeWindow::GetCurrentValues(int which_widget)
     {
         double val[3];
         if(LineEditGetDoubles(planePoint, val, 3))
-            atts->SetPlanePoint(val);
+            windowAtts.SetPlanePoint(val);
         else
         {
             ResettingError(tr("planePoint"),
-                DoublesToQString(atts->GetPlanePoint(),3));
-            atts->SetPlanePoint(atts->GetPlanePoint());
+                DoublesToQString(windowAtts.GetPlanePoint(),3));
+            windowAtts.SetPlanePoint(windowAtts.GetPlanePoint());
         }
     }
 
@@ -470,12 +541,12 @@ QvisExplodeWindow::GetCurrentValues(int which_widget)
     {
         double val[3];
         if(LineEditGetDoubles(planeNorm, val, 3))
-            atts->SetPlaneNorm(val);
+            windowAtts.SetPlaneNorm(val);
         else
         {
             ResettingError(tr("planeNorm"),
-                DoublesToQString(atts->GetPlaneNorm(),3));
-            atts->SetPlaneNorm(atts->GetPlaneNorm());
+                DoublesToQString(windowAtts.GetPlaneNorm(),3));
+            windowAtts.SetPlaneNorm(windowAtts.GetPlaneNorm());
         }
     }
 
@@ -484,12 +555,12 @@ QvisExplodeWindow::GetCurrentValues(int which_widget)
     {
         double val[3];
         if(LineEditGetDoubles(cylinderPoint1, val, 3))
-            atts->SetCylinderPoint1(val);
+            windowAtts.SetCylinderPoint1(val);
         else
         {
             ResettingError(tr("cylinderPoint1"),
-                DoublesToQString(atts->GetCylinderPoint1(),3));
-            atts->SetCylinderPoint1(atts->GetCylinderPoint1());
+                DoublesToQString(windowAtts.GetCylinderPoint1(),3));
+            windowAtts.SetCylinderPoint1(windowAtts.GetCylinderPoint1());
         }
     }
 
@@ -498,12 +569,12 @@ QvisExplodeWindow::GetCurrentValues(int which_widget)
     {
         double val[3];
         if(LineEditGetDoubles(cylinderPoint2, val, 3))
-            atts->SetCylinderPoint2(val);
+            windowAtts.SetCylinderPoint2(val);
         else
         {
             ResettingError(tr("cylinderPoint2"),
-                DoublesToQString(atts->GetCylinderPoint2(),3));
-            atts->SetCylinderPoint2(atts->GetCylinderPoint2());
+                DoublesToQString(windowAtts.GetCylinderPoint2(),3));
+            windowAtts.SetCylinderPoint2(windowAtts.GetCylinderPoint2());
         }
     }
 
@@ -512,12 +583,12 @@ QvisExplodeWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(materialExplosionFactor, val))
-            atts->SetMaterialExplosionFactor(val);
+            windowAtts.SetMaterialExplosionFactor(val);
         else
         {
             ResettingError(tr("materialExplosionFactor"),
-                DoubleToQString(atts->GetMaterialExplosionFactor()));
-            atts->SetMaterialExplosionFactor(atts->GetMaterialExplosionFactor());
+                DoubleToQString(windowAtts.GetMaterialExplosionFactor()));
+            windowAtts.SetMaterialExplosionFactor(windowAtts.GetMaterialExplosionFactor());
         }
     }
 
@@ -526,19 +597,19 @@ QvisExplodeWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(cellExplosionFactor, val))
-            atts->SetCellExplosionFactor(val);
+            windowAtts.SetCellExplosionFactor(val);
         else
         {
             ResettingError(tr("cellExplosionFactor"),
-                DoubleToQString(atts->GetCellExplosionFactor()));
-            atts->SetCellExplosionFactor(atts->GetCellExplosionFactor());
+                DoubleToQString(windowAtts.GetCellExplosionFactor()));
+            windowAtts.SetCellExplosionFactor(windowAtts.GetCellExplosionFactor());
         }
     }
 
     // Do materials
     if(which_widget == ExplodeAttributes::ID_material || doAll)
     {
-        atts->SetMaterial(materialsCombo->currentText().toStdString());
+        windowAtts.SetMaterial(materialsCombo->currentText().toStdString());
     }
 
     // Do cylinderRadius
@@ -546,12 +617,12 @@ QvisExplodeWindow::GetCurrentValues(int which_widget)
     {
         double val;
         if(LineEditGetDouble(cylinderRadius, val))
-            atts->SetCylinderRadius(val);
+            windowAtts.SetCylinderRadius(val);
         else
         {
             ResettingError(tr("cylinderRadius"),
-                DoubleToQString(atts->GetCylinderRadius()));
-            atts->SetCylinderRadius(atts->GetCylinderRadius());
+                DoubleToQString(windowAtts.GetCylinderRadius()));
+            windowAtts.SetCylinderRadius(windowAtts.GetCylinderRadius());
         }
     }
 }
@@ -565,30 +636,28 @@ void
 QvisExplodeWindow::explosionTabsChangedIndex(int type)
 {
     // Do explosionType
-    if(type != atts->GetExplosionType())
+    if(type != windowAtts.GetExplosionType())
     {
         switch (type)
         {
             case POINT:
             {
-                atts->SetExplosionType(ExplodeAttributes::Point);
+                windowAtts.SetExplosionType(ExplodeAttributes::Point);
             }
             break;
             case PLANE:
             {
-                atts->SetExplosionType(ExplodeAttributes::Plane);
+                windowAtts.SetExplosionType(ExplodeAttributes::Plane);
             }
             break;
             case CYLINDER:
             {
-                atts->SetExplosionType(ExplodeAttributes::Cylinder);
+                windowAtts.SetExplosionType(ExplodeAttributes::Cylinder);
             }
             break;
         }
         SetUpdate(false);
-        Apply();
     }
-    Apply();
 }
 
 
@@ -596,24 +665,23 @@ void
 QvisExplodeWindow::explosionPatternChangedIndex(int type)
 {
     // Do explosionPattern
-    if(type != atts->GetExplosionPattern())
+    if(type != windowAtts.GetExplosionPattern())
     {
         switch (type)
         {
             case IMPACT:
             {
-                atts->SetExplosionPattern(ExplodeAttributes::Impact);
+                windowAtts.SetExplosionPattern(ExplodeAttributes::Impact);
             }
             break;
             case SCATTER:
             {
-                atts->SetExplosionPattern(ExplodeAttributes::Scatter);
+                windowAtts.SetExplosionPattern(ExplodeAttributes::Scatter);
             }
             break;
         }
         SetUpdate(false);
     }
-    Apply();
 }
 
 
@@ -621,7 +689,6 @@ void
 QvisExplodeWindow::explosionPointProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_explosionPoint);
-    Apply();
 }
 
 
@@ -629,7 +696,6 @@ void
 QvisExplodeWindow::planePointProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_planePoint);
-    Apply();
 }
 
 
@@ -637,7 +703,6 @@ void
 QvisExplodeWindow::planeNormProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_planeNorm);
-    Apply();
 }
 
 
@@ -645,7 +710,6 @@ void
 QvisExplodeWindow::cylinderPoint1ProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_cylinderPoint1);
-    Apply();
 }
 
 
@@ -653,7 +717,6 @@ void
 QvisExplodeWindow::cylinderPoint2ProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_cylinderPoint2);
-    Apply();
 }
 
 
@@ -661,7 +724,6 @@ void
 QvisExplodeWindow::materialExplosionFactorProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_materialExplosionFactor);
-    Apply();
 }
 
 
@@ -669,7 +731,6 @@ void
 QvisExplodeWindow::cellExplosionFactorProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_cellExplosionFactor);
-    Apply();
 }
 
 
@@ -677,7 +738,6 @@ void
 QvisExplodeWindow::materialProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_material);
-    Apply();
 }
 
 
@@ -685,7 +745,6 @@ void
 QvisExplodeWindow::cylinderRadiusProcessText()
 {
     GetCurrentValues(ExplodeAttributes::ID_cylinderRadius);
-    Apply();
 }
 
 void 
@@ -694,8 +753,7 @@ QvisExplodeWindow::explodeMaterialCellsToggled(bool val)
     cellExplosionFactor->setEnabled(val);
     explosionPattern->setEnabled(val);
     explodeAllCells->setEnabled(!val);
-    atts->SetExplodeMaterialCells(val); 
-    Apply();
+    windowAtts.SetExplodeMaterialCells(val); 
 }
 
 void 
@@ -705,8 +763,80 @@ QvisExplodeWindow::explodeAllCellsToggled(bool val)
     explosionPattern->setEnabled(val);
     materialGroup->setEnabled(!val);
     explodeMaterialCells->setEnabled(!val);
-    atts->SetExplodeAllCells(val); 
+    windowAtts.SetExplodeAllCells(val); 
+}
+
+void
+QvisExplodeWindow::addExplosionToList()
+{
+    GetCurrentValues(-1);
+    atts->AddExplosions(windowAtts);
+    windowAtts = origAtts;
+    explosionList->clear();
+    UpdateWindow(true);
     Apply();
 }
 
+void
+QvisExplodeWindow::removeExplosionFromList()
+{
+    QModelIndexList indices = explosionList->selectionModel()->selectedIndexes();
+    
+    foreach (QModelIndex idx, indices)
+    {
+        atts->RemoveExplosions(idx.row());
+    }
 
+    explosionList->clear();
+    windowAtts = origAtts;
+    UpdateWindow(true);
+    Apply();
+}
+
+void
+QvisExplodeWindow::clearExplosionList()
+{
+    atts->ClearExplosions();
+    explosionList->clear();
+    UpdateWindow(false);
+    Apply();
+}
+
+void 
+QvisExplodeWindow::switchCurrentExplosion(QListWidgetItem *item)
+{
+    int curRow; 
+    curRow     = explosionList->currentRow();    
+    windowAtts = atts->GetExplosions(curRow);
+    UpdateWindow(true);
+}
+
+void
+QvisExplodeWindow::updateExplosion()
+{
+    int curRow;
+    curRow = explosionList->currentRow();
+    
+    std::vector<ExplodeAttributes> explosions;
+    int numExp = atts->GetNumExplosions();
+
+    for (int i = 0; i < numExp; ++i)
+    {
+        ExplodeAttributes attsCpy;
+        attsCpy.CopyAttributes(&atts->GetExplosions(i));
+        explosions.push_back(attsCpy);
+    }
+
+    GetCurrentValues(-1);
+    explosions[curRow] = windowAtts;
+    clearExplosionList();
+    
+    for (int i = 0; i < numExp; ++i)
+    {
+        atts->AddExplosions(explosions[i]);
+    }
+
+    windowAtts = origAtts;
+    UpdateWindow(true);
+    Apply();
+}

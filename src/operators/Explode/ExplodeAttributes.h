@@ -149,6 +149,8 @@ public:
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
+    // Comparison methods
+    bool AttributesMatch(const ExplodeAttributes &) const; 
 
     // Attributegroup convenience methods
     void AddExplosions(const ExplodeAttributes &);
