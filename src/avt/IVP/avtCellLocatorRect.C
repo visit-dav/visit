@@ -64,32 +64,38 @@ avtCellLocatorRect::avtCellLocatorRect( vtkDataSet* ds ) :
         EXCEPTION1( ImproperUseException, "avtCellLocatorRect: Dataset is not rectilinear." );
 
     // copy the coordinate arrays for faster access later
-    vtkDataArray* ca[3] = { 
-        rg->GetXCoordinates(),
-        rg->GetYCoordinates(),
-        rg->GetZCoordinates(),
-    };
+    vtkDataArray* ca[3] = { rg->GetXCoordinates(),
+                            rg->GetYCoordinates(),
+                            rg->GetZCoordinates() };
 
     for( unsigned int d=0; d<3; ++d )
     {
         coord[d].resize( ca[d]->GetNumberOfTuples() );
         ascending[d] = true;
-
+        
         for( unsigned int i=0; i<coord[d].size(); ++i )
         {
             coord[d][i] = ca[d]->GetComponent( i, 0 );
+
             if (i == 1)
             {
-               if (coord[d][1] < coord[d][0])
-                   ascending[d] = false;
+              ascending[d] = (coord[d][1] > coord[d][0]);
             }
             else if (i > 1)
             {
                 bool thisPairAscending = (coord[d][i] > coord[d][i-1]);
+
                 if (thisPairAscending != ascending[d])
                 {
-                    EXCEPTION1( ImproperUseException, "avtCellLocatorRect: Coordinate "
-                       "arrays are not monotonic.");
+                  std::stringstream msg;
+                  
+                  msg << "avtCellLocatorRect: Coordinate "
+                      << "array " << d << " at index " << i
+                      << " is not monotonic: "
+                      << coord[d][i] << (ascending[d] ? " <= " :  " >= ")
+                      << coord[d][i-1] << ".";
+                    
+                  EXCEPTION1( ImproperUseException, msg.str());
                 }
             }
         }
