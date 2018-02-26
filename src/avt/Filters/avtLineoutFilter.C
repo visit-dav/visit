@@ -82,7 +82,7 @@ struct CellInfo
     int origCell;
     int origDomain;
     intVector currCell;
-    std::vector<IntersectionPoint> isect;  
+    std::vector<IntersectionPoint> isect;
 } ;
 
 
@@ -96,7 +96,7 @@ struct CellInfo
 //    Kathleen Bonnell, Wed Oct 20 17:20:38 PDT 2004
 //    Initialize useOriginalCells.
 //
-//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
+//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006
 //    Initialize ndims.
 //
 //    Hank Childs, Thu Jan 24 09:44:45 PST 2008
@@ -142,18 +142,18 @@ avtLineoutFilter::avtLineoutFilter()
 //  Creation:   Thu Apr 25 16:01:28 PST 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002 
+//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002
 //    No longer send YScale to vtkLineoutFilter, it is not needed.
 //
 //    Hank Childs, Tue Sep 10 16:46:57 PDT 2002
 //    Re-work memory management.
 //
-//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
-//    Set vtkLineoutFilter's UpdateGhostLevel, so that ghost levels can be 
+//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003
+//    Set vtkLineoutFilter's UpdateGhostLevel, so that ghost levels can be
 //    ignored.  Ensure output has points.
 //
-//    Kathleen Bonnell, Thu Jul 29 09:55:49 PDT 2004 
-//    Moved code to Sampling method, added call to NoSampling. 
+//    Kathleen Bonnell, Thu Jul 29 09:55:49 PDT 2004
+//    Moved code to Sampling method, added call to NoSampling.
 //
 //    Hank Childs, Thu Jan 24 09:44:45 PST 2008
 //    Make use of new data members.
@@ -182,13 +182,13 @@ avtLineoutFilter::ExecuteData(avtDataRepresentation *in_dr)
     vtkDataSet *out_ds = NULL;
     if (!samplingOn)
         out_ds = NoSampling(in_ds, domain);
-    else 
+    else
         out_ds = Sampling(in_ds, domain);
 
     avtDataRepresentation *out_dr = NULL;
     if (out_ds != NULL)
     {
-        out_dr = new avtDataRepresentation(out_ds, in_dr->GetDomain(), 
+        out_dr = new avtDataRepresentation(out_ds, in_dr->GetDomain(),
                                            in_dr->GetLabel());
         out_ds->Delete();
     }
@@ -204,8 +204,8 @@ avtLineoutFilter::ExecuteData(avtDataRepresentation *in_dr)
 //      Allows the filter to change its output's data object information, which
 //      is a description of the data object.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 25, 202 
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 25, 202
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Mar 23 08:48:33 PST 2004
@@ -214,8 +214,8 @@ avtLineoutFilter::ExecuteData(avtDataRepresentation *in_dr)
 //    Brad Whitlock, Thu Jul 22 17:20:05 PST 2004
 //    Set the Y units.
 //
-//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005 
-//    Remove TRY-CATCH block in favor of testing for ValidActiveVariable. 
+//    Kathleen Bonnell, Thu Jan  6 10:34:57 PST 2005
+//    Remove TRY-CATCH block in favor of testing for ValidActiveVariable.
 //
 // ****************************************************************************
 
@@ -247,15 +247,15 @@ avtLineoutFilter::UpdateDataObjectInfo(void)
 //  Creation:   April 26, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Mon Dec 23 11:50:54 PST 2002  
+//    Kathleen Bonnell, Mon Dec 23 11:50:54 PST 2002
 //    Modified to test topological dimenions, so that lineouts of point-var
 //    or lines data will be disallowed.  Lineouts of 3d now allowed.
 //
-//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
-//    Grab spatial dimension. 
+//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006
+//    Grab spatial dimension.
 //
 // ****************************************************************************
- 
+
 void
 avtLineoutFilter::VerifyInput(void)
 {
@@ -273,15 +273,15 @@ avtLineoutFilter::VerifyInput(void)
 //  Method: avtLineoutFilter::ModifyContract
 //
 //  Purpose:
-//      Calculates the restriction on the meta-data and the line endpoints. 
+//      Calculates the restriction on the meta-data and the line endpoints.
 //
 //  Arguments:
 //      spec    The current pipeline specification.
 //
 //  Returns:    The new specification.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   December 19, 2003 
+//  Programmer: Kathleen Bonnell
+//  Creation:   December 19, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Oct 20 17:20:38 PDT 2004
@@ -343,8 +343,8 @@ avtLineoutFilter::ModifyContract(avtContract_p in_contract)
         return rv;
     }
 
-    double rayDir[3] = {point2[0]-point1[0], point2[1]-point1[1], 
-                        point2[2]-point1[2]};   
+    double rayDir[3] = {point2[0]-point1[0], point2[1]-point1[1],
+                        point2[2]-point1[2]};
 
     intVector domains;
     it->GetElementsList(point1, rayDir, domains);
@@ -360,7 +360,7 @@ avtLineoutFilter::ModifyContract(avtContract_p in_contract)
 //  Purpose:
 //      Cleans up after the execution.  This manages extents.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   January 14, 2004
 //
 //  Modifications:
@@ -399,12 +399,12 @@ avtLineoutFilter::PostExecute(void)
 //    pt1       The origin of the line (used to calculate distances).
 //    pt2       The endpoint of the line (used to calculate distances).
 //    pts       Cell center points.
-//    cells     A list of intersected cells. 
+//    cells     A list of intersected cells.
 //
 //  Returns:    The output poly data.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 27, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 27, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Oct 20 17:20:38 PDT 2004
@@ -412,13 +412,13 @@ avtLineoutFilter::PostExecute(void)
 //    closest point along the line defined by pt1 and pt2, and use it to
 //    calculate distance.
 //
-//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
-//    Create RectilinearGrid instead of PolyData for curve representation. 
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006
+//    Create RectilinearGrid instead of PolyData for curve representation.
 //
-//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
-//    Removed calculation of ClosestPointOnLine, no longer using cell centers. 
+//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006
+//    Removed calculation of ClosestPointOnLine, no longer using cell centers.
 //
-//    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008 
+//    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008
 //    Removed unused variable.
 //
 //    Brad Whitlock, Mon Jan  7 14:15:45 PST 2013
@@ -428,15 +428,18 @@ avtLineoutFilter::PostExecute(void)
 //    coordinates if the field was int. That becomes a problem with small
 //    coordinates!
 //
+//    Kathleen Biagas, Mon Feb 26 09:24:23 PST 2018
+//    Ensure output has a name attached to the PD array.
+//
 // ****************************************************************************
 
 vtkRectilinearGrid *
 avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
                               vtkPoints *pts, vtkIdList *cells)
 {
-    bool pointData = true; 
+    bool pointData = true;
     vtkDataArray *scalars = ds->GetPointData()->GetScalars();
-                  
+
     if (scalars == NULL)
     {
         pointData = false;
@@ -455,7 +458,8 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
         dType = VTK_DOUBLE;
     vtkRectilinearGrid *rgrid = vtkVisItUtility::Create1DRGrid(0, dType);
     vtkDataArray *outXC = rgrid->GetXCoordinates();
-    vtkDataArray *outVal = outXC->NewInstance(); 
+    vtkDataArray *outVal = outXC->NewInstance();
+    outVal->SetName(scalars->GetName());
     rgrid->GetPointData()->SetScalars(outVal);
     outVal->Delete();
 
@@ -486,7 +490,7 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 
             newVal = sum;
         }
-        else 
+        else
         {
             newVal = scalars->GetTuple1(cells->GetId(i));
         }
@@ -500,6 +504,7 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
     {
         vtkDataArray *sortedXC = outXC->NewInstance();
         vtkDataArray *sortedVal = outVal->NewInstance();
+        sortedVal->SetName(outVal->GetName());
         DoubleIntMap sortedIds;
         double x;
         for (i = 0; i < outXC->GetNumberOfTuples(); i++)
@@ -528,7 +533,7 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //  Method: avtLineoutFilter::NoSampling
 //
 //  Purpose:
-//    Peforms a lineout by intersecting cells.  
+//    Peforms a lineout by intersecting cells.
 //
 //  Arguments:
 //    in_ds      The input dataset.
@@ -536,8 +541,8 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //
 //  Returns:       The output dataset.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 27, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 27, 2004
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Oct 20 17:20:38 PDT 2004
@@ -547,21 +552,21 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //    Hank Childs, Fri Mar 11 17:04:37 PST 2005
 //    Fix memory leak.
 //
-//    Kathleen Bonnell, Thu May 19 11:34:05 PDT 2005 
+//    Kathleen Bonnell, Thu May 19 11:34:05 PDT 2005
 //    Added logic to determine if the cell-centers or the intersection points
-//    should be used in creating the curve. 
+//    should be used in creating the curve.
 //
-//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
-//    Create RectilinearGrid instead of PolyData for the curves. 
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006
+//    Create RectilinearGrid instead of PolyData for the curves.
 //
-//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
+//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006
 //    Use avtIntervalTree and vtkCellIntersections(new) instead of
-//    vtkVisItCellLocator, for better accuracy. 
+//    vtkVisItCellLocator, for better accuracy.
 //
-//    Kathleen Bonnell, Mon Aug 21 13:34:18 PDT 2006 
-//    Tell IntervalTree to NOT do communication (via arg to constructor). 
+//    Kathleen Bonnell, Mon Aug 21 13:34:18 PDT 2006
+//    Tell IntervalTree to NOT do communication (via arg to constructor).
 //
-//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
+//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006
 //    Removed calculation of cell centers.
 //
 //    Hank Childs, Thu Jan 24 09:44:45 PST 2008
@@ -580,7 +585,7 @@ avtLineoutFilter::CreateRGrid(vtkDataSet *ds, double *pt1, double *pt2,
 //
 // ****************************************************************************
 
-double 
+double
 GetMinRange(double *b, int ndims)
 {
     double r1 = 1e38;
@@ -624,14 +629,14 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     doubleVector linePts;
     itree.GetElementsListFromLine(point1, point2, lineCells, linePts, &tol);
 
-    if (lineCells.size() == 0) 
+    if (lineCells.size() == 0)
     {
-        debug5 << "avtIntervalTree returned NO intersected cells for domain " 
+        debug5 << "avtIntervalTree returned NO intersected cells for domain "
                << domain << "." << endl;
         return NULL;
     }
 
-    vtkUnsignedCharArray *ghosts = 
+    vtkUnsignedCharArray *ghosts =
        (vtkUnsignedCharArray *)in_ds->GetCellData()->GetArray("avtGhostZones");
 
     vtkCellIntersections *cellIntersections = NULL;
@@ -643,7 +648,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
         cellIntersections->SetTestCoPlanar(true);
         cell = vtkGenericCell::New();
     }
-    
+
     for (size_t i = 0; i < lineCells.size(); i++)
     {
         //
@@ -653,12 +658,12 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
         {
             continue;
         }
-    
+
         bool doMore = true;
         if (!rgrid)
         {
             //
-            // do a bit more checking if not a rectlinearGrid, as the interval 
+            // do a bit more checking if not a rectlinearGrid, as the interval
             // tree only calculated intersections with a cell's bounding box.
             //
 
@@ -666,9 +671,9 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
             double isect2[3];
             // Check both directions of the line, because we don't want
             // to intersect only a node.
-            if (cellIntersections->CellIntersectWithLine(cell, point1, point2, 
+            if (cellIntersections->CellIntersectWithLine(cell, point1, point2,
                                         t, isect) &&
-                cellIntersections->CellIntersectWithLine(cell, point2, point1, 
+                cellIntersections->CellIntersectWithLine(cell, point2, point1,
                                         t, isect2))
             {
                 if (vtkVisItUtility::PointsEqual(isect, isect2, &tol))
@@ -680,9 +685,9 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
                     {
                         if (!vtkVisItUtility::PointsEqual(point1, isect, &tol))
                         {
-                            p1[0] = point1[0];    
-                            p1[1] = point1[1];    
-                            p1[2] = point1[2];    
+                            p1[0] = point1[0];
+                            p1[1] = point1[1];
+                            p1[2] = point1[2];
                             doMore = true;
                         }
                     }
@@ -690,9 +695,9 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
                     {
                         if (!vtkVisItUtility::PointsEqual(point2, isect, &tol))
                         {
-                            p1[0] = point2[0];    
-                            p1[1] = point2[1];    
-                            p1[2] = point2[2];    
+                            p1[0] = point2[0];
+                            p1[1] = point2[1];
+                            p1[2] = point2[2];
                             doMore = true;
                         }
                     }
@@ -705,7 +710,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
                     doMore = true;
                 }
             } // isects both directions
-            else 
+            else
             {
                 doMore = false;
             }
@@ -718,7 +723,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
         }
         if (doMore)
         {
-            bool dupFound = false; 
+            bool dupFound = false;
             for (size_t j = 0; j < isectedCells.size() && !dupFound; j++)
             {
                 double p2[3];
@@ -754,7 +759,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
         cells->InsertNextId(isectedCells[i]);
     }
 
-    // If we want original cells, be sure that we have them since it's 
+    // If we want original cells, be sure that we have them since it's
     // possible that filters before lineout might not be capable of preserving
     // the original cells.
     if (useOriginalCells &&
@@ -770,12 +775,12 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
     if (rv->GetNumberOfCells() == 0 ||
         rv->GetNumberOfPoints() == 0)
     {
-        debug5 << "avtIntervalTree returned empty DS for domain " 
+        debug5 << "avtIntervalTree returned empty DS for domain "
                    << domain << "." << endl;
         rv->Delete();
         rv = NULL;
     }
-   
+
     cells->Delete();
     pts->Delete();
 
@@ -793,7 +798,7 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 //  Method: avtLineoutFilter::Sampling
 //
 //  Purpose:
-//    Executes the lineout using a sampling method. 
+//    Executes the lineout using a sampling method.
 //
 //  Arguments:
 //    in_ds      The input dataset.
@@ -805,27 +810,27 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 //  Creation:   Thu Apr 25 16:01:28 PST 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002 
+//    Kathleen Bonnell, Fri Jul 12 17:28:31 PDT 2002
 //    No longer send YScale to vtkLineoutFilter, it is not needed.
 //
 //    Hank Childs, Tue Sep 10 16:46:57 PDT 2002
 //    Re-work memory management.
 //
-//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003 
-//    Set vtkLineoutFilter's UpdateGhostLevel, so that ghost levels can be 
+//    Kathleen Bonnell, Tue Dec 23 10:18:06 PST 2003
+//    Set vtkLineoutFilter's UpdateGhostLevel, so that ghost levels can be
 //    ignored.  Ensure output has points.
 //
 //    Kathleen Bonnell, Tue Jul 27 10:18:14 PDT 2004
-//    Moved from 'ExecueData' method. 
-// 
+//    Moved from 'ExecueData' method.
+//
 //    Hank Childs, Wed Sep  8 19:57:21 PDT 2004
 //    Remove ghost zones before doing a lineout.  This is because the
 //    vtkLineoutFilter is a bit touchy about ghost zone values.  If you have
-//    values > 1, then it can do interpolations to nodal data that can 
+//    values > 1, then it can do interpolations to nodal data that can
 //    mistakenly identify real zones as ghost.
 //
 //    Hank Childs, Thu Jan  4 09:51:34 PST 2007
-//    Manually force an update to the ghost filter.  If we don't do this, 
+//    Manually force an update to the ghost filter.  If we don't do this,
 //    then the lineout filter gets bad data.  I believe this is because
 //    the data set remove ghost cells filter doesn't know what it's real
 //    output is until it updates.
@@ -859,7 +864,7 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
     if (outPolys->GetNumberOfCells() == 0 ||
         outPolys->GetNumberOfPoints() == 0)
     {
-        debug5 << "vtkLineoutFilter returned empty DS for domain " 
+        debug5 << "vtkLineoutFilter returned empty DS for domain "
                << domain << "." << endl;
         rv->Delete();
         rv = NULL;
@@ -890,27 +895,27 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 //    ds        The input dataset.
 //    pt1       The origin of the line (used to calculate distances).
 //    pts       Intersection points along the line.
-//    cells     A list of intersected cells. 
+//    cells     A list of intersected cells.
 //
 //  Returns:    The output poly data.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 27, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 27, 2004
 //
 //  Modifications:
 //    Brad Whitlock, Wed Nov 3 10:16:32 PDT 2004
 //    Fixed on win32.
 //
-//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006 
-//    Create RectilinearGrid instead of PolyData for the curves. 
+//    Kathleen Bonnell, Mon Jul 31 10:15:00 PDT 2006
+//    Create RectilinearGrid instead of PolyData for the curves.
 //
-//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006 
-//    Remove unnecessary if(origCells) statements. 
+//    Kathleen Bonnell, Mon Aug 14 18:12:09 PDT 2006
+//    Remove unnecessary if(origCells) statements.
 //
-//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006 
-//    Removed calculation of ClosestPointOnLine, no longer using cell centers. 
+//    Kathleen Bonnell, Mon Sep 11 16:47:08 PDT 2006
+//    Removed calculation of ClosestPointOnLine, no longer using cell centers.
 //
-//    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008 
+//    Kathleen Bonnell, Thu Mar  6 09:07:33 PST 2008
 //    Removed unused variable.
 //
 //    Jeremy Meredith, Wed Sep  3 10:28:07 EDT 2008
@@ -927,10 +932,10 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
 // ****************************************************************************
 
 vtkRectilinearGrid *
-avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1, 
+avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
     double *pt2, vtkPoints *pts, vtkIdList *cells)
 {
-    bool pointData = true; 
+    bool pointData = true;
     vtkDataArray *scalars = ds->GetPointData()->GetScalars();
     if (scalars == NULL)
     {
@@ -948,7 +953,7 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
 
     if (!origCells)
     {
-       EXCEPTION2(UnexpectedValueException, "avtOriginalCellNumbers", 
+       EXCEPTION2(UnexpectedValueException, "avtOriginalCellNumbers",
                   "nada.  Internal error.");
     }
     int currentCell;
@@ -959,10 +964,10 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
     bool dup = false;
     for (size_t i = 0; i < npts; i++)
     {
-        currentCell = cells->GetId(i); 
+        currentCell = cells->GetId(i);
         pts->GetPoint(i, center);
 
-        origCell = (int)origCells->GetComponent(currentCell, 1); 
+        origCell = (int)origCells->GetComponent(currentCell, 1);
         origDomain = (int)origCells->GetComponent(currentCell, 0);
         dup = false;
         for (size_t j = 0; j < cellInfoList.size() && !dup; j++)
@@ -1011,12 +1016,12 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
     double sum = 0.;
     bool requiresSort = false;
     CellInfo cellInfo;
-    
+
     for (size_t i = 0; i < cellInfoList.size(); i++)
     {
         cellInfo = cellInfoList[i];
         size_t nDups = cellInfo.currCell.size();
-        
+
         if (nDups == 1)
         {
         newX = sqrt(vtkMath::Distance2BetweenPoints(pt1, cellInfo.isect[0].x));
@@ -1048,29 +1053,29 @@ avtLineoutFilter::CreateRGridFromOrigCells(vtkDataSet *ds, double *pt1,
                    sum /= (double) numCellPts;
                 newVal = sum;
             }
-            else 
+            else
             {
                 sum = 0;
                 std::set<int> uniquePts;
                 for (size_t j = 0; j < nDups; j++)
-                { 
-                    ds->GetCellPoints(cellInfoList[i].currCell[j], ptIds); 
+                {
+                    ds->GetCellPoints(cellInfoList[i].currCell[j], ptIds);
                     vtkIdType numCellPts = ptIds->GetNumberOfIds();
                     for (vtkIdType k = 0; k < numCellPts; k++)
-                    { 
+                    {
                         if (uniquePts.count(ptIds->GetId(k)) == 0)
-                        { 
-                            uniquePts.insert(ptIds->GetId(k)); 
+                        {
+                            uniquePts.insert(ptIds->GetId(k));
                             sum += scalars->GetTuple1(ptIds->GetId(j));
-                        } 
-                    } 
-                } 
+                        }
+                    }
+                }
                 if (uniquePts.size() > 0)
                    sum /= (double) uniquePts.size();
                 newVal = sum;
             }
         }
-        else 
+        else
         {
             if (nDups == 1)
             {
