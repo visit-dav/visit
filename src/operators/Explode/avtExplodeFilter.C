@@ -1365,7 +1365,7 @@ avtExplodeFilter::Execute(void)
         return;
     }
 
-    bool materialsExploded[nLeaves];
+    bool *materialsExploded = new bool[nLeaves];
     for (int i = 0; i < nLeaves; ++i)
         materialsExploded[i] = 0;
 
@@ -1466,6 +1466,7 @@ avtExplodeFilter::Execute(void)
         }
         #endif
     }
+    delete [] materialsExploded;
 
     //
     // Note: when in parallel, we cannot safely return until
