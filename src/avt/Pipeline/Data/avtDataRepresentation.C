@@ -158,8 +158,8 @@ avtDataRepresentation::avtDataRepresentation()
 //    Hank Childs, Mon Sep 17 09:14:03 PDT 2001
 //    Removed references to asCharRef.
 //
-//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001 
-//    Added string argument. 
+//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001
+//    Added string argument.
 //
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Initialized datasetType.
@@ -334,8 +334,8 @@ avtDataRepresentation::avtDataRepresentation(vtkmDataSet *d, int dom, string s,
 //    Hank Childs, Mon Sep 17 09:27:11 PDT 2001
 //    Changed method for reference counting the character string.
 //
-//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001 
-//    Added string argument. 
+//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001
+//    Added string argument.
 //
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Added argument to dataset type.
@@ -351,7 +351,7 @@ avtDataRepresentation::avtDataRepresentation(vtkmDataSet *d, int dom, string s,
 //
 // ****************************************************************************
 
-avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom, 
+avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
                                      string s, CharStrRef &os, DataSetType dst)
 {
     asVTK  = NULL;
@@ -364,7 +364,7 @@ avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
 
     originalString = os;
     domain         = dom;
-    label          = s; 
+    label          = s;
     compressionRatio = -1.0;
     timeToCompress   = -1.0;
     timeToDecompress = -1.0;
@@ -390,7 +390,7 @@ avtDataRepresentation::avtDataRepresentation(char *d, int dl, int dom,
 //    Changed method for reference counting the character string.
 //
 //    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001
-//    Copy over label. 
+//    Copy over label.
 //
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Initialized datasetType.
@@ -437,14 +437,14 @@ avtDataRepresentation::avtDataRepresentation(const avtDataRepresentation &rhs)
     if (rhs.asChar)
     {
         asChar         = rhs.asChar;
-        asCharLength   = rhs.asCharLength; 
+        asCharLength   = rhs.asCharLength;
         originalString = rhs.originalString;
     }
 
     datasetType = rhs.datasetType;
     dataRepType  = rhs.dataRepType;
     domain = rhs.domain;
-    label = rhs.label; 
+    label = rhs.label;
     compressionRatio = rhs.compressionRatio;
     timeToCompress = rhs.timeToCompress;
     timeToDecompress = rhs.timeToDecompress;
@@ -530,8 +530,8 @@ debug5 << "TODO: Not deleting asVTKm because some reference counting seems to be
 //    Hank Childs, Mon Sep 17 09:27:11 PDT 2001
 //    Changed method for reference counting the character string.
 //
-//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001 
-//    Copied over label. 
+//    Kathleen Bonnell, Wed Sep 19 13:45:33 PDT 2001
+//    Copied over label.
 //
 //    Hank Childs, Thu Sep 27 16:43:27 PDT 2001
 //    Copied over datasetType.
@@ -604,14 +604,14 @@ avtDataRepresentation::operator=(const avtDataRepresentation &rhs)
     if (rhs.asChar)
     {
         asChar         = rhs.asChar;
-        asCharLength   = rhs.asCharLength; 
+        asCharLength   = rhs.asCharLength;
         originalString = rhs.originalString;
     }
 
     datasetType = rhs.datasetType;
     dataRepType = rhs.dataRepType;
     domain = rhs.domain;
-    label = rhs.label; 
+    label = rhs.label;
     compressionRatio = rhs.compressionRatio;
     timeToCompress = rhs.timeToCompress;
     timeToDecompress = rhs.timeToDecompress;
@@ -655,8 +655,8 @@ avtDataRepresentation::Valid(void)
 //     we'll return the value for the underlying vtk's GetNumberOfCells()
 //     only if topoDim < 3;
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   19Aug03 
+//  Programmer: Mark C. Miller
+//  Creation:   19Aug03
 //
 //  Modifications:
 //
@@ -730,7 +730,7 @@ avtDataRepresentation::GetNumberOfCells(int topoDim, bool polysOnly) const
 //  Purpose: Public interface to get the data as a character string
 //           w/o compression
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   November 15, 2005
 //
 // ****************************************************************************
@@ -748,7 +748,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst)
 //  Purpose: Public interface to get the data as a character string
 //           with compression
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   November 15, 2005
 //
 // ****************************************************************************
@@ -778,7 +778,7 @@ avtDataRepresentation::vtkToString(bool compress)
 {
     if (asVTK == NULL)
         return NULL;
-                    
+
     datasetType = DatasetTypeForVTK(asVTK);
 
     vtkDataSetWriter *writer = vtkDataSetWriter::New();
@@ -808,7 +808,7 @@ avtDataRepresentation::vtkToString(bool compress)
 
     return asChar;
 }
-                
+
 // ****************************************************************************
 //  Method: avtDataRepresentation::GetDataString
 //
@@ -884,7 +884,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
                 vtkToString(compress);
                 dst = datasetType;
             }
-        }            
+        }
 #endif
 #ifdef HAVE_LIBVTKM
         else if (dataRepType == DATA_REP_TYPE_VTKM)
@@ -902,7 +902,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
                 vtkToString(compress);
                 dst = datasetType;
             }
-        }            
+        }
 #endif
         else
         {
@@ -913,7 +913,7 @@ avtDataRepresentation::GetDataString(int &length, DataSetType &dst, bool compres
     {
         dst = datasetType;
     }
-    
+
     length = asCharLength;
     return asChar;
 }
@@ -943,7 +943,7 @@ avtDataRepresentation::GetDataEAVL(void)
 #else
 
     InitializeNullDatasets();
-    
+
     if (asEAVL == NULL)
     {
         if (datasetType == DATASET_TYPE_NULL)
@@ -998,7 +998,7 @@ avtDataRepresentation::GetDataEAVL(void)
 //    Make use of the null dataset to make sure we don't blow memory in SR-mode
 //
 //    Hank Childs, Sun Mar  6 08:18:53 PST 2005
-//    Remove the data string after creating the VTK data set.  This 
+//    Remove the data string after creating the VTK data set.  This
 //    substantially reduces memory footprint.
 //
 //    Mark C. Miller, Wed Nov 16 14:17:01 PST 2005
@@ -1078,7 +1078,7 @@ avtDataRepresentation::GetDataVTK(void)
               }
               case DATASET_TYPE_UNSTRUCTURED:
               {
-                vtkUnstructuredGridReader *r1 = 
+                vtkUnstructuredGridReader *r1 =
                                               vtkUnstructuredGridReader::New();
                 reader = r1;
                 asVTK = r1->GetOutput();
@@ -1111,7 +1111,7 @@ avtDataRepresentation::GetDataVTK(void)
             if (CDecompressDataString(asChar, asCharLength, &asCharNew, &asCharLengthNew,
                               &timeToCompress, &timeToDecompress, &compressionRatio))
             {
-                
+
                 asCharTmp = asCharNew;
                 asCharLengthTmp = asCharLengthNew;
             }
@@ -1170,7 +1170,7 @@ avtDataRepresentation::GetDataVTKm(void)
 #else
 
     InitializeNullDatasets();
-    
+
     if (asVTKm == NULL)
     {
         if (datasetType == DATASET_TYPE_NULL)
@@ -1269,7 +1269,7 @@ avtDataRepresentation::InitializeNullDatasets(void)
 //    Added support for VTKm.
 //
 // ****************************************************************************
-void 
+void
 avtDataRepresentation::DeleteNullDatasets(void)
 {
     if (nullVTKDataset)
@@ -1282,12 +1282,12 @@ avtDataRepresentation::DeleteNullDatasets(void)
     delete nullEAVLDataset;
     nullEAVLDataset = NULL;
 #endif
-    
+
 #ifdef HAVE_LIBVTKM
     delete nullVTKmDataset;
     nullVTKmDataset = NULL;
 #endif
-    
+
     initializedNullDatasets = false;
 }
 
@@ -1355,10 +1355,10 @@ avtDataRepresentation::DatasetTypeForVTK(vtkDataSet *ds)
 // ****************************************************************************
 //  Method: avtDataRepresentation::GetCompressionRatio
 //
-//  Purpose: Gets the compression ratio, if any, without uncompressing 
+//  Purpose: Gets the compression ratio, if any, without uncompressing
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   November 15, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   November 15, 2005
 //
 // ****************************************************************************
 
@@ -1371,7 +1371,7 @@ avtDataRepresentation::GetCompressionRatio() const
     if (asChar != NULL)
     {
         float ratioc;
-        CGetCompressionInfoFromDataString(asChar, asCharLength, 
+        CGetCompressionInfoFromDataString(asChar, asCharLength,
             0, &ratioc);
         return ratioc;
     }
@@ -1382,10 +1382,10 @@ avtDataRepresentation::GetCompressionRatio() const
 // ****************************************************************************
 //  Method: avtDataRepresentation::GetTimeToCompress
 //
-//  Purpose: Gets the time to compress, if any, without uncompressing 
+//  Purpose: Gets the time to compress, if any, without uncompressing
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   November 15, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   November 15, 2005
 //
 // ****************************************************************************
 
@@ -1398,7 +1398,7 @@ avtDataRepresentation::GetTimeToCompress() const
     if (asChar != NULL)
     {
         float timec;
-        CGetCompressionInfoFromDataString(asChar, asCharLength, 
+        CGetCompressionInfoFromDataString(asChar, asCharLength,
             &timec, 0);
         return timec;
     }
@@ -1409,10 +1409,10 @@ avtDataRepresentation::GetTimeToCompress() const
 // ****************************************************************************
 //  Method: avtDataRepresentation::GetTimeToDecompress
 //
-//  Purpose: Gets the time to decompress, if any, without uncompressing 
+//  Purpose: Gets the time to decompress, if any, without uncompressing
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   November 15, 2005 
+//  Programmer: Mark C. Miller
+//  Creation:   November 15, 2005
 //
 // ****************************************************************************
 
@@ -1441,7 +1441,7 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Added reference counts to output.
 //
 //    Cyrus Harrison, Thu Jan 10 10:52:42 PST 2008
-//    Add more information about number of tuples, components and fixed 
+//    Add more information about number of tuples, components and fixed
 //    bug where some info was droped in the output string.
 //
 //    Hank Childs, Mon Jan 14 20:27:10 PST 2008
@@ -1452,7 +1452,7 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    Added support for optional -dump output directory.
 //
 //    Cyrus Harrison, Tue Feb 19 11:41:18 PST 2008
-//    Fixed a bug with naming -dump vtk output files in the parallel case. 
+//    Fixed a bug with naming -dump vtk output files in the parallel case.
 //
 //    Tom Fogal, Sat Jun 14 21:59:58 EDT 2008
 //    Made an array `static const' to avoid a warning and allow it to be put in
@@ -1474,7 +1474,7 @@ avtDataRepresentation::GetTimeToDecompress() const
 //    of each of those we need to actually write.
 //
 //    Hank Childs, Sun Jun  6 11:15:23 CDT 2010
-//    Account for NULL vtkPoints objects. 
+//    Account for NULL vtkPoints objects.
 //
 //    Kathleen Bonnell, Tue Dec 14 12:31:40 PST 2010
 //    std::string doesn't like assignment to a NULL const char *, so don't
@@ -1485,6 +1485,10 @@ avtDataRepresentation::GetTimeToDecompress() const
 //
 //    Kathleen Biagas, Wed Apr  1 16:34:55 PDT 2015
 //    Access FieldData arrays via AbstractArray interface.
+//
+//    Kathleen Biagas, Mon Feb 26 09:22:50 PST 2018
+//    When writing to html the data arrays, don't assume they have a name.
+//    Same when removing, remove by index not name.
 //
 // ****************************************************************************
 
@@ -1520,7 +1524,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             vtkDataArray *arr = newDS->GetPointData()->GetArray(i);
             if (arr->GetNumberOfTuples() != newDS->GetNumberOfPoints())
             {
-                newDS->GetPointData()->RemoveArray(arr->GetName());
+                newDS->GetPointData()->RemoveArray(i);
                 newDS->GetFieldData()->AddArray(arr);
             }
         }
@@ -1533,7 +1537,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             vtkDataArray *arr = newDS->GetCellData()->GetArray(i);
             if (arr->GetNumberOfTuples() != newDS->GetNumberOfCells())
             {
-                newDS->GetCellData()->RemoveArray(arr->GetName());
+                newDS->GetCellData()->RemoveArray(i);
                 newDS->GetFieldData()->AddArray(arr);
             }
         }
@@ -1568,7 +1572,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         for(int i = 0; i < npt; i++)
         {
             vtkDataArray *arr = newDS->GetPointData()->GetArray(i);
-            string cur_name(""); 
+            string cur_name("");
             if (arr->GetName() != NULL)
                 cur_name = arr->GetName();
             string dmp_name = cur_name;
@@ -1586,7 +1590,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
         for(int i = 0; i < ncell; i++)
         {
             vtkDataArray *arr = newDS->GetCellData()->GetArray(i);
-            string cur_name(""); 
+            string cur_name("");
             if (arr->GetName() != NULL)
                 cur_name = arr->GetName();
             string dmp_name = cur_name;
@@ -1701,7 +1705,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 
     if (dims[0] > 0)
     {
-        oss << "ncells = " << nzones << " npts = " <<  nnodes 
+        oss << "ncells = " << nzones << " npts = " <<  nnodes
             << " dims = " << dims[0] << "," << dims[1] << "," << dims[2];
     }
     else
@@ -1713,7 +1717,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
 
     if (ptcnt >= 0)
     {
-        oss << "Refs to mesh = " << asVTK->GetReferenceCount() 
+        oss << "Refs to mesh = " << asVTK->GetReferenceCount()
             << ", to points = "  << ptcnt << "<br>";
     }
     else if (ptcnt == -1)
@@ -1722,7 +1726,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     }
     else
     {
-        oss << "Refs to mesh = " << asVTK->GetReferenceCount() 
+        oss << "Refs to mesh = " << asVTK->GetReferenceCount()
             << " (mesh has NULL vtkPoints object)" << "<br>";
     }
 
@@ -1732,6 +1736,7 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
     data[1] = asVTK->GetPointData();
     data[2] = asVTK->GetCellData();
     static const char *names[3] = { "field", "point", "cell" };
+    static const char *unk_arr_name = "unknown_array_name";
 
     for (int fd = 0 ; fd < 3 ; fd++)
     {
@@ -1746,6 +1751,9 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
             for (int i=0; i<data[fd]->GetNumberOfArrays(); i++)
             {
                 const char *arr_type = "<unknown>";
+                const char *aname = data[fd]->GetAbstractArray(i)->GetName();
+                if (aname == NULL)
+                    aname = unk_arr_name;
                 switch (data[fd]->GetAbstractArray(i)->GetDataType())
                 {
                   case VTK_CHAR:
@@ -1779,17 +1787,17 @@ avtDataRepresentation::DebugDump(avtWebpage *webpage, const char *prefix)
                     arr_type = "id_type";
                     break;
                 }
-                oss << "<li>" << data[fd]->GetAbstractArray(i)->GetName() 
-                    << "<ul>" 
-                    << "<li>" 
+                oss << "<li>" << aname
+                    << "<ul>"
+                    << "<li>"
                     << "refs = "  << data[fd]->GetAbstractArray(i)->GetReferenceCount()
-                    << "</li><li>" 
+                    << "</li><li>"
                     << "vals = " << data[fd]->GetAbstractArray(i)->GetNumberOfTuples()
-                    << "</li><li>" 
-                    << "ncomps = " 
+                    << "</li><li>"
+                    << "ncomps = "
                     << data[fd]->GetAbstractArray(i)->GetNumberOfComponents()
-                    << "</li><li>" 
-                    << "type = " 
+                    << "</li><li>"
+                    << "type = "
                     << arr_type
                     << "</li></ul>"
                     << "</li>";
