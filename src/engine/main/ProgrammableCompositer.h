@@ -1028,9 +1028,7 @@ CompositerThreadManager<T>::~CompositerThreadManager()
 template <typename T>
 void CompositerThreadManager<T>::SetThreadPoolSize(size_t nThreads)
 {
-#ifndef THREADED_COMPOSITER
-    (void)nThreads;
-#else
+#ifdef THREADED_COMPOSITER
    if (nThreads == m_workers.size())
        return;
 
@@ -1044,9 +1042,13 @@ void CompositerThreadManager<T>::SetThreadPoolSize(size_t nThreads)
     for (size_t i = 0; i < nThreads; ++i)
         pthread_create(&m_workers[i], &attr, CompositerThread<T>, (void *)this);
     pthread_attr_destroy(&attr);
+
 #ifdef ProgrammableCompositerDEBUG
     std::cerr << "created thread pool with " << nThreads << std::endl;
 #endif
+
+#else
+    (void)nThreads;
 #endif
 }
 
@@ -1100,10 +1102,10 @@ void CompositerThreadManager<T>::FinalizeThreads()
 template <typename T>
 size_t CompositerThreadManager<T>::GetNumberOfThreads()
 {
-#ifndef THREADED_COMPOSITER
-    return 0;
-#else
+#ifdef THREADED_COMPOSITER
     return m_workers.size();
+#else
+    return 0;
 #endif
 }
 
@@ -1429,10 +1431,10 @@ template <typename T>
 void
 ProgrammableCompositer<T>::SetThreadPoolSize(size_t n)
 {
-#ifndef THREADED_COMPOSITER
-    (void)n;
-#else
+#ifdef THREADED_COMPOSITER
     tmgr->SetThreadPoolSize(n);
+#else
+    (void)n;
 #endif
 }
 
