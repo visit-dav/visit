@@ -592,7 +592,7 @@ debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
             //
             vtkDataArray *subsetArray = 
                 inDS->GetCellData()->GetArray("avtSubsets");
-            unsigned int subsetList[inDS->GetNumberOfCells()];
+            std::vector<unsigned int> subsetList(inDS->GetNumberOfCells());
             int numMat = 0;
             if (subsetArray)
             {
@@ -699,7 +699,7 @@ debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
                 // If our cell contains mixed variables, we need to 
                 // consider them when looking for repeats. 
                 //
-                std::vector<unsigned int> matCellIds[numMat];
+                std::vector< std::vector< unsigned int > > matCellIds(numMat);
                 matCellIds[subsetList[i]].push_back(i);
 
                 int j = i + 1;
