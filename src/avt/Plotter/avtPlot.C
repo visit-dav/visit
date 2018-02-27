@@ -90,21 +90,21 @@
 //    Jeremy Meredith, Tue Jun  5 20:41:21 PDT 2001
 //    Added initialization of needsRecalculation.
 //
-//    Kathleen Bonnell, Wed Jun 20 13:35:27 PDT 2001 
+//    Kathleen Bonnell, Wed Jun 20 13:35:27 PDT 2001
 //    Added initialization of ghostZoneFilter.
 //
-//    Kathleen Bonnell, Fri Jul 20 07:26:55 PDT 2001 
+//    Kathleen Bonnell, Fri Jul 20 07:26:55 PDT 2001
 //    Added combined ghostZone and facelist filter, removed
 //    separate filters.
 //
 //    Hank Childs, Mon Aug 20 14:49:44 PDT 2001
 //    Initialized silr to NULL.
 //
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
-//    Initialized compactTreeFilter. 
+//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001
+//    Initialized compactTreeFilter.
 //
-//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
-//    Initialized currentExtentFilter. 
+//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
+//    Initialized currentExtentFilter.
 //
 //    Hank Childs, Tue Nov 20 14:48:18 PST 2001
 //    Initialized index.
@@ -112,8 +112,8 @@
 //    Hank Childs, Mon Dec 31 11:36:28 PST 2001
 //    Added vertex normals filter.
 //
-//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002   
-//    Initialized intermediateDataObject. 
+//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
+//    Initialized intermediateDataObject.
 //
 //    Jeremy Meredith, Tue Dec 10 09:15:35 PST 2002
 //    Initialize avtSmoothPolyDataFilter.
@@ -124,14 +124,14 @@
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Added cellCountMultiplierForSRThreshold
 //
-//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004 
-//    Initialize meshType. 
+//    Kathleen Bonnell, Tue Nov  2 10:18:16 PST 2004
+//    Initialize meshType.
 //
-//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004
 //    Removed meshType, added topologicalDim and spatialDim.
 //
-//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
-//    Added logMeshFilter, xScaleMode, yScaleMode, havePerformedLogX, 
+//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007
+//    Added logMeshFilter, xScaleMode, yScaleMode, havePerformedLogX,
 //    havePerformedLogY.
 //
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
@@ -195,18 +195,18 @@ avtPlot::avtPlot()
 //    Jeremy Meredith, Thu Mar  1 13:52:16 PST 2001
 //    Added a relevantPointsFilter and a facelistFilter.
 //
-//    Kathleen Bonnell, Wed Jun 20 13:35:27 PDT 2001 
+//    Kathleen Bonnell, Wed Jun 20 13:35:27 PDT 2001
 //    Added a ghostZoneFilter.
 //
-//    Kathleen Bonnell, Fri Jul 20 07:26:55 PDT 2001 
-//    Added combined ghostZone and facelist filter, removed 
-//    separate filters. 
+//    Kathleen Bonnell, Fri Jul 20 07:26:55 PDT 2001
+//    Added combined ghostZone and facelist filter, removed
+//    separate filters.
 //
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
-//    Added compactTreeFilter. 
+//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001
+//    Added compactTreeFilter.
 //
 //    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
-//    Added currentExtentFilter. 
+//    Added currentExtentFilter.
 //
 //    Hank Childs, Mon Dec 31 11:36:28 PST 2001
 //    Added vertex normals filter.
@@ -217,7 +217,7 @@ avtPlot::avtPlot()
 //    Brad Whitlock, Tue Jul 20 16:11:26 PST 2004
 //    Added variable units.
 //
-//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
+//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007
 //    Added logMeshFilter.
 //
 // ****************************************************************************
@@ -364,7 +364,7 @@ avtPlot::SetPlotTitle(const char *title)
         }
         else
         {
-            // Get the name of the plot 
+            // Get the name of the plot
             std::string plotName( GetName() );
 
             // All plots should end in "Plot" so strip that off.
@@ -439,7 +439,7 @@ avtPlot::SetVarName(const char *name)
 // ****************************************************************************
 // Method: avtPlot::SetVarUnits
 //
-// Purpose: 
+// Purpose:
 //   Sets the units for the plot.
 //
 // Arguments:
@@ -449,7 +449,7 @@ avtPlot::SetVarName(const char *name)
 // Creation:   Tue Jul 20 16:12:30 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -490,12 +490,12 @@ avtPlot::SetVarUnits(const char *name)
 //
 //  Modifications:
 //    Kathleen Bonnell, Thu Jan  4 14:30:26 PST 2001
-//    Added code to create imageOutput from geometryOutput if the geometry's 
+//    Added code to create imageOutput from geometryOutput if the geometry's
 //    size is greater than SIZECUTOFF.
 //
-//    Kathleen Bonnell, Mon Jan  8 11:48:07 PST 2001 
-//    Revised code to reflect new version of avtDrawer.  
-//   
+//    Kathleen Bonnell, Mon Jan  8 11:48:07 PST 2001
+//    Revised code to reflect new version of avtDrawer.
+//
 //    Jeremy Meredith, Thu Mar  1 13:52:16 PST 2001
 //    Added a relevantPointsFilter and a facelistFilter directly to this class.
 //
@@ -509,30 +509,30 @@ avtPlot::SetVarUnits(const char *name)
 //    Changed usage of the writer to reflect the fact that it is now
 //    and originating sink (to enable dynamic load balancing).
 //
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 200 
-//    Added call to CompactTree method. 
-//    
-//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
-//    Added call to SetCurrentExtents method. 
-//    
+//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 200
+//    Added call to CompactTree method.
+//
+//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
+//    Added call to SetCurrentExtents method.
+//
 //    Jeremy Meredith, Thu Nov  8 11:07:14 PST 2001
 //    Added WindowAttributes.
 //
-//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002   
+//    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
 //    Place a copy of the data in intermediateDataObject, to be used
-//    by queries. 
+//    by queries.
 //
-//    Kathleen Bonnell, Wed Oct 23 15:11:44 PDT 2002 
+//    Kathleen Bonnell, Wed Oct 23 15:11:44 PDT 2002
 //    Split ApplyOperators into two methods (added ApplyRendering
 //    Transformation).  The output from ApplyOperators is the data stored in
-//    intermediateDataObject, and is the portion of the plot that is 
+//    intermediateDataObject, and is the portion of the plot that is
 //    (possibly) queryable.
-//    
+//
 //    Mark C. Miller, Tue Feb 11 08:33:07 PST 2003
 //    Added boolean argument indicating if its being called by the
 //    CombinedExecute method or not. Made it a protected method. Introduced
 //    a public wrapper for this now protected method.
-//    
+//
 //    Hank Childs, Tue Feb 24 13:47:47 PST 2004
 //    Remove old code regarding the "avtDrawer", since its functionality is
 //    now totally subsumed by scalable rendering.  Also set the name of the
@@ -546,10 +546,10 @@ avtPlot::SetVarUnits(const char *name)
 //
 //    Kathleen Bonnell, Fri Sep  3 10:07:11 PDT 2004
 //    Added test for ValidActiveVariable for attempting to retrieve Units,
-//    to avoid unncessary exception catches. 
+//    to avoid unncessary exception catches.
 //
-//    Kathleen Bonnell, Fri Jan  7 13:00:32 PST 2005 
-//    Removed unnecessary TRY-CATCH block. 
+//    Kathleen Bonnell, Fri Jan  7 13:00:32 PST 2005
+//    Removed unnecessary TRY-CATCH block.
 //
 //    Hank Childs, Wed Mar  2 11:11:59 PST 2005
 //    Pass a pipeline specification to the sink, not a data specification.
@@ -569,7 +569,7 @@ avtPlot::SetVarUnits(const char *name)
 //    Add compact domains options.
 //
 //    Hank Childs, Thu Aug 26 16:57:24 PDT 2010
-//    Explicitly state which variables should have 
+//    Explicitly state which variables should have
 //
 //    Kathleen Biagas, Mon Apr 21 13:18:13 PDT 2014
 //    Remove no-longer used arg combinedExecute.
@@ -585,7 +585,7 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
 
     //
     // We don't know that the varname is has extents.  It might be a mesh or a
-    // material.  But that won't hurt anything ... the extents calculation 
+    // material.  But that won't hurt anything ... the extents calculation
     // won't happen in that case any way.
     //
     contract->SetCalculateVariableExtents(varName, true);
@@ -607,7 +607,7 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
     intermediateDataObject->SetTransientStatus(false);
     dob = ApplyRenderingTransformation(dob);
 
-    if (UtilizeRenderingFilters() && 
+    if (UtilizeRenderingFilters() &&
         strcmp(dob->GetType(), "avtDataset") == 0)
     {
         RenderingAttributes renderAtts = atts->GetRenderAtts();
@@ -635,7 +635,7 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
             SetVarUnits(dobunits.c_str());
     }
     else
-    { 
+    {
         SetVarUnits(NULL);
     }
 
@@ -654,8 +654,8 @@ avtPlot::Execute(avtDataObject_p input, avtContract_p contract,
 //  method, this is NOT the place to do it. Modify the method below this
 //  one.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   February 11, 2003 
+//  Programmer: Mark C. Miller
+//  Creation:   February 11, 2003
 //
 // ****************************************************************************
 
@@ -675,7 +675,7 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //
 //  Arguments:
 //      reader  A reader that contains geometry or an image.
-//   
+//
 //  Returns:    An actor created from the data object input.
 //
 //  Programmer: Hank Childs
@@ -693,8 +693,8 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Brad Whitlock, Thu Apr 4 16:40:17 PST 2002
 //    Changed CopyTo to an inline template function.
 //
-//    Kathleen Bonnell, Fri Jul 12 16:45:42 PDT 2002  
-//    Added support for decorations. 
+//    Kathleen Bonnell, Fri Jul 12 16:45:42 PDT 2002
+//    Added support for decorations.
 //
 //    Mark C. Miller, Tue Feb 11 08:33:07 PST 2003
 //    Added avtDataObject argument indicating if its being called by the
@@ -705,7 +705,7 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Set the window mode based on the spatial dimension.
 //
 //    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004
-//    Save Spatial and Topological dimension for use by derived types. 
+//    Save Spatial and Topological dimension for use by derived types.
 //
 //    Hank Childs, Wed Dec  1 07:33:05 PST 2004
 //    If plot is image based, then we should not add the drawable to the vis
@@ -724,10 +724,10 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Brad Whitlock, Wed Feb 7 12:19:17 PDT 2007
 //    Removed avtTheater.
 //
-//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007 
+//    Kathleen Bonnell, Thu Mar 22 15:45:21 PDT 2007
 //    Added Call to SetScaleMode(performs log scale on mesh when requested).
 //
-//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
+//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007
 //    Added separate calls to SetScaleMode, based on spatial/topo dims, so
 //    that correct scale modes get used.
 //
@@ -737,6 +737,10 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Kathleen Bonnell, Thu May  7 18:03:55 PDT 2009
 //    Changed test for curve plots (before SetScaleMode) to use windwowmode
 //    instead of spatial/topological dimensions.
+//
+//    Kathleen Biagas, Mon Feb 26 16:58:55 MST 2018
+//    Added call to SetVarUnits.  Moved from ViewerPlot so that plugins can
+//    override the default units in their CustomizeBehavior method.
 //
 // ****************************************************************************
 
@@ -753,11 +757,11 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
     // means creating a mapper.
     //
     bool haveDatasetReader = (*reader != NULL) && reader->InputIsDataset();
-    bool haveDatasetObject = (*dob != NULL) && 
+    bool haveDatasetObject = (*dob != NULL) &&
                                  (strcmp(dob->GetType(),"avtDataset")==0);
     bool haveDataset = haveDatasetReader || haveDatasetObject;
     if (haveDataset && !PlotIsImageBased())
-    {   
+    {
         avtDataset_p geometry;
 
         debug2 << "avtPlot::Execute Receiving Polygon Data" << endl;
@@ -783,14 +787,14 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
            src = dob->GetOriginatingSource();
         else
            src = geo->GetOriginatingSource();
-        avtContract_p ds = 
+        avtContract_p ds =
               new avtContract(src->GetFullDataRequest(), 0);
 
         avtDataObject_p sd;
         if (actor->GetWindowMode() == WINMODE_CURVE)
             sd = SetScaleMode(geo, xScaleModeCurve, yScaleModeCurve,
                               havePerformedLogXCurve, havePerformedLogYCurve);
-        else 
+        else
             sd = SetScaleMode(geo, xScaleMode2D, yScaleMode2D,
                               havePerformedLogX2D, havePerformedLogY2D);
         sd->Update(ds);
@@ -823,9 +827,9 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
     }
     else if (((*reader != NULL) && reader->InputIsImage()) ||
              ((*dob != NULL) && !strcmp(dob->GetType(),"avtImage")))
-    {   
+    {
         avtImage_p  image;
-    
+
         debug2 << "avtPlot::Execute Receiving Image Data" << endl;
 
         if (*dob != NULL)
@@ -840,7 +844,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
         mapper.SetInput(img);
         drawable = mapper.GetDrawable();
     }
-    else if (!PlotIsImageBased() && ((*reader != NULL) && 
+    else if (!PlotIsImageBased() && ((*reader != NULL) &&
              reader->InputIsNullData()))
     {
         // proceed as though we had geometry & create a geometry drawable.
@@ -862,7 +866,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 
         // Before we get the drawable, we must do an update.
         avtOriginatingSource *src = geo->GetOriginatingSource();
-        avtContract_p ds = 
+        avtContract_p ds =
               new avtContract(src->GetFullDataRequest(), 0);
         mapper->Execute(ds);
 
@@ -903,7 +907,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 
         // Before we get the drawable, we must do an update.
         avtOriginatingSource *src = geo->GetOriginatingSource();
-        avtContract_p ds = 
+        avtContract_p ds =
               new avtContract(src->GetFullDataRequest(), 0);
         GuideFunction foo;
         void *args;
@@ -926,8 +930,26 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
     }
 
     //
-    // Add behavior to our drawable. Set the window mode based on the 
-    // spatial dimension.  Call CustomizeBehavior to give the derived 
+    // Try setting the plot's units based on the information in the dob.
+    // This is purposely done before the call to CustomzieBehavior, to allow
+    // plugins to override the units set here.
+    //
+    if (info.GetAttributes().ValidActiveVariable())
+    {
+        std::string dobunits = info.GetAttributes().GetVariableUnits();
+        if(dobunits == "")
+            SetVarUnits(NULL);
+        else
+            SetVarUnits(dobunits.c_str());
+    }
+    else
+    {
+        SetVarUnits(NULL);
+    }
+
+    //
+    // Add behavior to our drawable. Set the window mode based on the
+    // spatial dimension.  Call CustomizeBehavior to give the derived
     // types a chance to add legends, etc.
     //
     actor->SetDrawable(drawable);
@@ -968,17 +990,17 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 //    Hank Childs, Tue Apr 10 14:01:42 PDT 2001
 //    Correct test for debug statement.
 //
-//    Kathleen Bonnell, Wed Jun 13 15:01:47 PDT 2001 
-//    Added ghostZoneFilter. 
+//    Kathleen Bonnell, Wed Jun 13 15:01:47 PDT 2001
+//    Added ghostZoneFilter.
 //
 //    Hank Childs, Tue Jun 26 18:53:48 PDT 2001
 //    Only apply a relevant points filter if the target geometry is not points.
 //
-//    Kathleen Bonnell, Fri Jun 29 14:37:18 PDT 2001 
-//    Moved ghostZoneFilter after facelistFilter. 
+//    Kathleen Bonnell, Fri Jun 29 14:37:18 PDT 2001
+//    Moved ghostZoneFilter after facelistFilter.
 //
-//    Kathleen Bonnell, Fri Jul 20 07:26:55 PDT 2001 
-//    Added ghostZoneAndFacelistFilter in place of separate facelistFilter 
+//    Kathleen Bonnell, Fri Jul 20 07:26:55 PDT 2001
+//    Added ghostZoneAndFacelistFilter in place of separate facelistFilter
 //    and ghostZoneFilter.
 //
 //    Hank Childs, Tue Sep  4 16:04:18 PDT 2001
@@ -1033,7 +1055,7 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
 
     //
     // avtGhostZoneAndFacelistFilter applies a facelist and ghostzone
-    // filter in correct order depending upon the data.  
+    // filter in correct order depending upon the data.
     //
     // If we have a 3D dataset, but actually want a surface, then make
     // sure we apply facelist filter, otherwise not.
@@ -1068,7 +1090,7 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
     }
 
     //
-    // The vertex normals filter will decide whether or not normals are 
+    // The vertex normals filter will decide whether or not normals are
     // necessary and what kind of normals (point, cell) to do.
     //
     vertexNormalsFilter->SetInput(rv);
@@ -1089,20 +1111,20 @@ avtPlot::ReduceGeometry(avtDataObject_p curDS)
 //  Method: avtPlot::CompactTree
 //
 //  Purpose:
-//    Compacts that data by using a compact tree filter. 
+//    Compacts that data by using a compact tree filter.
 //
 //  Arguments:
-//    curDS     The current dataset. 
+//    curDS     The current dataset.
 //
 //  Returns:    The dataset with it's tree compacted.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   September 18, 2001
 //
 //  Modifications:
 //
 //    Kathleen Bonnell, Fri Oct 12 11:38:41 PDT 2001
-//    Set flag specifiying that execution depends on DLB. 
+//    Set flag specifiying that execution depends on DLB.
 //
 //    Dave Pugmire, Tue Aug 24 11:32:12 EDT 2010
 //    Add compact domains options.
@@ -1119,7 +1141,7 @@ avtPlot::CompactTree(avtDataObject_p curDS, const RenderingAttributes &renderAtt
         compactTreeFilter->SetCompactDomainsMode(avtCompactTreeFilter::Never);
     else if (renderAtts.GetCompactDomainsActivationMode() == RenderingAttributes::Always)
         compactTreeFilter->SetCompactDomainsMode(avtCompactTreeFilter::Always);
-        
+
     avtDataObject_p rv = curDS;
     compactTreeFilter->SetInput(rv);
     ((avtCompactTreeFilter*)compactTreeFilter)->DLBDependentExecutionON();
@@ -1218,7 +1240,7 @@ avtPlot::GetCurrentSILRestriction(void)
 // ****************************************************************************
 //  Method: avtPlot::SetColorTable
 //
-//  Purpose: 
+//  Purpose:
 //      This method allows the plot to lookup the colors for the named
 //      colormap and do things with them. This is a stub that allows the derived
 //      type to not define this method.
@@ -1241,15 +1263,15 @@ avtPlot::SetColorTable(const char *)
 // ****************************************************************************
 //  Method: avtPlot::SetBackgroundColor
 //
-//  Purpose: 
-//    This method allows the plot to set the background color. 
+//  Purpose:
+//    This method allows the plot to set the background color.
 //    This is a stub that allows the derived type to not define this method.
 //
 //  Arguments:
-//    bg        The background color. 
+//    bg        The background color.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 25, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 25, 2001
 //
 // ****************************************************************************
 
@@ -1263,15 +1285,15 @@ avtPlot::SetBackgroundColor(const double *)
 // ****************************************************************************
 //  Method: avtPlot::SetForegroundColor
 //
-//  Purpose: 
-//    This method allows the plot to set the foreground color. 
+//  Purpose:
+//    This method allows the plot to set the foreground color.
 //    This is a stub that allows the derived type to not define this method.
 //
 //  Arguments:
-//    fg        The foreground color. 
+//    fg        The foreground color.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 26, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 26, 2001
 //
 // ****************************************************************************
 
@@ -1285,16 +1307,16 @@ avtPlot::SetForegroundColor(const double *)
 // ****************************************************************************
 //  Method: avtPlot::SetActualExtents
 //
-//  Purpose: 
-//    This method sets the actual extents using the current extent filter. 
+//  Purpose:
+//    This method sets the actual extents using the current extent filter.
 //
 //  Arguments:
-//    curDS     The data object. 
+//    curDS     The data object.
 //
-//  Returns:    The data object with its current extents set. 
+//  Returns:    The data object with its current extents set.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 2, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 2, 2001
 //
 // ****************************************************************************
 
@@ -1311,11 +1333,11 @@ avtPlot::SetActualExtents(avtDataObject_p curDS)
 // ****************************************************************************
 //  Method: avtPlot::SetScaleMode
 //
-//  Purpose: 
-//    This method sets the mesh scaling using the MeshLog filter. 
+//  Purpose:
+//    This method sets the mesh scaling using the MeshLog filter.
 //
 //  Arguments:
-//    curDS             The data object to be scaled. 
+//    curDS             The data object to be scaled.
 //    xScaleMode        The scale mode for the x-axis.
 //    yScaleMode        The scale mode for the y-axis.
 //    havePerformedLogX Has this data object already been log scaled in x?
@@ -1323,25 +1345,25 @@ avtPlot::SetActualExtents(avtDataObject_p curDS)
 //
 //  Returns:    The data object with (possibly) log scaling applied.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 6, 2007 
-// 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 6, 2007
+//
 //  Modifications:
 //    Kathleen Bonnell, Tue Apr  3 16:06:54 PDT 2007
 //    Made execution dependent upon this plot allowing curve view scaling.
 //
-//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
+//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007
 //    Added ScaleMode and bool args so this method could be used for 2d or
-//    curve, depending on the args passed in. 
+//    curve, depending on the args passed in.
 //
 // ****************************************************************************
 
 avtDataObject_p
-avtPlot::SetScaleMode(avtDataObject_p curDS, ScaleMode xScaleMode, 
+avtPlot::SetScaleMode(avtDataObject_p curDS, ScaleMode xScaleMode,
                       ScaleMode yScaleMode,
                       bool &havePerformedLogX, bool &havePerformedLogY)
 {
-    if (!havePerformedLogX && !havePerformedLogY && 
+    if (!havePerformedLogX && !havePerformedLogY &&
         xScaleMode == LINEAR && yScaleMode == LINEAR)
     {
         return curDS;
@@ -1362,10 +1384,10 @@ avtPlot::SetScaleMode(avtDataObject_p curDS, ScaleMode xScaleMode,
     {
         useXScaleMode = xScaleMode;
     }
-    else 
+    else
     {
-        // we've already performed a log scale on the data, 
-        // if we want linear now, then we must do an inverse log, 
+        // we've already performed a log scale on the data,
+        // if we want linear now, then we must do an inverse log,
         // if we want log now, then we don't transform by specifying linear
         //useXScaleMode = (xScaleMode == LINEAR ? INVLOG : LINEAR);
         if (xScaleMode == LINEAR)
@@ -1375,17 +1397,17 @@ avtPlot::SetScaleMode(avtDataObject_p curDS, ScaleMode xScaleMode,
         }
         else
         {
-            useXScaleMode = LINEAR; 
+            useXScaleMode = LINEAR;
         }
     }
     if (!havePerformedLogY)
     {
         useYScaleMode = yScaleMode;
     }
-    else 
+    else
     {
-        // we've already performed a log scale on the data, 
-        // if we want linear now, then we must do an inverse log, 
+        // we've already performed a log scale on the data,
+        // if we want linear now, then we must do an inverse log,
         // if we want log now, then we don't transform by specifying linear
         //useYScaleMode = (yScaleMode == LINEAR ? INVLOG : LINEAR);
         if (yScaleMode == LINEAR)
@@ -1393,7 +1415,7 @@ avtPlot::SetScaleMode(avtDataObject_p curDS, ScaleMode xScaleMode,
             useYScaleMode = LOG;
             useInvLogY = true;
         }
-        else 
+        else
         {
             useYScaleMode = LINEAR;
         }
@@ -1434,18 +1456,18 @@ avtPlot::EnhanceSpecification(avtContract_p contract)
 // ****************************************************************************
 //  Method: avtPlot::RequiresReExecuteForQuery
 //
-//  Purpose: 
+//  Purpose:
 //    Returns whether or not Re-execution of the pipeline is required
-//    in order to perform a query. 
+//    in order to perform a query.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   November 26, 2001
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Mar 25 11:18:43 PST 2003
 //    Renamed from "GetTransformedPoints" to reflect actual usage.
 //
-//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004 
+//    Kathleen Bonnell, Tue Jun  1 15:08:30 PDT 2004
 //    Added args needInvT, and needZones.
 //
 // ****************************************************************************
@@ -1465,8 +1487,8 @@ avtPlot::RequiresReExecuteForQuery(const bool needInvT, const bool needZones)
 //      render window.  Most plots do not want to do this,
 //      so this is defined so the derived types don't have to.
 //
-//  Programmer: Kathleen Bonnel 
-//  Creation:   July 12, 2002 
+//  Programmer: Kathleen Bonnel
+//  Creation:   July 12, 2002
 //
 // ****************************************************************************
 
@@ -1516,8 +1538,8 @@ avtPlot::ReleaseData(void)
 //      threshold. By default, all plot's that don't override this method
 //      will set a value of 1.0.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   August 23, 2004 
+//  Programmer: Mark C. Miller
+//  Creation:   August 23, 2004
 //
 //  Modifications:
 //
@@ -1541,8 +1563,8 @@ avtPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p)
 //  Purpose: Return the cell count multiplier for SR threshold. However, throw
 //  an exception if this information is requested but hasn't already been set.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   August 23, 2004 
+//  Programmer: Mark C. Miller
+//  Creation:   August 23, 2004
 //
 // ****************************************************************************
 
@@ -1562,10 +1584,10 @@ avtPlot::GetCellCountMultiplierForSRThreshold() const
 // ****************************************************************************
 //  Method: avtPlot::GetPlotInformation
 //
-//  Purpose: 
+//  Purpose:
 //    Returns the PlotInfoAttributes associated with this plot.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   June 20, 2006
 //
 //  Modifications:
@@ -1583,29 +1605,29 @@ avtPlot::GetPlotInformation() const
 // ****************************************************************************
 //  Method: avtPlot::SetScaleMode
 //
-//  Purpose: 
-//    Sets the scale modes. 
+//  Purpose:
+//    Sets the scale modes.
 //
 //  Arguments:
 //    ds        The scale mode for the x-axis.
 //    rs        The scale mdoe for the y-axis.
 //    wm        The window mode to which the scaling applies.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 6, 2007 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 6, 2007
 //
 //  Modifications:
 //    Kathleen Bonnell, Tue Apr  3 16:06:54 PDT 2007
 //    Don't set scale modes if this plot doesn't support curve view scaling.
 //
-//    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007 
+//    Kathleen Bonnell, Wed May  9 16:58:50 PDT 2007
 //    Added support for 2D log scaling.
 //
-//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007 
+//    Kathleen Bonnell, Tue Sep 25 07:57:01 PDT 2007
 //    2D and Curve modes now stored separately.
 //
 //    Kathleen Bonnell, Tue Mar  3 10:40:06 PST 2009
-//    Removed 'CanDo*ViewScaling' tests. 
+//    Removed 'CanDo*ViewScaling' tests.
 //
 // ****************************************************************************
 
@@ -1632,17 +1654,17 @@ avtPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 // ****************************************************************************
 //  Method: avtPlot::ScaleModeRequiresUpdate
 //
-//  Purpose: 
+//  Purpose:
 //    Determines if changing to passed scale modes would require this
-//    plot to reexecute (viewer). 
+//    plot to reexecute (viewer).
 //
 //  Arguments:
 //    wm    The windowmode that the scale modes apply to.
 //    ds    The scale mode for the x-axis.
 //    rs    The scale mode for the y-axis.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 27, 2007 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 27, 2007
 //
 //  Modifications:
 //
@@ -1654,12 +1676,12 @@ avtPlot::ScaleModeRequiresUpdate(WINDOW_MODE wm, ScaleMode ds, ScaleMode rs)
     if (wm == WINMODE_CURVE)
     {
         return ( (havePerformedLogXCurve != (ds == LOG)) ||
-                 (havePerformedLogYCurve != (rs == LOG)) ); 
+                 (havePerformedLogYCurve != (rs == LOG)) );
     }
-    else 
+    else
     {
         return ( (havePerformedLogX2D != (ds == LOG)) ||
-                 (havePerformedLogY2D != (rs == LOG)) ); 
+                 (havePerformedLogY2D != (rs == LOG)) );
     }
 }
 
@@ -1683,7 +1705,7 @@ avtPlot::ScaleModeRequiresUpdate(WINDOW_MODE wm, ScaleMode ds, ScaleMode rs)
 const MapNode&
 avtPlot::GetExtraInfoForPick()
 {
-    // The defaults that control how Pick is performed are listed below, 
+    // The defaults that control how Pick is performed are listed below,
     // derived classes should overide individual items as necessary
     //
     // extraPickInfo["additionalVars"] = <empty stringVector>;
@@ -1698,7 +1720,7 @@ avtPlot::GetExtraInfoForPick()
     // extraPickInfo["showMeshInfo"] = false;
     // extraPickInfo["showIncidentElements"] = false;
     // Look at Pick Attributes "showXXX" members for more examples.
-    // 
+    //
     // To override how the intersection 'Point' is displayed:
     // extraPickInfo["pointString"] = string("<somestring representing xyz>")
 
