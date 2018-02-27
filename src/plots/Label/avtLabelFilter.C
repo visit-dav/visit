@@ -629,7 +629,7 @@ debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
                 // If our cell contains mixed variables, we need to 
                 // consider them when looking for repeats. 
                 //
-                std::vector<unsigned int> matCellIds[numMat];
+                std::vector< std::vector< unsigned int > > matCellIds(numMat);
                 matCellIds[subsetList[c1]].push_back(c1);
 
                 int nDupIds = 0;
