@@ -143,8 +143,8 @@ int ViewerPlot::numPlotsCreated = 0;
 //    Eric Brugger, Fri Aug 31 09:41:38 PDT 2001
 //    I replaced the avtPlot with a list of avtPlots, one per frame.
 //
-//    Kathleen Bonnell, Wed Sep 26 15:14:07 PDT 2001 
-//    Initialize bgColor, fgColor. 
+//    Kathleen Bonnell, Wed Sep 26 15:14:07 PDT 2001
+//    Initialize bgColor, fgColor.
 //
 //    Jeremy Meredith, Fri Sep 28 13:47:32 PDT 2001
 //    Removed the general plugin info since the viewer info is derived
@@ -153,8 +153,8 @@ int ViewerPlot::numPlotsCreated = 0;
 //    Jeremy Meredith, Fri Nov  9 10:08:50 PST 2001
 //    Added a network id.
 //
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Initialize queryAtts. 
+//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002
+//    Initialize queryAtts.
 //
 //    Hank Childs, Mon Jul 15 16:13:33 PDT 2002
 //    Initialize spatialExtentsType.
@@ -172,8 +172,8 @@ int ViewerPlot::numPlotsCreated = 0;
 //    Brad Whitlock, Fri Apr 11 09:48:58 PDT 2003
 //    I initialized some new members.
 //
-//    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003 
-//    Initialize 'isMesh'. 
+//    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003
+//    Initialize 'isMesh'.
 //
 //    Hank Childs, Wed Sep 17 10:20:23 PDT 2003
 //    Added pointer to ViewerPlotList.
@@ -184,14 +184,14 @@ int ViewerPlot::numPlotsCreated = 0;
 //    Jeremy Meredith, Tue Mar 30 10:39:20 PST 2004
 //    Added an engine key to map this plot to the engine used to create it.
 //
-//    Kathleen Bonnell, Wed Mar 31 16:46:13 PST 2004 
-//    Added clonedNetworkId. 
+//    Kathleen Bonnell, Wed Mar 31 16:46:13 PST 2004
+//    Added clonedNetworkId.
 //
 //    Brad Whitlock, Thu Apr 8 15:27:48 PST 2004
 //    Added support for keyframing back in.
 //
 //    Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
-//    Initialize 'isLabel'. 
+//    Initialize 'isLabel'.
 //
 //    Brad Whitlock, Wed Feb 7 16:40:25 PST 2007
 //    Added alternateDisplay and made it inherit ViewerBase.
@@ -200,7 +200,7 @@ int ViewerPlot::numPlotsCreated = 0;
 //    Added plotName.
 //
 //    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
-//    Added xScaleMode, yScaleMode. 
+//    Added xScaleMode, yScaleMode.
 //
 //    Jeremy Meredith, Tue Feb 19 14:23:59 EST 2008
 //    Added explicit storage for meshname.
@@ -221,7 +221,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     const int nStates,      // The number of total database states
     const int cacheIndex_,  // The initial active cache index
     const int nCacheEntries // The number of cache entries.
-    ) : ViewerBase(), 
+    ) : ViewerBase(),
         engineKey(ek_), hostName(hostName_), databaseName(databaseName_),
         variableName(variableName_)
 {
@@ -230,18 +230,18 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
     //
     type                = type_;
     viewerPluginInfo    = viewerPluginInfo_;
-    isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0); 
-    isLabel = (strcmp(viewerPluginInfo->GetName(), "Label") == 0); 
+    isMesh = (strcmp(viewerPluginInfo->GetName(), "Mesh") == 0);
+    isLabel = (strcmp(viewerPluginInfo->GetName(), "Label") == 0);
     followsTime         = true;
     expandedFlag        = GetViewerState()->GetGlobalAttributes()->GetExpandNewPlots();
     errorFlag           = false;
     networkID           = -1;
     embeddedPlotId      = -1;
     clonedNetworkId     = -1;
-    queryAtts           = 0;               
+    queryAtts           = 0;
     viewerPlotList      = NULL;
-    bgColor[0] = bgColor[1] = bgColor[2] = 1.0; 
-    fgColor[0] = fgColor[1] = fgColor[2] = 0.0; 
+    bgColor[0] = bgColor[1] = bgColor[2] = 1.0;
+    fgColor[0] = fgColor[1] = fgColor[2] = 0.0;
     spatialExtentsType  = AVT_ORIGINAL_EXTENTS;
 
     xScaleMode = LINEAR;
@@ -336,7 +336,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
 // ****************************************************************************
 // Method: ViewerPlot::ViewerPlot
 //
-// Purpose: 
+// Purpose:
 //   Copy constructor for the ViewerPlot class.
 //
 // Arguments:
@@ -346,7 +346,7 @@ ViewerPlot::ViewerPlot(const int type_,ViewerPlotPluginInfo *viewerPluginInfo_,
 // Creation:   Fri Apr 2 10:54:56 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ViewerPlot::ViewerPlot(const ViewerPlot &obj) : engineKey(obj.engineKey),
@@ -369,11 +369,11 @@ ViewerPlot::ViewerPlot(const ViewerPlot &obj) : engineKey(obj.engineKey),
 //    Eric Brugger, Fri Aug 31 09:41:38 PDT 2001
 //    I replaced the avtPlot with a list of avtPlots, one per frame.
 //
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Delete queryAtts. 
+//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002
+//    Delete queryAtts.
 //
 //    Kathleen Bonnell, Mon Sep 30 14:38:33 PDT 2002
-//    Added call to ReleaseData. 
+//    Added call to ReleaseData.
 //
 //    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
 //    I added keyframing support.
@@ -410,7 +410,7 @@ ViewerPlot::~ViewerPlot()
     // Delete the alternate display observer.
     delete alternateDisplayObserver;
     alternateDisplayObserver = 0;
-    
+
     //
     // Delete the database attributes.
     //
@@ -446,7 +446,7 @@ ViewerPlot::~ViewerPlot()
 // ****************************************************************************
 // Method: ViewerPlot::operator =
 //
-// Purpose: 
+// Purpose:
 //   Assignment operator.
 //
 // Arguments:
@@ -456,7 +456,7 @@ ViewerPlot::~ViewerPlot()
 // Creation:   Fri Apr 2 10:53:13 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -473,7 +473,7 @@ ViewerPlot::operator = (const ViewerPlot &obj)
 // ****************************************************************************
 // Method: ViewerPlot::CopyHelper
 //
-// Purpose: 
+// Purpose:
 //   Helps copy most fields into this ViewerPlot.
 //
 // Arguments:
@@ -484,13 +484,13 @@ ViewerPlot::operator = (const ViewerPlot &obj)
 //
 // Modifications:
 //   Kathleen Bonnell, Tue Jan 11 16:16:48 PST 2005
-//   Initialize 'isLabel'. 
+//   Initialize 'isLabel'.
 //
 //   Brad Whitlock, Wed Feb 14 12:15:57 PDT 2007
 //   Added code for alternate displays.
 //
 //   Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
-//   Added xScaleMode, yScaleMode. 
+//   Added xScaleMode, yScaleMode.
 //
 //   Brad Whitlock, Tue Oct 20 11:55:51 PDT 2009
 //   Added plotDescription.
@@ -607,7 +607,7 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
 // ****************************************************************************
 // Method: ViewerPlot::GetState
 //
-// Purpose: 
+// Purpose:
 //   Returns the database state currently being used by the plot.
 //
 // Returns:    The plot's current database state.
@@ -616,7 +616,7 @@ ViewerPlot::CopyHelper(const ViewerPlot &obj)
 // Creation:   Thu Apr 8 15:28:32 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -640,7 +640,7 @@ ViewerPlot::GetState() const
 // ****************************************************************************
 // Method: ViewerPlot::SetCacheIndex
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot's cacheIndex, which is the index of the actor that is being
 //   shown. The cache index corresponds to the time slider.
 //
@@ -653,10 +653,10 @@ ViewerPlot::GetState() const
 // Modifications:
 //   Kathleen Bonnell, Thu Feb  3 16:02:01 PST 2005
 //   Update queryAtts so that lineouts can update when time changes.
-//   
-//   Kathleen Bonnell, Wed Nov  1 13:50:32 PST 2006 
-//   Add another test for CreateCurve. 
-//   
+//
+//   Kathleen Bonnell, Wed Nov  1 13:50:32 PST 2006
+//   Add another test for CreateCurve.
+//
 // ****************************************************************************
 
 void
@@ -683,7 +683,7 @@ ViewerPlot::SetCacheIndex(int newCacheIndex)
 // ****************************************************************************
 // Method: ViewerPlot::GetCacheIndex
 //
-// Purpose: 
+// Purpose:
 //   Returns the plot's cache index.
 //
 // Returns:    The plot's cache index.
@@ -692,7 +692,7 @@ ViewerPlot::SetCacheIndex(int newCacheIndex)
 // Creation:   Thu Apr 8 15:30:11 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -704,7 +704,7 @@ ViewerPlot::GetCacheIndex() const
 // ****************************************************************************
 // Method: ViewerPlot::FollowsTime
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the plot follows a time slider.
 //
 // Returns:    True if the plot follows a time slider; false otherwise.
@@ -713,7 +713,7 @@ ViewerPlot::GetCacheIndex() const
 // Creation:   Thu Apr 8 15:30:30 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -725,7 +725,7 @@ ViewerPlot::FollowsTime() const
 // ****************************************************************************
 // Method: ViewerPlot::SetFollowsTime
 //
-// Purpose: 
+// Purpose:
 //   Sets whether or not the plot follows a time slider.
 //
 // Arguments:
@@ -735,7 +735,7 @@ ViewerPlot::FollowsTime() const
 // Creation:   Thu Apr 8 15:31:02 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -747,7 +747,7 @@ ViewerPlot::SetFollowsTime(bool val)
 // ****************************************************************************
 // Method: ViewerPlot::SetKeyframeMode
 //
-// Purpose: 
+// Purpose:
 //   This method shifts the plot into of out of keyframing mode.
 //
 // Arguments:
@@ -762,7 +762,7 @@ ViewerPlot::SetFollowsTime(bool val)
 // Creation:   Thu Apr 8 15:31:29 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -816,7 +816,7 @@ ViewerPlot::SetKeyframeMode(bool kfMode)
 // ****************************************************************************
 // Method: ViewerPlot::ResizeCache
 //
-// Purpose: 
+// Purpose:
 //   Resizes the actor cache and adjusts the plot range if needed.
 //
 // Arguments:
@@ -828,7 +828,7 @@ ViewerPlot::SetKeyframeMode(bool kfMode)
 // Creation:   Thu Apr 8 15:34:52 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -890,7 +890,7 @@ ViewerPlot::ResizeCache(int cs)
 // ****************************************************************************
 // Method: ViewerPlot::UpdateCacheSize
 //
-// Purpose: 
+// Purpose:
 //   This method is called when we do a replace, reopen, etc. It enlarges the
 //   actor caches so we can fit more.
 //
@@ -900,22 +900,22 @@ ViewerPlot::ResizeCache(int cs)
 //                 cache size.
 //   size        : The new number of keyframes if we're in keyframe mode.
 //                 Otherwise the argument is ignored.
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Apr 5 11:28:27 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
 ViewerPlot::UpdateCacheSize(bool kfMode, bool clearActors, int size)
 {
     //
-    // We were told to clear the actors so clear them now. 
+    // We were told to clear the actors so clear them now.
     //
     if(clearActors)
         ClearActors();
@@ -950,7 +950,7 @@ ViewerPlot::UpdateCacheSize(bool kfMode, bool clearActors, int size)
 // ****************************************************************************
 // Method: ViewerPlot::SetRange
 //
-// Purpose: 
+// Purpose:
 //   Sets the cache indices over which a plot is valid.
 //
 // Arguments:
@@ -961,7 +961,7 @@ ViewerPlot::UpdateCacheSize(bool kfMode, bool clearActors, int size)
 // Creation:   Thu Apr 8 15:36:46 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1065,13 +1065,13 @@ ViewerPlot::PrepareCacheForReplace(int newCacheIndex, int newNumStates,
 //    Kathleen Bonnell, Wed Dec  4 17:59:44 PST 2002
 //    Using IntializePlotAtts to reInitialize atts caused problems if
 //    user had changed the atts from default.  Call ReInitializePlotAtts
-//    instead. 
+//    instead.
 //
 //    Eric Brugger, Thu Dec 19 12:29:22 PST 2002
 //    I added keyframing support.
-//    
-//    Kathleen Bonnell, Tue Mar  4 15:34:36 PST 2003  
-//    Update queryAtts. 
+//
+//    Kathleen Bonnell, Tue Mar  4 15:34:36 PST 2003
+//    Update queryAtts.
 //
 //    Brad Whitlock, Fri Mar 26 08:03:51 PDT 2004
 //    Changed interface to ReInitializePlotAtts. Made host and db name be
@@ -1091,7 +1091,7 @@ ViewerPlot::PrepareCacheForReplace(int newCacheIndex, int newNumStates,
 // ****************************************************************************
 
 void
-ViewerPlot::SetHostDatabaseName(const EngineKey &key, 
+ViewerPlot::SetHostDatabaseName(const EngineKey &key,
     const std::string &database)
 {
     bool reInit = false;
@@ -1108,7 +1108,7 @@ ViewerPlot::SetHostDatabaseName(const EngineKey &key,
     //
     // If the host and database are different then we need to clear the
     // database keyframes.
-    // 
+    //
     if(key != engineKey || database != databaseName)
     {
         databaseAtts->ClearAtts();
@@ -1197,7 +1197,7 @@ ViewerPlot::GetDatabaseName() const
 // ****************************************************************************
 // Method: ViewerPlot::GetSource
 //
-// Purpose: 
+// Purpose:
 //   Returns the plot's source.
 //
 // Returns:    The plot's source, which is the host + database name.
@@ -1206,7 +1206,7 @@ ViewerPlot::GetDatabaseName() const
 // Creation:   Thu Jan 29 23:53:37 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -1218,7 +1218,7 @@ ViewerPlot::GetSource() const
 // ****************************************************************************
 // Method: ViewerPlot::GetName
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the plot type.
 //
 // Programmer: Brad Whitlock
@@ -1258,12 +1258,12 @@ ViewerPlot::GetMenuName() const
 // ****************************************************************************
 // Method: ViewerPlot::GetPluginID
 //
-// Purpose: 
-//   Returns the plugin ID of the plot 
+// Purpose:
+//   Returns the plugin ID of the plot
 //
-// Programmer: Mark C. Miller 
-// Creation:   16Apr03 
-//   
+// Programmer: Mark C. Miller
+// Creation:   16Apr03
+//
 // ****************************************************************************
 
 const char *
@@ -1275,12 +1275,12 @@ ViewerPlot::GetPluginID() const
 // ****************************************************************************
 // Method: ViewerPlot::ProvidesLegend
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the plot provides a legend.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Mar 20 11:46:40 PDT 2007
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1292,7 +1292,7 @@ ViewerPlot::ProvidesLegend() const
 // ****************************************************************************
 // Method: ViewerPlot::GetPlotName
 //
-// Purpose: 
+// Purpose:
 //   Returns the name of the plot.
 //
 // Programmer: Brad Whitlock
@@ -1311,17 +1311,17 @@ ViewerPlot::GetPlotName() const
 // ****************************************************************************
 // Method: ViewerPlot::SetPlotName
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot name.
 //
-// Note: This method should not be called by anyone but the plot list when 
+// Note: This method should not be called by anyone but the plot list when
 //       creating a new plot or restoring a session.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 23 15:53:39 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1333,7 +1333,7 @@ ViewerPlot::SetPlotName(const std::string &name)
 // ****************************************************************************
 // Method: ViewerPlot::GetPlotDescription
 //
-// Purpose: 
+// Purpose:
 //   Returns the description of the plot.
 //
 // Programmer: Brad Whitlock
@@ -1352,16 +1352,16 @@ ViewerPlot::GetPlotDescription() const
 // ****************************************************************************
 // Method: ViewerPlot::SetPlotDescription
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot description.
 //
-// Note: 
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Mar 23 15:53:39 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1381,7 +1381,7 @@ ViewerPlot::SetPlotDescription(const std::string &Description)
 // ****************************************************************************
 // Method: ViewerPlot::GetVariableDescription
 //
-// Purpose: 
+// Purpose:
 //   Returns the description of the variable.
 //
 // Programmer: Allen Sanderson
@@ -1398,10 +1398,10 @@ ViewerPlot::GetVariableDescription() const
 // ****************************************************************************
 // Method: ViewerPlot::SetVariableDescription
 //
-// Purpose: 
+// Purpose:
 //   Sets the variable description.
 //
-// Note: 
+// Note:
 //
 // Programmer: Allen Sanderson
 // Creation:   Fri April 12 15:53:39 PST 2013
@@ -1418,10 +1418,10 @@ ViewerPlot::SetVariableDescription(const std::string &Description)
 // ****************************************************************************
 // Method: ViewerPlot::UpdateVariableDescription
 //
-// Purpose: 
+// Purpose:
 //   Update the variable description.
 //
-// Note: 
+// Note:
 //
 // Programmer: Allen Sanderson
 // Creation:   Fri April 12 15:53:39 PST 2013
@@ -1448,11 +1448,11 @@ ViewerPlot::UpdateVariableDescription( bool reset )
     // Check for a new variable description. The last operator
     // gets to the provide the description.
     int nOps = GetNOperators();
-    
+
     for (int opId = 0 ; opId < nOps ; opId++)
     {
       ViewerOperator *op = GetOperator(opId);
-      
+
       if( op->GetOperatorVarDescription() != "" )
         SetVariableDescription( op->GetOperatorVarDescription() );
     }
@@ -1476,7 +1476,7 @@ ViewerPlot::UpdateVariableDescription( bool reset )
 // ****************************************************************************
 // Method: ViewerPlot::GetMetaData
 //
-// Purpose: 
+// Purpose:
 //   Returns the metadata for the plot at its current time state.
 //
 // Returns:    A pointer to the metadata for the plot at its current time
@@ -1507,11 +1507,11 @@ ViewerPlot::GetMetaData() const
 //   objects.
 //
 // Arguments:
-//   
+//
 //
 // Returns:    An avtPlotMetaData that contains information about the plot.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Sep 17 08:45:53 PDT 2014
@@ -1523,14 +1523,14 @@ ViewerPlot::GetMetaData() const
 avtPlotMetaData
 ViewerPlot::GetPlotMetaData() const
 {
-    return avtPlotMetaData(GetMetaData(), GetVariableName(), 
+    return avtPlotMetaData(GetMetaData(), GetVariableName(),
                            GetVarType(), GetSILRestriction());
 }
 
 // ****************************************************************************
 // Method: ViewerPlot::GetExpressions
 //
-// Purpose: 
+// Purpose:
 //   Gets the user-defined expressions plus the expressions from the plot's
 //   database at the current database time state.
 //
@@ -1540,7 +1540,7 @@ ViewerPlot::GetPlotMetaData() const
 // Creation:   Fri Feb 18 10:11:49 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ExpressionList
@@ -1578,15 +1578,15 @@ ViewerPlot::GetExpressions() const
 //    Brad Whitlock, Fri Sep 21 11:54:13 PDT 2001
 //    I added code to update the SIL restriction of the plot if the new
 //    variable has a different top set.
-//    
-//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001 
-//    Allow the plotAtts to be reset if necessary. 
+//
+//    Kathleen Bonnell, Fri Oct 19 15:33:35 PDT 2001
+//    Allow the plotAtts to be reset if necessary.
 //
 //    Brad Whitlock, Mon Oct 22 18:33:37 PST 2001
 //    Changed the exception keywords to macros.
 //
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Update queryAtts. 
+//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002
+//    Update queryAtts.
 //
 //    Eric Brugger, Mon Nov 18 09:16:38 PST 2002
 //    I added keyframing support.
@@ -1612,12 +1612,12 @@ ViewerPlot::GetExpressions() const
 //    constructor, so the first time anyone tried to change variables, it
 //    ignored their request to change important things like subset names.
 //
-//    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004 
-//    Added call to set the avtPlot's mesh type. 
-// 
-//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
-//    Removed call to set the avtPlot's mesh type. 
-// 
+//    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004
+//    Added call to set the avtPlot's mesh type.
+//
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004
+//    Removed call to set the avtPlot's mesh type.
+//
 //    Brad Whitlock, Wed Feb 14 10:23:38 PDT 2007
 //    Added code to update the plot's alternate display.
 //
@@ -1694,12 +1694,12 @@ ViewerPlot::SetVariableName(const std::string &name)
                 avtSILSet_p current = silr->GetSILSet(silr->GetTopSet());
                 if (meshName != current->GetName() || restrictToMats.size())
                 {
-                    avtSILRestriction_p new_sil = 
+                    avtSILRestriction_p new_sil =
                                                new avtSILRestriction(silr);
                     int topSet = 0;
                     for (size_t i = 0; i < new_sil->GetWholes().size(); i++)
                     {
-                        current = 
+                        current =
                                new_sil->GetSILSet(new_sil->GetWholes()[i]);
                         if(meshName == current->GetName())
                         {
@@ -1742,7 +1742,7 @@ ViewerPlot::SetVariableName(const std::string &name)
 
 
     if (curPlotAtts->VarChangeRequiresReset())
-    { 
+    {
         const avtDatabaseMetaData *md;
         if((md = GetMetaData()) != 0)
         {
@@ -1791,13 +1791,13 @@ ViewerPlot::SetVariableName(const std::string &name)
                         {
                             ViewerOperator *op = GetOperator(opId);
                             op->UpdateOperatorAtts();
-                            
+
                             if (op->GetPluginID() == id)
                             {
                                 hasAlready = true;
                             }
                         }
-                        
+
                         if (!hasAlready)
                         {
                             AddOperator(j, true);
@@ -1880,7 +1880,7 @@ ViewerPlot::GetMeshName() const
 //    I changed the implementation to not be so "frame-centric".
 //
 // ****************************************************************************
- 
+
 void
 ViewerPlot::DeleteKeyframe(const int index)
 {
@@ -1926,7 +1926,7 @@ ViewerPlot::DeleteKeyframe(const int index)
 //    I made it not be so "frame-centric".
 //
 // ****************************************************************************
- 
+
 void
 ViewerPlot::MoveKeyframe(int oldIndex, int newIndex)
 {
@@ -2000,14 +2000,14 @@ ViewerPlot::DeleteDatabaseKeyframe(const int index)
         return;
     }
 
-    i1 = (i1 < cacheSize) ? i1 : (cacheSize - 1); 
+    i1 = (i1 < cacheSize) ? i1 : (cacheSize - 1);
     CheckCache(i0, i1, true);
 }
 
 // ****************************************************************************
 // Method: ViewerPlot::AddDatabaseKeyframe
 //
-// Purpose: 
+// Purpose:
 //   Adds a database keyframe at the specified index.
 //
 // Arguments:
@@ -2018,7 +2018,7 @@ ViewerPlot::DeleteDatabaseKeyframe(const int index)
 // Creation:   Fri Apr 2 15:13:24 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2144,7 +2144,7 @@ ViewerPlot::SetSILRestriction(avtSILRestriction_p s, bool checkActors)
             {
                 avtSILRestriction_p silp =
                     (*plotList[i])->GetCurrentSILRestriction();
-    
+
                 avtSILRestrictionTraverser trav(silp);
                 if ( (*silp != NULL) && (!(trav.Equal(silr))) )
                 {
@@ -2179,7 +2179,7 @@ ViewerPlot::GetSILRestriction() const
 // ****************************************************************************
 // Method: ViewerPlot::GetErrorFlag
 //
-// Purpose: 
+// Purpose:
 //   Returns the error flag of the plot.
 //
 // Returns:    The error flag of the plot.
@@ -2188,7 +2188,7 @@ ViewerPlot::GetSILRestriction() const
 // Creation:   Tue Apr 24 14:44:37 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -2200,7 +2200,7 @@ ViewerPlot::GetErrorFlag() const
 // ****************************************************************************
 // Method: ViewerPlot::SetErrorFlag
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot's error flag.
 //
 // Arguments:
@@ -2210,7 +2210,7 @@ ViewerPlot::GetErrorFlag() const
 // Creation:   Thu Apr 26 16:58:23 PST 2001
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2238,11 +2238,11 @@ ViewerPlot::SetErrorFlag(bool val)
 //    Jeremy Meredith, Thu Jul 26 03:18:52 PDT 2001
 //    Removed reference to OperType.
 //
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Update queryAtts. 
+//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002
+//    Update queryAtts.
 //
 //    Kathleen Bonnell, Tue Mar  4 15:20:25 PST 2003
-//    Update queryAtts before the actors are cleared. 
+//    Update queryAtts before the actors are cleared.
 //
 //    Brad Whitlock, Thu Apr 10 11:41:49 PDT 2003
 //    I got rid of a bad check that used an actual operator name. I added
@@ -2251,9 +2251,9 @@ ViewerPlot::SetErrorFlag(bool val)
 //    Brad Whitlock, Thu Jul 17 10:05:04 PDT 2003
 //    I made it return the index of the new operator in the operators array.
 //
-//    Kathleen Bonnell, Thu Sep 11 11:50:02 PDT 2003 
+//    Kathleen Bonnell, Thu Sep 11 11:50:02 PDT 2003
 //    Added optional bool arg, indicates whether the operator
-//    should be initialized from its default or client atts. 
+//    should be initialized from its default or client atts.
 //
 //    Mark C. Miller, Wed Aug 11 17:07:46 PDT 2004
 //    Added warning for multiple operators of same type
@@ -2272,7 +2272,7 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
 {
     if (nOperators > 0)
     {
-        if (!operators[nOperators-1]->AllowsSubsequentOperators())    
+        if (!operators[nOperators-1]->AllowsSubsequentOperators())
         {
             ViewerText msg(TR("VisIt cannot apply other operators after a "
                              "%1 operator.").
@@ -2345,7 +2345,7 @@ ViewerPlot::AddOperator(const int type, const bool fromDefault)
 // ****************************************************************************
 // Method: ViewerPlot::MoveOperator
 //
-// Purpose: 
+// Purpose:
 //   Moves an operator within the plot's operator list.
 //
 // Arguments:
@@ -2382,14 +2382,14 @@ ViewerPlot::MoveOperator(const int operatorIndex, bool promote)
         if(isFirst)
         {
             msg = TR("VisIt cannot move the %1 operator because "
-                     "it is already the first operator."). 
+                     "it is already the first operator.").
                   arg(operators[operatorIndex]->GetMenuName());
             GetViewerMessaging()->Error(msg);
         }
         else if(isLast)
         {
             msg = TR("VisIt cannot move the %1 operator because "
-                     "it is already the last operator."). 
+                     "it is already the last operator.").
                   arg(operators[operatorIndex]->GetMenuName());
             GetViewerMessaging()->Error(msg);
         }
@@ -2440,7 +2440,7 @@ ViewerPlot::MoveOperator(const int operatorIndex, bool promote)
 // ****************************************************************************
 // Method: ViewerPlot::PromoteOperator
 //
-// Purpose: 
+// Purpose:
 //   Promotes the specified operator within the plot's operator list.
 //
 // Arguments:
@@ -2452,7 +2452,7 @@ ViewerPlot::MoveOperator(const int operatorIndex, bool promote)
 // Creation:   Thu Apr 10 12:16:56 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -2464,7 +2464,7 @@ ViewerPlot::PromoteOperator(const int operatorIndex)
 // ****************************************************************************
 // Method: ViewerPlot::DemoteOperator
 //
-// Purpose: 
+// Purpose:
 //   Demotes the specified operator within the plot's operator list.
 //
 // Arguments:
@@ -2476,7 +2476,7 @@ ViewerPlot::PromoteOperator(const int operatorIndex)
 // Creation:   Thu Apr 10 12:17:51 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -2488,7 +2488,7 @@ ViewerPlot::DemoteOperator(const int operatorIndex)
 // ****************************************************************************
 // Method: ViewerPlot::RemoveOperator
 //
-// Purpose: 
+// Purpose:
 //   Removes an operator from the plot's operator list.
 //
 // Arguments:
@@ -2528,7 +2528,7 @@ ViewerPlot::RemoveOperator(const int operatorIndex)
             --nOperators;
 
             //
-            // If we deleted the active operator, decrement the active 
+            // If we deleted the active operator, decrement the active
             // operator index so it points to an operator that is still
             // in the list.
             //
@@ -2537,7 +2537,7 @@ ViewerPlot::RemoveOperator(const int operatorIndex)
                 --activeOperatorIndex;
                 if(nOperators > 0)
                     activeOperatorIndex = 0;
-            }               
+            }
 
             if (queryAtts != 0)
             {
@@ -2578,11 +2578,11 @@ ViewerPlot::RemoveOperator(const int operatorIndex)
 //  Creation:   September 18, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Update queryAtts. 
+//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002
+//    Update queryAtts.
 //
-//    Kathleen Bonnell, Tue Mar  4 15:24:19 PST 2003 
-//    Update queryAtts before actors have been cleared. 
+//    Kathleen Bonnell, Tue Mar  4 15:24:19 PST 2003
+//    Update queryAtts before actors have been cleared.
 //
 //    Brad Whitlock, Thu Apr 10 11:36:45 PDT 2003
 //    Recoded how operators tell the client if they can be removed to get rid
@@ -2605,14 +2605,14 @@ ViewerPlot::RemoveLastOperator()
         return;
     }
 
-    if (operators[nOperators-1]->Removeable())    
+    if (operators[nOperators-1]->Removeable())
     {
         //
         // Remove the last operator.
         //
         nOperators--;
         delete operators[nOperators];
-         
+
         //
         // If we deleted the active operator, decrement the active operator
         // index so it points to an operator that is still in the list.
@@ -2654,10 +2654,10 @@ ViewerPlot::RemoveLastOperator()
 //  Creation:   September 18, 2000
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Update queryAtts. 
+//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002
+//    Update queryAtts.
 //
-//    Kathleen Bonnell, Tue Mar  4 15:24:19 PST 2003 
+//    Kathleen Bonnell, Tue Mar  4 15:24:19 PST 2003
 //    Update queryAtts before the actors are cleared.
 //
 //    Brad Whitlock, Thu Apr 10 11:36:45 PDT 2003
@@ -2680,7 +2680,7 @@ ViewerPlot::RemoveAllOperators()
         return;
     }
 
-    if (operators[nOperators-1]->Removeable())    
+    if (operators[nOperators-1]->Removeable())
     {
         //
         // Remove all the operators.
@@ -2732,10 +2732,10 @@ ViewerPlot::RemoveAllOperators()
 //    Jeremy Meredith, Thu Jul 26 03:19:13 PDT 2001
 //    Removed reference to OperType.
 //
-//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002  
-//    Update queryAtts. 
+//    Kathleen Bonnell, Wed Jun 19 18:05:04 PDT 2002
+//    Update queryAtts.
 //
-//    Kathleen Bonnell, Tue Mar  4 15:24:19 PST 2003 
+//    Kathleen Bonnell, Tue Mar  4 15:24:19 PST 2003
 //    Update queryAtts before the actors are cleared.
 //
 //    Brad Whitlock, Fri Apr 11 10:00:22 PDT 2003
@@ -2964,7 +2964,7 @@ ViewerPlot::GetActor() const
 // ****************************************************************************
 //  Method: ViewerPlot::NoActorExists
 //
-//  Purpose: 
+//  Purpose:
 //    This is a convenience method that returns whether or not the specified
 //    frame has an actor.
 //
@@ -2976,7 +2976,7 @@ ViewerPlot::GetActor() const
 //  Modifications:
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-// 
+//
 //    Brad Whitlock, Thu Jan 29 19:06:13 PST 2004
 //    I removed the frame argument.
 //
@@ -3036,16 +3036,16 @@ ViewerPlot::GetReader() const
 //    Brad Whitlock, Tue Apr 24 13:38:25 PST 2001
 //    Added code to handle NoInputException.
 //
-//    Kathleen Bonnell, Wed Apr 25 14:28:22 PDT 2001 
+//    Kathleen Bonnell, Wed Apr 25 14:28:22 PDT 2001
 //    Added code to handle InvalidLimitsException.
 //
 //    Brad Whitlock, Fri Apr 27 14:28:05 PST 2001
 //    Moved some exception handling code to prevent a memory error.
 //
-//    Kathleen Bonnell, Wed May  2 14:18:47 PDT 2001 
+//    Kathleen Bonnell, Wed May  2 14:18:47 PDT 2001
 //    Added try-catch to handle exceptions on engine-portion of this
 //    method.  Added another catch to viewer portion to handle
-//    general VisItExceptions. 
+//    general VisItExceptions.
 //
 //    Jeremy Meredith, Tue Jun  5 20:31:38 PDT 2001
 //    Added code to reuse an existing plot if is already exists and does
@@ -3070,8 +3070,8 @@ ViewerPlot::GetReader() const
 //    I modified the routine so that it always regenerates the plot.  The
 //    routine no longer gets called if a plot doesn't need recalculation.
 //
-//    Kathleen Bonnell, Wed Sep 26 15:09:58 PDT 2001 
-//    Added calls to plot's SetBackgroundColor and SetForegroundColor.  
+//    Kathleen Bonnell, Wed Sep 26 15:09:58 PDT 2001
+//    Added calls to plot's SetBackgroundColor and SetForegroundColor.
 //
 //    Jeremy Meredith, Fri Sep 28 13:47:32 PDT 2001
 //    Removed the general plugin info since the viewer info is derived
@@ -3122,7 +3122,7 @@ ViewerPlot::GetReader() const
 //    Added code to issue a warning message if actor has no data
 //
 //    Mark C. Miller, Mon Apr 19 16:17:37 PDT 2004
-//    Added returned bool argument, actorHasNoData and removed code that 
+//    Added returned bool argument, actorHasNoData and removed code that
 //    issues the no data warning message to the caller of this method
 //
 //    Mark C. Miller, Wed Jul  7 11:42:09 PDT 2004
@@ -3132,15 +3132,15 @@ ViewerPlot::GetReader() const
 //    Brad Whitlock, Thu Jul 22 14:41:22 PST 2004
 //    Added code to set the actor's units if applicable.
 //
-//    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004 
-//    Added call to set the avtPlot's mesh type. 
-// 
-//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004 
+//    Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004
+//    Added call to set the avtPlot's mesh type.
+//
+//    Kathleen Bonnell, Wed Nov  3 16:51:24 PST 2004
 //    Removed call to set the avtPlot's mesh type. Added test for valid
-//    active variable before attempting to retrieve Units, to prevent 
+//    active variable before attempting to retrieve Units, to prevent
 //    unnecessary Exception handling.
-// 
-//    Kathleen Bonnell, Fri Jan  7 13:00:32 PST 2005 
+//
+//    Kathleen Bonnell, Fri Jan  7 13:00:32 PST 2005
 //    Removed unnecessary TRY-CATCH block surrounding retrieval of units.
 //
 //    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
@@ -3154,10 +3154,10 @@ ViewerPlot::GetReader() const
 //    legend annotation names later.
 //
 //    Kathleen Bonnell, Thu Mar 22 19:44:41 PDT 2007
-//    Added xScaleMode, yScaleMode. 
+//    Added xScaleMode, yScaleMode.
 //
-//    Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007 
-//    Retrieve the correct ScaleMode before setting it in avtPlot. 
+//    Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007
+//    Retrieve the correct ScaleMode before setting it in avtPlot.
 //
 //    Kathleen Bonnell, Tue Mar  3 10:18:50 PST 2009
 //    CanDo*ViewScaling now retrieved from viewerPluginInfo, not plot.
@@ -3165,6 +3165,10 @@ ViewerPlot::GetReader() const
 //    Jeremy Meredith, Wed Feb  3 15:35:08 EST 2010
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
+//
+//    Kathleen Biagas, Mon Feb 26 16:59:52 MST 2018
+//    Moved setting of the plots VarUnits to avtPlot, so that plugins can
+//    override in their CustomizeBehavior call.
 //
 // ****************************************************************************
 
@@ -3229,7 +3233,7 @@ ViewerPlot::CreateActor(bool createNew,
 
         // Use the null actor.
         this->SetActor(nullActor);
-        
+
         // re-instate correct external render request state on all windows
         ViewerWindowManager::Instance()->EnableExternalRenderRequestsAllWindows(oldAble);
 
@@ -3253,7 +3257,7 @@ ViewerPlot::CreateActor(bool createNew,
         {
             //
             // Add as much information to the message as we can,
-            // including plot name, exception type and exception 
+            // including plot name, exception type and exception
             // message.
             //
              message = ViewerText("%1:  (%2)\n%3").
@@ -3261,7 +3265,7 @@ ViewerPlot::CreateActor(bool createNew,
                        arg(e.GetExceptionType()).
                        arg(e.Message());
         }
-     
+
         GetViewerMessaging()->Error(message);
 
         // Indicate that this plot has an error.
@@ -3355,13 +3359,13 @@ ViewerPlot::CreateActor(bool createNew,
         viewerPlotList->GetScaleMode(xScaleMode, yScaleMode, WINMODE_CURVE);
         plotList[cacheIndex]->SetScaleMode(xScaleMode, yScaleMode, WINMODE_CURVE);
     }
-    else if (2 == GetSpatialDimension() && 
+    else if (2 == GetSpatialDimension() &&
              viewerPluginInfo->Permits2DViewScaling())
     {
         viewerPlotList->GetScaleMode(xScaleMode, yScaleMode, WINMODE_2D);
         plotList[cacheIndex]->SetScaleMode(xScaleMode, yScaleMode, WINMODE_2D);
     }
-    else 
+    else
     {
         viewerPlotList->GetScaleMode(xScaleMode, yScaleMode, WINMODE_NONE);
     }
@@ -3386,23 +3390,6 @@ ViewerPlot::CreateActor(bool createNew,
             AlternateDisplayUpdatePlotAttributes();
         }
 
-        //
-        // Set the actor's units from the data attributes.
-        //
-        if (actor->GetDataObject()->GetInfo().GetAttributes().ValidActiveVariable())
-        {
-            std::string units(actor->GetDataObject()->GetInfo().GetAttributes().
-            GetVariableUnits());
-            if(units != "")
-                plotList[cacheIndex]->SetVarUnits(units.c_str());
-            else
-                plotList[cacheIndex]->SetVarUnits(0);
-        }
-        else
-        {
-            plotList[cacheIndex]->SetVarUnits(0);
-        }
-
         this->SetActor(actor);
 
         actor->SetTypeName(GetName());
@@ -3414,7 +3401,7 @@ ViewerPlot::CreateActor(bool createNew,
     CATCH2(InvalidLimitsException, e)
     {
         // Create a message to send to the GUI,
-        // Stating plot name and message. 
+        // Stating plot name and message.
         GetViewerMessaging()->Error(ViewerText("%1:  %1").
                                     arg(viewerPluginInfo->GetName()).
                                     arg(e.Message()));
@@ -3429,7 +3416,7 @@ ViewerPlot::CreateActor(bool createNew,
     {
         // Create a message to send to the GUI, with as
         // much info as we can, including plot name,
-        // exception type and exception message. 
+        // exception type and exception message.
         GetViewerMessaging()->Error(ViewerText("%1 (%2):  %3").
                                     arg(viewerPluginInfo->GetName()).
                                     arg(e.GetExceptionType()).
@@ -3483,8 +3470,8 @@ ViewerPlot::CreateActor(bool createNew,
 //    Brad Whitlock, Mon Apr 30 14:21:29 PST 2001
 //    Added code to update the engine list that is displayed in the GUI.
 //
-//    Kathleen Bonnell, Wed May  2 14:18:47 PDT 2001 
-//    Added catch block to catch and rethrow general VisItExceptions. 
+//    Kathleen Bonnell, Wed May  2 14:18:47 PDT 2001
+//    Added catch block to catch and rethrow general VisItExceptions.
 //
 //    Hank Childs, Wed Jun 13 11:03:30 PDT 2001
 //    Added sil restrictions.
@@ -3548,8 +3535,8 @@ ViewerPlot::CreateActor(bool createNew,
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
 //    Use a map of engines based on a key, and be aware of simulations.
 //
-//    Kathleen Bonnell, Wed Mar 31 16:40:15 PST 2004 
-//    Only defineVirtualDatabase and ReadDataObject if plot isn't using a 
+//    Kathleen Bonnell, Wed Mar 31 16:40:15 PST 2004
+//    Only defineVirtualDatabase and ReadDataObject if plot isn't using a
 //    cloned network.
 //
 //    Mark C. Miller, Wed Apr 14 16:41:32 PDT 2004
@@ -3592,7 +3579,7 @@ ViewerPlot::CreateActor(bool createNew,
 //    thus crashing the viewer.
 //
 //    Mark C. Miller, Wed Nov 16 10:46:36 PST 2005
-//    Added mesh management attributes 
+//    Added mesh management attributes
 //
 //    Mark C. Miller, Wed Aug 22 20:16:59 PDT 2007
 //    Obtained treatAllDBsAsTimeVarying from VWM instead of VFS
@@ -3629,9 +3616,9 @@ ViewerPlot::GetDataObjectReader()
 
     TRY
     {
-        // 
+        //
         // Only do this if plot isn't using a cloned network.
-        // 
+        //
         if (!this->CloneNetwork())
         {
             std::string defaultFormat;
@@ -3708,7 +3695,7 @@ ViewerPlot::GetDataObjectReader()
                                        fns[4], fns[5], fns[6]);
            double vext[6];
            w->GetExtents(3, vext);
-           GetViewerEngineManager()->SetWinAnnotAtts(ek, 
+           GetViewerEngineManager()->SetWinAnnotAtts(ek,
                &winAtts,&annotAtts,&annotObjs,extStr,&visCues,fns,vext,"",windowId);
         }
 
@@ -3724,8 +3711,8 @@ ViewerPlot::GetDataObjectReader()
             // this output
             if (!replyWithNullData && *retval != NULL && retval->InputIs(AVT_NULL_DATASET_MSG))
             {
-               // ask for the engine's output as null data 'cause the 
-               // avtDataObject in the current reader is just the message that 
+               // ask for the engine's output as null data 'cause the
+               // avtDataObject in the current reader is just the message that
                // it exceeded threshold
                GetViewerEngineManager()->Execute(ek, retval, true, 0, 0);
 
@@ -3739,13 +3726,13 @@ ViewerPlot::GetDataObjectReader()
                                               this->ProcessEventsCB,
                                               this->ProcessEventsCBData);
 
-            // deal with possibility that engine may decide to scalable render 
+            // deal with possibility that engine may decide to scalable render
             // this output. Check that the data object is valid first since the
             // compute engine may have died in the interim.
             if (!replyWithNullData && *retval != NULL && retval->InputIs(AVT_NULL_DATASET_MSG))
             {
-               // ask for the engine's output as null data 'cause the 
-               // avtDataObject in the current reader is just the message that 
+               // ask for the engine's output as null data 'cause the
+               // avtDataObject in the current reader is just the message that
                //it exceeded threshold
                GetViewerEngineManager()->Execute(ek, retval, true,
                                                  this->ProcessEventsCB,
@@ -3776,7 +3763,7 @@ ViewerPlot::GetDataObjectReader()
         GetViewerMessaging()->ClearStatus(ek.ID());
 
         //
-        //  Let calling method handle this exception. 
+        //  Let calling method handle this exception.
         //
         RETHROW;
     }
@@ -3792,13 +3779,13 @@ ViewerPlot::GetDataObjectReader()
 //
 //  Purpose:
 //      Return a pointer to an avt data object reader for a currently existing
-//      plot. This is only ever used in the transition into and out of 
+//      plot. This is only ever used in the transition into and out of
 //      Scalable Rendering mode.
 //
 //  Returns:    A pointer to the avt data object reader.
 //
-//  Programmer: Mark C. Miller 
-//  Creation:   Wed Oct 29 16:56:14 PST 2003 
+//  Programmer: Mark C. Miller
+//  Creation:   Wed Oct 29 16:56:14 PST 2003
 //
 //  Modifications:
 //    Jeremy Meredith, Fri Mar 26 16:59:59 PST 2004
@@ -3827,7 +3814,7 @@ ViewerPlot::UseDataObjectReader(bool turningOffScalableRendering)
         // tell engine which network to re-use
         GetViewerEngineManager()->UseNetwork(ek, this->GetNetworkID());
 
-        bool replyWithNullData = !turningOffScalableRendering; 
+        bool replyWithNullData = !turningOffScalableRendering;
 
         //
         // Return the result.
@@ -3863,7 +3850,7 @@ ViewerPlot::UseDataObjectReader(bool turningOffScalableRendering)
         GetViewerMessaging()->ClearStatus(ek.ID());
 
         //
-        //  Let calling method handle this exception. 
+        //  Let calling method handle this exception.
         //
         RETHROW;
     }
@@ -3922,14 +3909,14 @@ ViewerPlot::ClearActors()
 // ****************************************************************************
 // Method: ViewerPlot::ClearCurrentActor
 //
-// Purpose: 
+// Purpose:
 //   Clears the current actor, plot, and reader.
 //
 // Programmer: Brad Whitlock
 // Creation:   Sat Jan 31 23:20:57 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4000,14 +3987,14 @@ ViewerPlot::ClearActors(const int i0, const int i1)
 //
 //  Purpose: This method supports smooth transitions into and out of scalable
 //  rendering. When switching into scalable rendering, we clear all the actors
-//  and then re-acquire each one again from the engine but setting the 
+//  and then re-acquire each one again from the engine but setting the
 //  'respondWithNullData' flag to true. When swithcing out of scalable
 //  rendering, we clear all the actors and then re-acquire each one again
 //  but setting 'respondWithNullData' to false. In either case, it is assumed
 //  the associated networks already exist in cache on the engine.
-//  
+//
 //  Programmer: Mark C. Miller
-//  Creation:   October 29, 2003 
+//  Creation:   October 29, 2003
 //
 //  Modifications:
 //    Brad Whitlock, Sat Jan 31 22:22:26 PST 2004
@@ -4020,7 +4007,7 @@ ViewerPlot::TransmuteActor(bool turningOffScalableRendering)
 {
     bool dummyBool;
     CreateActor(false, turningOffScalableRendering, dummyBool);
-} 
+}
 
 
 // ****************************************************************************
@@ -4029,8 +4016,8 @@ ViewerPlot::TransmuteActor(bool turningOffScalableRendering)
 //  Purpose:
 //    Get the block origin for the plot.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 29, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 29, 2004
 //
 //  Modifications:
 //
@@ -4061,8 +4048,8 @@ ViewerPlot::GetBlockOrigin() const
 //  Purpose:
 //    Get the topological dimension for the plot.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   November 17, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   November 17, 2005
 //
 //  Modifications:
 //
@@ -4164,8 +4151,8 @@ ViewerPlot::GetSpatialDimension() const
 //    Hank Childs, Fri Mar 15 19:42:03 PST 2002
 //    Account for dataset examiner.
 //
-//    Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002 
-//    Use extentSize for size of buffer (instead of 2*extentSize). 
+//    Kathleen Bonnell, Thu May 16 10:13:56 PDT 2002
+//    Use extentSize for size of buffer (instead of 2*extentSize).
 //
 //    Hank Childs, Mon Jul 15 15:58:39 PDT 2002
 //    Allow for different flavors of spatial extents.
@@ -4188,9 +4175,9 @@ ViewerPlot::GetSpatialExtents(avtExtentType extsType) const
     // If extsType is sent in as AVT_UNKNOWN_EXTENT_TYPE, then that is a signal
     // that we should be using our own data member instead.
     //
-    avtExtentType realExtsType = (extsType == AVT_UNKNOWN_EXTENT_TYPE 
+    avtExtentType realExtsType = (extsType == AVT_UNKNOWN_EXTENT_TYPE
                                   ? spatialExtentsType : extsType);
-   
+
     // Return early if the reader does not exist.
     if(*(readerList[cacheIndex]) == 0)
         return 0;
@@ -4281,7 +4268,7 @@ ViewerPlot::SetSpatialExtentsType(avtExtentType extsType)
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed May  2 15:16:16 PDT 2001
-//    Added try-catch block so that any VisItExceptions 
+//    Added try-catch block so that any VisItExceptions
 //    could be rethrown.
 //
 //    Jeremy Meredith, Fri Sep 28 13:47:32 PDT 2001
@@ -4347,7 +4334,7 @@ ViewerPlot::ExecuteEngineRPC()
     plotAtts->GetAtts(cacheIndex, curPlotAtts);
 
     bool successful = GetViewerEngineManager()->MakePlot(engineKey,
-            GetPlotName(), GetPluginID(), curPlotAtts, nullDataExtents, 
+            GetPlotName(), GetPluginID(), curPlotAtts, nullDataExtents,
             GetWindowId(), &networkID);
 
     if(!successful)
@@ -4428,7 +4415,7 @@ ViewerPlot::SetPlotAttsFromClient()
 // ****************************************************************************
 // Method: ViewerPlot::SetPlotAtts
 //
-// Purpose: 
+// Purpose:
 //   Tries to set the attributes for the entire plot. This only happens
 //   if they are compatible types.
 //
@@ -4461,7 +4448,7 @@ ViewerPlot::SetPlotAtts(const AttributeSubject *atts)
     if (atts != curPlotAtts)
     {
         if (!curPlotAtts->CopyAttributes(atts))
-        { 
+        {
             return false;
         }
     }
@@ -4502,7 +4489,7 @@ ViewerPlot::SetPlotAtts(const AttributeSubject *atts)
 // ****************************************************************************
 // Method: ViewerOperator::GetPlotAtts
 //
-// Purpose: 
+// Purpose:
 //   Returns a const pointer to the current plot attributes.
 //
 // Returns:    A const pointer to the plot attributes.
@@ -4527,7 +4514,7 @@ ViewerPlot::GetPlotAtts() const
 // ****************************************************************************
 //  Method: ViewerPlot::UpdateColorTable
 //
-//  Purpose: 
+//  Purpose:
 //    Passes the color table name along to the avtplots. If the plot can
 //    use a color table and it uses the one by the name of ctName, its
 //    colors will be updated and the plot will be redrawn.
@@ -4541,7 +4528,7 @@ ViewerPlot::GetPlotAtts() const
 //  Modifications:
 //    Eric Brugger, Fri Aug 31 09:41:38 PDT 2001
 //    Modified the routine to set the color table for all the plots.
-//   
+//
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
 //
@@ -4580,22 +4567,22 @@ ViewerPlot::UpdateColorTable(const std::string &ctName)
 // ****************************************************************************
 //  Method: ViewerPlot::SetBackgroundColor
 //
-//  Purpose: 
+//  Purpose:
 //    Passes the background color along to the avtplots. If the plot can
 //    use the background color, the plot will be redrawn.
 //
 //  Arguments:
-//    bg        The background color. 
+//    bg        The background color.
 //
 //  Returns:    True if any of the existing plots need to be redrawn.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 25, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 25, 2001
 //
 //  Modifications:
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+//
 // ****************************************************************************
 
 bool
@@ -4619,22 +4606,22 @@ ViewerPlot::SetBackgroundColor(const double *bg)
 // ****************************************************************************
 //  Method: ViewerPlot::SetForegroundColor
 //
-//  Purpose: 
+//  Purpose:
 //    Passes the foreground color along to the avtplots. If the plot can
 //    use the foreground color, the plot will be redrawn.
 //
 //  Arguments:
-//    fg        The foreground color. 
+//    fg        The foreground color.
 //
 //  Returns:    True if any of the existing plots need to be redrawn.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 25, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 25, 2001
 //
 //  Modifications:
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
+//
 // ****************************************************************************
 
 bool
@@ -4658,7 +4645,7 @@ ViewerPlot::SetForegroundColor(const double *fg)
 // ****************************************************************************
 // Method: ViewerPlot::HandleTool
 //
-// Purpose: 
+// Purpose:
 //   Sets the attributes for the entire plot from the tool.
 //
 // Arguments:
@@ -4698,7 +4685,7 @@ ViewerPlot::HandleTool(const avtToolInterface &ti)
 // ****************************************************************************
 // Method: ViewerPlot::InitializeTool
 //
-// Purpose: 
+// Purpose:
 //   Initializes the tool with all of the operator attributes.
 //
 // Arguments:
@@ -4769,7 +4756,7 @@ ViewerPlot::InitializeTool(avtToolInterface &ti)
             atts->SelectAll(); // We need the addresses to be assigned for
                                // EqualTo
 
-            // If the plot is expanded, only attempt to use the 
+            // If the plot is expanded, only attempt to use the
             if(expandedFlag)
             {
                 if(!retval || (i == activeOperatorIndex))
@@ -4863,7 +4850,7 @@ ViewerPlot::SetEmbeddedPlotId(int id)
 // ****************************************************************************
 // Method: ViewerPlot::SetActiveOperatorIndex
 //
-// Purpose: 
+// Purpose:
 //   Sets the active operator index.
 //
 // Arguments:
@@ -4873,7 +4860,7 @@ ViewerPlot::SetEmbeddedPlotId(int id)
 // Creation:   Fri Apr 11 09:52:53 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4890,7 +4877,7 @@ ViewerPlot::SetActiveOperatorIndex(int index)
 // ****************************************************************************
 // Method: ViewerPlot::GetActiveOperatorIndex
 //
-// Purpose: 
+// Purpose:
 //   Returns the active operator index.
 //
 // Returns:    The active operator index.
@@ -4899,7 +4886,7 @@ ViewerPlot::SetActiveOperatorIndex(int index)
 // Creation:   Fri Apr 11 09:53:39 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -4911,7 +4898,7 @@ ViewerPlot::GetActiveOperatorIndex() const
 // ****************************************************************************
 // Method: ViewerPlot::SetExpanded
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot's expanded flag.
 //
 // Arguments:
@@ -4921,7 +4908,7 @@ ViewerPlot::GetActiveOperatorIndex() const
 // Creation:   Fri Apr 11 09:54:09 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4933,7 +4920,7 @@ ViewerPlot::SetExpanded(bool val)
 // ****************************************************************************
 // Method: ViewerPlot::GetExpanded
 //
-// Purpose: 
+// Purpose:
 //   Returns the plot's expanded flag.
 //
 // Returns:    The plot's expanded flag.
@@ -4942,7 +4929,7 @@ ViewerPlot::SetExpanded(bool val)
 // Creation:   Fri Apr 11 09:54:45 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -4960,21 +4947,21 @@ ViewerPlot::GetExpanded() const
 //
 //  Returns:     True if the pipeline needed to be re-exeucted false otherwise.
 //
-//  Programmer:  Kathleen Bonnell 
+//  Programmer:  Kathleen Bonnell
 //  Creation:    November  15, 2001
 //
 //  Modifications:
 //    Brad Whitlock, Fri Feb 22 16:26:43 PST 2002
 //    Made the engine RPC go through the engine manager.
 //
-//    Kathleen Bonnell, Tue Mar 26 10:15:00 PST 2002 
-//    Pushed back the creation of new actors to ViewerPlotList. 
+//    Kathleen Bonnell, Tue Mar 26 10:15:00 PST 2002
+//    Pushed back the creation of new actors to ViewerPlotList.
 //
 //    Eric Brugger, Tue Nov 26 10:59:42 PST 2002
 //    I added keyframing support.
-//   
-//    Kathleen Bonnell, Wed Mar 26 14:37:23 PST 2003  
-//    GetTransformedPoints renamed RequiresReExecuteForQuery. 
+//
+//    Kathleen Bonnell, Wed Mar 26 14:37:23 PST 2003
+//    GetTransformedPoints renamed RequiresReExecuteForQuery.
 //
 //    Brad Whitlock, Sat Jan 31 22:45:06 PST 2004
 //    I removed the frame argument and made it use strings.
@@ -4985,8 +4972,8 @@ ViewerPlot::GetExpanded() const
 //    Brad Whitlock, Mon Apr 5 14:07:54 PST 2004
 //    Changed to use new indexing.
 //
-//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004 
-//    Added bool args. 
+//    Kathleen Bonnell, Tue Jun  1 17:57:52 PDT 2004
+//    Added bool args.
 //
 // ****************************************************************************
 
@@ -5028,7 +5015,7 @@ ViewerPlot::StartPick(const bool needZones, const bool needInvTransform)
 //  Purpose:
 //    Tells the engine to stop pick mode.
 //
-//  Programmer:  Kathleen Bonnell 
+//  Programmer:  Kathleen Bonnell
 //  Creation:    November  15, 2001
 //
 //  Modifications:
@@ -5062,7 +5049,7 @@ ViewerPlot::StopPick()
 // ****************************************************************************
 // Method: ViewerPlot::ResetNetworkIds
 //
-// Purpose: 
+// Purpose:
 //   Resets the network ids for pick if the specified engine key matches the
 //   plot's engine key.
 //
@@ -5073,7 +5060,7 @@ ViewerPlot::StopPick()
 // Creation:   Mon May 3 14:23:26 PST 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -5090,10 +5077,10 @@ ViewerPlot::ResetNetworkIds(const EngineKey &key)
 //  Method:  ViewerPlot::GetPlotQueryInfo
 //
 //  Purpose:
-//    Returns queryAtts that an observer may watch. 
+//    Returns queryAtts that an observer may watch.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    June 19, 2002 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    June 19, 2002
 //
 // ****************************************************************************
 
@@ -5116,8 +5103,8 @@ ViewerPlot::GetPlotQueryInfo()
 //  Purpose:
 //    Returns the type of the variable.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    June 19, 2002 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    June 19, 2002
 //
 //  Modifications:
 //    Sean Ahern, Fri Jun 28 14:45:26 PDT 2002
@@ -5144,13 +5131,13 @@ ViewerPlot::GetPlotQueryInfo()
 //
 // ****************************************************************************
 
-avtVarType 
+avtVarType
 ViewerPlot::GetVarType() const
 {
     return GetVarType(variableName);
 }
 
-avtVarType 
+avtVarType
 ViewerPlot::GetVarType(const std::string &var) const
 {
     return GetViewerStateManager()->GetVariableMethods()->DetermineVarType(
@@ -5164,20 +5151,20 @@ ViewerPlot::GetVarType(const std::string &var) const
 //  Purpose:
 //    Returns the type of the real variable behind this plot's variable.
 //
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    July 05, 2005 
+//  Programmer:  Kathleen Bonnell
+//  Creation:    July 05, 2005
 //
 //  Modifications:
 //
 // ****************************************************************************
 
-avtVarType 
+avtVarType
 ViewerPlot::GetRealVarType() const
 {
     return GetRealVarType(variableName);
 }
 
-avtVarType 
+avtVarType
 ViewerPlot::GetRealVarType(const std::string &var) const
 {
     return GetViewerStateManager()->GetVariableMethods()->DetermineRealVarType(
@@ -5200,7 +5187,7 @@ ViewerPlot::GetRealVarType(const std::string &var) const
 //               the plot attributes requires it.
 //
 //  Programmer:  Eric Brugger
-//  Creation:    December 30, 2002 
+//  Creation:    December 30, 2002
 //
 //  Modifications:
 //    Brad Whitlock, Fri Apr 25 10:55:38 PDT 2003
@@ -5265,7 +5252,7 @@ ViewerPlot::CheckCache(const int i0, const int i1, const bool force)
 // ****************************************************************************
 // Method: ViewerPlot::CreateNode
 //
-// Purpose: 
+// Purpose:
 //   Lets the plot save its information for a config file's DataNode.
 //
 // Arguments:
@@ -5386,7 +5373,7 @@ ViewerPlot::CreateNode(DataNode *parentNode)
 // ****************************************************************************
 // Method: ViewerPlot::SetFromNode
 //
-// Purpose: 
+// Purpose:
 //   Lets the plot reset its values from a config file.
 //
 // Arguments:
@@ -5536,7 +5523,7 @@ ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
                 //
                 // Add the operator.
                 //
-                if((node = opNode->GetNode("operatorType")) != 0) 
+                if((node = opNode->GetNode("operatorType")) != 0)
                 {
                     int type = GetOperatorPluginManager()->
                         GetEnabledIndex(node->AsString());
@@ -5594,17 +5581,17 @@ ViewerPlot::SetFromNode(DataNode *parentNode, const std::string &configVersion)
 // ****************************************************************************
 // Method: ViewerPlot::SessionContainsErrors
 //
-// Purpose: 
-//   This is a static method that is used to check the validity of the 
+// Purpose:
+//   This is a static method that is used to check the validity of the
 //   data nodes coming in from a session so we can detect errors without
 //   actually having to restore the session and disturb the state.
 //
 // Arguments:
 //   parentNode : The node that contains the plot information.
 //
-// Returns:    True 
+// Returns:    True
 //
-// Note:       The pattern followed by this function is similar to the 
+// Note:       The pattern followed by this function is similar to the
 //             SetFromNode function.
 //
 // Programmer: Brad Whitlock
@@ -5671,7 +5658,7 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
                         //
                         // Add the operator.
                         //
-                        if((node = opNode->GetNode("operatorType")) != 0) 
+                        if((node = opNode->GetNode("operatorType")) != 0)
                         {
                             std::string operatorID(node->AsString());
                             int type = GetOperatorPluginManager()->
@@ -5719,7 +5706,7 @@ ViewerPlot::SessionContainsErrors(DataNode *parentNode)
 // ****************************************************************************
 // Method: ViewerPlot::InitializePlot
 //
-// Purpose: 
+// Purpose:
 //   This method initializes a Plot object with the ViewerPlot's attributes
 //   so we can send the Plot object back to the client.
 //
@@ -5763,7 +5750,7 @@ ViewerPlot::InitializePlot(Plot &plot) const
     plot.SetEndFrame(endCacheIndex);
     plot.SetIsFromSimulation(engineKey.IsSimulation());
     plot.SetEmbeddedPlotId(embeddedPlotId);
- 
+
     // Set the keyframe indices.
     int j, nIndices;
     const int *indices = plotAtts->GetIndices(nIndices);
@@ -5782,7 +5769,7 @@ ViewerPlot::InitializePlot(Plot &plot) const
     // Set the operators that are applied to the plot
     for (int op_index = 0; op_index < GetNOperators(); ++op_index)
     {
-        plot.AddOperator(GetOperator(op_index)->GetType(), 
+        plot.AddOperator(GetOperator(op_index)->GetType(),
                          GetOperator(op_index)->GetName());
     }
     plot.SetActiveOperator(activeOperatorIndex);
@@ -5791,7 +5778,7 @@ ViewerPlot::InitializePlot(Plot &plot) const
 // ****************************************************************************
 // Method: ViewerPlot::RegisterViewerPlotList
 //
-// Purpose: 
+// Purpose:
 //   Associates the plot with the given plot list.
 //
 // Arguments:
@@ -5813,14 +5800,14 @@ ViewerPlot::RegisterViewerPlotList(ViewerPlotList *vpl)
 // ****************************************************************************
 // Method: ViewerPlot::SetOpaqueMeshIsAppropriate
 //
-// Purpose: 
-//   Notifies avtPlot if opaque mesh is appropriate. 
+// Purpose:
+//   Notifies avtPlot if opaque mesh is appropriate.
 //
 // Arguments:
 //   val :  True if opaque mesh is appropriate, false otherwise.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   August 27, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   August 27, 2003
 //
 // Modifications:
 //   Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003
@@ -5829,15 +5816,15 @@ ViewerPlot::RegisterViewerPlotList(ViewerPlotList *vpl)
 //   Brad Whitlock, Mon Apr 5 09:30:08 PDT 2004
 //   I rewrote it since I changed how it is called.
 //
-//   Kathleen Bonnell, Tue Aug 24 16:19:00 PDT 2004 
-//   Send MeshType as arg to SetOpaqueMeshIsAppropriate. 
+//   Kathleen Bonnell, Tue Aug 24 16:19:00 PDT 2004
+//   Send MeshType as arg to SetOpaqueMeshIsAppropriate.
 //
-//   Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004 
+//   Kathleen Bonnell, Tue Nov  2 11:13:15 PST 2004
 //   Removed MeshType arg from SetOpaqueMeshIsAppropriate.  (MeshType is now
 //   sent to the avtPlot.)
 //
-//   Kathleen Bonnell, Mon Jan 23 18:28:28 PST 2006 
-//   Set the atts in plotAtts, too. 
+//   Kathleen Bonnell, Mon Jan 23 18:28:28 PST 2006
+//   Set the atts in plotAtts, too.
 //
 // ****************************************************************************
 
@@ -5867,17 +5854,17 @@ ViewerPlot::SetOpaqueMeshIsAppropriate(bool val)
 // ****************************************************************************
 // Method: ViewerPlot::IsMesh
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the plot type is Mesh Plot.
 //
 // Returns:
 //   true if this is a mesh plot, false otherwise.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   August 27, 2003 
+// Programmer: Kathleen Bonnell
+// Creation:   August 27, 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -5890,17 +5877,17 @@ ViewerPlot::IsMesh()
 // ****************************************************************************
 // Method: ViewerPlot::IsLabel
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not the plot type is Label Plot.
 //
 // Returns:
 //   true if this is a label plot, false otherwise.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   January 11, 2005 
+// Programmer: Kathleen Bonnell
+// Creation:   January 11, 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -5933,11 +5920,11 @@ ViewerPlot::GetEngineKey() const
 //  Method: ViewerPlot::GetVariableCentering
 //
 //  Purpose:
-//    Get the centering the plot's variable. 
+//    Get the centering the plot's variable.
 //
 //  Returns:  the variable's centering
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   April 2, 2004
 //
 //  Modifications:
@@ -5952,7 +5939,7 @@ ViewerPlot::GetEngineKey() const
 avtCentering
 ViewerPlot::GetVariableCentering() const
 {
-    avtCentering retval = AVT_UNKNOWN_CENT; 
+    avtCentering retval = AVT_UNKNOWN_CENT;
 
     if(readerList != NULL)
     {
@@ -6002,7 +5989,7 @@ ViewerPlot::UpdateDataExtents()
 //
 //  Purpose: Return the window Id for this plot
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   June 8, 2004
 //
 // ****************************************************************************
@@ -6020,9 +6007,9 @@ ViewerPlot::GetWindowId() const
 // ****************************************************************************
 //  Method: ViewerPlot::GetMeshType
 //
-//  Purpose: Return the mesh type for this plot. 
+//  Purpose: Return the mesh type for this plot.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   August 24, 2004
 //
 //  Modifications:
@@ -6031,7 +6018,7 @@ ViewerPlot::GetWindowId() const
 //
 //    Dave Bremer, Fri Mar  9 17:35:45 PST 2007
 //    Added a NULL pointer check after GetMetaData().
-//    Assume that I should handle the error the same way 
+//    Assume that I should handle the error the same way
 //    as when  md->GetMesh(meshName) returns NULL.
 //
 //    Jeremy Meredith, Tue Feb 19 14:29:52 EST 2008
@@ -6045,25 +6032,25 @@ ViewerPlot::GetMeshType() const
     const avtDatabaseMetaData *md = GetMetaData();
     if (!md)
         return AVT_UNKNOWN_MESH;
-    
+
     const avtMeshMetaData *mmd = md->GetMesh(meshName);
     if (mmd)
         return mmd->meshType;
-    else 
+    else
         return AVT_UNKNOWN_MESH;
 }
 
 // ****************************************************************************
 // Method: ViewerPlotList::UpdatePlotInformation
 //
-// Purpose: 
+// Purpose:
 //   Send the plot information back to the client.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jan  8 15:05:14 PST 2009
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6079,7 +6066,7 @@ ViewerPlot::UpdatePlotInformation() const
             if(*info != (*plotList[cacheIndex])->GetPlotInformation())
             {
                 *info = (*plotList[cacheIndex])->GetPlotInformation();
-                info->Notify(); 
+                info->Notify();
             }
         }
         else
@@ -6096,7 +6083,7 @@ ViewerPlot::UpdatePlotInformation() const
 // ****************************************************************************
 // Method: ViewerPlot::SetFullFrameScaling
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the plot's mapper needed to use fullframe scaling.
 //
 // Arguments:
@@ -6105,7 +6092,7 @@ ViewerPlot::UpdatePlotInformation() const
 //
 // Returns:    True if fullframe scaling was used by the mapper.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Jul 24 14:02:31 PST 2006
@@ -6129,14 +6116,14 @@ ViewerPlot::SetFullFrameScaling(bool useScale, double *s)
 // ****************************************************************************
 // Method: ViewerPlot::AlternateDisplayHide
 //
-// Purpose: 
+// Purpose:
 //   Tells the plot's alternate display to hide.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 23 15:13:59 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6149,14 +6136,14 @@ ViewerPlot::AlternateDisplayHide()
 // ****************************************************************************
 // Method: ViewerPlot::AlternateDisplayShow
 //
-// Purpose: 
+// Purpose:
 //   Tells the plot's alternate display to show itself.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 23 15:13:59 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6169,14 +6156,14 @@ ViewerPlot::AlternateDisplayShow()
 // ****************************************************************************
 // Method: ViewerPlot::AlternateDisplayDeIconify
 //
-// Purpose: 
+// Purpose:
 //   Tells the plot's alternate display to show normally.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 23 15:13:59 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6189,14 +6176,14 @@ ViewerPlot::AlternateDisplayDeIconify()
 // ****************************************************************************
 // Method: ViewerPlot::AlternateDisplayIconify
 //
-// Purpose: 
+// Purpose:
 //   Tells the plot's alternate display to iconify.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 23 15:13:59 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6209,14 +6196,14 @@ ViewerPlot::AlternateDisplayIconify()
 // ****************************************************************************
 // Method: ViewerPlot::AlternateDisplayClear
 //
-// Purpose: 
+// Purpose:
 //   Tells the plot's alternate display to clear out its data display.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Feb 23 15:13:59 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6229,7 +6216,7 @@ ViewerPlot::AlternateDisplayClear()
 // ****************************************************************************
 // Method: ViewerPlot::AlternateDisplayUpdatePlotAttributes
 //
-// Purpose: 
+// Purpose:
 //   Tells the plot's alternate display to update its display of the plot's
 //   attributes since they have changed.
 //
@@ -6237,7 +6224,7 @@ ViewerPlot::AlternateDisplayClear()
 // Creation:   Fri Feb 23 15:13:59 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6257,7 +6244,7 @@ ViewerPlot::AlternateDisplayUpdatePlotAttributes()
 // ****************************************************************************
 // Method: ViewerPlot::emitAlternateDisplayChangedPlotAttributes
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the alternate display
 //   changes the plot attributes via a Notify() call. We use that notification
 //   to get here via an observer to signal class. We set the plot attributes
@@ -6271,7 +6258,7 @@ ViewerPlot::AlternateDisplayUpdatePlotAttributes()
 //   Brad Whitlock, Fri Jan 9 15:07:35 PST 2009
 //   Added exception handling to prevent exceptions from being propagated into
 //   the Qt event loop.
-//   
+//
 //   Mark C. Miller, Wed Jun 17 17:46:18 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL
 //
@@ -6311,7 +6298,7 @@ ViewerPlot::emitAlternateDisplayChangedPlotAttributes()
 // ****************************************************************************
 // Method: ViewerPlot::AlternateDisplaySetAllowClientUpdates
 //
-// Purpose: 
+// Purpose:
 //   Sets whether sending data to clients is allows when processing a Notify()
 //   caused by the alternate display.
 //
@@ -6322,7 +6309,7 @@ ViewerPlot::emitAlternateDisplayChangedPlotAttributes()
 // Creation:   Fri Feb 23 15:22:18 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6334,7 +6321,7 @@ ViewerPlot::AlternateDisplaySetAllowClientUpdates(bool val)
 // ****************************************************************************
 // Method: ViewerPlot::AlternateDisplayAllowClientUpdates
 //
-// Purpose: 
+// Purpose:
 //   Returns whether the client can be sent new state during an update
 //   caused by the alternate display.
 //
@@ -6342,7 +6329,7 @@ ViewerPlot::AlternateDisplaySetAllowClientUpdates(bool val)
 // Creation:   Fri Feb 23 15:23:15 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -6355,20 +6342,20 @@ ViewerPlot::AlternateDisplayAllowClientUpdates() const
 // ****************************************************************************
 // Method: ViewerPlot::SetScaleMode
 //
-// Purpose: 
+// Purpose:
 //   Sets the scaling mode for this plot -- updates the Actor with the
-//   new scaling.  In support of log-scaled views. 
+//   new scaling.  In support of log-scaled views.
 //
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   March 6, 2007
 //
 // Modifications:
 //   Kathlen Bonnell, Tue Apr  3 17:17:33 PDT 2007
 //   Don't re-execute unnecessarily.
-//   
-//   Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007 
-//   Added WINDOW_MODE arg. 
+//
+//   Kathleen Bonnell, Wed May  9 17:27:40 PDT 2007
+//   Added WINDOW_MODE arg.
 //
 //   Kathleen Bonnell, Tue Mar  3 10:20:56 PST 2009
 //   Only set scaling if appropriate to do so.
@@ -6400,7 +6387,7 @@ ViewerPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
     }
     if (doUpdate)
     {
-        avtDataObjectReader_p reader = GetReader(); 
+        avtDataObjectReader_p reader = GetReader();
         avtActor_p actor = plotList[cacheIndex]->Execute(reader);
 
         this->SetActor(actor);
@@ -6416,23 +6403,23 @@ ViewerPlot::SetScaleMode(ScaleMode ds, ScaleMode rs, WINDOW_MODE wm)
 // ****************************************************************************
 // Method: ViewerPlot::PermitsLogViewScaling
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not this plot supports log view scaling.
 //
 // Arguments:
 //   wm        The window mode.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   May 11, 2007
 //
 // Modifications:
 //    Kathleen Bonnell, Tue Mar  3 10:18:50 PST 2009
-//    Renamed to PermitsLogViewScaling, retrieve plot's flag from 
+//    Renamed to PermitsLogViewScaling, retrieve plot's flag from
 //    viewerPluginInfo, not plot
 //
 // ****************************************************************************
 
-bool 
+bool
 ViewerPlot::PermitsLogViewScaling(WINDOW_MODE wm)
 {
     bool rv = false;
@@ -6455,19 +6442,19 @@ ViewerPlot::PermitsLogViewScaling(WINDOW_MODE wm)
 // ****************************************************************************
 // Method: ViewerPlot::AdaptsToAnyWindowMode
 //
-// Purpose: 
+// Purpose:
 //   Returns whether or not this plot can adapt to any window mode.
 //
 // Returns:    true if it can, false otherwise
 //
-// Programmer: Hank Childs 
+// Programmer: Hank Childs
 // Creation:   August 30, 2007
 //
 // Modifications:
-//  
+//
 // ****************************************************************************
 
-bool 
+bool
 ViewerPlot::AdaptsToAnyWindowMode(void)
 {
     bool rv = false;
@@ -6483,14 +6470,14 @@ ViewerPlot::AdaptsToAnyWindowMode(void)
 // ****************************************************************************
 // Method: ViewerPlot::SetNumPlotsCreated
 //
-// Purpose: 
+// Purpose:
 //   Set the number of plots created.
 //
 // Programmer: Eric Brugger
 // Creation:   February 12, 2010
 //
 // Modifications:
-//  
+//
 // ****************************************************************************
 
 void
@@ -6502,7 +6489,7 @@ ViewerPlot::SetNumPlotsCreated(int n)
 // ****************************************************************************
 // Method: ViewerPlot::SetNamedSelection
 //
-// Purpose: 
+// Purpose:
 //   Set the named selection for the plot.
 //
 // Arguments:
@@ -6512,7 +6499,7 @@ ViewerPlot::SetNumPlotsCreated(int n)
 // Creation:   Mon Aug 22 10:57:35 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -6524,7 +6511,7 @@ ViewerPlot::SetNamedSelection(const std::string &selName)
 // ****************************************************************************
 // Method: ViewerPlot::GetNamedSelection
 //
-// Purpose: 
+// Purpose:
 //   Return the name of the selection for the plot.
 //
 // Returns:    The name of the plot's selection.
@@ -6533,7 +6520,7 @@ ViewerPlot::SetNamedSelection(const std::string &selName)
 // Creation:   Mon Aug 22 10:58:32 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const std::string &
@@ -6546,14 +6533,14 @@ ViewerPlot::GetNamedSelection() const
 // ****************************************************************************
 // Method: ViewerPlot::GetExtraInfoForPick
 //
-// Purpose: 
+// Purpose:
 //   Return the name of the selection for the plot.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   February 29, 2012
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
