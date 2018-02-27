@@ -95,6 +95,9 @@
 //      Added hasMaterials, onlyCellExp, and init of 
 //      datasetExtents. 
 //
+//      Alister Maguire, Tue Feb 27 11:08:51 PST 2018
+//      Removed datasetExtents. 
+//
 // ****************************************************************************
 
 avtExplodeFilter::avtExplodeFilter()
@@ -105,10 +108,6 @@ avtExplodeFilter::avtExplodeFilter()
     numExplosions      = 0;
     hasMaterials       = false;
     onlyCellExp        = true;
-    for (int i = 0; i < 6; ++i)
-    {
-        datasetExtents[i] = 0.0;
-    }
 }
 
 
@@ -251,6 +250,9 @@ avtExplodeFilter::GetMaterialIndex(std::string matName)
 //      Alister Maguire, Wed Feb 14 14:36:02 PST 2018
 //      Added updating of dataset extents. 
 //
+//      Alister Maguire, Tue Feb 27 11:08:51 PST 2018
+//      Removed update of datasetExtents. 
+//
 // ****************************************************************************
 
 void
@@ -293,27 +295,6 @@ avtExplodeFilter::UpdateExtentsAcrossProcs()
         materialExtents[idx + 1] = trueMaxExtents[i];
     }
 
-    //
-    // Update the dataset extents from across all procs. 
-    //
-    for (int i = 0; i < numMat; ++i)
-    {
-        for (int j = 0; j < 3; ++j)
-        {
-            int matIdx = i*6 + j*2;
-            int dsIdx  = j*2;
-
-            if (materialExtents[matIdx] < datasetExtents[dsIdx])
-            {
-                datasetExtents[dsIdx] = materialExtents[matIdx];
-            }
-            if (materialExtents[matIdx+1] > datasetExtents[dsIdx+1])
-            {
-                datasetExtents[dsIdx+1] = materialExtents[matIdx+1];
-            }
-        } 
-    }
-
     delete [] curMinExtents;
     delete [] curMaxExtents;
     delete [] trueMinExtents;
@@ -344,6 +325,9 @@ avtExplodeFilter::UpdateExtentsAcrossProcs()
 //      Altered safety check to init the extents if 
 //      they are null. Also added a section to update
 //      the dataset extents. 
+//
+//      Alister Maguire, Tue Feb 27 11:08:51 PST 2018
+//      Removed update of datasetExtents. 
 //
 // ****************************************************************************
 
@@ -382,24 +366,6 @@ avtExplodeFilter::UpdateExtentsAcrossDomains(double *localExtents,
         if (localExtents[locIdx] > materialExtents[gMatIdx])
         {
             materialExtents[gMatIdx] = localExtents[locIdx];
-        }
-    } 
-
-    //
-    // Update dataset extents. 
-    //
-    for (int i = 0; i < 3; ++i)
-    {
-        int idx  = i*2;
-        if (localExtents[idx] < datasetExtents[idx])
-        {
-            datasetExtents[idx] = localExtents[idx];
-        }
-
-        idx  += 1;
-        if (localExtents[idx] > datasetExtents[idx])
-        {
-            datasetExtents[idx] = localExtents[idx];
         }
     } 
 }
@@ -1000,47 +966,6 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
 
 
 // ****************************************************************************
-//  Method: avtExplodeFilter::ComputeScaleFactor
-//
-//  Purpose:
-//      Compute the scale factor. 
-//
-//  Programmer: Aliseter Maguire
-//  Creation:   Tue Feb 13 13:32:18 PST 2018
-//
-//     Note: this was mostly copied from avtTubeFilter.
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtExplodeFilter::ComputeScaleFactor()
-{
-    //
-    // Calculate the scale factor for this dataset. 
-    //
-    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
-    int numReal   = 0;
-    double volume = 1.0;
-    for (int i = 0 ; i < dim ; i++)
-    {
-        if (datasetExtents[2*i] != datasetExtents[2*i+1])
-        {
-            numReal++;
-            volume *= (datasetExtents[2*i+1] - datasetExtents[2*i]);
-        }
-    }
-    if (volume < 0)
-        volume *= -1.;
-    if (numReal > 0)
-        scaleFactor = pow(volume, 1.0/numReal);
-    else
-        scaleFactor = 1;
-}
-
-
-// ****************************************************************************
 //  Method: avtExplodeFilter::PreExecute
 //
 //  Purpose:
@@ -1067,9 +992,28 @@ void
 avtExplodeFilter::PreExecute(void)
 {
     //
-    // Set the initial spatial extents. 
+    // Calculate the scale factor for this dataset. 
     //
+    double datasetExtents[6];
     GetSpatialExtents(datasetExtents);
+
+    int dim = GetInput()->GetInfo().GetAttributes().GetSpatialDimension();
+    int numReal   = 0;
+    double volume = 1.0;
+    for (int i = 0 ; i < dim ; i++)
+    {
+        if (datasetExtents[2*i] != datasetExtents[2*i+1])
+        {
+            numReal++;
+            volume *= (datasetExtents[2*i+1] - datasetExtents[2*i]);
+        }
+    }
+    if (volume < 0)
+        volume *= -1.;
+    if (numReal > 0)
+        scaleFactor = pow(volume, 1.0/numReal);
+    else
+        scaleFactor = 1;
 
     //
     // Initialize the global material extents.
@@ -1272,8 +1216,6 @@ avtExplodeFilter::Execute(void)
         vtkDataSet **inLeaves  = inTree->GetAllLeaves(nLeaves);
         vtkDataSet **outLeaves = new vtkDataSet *[nLeaves];
 
-        ComputeScaleFactor(); 
-
         for (int expIdx = 0; expIdx < numExplosions; ++expIdx)
         {
             for (int i = 0; i < nLeaves; ++i)
@@ -1382,8 +1324,6 @@ avtExplodeFilter::Execute(void)
         {
             if (explosions[expIdx]->explodeAllCells)
             {
-                ComputeScaleFactor();
-
                 vtkUnstructuredGrid *newLeaf = 
                     vtkUnstructuredGrid::New();
                 explosions[expIdx]->ExplodeAllCells(
@@ -1414,8 +1354,6 @@ avtExplodeFilter::Execute(void)
                     matExtents[j] = materialExtents[matIdx + j];
                 }
  
-                ComputeScaleFactor();
-
                 if (explosions[expIdx]->explodeMaterialCells)
                 {
                     explosions[expIdx]->ExplodeAndDisplaceMaterial(

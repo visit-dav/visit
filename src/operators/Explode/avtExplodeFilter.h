@@ -123,13 +123,11 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
                                                     std::vector<int>, 
                                                     stringVector);
     void                           ResetMaterialExtents(bool, int matIdx=-1);
-    void                           ComputeScaleFactor();
 
     ExplodeAttributes              atts;
     Explosion                    **explosions;
     double                        *materialExtents;
     double                         scaleFactor;
-    double                         datasetExtents[6];
     int                            numExplosions;
     bool                           hasMaterials;
     bool                           onlyCellExp;
