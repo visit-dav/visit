@@ -146,8 +146,8 @@ public:
     void GetOutput(T *&ar, T *&ag, T *&ab, T *&aa, float *&az, bool take)
          { ar = ro; ag = go; ab = bo; aa = ao; az = zo; ownout = !take; }
 
-    void SetBackground(T *ar, T *ag, T *ab, float *az, bool aown);
-    void SetBackgroundColor(const double abg[3]);
+    void SetBackground(T *ar, T *ag, T *ab, T *aa, float *az, bool aown);
+    void SetBackgroundColor(const double abg[4]);
 
     void ApplyBackgroundColor(const double abg[3]);
 
@@ -1475,7 +1475,7 @@ ProgrammableCompositer<T>::SetInput(
 }
 
 // ****************************************************************************
-//  Method: SetOutput
+//  Method: G
 //
 //  Purpose: Set this ranks output image. if the own flag is
 //           true then the data will be free'd when
@@ -1521,13 +1521,15 @@ ProgrammableCompositer<T>::SetOutput(
 //  Creation:   Thu Aug 20 13:12:38 PDT 2015
 //
 //  Modifications:
+//    Brad Whitlock, Fri Feb 23 15:00:16 PST 2018
+//    Copy input alpha if provided.
 //
 // ****************************************************************************
 
 template <typename T>
 void
 ProgrammableCompositer<T>::SetBackground(
-    T *a_r, T *a_g, T *a_b, float *a_z,
+    T *a_r, T *a_g, T *a_b, T *a_a, float *a_z,
     bool aown)
 {
     if (ownbg)
@@ -1544,12 +1546,18 @@ ProgrammableCompositer<T>::SetBackground(
     bb = a_b;
     zb = a_z;
 
-    // background is always opaque.
     size_t n = w*h;
     ab = static_cast<T*>(aligned_alloc(alignment, n*sizeof(T)));
-    for (size_t i = 0; i < n; ++i)
-        ab[i] = color_tt<T>::max();
-
+    if(a_a == NULL)
+    {
+        for (size_t i = 0; i < n; ++i)
+            ab[i] = bgrgba[3];
+    }
+    else
+    {
+        for (size_t i = 0; i < n; ++i)
+            ab[i] = a_a[i];
+    }
     ownbg = aown;
 }
 
@@ -1567,12 +1575,12 @@ ProgrammableCompositer<T>::SetBackground(
 
 template <typename T>
 void
-ProgrammableCompositer<T>::SetBackgroundColor(const double rgb[3])
+ProgrammableCompositer<T>::SetBackgroundColor(const double rgba[4])
 {
-    bgrgba[0] = color_tt<T>::from(rgb[0]);
-    bgrgba[1] = color_tt<T>::from(rgb[1]);
-    bgrgba[2] = color_tt<T>::from(rgb[2]);
-    bgrgba[3] = color_tt<T>::max();
+    bgrgba[0] = color_tt<T>::from(rgba[0]);
+    bgrgba[1] = color_tt<T>::from(rgba[1]);
+    bgrgba[2] = color_tt<T>::from(rgba[2]);
+    bgrgba[3] = color_tt<T>::from(rgba[3]);
 }
 
 // ****************************************************************************
@@ -2033,7 +2041,7 @@ ProgrammableCompositer<T>::Execute()
     {
         bool color = bcastrgba || (rank == 0);
         bool depth = (bcastz || (rank == 0)) && zi;
-        bool alpha = color && ai && zi;
+        bool alpha = color && ai;// && zi;
 
         // copy into a user provided buffer or allocate one for him
         ImageBuffer<T> *tmp = ro||zo ? new ImageBuffer<T>(ro, go, bo, ao, zo, npix, false) :

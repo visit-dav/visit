@@ -7285,6 +7285,12 @@ NetworkManager::RenderGeometry()
 //    Burlen Loring, Wed Sep  2 11:06:19 PDT 2015
 //    refactored for depth peeling and ordered compositing
 //
+//    Brad Whitlock, Wed Feb 28 11:14:59 PST 2018
+//    Enable passing input image's alpha through the compositing. This lets us
+//    create images where the translucent geometry is overlayed over a 
+//    transparent background so that transparency is preserved (if we are
+//    requesting an image that has alpha).
+//
 // ****************************************************************************
 
 avtImage_p
@@ -7326,8 +7332,9 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
     {
         viswin->EnableAlphaChannel();
 
-        double bgColor[3];
+        double bgColor[4] = {0., 0., 0., 0.};
         memcpy(bgColor, viswin->GetBackgroundColor(), 3*sizeof(double));
+        bgColor[3] = renderState.getAlpha ? 0. : 1.;
         viswin->SetBackgroundColor(0.0, 0.0, 0.0);
 
         viswin->ScreenRender(renderState.imageType,
@@ -7364,32 +7371,38 @@ NetworkManager::RenderTranslucent(avtImage_p& input)
         if (rank == 0)
         {
             float *rb = NULL, *gb = NULL, *bb = NULL, *ab = NULL, *zb = NULL;
-            Split(rb,gb,bb,ab, zb, w,h, 3, input);
-            acomp->SetBackground(rb,gb,bb,zb,true);
+            Split(rb,gb,bb,ab, zb, w,h, renderState.getAlpha?4:3, input);
+            acomp->SetBackgroundColor(bgColor);
+            acomp->SetBackground(rb,gb,bb,ab,zb,true);
 
-            if (bgMode == AnnotationAttributes::Solid)
+            if(!renderState.getAlpha)
             {
-                acomp->ApplyBackgroundColor(bgColor);
-            }
-            else
-            {
-               viswin->ScreenRender(renderState.imageType,
-                  /*mode=*/renderState.viewportedMode,
-                  /*canvas z=*/true, /*opaque on=*/false,
-                  /*translucent on=*/false, /*no bg=*/false,
-                  /*pass 1=*/NULL);
+                // If we're not getting alpha then we do not want a 
+                // transparent background.
+                if (bgMode == AnnotationAttributes::Solid)
+                {
+                    acomp->ApplyBackgroundColor(bgColor);
+                }
+                else
+                {
+                    viswin->ScreenRender(renderState.imageType,
+                        /*mode=*/renderState.viewportedMode,
+                        /*canvas z=*/true, /*opaque on=*/false,
+                        /*translucent on=*/false, /*no bg=*/false,
+                        /*pass 1=*/NULL);
 
-                float *rbi = NULL, *gbi = NULL, *bbi = NULL, *abi = NULL, *zbi = NULL;
-                int w = 0, h = 0;
-                viswin->ScreenReadBack(
-                    rbi,gbi,bbi,abi,zbi, w,h,
-                    /*mode=*/renderState.viewportedMode,
-                    /*read z=*/false, /*read a=*/false);
+                    float *rbi = NULL, *gbi = NULL, *bbi = NULL, *abi = NULL, *zbi = NULL;
+                    int w = 0, h = 0;
+                    viswin->ScreenReadBack(
+                        rbi,gbi,bbi,abi,zbi, w,h,
+                        /*mode=*/renderState.viewportedMode,
+                        /*read z=*/false, /*read a=*/false);
 
 #ifdef ProgrammableCompositerDEBUG
-                writeVTK("bg_in.vtk", rbi,gbi,bbi,abi,zbi,w,h);
+                    writeVTK("bg_in.vtk", rbi,gbi,bbi,abi,zbi,w,h);
 #endif
-                acomp->ApplyBackgroundImage(rbi, gbi, bbi);
+                    acomp->ApplyBackgroundImage(rbi, gbi, bbi);
+                }
             }
         }
 
