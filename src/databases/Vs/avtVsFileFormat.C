@@ -1475,7 +1475,11 @@ avtVsFileFormat::getHighOrderUnstructuredMesh(VsUnstructuredMesh* unstructuredMe
 //  Creation:   June, 2010
 //
 //  Modifications:
+//    Kevin Griffin, Wed Feb 28 15:46:18 PST 2018
+//    Inserted explicit cast for numCells to avoid the -Wc++11-narrowing
+//    error.
 //
+// *****************************************************************************
 
 vtkDataSet*
 avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
@@ -1880,7 +1884,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     herr_t loadDataErr;
     if (haveDataSelections) {
         int srcMins[1] = {mins[0]};
-        int srcMaxs[1] = {numCells};
+        int srcMaxs[1] = {static_cast<int>(numCells)};
         int srcStrides[1] = {strides[0]};
 
         loadDataErr = reader->getData( connectivityDataset, vertices,
