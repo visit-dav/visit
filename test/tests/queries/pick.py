@@ -213,6 +213,9 @@
 #    Alister Maguire, Mon Oct 30 15:54:30 PDT 2017
 #    Added test for removing a list of labeled picks. 
 #
+#    Matt Larsen, Wed Feb 28 08:24:31 PDT 2018
+#    Turning off all anotations for pick highlight tests 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("Boxlib2D","SAMRAI","Mili"))
 
@@ -2784,14 +2787,7 @@ def PickScatter():
     
 def PickHighlight():
     OpenDatabase(silo_data_path("noise.silo"))
-    annotAtts  = GetAnnotationAttributes() 
-    annotAtts.userInfoFlag = 0
-    annotAtts.axes3D.xAxis.title.visible = 0
-    annotAtts.axes3D.yAxis.title.visible = 0
-    annotAtts.axes3D.zAxis.title.visible = 0
-    annotAtts.axes3D.bboxFlag = 0;
-    annotAtts.axes3D.triadFlag = 0;
-    SetAnnotationAttributes(annotAtts)
+    TurnOffAllAnnotations()
     AddPlot("Pseudocolor", "hardyglobal")
     pickAtts = GetPickAttributes()
     pickAtts.showPickHighlight = 1
@@ -2813,14 +2809,7 @@ def PickHighlight():
 
 def PickHighlightColor():
     OpenDatabase(silo_data_path("noise.silo"))
-    annotAtts  = GetAnnotationAttributes() 
-    annotAtts.userInfoFlag = 0
-    annotAtts.axes3D.xAxis.title.visible = 0
-    annotAtts.axes3D.yAxis.title.visible = 0
-    annotAtts.axes3D.zAxis.title.visible = 0
-    annotAtts.axes3D.bboxFlag = 0;
-    annotAtts.axes3D.triadFlag = 0;
-    SetAnnotationAttributes(annotAtts)
+    TurnOffAllAnnotations()
     AddPlot("Pseudocolor", "hardyglobal")
     pickAtts = GetPickAttributes()
     pickAtts.showPickHighlight  = 1
