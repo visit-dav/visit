@@ -108,6 +108,8 @@ class QvisNoDefaultColorTableButton;
 //   Kathleen Biagas, Fri Aug 8 08:50:31 PDT 2014
 //   Added support for grouping color tables according to a category name.
 //
+//   Mark C. Miller, Wed Feb 28 14:56:09 PST 2018
+//   Handling "smoothing" label correctly.
 // ****************************************************************************
 
 class GUI_API QvisColorTableWindow : public QvisPostableWindowObserver
@@ -198,6 +200,7 @@ private:
     QSpinBox                 *colorNumColors;
     QButtonGroup             *colorTableTypeGroup;
 
+    QLabel                   *smoothLabel;
     QComboBox                *smoothingMethod;
     QCheckBox                *equalCheckBox;
     QvisSpectrumBar          *spectrumBar;
