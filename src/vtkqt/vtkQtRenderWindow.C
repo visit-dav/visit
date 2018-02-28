@@ -32,7 +32,6 @@
 #include <QSysInfo>
 #endif
 
-
 // ****************************************************************************
 // Class: vtkQtRenderWindowPrivate
 //
@@ -56,6 +55,11 @@
 //   Kevin Griffin, Thu Apr 27 11:32:52 PDT 2017
 //   Disabled High DPI (Retina) for QT5 on OSX until the bug that causes the 
 //   viewer to display random content is fixed.
+//
+//   Kevin Griffin, Tue Feb 27 14:23:36 PST 2018
+//   Added additional checks before disabling High DPI since it causes
+//   problems with the viewer window in OSX 10.13 and Qt 5.10.0 appears to
+//   have fixed the underlying issue. This fixes Bug #3020.
 //
 // ****************************************************************************
 
@@ -96,10 +100,12 @@ public:
         // the channel seems to be benign. In addition, the 2D view
         // bounds and picking are off.
         gl = new QVTKWidget(w);
-#ifdef Q_OS_OSX
-        if(QSysInfo::macVersion() >= QSysInfo::MV_YOSEMITE) // OSX 10.10
+#if defined Q_OS_OSX && (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))
+        if(QSysInfo::macVersion() >= QSysInfo::MV_YOSEMITE &&
+           QSysInfo::macVersion() <= QSysInfo::MV_ELCAPITAN) // OSX 10.10 and 10.11
         {
-            disableGLHiDPI(gl->winId());            
+            disableGLHiDPI(gl->winId());
+            std::cout << "Disabled using High DPI (Retina Display)." << std::endl;
         }
 #endif
 
@@ -134,7 +140,7 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     d = new vtkQtRenderWindowPrivate(this, false);
     setIconSize(QSize(20,20));
 
-#ifdef Q_OS_OSX
+#if defined Q_OS_OSX && (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))
     // Fixes the issue with the left corner of the toolbar being
     // rendered over.
     QCoreApplication::setAttribute(Qt::AA_ImmediateWidgetCreation);
