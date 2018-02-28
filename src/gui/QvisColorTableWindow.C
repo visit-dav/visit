@@ -188,6 +188,8 @@ QvisColorTableWindow::~QvisColorTableWindow()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Mark C. Miller, Wed Feb 28 14:27:38 PST 2018
+//   Handle "smoothing" label correctly.
 // ****************************************************************************
 
 void
@@ -307,7 +309,7 @@ QvisColorTableWindow::CreateWindowContents()
     seLayout->addWidget(alignPointButton);
     seLayout->addStretch(10);
 
-    QLabel *smoothLabel = new QLabel(tr("Smoothing"), colorWidgetGroup);
+    smoothLabel = new QLabel(tr("Smoothing"), colorWidgetGroup);
     seLayout->addWidget(smoothLabel);
     smoothingMethod = new QComboBox(colorWidgetGroup);
     smoothingMethod->addItem(tr("None"));
@@ -668,6 +670,8 @@ QvisColorTableWindow::UpdateWindow(bool doAll)
 //   Jeremy Meredith, Wed Dec 31 16:11:50 EST 2008
 //   Added show index hints checkbox for discrete color tables.
 //
+//   Mark C. Miller, Wed Feb 28 14:28:01 PST 2018
+//   Handle "smoothing" label correctly.
 // ****************************************************************************
 
 void
@@ -681,6 +685,7 @@ QvisColorTableWindow::UpdateEditor()
         {
             UpdateDiscreteSettings();
 
+            smoothLabel->hide();
             smoothingMethod->hide();
             equalCheckBox->hide();
             spectrumBar->hide();
@@ -700,6 +705,7 @@ QvisColorTableWindow::UpdateEditor()
         {
             UpdateColorControlPoints();
 
+            smoothLabel->show();
             smoothingMethod->show();
             equalCheckBox->show();
             spectrumBar->show();
