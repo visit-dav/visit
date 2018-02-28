@@ -56,6 +56,7 @@
 #include <DebugStream.h>
 #include <avtExtents.h>
 
+#define MAX_PARALLEL_COORDINATE_AXES 100
 
 //
 // Static Function Prototypes
@@ -484,6 +485,10 @@ VisWinParallelAxes::SetViewport(double vl_, double vb_, double vr_, double vt_)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Brad Whitlock, Tue Feb 27 12:03:03 PST 2018
+//    Ensure that we are in parallel coordinate window mode before even setting
+//    the axes.
+//
 // ****************************************************************************
 
 void
@@ -491,50 +496,57 @@ VisWinParallelAxes::UpdatePlotList(vector<avtActor_p> &list)
 {
     int nActors = (int)list.size();
 
-    //
-    // Find the highest-valued axis index for any plot
-    //
-    int naxes = -1;
-    int actorIndex = -1;
-    for (int i = 0 ; i < nActors ; i++)
+    // Only update the plot axes if we are in parallel axis mode and we
+    // have plots.
+    if((mediator.GetMode() == WINMODE_PARALLELAXES ||
+        mediator.GetMode() == WINMODE_VERTPARALLELAXES) &&
+       nActors > 0)
     {
-        avtDataAttributes &atts = 
-            list[i]->GetBehavior()->GetInfo().GetAttributes();
-        std::vector<std::string> labels;
-        atts.GetLabels(labels);
-        if ((int)labels.size() > naxes)
+        //
+        // Find the highest-valued axis index for any plot
+        //
+        int naxes = -1;
+        int actorIndex = -1;
+        for (int i = 0 ; i < nActors ; i++)
         {
-            actorIndex = i;
-            naxes = (int)labels.size();
+            avtDataAttributes &atts = 
+                list[i]->GetBehavior()->GetInfo().GetAttributes();
+            std::vector<std::string> labels;
+            atts.GetLabels(labels);
+            if ((int)labels.size() > naxes)
+            {
+                actorIndex = i;
+                naxes = (int)labels.size();
+            }
         }
-    }
 
-    SetNumberOfAxes(naxes+1);
+        SetNumberOfAxes(naxes+1);
 
-    if (actorIndex >= 0)
-    {
-        avtDataAttributes &atts = 
-            list[actorIndex]->GetBehavior()->GetInfo().GetAttributes();
-        std::vector<std::string> labels;
-        atts.GetLabels(labels);
-
-        double extents[6];
-        if (atts.GetOriginalSpatialExtents()->HasExtents())
-            atts.GetOriginalSpatialExtents()->CopyTo(extents);
-        else if (atts.GetThisProcsOriginalSpatialExtents()->HasExtents())
-            atts.GetThisProcsOriginalSpatialExtents()->CopyTo(extents);
-        else
-            return;
-      
-        axes[0].xpos = 0;
-        axes[0].range[0] = extents[0];
-        axes[0].range[1] = extents[1];
-        for (int i = 0; i < naxes; i++)
+        if (actorIndex >= 0)
         {
-            axes[i+1].xpos = i + 0.5;
-            axes[i+1].range[0] = extents[0];
-            axes[i+1].range[1] = extents[1];
-            SNPRINTF(axes[i+1].title, 256, "%s", labels[i].c_str());
+            avtDataAttributes &atts = 
+                list[actorIndex]->GetBehavior()->GetInfo().GetAttributes();
+            std::vector<std::string> labels;
+            atts.GetLabels(labels);
+
+            double extents[6];
+            if (atts.GetOriginalSpatialExtents()->HasExtents())
+                atts.GetOriginalSpatialExtents()->CopyTo(extents);
+            else if (atts.GetThisProcsOriginalSpatialExtents()->HasExtents())
+                atts.GetThisProcsOriginalSpatialExtents()->CopyTo(extents);
+            else
+                return;
+      
+            axes[0].xpos = 0;
+            axes[0].range[0] = extents[0];
+            axes[0].range[1] = extents[1];
+            for (int i = 0; i < naxes; i++)
+            {
+                axes[i+1].xpos = i + 0.5;
+                axes[i+1].range[0] = extents[0];
+                axes[i+1].range[1] = extents[1];
+                SNPRINTF(axes[i+1].title, 256, "%s", labels[i].c_str());
+            }
         }
     }
 }
