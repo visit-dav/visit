@@ -1404,7 +1404,7 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
     if (qName ==  "Lineout")
     {
         doubleVector pt1, pt2;
-        if (queryParams.HasNumericVectorEntry("start_point")) 
+        if (queryParams.HasNumericVectorEntry("start_point"))
         {
             queryParams.GetEntry("start_point")->ToDoubleVector(pt1);
         }
@@ -1414,7 +1414,7 @@ ViewerQueryManager::StartLineQuery(const MapNode &queryParams)
             return;
         }
 
-        if (queryParams.HasNumericVectorEntry("end_point")) 
+        if (queryParams.HasNumericVectorEntry("end_point"))
         {
             queryParams.GetEntry("end_point")->ToDoubleVector(pt2);
         }
@@ -3336,11 +3336,11 @@ ViewerQueryManager::HandlePickCache()
 //    Check if 'vars' is a single string.
 //
 //    Matt Larsen, Mon Dec 12 08:11:00 PDT 2016
-//    Adding detection of a range of picks and looping over them. 
+//    Adding detection of a range of picks and looping over them.
 //
 //    Matt Larsen, Mon Dec July 08:11:00 PDT 2017
 //    Adding support for picking zones and nodes by label if the database
-//    supports them. 
+//    supports them.
 //
 //    Alister Mguire, Tue Oct  3 11:27:21 PDT 2017
 //    Added support for retrieving the data from a pick range over time. 
@@ -3376,7 +3376,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
             }
         }
     }
-    
+
     //
     // Look for a pick range and iterate though them
     //
@@ -3390,7 +3390,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     {
         pickAtts->SetHasRangeOutput(false);
     }
-  
+
     bool hasElementLabel = false;
     if(queryParams.HasEntry("element_label"))
     {
@@ -3415,11 +3415,11 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
     timeCurve |= (pickAtts->GetDoTimeCurve() ? 1 : 0);
     if(hasPickRange)
     {
-        MapNode multiOutput; 
+        MapNode multiOutput;
         string range = queryParams.GetEntry("pick_range")->AsString();
         ViewerWindow *win = ViewerWindowManager::Instance()->GetActiveWindow();
         win->DisableUpdates();
-        
+
         //
         // This is a purely visual operation. Disable window updates while
         // geometry is being generated.
@@ -3631,7 +3631,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         pickAtts->SetElementLabel("");
         return;
     }
-    
+
     if (!vars.empty())
         pickAtts->SetVariables(vars);
 
@@ -3696,7 +3696,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         ppi.rayPt1[1] = ppi.rayPt2[1] = pt[1];
         ppi.rayPt1[2] = ppi.rayPt2[2] = pt[2];
         ppi.validPick = true;
-        
+
         if (!timeCurve)
         {
             Pick(&ppi);
@@ -3720,7 +3720,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
         }
         win->SetInteractionMode(imode);
     }
-    else if (pType == "DomainZone"  || pType == "DomainNode" || 
+    else if (pType == "DomainZone"  || pType == "DomainNode" ||
              pType == "ZoneLabel" || pType == "NodeLabel")
     {
         int domain = 0, element = -1;
@@ -3742,7 +3742,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
         if (queryParams.HasNumericEntry("domain"))
             domain = queryParams.GetEntry("domain")->ToInt();
-            
+
         if (queryParams.HasNumericEntry("element"))
             element = queryParams.GetEntry("element")->ToInt();
 
@@ -3765,7 +3765,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
                 if(pType == "ZoneLabel")
                 {
-                    // if we have a label, we don't know the id of the element 
+                    // if we have a label, we don't know the id of the element
                     // so we have to add an additional query to figure that out
                     //PickAttributes pickAtts_orig = pickAtts;
                     MapNode pointQueryParams;
@@ -3775,7 +3775,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                     pointQueryParams["element_label"] = label;
                     pointQueryParams["do_time"] = 0;
                     pointQueryParams["preserve_coord"] = false;
-                     
+
                     pickAtts->SetDoTimeCurve(false);
                     PointQuery(pointQueryParams);
                     pickAtts->SetDoTimeCurve(true);
@@ -3810,7 +3810,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
 
                 if(pType == "NodeLabel")
                 {
-                    // if we have a label, we don't know the id of the element 
+                    // if we have a label, we don't know the id of the element
                     // so we have to add an additional query to figure that out
                     //PickAttributes pickAtts_orig = pickAtts;
                     MapNode pointQueryParams;
@@ -3820,7 +3820,7 @@ ViewerQueryManager::PointQuery(const MapNode &queryParams)
                     pointQueryParams["element_label"] = label;
                     pointQueryParams["do_time"] = 0;
                     pointQueryParams["preserve_coord"] = false;
-                     
+
                     pickAtts->SetDoTimeCurve(false);
                     PointQuery(pointQueryParams);
                     pickAtts->SetDoTimeCurve(true);
@@ -4835,6 +4835,10 @@ ViewerQueryManager::UpdateQueryOverTimeAtts()
 //    Kathleen Biagas, Tue Mar 25 07:56:00 PDT 2014
 //    Check if 'vars' is a single string.
 //
+//    Kathleen Biagas, Thu Mar  1 13:52:05 MST 2018
+//    Test for missing/disabled Curve and Multi-Curve Plots,
+//    issue error message.
+//
 // ***********************************************************************
 
 void
@@ -4856,6 +4860,36 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
             return;
         }
     }
+    bool doMCurve = false;
+    if (qParams.HasNumericEntry("curve_plot_type") &&
+        qParams.GetEntry("curve_plot_type")->ToInt() == 1 )
+    {
+        doMCurve = true;
+    }
+    else if (pickAtts->GetTimeCurveType() == 1 )
+    {
+        doMCurve = true;
+    }
+    if (doMCurve)
+    {
+        if (!GetPlotPluginManager()->PluginAvailable("MultiCurve_1.0"))
+        {
+            GetViewerMessaging()->Error(
+              TR("Time query results are set to be plotted in MultiCurve plot, which is not available.\n  Try enabling it in the Controls->Plugin Manager window"));
+            return;
+        }
+    }
+    else
+    {
+        if (!GetPlotPluginManager()->PluginAvailable("Curve_1.0"))
+        {
+            GetViewerMessaging()->Error(
+              TR("Time query results are plotted in Curve plot, which is not available.\n"
+                 "Try enabling it in the Controls->Plugin Manager window"));
+            return;
+        }
+    }
+
     //
     //  Grab information from the originating window.
     //
@@ -5028,14 +5062,8 @@ ViewerQueryManager::DoTimeQuery(ViewerWindow *origWin,
     }
 
     int plotType = GetPlotPluginManager()->GetEnabledIndex("Curve_1.0");
-    if (qParams.HasNumericEntry("curve_plot_type"))
+    if (doMCurve)
     {
-      if (qParams.GetEntry("curve_plot_type")->ToInt() == 1)
-        plotType = GetPlotPluginManager()->GetEnabledIndex("MultiCurve_1.0");
-    }
-    else
-    {
-      if (pickAtts->GetTimeCurveType() == 1)
         plotType = GetPlotPluginManager()->GetEnabledIndex("MultiCurve_1.0");
     }
 
@@ -5985,6 +6013,9 @@ ViewerQueryManager::CloneQuery(ViewerQuery *toBeCloned, int newTS, int oldTS)
 //    Kathleen Biagas, Wed Feb 26 10:44:01 PST 2014
 //    Clear prior query results and notify clients before early return.
 //
+//    Kathleen Biagas, Thu Mar  1 13:52:05 MST 2018
+//    Test for missing/disabled Curve Plot for Lineout, issue error message.
+//
 // ****************************************************************************
 
 
@@ -6052,14 +6083,30 @@ ViewerQueryManager::Query(const MapNode &queryParams)
     }
     else if (qtype == QueryList::LineQuery)
     {
+        if (!GetPlotPluginManager()->PluginAvailable("Curve_1.0"))
+        {
+            GetViewerMessaging()->Error(
+              TR("Curve plot is not available to plot the results of Lineout."
+                 "Try enabling it in the Controls->Plugin Manager window"));
+            return;
+        }
         StartLineQuery(queryParams);
         GetViewerMessaging()->QueueCommand(new ViewerCommandFinishLineQuery());
     }
     else
     {
         GetViewerState()->GetQueryAttributes()->Notify();
-        GetViewerMessaging()->Error(
-            TR("VisIt could not determine query type."));
+        if (qName == "Lineout" &&
+            !GetPlotPluginManager()->PluginAvailable("Curve_1.0"))
+        {
+            GetViewerMessaging()->Error(
+                TR("Lineout is not available when Curve plots are disabled\n. Try enabling Curve plot in the Controls->Plugin Manager window"));
+        }
+        else
+        {
+            GetViewerMessaging()->Error(
+                TR("VisIt could not determine query type."));
+        }
     }
 
     // Clear the status
