@@ -59,6 +59,7 @@
 #include <DebugStream.h>
 #include <InvalidColortableException.h>
 #include <LineAttributes.h>
+#include <StackTimer.h>
 #include <maptypes.h>
 
 #include <algorithm>
@@ -852,15 +853,16 @@ void
 avtSubsetPlot::SetColors()
 {
     const vector < string > &allLabels = atts.GetSubsetNames();
-    vector < string > labels; 
     LevelColorMap levelColorMap;
 
-    behavior->GetInfo().GetAttributes().GetLabels(labels);
-   
+    const vector < string > &labels = behavior->GetInfo().GetAttributes().GetLabels();
+
+    bool colorBarVisible = true;
     if (labels.size() == 0)
     {
         levelsLegend->SetColorBarVisibility(0);
         levelsLegend->SetMessage("No subsets present");
+        colorBarVisible = false;
     }
     else if(labels.size() > AVT_SUBSET_LEGEND_MAX_LABELS)
     {
@@ -868,9 +870,7 @@ avtSubsetPlot::SetColors()
         SNPRINTF(msg, 100, "%d subsets", static_cast<int>(labels.size()));
         levelsLegend->SetColorBarVisibility(0);
         levelsLegend->SetMessage(msg);
-
-        // Limit the number of labels.
-        labels.resize(AVT_SUBSET_LEGEND_MAX_LABELS);
+        colorBarVisible = false;
     }
     else 
     {
@@ -892,8 +892,11 @@ avtSubsetPlot::SetColors()
         //  Send an empty color map, rather than one where all
         //  entries map to same value. 
         //
-        levelsLegend->SetLabelColorMap(levelColorMap);
-        levelsLegend->SetLevels(labels);
+        if(colorBarVisible)
+        {
+            levelsLegend->SetLabelColorMap(levelColorMap);
+            levelsLegend->SetLevels(labels);
+        }
     }
     else if (atts.GetColorType() == SubsetAttributes::ColorByMultipleColors)
     {
@@ -921,11 +924,17 @@ avtSubsetPlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
-        levelsMapper->SetColors(cal, needsRecalculation);
-        levelsLegend->SetLevels(labels);
-
-        levelsMapper->SetLabelColorMap(levelColorMap);
-        levelsLegend->SetLabelColorMap(levelColorMap);
+        {
+            StackTimer t0("Set up levels mapper");
+            levelsMapper->SetColors(cal, needsRecalculation);
+            levelsMapper->SetLabelColorMap(levelColorMap);
+        }
+        if(colorBarVisible)
+        {
+            StackTimer t1("Set up levels legend");
+            levelsLegend->SetLevels(labels);
+            levelsLegend->SetLabelColorMap(levelColorMap);
+        }
 
         delete [] colors;
     }
@@ -998,12 +1007,18 @@ avtSubsetPlot::SetColors()
         }
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
-        levelsMapper->SetColors(cal, needsRecalculation);
-        levelsLegend->SetLevels(labels);
+        {
+            StackTimer t0("Set up levels mapper");
+            levelsMapper->SetColors(cal, needsRecalculation);
+            levelsMapper->SetLabelColorMap(levelColorMap);
+        }
 
-        levelsMapper->SetLabelColorMap(levelColorMap);
-        levelsLegend->SetLabelColorMap(levelColorMap);
-
+        if(colorBarVisible)
+        {
+            StackTimer t0("Set up levels legend");
+            levelsLegend->SetLevels(labels);
+            levelsLegend->SetLabelColorMap(levelColorMap);
+        }
         delete [] colors;
     }
 }
@@ -1081,6 +1096,7 @@ avtSubsetPlot::ReleaseData(void)
 void
 avtSubsetPlot::SortLabels()
 {
+    StackTimer t0("Sort labels");
     size_t   i;
 
     vector < string > originalLabels = atts.GetSubsetNames();

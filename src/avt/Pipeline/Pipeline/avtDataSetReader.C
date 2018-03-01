@@ -169,6 +169,9 @@ avtDataSetReader::Read(char *input, CharStrRef &csr)
 //    Hank Childs, Mon Jan  7 16:47:28 PST 2002
 //    Fix memory leak.
 //
+//    Brad Whitlock, Wed Feb 28 14:34:45 PST 2018
+//    Allow for small numbers of children to use array on stack.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -191,7 +194,12 @@ avtDataSetReader::ReadDataTree(char * &input, int &size, CharStrRef &csr)
 
     if (nc > 0)
     {
-        avtDataTree_p *children = new avtDataTree_p [nc];
+#define READ_DATA_TREE_NC 5
+        avtDataTree_p arr[READ_DATA_TREE_NC], *children = NULL;
+        if(nc > READ_DATA_TREE_NC)
+            children = new avtDataTree_p [nc];
+        else
+            children = arr;
         for (int i = 0; i < nc; ++i)
         {
             int IsPresent;
@@ -206,8 +214,9 @@ avtDataSetReader::ReadDataTree(char * &input, int &size, CharStrRef &csr)
                 children[i] = NULL; 
             }
         }
-        result = new avtDataTree(nc, children);        
-        delete [] children;
+        result = new avtDataTree(nc, children);
+        if(nc > READ_DATA_TREE_NC)
+            delete [] children;
     }
     else
     {
@@ -230,7 +239,7 @@ avtDataSetReader::ReadDataTree(char * &input, int &size, CharStrRef &csr)
         {
             string l(input, labelSize);
             input += labelSize; size += labelSize;
-            label = l;
+            label.swap(l); // = l;
         }
 
         avtDataRepresentation child(input, len, chunk, label, csr, dst);

@@ -3737,6 +3737,7 @@ avtDataAttributes::SetLabels(const vector<string> &l)
         labels.clear();
     }
 
+    labels.reserve(l.size());
     for (size_t i = 0; i < l.size(); i++)
     {
         labels.push_back(l[i]);
@@ -3766,12 +3767,18 @@ avtDataAttributes::GetLabels(vector<string> &l)
         l.clear();
     }
 
+    l.reserve(labels.size());
     for (size_t i = 0; i < labels.size(); i++)
     {
         l.push_back(labels[i]);
     }
 }
 
+const vector<string> &
+avtDataAttributes::GetLabels() const
+{
+    return labels;
+}
 
 // ****************************************************************************
 //  Method: avtDataAttributes::GetActualDataExtents

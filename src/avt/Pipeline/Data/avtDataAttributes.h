@@ -428,7 +428,8 @@ class PIPELINE_API avtDataAttributes
 
     void                     SetLabels(const std::vector<std::string> &l);
     void                     GetLabels(std::vector<std::string> &l);
-            
+    const std::vector<std::string> &GetLabels() const;
+
     const std::string       &GetVariableName(void) const;
     const std::string       &GetVariableName(int) const;
     const std::string       &GetVariableUnits(const char * = NULL) const;
