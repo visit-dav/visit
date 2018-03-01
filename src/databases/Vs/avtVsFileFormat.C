@@ -1879,10 +1879,9 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     size_t k = 0;
     herr_t loadDataErr;
     if (haveDataSelections) {
-        int srcMins[1], srcMaxs[1], srcStrides[1];
-        srcMins[0] = mins[0];
-        srcMaxs[0] = numCells;
-        srcStrides[0] = strides[0];
+        int srcMins[1] = {mins[0]};
+        int srcMaxs[1] = {static_cast<int>(numCells)};
+        int srcStrides[1] = {strides[0]};
 
         loadDataErr = reader->getData( connectivityDataset, vertices,
                 // -1 read all coordinate components
