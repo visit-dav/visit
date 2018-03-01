@@ -32,6 +32,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed crash performing a lineout when -dump issued on command line.</li>
   <li>VisIt's viewer was unnecessarily creating text labels that would likely not be used unless using a ParallelCoordinates plot. For Subset plots with large numbers of domains, this caused the viewer to use many gigabytes of memory even when scalable rendering was used.</li>
   <li>Fixed crash performing a time-query when Curve plot is disabled. An error message will now be issued, and the query will not be performed.</li>
+  <li>Fixed build_visit build of Qt with -no-openssl on Fedora.</li>
 </ul>
 
 <a name="Enhancements"></a>
