@@ -485,6 +485,9 @@ function build_qt
         VER=$(uname -r)
         if [[ "${VER:0:3}" == "2.4" ]] ; then
             EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
+        # For Fedora, disable openssl
+        elif [[ -n "$(cat /proc/version 2>/dev/null | grep -i fedora)" ]] ; then
+            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
         fi
 
         #
