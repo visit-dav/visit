@@ -1077,6 +1077,9 @@ avtSiloWriter::ConstructChunkOptlist(const avtDatabaseMetaData *md)
 //    I modified the writer to handle the case where the meshes in a
 //    multimesh or multivar were not all of the same type.
 //
+//    Mark C. Miller, Thu Mar  1 15:03:23 PST 2018
+//    Indicate db metadata is time-varying (even if it may not be). In trunk,
+//    a write option is added to disable.
 // ****************************************************************************
 
 void
@@ -1110,6 +1113,12 @@ avtSiloWriter::WriteChunk(vtkDataSet *ds, int chunk)
     else
     {
         dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
+    }
+
+    if (!DBInqVarExists(dbfile, "/MetadataIsTimeVarying"))
+    {
+        int const n = 1;
+        DBWrite(dbfile, "/MetadataIsTimeVarying", &n, &n, 1, DB_INT);
     }
 
     if (nblocks > 1)
@@ -1232,6 +1241,10 @@ avtSiloWriter::CloseFile(void)
 //
 //    Mark C. Miller, Tue Jun 14 10:36:25 PDT 2016
 //    Added logic to gather the chunk map
+//
+//    Mark C. Miller, Thu Mar  1 15:03:23 PST 2018
+//    Indicate db metadata is time-varying (even if it may not be). In trunk,
+//    a write option is added to disable.
 // ****************************************************************************
 
 void
@@ -1285,6 +1298,12 @@ avtSiloWriter::WriteRootFile()
             dbfile = DBOpen(filename, DB_UNKNOWN, DB_APPEND);
         else
             dbfile = DBCreate(filename, 0, DB_LOCAL, "VisIt ExportDB", driver);
+
+        if (!DBInqVarExists(dbfile, "/MetadataIsTimeVarying"))
+        {
+            int const n = 1;
+            DBWrite(dbfile, "/MetadataIsTimeVarying", &n, &n, 1, DB_INT);
+        }
 
         const avtMeshMetaData *mmd = headerDbMd->GetMesh(meshname);
         ConstructMultimesh(dbfile, mmd, globalMeshtypes, globalChunkToFileMap);
