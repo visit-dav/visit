@@ -84,8 +84,8 @@ function bv_uintah_print
 
 function bv_uintah_print_usage
 {
-    printf "%-15s %s [%s]\n" "--uintah" "Build Uintah" "${DO_UINTAH}"
-    printf "%-15s %s [%s]\n" "--alt-uintah-dir" "Use Uintah from an alternative directory"
+    printf "%-20s %s [%s]\n" "--uintah" "Build Uintah" "${DO_UINTAH}"
+    printf "%-20s %s [%s]\n" "--alt-uintah-dir" "Use Uintah from an alternative directory"
 }
 
 function bv_uintah_host_profile

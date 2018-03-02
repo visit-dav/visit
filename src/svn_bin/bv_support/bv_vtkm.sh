@@ -58,8 +58,8 @@ function bv_vtkm_print
 
 function bv_vtkm_print_usage
 {
-    printf "%-15s %s [%s]\n" "--vtkm" "Build VTKm support" "$DO_VTKM"
-    printf "%-15s %s [%s]\n" "--alt-vtkm-dir" "Use VTKm from an alternative directory"
+    printf "%-20s %s [%s]\n" "--vtkm" "Build VTKm support" "$DO_VTKM"
+    printf "%-20s %s [%s]\n" "--alt-vtkm-dir" "Use VTKm from an alternative directory"
 }
 
 function bv_vtkm_host_profile

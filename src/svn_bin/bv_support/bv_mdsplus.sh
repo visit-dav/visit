@@ -39,7 +39,7 @@ function bv_mdsplus_print
 
 function bv_mdsplus_print_usage
 {
-    printf "%-15s %s [%s]\n" "--mdsplus" "Build MDSplus" "${DO_MDSPLUS}"
+    printf "%-20s %s [%s]\n" "--mdsplus" "Build MDSplus" "${DO_MDSPLUS}"
 }
 
 function bv_mdsplus_host_profile

@@ -65,8 +65,8 @@ function bv_nektarpp_print
 
 function bv_nektarpp_print_usage
 {
-    printf "%-15s %s [%s]\n" "--nektarpp" "Build Nektar++" "${DO_NEKTAR_PLUS_PLUS}"
-    printf "%-15s %s [%s]\n" "--alt-nektarpp-dir" "Use Nektar++ from an alternative directory"
+    printf "%-20s %s [%s]\n" "--nektarpp" "Build Nektar++" "${DO_NEKTAR_PLUS_PLUS}"
+    printf "%-20s %s [%s]\n" "--alt-nektarpp-dir" "Use Nektar++ from an alternative directory"
 }
 
 function bv_nektarpp_host_profile

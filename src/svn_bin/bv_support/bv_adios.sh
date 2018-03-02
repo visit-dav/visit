@@ -81,8 +81,8 @@ function bv_adios_print
 
 function bv_adios_print_usage
 {
-    printf "%-15s %s [%s]\n" "--adios" "Build ADIOS" "$DO_ADIOS"
-    printf "%-15s %s [%s]\n" "--alt-adios-dir" "Use ADIOS from an alternative directory"
+    printf "%-20s %s [%s]\n" "--adios" "Build ADIOS" "$DO_ADIOS"
+    printf "%-20s %s [%s]\n" "--alt-adios-dir" "Use ADIOS from an alternative directory"
 }
 
 function bv_adios_host_profile

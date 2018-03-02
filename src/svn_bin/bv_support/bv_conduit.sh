@@ -44,7 +44,7 @@ function bv_conduit_print
 
 function bv_conduit_print_usage
 {
-    printf "%-15s %s [%s]\n" "--conduit"   "Build Conduit" "$DO_CONDUIT"
+    printf "%-20s %s [%s]\n" "--conduit"   "Build Conduit" "$DO_CONDUIT"
 }
 
 function bv_conduit_host_profile

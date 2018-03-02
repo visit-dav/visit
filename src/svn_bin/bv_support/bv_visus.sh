@@ -56,8 +56,8 @@ function bv_visus_print
 
 function bv_visus_print_usage
 {
-    printf "%-15s %s [%s]\n" "--visus" "Build ViSUS support" "$DO_VISUS"
-    printf "%-15s %s [%s]\n" "--alt-visus-dir" "Use ViSUS from an alternative directory"
+    printf "%-20s %s [%s]\n" "--visus" "Build ViSUS support" "$DO_VISUS"
+    printf "%-20s %s [%s]\n" "--alt-visus-dir" "Use ViSUS from an alternative directory"
 }
 
 function bv_visus_host_profile

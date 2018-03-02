@@ -38,7 +38,7 @@ function bv_tcmalloc_print
 
 function bv_tcmalloc_print_usage
 {
-    printf "%-15s %s [%s]\n" "--tcmalloc" "Build tcmalloc from Google's perftools" "$DO_TCMALLOC"  
+    printf "%-20s %s [%s]\n" "--tcmalloc" "Build tcmalloc from Google's perftools" "$DO_TCMALLOC"  
 }
 
 function bv_tcmalloc_host_profile

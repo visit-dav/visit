@@ -40,7 +40,7 @@ function bv_xercesc_print
 
 function bv_xercesc_print_usage
 {
-    printf "%-15s %s [%s]\n" "--xercesc"   "Build XERCESC" "$DO_XERCESC"
+    printf "%-20s %s [%s]\n" "--xercesc"   "Build XERCESC" "$DO_XERCESC"
 }
 
 function bv_xercesc_host_profile

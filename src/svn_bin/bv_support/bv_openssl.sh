@@ -41,7 +41,7 @@ function bv_openssl_print
 
 function bv_openssl_print_usage
 {
-    printf "%-15s %s [%s]\n" "--openssl" "Build openssl support" "$DO_OPENSSL"
+    printf "%-20s %s [%s]\n" "--openssl" "Build openssl support" "$DO_OPENSSL"
 }
 
 function bv_openssl_host_profile

@@ -54,8 +54,8 @@ function bv_fastquery_print
 
 function bv_fastquery_print_usage
 {
-    printf "\t\t%15s\n" "NOTE: FastQuery not available for download from web" 
-    printf "%-15s %s [%s]\n" "--fastquery" "Build FastQuery" "$DO_FASTQUERY"
+    printf "%-20s %s [%s]\n" "--fastquery" "Build FastQuery" "$DO_FASTQUERY"
+    printf "%-20s %s\n" "" "NOTE: FastQuery not available for download from web" 
 }
 
 function bv_fastquery_host_profile

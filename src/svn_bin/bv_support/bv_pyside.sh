@@ -89,9 +89,9 @@ function bv_pyside_print
 
 function bv_pyside_print_usage
 {
-    printf "%-15s %s [%s]\n" "--pyside" "Build PySide" "$DO_PYSIDE"
+    printf "%-20s %s [%s]\n" "--pyside" "Build PySide" "$DO_PYSIDE"
     if [[ "$DO_STATIC_BUILD" == "no" ]]; then
-        printf "%-15s %s [%s]\n" "--alt-pyside-dir" "Use PySide from an alternative directory"
+        printf "%-20s %s [%s]\n" "--alt-pyside-dir" "Use PySide from an alternative directory"
     fi
 }
 

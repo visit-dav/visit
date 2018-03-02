@@ -41,7 +41,7 @@ function bv_mpich_print
 
 function bv_mpich_print_usage
 {
-    printf "%-15s %s [%s]\n" "--mpich" "Build MPICH support" "$DO_MPICH"
+    printf "%-20s %s [%s]\n" "--mpich" "Build MPICH support" "$DO_MPICH"
 }
 
 function bv_mpich_host_profile

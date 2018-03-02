@@ -38,8 +38,9 @@ function bv_icet_print
 
 function bv_icet_print_usage
 {
-    printf "%-15s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
-    printf "%-15s %s [%s]\n" "--no-icet" "Ice-T is automatically built with --enable-parallel.  Prevent it from being built" "$PREVENT_ICET"
+    printf "%-20s %s [%s]\n" "--icet" "Build Ice-T (parallel rendering lib)" "$DO_ICET"
+    printf "%-20s %s [%s]\n" "--no-icet" "Prevent Ice-T from being built" "$PREVENT_ICET"
+    printf "%-20s %s\n" "" "NOTE: Ice-T is automatically built with --enable-parallel."
 }
 
 function bv_icet_host_profile

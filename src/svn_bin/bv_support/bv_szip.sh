@@ -38,7 +38,7 @@ function bv_szip_print
 
 function bv_szip_print_usage
 {
-    printf "%-15s %s [%s]\n" "--szip" "Build with SZIP" "$DO_SZIP"  
+    printf "%-20s %s [%s]\n" "--szip" "Build with SZIP" "$DO_SZIP"  
 }
 
 function bv_szip_host_profile

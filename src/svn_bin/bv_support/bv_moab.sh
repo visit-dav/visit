@@ -45,7 +45,7 @@ function bv_moab_print
 
 function bv_moab_print_usage
 {
-    printf "%-15s %s [%s]\n" "--moab" "Build moab support" "$DO_MOAB"
+    printf "%-20s %s [%s]\n" "--moab" "Build moab support" "$DO_MOAB"
 }
 
 function bv_moab_host_profile

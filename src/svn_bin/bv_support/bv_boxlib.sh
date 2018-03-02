@@ -39,7 +39,7 @@ function bv_boxlib_print
 
 function bv_boxlib_print_usage
 {
-    printf "%-15s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB" 
+    printf "%-20s %s [%s]\n" "--boxlib"  "Build Boxlib" "$DO_BOXLIB" 
 }
 
 function bv_boxlib_host_profile

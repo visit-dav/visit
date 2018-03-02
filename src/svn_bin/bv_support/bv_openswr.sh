@@ -39,7 +39,7 @@ function bv_openswr_print
 
 function bv_openswr_print_usage
 {
-    printf "%-15s %s [%s]\n" "--openswr" "Build OpenSWR" "$DO_OPENSWR"
+    printf "%-20s %s [%s]\n" "--openswr" "Build OpenSWR" "$DO_OPENSWR"
 }
 
 function bv_openswr_host_profile

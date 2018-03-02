@@ -377,16 +377,9 @@ function initialize_build_visit()
     done
 
 
-    # Dialog-related variables.
-    DLG="dialog"
-    DLG_BACKTITLE="VisIt $VISIT_VERSION Build Process"
-    DLG_HEIGHT="5"
-    DLG_HEIGHT_TALL="25"
-    DLG_WIDTH="60"
-    DLG_WIDTH_WIDE="80"
     WRITE_UNIFIED_FILE=""
     VISIT_INSTALLATION_BUILD_DIR=""
-    VISIT_DRY_RUN=0
+    VISIT_DRY_RUN="no"
     DO_SUPER_BUILD="no"
     DO_MANGLED_LIBRARIES="no"
 }
@@ -913,7 +906,7 @@ function run_build_visit()
             --installation-build-dir) next_arg="installation-build-dir";;
             --write-unified-file) next_arg="write-unified-file";;
             --parallel-build) DO_SUPER_BUILD="yes";;
-            --dry-run) VISIT_DRY_RUN=1;;
+            --dry-run) VISIT_DRY_RUN="yes";;
             --arch) next_arg="arch";;
             --build-mode) next_arg="build-mode";;
             --cflag) next_arg="append-cflags";;
@@ -1111,10 +1104,10 @@ function run_build_visit()
     info "enabling any dependent libraries"
     enable_dependent_libraries
 
-    ## At this point we are after the command line and the visual selection
-    #dry run, don't execute anything just run the enabled stuff..
-    #happens before any downloads have taken place..
-    if [[ $VISIT_DRY_RUN -eq 1 ]]; then
+    # At this point we are after the command line and the visual selection
+    # dry run, don't execute anything just run the enabled stuff..
+    # happens before any downloads have taken place..
+    if [[ $VISIT_DRY_RUN == "yes" ]]; then
         for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
         do
             initializeFunc="bv_${reqlibs[$bv_i]}_dry_run"
@@ -1193,13 +1186,30 @@ function run_build_visit()
         DO_CMAKE="yes"
     fi
 
-    #initialize module variables, since all of VisIt's variables should be set by now..
+    # initialize module variables, since all of VisIt's variables should
+    # be set by now..
     initialize_module_variables
+
+    #
+    # Disable qt,qwt if it is not needed
+    #
+    if [[ "$DO_ENGINE_ONLY" == "yes" || "$DO_DBIO_ONLY" == "yes" || "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]] ; then
+        if [[ "$DO_ENGINE_ONLY" == "yes" ]] ; then
+           info "disabling qt, qwt because --engine-only used"
+        elif [[ "$DO_DBIO_ONLY" == "yes" ]] ; then
+           info "disabling qt, qwt because --dbio-only used"
+        elif [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" ]] ; then
+           info "disabling qt, qwt because --server-components-only used"
+        fi
+        bv_qt_disable
+        bv_qwt_disable
+    fi
+
     #
     # Later we will build Qt.  We are going to bypass their licensing agreement,
     # so echo it here.
     #
-    if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]]; then
+    if [[ "$USE_SYSTEM_QT" != "yes" && "$DO_QT" == "yes" ]]; then
         BYPASS_QT_LICENSE="no"
         check_if_installed "qt" $QT_VERSION
         if [[ $? == 0 ]] ; then

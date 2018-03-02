@@ -44,7 +44,7 @@ function bv_visit_print
 #print how to install and uninstall module..
 function bv_visit_print_usage
 {
-    printf "%-15s %s [%s]\n" "--visit"   "Build VisIt" "$DO_VISIT"
+    printf "%-20s %s [%s]\n" "--visit"   "Build VisIt" "$DO_VISIT"
 }
 
 #values to add to host profile, write to $HOSTCONF

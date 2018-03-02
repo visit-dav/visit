@@ -62,8 +62,8 @@ function bv_silo_print
 
 function bv_silo_print_usage
 {
-    printf "%-15s %s [%s]\n" "--silo" "Build Silo support" "$DO_SILO"
-    printf "%-15s %s [%s]\n" "--silex" "Enable silex when building Silo" "$DO_SILEX"
+    printf "%-20s %s [%s]\n" "--silo" "Build Silo support" "$DO_SILO"
+    printf "%-20s %s [%s]\n" "--silex" "Enable silex when building Silo" "$DO_SILEX"
 }
 
 function bv_silo_host_profile

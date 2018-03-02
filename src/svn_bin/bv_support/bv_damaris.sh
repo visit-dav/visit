@@ -44,7 +44,7 @@ function bv_damaris_print
 
 function bv_damaris_print_usage
 {
-    printf "%-15s %s [%s]\n" "--damaris"   "Build DAMARIS" "$DO_DAMARIS"
+    printf "%-20s %s [%s]\n" "--damaris"   "Build DAMARIS" "$DO_DAMARIS"
 }
 
 function bv_damaris_host_profile

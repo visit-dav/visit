@@ -41,7 +41,7 @@ function bv_h5part_print
 
 function bv_h5part_print_usage
 {
-    printf "%-15s %s [%s]\n" "--h5part" "Build H5Part" "$DO_H5PART"
+    printf "%-20s %s [%s]\n" "--h5part" "Build H5Part" "$DO_H5PART"
 }
 
 function bv_h5part_host_profile

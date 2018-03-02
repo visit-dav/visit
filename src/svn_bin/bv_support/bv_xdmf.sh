@@ -41,7 +41,7 @@ function bv_xdmf_print
 
 function bv_xdmf_print_usage
 {
-    printf "%-15s %s [%s]\n" "--xdmf" "Build Xdmf" "$DO_XDMF"
+    printf "%-20s %s [%s]\n" "--xdmf" "Build Xdmf" "$DO_XDMF"
 }
 
 function bv_xdmf_host_profile

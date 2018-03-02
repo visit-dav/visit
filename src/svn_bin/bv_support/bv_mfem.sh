@@ -39,7 +39,7 @@ function bv_mfem_print
 
 function bv_mfem_print_usage
 {
-    printf "%-15s %s [%s]\n" "--mfem" "Build mfem support" "$DO_MFEM"
+    printf "%-20s %s [%s]\n" "--mfem" "Build mfem support" "$DO_MFEM"
 }
 
 function bv_mfem_host_profile

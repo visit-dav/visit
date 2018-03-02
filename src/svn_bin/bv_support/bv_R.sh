@@ -54,8 +54,8 @@ function bv_R_print
 
 function bv_R_print_usage
 {
-    printf "%-15s %s [%s]\n" "--R" "Build R" "$DO_R"
-    printf "%-15s %s [%s]\n" "--alt-R-dir" "Use R from an alternative directory"
+    printf "%-20s %s [%s]\n" "--R" "Build R" "$DO_R"
+    printf "%-20s %s [%s]\n" "--alt-R-dir" "Use R from an alternative directory"
 
 }
 
