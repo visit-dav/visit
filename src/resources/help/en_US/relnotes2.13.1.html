@@ -35,6 +35,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Fixed build_visit build of Qt with -no-openssl on Fedora.</li>
   <li>Set MetadataIsTimeVarying in exported Silo databases by fiat. This is a pre-caution to ensure we handle exported data correctly in cases where metadata really is time-varying and probably a minimal performance hit in cases where its not necessary.</li>
   <li>Fixed crash opening certain netcdf-4 files on Windows.</li>
+  <li>Fix crashes when any single block has number of nodes/zones or tuples x number of components that exceeds INT_MAX.<li>
 </ul>
 
 <a name="Enhancements"></a>
