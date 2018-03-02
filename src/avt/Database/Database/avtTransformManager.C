@@ -82,6 +82,7 @@
 
 #include <ImproperUseException.h>
 #include <PointerNotInCacheException.h>
+#include <TimingsManager.h>
 
 #include <DebugStream.h>
 #include <Utility.h>
@@ -1796,8 +1797,7 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
                 std::ostringstream oss;
                 oss << "Unable to discretize domain " << dom << " with "
                     << "the multi pass method, trying the uniform method.";
-                std::string msg(oss.str());
-                avtCallback::IssueWarning(msg.c_str());
+                avtCallback::IssueWarning(oss.str().c_str());
 
                 dgrid = csgmesh->DiscretizeSpace(csgreg,
                                              dataRequest->DiscTol(),
@@ -1815,8 +1815,7 @@ avtTransformManager::CSGToDiscrete(avtDatabaseMetaData *md,
         {
             std::ostringstream oss;
             oss << "Unable to discretize domain " << dom << ". Ignoring it.";
-            std::string msg(oss.str());
-            avtCallback::IssueWarning(msg.c_str());
+            avtCallback::IssueWarning(oss.str().c_str());
             dgrid = vtkUnstructuredGrid::New();
         }
 
@@ -2387,6 +2386,10 @@ avtTransformManager::TransformSingleDataset(vtkDataSet *ds,
 
     TRY
     {
+        // Handle cases where single block contains >2^32-1 nodes and/or cells
+        ds = OverflowInducingToEmpty(md, ds, domain);
+
+        // Convert CSG meshes
         ds = CSGToDiscrete(md, d_spec, ds, domain);
 
         // Handle vtkPoints datasets that have points but no cells
@@ -2524,4 +2527,68 @@ avtTransformManager::RemoveDuplicateNodes(vtkDataSet *ds)
         }
     }
     return ugrid;
+}
+
+// ****************************************************************************
+//  Method: OverflowInducingToEmpty
+//
+//  Purpose: Prevent blocks that would result in overflow in integer indexing
+//  arithmetic from making it any further down the pipelines and issue warning
+//  
+//  There are numerous places in VisIt code where int rather than size_t type
+//  is used to index into dataset arrays. If a given block is big enough, these
+//  can result in integer overflow and typicall result in VisIt crashing. This
+//  check prevents/protects all such code.
+//
+//  Programmer: Mark C. Miller, Fri Mar  2 13:10:09 PST 2018
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtTransformManager::OverflowInducingToEmpty(avtDatabaseMetaData *md,
+    vtkDataSet *ds, int dom)
+{
+    int i;
+    bool tooBig = false;
+
+    if (ds->GetNumberOfCells() > INT_MAX)
+        tooBig = true;
+
+    if (ds->GetNumberOfPoints() > INT_MAX)
+        tooBig = true;
+
+    vtkPointData *pd = ds->GetPointData();
+    for (i = 0; i < pd->GetNumberOfArrays() && !tooBig; i++)
+    {
+        vtkDataArray *da = pd->GetArray(i);
+        if (da->GetNumberOfTuples() * da->GetNumberOfComponents() > INT_MAX)
+            tooBig = true;
+    }
+
+    vtkCellData *cd = ds->GetCellData();
+    for (i = 0; i < cd->GetNumberOfArrays() && !tooBig; i++)
+    {
+        vtkDataArray *da = cd->GetArray(i);
+        if (da->GetNumberOfTuples() * da->GetNumberOfComponents() > INT_MAX)
+            tooBig = true;
+    }
+
+    if (!tooBig)
+        return ds;
+
+    std::ostringstream oss;
+    oss << "Mesh and/or variable size exceeds INT_MAX for domain " << dom
+        << ". This domain is being set to empty. Your only recourse "
+        << "to correct this issue is to decompose your input database "
+        << "into smaller domains. If you continue to process this data, "
+        << "this and likely other warnings will periodically re-appear.";
+    if (DELTA_TOA_THIS_LINE > 60)
+        avtCallback::IssueWarning(oss.str().c_str());
+
+    vtkDataSet *newds = ds->NewInstance();
+
+    // Loose the memory we're taking with this dataset
+    ds->Initialize();
+
+    return newds;
 }

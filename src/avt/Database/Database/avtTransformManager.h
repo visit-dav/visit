@@ -168,6 +168,9 @@ class DATABASE_API avtTransformManager
 
     vtkDataSet                *RemoveDuplicateNodes(vtkDataSet *ds);
 
+    vtkDataSet                *OverflowInducingToEmpty(avtDatabaseMetaData *md,
+                                   vtkDataSet *ds, int dom);
+
     avtVariableCache           cache;
     avtVariableCache          *gdbCache;
 };
