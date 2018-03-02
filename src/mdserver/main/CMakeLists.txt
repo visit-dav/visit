@@ -151,6 +151,10 @@ TARGET_LINK_LIBRARIES(mdserver
     ${DL_LIB}
 )
 
+if(WIN32 AND MSVC)
+    set_target_properties(mdserver PROPERTIES LINK_FLAGS "/STACK:4000000")
+endif()
+
 # If we're building statically then the mdserver can't be linked until the plugin
 # sources are built
 IF(VISIT_STATIC)
