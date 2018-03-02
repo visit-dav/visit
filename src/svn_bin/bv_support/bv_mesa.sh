@@ -37,7 +37,7 @@ function bv_mesa_print
 
 function bv_mesa_print_usage
 {
-    printf "%-15s %s [%s]\n" "--mesa" "Build Mesa" "$DO_MESA"
+    printf "%-20s %s [%s]\n" "--mesa" "Build Mesa" "$DO_MESA"
 }
 
 function bv_mesa_host_profile

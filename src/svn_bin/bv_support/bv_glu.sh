@@ -41,7 +41,7 @@ function bv_glu_print
 
 function bv_glu_print_usage
 {
-    printf "%-15s %s [%s]\n" "--glu" "Build GLU" "$DO_GLU"
+    printf "%-20s %s [%s]\n" "--glu" "Build GLU" "$DO_GLU"
 }
 
 function bv_glu_host_profile

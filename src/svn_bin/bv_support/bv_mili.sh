@@ -38,7 +38,7 @@ function bv_mili_print
 
 function bv_mili_print_usage
 {
-    printf "%-15s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
+    printf "%-20s %s [%s]\n" "--mili" "Build Mili" "$DO_MILI"
 }
 
 function bv_mili_host_profile

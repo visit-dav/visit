@@ -92,9 +92,9 @@ function bv_vtk_print
 
 function bv_vtk_print_usage
 {
-    printf "%-15s %s [%s]\n" "--vtk" "Build VTK" "built by default unless --no-thirdparty flag is used"
-    printf "%-15s %s [%s]\n" "--system-vtk" "Use the system installed VTK"
-    printf "%-15s %s [%s]\n" "--alt-vtk-dir" "Use VTK from an alternative directory"
+    printf "%-20s %s\n" "--vtk" "Build VTK" 
+    printf "%-20s %s [%s]\n" "--system-vtk" "Use the system installed VTK"
+    printf "%-20s %s [%s]\n" "--alt-vtk-dir" "Use VTK from an alternative directory"
 }
 
 function bv_vtk_host_profile

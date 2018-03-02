@@ -38,7 +38,7 @@ function bv_xsd_print
 
 function bv_xsd_print_usage
 {
-    printf "%-15s %s [%s]\n" "--xsd"   "Build XSD" "$DO_XSD"
+    printf "%-20s %s [%s]\n" "--xsd"   "Build XSD" "$DO_XSD"
 }
 
 function bv_xsd_host_profile

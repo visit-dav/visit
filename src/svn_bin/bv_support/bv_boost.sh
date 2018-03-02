@@ -57,8 +57,8 @@ function bv_boost_print
 
 function bv_boost_print_usage
 {
-    printf "%-15s %s [%s]\n" "--boost" "Build BOOST" "${DO_BOOST}"
-    printf "%-15s %s [%s]\n" "--alt-boost-dir" "Use Boost from an alternative directory"
+    printf "%-20s %s [%s]\n" "--boost" "Build BOOST" "${DO_BOOST}"
+    printf "%-20s %s [%s]\n" "--alt-boost-dir" "Use Boost from an alternative directory"
 }
 
 function bv_boost_host_profile

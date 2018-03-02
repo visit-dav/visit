@@ -112,10 +112,10 @@ function bv_cmake_print
 
 function bv_cmake_print_usage
 {
-    printf "%-15s %s [%s]\n" "--cmake" "Build CMake" "built by default unless --no-thirdparty flag is used"
-    printf "%-15s %s [%s]\n" "--system-cmake"  "Use the system installed CMake"
-    printf "%-15s %s [%s]\n" "--alt-cmake-dir" "Use CMake from an alternative directory"
-    printf "%-15s %s [%s]\n" "--bin-cmake-dir" "Use CMake from an alternative binary directory"
+    printf "%-20s %s\n" "--cmake" "Build CMake"
+    printf "%-20s %s [%s]\n" "--system-cmake"  "Use the system installed CMake"
+    printf "%-20s %s [%s]\n" "--alt-cmake-dir" "Use CMake from an alternative directory"
+    printf "%-20s %s [%s]\n" "--bin-cmake-dir" "Use CMake from an alternative binary directory"
 }
 
 function bv_cmake_host_profile

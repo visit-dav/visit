@@ -39,7 +39,7 @@ function bv_llvm_print
 
 function bv_llvm_print_usage
 {
-    printf "%-15s %s [%s]\n" "--llvm" "Build LLVM" "$DO_LLVM"
+    printf "%-20s %s [%s]\n" "--llvm" "Build LLVM" "$DO_LLVM"
 }
 
 function bv_llvm_host_profile

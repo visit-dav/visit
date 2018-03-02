@@ -51,7 +51,7 @@ function bv_hdf4_print
 
 function bv_hdf4_print_usage
 {
-    printf "%-15s %s [%s]\n" "--hdf4" "Build HDF4" "${DO_HDF4}"
+    printf "%-20s %s [%s]\n" "--hdf4" "Build HDF4" "${DO_HDF4}"
 }
 
 function bv_hdf4_host_profile

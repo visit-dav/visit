@@ -39,7 +39,7 @@ function bv_gdal_print
 
 function bv_gdal_print_usage
 {
-    printf "%-15s %s [%s]\n" "--gdal" "Build GDAL" "$DO_GDAL"
+    printf "%-20s %s [%s]\n" "--gdal" "Build GDAL" "$DO_GDAL"
 }
 
 function bv_gdal_host_profile

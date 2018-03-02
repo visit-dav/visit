@@ -38,7 +38,7 @@ function bv_ccmio_print
 
 function bv_ccmio_print_usage
 {
-    printf "%-15s %s [%s]\n" "--ccmio"   "Build Star-CD support" "$DO_CCMIO"
+    printf "%-20s %s [%s]\n" "--ccmio"   "Build Star-CD support" "$DO_CCMIO"
 }
 
 function bv_ccmio_host_profile

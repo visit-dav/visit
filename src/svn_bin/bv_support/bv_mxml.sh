@@ -45,7 +45,7 @@ function bv_mxml_host_profile
 function bv_mxml_print_usage
 {
     #mxml does not have an option, it is only dependent on mxml.
-    printf "%-15s %s [%s]\n" "--mxml" "Build Mxml" "$DO_MXML"
+    printf "%-20s %s [%s]\n" "--mxml" "Build Mxml" "$DO_MXML"
 }
 
 function bv_mxml_ensure

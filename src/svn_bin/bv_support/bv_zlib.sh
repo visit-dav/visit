@@ -41,7 +41,7 @@ function bv_zlib_print
 
 function bv_zlib_print_usage
 {
-    printf "%-15s %s [%s]\n" "--zlib" "Build ZLIB support" "$DO_ZLIB"
+    printf "%-20s %s [%s]\n" "--zlib" "Build ZLIB support" "$DO_ZLIB"
 }
 
 function bv_zlib_host_profile

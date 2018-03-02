@@ -166,10 +166,10 @@ function bv_qt_print
 
 function bv_qt_print_usage
 {
-    printf "%-15s %s [%s]\n" "--qt" "Build Qt4" "built by default unless --no-thirdparty flag is used"
-    printf "%-15s %s [%s]\n" "--qt4" "Build Qt4 instead of Qt5" "$IS_QT4"
-    printf "%-15s %s [%s]\n" "--system-qt" "Use the system installed Qt"
-    printf "%-15s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory"
+    printf "%-20s %s\n" "--qt" "Build Qt5" 
+    printf "%-20s %s [%s]\n" "--qt4" "Build Qt4 instead of Qt5" "$IS_QT4"
+    printf "%-20s %s [%s]\n" "--system-qt" "Use the system installed Qt"
+    printf "%-20s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory"
 }
 
 function bv_qt_host_profile

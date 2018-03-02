@@ -38,7 +38,7 @@ function bv_manta_print
 
 function bv_manta_print_usage
 {
-    printf "%-15s %s [%s]\n" "--manta" "Build Manta" "${DO_MANTA}"
+    printf "%-20s %s [%s]\n" "--manta" "Build Manta" "${DO_MANTA}"
 }
 
 function bv_manta_host_profile

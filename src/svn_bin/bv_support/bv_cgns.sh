@@ -47,7 +47,7 @@ function bv_cgns_print
 
 function bv_cgns_print_usage
 {
-    printf "%-15s %s [%s]\n" "--cgns"    "Build CGNS" "$DO_CGNS" 
+    printf "%-20s %s [%s]\n" "--cgns"    "Build CGNS" "$DO_CGNS" 
 }
 
 function bv_cgns_host_profile

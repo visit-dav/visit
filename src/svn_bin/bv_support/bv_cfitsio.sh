@@ -38,7 +38,7 @@ function bv_cfitsio_print
 
 function bv_cfitsio_print_usage
 {
-    printf "%-15s %s [%s]\n" "--cfitsio" "Build CFITSIO" "$DO_CFITSIO"
+    printf "%-20s %s [%s]\n" "--cfitsio" "Build CFITSIO" "$DO_CFITSIO"
 }
 
 function bv_cfitsio_host_profile

@@ -4,7 +4,6 @@
         <required>
             <lib name="cmake"/> <!-- cmake is here -->
             <lib name="python"/> 
-            <lib name="mesa"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="mesa"/> -->
             <lib name="qt"/>
             <lib name="qwt"/>
@@ -32,6 +31,7 @@
             <lib name="llvm"/>
             <lib name="manta"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
+            <lib name="mesa"/>
             <lib name="mfem"/>
             <lib name="mili"/>
             <lib name="moab"/>
@@ -59,7 +59,6 @@
         <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/> <!-- cmake is here -->
             <lib name="python"/>
-            <lib name="mesa"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="mesa"/> -->
             <lib name="qt"/>
             <lib name="qwt"/>
@@ -81,6 +80,7 @@
             <lib name="hdf5"/>
             <lib name="h5part"/>
             <lib name="llvm"/>
+            <lib name="mesa"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
@@ -162,7 +162,6 @@
             <lib name="uintah"/>
             <lib name="xdmf"/>
             <lib name="zlib"/> <!-- required by nektarpp -->
-            <lib name="no-mesa"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>
             <lib name="no-python"/>
@@ -199,7 +198,6 @@
         <required>
             <lib name="cmake"/>
             <lib name="python"/>
-            <lib name="mesa"/>
             <lib name="R"/>
             <lib name="vtk"/>
             <lib name="qt"/>
@@ -215,6 +213,7 @@
             <lib name="hdf5"/>
             <lib name="icet"/>
             <lib name="llvm"/>
+            <lib name="mesa"/>
             <lib name="mpich"/>
             <lib name="openswr"/>
             <lib name="pyqt"/>
@@ -228,7 +227,6 @@
         <group name="required" comment="All required libraries" enabled="yes">
             <lib name="cmake"/>
             <lib name="python"/>
-            <lib name="mesa"/>
             <lib name="R"/>
             <lib name="vtk"/>
             <lib name="qt"/>
@@ -239,6 +237,7 @@
             <lib name="boost"/>
             <lib name="hdf5"/>
             <lib name="openssl"/>
+            <lib name="mesa"/>
             <lib name="netcdf"/>
             <lib name="mpich"/>
             <lib name="szip"/>
@@ -263,7 +262,6 @@
             <lib name="netcdf"/>
             <lib name="szip"/>
             <lib name="uintah"/>
-            <lib name="no-mesa"/>
             <lib name="no-python"/>
             <lib name="no-qt"/>
             <lib name="no-qwt"/>

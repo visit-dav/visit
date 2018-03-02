@@ -65,8 +65,8 @@ function bv_pidx_print
 
 function bv_pidx_print_usage
 {
-    printf "%-15s %s [%s]\n" "--pidx" "Build pidx" "${DO_PIDX}"
-    printf "%-15s %s [%s]\n" "--alt-pidx-dir" "Use pidx from an alternative directory"
+    printf "%-20s %s [%s]\n" "--pidx" "Build pidx" "${DO_PIDX}"
+    printf "%-20s %s [%s]\n" "--alt-pidx-dir" "Use pidx from an alternative directory"
 }
 
 function bv_pidx_host_profile

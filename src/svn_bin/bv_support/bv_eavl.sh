@@ -58,8 +58,8 @@ function bv_eavl_print
 
 function bv_eavl_print_usage
 {
-    printf "%-15s %s [%s]\n" "--eavl" "Build eavl support" "$DO_EAVL"
-    printf "%-15s %s [%s]\n" "--alt-eavl-dir" "Use eavl from an alternative directory"
+    printf "%-20s %s [%s]\n" "--eavl" "Build eavl support" "$DO_EAVL"
+    printf "%-20s %s [%s]\n" "--alt-eavl-dir" "Use eavl from an alternative directory"
 }
 
 function bv_eavl_host_profile

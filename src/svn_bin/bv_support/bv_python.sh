@@ -182,10 +182,10 @@ function bv_python_print
 
 function bv_python_print_usage
 {
-    printf "%-15s %s [%s]\n" "--python" "Build Python" "built by default unless --no-thirdparty flag is used"
-    printf "%-15s %s [%s]\n" "--system-python" "Use the system installed Python"
-    printf "%-15s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
-    printf "%-15s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
+    printf "%-20s %s\n" "--python" "Build Python" 
+    printf "%-20s %s [%s]\n" "--system-python" "Use the system installed Python"
+    printf "%-20s %s [%s]\n" "--alt-python-dir" "Use Python from an alternative directory"
+    printf "%-20s %s [%s]\n" "--mpi4py" "Build mpi4py with Python"
 }
 
 function bv_python_host_profile

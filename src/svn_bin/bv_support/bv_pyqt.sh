@@ -47,8 +47,8 @@ function bv_pyqt_print
 
 function bv_pyqt_print_usage
 {
-    printf "%-15s %s [%s]\n" "--pyqt" "Build PyQt support" "$DO_PYQT"
-    printf "%-15s %s [%s]\n" "--alt-pyqt-dir" "Use alternative PyQt dir"
+    printf "%-20s %s [%s]\n" "--pyqt" "Build PyQt support" "$DO_PYQT"
+    printf "%-20s %s [%s]\n" "--alt-pyqt-dir" "Use alternative PyQt dir"
 }
 
 function bv_pyqt_host_profile

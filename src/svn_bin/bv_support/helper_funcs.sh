@@ -1405,34 +1405,47 @@ function usage
     initialize_build_visit
     
     printf "Usage: %s [options]\n" $0
-    printf "A download attempt will be made for all files which do not exist."
-    printf "\n\n"
-    printf "BOOLEAN FLAGS\n"
-    printf "\tThese are used to enable or disable specific functionality.  They do not take option values.\n\n"
-    printf "%-15s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "false"
-    printf "%-15s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
-    printf "%-15s %s [%s]\n" "--dbio-only" "Disables EVERYTHING but I/O." "$DO_DBIO_ONLY"
-    printf "%-15s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
-    printf "%-15s %s [%s]\n" "--debug"   "Enable debugging for this script" "false"
-    printf "%-15s %s [%s]\n" "--download-only" "Only download the specified packages" "false"
-    printf "%-15s %s [%s]\n" "--flags-debug" "Add '-g' to C[XX]FLAGS" "false"
-    printf "%-15s %s [%s]\n" "--fortran" "Enable compilation of Fortran sources" "false"
-    printf "%-15s %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
-    printf "%-15s %s [%s]\n" "-h" "Display this help message." "false"
-    printf "%-15s %s [%s]\n" "--help" "Display this help message." "false"
-    printf "%-15s %s [%s]\n" "--install-network" "Install specific network config files." "${VISIT_INSTALL_NETWORK}"
-    printf "%-15s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
-    printf "%-15s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$DO_HOSTCONF"
-    printf "%-15s %s [%s]\n" "--no-qt-silent" "Disable make silent operation for QT." "no"
-    printf "%-15s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
-    printf "%-15s %s [%s]\n" "--prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
-    printf "%-15s %s [%s]\n" "--print-vars" "Display user settable environment variables" "false"
-    printf "%-15s %s [%s]\n" "--server-components-only" "Only build VisIt's server components (mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
-    printf "%-15s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
-    printf "%-15s %s [%s]\n" "--paradis" "Build with the paraDIS client library" "$DO_PARADIS"
-    printf "%-15s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
-    printf "%-15s %s [%s]\n" "--stdout" "Write build log to stdout" "$LOG_FILE"
-    printf "%-15s %s [%s]\n" "--xdb" "Enable FieldView XDB plugin." "$DO_XDB"
+
+    printf "\n"
+    printf "BUILD OPTIONS\n" 
+    printf "\n"
+
+    printf "%-20s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
+    printf "%-20s %s [%s]\n" "--cflag"   "Append a flag to CFLAGS" "${CFLAGS}"
+    printf "%-20s %s [%s]\n" "--cxxflag" "Append a flag to CXXFLAGS" "$CXXFLAGS"
+    printf "%-20s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"
+    printf "%-20s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
+    printf "%-20s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
+    printf "%-20s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
+    printf "%-20s %s [%s]\n" "--debug" "Add '-g' to C[XX]FLAGS" "no"
+    printf "%s <%s>  %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
+    printf "%-20s %s [%s]\n" "--fortran" "Enable compilation of Fortran sources" "no"
+    printf "%-20s %s\n"      "--fc" "Explicitly set FC_COMPILER"
+    printf "%-20s [%s]\n"    ""     "$FC_COMPILER"
+    printf "%-20s %s [%s]\n" "--no-qt-silent" "Disable make silent operation for QT." "no"
+    printf "%-20s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
+    printf "%-20s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
+    printf "%-20s <%s> %s\n" "--installation-build-dir" "path" 
+    printf "%-20s %s [%s]\n" "" "Specify the directory visit will use for building" "$VISIT_INSTALLATION_BUILD_DIR"
+
+    printf "\n"
+    printf "INSTALLATION OPTIONS\n" 
+    printf "\n"
+
+    printf "%s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
+    printf "\t  %s\n" "   This variable is used in constructing the 3rd party"
+    printf "\t  %s\n" "   library path; usually set to something like"
+    printf "\t  %s\n" "   'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
+    printf "%-11s  %s [%s]\n" "--group" "Group name of installed libraries" "$GROUP"
+    printf "%-11s <%s> \n%s [%s]\n" "--thirdparty-path" "/path/to/directory" \
+           "             Specify the root directory name under which the 3rd party
+             libraries have been installed.  If defined, it would typically
+             mean the 3rd party libraries are pre-built and are installed
+             somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
+
+    printf "\n"
+    printf "GROUPING\n" 
+    printf "\n"
 
     for (( bv_i=0; bv_i<${#grouplibs_name[*]}; ++bv_i ))
     do
@@ -1441,9 +1454,29 @@ function usage
         enabled=${grouplibs_enabled[$bv_i]}
         printf "%-15s %s [%s]\n" "--$name" "$comment" "$enabled"
     done
+    printf "\n"
 
+    printf "\n"
+    printf "VISIT-SPECIFIC OPTIONS\n" 
+    printf "\n"
+    printf "%-20s %s [%s]\n" "--install-network" "Install specific network config files." "${VISIT_INSTALL_NETWORK}"
+    printf "%s <%s>    %s [%s]\n" "--prefix" "prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
+    printf "%s <%s>     %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
+    printf "%s <%s>  %s [%s]\n" "--version" "version" "The VisIt version to build" "$VISIT_VERSION"
+    printf "%-20s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$DO_HOSTCONF"
+    printf "%-20s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
+    printf "%-20s %s [%s]\n" "--paradis" "Build with the paraDIS client library" "$DO_PARADIS"
+    printf "%-20s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
+    printf "%-20s %s [%s]\n" "--xdb" "Enable FieldView XDB plugin." "$DO_XDB"
     bv_visit_initialize
     bv_visit_print_usage
+
+    printf "\n"
+    printf "THIRD-PARTY LIBRARIES\n" 
+    printf "  A download attempt will be made for all files which do not exist.\n"
+    printf "\n"
+    printf "  REQUIRED -- These are built by default unless --no-thirdparty flag is used.\n"
+    printf "\n"
 
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
@@ -1453,6 +1486,10 @@ function usage
         $printUsageFunc
     done
 
+    printf "\n"
+    printf "  OPTIONAL\n" 
+    printf "\n"
+
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
     do
         initializeFunc="bv_${optlibs[$bv_i]}_initialize"
@@ -1461,38 +1498,34 @@ function usage
         $printUsageFunc
     done
 
-    printf "%s\n" ""
-    printf "OPTIONS\n"
-    printf "These values all take a special value.  If given, they require an associated value to be provided as well.\n\n"
-    printf "%-15s \n\t%s [%s]\n" "--installation-build-dir"  "Specify the directory visit will use for building" "output-filename"
-    printf "%-15s \n\t%s [%s]\n" "--write-unified-file"  "Write single unified build_visit file" "output-filename"
-    printf "%s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
-    printf "\t  %s\n" "   This variable is used in constructing the 3rd party"
-    printf "\t  %s\n" "   library path; usually set to something like"
-    printf "\t  %s\n" "   'linux_gcc-3.4.6' or 'Darwin_gcc-4.0.1'"
-    printf "%-11s %s [%s]\n" "--cflag"   "Append a flag to CFLAGS" "${CFLAGS}"
-    printf "%-11s %s [%s]\n" "--cxxflag" "Append a flag to CXXFLAGS" "$CXXFLAGS"
-    printf "%-11s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"
-    printf "%-11s %s [%s]\n" "--cxxflags" "Explicitly set CXXFLAGS" "$CXXFLAGS"
-    printf "%-11s %s [%s]\n" "--cc"  "Explicitly set C_COMPILER" "$C_COMPILER"
-    printf "%-11s %s [%s]\n" "--cxx" "Explicitly set CXX_COMPILER" "$CXX_COMPILER"
-    printf "%-11s %s [%s]\n" "--fc" "Explicitly set FC_COMPILER" "$FC_COMPILER"
-    printf "%-11s <%s> %s [%s]\n" "--makeflags" "flags" "Flags to 'make'" "$MAKE_OPT_FLAGS"
-    printf "%s <%s> %s\n" "--svn" \
-           "Obtain VisIt source code and third party libraries from the SVN server"
-    printf "\t%s\n" "    [svn co $SVN_REPO_ROOT_PATH/$SVN_SOURCE_PATH]"
-    printf "%s <%s> %s\n" "--svn-anonymous" \
-           "Obtain VisIt source code and third party libraries using the anonymous SVN mirror."
-    printf "\t%s\n" "    [svn co $SVN_ANON_ROOT_PATH/$SVN_SOURCE_PATH]"
-    printf "%s <%s> %s\n" "--svn-revision" "revision" \
-           "Specify the SVN revision of the VisIt source code and third party libraries to download.  Used in conjunction with --svn or --svn-anonymous."
-    printf "%s <%s> %s [%s]\n" "--tarball" "file" "tarball to extract VisIt from" "$VISIT_FILE"
-    printf "%-11s <%s> \n%s [%s]\n" "--thirdparty-path" "/path/to/directory" \
-           "             Specify the root directory name under which the 3rd party
-             libraries have been installed.  If defined, it would typically
-             mean the 3rd party libraries are pre-built and are installed
-             somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
-    printf "%s <%s> %s [%s]\n" "--version" "version" "The VisIt version to build" "$VISIT_VERSION"
+    printf "\n"
+    printf "SVN OPTIONS\n" 
+    printf "\n"
+
+    printf "%-26s %s\n"      "--svn" "Obtain VisIt source code and third party libraries"
+    printf "%-26s %s [%s]\n" "" "from the SVN server" "$DO_SVN"
+    printf "%-26s %s\n"      "--svn-anonymous" "Obtain VisIt source code and third party libraries"
+    printf "%-26s %s [%s]\n" "" "using the anonymous SVN mirror." "$DO_SVN_ANON"
+    printf "%-14s <%s>  %s\n" "--svn-revision" "revision" "Specify the SVN revision of the VisIt source code"
+    printf "%-26s %s\n"     "" "and third party libraries to download."
+    printf "%-26s %s\n"     "" "Used in conjunction with --svn or --svn-anonymous."
+
+    printf "\n"
+    printf "MISC OPTIONS\n" 
+    printf "\n"
+
+    printf "%-20s %s [%s]\n" "--bv-debug"   "Enable debugging for this script" "no"
+    printf "%-20s %s [%s]\n" "--dry-run"  "Dry run of the presented options" "no"
+    printf "%-20s %s [%s]\n" "--download-only" "Only download the specified packages" "no"
+    printf "%-20s %s [%s]\n" "--engine-only" "Only build the compute engine." "$DO_ENGINE_ONLY"
+    printf "%-20s %s [%s]\n" "-h, --help" "Display this help message." "no"
+    printf "%-20s %s [%s]\n" "--print-vars" "Display user settable environment variables" "no"
+    printf "%-20s %s\n" "--server-components-only" ""
+    printf "%-20s %s\n" "" "Only build VisIt's server components"
+    printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
+    printf "%-20s %s [%s]\n" "--stdout" "Write build log to stdout" "no"
+    printf "%-20s <%s>\n" "--write-unified-file"  "filename" 
+    printf "%-20s %s [%s]\n" ""  "Write single unified build_visit file using the provided filename" "$WRITE_UNIFIED_FILE"
 }
 
 

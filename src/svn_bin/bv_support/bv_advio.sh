@@ -38,7 +38,7 @@ function bv_advio_print
 
 function bv_advio_print_usage
 {
-    printf "%-15s %s [%s]\n" "--advio"   "Build AdvIO" "$DO_ADVIO"
+    printf "%-20s %s [%s]\n" "--advio"   "Build AdvIO" "$DO_ADVIO"
 }
 
 function bv_advio_host_profile

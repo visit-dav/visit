@@ -73,8 +73,8 @@ function bv_hdf5_print
 
 function bv_hdf5_print_usage
 {
-    printf "%-15s %s [%s]\n" "--hdf5" "Build HDF5" "${DO_HDF5}"
-    printf "%-15s %s [%s]\n" "--alt-hdf5-dir" "Use HDF5 from an alternative directory"
+    printf "%-20s %s [%s]\n" "--hdf5" "Build HDF5" "${DO_HDF5}"
+    printf "%-20s %s [%s]\n" "--alt-hdf5-dir" "Use HDF5 from an alternative directory"
 }
 
 function bv_hdf5_host_profile
