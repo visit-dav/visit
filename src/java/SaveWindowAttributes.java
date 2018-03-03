@@ -102,7 +102,7 @@ public class SaveWindowAttributes extends AttributeSubject
         binary = false;
         lastRealFilename = new String("");
         stereo = false;
-        compression = COMPRESSIONTYPE_PACKBITS;
+        compression = COMPRESSIONTYPE_NONE;
         forceMerge = false;
         resConstraint = RESCONSTRAINT_SCREENPROPORTIONS;
         advancedMultiWindowSave = false;
@@ -127,7 +127,7 @@ public class SaveWindowAttributes extends AttributeSubject
         binary = false;
         lastRealFilename = new String("");
         stereo = false;
-        compression = COMPRESSIONTYPE_PACKBITS;
+        compression = COMPRESSIONTYPE_NONE;
         forceMerge = false;
         resConstraint = RESCONSTRAINT_SCREENPROPORTIONS;
         advancedMultiWindowSave = false;
