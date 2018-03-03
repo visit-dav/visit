@@ -1,6 +1,6 @@
 // ***************************************************************************
 //
-// Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+// Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
 // Produced at the Lawrence Livermore National Laboratory
 // LLNL-CODE-442911
 // All rights reserved.
@@ -79,6 +79,7 @@ public class SaveWindowAttributes extends AttributeSubject
     public final static int COMPRESSIONTYPE_PACKBITS = 1;
     public final static int COMPRESSIONTYPE_JPEG = 2;
     public final static int COMPRESSIONTYPE_DEFLATE = 3;
+    public final static int COMPRESSIONTYPE_LZW = 4;
 
     public final static int RESCONSTRAINT_NOCONSTRAINT = 0;
     public final static int RESCONSTRAINT_EQUALWIDTHHEIGHT = 1;
@@ -519,6 +520,8 @@ public class SaveWindowAttributes extends AttributeSubject
             str = str + "COMPRESSIONTYPE_JPEG";
         if(compression == COMPRESSIONTYPE_DEFLATE)
             str = str + "COMPRESSIONTYPE_DEFLATE";
+        if(compression == COMPRESSIONTYPE_LZW)
+            str = str + "COMPRESSIONTYPE_LZW";
         str = str + "\n";
         str = str + boolToString("forceMerge", forceMerge, indent) + "\n";
         str = str + indent + "resConstraint = ";

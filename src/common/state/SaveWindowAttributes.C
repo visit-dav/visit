@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -87,20 +87,20 @@ SaveWindowAttributes::FileFormat_FromString(const std::string &s, SaveWindowAttr
 
 static const char *CompressionType_strings[] = {
 "None", "PackBits", "Jpeg", 
-"Deflate"};
+"Deflate", "LZW"};
 
 std::string
 SaveWindowAttributes::CompressionType_ToString(SaveWindowAttributes::CompressionType t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
+    if(index < 0 || index >= 5) index = 0;
     return CompressionType_strings[index];
 }
 
 std::string
 SaveWindowAttributes::CompressionType_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
+    int index = (t < 0 || t >= 5) ? 0 : t;
     return CompressionType_strings[index];
 }
 
@@ -108,7 +108,7 @@ bool
 SaveWindowAttributes::CompressionType_FromString(const std::string &s, SaveWindowAttributes::CompressionType &val)
 {
     val = SaveWindowAttributes::None;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 5; ++i)
     {
         if(s == CompressionType_strings[i])
         {
@@ -877,7 +877,7 @@ SaveWindowAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
+            if(ival >= 0 && ival < 5)
                 SetCompression(CompressionType(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)

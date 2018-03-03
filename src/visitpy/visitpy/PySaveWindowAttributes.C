@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -192,7 +192,7 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
     else
         SNPRINTF(tmpStr, 1000, "%sstereo = 0\n", prefix);
     str += tmpStr;
-    const char *compression_names = "None, PackBits, Jpeg, Deflate";
+    const char *compression_names = "None, PackBits, Jpeg, Deflate, LZW";
     switch (atts->GetCompression())
     {
       case SaveWindowAttributes::None:
@@ -209,6 +209,10 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
           break;
       case SaveWindowAttributes::Deflate:
           SNPRINTF(tmpStr, 1000, "%scompression = %sDeflate  # %s\n", prefix, prefix, compression_names);
+          str += tmpStr;
+          break;
+      case SaveWindowAttributes::LZW:
+          SNPRINTF(tmpStr, 1000, "%scompression = %sLZW  # %s\n", prefix, prefix, compression_names);
           str += tmpStr;
           break;
       default:
@@ -597,14 +601,15 @@ SaveWindowAttributes_SetCompression(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the compression in the object.
-    if(ival >= 0 && ival < 4)
+    if(ival >= 0 && ival < 5)
         obj->data->SetCompression(SaveWindowAttributes::CompressionType(ival));
     else
     {
         fprintf(stderr, "An invalid compression value was given. "
-                        "Valid values are in the range of [0,3]. "
+                        "Valid values are in the range of [0,4]. "
                         "You can also use the following names: "
-                        "None, PackBits, Jpeg, Deflate.");
+                        "None, PackBits, Jpeg, Deflate, LZW"
+                        ".");
         return NULL;
     }
 
@@ -898,6 +903,8 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(SaveWindowAttributes::Jpeg));
     if(strcmp(name, "Deflate") == 0)
         return PyInt_FromLong(long(SaveWindowAttributes::Deflate));
+    if(strcmp(name, "LZW") == 0)
+        return PyInt_FromLong(long(SaveWindowAttributes::LZW));
 
     if(strcmp(name, "forceMerge") == 0)
         return SaveWindowAttributes_GetForceMerge(self, NULL);
