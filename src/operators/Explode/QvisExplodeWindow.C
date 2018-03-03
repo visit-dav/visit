@@ -127,6 +127,10 @@ QvisExplodeWindow::~QvisExplodeWindow()
 //    Alister Maguire, Wed Feb 21 11:20:52 PST 2018
 //    Refactored to handle multiple explosions. 
 //
+//    Alister Maguire, Fri Mar  2 16:29:13 PST 2018
+//    Only enable update and remove when an explosion
+//    has been selected. 
+//
 // ****************************************************************************
 
 void
@@ -158,11 +162,13 @@ QvisExplodeWindow::CreateWindowContents()
             this, SLOT(addExplosionToList()));
 
     removeExplosionButton = new QPushButton("Remove", central);
+    removeExplosionButton->setEnabled(false);
     listLayout->addWidget(removeExplosionButton, 1, 1);
     connect(removeExplosionButton, SIGNAL(clicked()),
             this, SLOT(removeExplosionFromList()));
 
     updateExplosionButton = new QPushButton("Update", central);
+    updateExplosionButton->setEnabled(false);
     listLayout->addWidget(updateExplosionButton, 1, 2);
     connect(updateExplosionButton, SIGNAL(clicked()), 
             this, SLOT(updateExplosion()));
@@ -773,6 +779,8 @@ QvisExplodeWindow::addExplosionToList()
     atts->AddExplosions(windowAtts);
     windowAtts = origAtts;
     explosionList->clear();
+    updateExplosionButton->setEnabled(false);
+    removeExplosionButton->setEnabled(false);
     UpdateWindow(true);
     Apply();
 }
@@ -789,6 +797,8 @@ QvisExplodeWindow::removeExplosionFromList()
 
     explosionList->clear();
     windowAtts = origAtts;
+    updateExplosionButton->setEnabled(false);
+    removeExplosionButton->setEnabled(false);
     UpdateWindow(true);
     Apply();
 }
@@ -798,6 +808,8 @@ QvisExplodeWindow::clearExplosionList()
 {
     atts->ClearExplosions();
     explosionList->clear();
+    updateExplosionButton->setEnabled(false);
+    removeExplosionButton->setEnabled(false);
     UpdateWindow(false);
     Apply();
 }
@@ -808,6 +820,8 @@ QvisExplodeWindow::switchCurrentExplosion(QListWidgetItem *item)
     int curRow; 
     curRow     = explosionList->currentRow();    
     windowAtts = atts->GetExplosions(curRow);
+    updateExplosionButton->setEnabled(true);
+    removeExplosionButton->setEnabled(true);
     UpdateWindow(true);
 }
 
@@ -837,6 +851,8 @@ QvisExplodeWindow::updateExplosion()
     }
 
     windowAtts = origAtts;
+    updateExplosionButton->setEnabled(false);
+    removeExplosionButton->setEnabled(false);
     UpdateWindow(true);
     Apply();
 }
