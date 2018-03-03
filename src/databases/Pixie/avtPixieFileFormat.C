@@ -1717,8 +1717,9 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
     //
     debug4 << "avtPixieFileFormat::ReadVariableFromFile: Trying to open data: "
            << fileVar.c_str() << endl;
-#warning FIXME
-    hid_t dataId = H5Dopen(fileId, varname.c_str());
+    hid_t dataId = H5Dopen(fileId, fileVar.c_str());
+    if(dataId < 0) // try stripping leading slash
+        dataId = H5Dopen(fileId, std::string(fileVar,1).c_str());
     if(dataId < 0)
     {
         EXCEPTION1(InvalidVariableException, varname);
