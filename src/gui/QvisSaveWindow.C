@@ -51,6 +51,7 @@
 #include <QSlider>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QStandardItemModel>
 
 #include <QvisSaveWindow.h>
 #include <QvisOpacitySlider.h>
@@ -211,8 +212,6 @@ QvisSaveWindow::~QvisSaveWindow()
 //   I overhauled the window.
 //
 // ****************************************************************************
-#warning FIXME
-#include <QStandardItemModel>
 
 void
 QvisSaveWindow::CreateWindowContents()
