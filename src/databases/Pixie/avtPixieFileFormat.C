@@ -1583,13 +1583,13 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
 #ifdef ADD_POINT_MESH
     if(it->first == "pointvar")
     {
-        int nels = it->second.dims[0] *
-                   it->second.dims[1] *
-                   it->second.dims[2];
+        hsize_t nels = it->second.dims[0] *
+                       it->second.dims[1] *
+                       it->second.dims[2];
         vtkFloatArray *fscalars = vtkFloatArray::New();
-        fscalars->SetNumberOfTuples(nels);
+        fscalars->SetNumberOfTuples((vtkIdType)nels);
         float *data = (float *)fscalars->GetVoidPointer(0);
-        for(int p = 0; p < nels; ++p)
+        for(size_t p = 0; p < (size_t)nels; ++p)
             *data++ = float(p);
         return fscalars;
     }
@@ -1603,12 +1603,12 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
     DetermineVarDimensions(it->second, hyperslabDims, 0, nVarDims);
 
     vtkDataArray *scalars = 0;
-    int nels = hyperslabDims[0] * hyperslabDims[1] * hyperslabDims[2];
+    hsize_t nels = hyperslabDims[0] * hyperslabDims[1] * hyperslabDims[2];
     if(H5Tequal(it->second.nativeVarType, H5T_NATIVE_INT) > 0 ||
        H5Tequal(it->second.nativeVarType, H5T_NATIVE_UINT) > 0)
     {
         vtkIntArray *iscalars = vtkIntArray::New();
-        iscalars->SetNumberOfTuples(nels);
+        iscalars->SetNumberOfTuples((vtkIdType)nels);
         scalars = iscalars;
         TRY
         {
@@ -1625,7 +1625,7 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
     else if(H5Tequal(it->second.nativeVarType, H5T_NATIVE_FLOAT) > 0)
     {
         vtkFloatArray *fscalars = vtkFloatArray::New();
-        fscalars->SetNumberOfTuples(nels);
+        fscalars->SetNumberOfTuples((vtkIdType)nels);
         scalars = fscalars;
         TRY
         {
@@ -1642,7 +1642,7 @@ avtPixieFileFormat::GetVar(int timestate, const char *varname)
     else if(H5Tequal(it->second.nativeVarType, H5T_NATIVE_DOUBLE) > 0)
     {
         vtkDoubleArray *dscalars = vtkDoubleArray::New();
-        dscalars->SetNumberOfTuples(nels);
+        dscalars->SetNumberOfTuples((vtkIdType)nels);
         scalars = dscalars;
         TRY
         {
@@ -1717,7 +1717,8 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
     //
     debug4 << "avtPixieFileFormat::ReadVariableFromFile: Trying to open data: "
            << fileVar.c_str() << endl;
-    hid_t dataId = H5Dopen(fileId, fileVar.c_str());
+#warning FIXME
+    hid_t dataId = H5Dopen(fileId, varname.c_str());
     if(dataId < 0)
     {
         EXCEPTION1(InvalidVariableException, varname);
@@ -1804,7 +1805,7 @@ avtPixieFileFormat::ReadVariableFromFile(int timestate, const std::string &varna
 // ****************************************************************************
 
 template <class T>
-float *ConvertToFloat(const T *data, int nels, bool &allocated)
+float *ConvertToFloat(const T *data, size_t nels, bool &allocated)
 {
     float *f;
 
@@ -1813,14 +1814,14 @@ float *ConvertToFloat(const T *data, int nels, bool &allocated)
         allocated = false;
         // Change to float in the same memory.
         f = (float *)data;
-        for(int i = 0; i < nels; ++i)
+        for(size_t i = 0; i < nels; ++i)
             f[i] = (float)data[i];
     }
     else
     {
         allocated = true;
         f = new float[nels];
-        for(int i = 0; i < nels; ++i)
+        for(size_t i = 0; i < nels; ++i)
             f[i] = (float)data[i];
     }
 
@@ -1882,11 +1883,11 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
         for(i = 0; i < nDims; ++i)
         {
             bool allocated;
-            int  nels = dims[0] * dims[1] * dims[2];
+            hsize_t nels = dims[0] * dims[1] * dims[2];
             if(H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_INT) > 0 ||
             H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_UINT) > 0)
             {
-                int *data = new int[nels];
+                int *data = new int[(size_t)nels];
                 TRY
                 {
                     ReadVariableFromFile(timestate, vars[i]->first,
@@ -1904,13 +1905,13 @@ avtPixieFileFormat::ReadCoordinateFields(int timestate, const VarInfo &info,
             }
             else if(H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_FLOAT) > 0)
             {
-                coords[i] = new float[nels];
+                coords[i] = new float[(size_t)nels];
                 ReadVariableFromFile(timestate, vars[i]->first, vars[i]->second,
                                      dims, coords[i]);
             }
             else if(H5Tequal(vars[i]->second.nativeVarType, H5T_NATIVE_DOUBLE) > 0)
             {
-                double *data = new double[nels];
+                double *data = new double[(size_t)nels];
                 TRY
                 {
                     ReadVariableFromFile(timestate, vars[i]->first,
