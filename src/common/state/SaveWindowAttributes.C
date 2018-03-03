@@ -249,7 +249,7 @@ void SaveWindowAttributes::Init()
     progressive = false;
     binary = false;
     stereo = false;
-    compression = PackBits;
+    compression = None;
     forceMerge = false;
     resConstraint = ScreenProportions;
     pixelData = 1;

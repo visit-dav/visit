@@ -78,7 +78,7 @@
       false
     </Field>
     <Field name="compression" label="compression" type="enum" subtype="CompressionType">
-      PackBits
+      None
     </Field>
     <Field name="forceMerge" label="forceMerge" type="bool">
       false
