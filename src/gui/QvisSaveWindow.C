@@ -211,6 +211,8 @@ QvisSaveWindow::~QvisSaveWindow()
 //   I overhauled the window.
 //
 // ****************************************************************************
+#warning FIXME
+#include <QStandardItemModel>
 
 void
 QvisSaveWindow::CreateWindowContents()
@@ -312,11 +314,11 @@ QvisSaveWindow::CreateWindowContents()
    
     compressionTypeLabel = new QLabel(tr("Compression type"),formatBox);
     compressionTypeComboBox = new QComboBox(formatBox);
-    compressionTypeComboBox->addItem(tr("None"));
-    compressionTypeComboBox->addItem(tr("PackBits"));
-    compressionTypeComboBox->addItem(tr("JPEG"));
-    compressionTypeComboBox->addItem(tr("Deflate"));
-    //compressionTypeComboBox->addItem("LZW");
+    compressionTypeComboBox->addItem(tr("None"));     // 0
+    compressionTypeComboBox->addItem(tr("PackBits")); // 1
+    compressionTypeComboBox->addItem(tr("JPEG"));     // 2
+    compressionTypeComboBox->addItem(tr("Gzip"));     // 3
+    //compressionTypeComboBox->addItem("LZW");          // 4
     formatLayout->addWidget(compressionTypeLabel, 2, 0);
     formatLayout->addWidget(compressionTypeComboBox, 2, 1, 1, 2);
     
@@ -582,6 +584,8 @@ QvisSaveWindow::CreateWindowContents()
 //   Eric Brugger, Mon Aug 31 10:38:12 PDT 2015
 //   I overhauled the window.
 //
+//   Mark C. Miller, Fri Mar  2 23:14:34 PST 2018
+//   Add logic to enable/disable compression methods based on selected format.
 // ****************************************************************************
 
 void
@@ -662,6 +666,39 @@ QvisSaveWindow::UpdateWindow(bool doAll)
             }
 
             compressionTypeComboBox->setEnabled(isCompressible);
+
+            if (isCompressible)
+            {
+                QStandardItemModel *model =
+                    dynamic_cast<QStandardItemModel*>(compressionTypeComboBox->model());
+
+                compressionTypeComboBox->blockSignals(true);
+                // Disable all compression methods (but None)
+                for (int i = 1; i < 4; i++)
+                    model->item(i,0)->setEnabled(false);
+
+                // Selectively enable compression methods that do apply
+                // for selected format. Note, TIFF supports all.
+                if (saveWindowAtts->GetFormat() == SaveWindowAttributes::TIFF)
+                {
+                    for (int i = 1; i < 4; i++)
+                        model->item(i,0)->setEnabled(true);
+                }
+                else if (saveWindowAtts->GetFormat() == SaveWindowAttributes::JPEG)
+                {
+                    model->item(2,0)->setEnabled(true); // JPEG
+                }
+                else if (saveWindowAtts->GetFormat() == SaveWindowAttributes::ULTRA ||
+                         saveWindowAtts->GetFormat() == SaveWindowAttributes::CURVE)
+                {
+                    model->item(3,0)->setEnabled(true); // Gzip
+                }
+
+                // Make sure current selection is enabled or None
+                if (!model->item(compressionTypeComboBox->currentIndex(),0)->isEnabled())
+                    compressionTypeComboBox->setCurrentIndex(0);
+                compressionTypeComboBox->blockSignals(false);
+            }
 
             if (saveWindowAtts->CurrentFormatIsImageFormat())
             {
