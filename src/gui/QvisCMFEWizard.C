@@ -1134,10 +1134,10 @@ QvisCMFEWizard::CreateActivityPage(void)
     exprDiffTypeSelect = new QButtonGroup(main_widget);
 
     // Min/Max
-    QRadioButton *r01 = new QRadioButton(tr("Minimum of valves"));
+    QRadioButton *r01 = new QRadioButton(tr("Minimum of values"));
     exprDiffTypeSelect->addButton(r01, 0);
     glayout2->addWidget(r01, 1, 1);
-    QRadioButton *r02 = new QRadioButton(tr("Maximum of valves"));
+    QRadioButton *r02 = new QRadioButton(tr("Maximum of values"));
     exprDiffTypeSelect->addButton(r02, 1);
     glayout2->addWidget(r02, 2, 1);
 
