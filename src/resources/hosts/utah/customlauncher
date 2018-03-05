@@ -17,9 +17,9 @@ class UtahLauncher(MainLauncher):
 
     def Customize(self):
         msg = """
-NOTE: Using a specific MPI implementation (mvapich2/2.1.g) which the release versions of VisIt are known to be compiled against.
+NOTE: Using a specific MPI implementation (mvapich2/2.2g49-c7) which the release versions of VisIt are known to be compiled against.
 If you are a *developer*, it's very likely I've chosen the wrong MPI implementation; you might have to hack internallauncher to load the module you need.\n"""
-        print msg
+#        print msg
 
         sys.path.insert(0,"/uufs/chpc.utah.edu/sys/installdir/lmod/lmod-c7/init")
         from env_modules_python import module
