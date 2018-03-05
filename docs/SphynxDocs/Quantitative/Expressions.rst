@@ -1365,12 +1365,12 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
 
    Working backwards, the next argument, is the ``<Target Mesh>``.
    The ``<Target Mesh>`` argument in ``pos_cmfe()`` is always
-   interpreted as a mesh *within* the currently active database. The CMFE
-   expressions are always mapping data from *other* meshes, possibly in other
+   interpreted as a mesh *within* the currently *active* database. The CMFE
+   expressions are always mapping data from *other* meshes, possibly in *other*
    databases onto the ``<Target Mesh>`` which is understood to be in the
-   currently active database. When mapping data between meshes
+   currently *active* database. When mapping data between meshes
    *in different databases*, the additional information necessary to specify
-   the other database is encoded with a special syntax in the
+   the other database is encoded with a special syntax prepending the
    ``Donor Variable`` argument.
 
    The ``Donor Variable`` argument is a string argument consisting
@@ -1406,11 +1406,11 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
    ``State Id`` substring is a square-bracket enclosed number used to identify
    *which state* from which to take the donor variable. The ``Modality``
    substring is a one- or two-character moniker. The first character indicates
-   whether the number in the the ``State Id`` substring is a (``c``) cycle,
-   a (``t``) time, or an (``i``) index. The second character, if present, is a
+   whether the number in the the ``State Id`` substring is a cycle (``c``),
+   a time (``t``), or an index (``i``). The second character, if present, is a
    ``d`` character to indicate the cycle, time or index is *relative* (e.g. a
    *delta*) to the current state. For example, the substring ``[200]c`` means to
-   treat the ``200`` as a *cycle number* in the donor database whereas the
+   treat the ``200`` as a *cycle* number in the donor database whereas the
    the substring ``[-10]id`` means to treat the ``-10`` as an (``i``) index
    (``d``) delta. Note that in cases where the donor database does not have
    an exact match for the specified cycle or time, VisIt_ will chose the state
@@ -1433,7 +1433,11 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
 ::
 
     # Case A: Donor variable, "pressure" in same database as mesh, "ucdmesh"
-    pos_cmfe(<pressure>,<ucdmesh>,1e+15)
+    # Note that due to a limitation in Expression parsing, the '[0]id:' is
+    # currently required in the donor variable name as a substitute for 
+    # specifying a filesystem path to a database file. The syntax '[0]id:'
+    # means a state index delta of zero within the active database.
+    pos_cmfe(<[0]id:pressure>,<ucdmesh>,1e+15)
 
     # Case B: Donor variable in a different database using absolute path
     pos_cmfe(</var/tmp/foo.silo:pressure>,<ucdmesh>,1e+15)
