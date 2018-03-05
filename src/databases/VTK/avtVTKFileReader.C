@@ -543,6 +543,9 @@ avtVTKFileReader::ReadInFile(int _domain)
 //    Kathleen Biagas, Fri Feb  6 06:00:16 PST 2015
 //    Added ability for parsing 'MeshName' field data from vtk file.
 //
+//    Matt Larsen, Fri Mar 2 09:00:15 PST 2018
+//    Getting image data extents correctly from vti files
+//
 // ****************************************************************************
 
 void
@@ -687,8 +690,23 @@ avtVTKFileReader::ReadInDataset(int domain)
         // The old dataset passed in will be deleted, a new one will be
         // returned.
         //
-        dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
-                                                 pieceExtents[domain]);
+        if(pieceExtents[domain] == NULL  &&
+           dataset->GetDataObjectType() == VTK_IMAGE_DATA) 
+        {
+        
+          vtkImageData *img = vtkImageData::SafeDownCast(dataset); 
+          if(img)
+          {
+            int *ext  = img->GetExtent(); 
+            dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
+                                                      ext);
+          }
+        }
+        else
+        {
+            dataset = ConvertStructuredPointsToRGrid((vtkStructuredPoints*)dataset,
+                                                     pieceExtents[domain]);
+        }
     }
 
     if(dataset->GetDataObjectType() == VTK_RECTILINEAR_GRID)
