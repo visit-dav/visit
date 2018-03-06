@@ -331,7 +331,8 @@ def test2(writeGroupSize):
 
     # Clean up window 1
     DeleteAllPlots()
-    cleanup_files()
+    if not platform.system() == "Windows":
+        cleanup_files()
 #    CloseDatabase(maindb)
 
 def test3():
