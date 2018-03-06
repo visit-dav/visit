@@ -163,9 +163,9 @@ function bv_python_info
     export CYTHON_FILE=${CYTHON_FILE:-"Cython-0.25.2.tar.gz"}
     export CYTHON_BUILD_DIR=${CYTHON_BUILD_DIR:-"Cython-0.25.2"}
 
-    export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/16/f5/b432f028134dd30cfbf6f21b8264a9938e5e0f75204e72453af08d67eb0b/"}
-    export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.11.2.tar.gz"}
-    export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.11.2"}
+    export NUMPY_URL=${NUMPY_URL:-"https://pypi.python.org/packages/a3/99/74aa456fc740a7e8f733af4e8302d8e61e123367ec660cd89c53a3cd4d70/"}
+    export NUMPY_FILE=${NUMPY_FILE:-"numpy-1.14.1.zip"}
+    export NUMPY_BUILD_DIR=${NUMPY_BUILD_DIR:-"numpy-1.14.1"}
 
     export MPI4PY_URL=${MPI4PY_URL:-"https://pypi.python.org/pypi/mpi4py"}
     export MPI4PY_FILE=${MPI4PY_FILE:-"mpi4py-2.0.0.tar.gz"}
