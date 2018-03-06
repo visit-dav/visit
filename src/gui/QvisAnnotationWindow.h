@@ -146,6 +146,10 @@ class QvisLineWidthWidget;
 //   Kathleen Biagas, Wed Apr  8 07:52:35 PDT 2015
 //   Added labels for 3d: line width, tick location and axes type.
 //
+//   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
+//   Added widgets and slots to handle altering the triad
+//   attributes. 
+//
 // ****************************************************************************
 
 class GUI_API QvisAnnotationWindow : public QvisPostableWindowSimpleObserver
@@ -235,6 +239,11 @@ private slots:
     void zAxisChanged(const AxisAttributes &);
     void setBBoxLocationChecked(bool);
     void bboxLocationChanged(void);
+    void setTriadColor(void);
+    void triadLineWidthChanged(int index);
+    void triadFontChanged(int index);
+    void triadBoldToggleChecked(bool val);
+    void triadItalicToggleChecked(bool val);
 
     // Color option slots
     void backgroundColorChanged(const QColor &c);
@@ -289,6 +298,7 @@ private:
     QCheckBox                *labelAutoSetScalingToggleArray;
     QvisLineWidthWidget      *axesLineWidthArray;
     QvisAxisAttributesWidget *axesArray[1];
+    
 
     // 2D tab widgets
     QWidget                  *page2D;
@@ -304,6 +314,7 @@ private:
     // 3D tab widgets
     QWidget                  *page3D;
     QTabWidget               *page3DTabs;
+    QGroupBox                *axesGroup;
     QCheckBox                *axes3DVisible;
     QCheckBox                *axesAutoSetTicksToggle;
     QCheckBox                *labelAutoSetScalingToggle;
@@ -314,11 +325,21 @@ private:
     QLabel                   *axes3DTypeLabel;
     QComboBox                *axes3DTypeComboBox;
     QCheckBox                *triadFlagToggle;
+    QGroupBox                *bboxGroup;
     QCheckBox                *bboxFlagToggle;
     QvisAxisAttributesWidget *axes3D[3];
     QCheckBox                *setBBoxLocationToggle;
     QNarrowLineEdit          *bboxLocations[6];
     QLabel                   *bboxLabels[6];
+    QGroupBox                *triadGroup;
+    QLabel                   *triadLineWidthLabel;
+    QLabel                   *triadColorLabel;
+    QPushButton              *triadColorButton;
+    QvisLineWidthWidget      *triadLineWidth;
+    QLabel                   *triadFontLabel;
+    QComboBox                *triadFontComboBox;
+    QCheckBox                *triadBoldToggle;
+    QCheckBox                *triadItalicToggle;
 
     // Color tab widgets
     QWidget                  *pageColor;

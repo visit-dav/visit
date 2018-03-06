@@ -53,6 +53,7 @@
 #include <QTimer>
 #include <QToolTip>
 #include <QWidget>
+#include <QColorDialog>
 
 #include <QNarrowLineEdit.h>
 #include <QvisAnnotationObjectInterface.h>
@@ -773,6 +774,9 @@ QvisAnnotationWindow::Create3DTab()
 //   Kathleen Biagas, Wed Apr  8 07:54:30 PDT 2015
 //   Added labels for Tick location, axis type and line width.
 //
+//   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
+//   Added widgets for changing triad attributes. 
+//
 // ****************************************************************************
 
 QWidget *
@@ -789,18 +793,33 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     rLayout->setColumnStretch(1, 10);
 
     int row = 0;
+
+    // Create the axes group
+    axesGroup = new QGroupBox(parentWidget);
+    axesGroup->setTitle(tr("Axes"));
+    rLayout->addWidget(axesGroup, row, 0, 1, 2);
+    row++;
+
+    // Create the axes layout
+    QGridLayout *axesLayout = new QGridLayout(axesGroup);
+    vlayout->addLayout(axesLayout);
+    axesLayout->setSpacing(5);
+    axesLayout->setMargin(0);
+    axesLayout->setColumnStretch(1, 10);
+    int axesRow = 0;
+
     labelAutoSetScalingToggle = new QCheckBox(tr("Auto scale label values"), top);
     connect(labelAutoSetScalingToggle, SIGNAL(toggled(bool)),
             this, SLOT(labelAutoSetScalingChecked(bool)));
-    rLayout->addWidget(labelAutoSetScalingToggle, row, 0, 1, 2);
-    ++row;
+    axesLayout->addWidget(labelAutoSetScalingToggle, axesRow, 0, 1, 2);
+    ++axesRow;
 
     // Create auto set ticks check box.
     axesAutoSetTicksToggle = new QCheckBox(tr("Auto set ticks"), top);
     connect(axesAutoSetTicksToggle, SIGNAL(toggled(bool)),
             this, SLOT(axesAutoSetTicksChecked(bool)));
-    rLayout->addWidget(axesAutoSetTicksToggle, row, 0, 1, 2);
-    ++row;
+    axesLayout->addWidget(axesAutoSetTicksToggle, axesRow, 0, 1, 2);
+    ++axesRow;
 
     // Create the 3D tick mark locations combobox.
     axes3DTickLocationComboBox = new QComboBox(top);
@@ -809,11 +828,11 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     axes3DTickLocationComboBox->addItem(tr("Both"));
     connect(axes3DTickLocationComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTickLocationChanged(int)));
-    rLayout->addWidget(axes3DTickLocationComboBox, row, 1);
+    axesLayout->addWidget(axes3DTickLocationComboBox, axesRow, 1);
     axes3DTickLocationLabel = new QLabel(tr("Tick mark locations"), top);
     axes3DTickLocationLabel->setBuddy(axes3DTickLocationComboBox);
-    rLayout->addWidget(axes3DTickLocationLabel, row, 0);
-    ++row;
+    axesLayout->addWidget(axes3DTickLocationLabel, axesRow, 0);
+    ++axesRow;
 
     // Create the 3D axes type combobox.
     axes3DTypeComboBox = new QComboBox(top);
@@ -824,27 +843,40 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     axes3DTypeComboBox->addItem(tr("Static edges"));
     connect(axes3DTypeComboBox, SIGNAL(activated(int)),
             this, SLOT(axes3DTypeChanged(int)));
-    rLayout->addWidget(axes3DTypeComboBox, row, 1);
+    axesLayout->addWidget(axes3DTypeComboBox, axesRow, 1);
     axes3DTypeLabel = new QLabel(tr("Axis type"), top);
     axes3DTypeLabel->setBuddy(axes3DTypeComboBox);
-    rLayout->addWidget(axes3DTypeLabel, row, 0);
-    ++row;
+    axesLayout->addWidget(axes3DTypeLabel, axesRow, 0);
+    ++axesRow;
 
     // Create the 2D line width widget.
     axesLineWidth = new QvisLineWidthWidget(0, top);
-    rLayout->addWidget(axesLineWidth, row, 1);
+    axesLayout->addWidget(axesLineWidth, axesRow, 1);
     connect(axesLineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(axesLineWidthChanged(int)));
     axesLineWidthLabel = new QLabel(tr("Line width"), top);
     axesLineWidthLabel->setBuddy(axesLineWidth);
-    rLayout->addWidget(axesLineWidthLabel, row, 0);
-    ++row;
+    axesLayout->addWidget(axesLineWidthLabel, axesRow, 0);
+    ++axesRow;
+
+    // Create the bounding box group
+    bboxGroup = new QGroupBox(parentWidget);
+    bboxGroup->setTitle(tr("Bounding Box"));
+    rLayout->addWidget(bboxGroup, row, 0, 1, 2);
+    row++;
+
+    QGridLayout *bboxLayout = new QGridLayout(bboxGroup);
+    vlayout->addLayout(bboxLayout);
+    bboxLayout->setSpacing(5);
+    bboxLayout->setMargin(0);
+    bboxLayout->setColumnStretch(1, 10);
+    int bboxRow = 0;
 
     setBBoxLocationToggle = new QCheckBox(tr("Set bounding box location manually"), top);
     connect(setBBoxLocationToggle, SIGNAL(toggled(bool)),
             this, SLOT(setBBoxLocationChecked(bool)));
-    rLayout->addWidget(setBBoxLocationToggle, row, 0, 1, 2);
-    ++row;
+    bboxLayout->addWidget(setBBoxLocationToggle, bboxRow, 0, 1, 2);
+    ++bboxRow;
     
     std::vector<std::string> labels;
     labels.push_back("X-Minimum");
@@ -857,13 +889,84 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     for (int i = 0 ; i < 6 ; i++)
     {
       bboxLabels[i] = new QLabel(labels[i].c_str());
-      rLayout->addWidget(bboxLabels[i], row, 0);
+      bboxLayout->addWidget(bboxLabels[i], bboxRow, 0);
       bboxLocations[i] = new QNarrowLineEdit(top);
-      rLayout->addWidget(bboxLocations[i], row, 1);
-      ++row;
+      bboxLayout->addWidget(bboxLocations[i], bboxRow, 1);
+      ++bboxRow;
       connect(bboxLocations[i], SIGNAL(returnPressed()),
             this, SLOT(bboxLocationChanged()));
     }
+
+    // Create the triad options group
+    triadGroup = new QGroupBox(parentWidget);
+    triadGroup->setTitle(tr("Triad"));
+    rLayout->addWidget(triadGroup, row, 0, 1, 2);
+    row++;
+
+    QGridLayout *triadLayout = new QGridLayout(triadGroup);
+    vlayout->addLayout(triadLayout);
+    triadLayout->setSpacing(5);
+    triadLayout->setMargin(0);
+    triadLayout->setColumnStretch(1, 10);
+    int triadRow = 0;
+
+    // Create the triad color picker
+    triadColorButton = new QPushButton(tr("Select color"), central);
+    connect(triadColorButton, SIGNAL(clicked()), 
+            this, SLOT(setTriadColor()));
+
+    triadColorLabel = new QLabel(tr("Color"), top);
+    triadColorLabel->setBuddy(triadColorButton);
+
+    triadLayout->addWidget(triadColorLabel, triadRow, 0);
+    triadLayout->addWidget(triadColorButton, triadRow, 1);
+    triadRow++;
+
+
+    // Create the triad line width widget
+    triadLineWidth = new QvisLineWidthWidget(0, top);
+    connect(triadLineWidth, SIGNAL(lineWidthChanged(int)),
+            this, SLOT(triadLineWidthChanged(int)));
+    triadLineWidthLabel = new QLabel(tr("Line width"), top);
+    triadLineWidthLabel->setBuddy(triadLineWidth);
+
+    triadLayout->addWidget(triadLineWidthLabel, triadRow, 0);
+    triadLayout->addWidget(triadLineWidth, triadRow, 1);
+    triadRow++;
+    
+    // Create the triad font combo box
+    triadFontComboBox = new QComboBox(top);
+    triadFontComboBox->addItem(tr("Arial"));
+    triadFontComboBox->addItem(tr("Courier"));
+    triadFontComboBox->addItem(tr("Times"));
+    connect(triadFontComboBox, SIGNAL(activated(int)),
+            this, SLOT(triadFontChanged(int)));
+    triadFontLabel = new QLabel(tr("Font"), top);
+    triadFontLabel->setBuddy(triadFontComboBox);
+
+    triadLayout->addWidget(triadFontLabel, triadRow, 0);
+    triadLayout->addWidget(triadFontComboBox, triadRow, 1);
+    triadRow++;
+
+    // Create the bold triad check box
+    triadBoldToggle = new QCheckBox(tr("Bold"), top);
+    connect(triadBoldToggle, SIGNAL(toggled(bool)),
+            this, SLOT(triadBoldToggleChecked(bool)));
+    triadBoldToggle->setChecked(
+        annotationAtts->GetAxes3D().GetTriadBold());
+
+    triadLayout->addWidget(triadBoldToggle, triadRow, 0);
+    triadRow++;
+
+    // Create the italic triad check box
+    triadItalicToggle = new QCheckBox(tr("Italic"), top);
+    connect(triadItalicToggle, SIGNAL(toggled(bool)),
+            this, SLOT(triadItalicToggleChecked(bool)));
+    triadItalicToggle->setChecked(
+        annotationAtts->GetAxes3D().GetTriadItalic());
+
+    triadLayout->addWidget(triadItalicToggle, triadRow, 0);
+    triadRow++;
 
     return top;
 }
@@ -1349,6 +1452,10 @@ QvisAnnotationWindow::UpdateWindow(bool doAll)
 // Creation:   November 18, 2008
 //
 // Modifications:
+//
+//     Alister Maguire, Tue Mar  6 11:12:11 PST 2018 
+//     Changed the axes enabler to enable/disable the
+//     axesGroup. 
 //   
 // ****************************************************************************
 
@@ -1360,7 +1467,7 @@ QvisAnnotationWindow::UpdateAxesArray()
     axesFlagToggleArray->blockSignals(true);
     axesFlagToggleArray->setChecked(axes.GetVisible());
     axesFlagToggleArray->blockSignals(false);
-    axesArrayGroup->setEnabled(axes.GetVisible());
+    axesGroup->setEnabled(axes.GetVisible());
 
     ticksToggleArray->blockSignals(true);
     ticksToggleArray->setChecked(axes.GetTicksVisible());
@@ -1477,6 +1584,9 @@ QvisAnnotationWindow::UpdateAxes2D()
 //   'Show bounding box' controls enabled state of bounding box controls.
 //   If either of these are true, the line width control is enabled.
 //
+//   Alister Maguire, Tue Mar  6 11:12:11 PST 2018 
+//   Changed the enablers to enable/disable by group. 
+//
 // ****************************************************************************
 
 void
@@ -1484,32 +1594,31 @@ QvisAnnotationWindow::UpdateAxes3D()
 {
     const Axes3D &axes = annotationAtts->GetAxes3D();
 
+    triadGroup->setEnabled(axes.GetTriadFlag());
+
     axes3DVisible->blockSignals(true);
     axes3DVisible->setChecked(axes.GetVisible());
     axes3DVisible->blockSignals(false);
 
+    axesGroup->setEnabled(axes.GetVisible());
 
     axesAutoSetTicksToggle->blockSignals(true);
     axesAutoSetTicksToggle->setChecked(axes.GetAutoSetTicks());
     axesAutoSetTicksToggle->blockSignals(false);
-    axesAutoSetTicksToggle->setEnabled(axes.GetVisible());
 
     labelAutoSetScalingToggle->blockSignals(true);
     labelAutoSetScalingToggle->setChecked(axes.GetAutoSetScaling());
     labelAutoSetScalingToggle->blockSignals(false);
-    labelAutoSetScalingToggle->setEnabled(axes.GetVisible());
 
     axes3DTickLocationComboBox->blockSignals(true);
     axes3DTickLocationComboBox->setCurrentIndex(axes.GetTickLocation());
     axes3DTickLocationComboBox->blockSignals(false);
     axes3DTickLocationComboBox->setEnabled(axes.GetVisible());
-    axes3DTickLocationLabel->setEnabled(axes.GetVisible());
 
     axes3DTypeComboBox->blockSignals(true);
     axes3DTypeComboBox->setCurrentIndex(axes.GetAxesType());
     axes3DTypeComboBox->blockSignals(false);
     axes3DTypeComboBox->setEnabled(axes.GetVisible());
-    axes3DTypeLabel->setEnabled(axes.GetVisible());
 
     axesLineWidth->blockSignals(true);
     axesLineWidth->SetLineWidth(axes.GetLineWidth());
@@ -1535,6 +1644,8 @@ QvisAnnotationWindow::UpdateAxes3D()
     axes3D[2]->setAutoScaling(axes.GetAutoSetScaling());
     axes3D[2]->setAutoTickMarks(axes.GetAutoSetTicks());
     axes3D[2]->setAxisAttributes(axes.GetZAxis());
+
+    bboxGroup->setEnabled(axes.GetBboxFlag());
 
     setBBoxLocationToggle->setEnabled(axes.GetBboxFlag());
     setBBoxLocationToggle->blockSignals(true);
@@ -2487,6 +2598,137 @@ QvisAnnotationWindow::bboxLocationChanged()
 }
 
 // ****************************************************************************
+//  Method:  QvisAnnotationWindow::setTriadColor
+//
+//  Purpose:
+//   This is a Qt slot function that sets the triad color. 
+//
+//  Arguments:
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Thu Mar  1 11:11:56 PST 2018
+//
+// ****************************************************************************
+void
+QvisAnnotationWindow::setTriadColor()
+{
+    QColor color = QColorDialog::getColor(Qt::black, this);
+    int    iRGB[3];
+    iRGB[0] = color.red(); 
+    iRGB[1] = color.green(); 
+    iRGB[2] = color.blue(); 
+
+    annotationAtts->GetAxes3D().SetTriadColor(iRGB);
+    annotationAtts->SelectAxes3D();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::triadLineWidthChanged
+//
+// Purpose:
+//   This is a Qt slot function that is called when the triad line width
+//   is changed.
+//
+// Arguments:
+//   index:    The new line width.
+//
+// Programmer: Alister Maguire
+// Creation:   Thu Mar  1 14:43:11 PST 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
+void
+QvisAnnotationWindow::triadLineWidthChanged(int index)
+{
+    annotationAtts->GetAxes3D().SetTriadLineWidth((float)index);
+    annotationAtts->SelectAxes3D();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::triadFontChanged
+//
+// Purpose:
+//   This is a Qt slot function that is called when the triad font
+//   is changed.
+//
+// Arguments:
+//   index:    The new font.
+//
+// Programmer: Alister Maguire
+// Creation:   Thu Mar  1 14:43:11 PST 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
+void
+QvisAnnotationWindow::triadFontChanged(int index)
+{
+    annotationAtts->GetAxes3D().SetTriadFont(index);
+    annotationAtts->SelectAxes3D();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::triadBoldToggleChecked
+//
+// Purpose:
+//   This is a Qt slot function that is called when the triad bold
+//   check box is toggled. 
+//
+// Arguments:
+//   val:    Whether or not to enable bold font for the triad. 
+//
+// Programmer: Alister Maguire
+// Creation:   Thu Mar  1 14:43:11 PST 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
+void
+QvisAnnotationWindow::triadBoldToggleChecked(bool val)
+{
+    annotationAtts->GetAxes3D().SetTriadBold(val);
+    annotationAtts->SelectAxes3D();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::triadItalicToggleChecked
+//
+// Purpose:
+//   This is a Qt slot function that is called when the triad italic
+//   check box is toggled. 
+//
+// Arguments:
+//   val:    Whether or not to enable italic font for the triad. 
+//
+// Programmer: Alister Maguire
+// Creation:   Thu Mar  1 14:43:11 PST 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
+void
+QvisAnnotationWindow::triadItalicToggleChecked(bool val)
+{
+    annotationAtts->GetAxes3D().SetTriadItalic(val);
+    annotationAtts->SelectAxes3D();
+    SetUpdate(false);
+    Apply();
+}
+
+// ****************************************************************************
 // Method: QvisAnnotationWindow::databaseTimeScaleChanged
 //
 // Purpose: 
@@ -3057,6 +3299,10 @@ QvisAnnotationWindow::axes3DTypeChanged(int index)
 // Modifications:
 //   Brad Whitlock, Fri Jan 25 11:50:50 PST 2008
 //   Updated AnnotationAttributes.
+//
+//   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
+//   Removed the SetUpdate so that the triad group
+//   will be enabled/disabled. 
 //   
 // ****************************************************************************
 
@@ -3065,7 +3311,6 @@ QvisAnnotationWindow::triadFlagChecked(bool val)
 {
     annotationAtts->GetAxes3D().SetTriadFlag(val);
     annotationAtts->SelectAxes3D();
-    SetUpdate(false);
     Apply();
 }
 
@@ -3817,4 +4062,3 @@ QvisAnnotationWindow::axesAutoSetTicksCheckedArray(bool val)
     annotationAtts->SelectAxesArray();
     Apply();
 }
-

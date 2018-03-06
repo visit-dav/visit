@@ -4710,6 +4710,9 @@ VisWindow::UpdateParallelAxes()
 //   Jeremy Meredith, Wed May  5 14:31:37 EDT 2010
 //   Added support for title visibility separate from label visibility.
 //
+//   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
+//   Added support for altering the triad. 
+//
 // ****************************************************************************
 
 void
@@ -4788,6 +4791,18 @@ VisWindow::UpdateAxes3D()
     // Triad 
     //
     triad->SetVisibility(axis3D.GetTriadFlag());
+    int *triadColor    = annotationAtts.GetAxes3D().GetTriadColor();
+    double scaledColor[3] = {0.0, 0.0, 0.0};
+    for (int i = 0; i < 3; ++i)
+    {
+        scaledColor[i] = (double)triadColor[i] / 255.0;
+    }
+    float lineWidth = annotationAtts.GetAxes3D().GetTriadLineWidth();
+    triad->SetForegroundColor(scaledColor[0], scaledColor[1], scaledColor[2]);
+    triad->SetLineWidth(lineWidth, lineWidth, lineWidth);
+    triad->SetBold(annotationAtts.GetAxes3D().GetTriadBold());
+    triad->SetItalic(annotationAtts.GetAxes3D().GetTriadItalic());
+    triad->SetFontFamily(annotationAtts.GetAxes3D().GetTriadFont());
 
     //
     // Bounding Box 

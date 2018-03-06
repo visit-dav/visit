@@ -106,6 +106,7 @@ public:
     void SelectYAxis();
     void SelectZAxis();
     void SelectBboxLocation();
+    void SelectTriadColor();
 
     // Property setting methods
     void SetVisible(bool visible_);
@@ -121,6 +122,11 @@ public:
     void SetZAxis(const AxisAttributes &zAxis_);
     void SetSetBBoxLocation(bool setBBoxLocation_);
     void SetBboxLocation(const double *bboxLocation_);
+    void SetTriadColor(const int *triadColor_);
+    void SetTriadLineWidth(float triadLineWidth_);
+    void SetTriadFont(int triadFont_);
+    void SetTriadBold(bool triadBold_);
+    void SetTriadItalic(bool triadItalic_);
 
     // Property getting methods
     bool                 GetVisible() const;
@@ -140,6 +146,12 @@ public:
     bool                 GetSetBBoxLocation() const;
     const double         *GetBboxLocation() const;
           double         *GetBboxLocation();
+    const int            *GetTriadColor() const;
+          int            *GetTriadColor();
+    float                GetTriadLineWidth() const;
+    int                  GetTriadFont() const;
+    bool                 GetTriadBold() const;
+    bool                 GetTriadItalic() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -179,9 +191,16 @@ public:
         ID_zAxis,
         ID_setBBoxLocation,
         ID_bboxLocation,
+        ID_triadColor,
+        ID_triadLineWidth,
+        ID_triadFont,
+        ID_triadBold,
+        ID_triadItalic,
         ID__LAST
     };
 
+protected:
+    int            triadColor[3];
 private:
     bool           visible;
     bool           autoSetTicks;
@@ -196,11 +215,15 @@ private:
     AxisAttributes zAxis;
     bool           setBBoxLocation;
     double         bboxLocation[6];
+    float          triadLineWidth;
+    int            triadFont;
+    bool           triadBold;
+    bool           triadItalic;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AXES3D_TMFS "bbbiiibbaaabD"
+#define AXES3D_TMFS "bbbiiibbaaabDIfibb"
 
 #endif

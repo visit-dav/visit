@@ -53,4 +53,21 @@
       0.000000
       1.000000
     </Field>
+    <Field name="triadColor" label="Triad Color" type="intArray" length="3" access="protected">
+      0
+      0
+      0
+    </Field>
+    <Field name="triadLineWidth" label="Triad Line Width" type="float">
+      0.000000
+    </Field>
+    <Field name="triadFont" label="Triad Font" type="int">
+      0
+    </Field>
+    <Field name="triadBold" label="Triad Bold" type="bool">
+      true
+    </Field>
+    <Field name="triadItalic" label="Triad Italic" type="bool">
+      true
+    </Field>
   </Attribute>

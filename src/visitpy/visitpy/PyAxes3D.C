@@ -188,6 +188,36 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const int *triadColor = atts->GetTriadColor();
+        SNPRINTF(tmpStr, 1000, "%striadColor = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", triadColor[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    SNPRINTF(tmpStr, 1000, "%striadLineWidth = %g\n", prefix, atts->GetTriadLineWidth());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%striadFont = %d\n", prefix, atts->GetTriadFont());
+    str += tmpStr;
+    if(atts->GetTriadBold())
+        SNPRINTF(tmpStr, 1000, "%striadBold = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%striadBold = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetTriadItalic())
+        SNPRINTF(tmpStr, 1000, "%striadItalic = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%striadItalic = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -597,6 +627,156 @@ Axes3D_GetBboxLocation(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+Axes3D_SetTriadColor(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+
+    int *ivals = obj->data->GetTriadColor();
+    if(!PyArg_ParseTuple(args, "iii", &ivals[0], &ivals[1], &ivals[2]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 3)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    ivals[i] = int(PyFloat_AS_DOUBLE(item));
+                else if(PyInt_Check(item))
+                    ivals[i] = int(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    ivals[i] = int(PyLong_AsDouble(item));
+                else
+                    ivals[i] = 0;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the triadColor in the object as modified.
+    obj->data->SelectTriadColor();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Axes3D_GetTriadColor(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+    // Allocate a tuple the with enough entries to hold the triadColor.
+    PyObject *retval = PyTuple_New(3);
+    const int *triadColor = obj->data->GetTriadColor();
+    for(int i = 0; i < 3; ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(triadColor[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
+Axes3D_SetTriadLineWidth(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+
+    float fval;
+    if(!PyArg_ParseTuple(args, "f", &fval))
+        return NULL;
+
+    // Set the triadLineWidth in the object.
+    obj->data->SetTriadLineWidth(fval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Axes3D_GetTriadLineWidth(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetTriadLineWidth()));
+    return retval;
+}
+
+/*static*/ PyObject *
+Axes3D_SetTriadFont(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the triadFont in the object.
+    obj->data->SetTriadFont((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Axes3D_GetTriadFont(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetTriadFont()));
+    return retval;
+}
+
+/*static*/ PyObject *
+Axes3D_SetTriadBold(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the triadBold in the object.
+    obj->data->SetTriadBold(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Axes3D_GetTriadBold(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetTriadBold()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+Axes3D_SetTriadItalic(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the triadItalic in the object.
+    obj->data->SetTriadItalic(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Axes3D_GetTriadItalic(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetTriadItalic()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyAxes3D_methods[AXES3D_NMETH] = {
@@ -627,6 +807,16 @@ PyMethodDef PyAxes3D_methods[AXES3D_NMETH] = {
     {"GetSetBBoxLocation", Axes3D_GetSetBBoxLocation, METH_VARARGS},
     {"SetBboxLocation", Axes3D_SetBboxLocation, METH_VARARGS},
     {"GetBboxLocation", Axes3D_GetBboxLocation, METH_VARARGS},
+    {"SetTriadColor", Axes3D_SetTriadColor, METH_VARARGS},
+    {"GetTriadColor", Axes3D_GetTriadColor, METH_VARARGS},
+    {"SetTriadLineWidth", Axes3D_SetTriadLineWidth, METH_VARARGS},
+    {"GetTriadLineWidth", Axes3D_GetTriadLineWidth, METH_VARARGS},
+    {"SetTriadFont", Axes3D_SetTriadFont, METH_VARARGS},
+    {"GetTriadFont", Axes3D_GetTriadFont, METH_VARARGS},
+    {"SetTriadBold", Axes3D_SetTriadBold, METH_VARARGS},
+    {"GetTriadBold", Axes3D_GetTriadBold, METH_VARARGS},
+    {"SetTriadItalic", Axes3D_SetTriadItalic, METH_VARARGS},
+    {"GetTriadItalic", Axes3D_GetTriadItalic, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -699,6 +889,16 @@ PyAxes3D_getattr(PyObject *self, char *name)
         return Axes3D_GetSetBBoxLocation(self, NULL);
     if(strcmp(name, "bboxLocation") == 0)
         return Axes3D_GetBboxLocation(self, NULL);
+    if(strcmp(name, "triadColor") == 0)
+        return Axes3D_GetTriadColor(self, NULL);
+    if(strcmp(name, "triadLineWidth") == 0)
+        return Axes3D_GetTriadLineWidth(self, NULL);
+    if(strcmp(name, "triadFont") == 0)
+        return Axes3D_GetTriadFont(self, NULL);
+    if(strcmp(name, "triadBold") == 0)
+        return Axes3D_GetTriadBold(self, NULL);
+    if(strcmp(name, "triadItalic") == 0)
+        return Axes3D_GetTriadItalic(self, NULL);
 
     return Py_FindMethod(PyAxes3D_methods, self, name);
 }
@@ -739,6 +939,16 @@ PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
         obj = Axes3D_SetSetBBoxLocation(self, tuple);
     else if(strcmp(name, "bboxLocation") == 0)
         obj = Axes3D_SetBboxLocation(self, tuple);
+    else if(strcmp(name, "triadColor") == 0)
+        obj = Axes3D_SetTriadColor(self, tuple);
+    else if(strcmp(name, "triadLineWidth") == 0)
+        obj = Axes3D_SetTriadLineWidth(self, tuple);
+    else if(strcmp(name, "triadFont") == 0)
+        obj = Axes3D_SetTriadFont(self, tuple);
+    else if(strcmp(name, "triadBold") == 0)
+        obj = Axes3D_SetTriadBold(self, tuple);
+    else if(strcmp(name, "triadItalic") == 0)
+        obj = Axes3D_SetTriadItalic(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

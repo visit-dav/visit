@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class Axes3D extends AttributeSubject
 {
-    private static int Axes3D_numAdditionalAtts = 13;
+    private static int Axes3D_numAdditionalAtts = 18;
 
     // Enum values
     public final static int AXES_CLOSESTTRIAD = 0;
@@ -93,6 +93,14 @@ public class Axes3D extends AttributeSubject
         bboxLocation[3] = 1;
         bboxLocation[4] = 0;
         bboxLocation[5] = 1;
+        triadColor = new int[3];
+        triadColor[0] = 0;
+        triadColor[1] = 0;
+        triadColor[2] = 0;
+        triadLineWidth = 0f;
+        triadFont = 0;
+        triadBold = true;
+        triadItalic = true;
     }
 
     public Axes3D(int nMoreFields)
@@ -118,6 +126,14 @@ public class Axes3D extends AttributeSubject
         bboxLocation[3] = 1;
         bboxLocation[4] = 0;
         bboxLocation[5] = 1;
+        triadColor = new int[3];
+        triadColor[0] = 0;
+        triadColor[1] = 0;
+        triadColor[2] = 0;
+        triadLineWidth = 0f;
+        triadFont = 0;
+        triadBold = true;
+        triadItalic = true;
     }
 
     public Axes3D(Axes3D obj)
@@ -142,6 +158,15 @@ public class Axes3D extends AttributeSubject
         for(i = 0; i < obj.bboxLocation.length; ++i)
             bboxLocation[i] = obj.bboxLocation[i];
 
+        triadColor = new int[3];
+        triadColor[0] = obj.triadColor[0];
+        triadColor[1] = obj.triadColor[1];
+        triadColor[2] = obj.triadColor[2];
+
+        triadLineWidth = obj.triadLineWidth;
+        triadFont = obj.triadFont;
+        triadBold = obj.triadBold;
+        triadItalic = obj.triadItalic;
 
         SelectAll();
     }
@@ -165,6 +190,11 @@ public class Axes3D extends AttributeSubject
         for(i = 0; i < 6 && bboxLocation_equal; ++i)
             bboxLocation_equal = (bboxLocation[i] == obj.bboxLocation[i]);
 
+        // Compare the triadColor arrays.
+        boolean triadColor_equal = true;
+        for(i = 0; i < 3 && triadColor_equal; ++i)
+            triadColor_equal = (triadColor[i] == obj.triadColor[i]);
+
         // Create the return value
         return ((visible == obj.visible) &&
                 (autoSetTicks == obj.autoSetTicks) &&
@@ -178,7 +208,12 @@ public class Axes3D extends AttributeSubject
                 (yAxis.equals(obj.yAxis)) &&
                 (zAxis.equals(obj.zAxis)) &&
                 (setBBoxLocation == obj.setBBoxLocation) &&
-                bboxLocation_equal);
+                bboxLocation_equal &&
+                triadColor_equal &&
+                (triadLineWidth == obj.triadLineWidth) &&
+                (triadFont == obj.triadFont) &&
+                (triadBold == obj.triadBold) &&
+                (triadItalic == obj.triadItalic));
     }
 
     // Property setting methods
@@ -261,6 +296,46 @@ public class Axes3D extends AttributeSubject
         Select(12);
     }
 
+    public void SetTriadColor(int[] triadColor_)
+    {
+        triadColor[0] = triadColor_[0];
+        triadColor[1] = triadColor_[1];
+        triadColor[2] = triadColor_[2];
+        Select(13);
+    }
+
+    public void SetTriadColor(int e0, int e1, int e2)
+    {
+        triadColor[0] = e0;
+        triadColor[1] = e1;
+        triadColor[2] = e2;
+        Select(13);
+    }
+
+    public void SetTriadLineWidth(float triadLineWidth_)
+    {
+        triadLineWidth = triadLineWidth_;
+        Select(14);
+    }
+
+    public void SetTriadFont(int triadFont_)
+    {
+        triadFont = triadFont_;
+        Select(15);
+    }
+
+    public void SetTriadBold(boolean triadBold_)
+    {
+        triadBold = triadBold_;
+        Select(16);
+    }
+
+    public void SetTriadItalic(boolean triadItalic_)
+    {
+        triadItalic = triadItalic_;
+        Select(17);
+    }
+
     // Property getting methods
     public boolean        GetVisible() { return visible; }
     public boolean        GetAutoSetTicks() { return autoSetTicks; }
@@ -275,6 +350,11 @@ public class Axes3D extends AttributeSubject
     public AxisAttributes GetZAxis() { return zAxis; }
     public boolean        GetSetBBoxLocation() { return setBBoxLocation; }
     public double[]       GetBboxLocation() { return bboxLocation; }
+    public int[]          GetTriadColor() { return triadColor; }
+    public float          GetTriadLineWidth() { return triadLineWidth; }
+    public int            GetTriadFont() { return triadFont; }
+    public boolean        GetTriadBold() { return triadBold; }
+    public boolean        GetTriadItalic() { return triadItalic; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -305,6 +385,16 @@ public class Axes3D extends AttributeSubject
             buf.WriteBool(setBBoxLocation);
         if(WriteSelect(12, buf))
             buf.WriteDoubleArray(bboxLocation);
+        if(WriteSelect(13, buf))
+            buf.WriteIntArray(triadColor);
+        if(WriteSelect(14, buf))
+            buf.WriteFloat(triadLineWidth);
+        if(WriteSelect(15, buf))
+            buf.WriteInt(triadFont);
+        if(WriteSelect(16, buf))
+            buf.WriteBool(triadBold);
+        if(WriteSelect(17, buf))
+            buf.WriteBool(triadItalic);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -353,6 +443,21 @@ public class Axes3D extends AttributeSubject
         case 12:
             SetBboxLocation(buf.ReadDoubleArray());
             break;
+        case 13:
+            SetTriadColor(buf.ReadIntArray());
+            break;
+        case 14:
+            SetTriadLineWidth(buf.ReadFloat());
+            break;
+        case 15:
+            SetTriadFont(buf.ReadInt());
+            break;
+        case 16:
+            SetTriadBold(buf.ReadBool());
+            break;
+        case 17:
+            SetTriadItalic(buf.ReadBool());
+            break;
         }
     }
 
@@ -390,6 +495,11 @@ public class Axes3D extends AttributeSubject
         str = str + indent + "zAxis = {\n" + zAxis.toString(indent + "    ") + indent + "}\n";
         str = str + boolToString("setBBoxLocation", setBBoxLocation, indent) + "\n";
         str = str + doubleArrayToString("bboxLocation", bboxLocation, indent) + "\n";
+        str = str + intArrayToString("triadColor", triadColor, indent) + "\n";
+        str = str + floatToString("triadLineWidth", triadLineWidth, indent) + "\n";
+        str = str + intToString("triadFont", triadFont, indent) + "\n";
+        str = str + boolToString("triadBold", triadBold, indent) + "\n";
+        str = str + boolToString("triadItalic", triadItalic, indent) + "\n";
         return str;
     }
 
@@ -408,5 +518,10 @@ public class Axes3D extends AttributeSubject
     private AxisAttributes zAxis;
     private boolean        setBBoxLocation;
     private double[]       bboxLocation;
+    private int[]          triadColor;
+    private float          triadLineWidth;
+    private int            triadFont;
+    private boolean        triadBold;
+    private boolean        triadItalic;
 }
 

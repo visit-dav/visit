@@ -74,6 +74,9 @@ class VisWindowColleagueProxy;
 //    Kathleen Bonnell, Wed Jun 27 14:56:09 PDT 2001 
 //    Added SetVisibility. 
 //
+//    Alister Maguire, Thu Mar  1 16:08:42 PST 2018
+//    Added SetLineWidth, SetFontFamily, SetBold, and SetItalic. 
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinTriad : public VisWinColleague
@@ -83,6 +86,10 @@ class VISWINDOW_API VisWinTriad : public VisWinColleague
     virtual                  ~VisWinTriad();
 
     virtual void              SetForegroundColor(double, double, double);
+    virtual void              SetLineWidth(float, float, float);
+    virtual void              SetFontFamily(bool);
+    virtual void              SetBold(bool);
+    virtual void              SetItalic(bool);
 
     virtual void              Start3DMode(void);
     virtual void              Stop3DMode(void);

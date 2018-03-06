@@ -135,6 +135,108 @@ VisWinTriad::SetForegroundColor(double fr, double fg, double fb)
 
 
 // ****************************************************************************
+//  Method: VisWinTriad::SetLineWidth
+//
+//  Purpose:
+//      Sets the line width of the triad.
+//
+//  Arguments:
+//      xw        Sets the line width of the x axis.
+//      yw        Sets the line width of the y axis.
+//      zw        Sets the line width of the z axis.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Feb 28 09:59:18 PST 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinTriad::SetLineWidth(float xw, float yw, float zw)
+{
+    triad->GetXAxis()->GetProperty()->SetLineWidth(xw);
+    triad->GetYAxis()->GetProperty()->SetLineWidth(yw);
+    triad->GetZAxis()->GetProperty()->SetLineWidth(zw);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinTriad::SetFontFamily
+//
+//  Purpose:
+//      Sets the font family for the x,y,z triad labels. 
+//
+//  Arguments:
+//      font        the chosen font. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Feb 28 09:59:18 PST 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinTriad::SetFontFamily(bool font)
+{
+    triad->GetXAxis()->SetFontFamily(font);
+    triad->GetYAxis()->SetFontFamily(font);
+    triad->GetZAxis()->SetFontFamily(font);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinTriad::SetBold
+//
+//  Purpose:
+//      Sets the bold option for the x,y,z triad labels. 
+//
+//  Arguments:
+//      bold        whether or not to use bold. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Feb 28 09:59:18 PST 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinTriad::SetBold(bool bold)
+{
+    triad->GetXAxis()->SetBold(bold);
+    triad->GetYAxis()->SetBold(bold);
+    triad->GetZAxis()->SetBold(bold);
+}
+
+
+// ****************************************************************************
+//  Method: VisWinTriad::SetItalic
+//
+//  Purpose:
+//      Sets the italic option for the x,y,z triad labels. 
+//
+//  Arguments:
+//      italic        whether or not to use italic. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Feb 28 09:59:18 PST 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+VisWinTriad::SetItalic(bool italic)
+{
+    triad->GetXAxis()->SetItalic(italic);
+    triad->GetYAxis()->SetItalic(italic);
+    triad->GetZAxis()->SetItalic(italic);
+}
+
+
+// ****************************************************************************
 //  Method: VisWinTriad::Start3DMode
 //
 //  Purpose:
