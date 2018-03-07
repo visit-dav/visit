@@ -1155,6 +1155,10 @@ QvisMainWindow::CreateMainContents(QvisPostableMainWindow *win)
 //   Brad Whitlock, Mon May 10 11:54:11 PDT 2010
 //   I moved some stuff out of this area to other widgets and windows.
 //
+//   Eric Brugger, Wed Mar  7 11:21:08 PST 2018
+//   I set the SizeAdjustPolicy for the activeWindowComboBox so that it would
+//   resize to accomadate 2 digits if necessary.
+//
 // ****************************************************************************
 
 QWidget *
@@ -1167,6 +1171,7 @@ QvisMainWindow::CreateGlobalArea(QWidget *par)
     activeWindowComboBox = new QComboBox(globalArea);
     connect(activeWindowComboBox, SIGNAL(activated(int)),
             this, SLOT(winset(int)));
+    activeWindowComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     activeWindowComboBox->addItem("1");
 
     QLabel *activeWindowLabel = new QLabel(tr("Active window"), globalArea);
