@@ -20,6 +20,7 @@ operators that you rarely use.
     DeferExpression_operator
     Displace_operator
     Elevate_operator
+    Explode_operator
     ExternalSurface_operator
     Index_Select_operator
     InverseGhostZone_operator
