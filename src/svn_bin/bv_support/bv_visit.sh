@@ -63,16 +63,18 @@ function bv_visit_ensure_built_or_ready
 {
     # Check-out the latest svn sources, before building VisIt
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        if [[ -d src ]] ; then
+        if [[ -d $SVN_DESTINATION_PATH ]] ; then
             info "Found existing VisIt SVN src directory, using that . . ."
         else
+	    mkdir -p $SVN_DESTINATION_PATH
+	    
             # Print a dialog screen
             info "SVN check-out of VisIt ($SVN_ROOT_PATH/$SVN_SOURCE_PATH) . . ."
             if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
                 svn co --quiet --non-interactive --revision "$SVNREVISION" \
-                    $SVN_ROOT_PATH/$SVN_SOURCE_PATH
+                    $SVN_ROOT_PATH/$SVN_SOURCE_PATH $SVN_DESTINATION_PATH
             else
-                svn co --quiet --non-interactive $SVN_ROOT_PATH/$SVN_SOURCE_PATH
+                svn co --quiet --non-interactive $SVN_ROOT_PATH/$SVN_SOURCE_PATH $SVN_DESTINATION_PATH
             fi
             if [[ $? != 0 ]] ; then
                 warn "Unable to build VisIt. SVN download failed."
@@ -80,15 +82,15 @@ function bv_visit_ensure_built_or_ready
             fi
         fi
 
-        # Build using (the assumed) existing VisIt svn "src" directory
-    elif [[ -d src ]] ; then
+    # Build using (the assumed) existing VisIt svn "src" directory
+    elif [[ -d $SVN_DESTINATION_PATH ]] ; then
         info "Found VisIt SVN src directory found, using it."
         #resetting any values that have mixup the build between Trunk and RC
         VISIT_FILE="" #erase any accidental setting of these values
         USE_VISIT_FILE="no"
-        DO_SVN="yes" #if src directory exists it may have come from svn..
+        DO_SVN="yes" #if src directory exists it may have come from svn.
 
-        # Build using a VisIt source tarball
+    # Build using a VisIt source tarball
     else
         if [[ -e ${VISIT_FILE%.gz} || -e ${VISIT_FILE} ]] ; then
             info \
@@ -163,32 +165,12 @@ function bv_visit_modify_makefiles
             mv -f Make.tmp third_party_builtin/mesa_stub/Makefile
         fi
         if (( ${VER%%.*} > 6 )) ; then
-            cat databases/SimV1/Makefile | \
-                sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-            mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
-            mv -f Make.tmp databases/SimV1/Makefile
-            cat databases/SimV1Writer/Makefile | \
-                sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
-            mv -f databases/SimV1Writer/Makefile \
-               databases/SimV1Writer/Makefile.orig
-            mv -f Make.tmp databases/SimV1Writer/Makefile
             cat avt/Expressions/Makefile | \
                 sed '/LDFLAGS/s/$/ -Wl,-undefined,dynamic_lookup/g' > Make.tmp
             mv -f avt/Expressions/Makefile \
                avt/Expressions/Makefile.orig
             mv -f Make.tmp avt/Expressions/Makefile
         else
-            cat databases/SimV1/Makefile | \
-                sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
-                    Make.tmp
-            mv -f databases/SimV1/Makefile databases/SimV1/Makefile.orig
-            mv -f Make.tmp databases/SimV1/Makefile
-            cat databases/SimV1Writer/Makefile | \
-                sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
-                    Make.tmp
-            mv -f databases/SimV1Writer/Makefile \
-               databases/SimV1Writer/Makefile.orig
-            mv -f Make.tmp databases/SimV1Writer/Makefile
             cat avt/Expressions/Makefile | \
                 sed '/LDFLAGS/s/$/ -Wl,-flat_namespace,-undefined,suppress/g' > \
                     Make.tmp
@@ -295,21 +277,38 @@ function build_visit
     fi
 
     #
-    # Set up the config-site file, which gives configure the information it
-    # needs about the third party libraries.
+    # Set up the VisIt build dir which is a sibling to the VisIt src dir
     #
-    local VISIT_DIR="${VISIT_FILE%.tar*}/src"
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-        VISIT_DIR="src" 
+	#remove the src from the destination path and replace it with build.
+	VISIT_BUILD_DIR="${SVN_DESTINATION_PATH/src/build}" 
     else
+	VISIT_BUILD_DIR="${VISIT_FILE%.tar*}/build"
+    
         #visit2.5.0 needs a patch for ModelFit operator
         if [[ "${VISIT_FILE%.tar*}" == "visit2.5.0" ]]; then
             bv_patch_2_5_0
         fi
     fi
+
+    if [[ ! -e $VISIT_BUILD_DIR ]] ; then
+        mkdir $VISIT_BUILD_DIR || error "Can't make VisIt build dir."
+    else
+	rm -rf $VISIT_BUILD_DIR/* || error "Can't clean VisIt build dir."
+    fi
+
+    info "Building VisIt in ${VISIT_BUILD_DIR} . . ."
     
-    cd $VISIT_DIR
-    #cp $START_DIR/$(hostname).cmake config-site
+    cd $VISIT_BUILD_DIR
+
+    #
+    # Set up the config-site file, which gives configure the information it
+    # needs about the third party libraries.
+    #
+
+    # No real need to do this as it is defined on the cmake line BUT
+    # Users may rebuild visit with updated svn
+    cp ${START_DIR}/${HOSTCONF} config-site
 
     #
     # Call cmake
@@ -364,7 +363,7 @@ function build_visit
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     rm -f CMakeCache.txt
-    issue_command "${CMAKE_BIN}" ${FEATURES} . 
+    issue_command "${CMAKE_BIN}" ${FEATURES} ../src
     if [[ $? != 0 ]] ; then
         echo "VisIt configure failed.  Giving up"
         return 1
@@ -443,7 +442,6 @@ EOF
 #the build command..
 function bv_visit_build
 {
-
     #
     # Build the actual VisIt code
     #
@@ -456,22 +454,16 @@ function bv_visit_build
             error "Unable to build or install VisIt.  Bailing out."
         fi
 
-        if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-            VISIT_SRC_DIR="src"
-        else
-            VISIT_SRC_DIR="${VISIT_FILE%.tar*}/src"
-        fi
-
         #
         # Output the message indicating that we are finished.
         #
         info "Finished building VisIt."
         info
         info "You many now try to run VisIt by cd'ing into the"
-        info "$VISIT_SRC_DIR/bin directory and invoking \"visit\""
+        info "$VISIT_BUILD_DIR/bin directory and invoking \"visit\""
         info
         info "To create a binary distribution tarball from this build, cd to"
-        info "${START_DIR}/${VISIT_SRC_DIR}"
+        info "${START_DIR}/${VISIT_BUILD_DIR}"
         info "then enter: \"make package\""
         info
         info "This will produce a tarball called visitVERSION.ARCH.tar.gz, where"
@@ -488,5 +480,4 @@ function bv_visit_build
             info "Finished with Errors"
         fi
     fi
-
 }
