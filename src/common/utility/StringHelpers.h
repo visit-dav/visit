@@ -91,8 +91,8 @@ namespace StringHelpers
     std::string UTILITY_API ExtractRESubstr(const char *stringToSearch,
                                             const char *re);
 
-    bool UTILITY_API ValidatePrintfFormatString(const char *fmtStr,
-                                                const char *arg1Type, ...);
+    bool UTILITY_API ValidatePrintfFormatString(const char *fmtStr, ...);
+    bool UTILITY_API ValidatePrintfFormatString(int nargs, const char *fmtStr, ...);
 
     std::string UTILITY_API car(const std::string, const char separator);
     std::string UTILITY_API cdr(const std::string, const char separator);

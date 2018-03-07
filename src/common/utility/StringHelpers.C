@@ -679,10 +679,11 @@ static void InitTypeNameToFmtREMap()
 }
 
 // ****************************************************************************
-//  Function: ValidatePrintfFormatString
+//  Private Function: vValidatePrintfFormatString
 //
-//  Purpose: Validates a printf style format string against a variable length
-//  list of argument type names.
+//  Purpose: Validates a printf style format string against a va_list set of
+//  char * arguments indicate the name of the language types to be printed
+//  (or scanned) such as "int", "double", "unsigned long long".
 //
 //  Programmer: Mark C. Miller
 //  Creation:   September 20, 2007
@@ -695,8 +696,8 @@ static void InitTypeNameToFmtREMap()
 //    Fixed issue with missing REG_EXTENDED on Mac by adding check for simple
 //    case and falling back to REs for more complicated cases.
 // ****************************************************************************
-bool
-StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Type, ... )
+static bool
+vValidatePrintfFormatString(int nargs, const char *fmtStr, va_list ap)
 {
     int n;
     int i;
@@ -720,15 +721,16 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
         if (fmtStr[i] == '%' && fmtStr[i+1] != '%')
             ncspecs++;
     }
+    if (nargs > 0 && ncspecs != nargs)
+        return false;
     if (ncspecs == 0)
         return true;
 
     InitTypeNameToFmtREMap();
 
     // start processing the varargs list
-    va_list ap;
-    va_start(ap, arg1Type);
-    const char *currentArgTypeName = arg1Type;
+
+    const char *currentArgTypeName = va_arg(ap, const char *);
     // loop adding RE terms for each argument type
     for (i = 0; i < ncspecs; i++)
     {
@@ -738,7 +740,6 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
         re += typeNameToFmtREMap[string(currentArgTypeName)];
         currentArgTypeName = va_arg(ap, const char *);
     }
-    va_end(ap);
 
     // if we broke out of loop early, a bad type name was encountered
     if (i < ncspecs)
@@ -748,6 +749,48 @@ StringHelpers::ValidatePrintfFormatString(const char *fmtStr, const char *arg1Ty
 
     return StringHelpers::FindRE(fmtStr, re.c_str()) >= 0;
 }
+
+// ****************************************************************************
+//  Function: ValidatePrintfFormatString
+//
+//  Purpose: Validate a printf-style format spec string against a set of
+//  args indicating the language type to printed (or scaned)
+//
+//  Mark C. Miller, Wed Dec  6 11:38:33 PST 2017
+//
+// ****************************************************************************
+bool
+StringHelpers::ValidatePrintfFormatString(const char *fmtStr, ...)
+{
+    bool retval;
+    va_list ap;
+    va_start(ap, fmtStr);
+    retval = vValidatePrintfFormatString(-1, fmtStr, ap);
+    va_end(ap);
+    return retval;
+}
+
+// ****************************************************************************
+//  Function: ValidatePrintfFormatString
+//
+//  Purpose: Validate a printf-style format spec string against a set of
+//  args indicating the language type to printed (or scaned) but also require
+//  that the format spec exactly match an expected number of arguments (nargs)
+//
+//  Mark C. Miller, Wed Dec  6 11:38:33 PST 2017
+//
+// ****************************************************************************
+bool
+StringHelpers::ValidatePrintfFormatString(int nargs, const char *fmtStr, ...)
+{
+    bool retval;
+    va_list ap;
+    va_start(ap, fmtStr);
+    retval = vValidatePrintfFormatString(nargs, fmtStr, ap);
+    va_end(ap);
+    return retval;
+}
+
 
 // ****************************************************************************
 //  Function: car
