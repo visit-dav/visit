@@ -217,7 +217,7 @@ QvisExplodeWindow::CreateWindowContents()
             this, SLOT(planePointProcessText()));
     explodePlaneLayout->addWidget(planePoint, 0, 1);
 
-    QLabel *planeNormLabel = new QLabel(tr("Plane Norm"), central);
+    QLabel *planeNormLabel = new QLabel(tr("Plane Normal"), central);
     explodePlaneLayout->addWidget(planeNormLabel, 1, 0);
     planeNorm = new QLineEdit(central);
     planeNorm->setPlaceholderText("0.0 0.0 0.0");
