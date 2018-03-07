@@ -87,12 +87,18 @@ int main(int argc, char **argv)
         falseNegatives.push_back(__LINE__);
     if (!ValidatePrintfFormatString("hello world %d", "int"))
         falseNegatives.push_back(__LINE__);
-    // more args that conversion specifiers is ok
+    // More args than conversion specifiers is ok
     if (!ValidatePrintfFormatString("%d %d %d", "int", "int", "int", "int"))
         falseNegatives.push_back(__LINE__);
     if (!ValidatePrintfFormatString("hello world", "dummy"))
         falseNegatives.push_back(__LINE__);
     if (!ValidatePrintfFormatString("firstInt = %d\nsecondFlt=%G\n", "int", "float"))
+        falseNegatives.push_back(__LINE__);
+    // (Strict) Number of conversion specs doesn't match expected number should fail
+    if (ValidatePrintfFormatString(4, "%d %d %d", "int", "int", "int", "int"))
+        falsePositives.push_back(__LINE__);
+    // (Strict) Number of conversion specs matches expected number should succeed 
+    if (!ValidatePrintfFormatString(3, "%d %d %d", "int", "int", "int", "int"))
         falseNegatives.push_back(__LINE__);
 
     size_t s_to_num_tmp;
