@@ -43,7 +43,7 @@ material cells, algorithms must be used to determine where the material is
 located in the cell, typically by looking at the materials in neighboring
 cells. Species are variables that are associated with each material. For a
 given material, species are a further breakdown of a material. The
-distictive property of a species is that it is uniformly distributed
+distinctive property of a species is that it is uniformly distributed
 throughout the material. For example, air consists of many different gases
 such as oxygen, nitrogen, carbon monoxide, carbon dioxide, etc.
 

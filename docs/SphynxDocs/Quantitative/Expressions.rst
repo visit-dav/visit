@@ -1329,6 +1329,12 @@ CMFE function and its friend, the connectivity-based CMFE function,
 needed when working with variables from *different* meshes in the *same*
 expression. *CMFE* is an abbreviation for *cross-mesh field evaluation*.
 
+The syntax for specifying CMFE expressions can be complicated. Therefore, the
+GUI supports a *wizard* to help create them. See the
+:ref:`Data-Level Comparisons Wizard <DataLevelComparisonsWizard>` for more
+information. Here, we describe the details of creating CMFE expressions
+manually.
+
 All of the comparison expressions involve the concepts of a *donor variable*
 and a *target mesh*. The donor variable (e.g. *pressure*) is the variable to
 be mapped. The target mesh is the mesh onto which the donor variable is to be
@@ -1384,10 +1390,11 @@ Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Targ
 
    Depending on circumstances, specifying the ``Donor-Variable`` argument to
    the CMFE functions can get cumbersome. For this reason, CMFE expressions
-   are typically created using the *Data-Level Comparisons Wizard* under the
-   *Controls* menu. Nonetheless, here we describe the syntax and provide
-   examples for a number of cases of increasing complexity in specifying where
-   the ``Donor Variable`` resides.
+   are typically created using the
+   :ref:`Data-Level Comparisons Wizard <DataLevelComparisonsWizard>`
+   under the *Controls* menu. Nonetheless, here we describe the syntax and
+   provide examples for a number of cases of increasing complexity in specifying
+   where the ``Donor Variable`` resides.
 
    When the donor variable is in the same database and state as the target mesh,
    then only the variable's name is needed. The optional substrings are not.

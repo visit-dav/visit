@@ -27,13 +27,13 @@ and select a new color from the **Popup color** menu. To change the
 foreground color (the color used to draw text), click the **GUI foreground**
 color button and select a new color from the **Popup color** menu.
 
-VisIt_ will issue an error message if the colors choosen for both the
+VisIt_ will issue an error message if the colors chosen for both the
 background and foreground colors are close enough that they cannot be
 distinguished so that the user does not accidentally get into a situation
 where the controls in VisIt_'s GUI become too difficult to read. Some
 application styles, such as Aqua, do not use the background color so
 setting the background has no effect unless an application style like
-Windows is choosen, which does use the background color.
+Windows is chosen, which does use the background color.
 
 Changing GUI Style
 ~~~~~~~~~~~~~~~~~~

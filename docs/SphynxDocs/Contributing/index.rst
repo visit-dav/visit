@@ -36,7 +36,7 @@ use of Sphinx as we move forward. These are discussed at the
 
 * A few documents about reStructuredText and Sphinx are useful:
 
-  * `reStructuredText Primer <http://docutils.sourceforge.net/docs/user/rst/quickref.html#field-lists>`_
+  * `reStructuredText Primer <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_
   * `Sphinx Documentation <http://www.sphinx-doc.org/en/stable/contents.html>`_
   * `reStructuredText Markup Specification <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_
   * `reStructuredText Reference Documentation <http://docutils.sourceforge.net/rst.html#reference-documentation>`_

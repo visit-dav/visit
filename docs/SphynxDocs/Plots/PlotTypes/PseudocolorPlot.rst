@@ -187,7 +187,7 @@ Legend Behavior
 
 The legend for the Pseudocolor plot is a color bar annotated with tick marks and
 numerical values. Below the color bar the minimum and maximum data values are
-also displayed. Setting the limits for the plot changes *only* the colar-bar portion
+also displayed. Setting the limits for the plot changes *only* the color-bar portion
 of the plot's legend. It *does not change* the *Min* and *Max* values printed
 just below the color bar. Those values will always display the original data's 
 minimum and maximum values, regardless of the limits set for the plot or the

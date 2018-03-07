@@ -4,7 +4,7 @@ Saving Cinema
 VisIt lets you save Cinema databases in addition to saving images and movies of 
 your plots. A Cinema database is an image-based proxy for large scale data that
 lets you explore the data using far fewer computational resources. Where 
-postprocessing full data might take a supercomputer, exploring a Cinema database
+post-processing full data might take a supercomputer, exploring a Cinema database
 can be done on a tablet. Cinema databases consist of images that are indexed by
 a JSON file or CSV file. The index file is used by the Cinema viewer (available at
 `www.cinemascience.org <http://www.cinemascience.org/>`_) to determine a set of 
@@ -211,8 +211,6 @@ object is created and populated like this: ::
   VisIt_NameList_addName(hvar, "rho");
   VisIt_NameList_addName(hvar, "energy");
 
-
-
-
-
-
+.. spelling::
+    Libsim
+    cdb

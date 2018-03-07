@@ -38,6 +38,7 @@ Uncheck
 Valgrind
 VTK
 Wireframe
+ZLib
 antialiasing
 backticks
 builtin
