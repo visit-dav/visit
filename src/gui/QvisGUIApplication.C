@@ -6453,11 +6453,18 @@ QvisGUIApplication::ReadFromViewer(int)
     {
         debug1 << "Reading from the viewer's socket is currently not allowed!"
                << endl;
+
 #if defined(_WIN32)
+        // This no longer seems necessary, at least with QT 5.
+        // Removing it for Qt5-enabled fixes problem running VisIt
+        // on newer Windows OS (8, 10) and also running on Windows VM.
+        // Leaving code in place for older qt, just in case.
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
         // If we ignore the socket read on Windows, we don't tend to keep
         // getting the message so call this function again though the event
         // loop using a timer.
         QTimer::singleShot(10, this, SLOT(DelayedReadFromViewer()));
+#endif
 #endif
     }
 }
