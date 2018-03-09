@@ -274,6 +274,10 @@ avtPythonFilterEnvironment::WrapVTKObject(void *obj,
 //  Programmer:   Cyrus Harrison
 //  Creation:     Tue Feb  2 13:14:44 PST 2010
 //
+//  Modifications:
+//    Kathleen Biagas, Thu Mar  8 16:58:03 MST 2018
+//    On Win32, also check py_add_int as long, change addy type to long long.
+// 
 // ****************************************************************************
 void *
 avtPythonFilterEnvironment::UnwrapVTKObject(PyObject *obj,
@@ -288,9 +292,24 @@ avtPythonFilterEnvironment::UnwrapVTKObject(PyObject *obj,
         return NULL;
 
     PyObject *py_addy_int = pyi->GetGlobalObject("_vtkaddy");
+
+#ifdef WIN32
+    if(py_addy_int == NULL)
+        return NULL;
+
+    if (!PyInt_Check(py_addy_int))
+    {
+        if (!PyLong_Check(py_addy_int))
+        {
+            return NULL;
+        }
+    }
+    long long addy = PyLong_AsLongLong(py_addy_int);
+#else
     if(py_addy_int == NULL || ! PyInt_Check(py_addy_int))
         return NULL;
     long addy = PyInt_AsLong(py_addy_int);
+#endif
     if(!pyi->RunScript("del _vtkaddy\n"))
         return NULL;
     // dec the extra ref we created.
