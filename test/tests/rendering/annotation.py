@@ -55,6 +55,9 @@
 #    Alister Maguire, Mon Mar  5 14:10:23 PST 2018
 #    Added a test for manipulating the triad attributes. 
 #
+#    Alister Maguire, Fri Mar  9 10:21:50 PST 2018
+#    Now using a 'set manually' flag for the triad attribtues. 
+#
 # ----------------------------------------------------------------------------
 
 TurnOnAllAnnotations()
@@ -355,7 +358,6 @@ Test("annot3d_01")
 
 # Turn off the bounding box
 a.axes3D.triadFlag = 1
-a.axes3D.triadColor = (255, 255, 255)
 a.axes3D.bboxFlag = 0
 SetAnnotationAttributes(a)
 Test("annot3d_02")
@@ -448,7 +450,8 @@ a.axes3D.axesType = a.axes3D.StaticTriad
 SetAnnotationAttributes(a)
 Test("annot3d_10")
 
-# Change the triad attribtues
+# Change the triad attribtues manually
+a.axes3D.triadSetManually = 1
 a.axes3D.triadColor = (66, 244, 215)
 a.axes3D.triadLineWidth = 3
 a.axes3D.triadFont = 1
