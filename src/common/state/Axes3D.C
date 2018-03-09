@@ -157,6 +157,7 @@ void Axes3D::Init()
     triadFont = 0;
     triadBold = true;
     triadItalic = true;
+    triadSetManually = false;
 
     Axes3D::SelectAll();
 }
@@ -202,6 +203,7 @@ void Axes3D::Copy(const Axes3D &obj)
     triadFont = obj.triadFont;
     triadBold = obj.triadBold;
     triadItalic = obj.triadItalic;
+    triadSetManually = obj.triadSetManually;
 
     Axes3D::SelectAll();
 }
@@ -386,7 +388,8 @@ Axes3D::operator == (const Axes3D &obj) const
             (triadLineWidth == obj.triadLineWidth) &&
             (triadFont == obj.triadFont) &&
             (triadBold == obj.triadBold) &&
-            (triadItalic == obj.triadItalic));
+            (triadItalic == obj.triadItalic) &&
+            (triadSetManually == obj.triadSetManually));
 }
 
 // ****************************************************************************
@@ -530,24 +533,25 @@ Axes3D::NewInstance(bool copy) const
 void
 Axes3D::SelectAll()
 {
-    Select(ID_visible,         (void *)&visible);
-    Select(ID_autoSetTicks,    (void *)&autoSetTicks);
-    Select(ID_autoSetScaling,  (void *)&autoSetScaling);
-    Select(ID_lineWidth,       (void *)&lineWidth);
-    Select(ID_tickLocation,    (void *)&tickLocation);
-    Select(ID_axesType,        (void *)&axesType);
-    Select(ID_triadFlag,       (void *)&triadFlag);
-    Select(ID_bboxFlag,        (void *)&bboxFlag);
-    Select(ID_xAxis,           (void *)&xAxis);
-    Select(ID_yAxis,           (void *)&yAxis);
-    Select(ID_zAxis,           (void *)&zAxis);
-    Select(ID_setBBoxLocation, (void *)&setBBoxLocation);
-    Select(ID_bboxLocation,    (void *)bboxLocation, 6);
-    Select(ID_triadColor,      (void *)triadColor, 3);
-    Select(ID_triadLineWidth,  (void *)&triadLineWidth);
-    Select(ID_triadFont,       (void *)&triadFont);
-    Select(ID_triadBold,       (void *)&triadBold);
-    Select(ID_triadItalic,     (void *)&triadItalic);
+    Select(ID_visible,          (void *)&visible);
+    Select(ID_autoSetTicks,     (void *)&autoSetTicks);
+    Select(ID_autoSetScaling,   (void *)&autoSetScaling);
+    Select(ID_lineWidth,        (void *)&lineWidth);
+    Select(ID_tickLocation,     (void *)&tickLocation);
+    Select(ID_axesType,         (void *)&axesType);
+    Select(ID_triadFlag,        (void *)&triadFlag);
+    Select(ID_bboxFlag,         (void *)&bboxFlag);
+    Select(ID_xAxis,            (void *)&xAxis);
+    Select(ID_yAxis,            (void *)&yAxis);
+    Select(ID_zAxis,            (void *)&zAxis);
+    Select(ID_setBBoxLocation,  (void *)&setBBoxLocation);
+    Select(ID_bboxLocation,     (void *)bboxLocation, 6);
+    Select(ID_triadColor,       (void *)triadColor, 3);
+    Select(ID_triadLineWidth,   (void *)&triadLineWidth);
+    Select(ID_triadFont,        (void *)&triadFont);
+    Select(ID_triadBold,        (void *)&triadBold);
+    Select(ID_triadItalic,      (void *)&triadItalic);
+    Select(ID_triadSetManually, (void *)&triadSetManually);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -706,6 +710,12 @@ Axes3D::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
         node->AddNode(new DataNode("triadItalic", triadItalic));
     }
 
+    if(completeSave || !FieldsEqual(ID_triadSetManually, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("triadSetManually", triadSetManually));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -806,6 +816,8 @@ Axes3D::SetFromNode(DataNode *parentNode)
         SetTriadBold(node->AsBool());
     if((node = searchNode->GetNode("triadItalic")) != 0)
         SetTriadItalic(node->AsBool());
+    if((node = searchNode->GetNode("triadSetManually")) != 0)
+        SetTriadSetManually(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -939,6 +951,13 @@ Axes3D::SetTriadItalic(bool triadItalic_)
 {
     triadItalic = triadItalic_;
     Select(ID_triadItalic, (void *)&triadItalic);
+}
+
+void
+Axes3D::SetTriadSetManually(bool triadSetManually_)
+{
+    triadSetManually = triadSetManually_;
+    Select(ID_triadSetManually, (void *)&triadSetManually);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1083,6 +1102,12 @@ Axes3D::GetTriadItalic() const
     return triadItalic;
 }
 
+bool
+Axes3D::GetTriadSetManually() const
+{
+    return triadSetManually;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1141,24 +1166,25 @@ Axes3D::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_visible:         return "visible";
-    case ID_autoSetTicks:    return "autoSetTicks";
-    case ID_autoSetScaling:  return "autoSetScaling";
-    case ID_lineWidth:       return "lineWidth";
-    case ID_tickLocation:    return "tickLocation";
-    case ID_axesType:        return "axesType";
-    case ID_triadFlag:       return "triadFlag";
-    case ID_bboxFlag:        return "bboxFlag";
-    case ID_xAxis:           return "xAxis";
-    case ID_yAxis:           return "yAxis";
-    case ID_zAxis:           return "zAxis";
-    case ID_setBBoxLocation: return "setBBoxLocation";
-    case ID_bboxLocation:    return "bboxLocation";
-    case ID_triadColor:      return "triadColor";
-    case ID_triadLineWidth:  return "triadLineWidth";
-    case ID_triadFont:       return "triadFont";
-    case ID_triadBold:       return "triadBold";
-    case ID_triadItalic:     return "triadItalic";
+    case ID_visible:          return "visible";
+    case ID_autoSetTicks:     return "autoSetTicks";
+    case ID_autoSetScaling:   return "autoSetScaling";
+    case ID_lineWidth:        return "lineWidth";
+    case ID_tickLocation:     return "tickLocation";
+    case ID_axesType:         return "axesType";
+    case ID_triadFlag:        return "triadFlag";
+    case ID_bboxFlag:         return "bboxFlag";
+    case ID_xAxis:            return "xAxis";
+    case ID_yAxis:            return "yAxis";
+    case ID_zAxis:            return "zAxis";
+    case ID_setBBoxLocation:  return "setBBoxLocation";
+    case ID_bboxLocation:     return "bboxLocation";
+    case ID_triadColor:       return "triadColor";
+    case ID_triadLineWidth:   return "triadLineWidth";
+    case ID_triadFont:        return "triadFont";
+    case ID_triadBold:        return "triadBold";
+    case ID_triadItalic:      return "triadItalic";
+    case ID_triadSetManually: return "triadSetManually";
     default:  return "invalid index";
     }
 }
@@ -1183,24 +1209,25 @@ Axes3D::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_visible:         return FieldType_bool;
-    case ID_autoSetTicks:    return FieldType_bool;
-    case ID_autoSetScaling:  return FieldType_bool;
-    case ID_lineWidth:       return FieldType_linewidth;
-    case ID_tickLocation:    return FieldType_enum;
-    case ID_axesType:        return FieldType_enum;
-    case ID_triadFlag:       return FieldType_bool;
-    case ID_bboxFlag:        return FieldType_bool;
-    case ID_xAxis:           return FieldType_att;
-    case ID_yAxis:           return FieldType_att;
-    case ID_zAxis:           return FieldType_att;
-    case ID_setBBoxLocation: return FieldType_bool;
-    case ID_bboxLocation:    return FieldType_doubleArray;
-    case ID_triadColor:      return FieldType_intArray;
-    case ID_triadLineWidth:  return FieldType_float;
-    case ID_triadFont:       return FieldType_int;
-    case ID_triadBold:       return FieldType_bool;
-    case ID_triadItalic:     return FieldType_bool;
+    case ID_visible:          return FieldType_bool;
+    case ID_autoSetTicks:     return FieldType_bool;
+    case ID_autoSetScaling:   return FieldType_bool;
+    case ID_lineWidth:        return FieldType_linewidth;
+    case ID_tickLocation:     return FieldType_enum;
+    case ID_axesType:         return FieldType_enum;
+    case ID_triadFlag:        return FieldType_bool;
+    case ID_bboxFlag:         return FieldType_bool;
+    case ID_xAxis:            return FieldType_att;
+    case ID_yAxis:            return FieldType_att;
+    case ID_zAxis:            return FieldType_att;
+    case ID_setBBoxLocation:  return FieldType_bool;
+    case ID_bboxLocation:     return FieldType_doubleArray;
+    case ID_triadColor:       return FieldType_intArray;
+    case ID_triadLineWidth:   return FieldType_float;
+    case ID_triadFont:        return FieldType_int;
+    case ID_triadBold:        return FieldType_bool;
+    case ID_triadItalic:      return FieldType_bool;
+    case ID_triadSetManually: return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1225,24 +1252,25 @@ Axes3D::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_visible:         return "bool";
-    case ID_autoSetTicks:    return "bool";
-    case ID_autoSetScaling:  return "bool";
-    case ID_lineWidth:       return "linewidth";
-    case ID_tickLocation:    return "enum";
-    case ID_axesType:        return "enum";
-    case ID_triadFlag:       return "bool";
-    case ID_bboxFlag:        return "bool";
-    case ID_xAxis:           return "att";
-    case ID_yAxis:           return "att";
-    case ID_zAxis:           return "att";
-    case ID_setBBoxLocation: return "bool";
-    case ID_bboxLocation:    return "doubleArray";
-    case ID_triadColor:      return "intArray";
-    case ID_triadLineWidth:  return "float";
-    case ID_triadFont:       return "int";
-    case ID_triadBold:       return "bool";
-    case ID_triadItalic:     return "bool";
+    case ID_visible:          return "bool";
+    case ID_autoSetTicks:     return "bool";
+    case ID_autoSetScaling:   return "bool";
+    case ID_lineWidth:        return "linewidth";
+    case ID_tickLocation:     return "enum";
+    case ID_axesType:         return "enum";
+    case ID_triadFlag:        return "bool";
+    case ID_bboxFlag:         return "bool";
+    case ID_xAxis:            return "att";
+    case ID_yAxis:            return "att";
+    case ID_zAxis:            return "att";
+    case ID_setBBoxLocation:  return "bool";
+    case ID_bboxLocation:     return "doubleArray";
+    case ID_triadColor:       return "intArray";
+    case ID_triadLineWidth:   return "float";
+    case ID_triadFont:        return "int";
+    case ID_triadBold:        return "bool";
+    case ID_triadItalic:      return "bool";
+    case ID_triadSetManually: return "bool";
     default:  return "invalid index";
     }
 }
@@ -1367,6 +1395,11 @@ Axes3D::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_triadItalic:
         {  // new scope
         retval = (triadItalic == obj.triadItalic);
+        }
+        break;
+    case ID_triadSetManually:
+        {  // new scope
+        retval = (triadSetManually == obj.triadSetManually);
         }
         break;
     default: retval = false;

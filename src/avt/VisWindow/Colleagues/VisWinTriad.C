@@ -175,14 +175,34 @@ VisWinTriad::SetLineWidth(float xw, float yw, float zw)
 //
 //  Modifications:
 //
+//      Alister Maguire, Fri Mar  9 11:10:43 PST 2018
+//      Changed method of setting to switch statement in case
+//      mapping is changed. 
+//
 // ****************************************************************************
 
 void
-VisWinTriad::SetFontFamily(bool font)
+VisWinTriad::SetFontFamily(int font)
 {
-    triad->GetXAxis()->SetFontFamily(font);
-    triad->GetYAxis()->SetFontFamily(font);
-    triad->GetZAxis()->SetFontFamily(font);
+    switch (font)
+    {
+        case 0:
+            triad->GetXAxis()->SetFontFamilyToArial();
+            triad->GetYAxis()->SetFontFamilyToArial();
+            triad->GetZAxis()->SetFontFamilyToArial();
+            break;
+        case 1:
+            triad->GetXAxis()->SetFontFamilyToCourier();
+            triad->GetYAxis()->SetFontFamilyToCourier();
+            triad->GetZAxis()->SetFontFamilyToCourier();
+            break;
+        case 2:
+            triad->GetXAxis()->SetFontFamilyToTimes();
+            triad->GetYAxis()->SetFontFamilyToTimes();
+            triad->GetZAxis()->SetFontFamilyToTimes();
+            break;
+
+    }
 }
 
 

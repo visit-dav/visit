@@ -87,7 +87,7 @@ class VISWINDOW_API VisWinTriad : public VisWinColleague
 
     virtual void              SetForegroundColor(double, double, double);
     virtual void              SetLineWidth(float, float, float);
-    virtual void              SetFontFamily(bool);
+    virtual void              SetFontFamily(int);
     virtual void              SetBold(bool);
     virtual void              SetItalic(bool);
 

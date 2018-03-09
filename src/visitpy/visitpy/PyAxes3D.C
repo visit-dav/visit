@@ -218,6 +218,11 @@ PyAxes3D_ToString(const Axes3D *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%striadItalic = 0\n", prefix);
     str += tmpStr;
+    if(atts->GetTriadSetManually())
+        SNPRINTF(tmpStr, 1000, "%striadSetManually = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%striadSetManually = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -777,6 +782,30 @@ Axes3D_GetTriadItalic(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+Axes3D_SetTriadSetManually(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the triadSetManually in the object.
+    obj->data->SetTriadSetManually(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+Axes3D_GetTriadSetManually(PyObject *self, PyObject *args)
+{
+    Axes3DObject *obj = (Axes3DObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetTriadSetManually()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyAxes3D_methods[AXES3D_NMETH] = {
@@ -817,6 +846,8 @@ PyMethodDef PyAxes3D_methods[AXES3D_NMETH] = {
     {"GetTriadBold", Axes3D_GetTriadBold, METH_VARARGS},
     {"SetTriadItalic", Axes3D_SetTriadItalic, METH_VARARGS},
     {"GetTriadItalic", Axes3D_GetTriadItalic, METH_VARARGS},
+    {"SetTriadSetManually", Axes3D_SetTriadSetManually, METH_VARARGS},
+    {"GetTriadSetManually", Axes3D_GetTriadSetManually, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -899,6 +930,8 @@ PyAxes3D_getattr(PyObject *self, char *name)
         return Axes3D_GetTriadBold(self, NULL);
     if(strcmp(name, "triadItalic") == 0)
         return Axes3D_GetTriadItalic(self, NULL);
+    if(strcmp(name, "triadSetManually") == 0)
+        return Axes3D_GetTriadSetManually(self, NULL);
 
     return Py_FindMethod(PyAxes3D_methods, self, name);
 }
@@ -949,6 +982,8 @@ PyAxes3D_setattr(PyObject *self, char *name, PyObject *args)
         obj = Axes3D_SetTriadBold(self, tuple);
     else if(strcmp(name, "triadItalic") == 0)
         obj = Axes3D_SetTriadItalic(self, tuple);
+    else if(strcmp(name, "triadSetManually") == 0)
+        obj = Axes3D_SetTriadSetManually(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

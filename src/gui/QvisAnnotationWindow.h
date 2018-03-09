@@ -239,6 +239,7 @@ private slots:
     void zAxisChanged(const AxisAttributes &);
     void setBBoxLocationChecked(bool);
     void bboxLocationChanged(void);
+    void triadSetManualChecked(bool val);
     void setTriadColor(void);
     void triadLineWidthChanged(int index);
     void triadFontChanged(int index);
@@ -331,6 +332,7 @@ private:
     QCheckBox                *setBBoxLocationToggle;
     QNarrowLineEdit          *bboxLocations[6];
     QLabel                   *bboxLabels[6];
+    QCheckBox                *triadSetManual;
     QGroupBox                *triadGroup;
     QLabel                   *triadLineWidthLabel;
     QLabel                   *triadColorLabel;

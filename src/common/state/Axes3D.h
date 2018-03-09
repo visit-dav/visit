@@ -127,6 +127,7 @@ public:
     void SetTriadFont(int triadFont_);
     void SetTriadBold(bool triadBold_);
     void SetTriadItalic(bool triadItalic_);
+    void SetTriadSetManually(bool triadSetManually_);
 
     // Property getting methods
     bool                 GetVisible() const;
@@ -152,6 +153,7 @@ public:
     int                  GetTriadFont() const;
     bool                 GetTriadBold() const;
     bool                 GetTriadItalic() const;
+    bool                 GetTriadSetManually() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -196,6 +198,7 @@ public:
         ID_triadFont,
         ID_triadBold,
         ID_triadItalic,
+        ID_triadSetManually,
         ID__LAST
     };
 
@@ -219,11 +222,12 @@ private:
     int            triadFont;
     bool           triadBold;
     bool           triadItalic;
+    bool           triadSetManually;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AXES3D_TMFS "bbbiiibbaaabDIfibb"
+#define AXES3D_TMFS "bbbiiibbaaabDIfibbb"
 
 #endif

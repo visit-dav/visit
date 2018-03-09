@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class Axes3D extends AttributeSubject
 {
-    private static int Axes3D_numAdditionalAtts = 18;
+    private static int Axes3D_numAdditionalAtts = 19;
 
     // Enum values
     public final static int AXES_CLOSESTTRIAD = 0;
@@ -101,6 +101,7 @@ public class Axes3D extends AttributeSubject
         triadFont = 0;
         triadBold = true;
         triadItalic = true;
+        triadSetManually = false;
     }
 
     public Axes3D(int nMoreFields)
@@ -134,6 +135,7 @@ public class Axes3D extends AttributeSubject
         triadFont = 0;
         triadBold = true;
         triadItalic = true;
+        triadSetManually = false;
     }
 
     public Axes3D(Axes3D obj)
@@ -167,6 +169,7 @@ public class Axes3D extends AttributeSubject
         triadFont = obj.triadFont;
         triadBold = obj.triadBold;
         triadItalic = obj.triadItalic;
+        triadSetManually = obj.triadSetManually;
 
         SelectAll();
     }
@@ -213,7 +216,8 @@ public class Axes3D extends AttributeSubject
                 (triadLineWidth == obj.triadLineWidth) &&
                 (triadFont == obj.triadFont) &&
                 (triadBold == obj.triadBold) &&
-                (triadItalic == obj.triadItalic));
+                (triadItalic == obj.triadItalic) &&
+                (triadSetManually == obj.triadSetManually));
     }
 
     // Property setting methods
@@ -336,6 +340,12 @@ public class Axes3D extends AttributeSubject
         Select(17);
     }
 
+    public void SetTriadSetManually(boolean triadSetManually_)
+    {
+        triadSetManually = triadSetManually_;
+        Select(18);
+    }
+
     // Property getting methods
     public boolean        GetVisible() { return visible; }
     public boolean        GetAutoSetTicks() { return autoSetTicks; }
@@ -355,6 +365,7 @@ public class Axes3D extends AttributeSubject
     public int            GetTriadFont() { return triadFont; }
     public boolean        GetTriadBold() { return triadBold; }
     public boolean        GetTriadItalic() { return triadItalic; }
+    public boolean        GetTriadSetManually() { return triadSetManually; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -395,6 +406,8 @@ public class Axes3D extends AttributeSubject
             buf.WriteBool(triadBold);
         if(WriteSelect(17, buf))
             buf.WriteBool(triadItalic);
+        if(WriteSelect(18, buf))
+            buf.WriteBool(triadSetManually);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -458,6 +471,9 @@ public class Axes3D extends AttributeSubject
         case 17:
             SetTriadItalic(buf.ReadBool());
             break;
+        case 18:
+            SetTriadSetManually(buf.ReadBool());
+            break;
         }
     }
 
@@ -500,6 +516,7 @@ public class Axes3D extends AttributeSubject
         str = str + intToString("triadFont", triadFont, indent) + "\n";
         str = str + boolToString("triadBold", triadBold, indent) + "\n";
         str = str + boolToString("triadItalic", triadItalic, indent) + "\n";
+        str = str + boolToString("triadSetManually", triadSetManually, indent) + "\n";
         return str;
     }
 
@@ -523,5 +540,6 @@ public class Axes3D extends AttributeSubject
     private int            triadFont;
     private boolean        triadBold;
     private boolean        triadItalic;
+    private boolean        triadSetManually;
 }
 

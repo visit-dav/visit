@@ -70,4 +70,7 @@
     <Field name="triadItalic" label="Triad Italic" type="bool">
       true
     </Field>
+    <Field name="triadSetManually" label="Set the triad manually" type="bool">
+      false
+    </Field>
   </Attribute>

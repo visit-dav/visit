@@ -777,6 +777,9 @@ QvisAnnotationWindow::Create3DTab()
 //   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
 //   Added widgets for changing triad attributes. 
 //
+//   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
+//   Added checkbox for setting triad manually. 
+//
 // ****************************************************************************
 
 QWidget *
@@ -910,6 +913,13 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     triadLayout->setColumnStretch(1, 10);
     int triadRow = 0;
 
+    // Create the triadSetManual checkbox
+    triadSetManual = new QCheckBox(tr("Set triad manually"), top);
+    connect(triadSetManual, SIGNAL(toggled(bool)),
+            this, SLOT(triadSetManualChecked(bool)));
+    triadLayout->addWidget(triadSetManual, triadRow, 0);
+    ++triadRow;
+    
     // Create the triad color picker
     triadColorButton = new QPushButton(tr("Select color"), central);
     connect(triadColorButton, SIGNAL(clicked()), 
@@ -1587,6 +1597,10 @@ QvisAnnotationWindow::UpdateAxes2D()
 //   Alister Maguire, Tue Mar  6 11:12:11 PST 2018 
 //   Changed the enablers to enable/disable by group. 
 //
+//   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
+//   Added enabling/disabling of triad options based on
+//   the TriadSetManually flag. 
+//
 // ****************************************************************************
 
 void
@@ -1595,6 +1609,54 @@ QvisAnnotationWindow::UpdateAxes3D()
     const Axes3D &axes = annotationAtts->GetAxes3D();
 
     triadGroup->setEnabled(axes.GetTriadFlag());
+    if (axes.GetTriadSetManually())
+    {
+        triadColorButton->setEnabled(true); 
+        triadColorLabel->setEnabled(true);
+        triadLineWidth->setEnabled(true);
+        triadLineWidthLabel->setEnabled(true);
+        triadFontLabel->setEnabled(true);
+        triadFontComboBox->setEnabled(true);
+        triadBoldToggle->setEnabled(true);
+        triadItalicToggle->setEnabled(true);
+    }
+    else
+    {
+        triadColorButton->setEnabled(false); 
+        triadColorLabel->setEnabled(false);
+        triadLineWidth->setEnabled(false);
+        triadLineWidthLabel->setEnabled(false);
+        triadFontLabel->setEnabled(false);
+        triadFontComboBox->setEnabled(false);
+        triadBoldToggle->setEnabled(false);
+        triadItalicToggle->setEnabled(false);
+
+        // 
+        // Return the triad atts to their original state. 
+        //
+        int triadColor[3] = {0, 0, 0};  
+        annotationAtts->GetAxes3D().SetTriadColor(triadColor);
+              
+        triadLineWidth->blockSignals(true);
+        triadLineWidth->SetLineWidth(0);
+        triadLineWidth->blockSignals(false);
+        annotationAtts->GetAxes3D().SetTriadLineWidth(0.0);
+ 
+        triadFontComboBox->blockSignals(true);
+        triadFontComboBox->setCurrentIndex(0);
+        triadFontComboBox->blockSignals(false);
+        annotationAtts->GetAxes3D().SetTriadFont(0);
+
+        triadBoldToggle->blockSignals(true);
+        triadBoldToggle->setChecked(1);
+        triadBoldToggle->blockSignals(false);
+        annotationAtts->GetAxes3D().SetTriadBold(1);
+
+        triadItalicToggle->blockSignals(true);
+        triadItalicToggle->setChecked(1);
+        triadItalicToggle->blockSignals(false);
+        annotationAtts->GetAxes3D().SetTriadItalic(1);
+    }
 
     axes3DVisible->blockSignals(true);
     axes3DVisible->setChecked(axes.GetVisible());
@@ -2594,6 +2656,31 @@ void
 QvisAnnotationWindow::bboxLocationChanged()
 {
     GetCurrentValues(AnnotationAttributes::ID_axes3D);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisAnnotationWindow::triadSetManualChecked
+//
+// Purpose:
+//   This is a Qt slot function that is called when the triad set manual
+//   checkbox is toggled. 
+//
+// Arguments:
+//   val:    Whether or not to enable manual override of the triad atts. 
+//
+// Programmer: Alister Maguire
+// Creation:   Fri Mar  9 09:48:42 PST 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+ 
+void
+QvisAnnotationWindow::triadSetManualChecked(bool val)
+{
+    annotationAtts->GetAxes3D().SetTriadSetManually(val);
+    annotationAtts->SelectAxes3D();
     Apply();
 }
 

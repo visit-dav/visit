@@ -45,7 +45,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define AXES3D_NMETH 38
+#define AXES3D_NMETH 40
 void VISITPY_API           PyAxes3D_StartUp(Axes3D *subj, void *data);
 void VISITPY_API           PyAxes3D_CloseDown();
 VISITPY_API PyMethodDef *  PyAxes3D_GetMethodTable(int *nMethods);

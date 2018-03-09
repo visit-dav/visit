@@ -4713,6 +4713,10 @@ VisWindow::UpdateParallelAxes()
 //   Alister Maguire, Thu Mar  1 16:08:42 PST 2018
 //   Added support for altering the triad. 
 //
+//   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
+//   Only update the triad color if the 
+//   set manually flag is raised. 
+//
 // ****************************************************************************
 
 void
@@ -4791,14 +4795,17 @@ VisWindow::UpdateAxes3D()
     // Triad 
     //
     triad->SetVisibility(axis3D.GetTriadFlag());
-    int *triadColor    = annotationAtts.GetAxes3D().GetTriadColor();
-    double scaledColor[3] = {0.0, 0.0, 0.0};
-    for (int i = 0; i < 3; ++i)
+    if (axis3D.GetTriadSetManually())
     {
-        scaledColor[i] = (double)triadColor[i] / 255.0;
+        int *triadColor    = annotationAtts.GetAxes3D().GetTriadColor();
+        double scaledColor[3] = {0.0, 0.0, 0.0};
+        for (int i = 0; i < 3; ++i)
+        {
+            scaledColor[i] = (double)triadColor[i] / 255.0;
+        }
+        triad->SetForegroundColor(scaledColor[0], scaledColor[1], scaledColor[2]);
     }
     float lineWidth = annotationAtts.GetAxes3D().GetTriadLineWidth();
-    triad->SetForegroundColor(scaledColor[0], scaledColor[1], scaledColor[2]);
     triad->SetLineWidth(lineWidth, lineWidth, lineWidth);
     triad->SetBold(annotationAtts.GetAxes3D().GetTriadBold());
     triad->SetItalic(annotationAtts.GetAxes3D().GetTriadItalic());
