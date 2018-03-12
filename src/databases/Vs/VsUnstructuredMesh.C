@@ -407,27 +407,22 @@ bool VsUnstructuredMesh::initialize() {
     
     //spatial dimensionality = number of vspoints datasets
     numSpatialDims = 1;
-    numTopologicalDims = 1;
+
     if (points1) {
       if (points2) {
         numSpatialDims = 3;
-        numTopologicalDims = 3;
       } else {
         numSpatialDims = 2;
-        numTopologicalDims = 2;
       }
     }
 
     numPoints = points0->getDims()[0];
   }
 
-  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Unstructured mesh " <<getShortName() <<" has num topological dims = " 
-                    << numTopologicalDims <<std::endl;
-
   if( isPointMesh() )
   {
     numCells = numPoints;
+    numTopologicalDims = 0;
   }
   else
   {
@@ -437,22 +432,31 @@ bool VsUnstructuredMesh::initialize() {
 
     if( (connectivityMeta = getLinesDataset())) {
       connectivityDatasetName = getLinesDatasetName();
+      numTopologicalDims = 1;
     } else if( (connectivityMeta = getPolygonsDataset()) ) {
       connectivityDatasetName = getPolygonsDatasetName();
+      numTopologicalDims = 2;
     } else if( (connectivityMeta = getTrianglesDataset()) ) {
       connectivityDatasetName = getTrianglesDatasetName();
+      numTopologicalDims = 2;
     } else if( (connectivityMeta = getQuadrilateralsDataset()) ) {
       connectivityDatasetName = getQuadrilateralsDatasetName();
+      numTopologicalDims = 2;
     } else if( (connectivityMeta = getPolyhedraDataset()) ) {
       connectivityDatasetName = getPolyhedraDatasetName();
+      numTopologicalDims = 3;
     } else if( (connectivityMeta = getTetrahedralsDataset()) ) {
       connectivityDatasetName = getTetrahedralsDatasetName();
+      numTopologicalDims = 3;
     } else if( (connectivityMeta = getPyramidsDataset()) ) {
       connectivityDatasetName = getPyramidsDatasetName();
+      numTopologicalDims = 3;
     } else if( (connectivityMeta = getPrismsDataset()) ) {
       connectivityDatasetName = getPrismsDatasetName();
+      numTopologicalDims = 3;
     } else if( (connectivityMeta = getHexahedralsDataset()) ){
       connectivityDatasetName = getHexahedralsDatasetName();
+      numTopologicalDims = 3;
     }
 
     VsDataset* connectivityDataset =
@@ -469,6 +473,10 @@ bool VsUnstructuredMesh::initialize() {
       numCells = connectivityDims[1];
     }
   }
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Unstructured mesh " <<getShortName() <<" has num topological dims = " 
+                    << numTopologicalDims <<std::endl;
 
   return initializeRoot();
 }

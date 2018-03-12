@@ -49,11 +49,6 @@ VsUniformMesh* VsUniformMesh::buildUniformMesh(VsGroup* group)
 
 bool VsUniformMesh::initialize()
 {
-  // ARS - Get the spatial dimensionality based on the lower and upper
-  // bounds NOT the dimensionality of the topology.
-
-  // Determine the topological dimensionality
-
   // For a uniform mesh, spatial dimensionality is the length of the
   // numCells array
   numCellsAtt = getAttribute(VsSchema::Uniform::numCells);
@@ -93,14 +88,23 @@ bool VsUniformMesh::initialize()
     return false;
   }
 
-  //Num topological dims is equal to the count of dims
-  //that are > 1
-  numTopologicalDims = 0;
-  for (size_t i = 0; i < dims.size(); i++) {
-    if (dims[i] > 1) {
-      numTopologicalDims++;
-    }
-  } 
+  // ARS - Becasue of the way the data structures are used to hold
+  // structured data in VTK and VisIt the topological dimension has to
+  // equal the spatial dimension unless the last dim(s) are 1.
+
+  // i.e. 1, 2, 3 = topological dims == 3
+  // i.e. 3, 2, 1 = topological dims == 2
+  
+  // Calculate the topological dims
+  numTopologicalDims = numSpatialDims;
+ 
+  // Num topological dims is equal to the count of dims that are > 1
+  // numTopologicalDims = 0;
+  // for (size_t i = 0; i < dims.size(); i++) {
+  //   if (dims[i] > 1) {
+  //     numTopologicalDims++;
+  //   }
+  // } 
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Uniform mesh " <<getShortName() << " has topological dimensionality " 

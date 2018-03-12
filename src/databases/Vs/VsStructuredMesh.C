@@ -70,6 +70,9 @@ bool VsStructuredMesh::initialize()
   }
   else if( dims.size() == 1 )
   {
+    numSpatialDims = 1;
+    numTopologicalDims = numSpatialDims;
+
     VsLog::warningLog()
       << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
       << "Special 1D case.  "
@@ -77,33 +80,41 @@ bool VsStructuredMesh::initialize()
       << "an array of size [numPoints] but with no spatial dimension.  "
       << "Whereas the normal dimensions would be [numPoints][spatialDim] "
       << "As such, assume the spatial dimenson is 1." << std::endl;
-    numTopologicalDims = 1;
-    numSpatialDims = 1;
   }
   else
   {
+    // ARS - Becasue of the way the data structures are used to hold
+    // structured data in VTK and VisIt the topological dimension has to
+    // equal the spatial dimension unless the last dim(s) are 1.
+
+    // i.e. 1, 2, 3 = topological dims == 3
+    // i.e. 3, 2, 1 = topological dims == 2
+  
     if( isCompMinor() ) {
       numSpatialDims = dims[dims.size()-1];
-      numTopologicalDims = 0;
-      for (int i = 0; i < (dims.size() - 1); i++) {
-        if (dims[i] > 1) {
-          numTopologicalDims++;
-        }
-      }
+      numTopologicalDims = numSpatialDims;
+      // numTopologicalDims = 0;
+      // for (int i = 0; i < (dims.size() - 1); i++) {
+      //   if (dims[i] > 1) {
+      //     numTopologicalDims++;
+      //   }
+      // }
     }
     else {
       numSpatialDims = dims[0];
-      numTopologicalDims = 0;
-      for (size_t i = 1; i < dims.size(); i++) {
-        if (dims[i] > 1) {
-          numTopologicalDims++;
-        }
-      } 
+      numTopologicalDims = numSpatialDims;
+      // numTopologicalDims = 0;
+      // for (size_t i = 1; i < dims.size(); i++) {
+      //   if (dims[i] > 1) {
+      //     numTopologicalDims++;
+      //   }
+      // } 
     }
   }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Structured mesh " << getShortName() << " has topological dimensionality = " 
+                    << "Structured mesh " << getShortName()
+                    << " has topological dimensionality = " 
                     << numTopologicalDims << std::endl;
   
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -148,7 +159,7 @@ void VsStructuredMesh::getCellDims(std::vector<int>& dims) const
  
   dims = dm->getDims();
 
-  //Structured is funny because dims is one of these:
+  // Structured data is funny because dims is one of these:
   // 3D: [i][j][k][N] where N == 3
   // 2D: [i][j][N]    where 2 <= N <= 3
   // 1D: [i][N]       where 1 <= N <= 3
@@ -193,23 +204,30 @@ void VsStructuredMesh::getNodeDims(std::vector<int>& dims) const
   }
 }
 
+
 std::string VsStructuredMesh::getMaskName() const
 {
   if (!maskAtt) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "No mask attribute, returning empty string." << std::endl;
+                      << "No mask attribute, returning empty string."
+                      << std::endl;
+    
     return std::string("");
   }
 
   std::string maskName;
   int err = maskAtt->getStringValue(&maskName);
+
   if (err < 0) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Cannot get mask name from attribute, returning empty string." << std::endl;
+                      << "Cannot get mask name from attribute, "
+                      << "returning empty string." << std::endl;
+    
     return std::string("");
   }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     <<"Returning makeCanonicalName of " <<maskName <<std::endl;
+  
   return makeCanonicalName(getFullName(), maskName);
 }
