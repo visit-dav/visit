@@ -100,46 +100,55 @@ bool VsRectilinearMesh::initialize() {
     }
   }
 
-  //Calculate topological dims
-  numTopologicalDims = 0;
-  std::vector<int> axis0Dims = axis0->getDims();
-  if (axis0Dims.size() != 1) {
-    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Expected 1-d dataset for Axis 0, actually have " <<axis0Dims.size() <<std::endl;
-    numTopologicalDims = numSpatialDims;
-  } else {
-    if (axis0Dims[0] > 1) {
-      numTopologicalDims++;
-    }
+  // ARS - Becasue of the way the data structures are used to hold
+  // structured data in VTK and VisIt the topological dimension has to
+  // equal the spatial dimension unless the last dim(s) are 1.
 
-    //Check axis 1 (if it exists)
-    if (axis1) {
-      std::vector<int> axis1Dims = axis1->getDims();
-      if (axis1Dims.size() != 1) {
-        VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                          << "Expected 1-d dataset for Axis 1, actually have " <<axis1Dims.size() <<std::endl;
-        numTopologicalDims = numSpatialDims;
-      } else {
-        if (axis1Dims[0] > 1) {
-          numTopologicalDims++;
-        }
+  // i.e. 1, 2, 3 = topological dims == 3
+  // i.e. 3, 2, 1 = topological dims == 2
+  
+  // Calculate the topological dims
+  numTopologicalDims = numSpatialDims;
 
-        //Check axis 1 (if it exists)
-        if (axis2) {
-          std::vector<int> axis2Dims = axis2->getDims();
-          if (axis2Dims.size() != 1) {
-            VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                              << "Expected 1-d dataset for Axis 2, actually have " <<axis2Dims.size() <<std::endl;
-            numTopologicalDims = numSpatialDims;
-          } else {
-            if (axis2Dims[0] > 1) {
-              numTopologicalDims++;
-            }
-          }
-        } //end if axis2
-      }
-    } //end if axis1
-  }
+  // numTopologicalDims = 0;
+  // std::vector<int> axis0Dims = axis0->getDims();
+  // if (axis0Dims.size() != 1) {
+  //   VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+  //                     << "Expected 1-d dataset for Axis 0, actually have " <<axis0Dims.size() <<std::endl;
+  //   numTopologicalDims = numSpatialDims;
+  // } else {
+  //   if (axis0Dims[0] > 1) {
+  //     numTopologicalDims++;
+  //   }
+
+  //   //Check axis 1 (if it exists)
+  //   if (axis1) {
+  //     std::vector<int> axis1Dims = axis1->getDims();
+  //     if (axis1Dims.size() != 1) {
+  //       VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+  //                         << "Expected 1-d dataset for Axis 1, actually have " <<axis1Dims.size() <<std::endl;
+  //       numTopologicalDims = numSpatialDims;
+  //     } else {
+  //       if (axis1Dims[0] > 1) {
+  //         numTopologicalDims++;
+  //       }
+
+  //       //Check axis 2 (if it exists)
+  //       if (axis2) {
+  //         std::vector<int> axis2Dims = axis2->getDims();
+  //         if (axis2Dims.size() != 1) {
+  //           VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+  //                             << "Expected 1-d dataset for Axis 2, actually have " <<axis2Dims.size() <<std::endl;
+  //           numTopologicalDims = numSpatialDims;
+  //         } else {
+  //           if (axis2Dims[0] > 1) {
+  //             numTopologicalDims++;
+  //           }
+  //         }
+  //       } //end if axis2
+  //     }
+  //   } //end if axis1
+  // }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Rectilinear Mesh " <<getShortName() <<" has num topological dims = "

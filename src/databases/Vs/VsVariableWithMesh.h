@@ -29,6 +29,9 @@ public:
   /** Get the number of spatial dimensions */
   size_t getNumSpatialDims() const;
 
+  /** Get the number of topological dimensions - ALWAYS 0, i.e. points */
+  size_t getNumTopologicalDims() const { return 0; };
+
   /** Retrieve a particular spatial dimension index from the list
     returns -1 on failure */
   int getSpatialDim(size_t index) const;
