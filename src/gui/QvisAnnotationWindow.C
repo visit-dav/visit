@@ -798,14 +798,13 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     int row = 0;
 
     // Create the axes group
-    axesGroup = new QGroupBox(parentWidget);
+    axesGroup = new QGroupBox(top);
     axesGroup->setTitle(tr("Axes"));
     rLayout->addWidget(axesGroup, row, 0, 1, 2);
     row++;
 
     // Create the axes layout
     QGridLayout *axesLayout = new QGridLayout(axesGroup);
-    vlayout->addLayout(axesLayout);
     axesLayout->setSpacing(5);
     axesLayout->setMargin(0);
     axesLayout->setColumnStretch(1, 10);
@@ -863,13 +862,12 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     ++axesRow;
 
     // Create the bounding box group
-    bboxGroup = new QGroupBox(parentWidget);
+    bboxGroup = new QGroupBox(top);
     bboxGroup->setTitle(tr("Bounding Box"));
     rLayout->addWidget(bboxGroup, row, 0, 1, 2);
     row++;
 
     QGridLayout *bboxLayout = new QGridLayout(bboxGroup);
-    vlayout->addLayout(bboxLayout);
     bboxLayout->setSpacing(5);
     bboxLayout->setMargin(0);
     bboxLayout->setColumnStretch(1, 10);
@@ -901,13 +899,12 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     }
 
     // Create the triad options group
-    triadGroup = new QGroupBox(parentWidget);
+    triadGroup = new QGroupBox(top);
     triadGroup->setTitle(tr("Triad"));
     rLayout->addWidget(triadGroup, row, 0, 1, 2);
     row++;
 
     QGridLayout *triadLayout = new QGridLayout(triadGroup);
-    vlayout->addLayout(triadLayout);
     triadLayout->setSpacing(5);
     triadLayout->setMargin(0);
     triadLayout->setColumnStretch(1, 10);
