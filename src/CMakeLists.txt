@@ -418,6 +418,11 @@
 #    Eric Brugger, Wed May 17 16:53:48 PDT 2017
 #    I added support for the LLVM and OpenSWR packages.
 #
+#    Eric Brugger, Tue Mar 13 13:24:56 PDT 2018
+#    I modified the header install command to exclude any directories named
+#    icons. Previously, this resulted in a couple of invalid symbolic links
+#    ending up in the distribution file.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
@@ -1055,6 +1060,7 @@ ELSE(VISIT_HEADERS_SKIP_INSTALL)
         PATTERN "*.hpp"
         PATTERN ".svn" EXCLUDE
         PATTERN "CMakeFiles" EXCLUDE
+        PATTERN "icons" EXCLUDE
     )
 ENDIF(VISIT_HEADERS_SKIP_INSTALL)
 
