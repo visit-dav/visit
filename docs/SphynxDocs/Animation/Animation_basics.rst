@@ -74,9 +74,16 @@ files.
    timestep1_domain3.silo
    ...
 
-VisIt provides a **File grouping** combo box in the **File open** window (see :numref:`Figure %s<file_open_fig>`) to assist in the creation of a ``.visit`` file for databases that 
-have no ``.visit`` file. Selecting *On* or *Smart* will create a .visit file. Selecting *Off* 
-will not group the files.
+VisIt provides a **File grouping** combo box in the **File open** window (see :numref:`Figure %s<file_open_fig>`) 
+to assist in grouping related time-varying files into a virtual database. A virtual database accomplishes
+the same function as a ``.visit`` file except that no extra file needs to be created.
+Selecting *On* or *Smart* will group files into a virtual database. The *On* setting applies file matching
+rules to group files with similar prefixes into a virtual database. VisIt will attempt to generate a pattern
+from a filename so sequences of numbers can be abstracted out. Multiple files that match the same pattern are
+added to the same virtual database.  The *Smart* setting applies the same logic as well as some extra rules 
+that permit additional file grouping. For instance, certain file extensions that include numbers such as
+ ``.hdf5`` are excluded from the pattern generation so the number in the file extension
+does not prevent useful file groupings. 
 
 .. _file_open_fig:
 
