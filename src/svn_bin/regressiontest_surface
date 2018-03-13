@@ -426,5 +426,5 @@ chmod 750 $testHost
 if test "$testHost" = "surface" ; then
     scp surface surface:surface_testit
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh syrah "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=7:00:00 -o surface_testit_$subTag.out -q pbatch -A wbronze -z ./surface_testit"
+    ssh syrah "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o surface_testit_$subTag.out -q pbatch -A wbronze -z ./surface_testit"
 fi
