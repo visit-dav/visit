@@ -2,10 +2,10 @@
 
 Data-Level Comparisons Wizard
 -----------------------------
-The data-level comparisons wizard facilitates entry of expressions that can
-be used in comparing fields on different meshes and/or in different databases.
+The data-level comparisons wizard facilitates creation of expressions that can
+be used when comparing fields on different meshes and/or in different databases.
 Such expressions are also known as Cross-Mesh Field Evaluation (CMFE)
-expressions because they effectively take a field defined on one mesh and
+Expressions because they effectively take a field defined on one mesh and
 *evaluate* it (e.g. map it) onto a new mesh. The data-level comparisons wizard
 is a very helpful alternative to entering CMFE expressions directly into the
 Expression system manually.
@@ -15,7 +15,7 @@ and a *target mesh*. The donor variable is the variable to be mapped onto a new
 mesh. The target mesh is the mesh onto which the donor variable is to be mapped.
 In addition, the term *donor mesh* refers to the mesh upon which the donor
 variable is defined. Also, the target mesh is always interpreted as a mesh in
-the *currently active* database. Data-level comparison expressions (CMFEs) are
+the currently *active* database. Data-level comparison expressions (CMFEs) are
 always mapping data from *other* meshes, possibly in *other* databases onto a
 target mesh which is understood to be in the currently *active* database.
 
@@ -51,7 +51,7 @@ But, VisIt_ will operate fine even if those are not chosen. In the description
 that follows, we demonstrate only this selection but describe variations where
 necessary.
 
-After selecting with variety of CMFE expression to create,
+After selecting the variety of CMFE expression to create,
 the user is presented with the next wizard window to specify the
 target mesh and donor variables to be used in the expression.
 
@@ -64,10 +64,10 @@ target mesh and donor variables to be used in the expression.
 The target mesh
 selection will present the user with a pull-down list of currently opened
 databases with the currently *active* database in the list selected. If another
-database is desired, the user may either select it from among the list of
-currently open databases or, if the database is not yet open, press the ellipsis
-(3 dots) button next to the database selection list to open a file browser and
-navigate to the desired database in the file system as shown in
+database is desired, the user may either select it from among the pulldown list
+of currently open databases or, if the database is not yet open, press the
+ellipsis (3 dots) button next to the database selection list to open a file
+browser and navigate to the desired database in the file system as shown in
 :numref:`Figure %s <dlc_3c>`
 
 .. _dlc_3c:
@@ -76,9 +76,8 @@ navigate to the desired database in the file system as shown in
 
    Setting up the target mesh and donor variables
 
-Once the database holding
-the target mesh is specified, the target mesh within that database is specified
-with the **Target Mesh:** pull down list.
+Once the database of the target mesh is specified, the target mesh within that
+database is specified with the **Target Mesh:** pull down list.
 
 A similar sequence of steps is followed for specifying the donor variable. The
 example in :numref:`Figure %s <dlc_3d>` demonstrates the selection of a specific
@@ -95,10 +94,10 @@ Next, the user is presented with a window to specify the manner in which the
 CMFE expression is to be evaluated. The choices are either *connectivity-based*
 or *position-based*. A position-based CMFE is a more general evaluation at the
 likely expense of lower performance. When in doubt, it is best to use this
-option. Connectivity-based evaluation is applicable *only* when the mesh of the
-donor variable and the target mesh are one-for-one *both* topologically and
-geometrically. In this case, VisIt_ can optimize the evaluation and avoid having
-to deal with cases where the donor and target meshes do not wholly overlap.
+option. Connectivity-based evaluation is applicable *only* when donor and
+target meshes are one-for-one *both* topologically and geometrically. In this
+case, VisIt_ can optimize the evaluation and avoid having to deal with cases
+where the donor and target meshes do not wholly overlap.
 
 .. _dlc_4:
 
@@ -116,7 +115,7 @@ come from the donor and values that come from the selected *fill* choice.
 A common practice is to choose a constant value that is an extremum of the
 donor variable's range. For example, if the donor variable has a maximum value
 of 25.7, then selecting this as the constant to use for non-overlapping regions
-in the CMFE has the benefit of not altering the result variable's range but
+in the CMFE has the benefit of not altering the variable's range but
 then also being indistinguishable from real data. Another practice is to choose
 a value that is easily distinguishable and later apply a threshold operator to
 remove those portions of the result.
