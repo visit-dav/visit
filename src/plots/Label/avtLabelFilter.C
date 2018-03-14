@@ -187,6 +187,9 @@ print_array_names(vtkDataSet *inDS)
 //    incorrect.
 //    (Logic mostly copied from NodeLabels_body.C and CellLabels_body.C)
 //
+//    Alister Maguire, Mon Feb 26 09:28:05 PST 2018
+//    Added in capability to correctly label mixed variables. 
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -583,6 +586,33 @@ debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
                    << "means that we should try and hide that there could "
                    << "be multiple cells that correspond to the same "
                    << "original cell." << endl;
+            //
+            // If we have mixed variables, we will need the subset array           
+            // to determine where they exist. 
+            //
+            vtkDataArray *subsetArray = 
+                inDS->GetCellData()->GetArray("avtSubsets");
+            std::vector<unsigned int> subsetList(inDS->GetNumberOfCells());
+            int numMat = 0;
+            if (subsetArray)
+            {
+                int numCells = inDS->GetNumberOfCells();
+                for (int i = 0; i < numCells; ++i)
+                {
+                    subsetList[i] = subsetArray->GetTuple1(i);
+                    numMat = numMat > subsetList[i] ? numMat : subsetList[i];
+                }
+            }
+            else
+            {
+                int numCells = inDS->GetNumberOfCells();
+                for (int i = 0; i < numCells; ++i)
+                {
+                    subsetList[i] = 0;
+                }
+            }
+            numMat++;
+
 #ifdef WORST_NSQUARED_CODE_IN_THE_WORLD
             vtkIdType dupIds[100];
             int i, n = outDS->GetNumberOfCells();
@@ -595,12 +625,22 @@ debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
                 if(cellHandled[c1])
                     continue;
 
+                //
+                // If our cell contains mixed variables, we need to 
+                // consider them when looking for repeats. 
+                //
+                std::vector< std::vector< unsigned int > > matCellIds(numMat);
+                matCellIds[subsetList[c1]].push_back(c1);
+
                 int nDupIds = 0;
                 unsigned int originalNumber = cellNumbers[c1];
                 for(vtkIdType c2 = 0; c2 < n; ++c2)
                 {
                     if(originalNumber == cellNumbers[c2])
+                    {
                         dupIds[nDupIds++] = c2;
+                        matCellIds[subsetList[c2]].push_back(c2);
+                    }
                 }
 
                 //
@@ -608,22 +648,37 @@ debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
                 //
                 if(nDupIds > 1)
                 {
-                    float avgCoord[] = {0,0,0};
-                    for(i = 0; i < nDupIds; ++i)
+                    for(int m = 0; m < numMat; ++m)
                     {
-                        const float *pt = cellCenters->GetTuple3(dupIds[i]);
-                        avgCoord[0] += pt[0];
-                        avgCoord[1] += pt[1];
-                        avgCoord[2] += pt[2];
-                    }
-                    float scale = 1.f / float(nDupIds);
-                    avgCoord[0] *= scale;
-                    avgCoord[1] *= scale;
-                    avgCoord[2] *= scale;
-                    for(i = 0; i < nDupIds; ++i)
-                    {
-                        cellCenters->SetTuple(dupIds[i], avgCoord);
-                        cellHandled[dupIds[i]] = true;
+                        //
+                        // Average repeats in a way that considers mixed
+                        // variables, if they're present. 
+                        //
+                        if (!matCellIds[m].empty())
+                        {
+                            float avgCoord[] = {0,0,0};
+                            for (int idIdx = 0; idIdx < matCellIds[m].size(); 
+                                 ++idIdx) 
+                            {
+                                unsigned int mCellId = matCellIds[m][idIdx];
+                                const double *pt = 
+                                    cellCenters->GetTuple3(mCellId);
+                                avgCoord[0] += pt[0];
+                                avgCoord[1] += pt[1];
+                                avgCoord[2] += pt[2];
+                            }
+                            float scale = 1.f / float(matCellIds[m].size());
+                            avgCoord[0] *= scale;
+                            avgCoord[1] *= scale;
+                            avgCoord[2] *= scale;
+                            for (int idIdx = 0; idIdx < matCellIds[m].size(); 
+                                 ++idIdx) 
+                            {
+                                unsigned int mCellId = matCellIds[m][idIdx];
+                                cellCenters->SetTuple(mCellId, avgCoord);
+                                cellHandled[mCellId] = true;
+                            }
+                        }
                     }
                 }
 
@@ -639,30 +694,57 @@ debug3 << "LabelFilter: adding LabelFilterCellLogicalIndices array" << endl;
             for(int i = 0; i < n; )
             {
                 unsigned int cellId = cellNumbers[i];
+
+                //
+                // If our cell contains mixed variables, we need to 
+                // consider them when looking for repeats. 
+                //
+                std::vector< std::vector< unsigned int > > matCellIds(numMat);
+                matCellIds[subsetList[i]].push_back(i);
+
                 int j = i + 1;
                 for(; j < n; ++j)
                 {
                     if(cellNumbers[j] != cellId)
                         break;
+                    matCellIds[subsetList[j]].push_back(j);
                 }
+
                 int repeatCount = j - i;
+
                 if(repeatCount > 1)
                 {
-                    float avgCoord[] = {0,0,0};
-                    int k;
-                    for(k = i; k < j; ++k)
+                    for(int m = 0; m < numMat; ++m)
                     {
-                        const double *pt = cellCenters->GetTuple3(k);
-                        avgCoord[0] += pt[0];
-                        avgCoord[1] += pt[1];
-                        avgCoord[2] += pt[2];
+                        //
+                        // Average repeats in a way that considers mixed
+                        // variables, if they're present. 
+                        //
+                        if (!matCellIds[m].empty())
+                        {
+                            float avgCoord[] = {0,0,0};
+                            for (int idIdx = 0; idIdx < matCellIds[m].size(); 
+                                 ++idIdx) 
+                            {
+                                unsigned int mCellId = matCellIds[m][idIdx];
+                                const double *pt = 
+                                    cellCenters->GetTuple3(mCellId);
+                                avgCoord[0] += pt[0];
+                                avgCoord[1] += pt[1];
+                                avgCoord[2] += pt[2];
+                            }
+                            float scale = 1.f / float(matCellIds[m].size());
+                            avgCoord[0] *= scale;
+                            avgCoord[1] *= scale;
+                            avgCoord[2] *= scale;
+                            for (int idIdx = 0; idIdx < matCellIds[m].size(); 
+                                 ++idIdx) 
+                            {
+                                unsigned int mCellId = matCellIds[m][idIdx];
+                                cellCenters->SetTuple(mCellId, avgCoord);
+                            }
+                        }
                     }
-                    float scale = 1.f / float(repeatCount);
-                    avgCoord[0] *= scale;
-                    avgCoord[1] *= scale;
-                    avgCoord[2] *= scale;
-                    for(k = i; k < j; ++k)
-                        cellCenters->SetTuple(k, avgCoord);
                 }
 
                 i = j;
@@ -711,6 +793,41 @@ avtLabelFilter::UpdateDataObjectInfo(void)
 //    IF YOU SEE FUNNY THINGS WITH EXTENTS, ETC, YOU CAN CHANGE THAT HERE.
     debug3 << "avtLabelFilter::UpdateDataObjectInfo" << endl;
 }
+
+
+// ****************************************************************************
+// Method: avtLabelFilter::ModifyContract
+//
+// Purpose: 
+//     Modify the avtContract.
+//
+// Arguments:
+//     contract    an avtContract pointer. 
+//
+// Returns:    
+//     contract    an avtContract pointer. 
+//
+// Programmer: Alister Maguire
+// Creation:   Fri Feb 23 16:19:18 PST 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+avtContract_p
+avtLabelFilter::ModifyContract(avtContract_p contract)
+{
+    //
+    // If we have mixed variables, we need to force MIR to 
+    // gain access to the subset array. 
+    //
+    if (contract->GetDataRequest()->NeedMixedVariableReconstruction())
+    {
+        contract->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
+    }
+    return contract;
+}
+
 
 // ****************************************************************************
 // Method: avtLabelFilter::FindClosestVector
