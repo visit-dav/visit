@@ -393,16 +393,12 @@ VisWinAnnotations::AddAnnotationObject(int annotType, const std::string &annotNa
     const char *mName = "VisWinAnnotations::AddAnnotationObject: ";
     bool visible = true;
 
-cerr << "annotType = " << annotType << endl;
-
     if (!(0 <= annotType && annotType <= 8))
     {
         if (annotType & CREATE_ANNOTATION_OBJECT_AS_NOT_VISIBLE)
             visible = false;
         annotType &= ~CREATE_ANNOTATION_OBJECT_AS_NOT_VISIBLE;
     }
-cerr << "annotType = " << annotType << endl;
-cerr << "visible = " << visible << endl;
 
     //
     // Make sure that the name is unique.
