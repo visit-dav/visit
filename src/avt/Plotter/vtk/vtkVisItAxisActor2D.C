@@ -512,6 +512,10 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Removed setting of title actor's Property from this->Property, prevented
 //   color from being set correctly.
 //
+//   Alister Maguire, Mon Mar 12 15:26:22 PDT 2018
+//   Create a new vtkTextProperty when updating the properties
+//   of the TitleActor. Fixes bug with triad letters. 
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -856,7 +860,11 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
   if ( this->Title != NULL && this->Title[0] != 0 && this->TitleVisibility )
     {
     this->TitleActor->SetInput(this->Title);
-    vtkTextProperty *titleTprop = this->TitleActor->GetTextProperty();
+    // Note: using the text property (pointer) directly from the TitleActor
+    //   causes a bug to appear (seen in the triad). Creating and setting
+    //   a new property resolves this issue. 
+    vtkTextProperty *titleTprop = 
+      this->TitleActor->GetTextProperty()->NewInstance();
     titleTprop->SetBold(this->TitleTextProperty->GetBold());
     titleTprop->SetItalic(this->TitleTextProperty->GetItalic());
     titleTprop->SetShadow(this->TitleTextProperty->GetShadow());
@@ -909,13 +917,13 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       this->TitleActor->SetPosition(pos[0], pos[1]);
       if(this->TitleAtEnd)
         {
-        this->TitleActor->GetTextProperty()->SetJustificationToCentered();
-        this->TitleActor->GetTextProperty()->SetVerticalJustificationToBottom();
+        titleTprop->SetJustificationToCentered();
+        titleTprop->SetVerticalJustificationToBottom();
         }
       else
         {
-        this->TitleActor->GetTextProperty()->SetJustificationToRight();
-        this->TitleActor->GetTextProperty()->SetVerticalJustificationToCentered();
+        titleTprop->SetJustificationToRight();
+        titleTprop->SetVerticalJustificationToCentered();
         }
       }
     else
@@ -929,8 +937,8 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
           pos[1] -= (this->LabelActors[0]->GetTextProperty()->GetFontSize());
         }
       this->TitleActor->SetPosition(pos[0], pos[1]);
-      this->TitleActor->GetTextProperty()->SetJustificationToCentered(); 
-      this->TitleActor->GetTextProperty()->SetVerticalJustificationToTop(); 
+      titleTprop->SetJustificationToCentered();
+      titleTprop->SetVerticalJustificationToTop();
       }
 
       // Optionally let the user override the alignment point.
@@ -941,6 +949,9 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
         titleTprop->SetJustification(j);
         titleTprop->SetVerticalJustification(vj);
         }
+
+      this->TitleActor->SetTextProperty(titleTprop);
+      titleTprop->Delete();
     } //if title visible
 
   if ( this->AxisVisibility )
