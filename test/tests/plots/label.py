@@ -43,6 +43,9 @@
 #    Added call(s) to DrawPlots() b/c of changes to the default plot state
 #    behavior when an operator is added.
 #
+#    Alister Maguire, Mon Feb 26 10:22:04 PST 2018
+#    Added TestMixedVariables for testing datasets with mixed variables. 
+#
 # ----------------------------------------------------------------------------
 
 
@@ -943,6 +946,38 @@ def TestRectilinearLogicalDisplay():
     SaveTestImage("label_10_06")
     DeleteAllPlots()
 
+def TestMixedVariables():
+    TestSection("Test datasets with mixed variables")
+    DeleteAllPlots()
+
+    ma = GetMaterialAttributes()
+    ma.forceMIR = 1
+    SetMaterialAttributes(ma)
+
+    OpenDatabase(silo_data_path("specmix_ucd.silo"))
+
+    AddPlot("Pseudocolor", "d")
+    AddPlot("Mesh", "Mesh")
+    AddPlot("Label", "d")
+    L = CreateLabelAttributes()
+    SetPlotOptions(L)
+    DrawPlots()
+
+    View2DAtts = View2DAttributes()
+    View2DAtts.windowCoords = (-10.9988, -8.83259, 1.01139, 3.18029)
+    View2DAtts.viewportCoords = (0.2, 0.95, 0.15, 0.95)
+    SetView2D(View2DAtts)
+
+    SaveTestImage("label_11_00")
+
+    View2DAtts = View2DAttributes()
+    View2DAtts.windowCoords = (0.474811, 3.09596, 1.20289, 3.82726)
+    View2DAtts.viewportCoords = (0.2, 0.95, 0.15, 0.95)
+    SetView2D(View2DAtts)
+
+    SaveTestImage("label_11_01")
+
+    DeleteAllPlots()
 
 def main():
     TestGeneralFeatures()
@@ -956,6 +991,7 @@ def main():
     TestLabelling3D()
     TestSlicedVectors()
     TestRectilinearLogicalDisplay()
+    TestMixedVariables()
 
 # Run all of the tests
 main()
