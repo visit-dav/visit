@@ -251,6 +251,8 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    SNPRINTF(tmpStr, 1000, "%sremovedPicks = \"%s\"\n", prefix, atts->GetRemovedPicks().c_str());
+    str += tmpStr;
     return str;
 }
 
@@ -1008,6 +1010,30 @@ PickAttributes_GetPickHighlightColor(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+PickAttributes_SetRemovedPicks(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the removedPicks in the object.
+    obj->data->SetRemovedPicks(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetRemovedPicks(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetRemovedPicks().c_str());
+    return retval;
+}
+
 
 
 PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
@@ -1068,6 +1094,8 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
     {"GetTimeCurveType", PickAttributes_GetTimeCurveType, METH_VARARGS},
     {"SetPickHighlightColor", PickAttributes_SetPickHighlightColor, METH_VARARGS},
     {"GetPickHighlightColor", PickAttributes_GetPickHighlightColor, METH_VARARGS},
+    {"SetRemovedPicks", PickAttributes_SetRemovedPicks, METH_VARARGS},
+    {"GetRemovedPicks", PickAttributes_GetRemovedPicks, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1164,6 +1192,8 @@ PyPickAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "pickHighlightColor") == 0)
         return PickAttributes_GetPickHighlightColor(self, NULL);
+    if(strcmp(name, "removedPicks") == 0)
+        return PickAttributes_GetRemovedPicks(self, NULL);
 
     return Py_FindMethod(PyPickAttributes_methods, self, name);
 }
@@ -1234,6 +1264,8 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickAttributes_SetTimeCurveType(self, tuple);
     else if(strcmp(name, "pickHighlightColor") == 0)
         obj = PickAttributes_SetPickHighlightColor(self, tuple);
+    else if(strcmp(name, "removedPicks") == 0)
+        obj = PickAttributes_SetRemovedPicks(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

@@ -1,6 +1,6 @@
 // ***************************************************************************
 //
-// Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+// Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
 // Produced at the Lawrence Livermore National Laboratory
 // LLNL-CODE-442911
 // All rights reserved.
@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class VisualCueInfo extends AttributeSubject
 {
-    private static int VisualCueInfo_numAdditionalAtts = 9;
+    private static int VisualCueInfo_numAdditionalAtts = 10;
 
     // Enum values
     public final static int CUETYPE_PICKPOINT = 0;
@@ -79,6 +79,10 @@ public class VisualCueInfo extends AttributeSubject
         lineStyle = 0;
         lineWidth = 0;
         opacity = 1;
+        highlightColor = new float[3];
+        highlightColor[0] = 0f;
+        highlightColor[1] = 1f;
+        highlightColor[2] = 0f;
     }
 
     public VisualCueInfo(int nMoreFields)
@@ -94,6 +98,10 @@ public class VisualCueInfo extends AttributeSubject
         lineStyle = 0;
         lineWidth = 0;
         opacity = 1;
+        highlightColor = new float[3];
+        highlightColor[0] = 0f;
+        highlightColor[1] = 1f;
+        highlightColor[2] = 0f;
     }
 
     public VisualCueInfo(VisualCueInfo obj)
@@ -117,6 +125,11 @@ public class VisualCueInfo extends AttributeSubject
         lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         opacity = obj.opacity;
+        highlightColor = new float[3];
+        highlightColor[0] = obj.highlightColor[0];
+        highlightColor[1] = obj.highlightColor[1];
+        highlightColor[2] = obj.highlightColor[2];
+
 
         SelectAll();
     }
@@ -144,6 +157,11 @@ public class VisualCueInfo extends AttributeSubject
             Double points2 = (Double)obj.points.elementAt(i);
             points_equal = points1.equals(points2);
         }
+        // Compare the highlightColor arrays.
+        boolean highlightColor_equal = true;
+        for(i = 0; i < 3 && highlightColor_equal; ++i)
+            highlightColor_equal = (highlightColor[i] == obj.highlightColor[i]);
+
         // Create the return value
         return (points_equal &&
                 (cueType == obj.cueType) &&
@@ -153,7 +171,8 @@ public class VisualCueInfo extends AttributeSubject
                 (showLabel == obj.showLabel) &&
                 (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
-                (opacity == obj.opacity));
+                (opacity == obj.opacity) &&
+                highlightColor_equal);
     }
 
     // Property setting methods
@@ -211,6 +230,22 @@ public class VisualCueInfo extends AttributeSubject
         Select(8);
     }
 
+    public void SetHighlightColor(float[] highlightColor_)
+    {
+        highlightColor[0] = highlightColor_[0];
+        highlightColor[1] = highlightColor_[1];
+        highlightColor[2] = highlightColor_[2];
+        Select(9);
+    }
+
+    public void SetHighlightColor(float e0, float e1, float e2)
+    {
+        highlightColor[0] = e0;
+        highlightColor[1] = e1;
+        highlightColor[2] = e2;
+        Select(9);
+    }
+
     // Property getting methods
     public Vector         GetPoints() { return points; }
     public int            GetCueType() { return cueType; }
@@ -221,6 +256,7 @@ public class VisualCueInfo extends AttributeSubject
     public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
     public double         GetOpacity() { return opacity; }
+    public float[]        GetHighlightColor() { return highlightColor; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -243,6 +279,8 @@ public class VisualCueInfo extends AttributeSubject
             buf.WriteInt(lineWidth);
         if(WriteSelect(8, buf))
             buf.WriteDouble(opacity);
+        if(WriteSelect(9, buf))
+            buf.WriteFloatArray(highlightColor);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -277,6 +315,9 @@ public class VisualCueInfo extends AttributeSubject
         case 8:
             SetOpacity(buf.ReadDouble());
             break;
+        case 9:
+            SetHighlightColor(buf.ReadFloatArray());
+            break;
         }
     }
 
@@ -299,6 +340,7 @@ public class VisualCueInfo extends AttributeSubject
         str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + doubleToString("opacity", opacity, indent) + "\n";
+        str = str + floatArrayToString("highlightColor", highlightColor, indent) + "\n";
         return str;
     }
 
@@ -313,5 +355,6 @@ public class VisualCueInfo extends AttributeSubject
     private int            lineStyle;
     private int            lineWidth;
     private double         opacity;
+    private float[]        highlightColor;
 }
 
