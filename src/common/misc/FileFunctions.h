@@ -44,6 +44,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+struct dirent;
+
 // ****************************************************************************
 //   Modifications:
 //    Kathleen Biagas, Fri Jun 26 12:10:08 PDT 2015
@@ -54,6 +56,8 @@
 //    Use _stat64 for VisItStat_t and __int64 for VisItOff_t if running a
 //    64 bit version on windows.
 //
+//    Mark C. Miller, Thu Mar 15 14:18:43 PDT 2018
+//    Added FileType enum and GetFileType methods.
 // ****************************************************************************
 
 namespace FileFunctions
@@ -93,6 +97,16 @@ typedef enum
     PERMISSION_RESULT_NOFILE
 } PermissionsResult;
 
+typedef enum
+{
+    FILE_TYPE_REG,
+    FILE_TYPE_DIR,
+    FILE_TYPE_OTHER,
+    FILE_TYPE_UNKNOWN
+} FileType;
+
+extern VisItStat_t* const FILE_TYPE_DONT_STAT;
+
 PermissionsResult MISC_API CheckPermissions(const std::string &filename);
 
 int         MISC_API VisItStat(const std::string &filename, VisItStat_t *buf);
@@ -128,6 +142,10 @@ std::string MISC_API  ComposeDatabaseName(const std::string &host,
                                           const std::string &db);
 
 void MISC_API  FileMatchesPatternCB(void *, const std::string &, bool, bool, long);
+FileType MISC_API GetFileType(char const *filename, struct dirent const *dent = 0,
+         VisItStat_t *statbuf = 0);
+FileType MISC_API GetFileType(std::string const &filename, struct dirent const *dent = 0,
+         VisItStat_t *statbuf = 0);
 };
 
 #endif

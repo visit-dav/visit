@@ -1202,6 +1202,14 @@ MDServerConnection::ReadCWD()
 //   Brad Whitlock, Fri Feb 15 15:20:21 PST 2008
 //   Protect closedir() with NULL test.
 //
+//   Mark C. Miller, Thu Mar 15 14:19:22 PDT 2018
+//   Modified to use FileFunctions::GetFileType to get as much info about file
+//   type as possible from the dirent structure without actually doing any
+//   stat'ing of the file here. If it is successful, it will have the effect
+//   of averting any stat'ing later in ReadFileListAttributes. However, in that
+//   case, while knowledge of file type prevails, knowledge of access privs and
+//   file size will not be obtained. This is a fair price to pay to avoid
+//   stat'ing 1000's of entries in dirs with large numbers entries.
 // ****************************************************************************
 
 void
@@ -1304,8 +1312,20 @@ MDServerConnection::ReadFileList()
             haveDot = haveDot || (strcmp(ent->d_name, ".") == 0);
             haveDotDot = haveDotDot || (strcmp(ent->d_name, "..") == 0);
 
+            // Attempt to get as much info as we can about file type
+            // from dirent struct but do not ever actually stat the
+            // file here.
+            FileFunctions::FileType ft = FileFunctions::GetFileType(
+                ent->d_name, ent, FileFunctions::FILE_TYPE_DONT_STAT); 
+            if (ft == FileFunctions::FILE_TYPE_REG)
+                fl.types.push_back(GetFileListRPC::REG);
+            else if (ft == FileFunctions::FILE_TYPE_DIR)
+                fl.types.push_back(GetFileListRPC::DIR);
+            else if (ft == FileFunctions::FILE_TYPE_OTHER)
+                fl.types.push_back(GetFileListRPC::UNKNOWN);
+            else
+                fl.types.push_back(GetFileListRPC::UNCHECKED);
             fl.names.push_back(ent->d_name);
-            fl.types.push_back(GetFileListRPC::UNCHECKED);
             fl.sizes.push_back(0);
             fl.access.push_back(1);
         }

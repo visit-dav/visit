@@ -246,14 +246,13 @@ FileFunctions::ReadAndProcessDirectory(const std::string &directory,
             if(directory.substr(directory.size() - 1, 1) != "/")
                 fileName += "/";
             fileName += ent->d_name;
-            VisItStat(fileName.c_str(), &s);
 
-            mode_t mode = s.st_mode;
-            bool isdir = S_ISDIR(mode);
-   
+            bool isdir = FileFunctions::FILE_TYPE_DIR ==
+                GetFileType(fileName, ent, checkAccess?&s:0);
             bool canaccess = checkAccess ? false : true;
             if(checkAccess)
             {
+                mode_t mode = s.st_mode;
                 bool isuser  = (s.st_uid == uid);
                 bool isgroup = false;
                 for (int i=0; i<ngids && !isgroup; i++)
@@ -1185,4 +1184,97 @@ FileFunctions::FileMatchesPatternCB(void *cbdata, const std::string &filename, b
                fl->push_back(name);
         }
     }
+}
+
+// ****************************************************************************
+//  Method: GetFileType
+//
+//  Purpose: More flexible and possibly faster way of determining file type 
+//  information without resorting to stat'ing the file but if so, able to
+//  return statbuf too if caller wants/needs it.
+//
+//  If statbuf arg is non-null (and not FILE_TYPE_DONT_STAT key), this method
+//  *will* stat the file to get file type information *and* that method is
+//  *always* reliable, but also costly. It will also return to the caller the
+//  resulting statbuf so that the work in stat'ing the file isn't wasted.
+//
+//  If used within an opendir()/readdir() iteration, a caller may instead
+//  pass current dirent and a null statbuf. This will then use d_type member
+//  of dirent to determine file type *iff* that is available.
+//
+//  Otherwise it *will* call stat() on the file (unless FILE_TYPE_DONT_STAT
+//  is passed for the statbuf arg) to obtain file type information but will
+//  do so only to a local copy of a statbuf thereby wasting any stat'ing work
+//  for the caller.
+//
+//  GetFileType(<path>)
+//      - gets file type by stat'ing and stat work is wasted because its done
+//        to a local variable.
+//  GetFileType(<path>, dirent)
+//      - gets file type from dirent, if possible, but if dirent returns
+//        DT_UNKNOWN stat's file and stat work is wasted
+//  GetFileType(<path>, dirent, FILE_TYPE_DONT_STAT)
+//      - like above but will NOT stat if dirent fails to resolve type
+//  GetFileType(<path>, null or non-null, statbuf)
+//      - gets file type by stat'ing, returns stat'd info in stabuf
+//
+//  Mark C. Miller, Wed Mar 14 22:36:48 PDT 2018
+//
+// ****************************************************************************
+
+static FileFunctions::VisItStat_t dont_stat = {};
+FileFunctions::VisItStat_t* const FileFunctions::FILE_TYPE_DONT_STAT = &dont_stat;
+
+FileFunctions::FileType
+FileFunctions::GetFileType(char const *filename, struct dirent const *dent,
+    VisItStat_t *statbuf)
+{
+    if (!filename)
+        return FILE_TYPE_UNKNOWN;
+
+    // If statbuf is non-null, caller wants stat info back.
+    // So, we have not choice but to stat the file.
+    if (statbuf && statbuf != FILE_TYPE_DONT_STAT)
+    {
+        VisItStat(filename, statbuf);
+        if S_ISDIR(statbuf->st_mode)
+            return FILE_TYPE_DIR;
+        if S_ISREG(statbuf->st_mode)
+            return FILE_TYPE_REG;
+        return FILE_TYPE_OTHER;
+    }
+
+    // Try to use dirent if we have it.
+#if defined(_DIRENT_HAVE_D_TYPE) || defined(__APPLE__)
+    if (dent)
+    {
+        if (dent->d_type == DT_DIR)
+            return FILE_TYPE_DIR;
+        if (dent->d_type == DT_REG)
+            return FILE_TYPE_REG;
+        if (dent->d_type != DT_UNKNOWN)
+            return FILE_TYPE_OTHER;
+    }
+#endif
+
+    if (statbuf == FILE_TYPE_DONT_STAT)
+        return FILE_TYPE_UNKNOWN;
+
+    // Really a last resort to perform a stat call to a local variable
+    // therby wasting everything we get from it except file type info
+    VisItStat_t stattmp;
+    VisItStat(filename, &stattmp);
+    if S_ISDIR(stattmp.st_mode)
+        return FILE_TYPE_DIR;
+    if S_ISREG(stattmp.st_mode)
+        return FILE_TYPE_REG;
+
+    return FILE_TYPE_OTHER;
+}
+
+FileFunctions::FileType
+FileFunctions::GetFileType(std::string const &filename, struct dirent const *dent,
+    VisItStat_t *statbuf)
+{
+    return GetFileType(filename.c_str(), dent, statbuf);
 }
