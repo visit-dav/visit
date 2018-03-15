@@ -39,6 +39,7 @@
 #
 # ----------------------------------------------------------------------------
 import string
+import time
 
 def test0():
     OpenDatabase(silo_data_path("globe.silo"))
@@ -50,11 +51,13 @@ def test0():
     e.db_type = "VTK"
     e.filename = "test_ex_db"
     ExportDatabase(e)
+    time.sleep(1)
 
     e.variables = ("u", "v")
     e.filename = "test_ex_db2"
     e.db_type = "Silo"
     ExportDatabase(e)
+    time.sleep(1)
 
     DeleteAllPlots()
 #    CloseDatabase(silo_data_path("globe.silo"))
@@ -81,6 +84,7 @@ def test0():
     e.filename = "test_ex_db3"
     e.db_type = "VTK"
     ExportDatabase(e)
+    time.sleep(1)
     DeleteAllPlots()
 
     DeleteExpression("cmfe")
@@ -158,6 +162,7 @@ def test1():
     #opts['Binary format'] = 1
     opts['FileFormat'] = 1
     ExportDatabase(e, opts)
+    time.sleep(1)
     line = "The binary_VTK.0.vtk file is NOT binary.\n\n"
     visitfile = string.join(open("binary_VTK.visit").readlines())
     if VTK_check_binary("binary_VTK/binary_VTK.0.vtk"):
@@ -198,6 +203,7 @@ def test1():
         e.db_type_fullname = f + "_1.0"
         e.filename = formats[f][0]
         ExportDatabase(e)
+        time.sleep(1)
 
         # Add the exported data in window 2.
         AddWindow()
@@ -289,6 +295,7 @@ def test2(writeGroupSize):
         e.writeUsingGroups = 1
         e.groupSize = writeGroupSize
         ExportDatabase(e)
+        time.sleep(1)
 
         # Add the exported database in window 2.
         AddWindow()
@@ -371,6 +378,7 @@ def test3():
     e.writeUsingGroups = 0
     e.variables = ("default", "v", "rad")
     ExportDatabase(e)
+    time.sleep(1)
 
     # Add the exported database in window 2
     AddWindow()
@@ -418,24 +426,28 @@ def test4():
     opts = GetExportOptions("VTK")
     opts['FileFormat'] = "Legacy Ascii"
     ExportDatabase(e, opts)
+    time.sleep(1)
     ReplaceDatabase("multi_rect3d_LA.visit")
     Test("export_db_4_02")
 
     e.filename = "multi_rect3d_LB"
     opts['FileFormat'] = "Legacy Binary"
     ExportDatabase(e, opts)
+    time.sleep(1)
     ReplaceDatabase("multi_rect3d_LB.visit")
     Test("export_db_4_03")
 
     e.filename = "multi_rect3d_XA"
     opts['FileFormat'] = "XML Ascii"
     ExportDatabase(e, opts)
+    time.sleep(1)
     ReplaceDatabase("multi_rect3d_XA.vtm")
     Test("export_db_4_04")
 
     e.filename = "multi_rect3d_XB"
     opts['FileFormat'] = "XML Binary"
     ExportDatabase(e, opts)
+    time.sleep(1)
     ReplaceDatabase("multi_rect3d_XB.vtm")
     Test("export_db_4_05")
 
