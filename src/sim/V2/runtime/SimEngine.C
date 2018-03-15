@@ -166,7 +166,7 @@ private:
 
 SimEngine::SimEngine() : Engine()
 #ifdef SIMV2_VIEWER_INTEGRATION
-                                 , ViewerBase()
+                                 , ViewerBase(), allowCommandExecution(true)
 #endif
     , viewerInitialized(false), simsource(), rpcNotifier(NULL)
 {
@@ -1031,6 +1031,11 @@ SimEngine::AddOperator(const std::string &operatorType, bool applyToAll)
 // Creation:   Thu Sep 18 18:02:39 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Wed Mar 14 17:45:48 PDT 2018
+//   Disable command execution during DrawPlots. We can end up in situations
+//   where an UpdateFrame indirectly recurses into parts of the viewer that
+//   try to change the SR mode. This can make it try and use network id -1
+//   to get data back from the "engine", which throws an exception.
 //
 // ****************************************************************************
 
@@ -1045,8 +1050,17 @@ SimEngine::DrawPlots()
         // Viewer based method.
         if(viewerInitialized)
         {
+            // Do not allow command execution during the DrawPlots.
+            allowCommandExecution = false;
+
 //cout << "Viewer-based DrawPlots()" << endl;
             GetViewerMethods()->DrawPlots();
+
+            // DrawPlots may have resulted in some internal commands
+            // to process. Do them now.
+            allowCommandExecution = true;
+            SimEngine::GetViewerMessaging()->ProcessCommands();
+
             retval = true;
         }
         else
@@ -2253,13 +2267,17 @@ SimEngine::AddInitialWindows()
 // Creation:   Thu Sep 18 12:56:44 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Wed Mar 14 17:45:48 PDT 2018
+//   Check to see if we're allowing command execution.
 //
 // ****************************************************************************
 
 void
 SimEngine::CommandNotificationCallback(void *cbdata, int)
 {
-    SimEngine::GetViewerMessaging()->ProcessCommands();
+    SimEngine *This = (SimEngine *)cbdata;
+    if(This->allowCommandExecution)
+        SimEngine::GetViewerMessaging()->ProcessCommands();
 }
 
 // ****************************************************************************

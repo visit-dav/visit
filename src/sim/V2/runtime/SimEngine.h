@@ -129,6 +129,8 @@ private:
 
     void CreateVisWindow(int winID, VisWindow *&viswindow, bool &owns);
     static void CreateVisWindowCB(int winID, VisWindow *&viswindow, bool &owns, void*);
+
+    bool allowCommandExecution;
 #endif
 
 private:
