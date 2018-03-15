@@ -80,6 +80,9 @@ typedef void (ProcessDirectoryCallback)(void *, const std::string &, bool,
   #ifndef S_ISDIR
     #define S_ISDIR(m) (((m) &S_IFMT) == S_IFDIR)
   #endif
+  #ifndef S_ISREG
+    #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+  #endif
 #else
   #if SIZEOF_OFF64_T > 4
     typedef struct stat64 VisItStat_t;
