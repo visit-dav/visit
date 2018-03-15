@@ -102,10 +102,10 @@ typedef enum
     FILE_TYPE_REG,
     FILE_TYPE_DIR,
     FILE_TYPE_OTHER,
-    FILE_TYPE_UNKNOWN
+    FILE_TYPE_NOT_KNOWN
 } FileType;
 
-extern VisItStat_t* const FILE_TYPE_DONT_STAT;
+VisItStat_t* const FILE_TYPE_DONT_STAT = ((VisItStat_t*)0x1);
 
 PermissionsResult MISC_API CheckPermissions(const std::string &filename);
 

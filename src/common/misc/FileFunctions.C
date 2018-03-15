@@ -1222,15 +1222,12 @@ FileFunctions::FileMatchesPatternCB(void *cbdata, const std::string &filename, b
 //
 // ****************************************************************************
 
-static FileFunctions::VisItStat_t dont_stat = {};
-FileFunctions::VisItStat_t* const FileFunctions::FILE_TYPE_DONT_STAT = &dont_stat;
-
 FileFunctions::FileType
 FileFunctions::GetFileType(char const *filename, struct dirent const *dent,
     VisItStat_t *statbuf)
 {
     if (!filename)
-        return FILE_TYPE_UNKNOWN;
+        return FILE_TYPE_NOT_KNOWN;
 
     // If statbuf is non-null, caller wants stat info back.
     // So, we have not choice but to stat the file.
@@ -1258,7 +1255,7 @@ FileFunctions::GetFileType(char const *filename, struct dirent const *dent,
 #endif
 
     if (statbuf == FILE_TYPE_DONT_STAT)
-        return FILE_TYPE_UNKNOWN;
+        return FILE_TYPE_NOT_KNOWN;
 
     // Really a last resort to perform a stat call to a local variable
     // therby wasting everything we get from it except file type info
