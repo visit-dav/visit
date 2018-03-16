@@ -309,9 +309,9 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
             painter.scale(scale, scale);
             QFont font("helvetica", 20, QFont::Bold, true);
             font.setItalic(false);
-            int x = 270;
-            int y = pictures[i].height() - 8;
-            painter.setPen(Qt::black);
+            int x = 290;
+            int y = pictures[i].height() - 10;
+            painter.setPen(QColor(210,37,74));
             painter.drawText(int(x / scale), int(y / scale), ver);
         }
     }
@@ -356,9 +356,9 @@ SplashScreen::SplashScreen(bool cyclePictures) : QFrame(0, Qt::SplashScreen)
            << tr("October")
            << tr("November")
            << tr("December");
-    int currentMonth = 10;
+    int currentMonth = 9;
     lLayout->addWidget(new QLabel(versionText, this));
-    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2017", this));
+    lLayout->addWidget(new QLabel(months[currentMonth-1] + " 2018", this));
 
     copyrightButton = 0;
     contributorButton = 0;
