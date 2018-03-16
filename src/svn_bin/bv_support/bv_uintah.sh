@@ -275,6 +275,7 @@ function build_uintah
         ${cf_build_type} \
 	--enable-minimal --enable-optimize \
 	--with-fortran=no --with-petsc=no --with-hypre=no \
+	--with-lapack=no --with-blas=no \
         --with-mpi=\"$PAR_INCLUDE_DIR/..\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
@@ -289,6 +290,7 @@ function build_uintah
         ${cf_build_type} \
         --enable-minimal --enable-optimize \
 	--with-fortran=no --with-petsc=no --with-hypre=no \
+	--with-lapack=no --with-blas=no \
         --with-mpi=\"$PAR_INCLUDE_DIR/..\" "
 
         #        --with-mpi-include="${PAR_INCLUDE_DIR}/" \
@@ -305,6 +307,7 @@ function build_uintah
         ${cf_build_type} \
         --enable-minimal --enable-optimize \
 	--with-fortran=no --with-petsc=no --with-hypre=no \
+	--with-lapack=no --with-blas=no \
         --with-mpi=built-in"
 
         sh -c "../src/configure CXX=\"$PAR_COMPILER_CXX\" CC=\"$PAR_COMPILER\" \
@@ -315,6 +318,7 @@ function build_uintah
         ${cf_build_type} \
         --enable-minimal --enable-optimize \
         --with-fortran=no --with-petsc=no --with-hypre=no \
+	--with-lapack=no --with-blas=no \
         --with-mpi=built-in"
     fi
 
