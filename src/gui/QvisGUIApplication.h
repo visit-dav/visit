@@ -51,6 +51,7 @@
 #include <StatusSubject.h>
 #include <QualifiedFilename.h>
 #include <maptypes.h>
+#include <qfileinfo.h>
 
 // Long list of forward declarations.
 class DataNode;
@@ -527,6 +528,11 @@ protected slots:
     void updateVisItCompleted(const QString &);
 private:
     void DestructorHelper(bool fastExit = false);
+    void GetCrashFilePIDs(const QFileInfoList &, intVector &);
+    void GetSystemPIDs(std::vector<int> &);
+    void ShowCrashRecoveryDialog(const QFileInfoList &);
+    void PerformRestoreSessionFile(const QString &);
+    void RemoveCrashRecoveryFileList() const;
 protected:
     QStringList                  windowNames;
     int                          completeInit;
@@ -648,6 +654,11 @@ protected:
     DataNode                     *localSettings;
     bool                          inheritedGUI;
     bool                          embeddedGUI;
+    
+    QFileInfoList               recoveryFiles;
+    
+    // VisIt Process ID
+    std::string                 visitPIDStr;
 };
 
 #endif
