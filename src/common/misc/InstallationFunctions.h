@@ -92,4 +92,8 @@ bool        MISC_API VersionGreaterThan(const std::string &v1, const std::string
 void        MISC_API SetIsDevelopmentVersion(bool val);
 bool        MISC_API GetIsDevelopmentVersion();
 
+// Process IDs
+std::string MISC_API GetVisItPIDString();
+
+
 #endif

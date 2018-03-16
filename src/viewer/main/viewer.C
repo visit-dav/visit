@@ -163,6 +163,11 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
 //    If running on linux in nowin mode, with qt 5, add -platform minimal
 //    to the QApplication arguments.
 //
+//    Kevin Griffin, Thu Mar 15 19:56:39 PDT 2018
+//    Made the viewer no longer responsible for removing the crash session
+//    files. The GUI has the sole responsiblity for removing the crash
+//    session files on exit.
+//
 // ****************************************************************************
 
 int
@@ -271,9 +276,6 @@ ViewerMain(int argc, char *argv[])
             { 
                 retval = mainApp->exec();
                 keepGoing = false;
-
-                // Remove the crash recovery file on a successful exit.
-                viewer.RemoveCrashRecoveryFile();
             }
             CATCH(LostConnectionException)
             {
