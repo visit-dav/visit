@@ -142,7 +142,7 @@ IF (NOT WIN32)
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
                     WORLD_READ             WORLD_EXECUTE)
 
-    INSTALL(FILES makemovie.py makemoviemain.py visitdiff.py
+    INSTALL(FILES makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py visitdiff.py
         DESTINATION ${VISIT_INSTALLED_VERSION_BIN}
         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
                     GROUP_READ GROUP_WRITE GROUP_EXECUTE
