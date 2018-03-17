@@ -380,21 +380,20 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
 {
     int t_load_bp_tree = visitTimer->StartTimer();
     
-    
-    
     // hid_t h5_file_id = tree_cache.Cache().FetchHDF5Id(file_path);
     
-    if(protocol == "conduit_hdf5" || protocol == "hdf5")
+    // non sidre case
+    if(protocol.find("sidre") == std::string::npos)
     {
         std::string fetch_path = tree_root + tree_path;
         BP_PLUGIN_INFO("tree cache read " 
                         << "domain " << tree_id 
                         << " : "
                         << fetch_path);
-        int t_hdf5_read = visitTimer->StartTimer();
+        int t_tree_read = visitTimer->StartTimer();
         
         tree_cache.Read(tree_id,fetch_path,out);
-        visitTimer->StopTimer(t_hdf5_read, "hdf5 read");
+        visitTimer->StopTimer(t_tree_read, "tree read");
     }
     else if( protocol == "sidre_hdf5" )
     {
@@ -1132,8 +1131,31 @@ avtBlueprintTreeCache::Cache()
 }
 
 
+//-----------------------------------------------------------------------//
+void
+avtBlueprintTreeCache::Read(int tree_id,
+                            const std::string &path,
+                            conduit::Node &out)
+{
+    // switch on protocol
+    if(m_protocol.find("hdf5") != std::string::npos)
+    {
+        hid_t h5_file_id = m_cache_map->FetchHDF5Id(GenerateFilePath(tree_id));
+        conduit::relay::io::hdf5_read(h5_file_id,path,out);
+    }
+    else
+    {
+        // TODO proper sub tree, or read and cache at higher lvl
+        Node n_full;
+        conduit::relay::io::load(GenerateFilePath(tree_id),m_protocol,n_full);
+        out = n_full[path];
+    }
+}
+
+
     
 //-----------------------------------------------------------------------//
+// Note: Only used by sidre_hdf5
 bool
 avtBlueprintTreeCache::HasPath(int tree_id,
                                const std::string &path)
@@ -1143,16 +1165,7 @@ avtBlueprintTreeCache::HasPath(int tree_id,
 }
 
 //-----------------------------------------------------------------------//
-void
-avtBlueprintTreeCache::Read(int tree_id,
-                            const std::string &path,
-                            conduit::Node &out)
-{
-    hid_t h5_file_id = m_cache_map->FetchHDF5Id(GenerateFilePath(tree_id));
-    conduit::relay::io::hdf5_read(h5_file_id,path,out);
-}
-
-//-----------------------------------------------------------------------//
+// Note: Only used by sidre_hdf5
 bool
 avtBlueprintTreeCache::Read(int tree_id,
                             const std::string &path,

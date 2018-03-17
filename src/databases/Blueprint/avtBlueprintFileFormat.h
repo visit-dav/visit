@@ -101,6 +101,12 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
 
   private:
 
+    void                   AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md,
+                                                            std::string const &mesh_name, 
+                                                            const conduit::Node &n_mesh_info);
+
+    void                   ReadRootFile();
+
     void                   ReadBlueprintMesh(int domain,
                                              const std::string &abs_meshname,
                                              conduit::Node &out);
@@ -116,6 +122,8 @@ class avtBlueprintFileFormat : public avtSTMDFileFormat
     avtBlueprintTreeCache  *m_tree_cache;
   
     int                    m_selected_lod;
+    
+    std::map<std::string,bool> m_mfem_mesh_map;
 
 };
 
