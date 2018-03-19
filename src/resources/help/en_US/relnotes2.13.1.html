@@ -24,51 +24,51 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Bugs fixed in version 2.13.1</font></b></p>
 <ul>
-  <li>Modified the query over time to store the results in double precision instead of single precision.</li>
-  <li>Modified the VTK Reader to ensure material scalars in multi-block datasets are read correctly.</li>
-  <li>For Windows platform, VisIt will now display an error message if VISITSSH defined, but does not point to an executable, and if a parallel engine is requested but mpiexec.exe cannot be found.</li>
-  <li>Fixed the issue with the ScatterPlot Setup Wizard populating the variable menus from a previous database.</li>
-  <li>Fixed the thresholding for point meshes.</li>
-  <li>Fixed crash performing a lineout when -dump issued on command line.</li>
-  <li>VisIt's viewer was unnecessarily creating text labels that would likely not be used unless using a ParallelCoordinates plot. For Subset plots with large numbers of domains, this caused the viewer to use many gigabytes of memory even when scalable rendering was used.</li>
-  <li>Fixed crash performing a time-query when Curve plot is disabled. An error message will now be issued, and the query will not be performed.</li>
-  <li>Fixed build_visit build of Qt with -no-openssl on Fedora.</li>
-  <li>Set MetadataIsTimeVarying in exported Silo databases by fiat. This is a pre-caution to ensure we handle exported data correctly in cases where metadata really is time-varying and probably a minimal performance hit in cases where its not necessary.</li>
-  <li>Fixed crash opening certain netcdf-4 files on Windows.</li>
-  <li>Fix crashes when any single block has number of nodes/zones or tuples x number of components that exceeds INT_MAX.<li>
-  <li>Fix Save Window compression options so that only those options appropriate to currently selected format are enabled for selection.</li>
-  <li>Fixed a bug with the active window selector in the main window so that it now displays more than a single digit if necessary.</li>
-  <li>Fixed problem running PythonFilters in parallel on Windows.</li>
-  <li>Fixed hang starting VisIt 2.13.x on Windows VM.</li>
-  <li>Fixed Python filters failures on Windows 8, 10.</li>
-  <li>Fixed a bug where the metadata server crashed when it encounterd a Silo file with a multimesh that was invalid, such as when the number of blocks specified was zero.</li>
-  <li>Crash session files created by any running VisIt process are correctly ignored by any additional VisIt processes that are launched while there are VisIt processes still running.</li>
+  <li>Query over time was modified to store the results in double precision instead of single precision.</li>
+  <li>The VTK Reader was modified to ensure material scalars in multi-block datasets are read correctly.</li>
+  <li>VisIt will now display an error message on Windows if VISITSSH is defined, but does not point to an executable, and if a parallel engine is requested but mpiexec.exe cannot be found.</li>
+  <li>A bug was corrected with the ScatterPlot Setup Wizard populating the variable menus from a previous database.</li>
+  <li>A bug was corrected with the Threshold operator thresholding point meshes.</li>
+  <li>A bug was corrected where VisIt would crash when performing a lineout when -dump was specified on the command line.</li>
+  <li>VisIt's viewer was enhanced to address a performance issue where it unnecessarily created text labels that would likely not be used unless displaying a ParallelCoordinates plot. For Subset plots with large numbers of domains, this caused the viewer to use many gigabytes of memory even when scalable rendering was used.</li>
+  <li>A bug was corrected where VisIt would crash performing a time-query when the Curve plot was disabled. An error message will now be issued, and the query will not be performed.</li>
+  <li>A bug was corrected with build_visit with the building of Qt with -no-openssl specified on the command line on Fedora systems.</li>
+  <li>The exporting of data to Silo files was modified to always set the MetadataIsTimeVarying attribute to ensure VisIt handles exported data correctly in cases where the metadata is time-varying. This will probably result in a minimal performance degradation in cases where its not necessary.</li>
+  <li>A bug was corrected where VisIt would crash opening certain NetCDF-4 files on Windows.</li>
+  <li>A bug was corrected where VisIt would crash when the number of nodes or zones or tuples times the number of components exceeds INT_MAX in a single block.<li>
+  <li>A bug was corrected with the Save Window compression options so that only those options appropriate to the currently selected format are enabled for selection.</li>
+  <li>A bug was corrected with the active window selector in the main window so that it now displays more than a single digit if necessary.</li>
+  <li>A bug was corrected with running Python filters in parallel on Windows.</li>
+  <li>A bug was corrected where VisIt would hang on start up when running on a Windows VM.</li>
+  <li>A bug was corrected with Python filters failing on Windows 8, 10.</li>
+  <li>A bug was corrected where the VisIt metadata server would crash when it encounterd a Silo file with a multimesh that was invalid, such as when the number of blocks specified was zero.</li>
+  <li>VisIt was modified so that crash session files created by any running VisIt process are correctly ignored by any additional VisIt processes that are launched.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 2.13.1</font></b></p>
 <ul>
-  <li>Enhanced the SPCTH reader to process a list of MTMD files as one MTMD file.</li>
-  <li>Updated the <i>parallel interactive pdebug</i> host profile for LLNL <i>cab</i> machine to handle job launching changes on the machine.</li>
-  <li>Updated the <i>parallel viz</i> host profile for the LANL <i>trinity</i> machine to handle job launching changes on the machine.</li>
-  <li>Enhanced Pixie plugin to read datasets with more than INT_MAX nodes/zones.</li>
-  <li>Default compression method for Save Window was changed from PackBits to None.</li>
-  <li>Improved performance of VisIt when populating file lists from dirs with large numbers of entries.<li>
-  <li>Crash session files are now written for a specific VisIt process. The user can choose which crash session file to restore if multiple ones exist.<li>
+  <li>The SPCTH reader was enhanced to process a list of MTMD files as one MTMD file.</li>
+  <li>The <i>parallel interactive pdebug</i> host profile for the LLNL <i>cab</i> machine was modified to handle job launching changes on the machine.</li>
+  <li>The <i>parallel viz</i> host profile for the LANL <i>trinity</i> machine was modified to handle job launching changes on the machine.</li>
+  <li>The Pixie reader was enhanced to read datasets with more than INT_MAX nodes or zones.</li>
+  <li>The default compression method for saving windows was changed from PackBits to None.</li>
+  <li>The performance of VisIt was improved when populating file lists from directories with large numbers of entries.<li>
+  <li>VisIt now saves crash session files for a specific VisIt process. The user can choose which crash session file to restore if multiple ones exist.<li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.13.1</font></b></p>
 <ul>
-  <li>Modified build_visit to pass the zlib directory information to the configure command for hdf5 when -zlib was specified on the command line.</li>
-  <li>Modified bv_pyside.sh to patch pyside2 that removes the conditional collecting of the Multimedia, WebEngineWidget, and WebKit modules.</li>
-  <li>Fixed the QWT make install symlink error for OSX.</li>
-  <li>Fixed the PySide2 and Shiboken2 library naming issue for OSX.</li>
-  <li>Changed build_visit to build Qt in silent mode by default. Added the --no-qt-silent argument to build_visit that disables building Qt in silent mode.</li>
-  <li>Changed when default variable units are set on the viewer, in order that plot plugins can override the default values in their CustomizeBehavior method.</li>
-  <li>Upgraded numpy from 1.11.2 to 1.14.1.</li>
-  <li>Made it possible for python scripts to control visibility of annotation objects during their creation with an additional argument in the CreateAnnotationObject() method. This required NO CHANGE to RPC protocols.</li>
-  <li>Modified <i>make package</i> so that it no longer includes any directories named <i>icons</i>. Previously, this resulted in a couple of invalid symbolic links being added to the distribution file.</li>
+  <li>Build_visit was modified to pass the zlib directory information to the configure command for hdf5 when -zlib was specified on the command line.</li>
+  <li>Build_visit was modified to patch pyside2 to remove the conditional collecting of the Multimedia, WebEngineWidget, and WebKit modules.</li>
+  <li>A bug was corrected with the creation of a QWT symbolic link on OSX.</li>
+  <li>A bug was corrected with the naming of the PySide2 and Shiboken2 libraries on OSX.</li>
+  <li>Build_visit was modified to build Qt in silent mode by default. Additionally, build_visit was modified to allow specifying <i>--no-qt-silent</i> on the command line to disable building Qt in silent mode.</li>
+  <li>The location where the default variables are set in the viewer was changed so that plot plugins can override the default values in their CustomizeBehavior method.</li>
+  <li>Numpy was upgraded from version 1.11.2 to 1.14.1.</li>
+  <li>The Python CLI was enhanced to make it possible to the control visibility of annotation objects during their creation with an additional argument in the CreateAnnotationObject() method.</li>
+  <li><i>Make package</i> was modified so that it no longer includes any directories named <i>icons</i>. Previously, this resulted in a couple of invalid symbolic links being added to the distribution file.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
