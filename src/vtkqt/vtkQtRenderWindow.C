@@ -105,7 +105,6 @@ public:
            QSysInfo::macVersion() <= QSysInfo::MV_ELCAPITAN) // OSX 10.10 and 10.11
         {
             disableGLHiDPI(gl->winId());
-            std::cout << "Disabled using High DPI (Retina Display)." << std::endl;
         }
 #endif
 
