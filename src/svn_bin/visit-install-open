@@ -95,6 +95,11 @@
 #   Eric Brugger, Fri Sep 22 11:39:17 PDT 2017
 #   I replaced rzzeus with rzalastor.
 #
+#   Eric Brugger, Mon Mar 19 14:21:54 PDT 2018
+#   I removed the modifications to the internallauncher for toss3
+#   systems. I made a change in internallauncher and customlauncher
+#   that made this unnecessary.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -440,12 +445,6 @@ rm -rf /usr/gapps/visit/toss3
 ./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit/toss3 > installlog 2>&1
 mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -rf /usr/gapps/visit/toss3
-sed -i "/arch = \"linux-x86_64\"/ i 16SPACESif GETENV(\"SYS_TYPE\") == \"toss_3_x86_64_ib\" or GETENV(\"SYS_TYPE\") == \"toss_3_x86_64\":" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "/arch = \"linux-x86_64\"/ i 20SPACESarch = \"linux-x86_64-toss3\"" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "/arch = \"linux-x86_64\"/ i 16SPACESelse:" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/arch = \"linux-x86_64\"/    arch = \"linux-x86_64\"/" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/16SPACES/                /" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/20SPACES/                    /" /usr/gapps/visit/$ver+/bin/internallauncher
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so.1
@@ -490,12 +489,6 @@ cat <<EOF > rztrona
 ./visit-install -private -c llnl_open_rz -g visit -b wbronze -gw -l $ver linux-rztrona /usr/gapps/visit/toss3 > installlog 2>&1
 mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -rf /usr/gapps/visit/toss3
-sed -i "/arch = \"linux-x86_64\"/ i 16SPACESif GETENV(\"SYS_TYPE\") == \"toss_3_x86_64_ib\" or GETENV(\"SYS_TYPE\") == \"toss_3_x86_64\":" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "/arch = \"linux-x86_64\"/ i 20SPACESarch = \"linux-x86_64-toss3\"" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "/arch = \"linux-x86_64\"/ i 16SPACESelse:" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/arch = \"linux-x86_64\"/    arch = \"linux-x86_64\"/" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/16SPACES/                /" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/20SPACES/                    /" /usr/gapps/visit/$ver+/bin/internallauncher
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so.1

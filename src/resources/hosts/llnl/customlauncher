@@ -83,6 +83,9 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   I added the MPI library paths to the LD_LIBRARY_PATH for jade and agate.
 #   I removed the logic that sets the LD_LIBRARY_PATH if running on cielo.
 #
+#   Eric Brugger, Mon Mar 19 12:55:14 PDT 2018
+#   I set visitarch to linux-x86_64-toss3 for all the toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -143,17 +146,19 @@ class LLNLLauncher(MainLauncher):
 
         #
         # Set the LD_LIBRARY_PATH to include the path to MPI on borax,
-        # quartz, rzgenie, rztopaz, rztrona, jade and agate.
+        # quartz, rzgenie, rztopaz, rztrona, jade, mica, and agate.
         #
         if self.sectorname() == "borax" or \
-           self.sectorname() == "quartz" or \
-           self.sectorname() == "rzgenie" or \
-           self.sectorname() == "rztopaz" or \
-           self.sectorname() == "rztrona" or \
-           self.sectorname() == "jade" or \
-           self.sectorname() == "agate":
+            self.sectorname() == "quartz" or \
+            self.sectorname() == "rzgenie" or \
+            self.sectorname() == "rztopaz" or \
+            self.sectorname() == "rztrona" or \
+            self.sectorname() == "jade" or \
+            self.sectorname() == "mica" or \
+            self.sectorname() == "agate":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
+            self.visitarch = "linux-x86_64-toss3"
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can

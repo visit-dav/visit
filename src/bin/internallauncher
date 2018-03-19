@@ -2447,6 +2447,9 @@ class MainLauncher(object):
     # Date: Fri May 25 10:48:41 PDT 2012
     #
     # Modifications:
+    #   Eric Brugger, Mon Mar 19 12:48:20 PDT 2018
+    #   I modified the method to leave the visitarch field unchanged if it is
+    #   already set, which could happen in a custom launcher.
     #
     ############################################################################
 
@@ -2474,11 +2477,16 @@ class MainLauncher(object):
         else:
             # We're running a public version
             archdir = ""
-            for arch in supportedarches:
-                app = self.visitdir + arch + "/bin/" + self.generalArgs.exe_name
+            if (self.visitarch == ""):
+                for arch in supportedarches:
+                    app = self.visitdir + arch + "/bin/" + self.generalArgs.exe_name
+                    if os.path.exists(app) or os.path.exists("%s.app" % app):
+                        archdir = arch
+                        break
+            else:
+                app = self.visitdir + self.visitarch + "/bin/" + self.generalArgs.exe_name
                 if os.path.exists(app) or os.path.exists("%s.app" % app):
-                    archdir = arch
-                    break
+                    archdir = self.visitarch
             if archdir == "":
                 msg = "Version %s of %s does not exist for " % (self.visitver, self.generalArgs.exe_name)
                 if len(supportedarches) > 1:
@@ -3453,6 +3461,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Mon Mar 19 12:48:20 PDT 2018
+#   I moved the call to Customize before the call to SetupDirectoryNames so
+#   that Customize could override visitarch.
 #
 ###############################################################################
 
@@ -3485,8 +3496,8 @@ def internallauncher(launcher, visitdir, visitprogram, visitver, visitpluginver,
 
     launcher.ConsistencyCheck()
     launcher.UpdateExecutableNames()
-    launcher.SetupDirectoryNames(supportedarches)
     launcher.Customize()
+    launcher.SetupDirectoryNames(supportedarches)
     launcher.SetupEnvironment()
     launcher.MakeUserDirectories(visitpluginver, supportedarches)
     launcher.SetStartDir()

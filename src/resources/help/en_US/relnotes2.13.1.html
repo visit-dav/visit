@@ -55,6 +55,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The default compression method for saving windows was changed from PackBits to None.</li>
   <li>The performance of VisIt was improved when populating file lists from directories with large numbers of entries.<li>
   <li>VisIt now saves crash session files for a specific VisIt process. The user can choose which crash session file to restore if multiple ones exist.<li>
+  <li>VisIt has been enhanced to select between chaos 5 and toss 3 executables on LLNL systems based on the machine name instead of the environment variable SYS_TYPE. Some users didn't have the SYS_TYPE environment variable set causing the previous logic to fail in some instances.</li>
 </ul>
 
 <a name="Dev_changes"></a>
