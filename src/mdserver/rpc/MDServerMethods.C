@@ -185,8 +185,6 @@ MDServerMethods::GetFileList(const std::string &filter,
     {
         FileEntry tmpentry;
         tmpentry.name = fl->names[i];
-        tmpentry.size = fl->sizes[i];
-        tmpentry.SetAccess(fl->access[i] > 0);
         bool isVirtual = fl->types[i] == GetFileListRPC::VIRTUAL;
         tmpentry.SetVirtual(isVirtual);
 

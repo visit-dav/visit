@@ -816,7 +816,6 @@ QvisFileWindowBase::UpdateDirectoryList()
         {
             item = new QListWidgetItem(directoryList);
             QualifiedFilename dirName(curDirString.toStdString());
-            dirName.SetAccess(pos->CanAccess());
 
             item->setText(curDirString);
             item->setData(Qt::UserRole, EncodeQualifiedFilename(dirName));
@@ -825,7 +824,6 @@ QvisFileWindowBase::UpdateDirectoryList()
         {
             item = new QListWidgetItem(directoryList);
             QualifiedFilename dirName(upDirString.toStdString());
-            dirName.SetAccess(pos->CanAccess());
 
             item->setText(upDirString);
             item->setData(Qt::UserRole, EncodeQualifiedFilename(dirName));
@@ -841,7 +839,6 @@ QvisFileWindowBase::UpdateDirectoryList()
             }
 
             QualifiedFilename dirName(pos->name);
-            dirName.SetAccess(pos->CanAccess());
 
             item = new QListWidgetItem(directoryList);
             item->setText(pos->name.c_str());
@@ -913,10 +910,6 @@ QvisFileWindowBase::AddFileItem(QListWidget *parent, const QString &displayName,
         }
     }
     item->setText(itemText);
-
-    // Gray out the text if we can't access the file.
-    if(!fileInfo.CanAccess())
-        item->setForeground(QBrush(QColor(Qt::gray)));
 
     // Stash the complete filename into the item as user data.
     item->setData(Qt::UserRole, EncodeQualifiedFilename(fileInfo));
@@ -2082,7 +2075,6 @@ EncodeQualifiedFilename(const QualifiedFilename &filename)
     values.append(QVariant(filename.path.c_str()));
     values.append(QVariant(filename.filename.c_str()));
     values.append(QVariant(QChar(filename.separator)));
-    values.append(QVariant(filename.CanAccess()));
     values.append(QVariant(filename.IsVirtual()));
     return QVariant(values);
 }
@@ -2118,8 +2110,7 @@ DecodeQualifiedFilename(const QVariant &v)
         f.path      = values[1].toString().toStdString();
         f.filename  = values[2].toString().toStdString();
         f.separator = values[3].toChar().toLatin1();
-        f.SetAccess(values[4].toBool());
-        f.SetVirtual(values[5].toBool());
+        f.SetVirtual(values[4].toBool());
     }
 
     return f;

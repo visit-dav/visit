@@ -263,14 +263,14 @@ GetFileListRPC::TypeName() const
 //
 // ****************************************************************************
 
-GetFileListRPC::FileList::FileList() : AttributeSubject("s*i*l*i*s*i*"), 
-    names(), types(), sizes(), access(), virtualNames(), numVirtualFiles()
+GetFileListRPC::FileList::FileList() : AttributeSubject("s*i*s*i*"), 
+    names(), types(), virtualNames(), numVirtualFiles()
 {
 }
 
 GetFileListRPC::FileList::FileList(const GetFileListRPC::FileList &obj) :
-    AttributeSubject("s*i*l*i*s*i*"), 
-    names(obj.names), types(obj.types), sizes(obj.sizes), access(obj.access),
+    AttributeSubject("s*i*s*i*"), 
+    names(obj.names), types(obj.types),
     virtualNames(obj.virtualNames), numVirtualFiles(obj.numVirtualFiles)
 {
 }
@@ -313,10 +313,8 @@ GetFileListRPC::FileList::SelectAll()
 {
     Select(0, (void *)&names);
     Select(1, (void *)&types);
-    Select(2, (void *)&sizes);
-    Select(3, (void *)&access);
-    Select(4, (void *)&virtualNames);
-    Select(5, (void *)&numVirtualFiles);
+    Select(2, (void *)&virtualNames);
+    Select(3, (void *)&numVirtualFiles);
 }
 
 // ****************************************************************************
@@ -337,8 +335,6 @@ GetFileListRPC::FileList::Clear()
 {
     names.clear();
     types.clear();
-    sizes.clear();
-    access.clear();
 
     virtualNames.clear();
     numVirtualFiles.clear();
@@ -389,18 +385,14 @@ struct FileListInformation
     {
     }
 
-    FileListInformation(const std::string &n, int t, long s, int a) : name(n)
+    FileListInformation(const std::string &n, int t) : name(n)
     {
         type = t;
-        size = s;
-        access = a;
     }
 
     FileListInformation(const FileListInformation &obj) : name(obj.name)
     {
         type = obj.type;
-        size = obj.size;
-        access = obj.access;
     }
 
     ~FileListInformation()
@@ -411,8 +403,6 @@ struct FileListInformation
     {
         name = obj.name;
         type = obj.type;
-        size = obj.size;
-        access = obj.access;
     }
 
     // Use numeric and string comparison to compare the name.
@@ -428,8 +418,6 @@ struct FileListInformation
 
     std::string name;
     int         type;
-    int         access;
-    long        size;
 };
 
 // ****************************************************************************
@@ -456,7 +444,7 @@ GetFileListRPC::FileList::Sort()
     for(size_t i = 0; i < names.size(); ++i)
     {
         sortVector.push_back(
-            FileListInformation(names[i], types[i], sizes[i], access[i]));
+            FileListInformation(names[i], types[i]));
     }
 
     // Sort the vector.
@@ -467,8 +455,6 @@ GetFileListRPC::FileList::Sort()
     {
         names[i]  = sortVector[i].name;
         types[i]  = sortVector[i].type;
-        sizes[i]  = sortVector[i].size;
-        access[i] = sortVector[i].access;
     }
 }
 
@@ -495,8 +481,7 @@ operator << (ostream &os, const GetFileListRPC::FileList &fl)
     os << "{";
     for(size_t i = 0; i < fl.names.size(); ++i)
     {
-        os << "{" << fl.names[i].c_str() << ", " << fl.types[i] << ", "
-           << fl.sizes[i] << ", " << fl.access[i] << "}";
+        os << "{" << fl.names[i].c_str() << ", " << fl.types[i] << "}";
 
         if(i < fl.names.size() - 1)
             os << ", ";

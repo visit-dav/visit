@@ -70,8 +70,7 @@ struct QualifiedFilename
 {
     QualifiedFilename();
     QualifiedFilename(std::string host_, std::string path_,
-                      std::string filename_, bool access = true,
-                      bool isVirtual = false);
+                      std::string filename_, bool isVirtual = false);
     QualifiedFilename(const std::string &fullname);
     QualifiedFilename(const QualifiedFilename &qf);
     ~QualifiedFilename();
@@ -86,10 +85,8 @@ struct QualifiedFilename
     std::string FullName() const;
     std::string PathAndFile() const;
 
-    bool CanAccess() const    { return (flag & 1) == 1; }
-    void SetAccess(bool val)  { flag = ((flag & 0xfe) | (val?1:0)); }
-    bool IsVirtual() const    { return (flag & 2) == 2; }
-    void SetVirtual(bool val) { flag = ((flag & 0xfd) | (val?2:0)); }
+    bool IsVirtual() const    { return (flag & 1) == 1; }
+    void SetVirtual(bool val) { flag = ((flag & 0xfe) | (val?1:0)); }
 
     std::string host;
     std::string path;
@@ -98,8 +95,7 @@ struct QualifiedFilename
 private:
     char DetermineSeparator(const std::string &p) const;
 
-    // Access  is bit 0
-    // Virtual is bit 1
+    // Virtual is bit 0
     unsigned char flag;
 };
 

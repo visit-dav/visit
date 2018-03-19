@@ -96,8 +96,6 @@ public:
     {
         stringVector names;
         intVector    types;
-        longVector   sizes;
-        intVector    access;
         stringVector virtualNames;
         intVector    numVirtualFiles;
     public:

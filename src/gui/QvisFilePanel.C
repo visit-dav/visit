@@ -3690,13 +3690,6 @@ FileTree::FileTreeNode::AddElementsToTreeItem(QTreeWidgetItem *item,
         }
         else if(nodeType == PATH_NODE)
         {
-            //
-            // Paths must always have access. Paths that were created by a file
-            // without read permission would have been reduced so any paths
-            // that remain at this point must have access.
-            //
-            fileName.SetAccess(true);
-
             // Add a directory node.
             QString temp;
             if(nodeName == fileName.path && nodeName[0] != separator)

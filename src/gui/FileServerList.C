@@ -2094,7 +2094,7 @@ FileServerList::GetFilteredFileList()
             {
                 // Add the host qualified filename to the applied file list.
                 QualifiedFilename f(activeHost, servers[activeHost]->path,
-                                    pos->name, pos->CanAccess(), pos->IsVirtual());
+                                    pos->name, pos->IsVirtual());
                 retval.push_back(f);
             }
         }
@@ -2109,7 +2109,7 @@ FileServerList::GetFilteredFileList()
                     continue;
                 // Add the host qualified filename to the applied file list.
                 QualifiedFilename f(activeHost, servers[activeHost]->path,
-                                    pos->name, pos->CanAccess(), pos->IsVirtual());
+                                    pos->name, pos->IsVirtual());
                 retval.push_back(f);
             }
         }
@@ -2135,7 +2135,7 @@ FileServerList::GetFilteredFileList()
                 {
                     // Add the host qualified filename to the applied file list.
                     QualifiedFilename f(activeHost, servers[activeHost]->path,
-                                        pos->name, pos->CanAccess(), false);
+                                        pos->name, false);
                     retval.push_back(f);
                 }
             }
@@ -2151,7 +2151,7 @@ FileServerList::GetFilteredFileList()
                 {
                     // Add the host qualified filename to the applied file list.
                     QualifiedFilename f(activeHost, servers[activeHost]->path,
-                                        pos->name, pos->CanAccess(), false);
+                                        pos->name, false);
                     retval.push_back(f);
                 }
             }

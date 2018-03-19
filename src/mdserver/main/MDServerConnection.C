@@ -1240,8 +1240,6 @@ MDServerConnection::ReadFileList()
                 std::string drive(ptr);
                 currentFileList.names.push_back(drive);
                 currentFileList.types.push_back(GetFileListRPC::DIR);
-                currentFileList.sizes.push_back(0);
-                currentFileList.access.push_back(1);
                 ptr += (drive.size() + 1);
             }
         }
@@ -1264,9 +1262,6 @@ MDServerConnection::ReadFileList()
                 currentFileList.names.push_back(fd.cFileName);
                 currentFileList.types.push_back(isDir ? GetFileListRPC::DIR :
                                                 GetFileListRPC::REG);
-                currentFileList.sizes.push_back((fd.nFileSizeHigh * MAXDWORD) +
-                                                fd.nFileSizeLow);
-                currentFileList.access.push_back(1);
             } while(FindNextFile(dirHandle, &fd));
             FindClose(dirHandle);
 
@@ -1280,8 +1275,6 @@ MDServerConnection::ReadFileList()
                 {
                     currentFileList.names.push_back(dirstr[i]);
                     currentFileList.types.push_back(GetFileListRPC::DIR);
-                    currentFileList.sizes.push_back(0);
-                    currentFileList.access.push_back(1);
                 }
             }
         }
@@ -1327,8 +1320,6 @@ MDServerConnection::ReadFileList()
             else
                 fl.types.push_back(GetFileListRPC::UNCHECKED);
             fl.names.push_back(ent->d_name);
-            fl.sizes.push_back(0);
-            fl.access.push_back(1);
         }
 
         closedir(dir);
@@ -1401,42 +1392,6 @@ MDServerConnection::ReadFileListAttributes(GetFileListRPC::FileList &fl,
             fl.types[i] = (isdir ? GetFileListRPC::DIR :
                            isreg ? GetFileListRPC::REG : 
                                    GetFileListRPC::UNKNOWN);
-            fl.sizes[i] = (long)s.st_size;
-    
-            bool isuser  = (s.st_uid == uid);
-            bool isgroup = false;
-            for (int j=0; j<ngids && !isgroup; ++j)
-                if (s.st_gid == gids[j])
-                    isgroup=true;
-    
-            bool canaccess = false;
-            if (isdir)
-            {
-                if ((mode & S_IROTH) &&
-                    (mode & S_IXOTH))
-                    canaccess=true;
-                else if (isuser &&
-                         (mode & S_IRUSR) &&
-                         (mode & S_IXUSR))
-                    canaccess=true;
-                else if (isgroup &&
-                         (mode & S_IRGRP) &&
-                         (mode & S_IXGRP))
-                    canaccess=true;
-            }
-            else
-            {
-                if (mode & S_IROTH)
-                        canaccess=true;
-                else if (isuser &&
-                         (mode & S_IRUSR))
-                    canaccess=true;
-                else if (isgroup &&
-                         (mode & S_IRGRP))
-                    canaccess=true;
-            }
-
-            fl.access[i] = (canaccess ? 1 : 0);
         }
 
         if(allowRemoval)
@@ -1447,16 +1402,12 @@ MDServerConnection::ReadFileListAttributes(GetFileListRPC::FileList &fl,
                 {
                     fl2.names.push_back(fl.names[i]);
                     fl2.types.push_back(fl.types[i]);
-                    fl2.sizes.push_back(fl.sizes[i]);
-                    fl2.access.push_back(fl.access[i]);
                 }
             }
             else
             {
                 fl2.names.push_back(fl.names[i]);
                 fl2.types.push_back(fl.types[i]);
-                fl2.sizes.push_back(fl.sizes[i]);
-                fl2.access.push_back(fl.access[i]);
             }
         }
     }
@@ -1948,8 +1899,6 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                             // filtered files.
                             files.names.push_back(names[i]);
                             files.types.push_back(currentFileList.types[i]);
-                            files.sizes.push_back(currentFileList.sizes[i]);
-                            files.access.push_back(currentFileList.access[i]);
                             continue;
                         }
 
@@ -1999,8 +1948,6 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                                 // filtered files.
                                 files.names.push_back(names[i]);
                                 files.types.push_back(currentFileList.types[i]);
-                                files.sizes.push_back(currentFileList.sizes[i]);
-                                files.access.push_back(currentFileList.access[i]);
                                 continue;
                             }
                         }
@@ -2020,8 +1967,6 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                         // Add the filename to the list of filtered files.
                         files.names.push_back(pattern);
                         files.types.push_back(currentFileList.types[i]);
-                        files.sizes.push_back(currentFileList.sizes[i]);
-                        files.access.push_back(currentFileList.access[i]);
 
                         // Add a new virtual filename.
                         stringVector vfiles;
@@ -2036,8 +1981,6 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                     // Add the filename to the list of filtered files.
                     files.names.push_back(names[i]);
                     files.types.push_back(currentFileList.types[i]);
-                    files.sizes.push_back(currentFileList.sizes[i]);
-                    files.access.push_back(currentFileList.access[i]);
                 }
             }
             else if(currentFileList.types[i] == GetFileListRPC::UNCHECKED)
@@ -2055,8 +1998,6 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
                 //
                 files.names.push_back(names[i]);
                 files.types.push_back(GetFileListRPC::UNCHECKED_REMOVE_IF_NOT_DIR);
-                files.sizes.push_back(0);
-                files.access.push_back(1);
             }
         }
         else
@@ -2064,8 +2005,6 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
             // Add the filename to the list of filtered files.
             files.names.push_back(names[i]);
             files.types.push_back(currentFileList.types[i]);
-            files.sizes.push_back(currentFileList.sizes[i]);
-            files.access.push_back(currentFileList.access[i]);
         }
     }
     visitTimer->StopTimer(stage1, "stage1: Assembling files list");
@@ -2122,8 +2061,6 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
             {
                 virtualFilesToCheck.names.push_back(pos->second.files[0]);
                 virtualFilesToCheck.types.push_back(files.types[fileIndex]);
-                virtualFilesToCheck.sizes.push_back(files.sizes[fileIndex]);
-                virtualFilesToCheck.access.push_back(files.access[fileIndex]);
 
                 // Mark the file as virtual in the file list so we won't get the
                 // file type if we needed it.
@@ -2174,8 +2111,6 @@ MDServerConnection::GetFilteredFileList(GetFileListRPC::FileList &files)
 
                     files.names.push_back(pos->second.files[i]);
                     files.types.push_back(virtualFilesToCheck.types[vfIndex]);
-                    files.sizes.push_back(virtualFilesToCheck.sizes[vfIndex]);
-                    files.access.push_back(virtualFilesToCheck.access[vfIndex]);
                 }
 
                 newVirtualFiles.erase(pos);
@@ -2374,8 +2309,7 @@ MDServerConnection::ConsolidateVirtualDatabases(
             VirtualFileInformation consolidatedInfo;
             std::string            virtualDBNames, suffixes("{");
 
-            int vdb_access, vdb_types;
-            long vdb_sizes;
+            int vdb_types;
             bool vdb_info_set = false;
 
             for(size_t s = 0; s < it->second.files.size(); ++s)
@@ -2406,17 +2340,13 @@ MDServerConnection::ConsolidateVirtualDatabases(
     
                     // Get the file access information.
                     stringVector::iterator vdb_names_it = files.names.begin();
-                    intVector::iterator vdb_access_it   = files.access.begin();
                     intVector::iterator vdb_types_it    = files.types.begin();
-                    longVector::iterator vdb_sizes_it   = files.sizes.begin();
                     for(size_t fileIndex = 0; fileIndex < files.names.size(); ++fileIndex)
                     {
                         if(files.names[fileIndex] == ci->first.name)
                         {
                             if(vdb_info_set)
                             {
-                                vdb_access = files.access[fileIndex];
-                                vdb_sizes = files.sizes[fileIndex];
                                 vdb_types = files.types[fileIndex];
                                 vdb_info_set = true;
                             }
@@ -2425,17 +2355,13 @@ MDServerConnection::ConsolidateVirtualDatabases(
                             // should remove it from the list of files since we're
                             // going to consolidate it anyway.
                             files.names.erase(vdb_names_it);
-                            files.access.erase(vdb_access_it);
                             files.types.erase(vdb_types_it);
-                            files.sizes.erase(vdb_sizes_it);
                             break;
                         }
                         else
                         {
                             ++vdb_names_it;
-                            ++vdb_access_it;
                             ++vdb_types_it;
-                            ++vdb_sizes_it;
                         }
                     }
 
@@ -2458,8 +2384,6 @@ MDServerConnection::ConsolidateVirtualDatabases(
                 // Add the filename to the list of filtered files.
                 files.names.push_back(key);
                 files.types.push_back(vdb_types);
-                files.sizes.push_back(vdb_sizes);
-                files.access.push_back(vdb_access);
 
                 debug4 << "Consolidated virtual databases ("
                        << virtualDBNames.c_str() << ") into "

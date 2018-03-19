@@ -66,13 +66,12 @@ QualifiedFilename::QualifiedFilename() : host(""), path(""), filename("")
 }
 
 QualifiedFilename::QualifiedFilename(std::string host_, std::string path_,
-    std::string filename_, bool access, bool isVirtual)
+    std::string filename_, bool isVirtual)
 {
     host = host_;
     path = path_;
     filename = filename_;
     flag = 0;
-    SetAccess(access);
     SetVirtual(isVirtual);
 
     // Try and determine the separator to use in the filename.
