@@ -50,6 +50,13 @@ SET(SET_UP_THIRD_PARTY_FULL_PATH ON)
 IF (WIN32)
   SET_UP_THIRD_PARTY(OPENEXR lib include/OpenEXR IlmImf-2_2 Imath-2_2 Half IlmThread-2_2 Iex-2_2)
 ELSE (WIN32)
-  SET_UP_THIRD_PARTY(OPENEXR lib include/OpenEXR IlmImf-2_2.22 Imath-2_2.12 Half.12 IlmThread-2_2.12 Iex-2_2.12)
+  IF(APPLE)
+    # These libraries are being build shared on Apple. We can find them without 
+    # version suffixes but then they do not install properly during "make install".
+    # If we add version suffixes then "make install/make package" do what we want.
+    SET_UP_THIRD_PARTY(OPENEXR lib include/OpenEXR IlmImf-2_2.22 Imath-2_2.12 Half.12 IlmThread-2_2.12 Iex-2_2.12)
+  ELSE(APPLE)
+    SET_UP_THIRD_PARTY(OPENEXR lib include/OpenEXR IlmImf Imath Half IlmThread Iex)
+  ENDIF(APPLE)
 ENDIF (WIN32)
 
