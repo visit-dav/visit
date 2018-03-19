@@ -19,6 +19,9 @@
 
 VsStructuredMesh::VsStructuredMesh(VsDataset* data):VsMesh(data) {
   maskAtt = NULL;
+  
+  numSpatialDims = -1;
+  numTopologicalDims = -1;  
 }
 
 
@@ -53,25 +56,39 @@ bool VsStructuredMesh::initialize()
 
   VsDataset* dm = registry->getDataset(getFullName());
 
+  // Structured meshes are defined by an array containing the node
+  // coordinates.
   std::vector< int > dims = dm->getDims();
-  
-  // Determine num spatial dims. For a structured mesh, it is the size
-  // of the last component of the dataset.
-  //int index = ((VsDataset*)h5Object)->getDims().size() - 1;
 
-  if (dims.empty())
+  for( int i=0; i<dims.size(); ++i )
+  {
+    if( dims[i] <= 0 )
+    {
+      VsLog::debugLog()
+        << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Failed to create mesh because dataset->dims[" << i
+        << "] = " << dims[i] << " and is less than or equal to zero."
+        << std::endl;
+
+      return false;
+    }  
+  }
+    
+  if (dims.size() == 0 || 4 < dims.size())
   {
     VsLog::debugLog()
       << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-      << "Failed to create mesh because dataset->dims.size() is zero."
+      << "Failed to create mesh because dataset->dims.size() is zero "
+      << "or contains more than four dimensions."
       << std::endl;
 
     return false;
   }
+  // Special case of 1D coordinates sans the spatial dimension.
   else if( dims.size() == 1 )
   {
     numSpatialDims = 1;
-    numTopologicalDims = numSpatialDims;
+    numTopologicalDims = (dims[0] > 1); 
 
     VsLog::warningLog()
       << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -80,7 +97,7 @@ bool VsStructuredMesh::initialize()
       << "an array of size [numPoints] but with no spatial dimension.  "
       << "Whereas the normal dimensions would be [numPoints][spatialDim] "
       << "As such, assume the spatial dimenson is 1." << std::endl;
-  }
+  }  
   else
   {
     // ARS - Becasue of the way the data structures are used to hold
@@ -90,21 +107,41 @@ bool VsStructuredMesh::initialize()
     // i.e. 1, 2, 3 = topological dims == 3
     // i.e. 3, 2, 1 = topological dims == 2
   
-    if( isCompMinor() ) {
+    if( isCompMinor() ) { // the comp minor ordering is X Y Z N
       numSpatialDims = dims[dims.size()-1];
-      numTopologicalDims = numSpatialDims;
+      
+      // Determine the topological dimension using the number of nodes.
+      
+      // Check for the last axis for a dimension greater than 1
+      for( int i=0; i<(dims.size()-1); ++i ) {
+        if( dims[i] > 1 ) {
+          numTopologicalDims = i + 1;
+        }
+      }
+        
+      // Check each axis for a dimension greater than 1
       // numTopologicalDims = 0;
-      // for (int i = 0; i < (dims.size() - 1); i++) {
+      // for( int i=0; i<(dims.size()-1); ++i ) {
       //   if (dims[i] > 1) {
       //     numTopologicalDims++;
       //   }
       // }
     }
-    else {
+    else { // the comp major ordering is N X Y Z
       numSpatialDims = dims[0];
-      numTopologicalDims = numSpatialDims;
-      // numTopologicalDims = 0;
-      // for (size_t i = 1; i < dims.size(); i++) {
+
+      // Determine the topological dimension using the number of nodes.
+      numTopologicalDims = 0;
+      
+      // Check for the last axis for a dimension greater than 1
+      for( int i=1; i<dims.size(); ++i ) {
+        if( dims[i] > 1 ) {
+          numTopologicalDims = i;
+        }
+      }
+
+      // Check each axis for a dimension greater than 1
+      // for( int i=1; i<dims.size(); ++i ) {
       //   if (dims[i] > 1) {
       //     numTopologicalDims++;
       //   }
@@ -112,15 +149,25 @@ bool VsStructuredMesh::initialize()
     }
   }
 
-  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Structured mesh " << getShortName()
-                    << " has topological dimensionality = " 
-                    << numTopologicalDims << std::endl;
-  
-  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Mesh has num spatial dims = " << numSpatialDims
-                    << std::endl;
+    if( numSpatialDims < 1 || 3 < numSpatialDims )
+    {
+      VsLog::debugLog()
+        << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+        << "Failed to create mesh because the numSpatialDims, "
+        << numSpatialDims << "is less than 1 or greater than 3."
+        << std::endl;
+      
+      return false;
+    } 
 
+    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Structured Mesh " << getShortName() << " "
+                    << "has num spatial dims = "
+                    << numSpatialDims << " and "
+                    << "has num topological dims = "
+                    << numTopologicalDims << std::endl;
+
+  // Get the mask attribute.
   maskAtt = getAttribute(VsSchema::maskAtt);
   if (maskAtt) {
      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
@@ -142,7 +189,7 @@ std::string VsStructuredMesh::getKind() const {
 }
 
 
-void VsStructuredMesh::getCellDims(std::vector<int>& dims) const
+void VsStructuredMesh::getNodeDims(std::vector<int>& dims) const
 {
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Entering." << std::endl;
@@ -159,24 +206,34 @@ void VsStructuredMesh::getCellDims(std::vector<int>& dims) const
  
   dims = dm->getDims();
 
-  // Structured data is funny because dims is one of these:
-  // 3D: [i][j][k][N] where N == 3
-  // 2D: [i][j][N]    where 2 <= N <= 3
-  // 1D: [i][N]       where 1 <= N <= 3
-  // 1D: [i]
+  // Lop off the spatial dimension.
+  if( dims.size() > 1 )
+  {    
+    if( isCompMinor() ) {
+      // Comp minor structured data dims is one of these:
+      // 3D: [i][j][k][N] where N == 3
+      // 2D: [i][j][N]    where 2 <= N <= 3
+      // 1D: [i][N]       where 1 <= N <= 3
+      // 1D: [i]
+      
+      // Lop off the spatial dimension which is last.
+      dims.resize(dims.size()-1);
+    }
 
-  // Special case were there is 1D data with only one coordinate, if
-  // so for consistancy add in the spatial dimension.
-  if( dims.size() == 1 )
-  {
-    dims.resize(dims.size()+1);
-
-    if( isCompMinor() )
-      dims[dims.size()-1] = 1;
     else
     {
-      dims[dims.size()-1] = dims[0];
-      dims[0] = 1;
+      // Comp major structured data dims is one of these:
+      // 3D: [N][i][j][k] where N == 3
+      // 2D: [N][i][j]    where 2 <= N <= 3
+      // 1D: [N][i]       where 1 <= N <= 3
+      // 1D: [i]
+
+      // The spatial dim is first so shift the dims over.
+      for( size_t i=0; i<dims.size()-1; ++i )
+        dims[i] = dims[i+1];
+
+      // Lop off the spatial dimension which was first.
+      dims.resize(dims.size()-1);
     }
   }
 
@@ -185,23 +242,13 @@ void VsStructuredMesh::getCellDims(std::vector<int>& dims) const
 }
 
 
-void VsStructuredMesh::getNodeDims(std::vector<int>& dims) const
+void VsStructuredMesh::getCellDims(std::vector<int>& dims) const
 {
-  getCellDims(dims);
-
-  // Lop off the spatial dimension.
-  if( dims.size() > 1 )
-  {
-    if( isCompMinor() )
-      dims.resize(dims.size()-1);
-    else
-    {
-      for( size_t i=0; i<dims.size()-1; ++i )
-        dims[i] = dims[i+1];
-
-      dims.resize(dims.size()-1);
-    }
-  }
+  // Determine the number of cells which is the number of nodes less 1.
+  getNodeDims( dims );
+  
+  for( int i=0; i<dims.size(); ++i )
+    dims[i] -= 1;
 }
 
 

@@ -22,6 +22,9 @@ VsUniformMesh::VsUniformMesh(VsGroup* group):VsMesh(group) {
   startCellAtt = NULL;
   lowerBoundsAtt = NULL;
   upperBoundsAtt = NULL;
+  
+  numSpatialDims = -1;
+  numTopologicalDims = -1;  
 }
 
 
@@ -49,8 +52,11 @@ VsUniformMesh* VsUniformMesh::buildUniformMesh(VsGroup* group)
 
 bool VsUniformMesh::initialize()
 {
-  // For a uniform mesh, spatial dimensionality is the length of the
-  // numCells array
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Entering" <<std::endl;
+
+  // Uniform meshes are defined by an lower and upper bounds and a
+  // number of cells.
   numCellsAtt = getAttribute(VsSchema::Uniform::numCells);
 
   if (!numCellsAtt) {
@@ -73,12 +79,9 @@ bool VsUniformMesh::initialize()
     return false;
   }
 
-  std::vector<int> dims;
-
-  int err = numCellsAtt->getIntVectorValue(&dims);
-  if (!err) {
-    numSpatialDims = dims.size();
-  } else {
+  std::vector<int> iNumCells;
+  int err = numCellsAtt->getIntVectorValue(&iNumCells);
+  if( err ) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to get dimensionality from attribute: "
                       << numCellsAtt->getShortName() << std::endl;
@@ -88,46 +91,46 @@ bool VsUniformMesh::initialize()
     return false;
   }
 
-  // ARS - Becasue of the way the data structures are used to hold
-  // structured data in VTK and VisIt the topological dimension has to
-  // equal the spatial dimension unless the last dim(s) are 1.
+  if( iNumCells.size() == 0 || 3 < iNumCells.size() ) {
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Malformed number of cells attribute: "
+                      << numCellsAtt->getShortName() << "  "
+                      << "contains zero or more than three dimensions. "
+                      << "Unable to initialize mesh, returning failure."
+                      << std::endl;
+    return false;
+  }    
 
-  // i.e. 1, 2, 3 = topological dims == 3
-  // i.e. 3, 2, 1 = topological dims == 2
-  
-  // Calculate the topological dims
-  numTopologicalDims = numSpatialDims;
- 
-  // Num topological dims is equal to the count of dims that are > 1
-  // numTopologicalDims = 0;
-  // for (size_t i = 0; i < dims.size(); i++) {
-  //   if (dims[i] > 1) {
-  //     numTopologicalDims++;
-  //   }
-  // } 
-
-  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Uniform mesh " <<getShortName() << " has topological dimensionality " 
-                    << numTopologicalDims <<std::endl;
-  
+  if( (iNumCells.size() >= 1 && iNumCells[0] < 0) ||
+      (iNumCells.size() >= 2 && iNumCells[1] < 0) ||
+      (iNumCells.size() == 3 && iNumCells[2] < 0) ) {
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Malformed number of cells attribute: "
+                      << numCellsAtt->getShortName() << "  "
+                      << "contains a negative number of cells. "
+                      << "Unable to initialize mesh, returning failure."
+                      << std::endl;
+    return false;
+  }    
+      
   // Lowerbounds is required
   lowerBoundsAtt = getAttribute(VsSchema::Uniform::lowerBounds);
+  
   if (!lowerBoundsAtt) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is missing attribute: "
-                      << VsSchema::Uniform::lowerBounds << std::endl;
-    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Looking for deprecated attribute: "
+                      << VsSchema::Uniform::lowerBounds
+                      << ".  Looking for deprecated attribute: "
                       << VsSchema::Uniform::lowerBounds_deprecated << std::endl;
+
     lowerBoundsAtt = getAttribute(VsSchema::Uniform::lowerBounds_deprecated);
   }
 
   if (!lowerBoundsAtt) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is also missing deprecated attribute: "
-                      << VsSchema::Uniform::lowerBounds_deprecated << std::endl;
-    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Unable to initialize mesh, returning failure."
+                      << VsSchema::Uniform::lowerBounds_deprecated
+                      << ".  Unable to initialize mesh, returning failure."
                       << std::endl;
     return false;
   }
@@ -137,9 +140,8 @@ bool VsUniformMesh::initialize()
   if (!upperBoundsAtt) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is missing attribute: "
-                      << VsSchema::Uniform::upperBounds << std::endl;
-    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Looking for deprecated attribute: "
+                      << VsSchema::Uniform::upperBounds
+                      << ".  Looking for deprecated attribute: "
                       << VsSchema::Uniform::upperBounds_deprecated << std::endl;
     upperBoundsAtt = getAttribute(VsSchema::Uniform::upperBounds_deprecated);
   }
@@ -147,68 +149,121 @@ bool VsUniformMesh::initialize()
   if (!upperBoundsAtt) {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh is also missing deprecated attribute: "
-                      << VsSchema::Uniform::upperBounds_deprecated << std::endl;
-    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Unable to initialize mesh, returning failure."
+                      << VsSchema::Uniform::upperBounds_deprecated
+                      << ".  Unable to initialize mesh, returning failure."
                       << std::endl;
     return false;
   }
 
-  // Get the spatial bounds. Get it from the lower bounds and make
-  // sure the upper bounds matches.
-  std::vector<double> dVals;
-
   // Get the lower bounds spatial dimension.
-  err = lowerBoundsAtt->getDoubleVectorValue(&dVals);
-
+  std::vector<double> dLowerBoundVals;
+  err = lowerBoundsAtt->getDoubleVectorValue(&dLowerBoundVals);
   if( err )
   {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to get lower bounds from attribute: "
-                      << lowerBoundsAtt->getShortName() << std::endl;
-    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Unable to initialize mesh, returning failure."
+                      << lowerBoundsAtt->getShortName()
+                      << ".  Unable to initialize mesh, returning failure."
                       << std::endl;
-    numSpatialDims = -1;
     return false;
   }
 
-  // Now get the upper bounds spatial dimension.
-  err = upperBoundsAtt->getDoubleVectorValue(&dVals);
+  if( iNumCells.size() != dLowerBoundVals.size() )
+  {
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Lower bounds and spatial dimensions do not match: "
+                      <<  iNumCells.size() << "  " << dLowerBoundVals.size()
+                      << ".  Unable to initialize mesh, returning failure."
+                      << std::endl;
+    return false;
+  }
 
+  // Get the upper bounds spatial dimension.
+  std::vector<double> dUpperBoundVals;
+  err = upperBoundsAtt->getDoubleVectorValue(&dUpperBoundVals);
   if( err )
   {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Unable to get upper bounds from attribute: "
-                      << lowerBoundsAtt->getShortName() << std::endl;
-    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Unable to initialize mesh, returning failure."
+                      << upperBoundsAtt->getShortName()
+                      << ".  Unable to initialize mesh, returning failure."
                       << std::endl;
-    numSpatialDims = -1;
     return false;
   }
 
-  if( numSpatialDims != dVals.size() )
+  if( iNumCells.size() != dUpperBoundVals.size() )
   {
     VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Lower and Upper spatial dimensions do not match: "
-                      << numSpatialDims << "  " << dVals.size()
+                      << "Upper bounds and spatial dimensions do not match: "
+                      <<  iNumCells.size() << "  " << dUpperBoundVals.size()
+                      << ".  Unable to initialize mesh, returning failure."
                       << std::endl;
-    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Unable to initialize mesh, returning failure."
-                      << std::endl;
-    numSpatialDims = -1;
     return false;
   }
+
+  // Malformed bounds 
+  if( (iNumCells.size() >= 1 && iNumCells[0] > 0 &&
+       dLowerBoundVals[0] == dUpperBoundVals[0]) ||
+
+      (iNumCells.size() >= 2 && iNumCells[1] > 0 &&
+       dLowerBoundVals[1] == dUpperBoundVals[1]) ||
+
+      (iNumCells.size() == 3 && iNumCells[2] > 0 &&
+       dLowerBoundVals[2] == dUpperBoundVals[2]) ) {
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Malformed mesh bounds and number of cells. "
+                      << "Must have at least one cell along an axis"
+                      << ".  Unable to initialize mesh, returning failure."
+                      << std::endl;
+    return false;
+  }
+
+  // For a uniform mesh, spatial dimensionality is the length of the
+  // numCells array
+  numSpatialDims = iNumCells.size();
+  
+  // ARS - Becasue of the way the data structures are used to hold
+  // structured data in VTK and VisIt the topological dimension has to
+  // equal the spatial dimension unless the last dim(s) are 0.
+
+  // i.e. 0, 0, 2 = topological dims == 3
+  // i.e. 2, 0, 0 = topological dims == 1
+  
+  // Determine the topological dimension using the number of cells.
+  numTopologicalDims = 0;
+
+  // Check for the last axis for a dimension greater than 0
+  for (int i = 0; i < iNumCells.size(); i++) {
+    if (iNumCells[i] > 0) {
+      numTopologicalDims = i + 1;
+    }
+  }
+  
+  // Check each axis for a dimension greater than 1
+  // for (int i = 0; i < iNumCells.size(); i++) {
+  //   if (iNumCells[i] > 0) {
+  //     numTopologicalDims++;
+  //   }
+  // }
+  
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Uniform Mesh " << getShortName() << " "
+                    << "has num spatial dims = "
+                    << numSpatialDims << " and "
+                    << "has num topological dims = "
+                    << numTopologicalDims << std::endl;
+
+  // ARS _ CURRENTLY THE START CELL IS IGNORED AS HOW IT IS TO USED IS
+  // NOT FULLY DEFINED.
 
   // StartCell is optional
   startCellAtt = getAttribute(VsSchema::Uniform::startCell);
+
   if (!startCellAtt) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh does not have optional attribute: "
-                      << VsSchema::Uniform::startCell << std::endl;
-    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Looking for deprecated attribute: "
+                      << VsSchema::Uniform::startCell
+                      << ".  Looking for deprecated attribute: "
                       << VsSchema::Uniform::startCell_deprecated << std::endl;
     startCellAtt = getAttribute(VsSchema::Uniform::startCell_deprecated);
   }
@@ -216,9 +271,50 @@ bool VsUniformMesh::initialize()
   if (!startCellAtt) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Uniform mesh does not have deprecated attribute: "
-                      << VsSchema::Uniform::startCell_deprecated << std::endl;
-    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "Using default start cell of 0." << std::endl;
+                      << VsSchema::Uniform::startCell_deprecated
+                      << ".  Using default start cell of 0." << std::endl;
+  }
+  else {
+    std::vector<int> iStartCell;
+    int err = startCellAtt->getIntVectorValue(&iStartCell);
+    if (err) {
+      VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "Unable to get dimensionality from attribute: "
+                        << startCellAtt->getShortName()
+                        << ".  Unable to initialize mesh, returning failure."
+                        << std::endl;
+      return false;
+    }
+
+    if( iNumCells.size() != iStartCell.size() )
+    {
+      VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "start cell and spatial dimensions do not match: "
+                        <<  iNumCells.size() << "  " << iStartCell.size()
+                        << ".  Unable to initialize mesh, returning failure."
+                        << std::endl;
+      return false;
+    }
+
+    if( (iStartCell.size() == 3 &&
+         (iStartCell[2] < 0 || iNumCells[2] < iStartCell[2])) ||
+        (iStartCell.size() == 2 &&
+         (iStartCell[1] < 0 || iNumCells[1] < iStartCell[1])) ||
+        (iStartCell.size() == 1 &&
+         (iStartCell[0] < 0 || iNumCells[0] < iStartCell[0])) )
+    {
+      VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                        << "start cell bounds are greater than the cell bounds"
+                        << ".  Unable to initialize mesh, returning failure."
+                        << std::endl;
+      return false;
+    }
+
+    VsLog::errorLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                      << "Found a start cell for this mesh, "
+                      << "but not sure how it should be used, "
+                      << "ignoring it for now."
+                      << std::endl;
   }
 
   return initializeRoot();
@@ -302,6 +398,7 @@ int VsUniformMesh::getUpperBounds(std::vector<float>* fVals) {
 
 
 int VsUniformMesh::getStartCell(std::vector<int>* startCell) {
+
   if (startCellAtt == NULL) {
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                       << "Mesh does not have optional attribute: "
@@ -317,6 +414,7 @@ int VsUniformMesh::getStartCell(std::vector<int>* startCell) {
                       << " in reading attribute '"
                       << startCellAtt->getShortName() << "'." <<  std::endl;
   }
+
   return err;
 }
 
@@ -326,17 +424,18 @@ void VsUniformMesh::getCellDims(std::vector<int>& dims) const
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "Entering." <<  std::endl;
   
-  // Read dims of totalNumCells attribute
   numCellsAtt->getIntVectorValue(&dims);
 }
 
 
 void VsUniformMesh::getNodeDims(std::vector<int>& dims) const
 {
-  // Get the number of cells
-  getCellDims(dims);
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Entering." <<  std::endl;
 
-  // The number of nodes will be one more than the number of cells;
-  for (unsigned int i = 0; i < dims.size(); i++)
-    ++dims[i];
+  // Determine the number of nodes which is the number of cells plus 1.
+  numCellsAtt->getIntVectorValue(&dims);
+  
+  for( int i=0; i<dims.size(); ++i )
+    dims[i] += 1;
 }

@@ -64,6 +64,7 @@ public:
   /** Get dimensions of associated dataset. */
   std::vector<int> getDims() const;
 
+  size_t getNumCells() const;
   size_t getNumPoints() const;
 
   virtual void getCellDims(std::vector<int>& dims) const;
