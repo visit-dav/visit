@@ -533,7 +533,7 @@ ExplicitCoordsToVTKPoints(const Node &n_coords)
         double z = have_z ? z_vals[i] : 0;
         points->SetPoint(i, x, y, z);
     }
-
+    
     return points;
 }
 
@@ -971,9 +971,8 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
    const int *mesh_atts  = NULL;
    const int *bndry_atts = NULL;
 
-   // These were used for debugging:
-   // int num_mesh_atts_entires = 0;
-   // int num_bndry_atts_entires = 0;
+   int num_mesh_atts_entires = 0;
+   int num_bndry_atts_entires = 0;
 
    // the attribute fields could have several names
    // for the element attributes check for first occurrence of field with
@@ -1011,7 +1010,7 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
          mesh_atts = n_mesh_atts_vals_conv.value();
       }
 
-      // num_mesh_atts_entires = n_mesh_atts_vals.dtype().number_of_elements();
+      num_mesh_atts_entires = n_mesh_atts_vals.dtype().number_of_elements();
    }
    else
    {
@@ -1052,7 +1051,7 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
          bndry_atts = n_bndry_atts_vals_conv.value();
       }
 
-      // num_bndry_atts_entires = n_bndry_atts_vals.dtype().number_of_elements();
+      num_bndry_atts_entires = n_bndry_atts_vals.dtype().number_of_elements();
 
    }
    else
@@ -1066,10 +1065,12 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
    //         << "Number of Mesh Attribute Entries: "
    //         << num_mesh_atts_entires << endl
    //         << "Number of Boundary Attribute Entries: "
-   //          << num_bndry_atts_entires << endl);
-   //
+   //         << num_bndry_atts_entires << endl);
 
    // Construct MFEM Mesh Object with externally owned data
+   // Note: if we don't have a gf, we need to provide the proper space dim
+   //       if nodes gf is attached later, it resets the space dim based
+   //       on the gf's fes.
    Mesh *mesh = new Mesh(// from coordset
       const_cast<double*>(verts_ptr),
       num_verts,
@@ -1086,10 +1087,10 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
       const_cast<int*>(bndry_atts),
       num_bndry_ele,
       ndims, // dim
-      ndims); // spatial dim
+      ndims); // space dim
 
    // Attach Nodes Grid Function, if it exists
-   if(n_mesh_topo.has_child("grid_function"))
+   if (n_mesh_topo.has_child("grid_function"))
    {
       std::string nodes_gf_name = n_mesh_topo["grid_function"].as_string();
 
@@ -1097,7 +1098,7 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
       const Node &n_mesh_gf = n_mesh["fields"][nodes_gf_name];
       // create gf
       mfem::GridFunction *nodes = FieldToMFEM(mesh,
-                                                               n_mesh_gf);
+                                              n_mesh_gf);
       // attach to mesh
       mesh->NewNodes(*nodes,true);
    }
@@ -1136,7 +1137,7 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
     
    // n_conv holds converted data (when necessary for mfem api)
    // if n_conv is used ( !n_conv.dtype().empty() ) we
-   // now that some data allocation was necessary, so we
+   // know that some data allocation was necessary, so we
    // can't return a gf that zero copies the conduit data
    Node n_conv;
 
@@ -1245,14 +1246,16 @@ avtBlueprintDataAdaptor::MFEM::FieldToMFEM(mfem::Mesh *mesh,
    }
    else
    {
-      // copy case
-      res = new GridFunction(fes,NULL);
-      res->NewDataAndSize(const_cast<double*>(vals_ptr),fes->GetVSize());
+      // copy case, this constructor will alloc the space for the GF data
+      res = new GridFunction(fes);
+      // create an mfem vector that wraps the conduit data
+      Vector vals_vec(const_cast<double*>(vals_ptr),fes->GetVSize());
+      // copy values into the result
+      (*res) = vals_vec;
    }
 
-   // TODO: I believe the GF already has ownership of fes, so this
-   // should be all we need to do to avoid leaking objs created
-   // here?
+   // TODO: I believe the GF already has ownership of fes, so this should be all
+   // we need to do to avoid leaking objs created here?
    res->MakeOwner(fec);
 
    return res;
