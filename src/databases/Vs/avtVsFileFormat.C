@@ -114,9 +114,6 @@ avtVsFileFormat::avtVsFileFormat(const char* filename,
                       DebugStream::Stream4(),
                       DebugStream::Stream5());
 
-    //VsLog::debugLog() << CLASSFUNCLINE
-    //<< "entering" << std::endl;
-
     VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
 
     if (readOpts != NULL) {
@@ -181,7 +178,7 @@ avtVsFileFormat::avtVsFileFormat(const char* filename,
     //But now do it on demand in 'populateDatabaseMetaData'
     //To minimize I/O
 
-    VsLog::debugLog() << CLASSFUNCLINE << "exiting" << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -198,11 +195,11 @@ avtVsFileFormat::avtVsFileFormat(const char* filename,
 
 avtVsFileFormat::~avtVsFileFormat()
 {
-    VsLog::debugLog() << CLASSFUNCLINE << "entering" << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
 
     FreeUpResources();
 
-    VsLog::debugLog() << CLASSFUNCLINE << "exiting" << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // ***************************************************************************
@@ -473,7 +470,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
         }
 
         // Rectilinear Mesh
-        if (meta->isRectilinearMesh()) {
+        else if (meta->isRectilinearMesh()) {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Trying to load & return rectilinear mesh."
                               << std::endl;
@@ -482,7 +479,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
         }
 
         // Structured Mesh
-        if (meta->isStructuredMesh()) {
+        else if (meta->isStructuredMesh()) {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Trying to load & return structured mesh" << std::endl;
             return getStructuredMesh(static_cast<VsStructuredMesh*>(meta),
@@ -492,7 +489,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
         // Don't know how to decompose any other type of mesh -> load it
         // on proc 0 only
-        if (PAR_Rank() > 0) {
+        else if (PAR_Rank() > 0) {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "In parallel mode on processor " << PAR_Rank()
                               << " and mesh is not uniform.  "
@@ -503,7 +500,7 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
 #endif
 
         // Unstructured Mesh
-        if (meta->isUnstructuredMesh()) {
+        else if (meta->isUnstructuredMesh()) {
 
             if(meta->isHighOrder()) {
                 VsLog::debugLog() << CLASSFUNCLINE
@@ -512,17 +509,21 @@ vtkDataSet* avtVsFileFormat::GetMesh(int domain, const char* name)
                                                     haveDataSelections, mins, maxs, strides);
             }
 
-            VsLog::debugLog() << CLASSFUNCLINE
-                              << "Trying to load & return unstructured mesh" << std::endl;
-            return getUnstructuredMesh(static_cast<VsUnstructuredMesh*>(meta),
-                                       haveDataSelections, mins, maxs, strides);
+            else {
+              VsLog::debugLog() << CLASSFUNCLINE
+                                << "Trying to load & return unstructured mesh" << std::endl;
+              return getUnstructuredMesh(static_cast<VsUnstructuredMesh*>(meta),
+                                         haveDataSelections, mins, maxs, strides);
+            }
         }
-
+        
         // At this point we don't know what kind of mesh it is.
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Mesh has unknown type: " << meta->getKind()
-                          << ".  Returning NULL." << std::endl;
-        return NULL;
+        else {
+          VsLog::debugLog() << CLASSFUNCLINE
+                            << "Mesh has unknown type: " << meta->getKind()
+                            << ".  Returning NULL." << std::endl;
+          return NULL;
+        }
     }
 
     // Variable with mesh
@@ -583,56 +584,32 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
+
+    // ARS - Becasue of the way the data structures are used to hold
+    // structured data in VTK and VisIt the topological dimension has
+    // to equal the spatial dimension. That is ONLY the last dim(s) of
+    // the nodes can be 1.
+    size_t numSpatialDims = uniformMesh->getNumSpatialDims();
+    size_t numTopologicalDims = uniformMesh->getNumTopologicalDims();
 
     // Get dims of points array
     VsLog::debugLog() << CLASSFUNCLINE
                       << "Determining dimension of points array." << std::endl;
 
-    std::vector<int> numCells;
-    uniformMesh->getCellDims(numCells); // Number of nodes NOT cells.
+    std::vector<int> numNodes;
+    uniformMesh->getNodeDims(numNodes);
 
-    if (numCells.size() <= 0) { ///TODO: are number of cells allow to be 0?
-        std::ostringstream msg;
-        msg << CLASSFUNCLINE
-            << "Could not get dimensions of the uniform mesh.";
-        VsLog::debugLog() << msg.str() << std::endl;
-        throw std::out_of_range(msg.str().c_str());
-    }
+    VsLog::debugLog() << CLASSFUNCLINE
+                      << "Getting bounds for mesh." << std::endl;
+    
+    std::vector<float> lowerBounds;
+    uniformMesh->getLowerBounds(&lowerBounds);
 
-    size_t numTopologicalDims = uniformMesh->getNumTopologicalDims();
-
-    if (numTopologicalDims > 3) {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: numTopologicalDims of the mesh is larger than 3.  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
-
-    size_t numSpatialDims = uniformMesh->getNumSpatialDims();
-
-    if (numSpatialDims > 3) {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: numSpatialDims of the mesh is larger than 3.  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
-
-    // The numTopologicalDims and numSpatialDims can be different for
-    // structured grids but the numSpatialDims must be great than or
-    // equal to the numTopologicalDims.
-    if( numTopologicalDims > numSpatialDims )
-    {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: The numTopologicalDims ("
-                          << numTopologicalDims
-                          << ") is greater than numSpatialDims ("
-                          << numSpatialDims << ").  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
+    std::vector<float> upperBounds;
+    uniformMesh->getUpperBounds(&upperBounds);
 
     // VisIt downcasts to float, so go to float by default now.
     hid_t meshDataType = uniformMesh->getDataType();
@@ -649,60 +626,47 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
         return NULL;
     }
 
-    // startCell
-    VsLog::debugLog() << CLASSFUNCLINE
-    << "Loading optional startCells attribute." << std::endl;
-    std::vector<int> startCell;
-    herr_t err = uniformMesh->getStartCell(&startCell);
-    if (err < 0) {
-        VsLog::warningLog() << CLASSFUNCLINE
-                            << "Uniform mesh does not have starting cell position."
-                            << std::endl;
-    } else {
-        // Adjust the box by startCell
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Adjusting numCells by startCells." << std::endl;
-        for (size_t i = 0; i < numSpatialDims; ++i)
-          numCells[i] -= startCell[i];
-    }
+    // ARS _ CURRENTLY THE START CELL IS IGNORED AS HOW IT IS TO USED IS
+    // NOT FULLY DEFINED.
+
+    // startCell - 
+    // VsLog::debugLog() << CLASSFUNCLINE
+    //                << "Loading optional startCells attribute." << std::endl;
+    
+    // std::vector<int> startCell;
+    // herr_t err = uniformMesh->getStartCell(&startCell);
+    // if (err < 0) {
+    //     VsLog::warningLog() << CLASSFUNCLINE
+    //                         << "Uniform mesh does not have starting cell position."
+    //                         << std::endl;
+    // } else {
+    //     // Adjust the box by startCell
+    //     VsLog::debugLog() << CLASSFUNCLINE
+    //                       << "Adjusting numCells by startCells." << std::endl;
+    //  // ARS - THIS MAKES NO SENSE
+    //     for (size_t i = 0; i < numSpatialDims; ++i)
+    //       numCells[i] -= startCell[i];
+    // }
 
     VsLog::debugLog() << CLASSFUNCLINE
                       << "Determining size of point arrays." << std::endl;
 
-    // Storage for meshes in VisIt, which is a vtkUniformGrid which
-    // is spatially 3D so the points must also be 3D.
+    // Storage for meshes in VisIt, which is a vtkRectilinearGrid
+    // which is spatially 3D so the points must also be 3D.
     size_t vsdim = 3;
     std::vector<int> gdims(vsdim);
 
-    // Number of nodes is equal to number of cells plus one
-    std::vector<int> numNodes(vsdim);
-    for (size_t i = 0; i < numSpatialDims; ++i)
-        numNodes[i] = numCells[i]+1;
-
-    // Set unused dims to 1
-    for (size_t i=numSpatialDims; i<vsdim; ++i)
-        numNodes[i] = 1;
-
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
+    GetSelectionBounds( numSpatialDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+    if( !GetParallelDecomp( numSpatialDims, gdims, mins, maxs, strides ) )
       return NULL; // No work for this processor.
 
     haveDataSelections = 1;
 #endif
-
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Getting bounds for mesh." << std::endl;
-    
-    std::vector<float> lowerBounds;
-    uniformMesh->getLowerBounds(&lowerBounds);
-
-    std::vector<float> upperBounds;
-    uniformMesh->getUpperBounds(&upperBounds);
 
     // Storage for mesh points in VisIt are spatially 3D. So create 3
     // coordinate arrays and fill in zero for the others.
@@ -762,8 +726,8 @@ vtkDataSet* avtVsFileFormat::getUniformMesh(VsUniformMesh* uniformMesh,
     for (size_t i = 0; i<vsdim; ++i)
       coords[i]->Delete();
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Returning data." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
+
     return rgrid;
 }
 
@@ -788,59 +752,23 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
+
+    // ARS - Becasue of the way the data structures are used to hold
+    // structured data in VTK and VisIt the topological dimension has
+    // to equal the spatial dimension. That is ONLY the last dim(s) of
+    // the nodes can be 1.
+    size_t numSpatialDims = rectilinearMesh->getNumSpatialDims();
+    size_t numTopologicalDims = rectilinearMesh->getNumTopologicalDims();
 
     // Get dims of points array
     VsLog::debugLog() << CLASSFUNCLINE
                       << "Determining dimension of points array." << std::endl;
 
     std::vector<int> numNodes;
-    rectilinearMesh->getCellDims(numNodes); // Number of nodes NOT cells.
-
-    if (numNodes.size() <= 0) { ///TODO: are number of cells allow to be zero?
-        std::ostringstream msg;
-        msg << CLASSFUNCLINE
-            << "Could not get dimensions of the rectilinear mesh.";
-        VsLog::debugLog() << msg.str() << std::endl;
-        throw std::out_of_range(msg.str().c_str());
-    }
-
-    // ARS - Becasue of the way the data structures are used to hold
-    // structured data in VTK and VisIt the topological dimension has to
-    // equal the spatial dimension. That is ONLY the last dim(s) can be 1.
-    size_t numTopologicalDims = rectilinearMesh->getNumTopologicalDims();
-
-    if (numTopologicalDims > 3) {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: numTopologicalDims of the mesh is larger than 3.  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
-
-    size_t numSpatialDims = rectilinearMesh->getNumSpatialDims();
-
-    if (numSpatialDims > 3) {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: numSpatialDims of the mesh is larger than 3.  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
-
-    // The numTopologicalDims and numSpatialDims can be different for
-    // structured grids but the numSpatialDims must be great than or
-    // equal to the numTopologicalDims.
-    if( numTopologicalDims > numSpatialDims )
-    {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: The numTopologicalDims ("
-                          << numTopologicalDims
-                          << ") is greater than numSpatialDims ("
-                          << numSpatialDims << ").  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
+    rectilinearMesh->getNodeDims(numNodes);
 
     // VisIt downcasts to float, so go to float by default now.
     hid_t meshDataType = rectilinearMesh->getDataType();
@@ -860,18 +788,18 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
     VsLog::debugLog() << CLASSFUNCLINE
                       << "Determining size of point arrays." << std::endl;
 
-    // Storage for meshes in VisIt, which is a vtkRectilinearGrid which
-    // is topologically 3D so the points must also be 3D.
+    // Storage for meshes in VisIt, which is a vtkRectilinearGrid
+    // which is spatially 3D so the points must also be 3D.
     size_t vsdim = 3;
     std::vector<int> gdims(vsdim);
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
+    GetSelectionBounds( numSpatialDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+    if( !GetParallelDecomp( numSpatialDims, gdims, mins, maxs, strides ) )
       return NULL; // No work for this processor.
 
     haveDataSelections = 1;
@@ -921,7 +849,7 @@ avtVsFileFormat::getRectilinearMesh(VsRectilinearMesh* rectilinearMesh,
         }
 
         // Read in the point data. NOTE: Even when doing index selecting
-        // or in parallel mode read in all of te data. As for the grid
+        // or in parallel mode read in all of the data. As for the grid
         // there is not that much data. When building the mesh the
         // correct nodes are used.
         herr_t err = reader->getData(axisData, dataPtr);
@@ -1123,14 +1051,13 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     // Find points: Structured meshes are datasets, and the data is
     // the points So, look for the dataset with the same name as the
     // mesh
-
     VsDataset* pointsDataset =
       registry->getDataset(structuredMesh->getFullName());
 
@@ -1142,55 +1069,19 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
         return NULL;
     }
 
+    // ARS - Becasue of the way the data structures are used to hold
+    // structured data in VTK and VisIt the topological dimension has
+    // to equal the spatial dimension. That is ONLY the last dim(s) of
+    // the nodes can be 1.
+    size_t numSpatialDims = structuredMesh->getNumSpatialDims();
+    size_t numTopologicalDims = structuredMesh->getNumTopologicalDims();
+
     // Get dims of points array
     VsLog::debugLog() << CLASSFUNCLINE
                       << "Determining dimension of points array." << std::endl;
 
     std::vector<int> numNodes;
-    structuredMesh->getCellDims(numNodes); // Number of nodes NOT cells.
-
-    if (numNodes.size() <= 0) { ///TODO: are number of cells allow to be zero?
-        std::ostringstream msg;
-        msg << CLASSFUNCLINE
-            << "Could not get dimensions of the structured mesh.";
-        VsLog::debugLog() << msg.str() << std::endl;
-        throw std::out_of_range(msg.str().c_str());
-    }
-
-    // ARS - Becasue of the way the data structures are used to hold
-    // structured data in VTK and VisIt the topological dimension has to
-    // equal the spatial dimension. That is ONLY the last dim(s) can be 1.
-    size_t numTopologicalDims = structuredMesh->getNumTopologicalDims();
-
-    if (numTopologicalDims > 3) {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: numTopologicalDims of the mesh is larger than 3.  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
-
-    size_t numSpatialDims = structuredMesh->getNumSpatialDims();
-
-    if (numSpatialDims > 3) {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: numSpatialDims of the mesh is larger than 3.  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
-
-    // The numTopologicalDims and numSpatialDims can be different for
-    // structured grids but the numSpatialDims must be great than or
-    // equal to the numTopologicalDims.
-    if( numTopologicalDims > numSpatialDims )
-    {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Error: The numTopologicalDims ("
-                          << numTopologicalDims
-                          << ") is greater than numSpatialDims ("
-                          << numSpatialDims << ").  "
-                          << "Returning NULL." << std::endl;
-        return NULL;
-    }
+    structuredMesh->getNodeDims(numNodes);
 
     // VisIt downcasts to float, so go to float by default now.
     hid_t meshDataType = pointsDataset->getType();
@@ -1207,17 +1098,17 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
     }
 
     // Storage for meshes in VisIt, which is a vtkStructuredGrid which
-    // is topologically 3D so the points must also be 3D.
+    // is spatially 3D so the points must also be 3D.
     size_t vsdim = 3;
     std::vector<int> gdims(vsdim);
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numNodes, gdims,
+    GetSelectionBounds( numSpatialDims, numNodes, gdims,
                         mins, maxs, strides, haveDataSelections );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
-    if( !GetParallelDecomp( numTopologicalDims, gdims, mins, maxs, strides ) )
+    if( !GetParallelDecomp( numSpatialDims, gdims, mins, maxs, strides ) )
       return NULL; // No work for this processor.
 
     haveDataSelections = 1;
@@ -1467,13 +1358,16 @@ vtkDataSet* avtVsFileFormat::getStructuredMesh(VsStructuredMesh* structuredMesh,
 //Most of this really should be moved into the HighOrderUnstrucured class.
 vtkDataSet*
 avtVsFileFormat::getHighOrderUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
-        bool haveDataSelections,
-        int* mins, int* maxs, int* strides) {
-    VsLog::debugLog() << CLASSFUNCLINE << "Entering" << std::endl;
+                                              bool haveDataSelections,
+                                              int* mins, int* maxs, int* strides) {
+    VsLog::debugLog() << CLASSFUNCLINE << "Entering." << std::endl;
+    
     LoadData();
 
     thisData.setReader(reader);
     thisData.setRegistry(registry);
+
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 
     return thisData.getMesh(unstructuredMesh);
 }
@@ -1498,8 +1392,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    VsLog::debugLog() << CLASSFUNCLINE
-    << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     // Check for points type
@@ -1511,20 +1405,20 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
     if (!isDouble && !isFloat) {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Error: hdf5 mesh data type not handled: "
-        << meshDataType << "Returning NULL." << std::endl;
+                          << "Error: hdf5 mesh data type not handled: "
+                          << meshDataType << "Returning NULL." << std::endl;
         return NULL;
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
-    << "Checking dimensionality of mesh." << std::endl;
+                      << "Checking dimensionality of mesh." << std::endl;
 
-    size_t numNodes = unstructuredMesh->getNumPoints();
+    size_t numNodes       = unstructuredMesh->getNumPoints();
     size_t numSpatialDims = unstructuredMesh->getNumSpatialDims();
 
     // Get ready to read in points
     VsLog::debugLog() << CLASSFUNCLINE
-    << "Setting up data structures." << std::endl;
+                      << "Setting up data structures." << std::endl;
 
     vtkUnstructuredGrid* ugridPtr = vtkUnstructuredGrid::New();
 
@@ -1541,18 +1435,18 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     if (unstructuredMesh->isPointMesh() && haveDataSelections)
     {
         if( maxs[0] < 0 || numNodes - 1 < (size_t)maxs[0] )
-        maxs[0] = (int)numNodes - 1;          // last cell index,
-                                         // not number of cells
+          maxs[0] = (int) numNodes - 1;  // last cell index, not number of cells
 
         if( maxs[0] < mins[0] )
-        mins[0] = 0;
+          mins[0] = 0;
 
-        VsLog::debugLog() << CLASSFUNCLINE
-        << "Have a zonal inclusive selection for unstructured point mesh "
-        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
-        << std::endl;
+        VsLog::debugLog()
+          << CLASSFUNCLINE
+          << "Have a zonal inclusive selection for unstructured point mesh "
+          << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+          << std::endl;
 
-                                         // New number of nodes based on the above.
+        // New number of nodes based on the above.
         numNodes = (maxs[0]-mins[0]) / strides[0] + 1;
     }
 
@@ -1568,17 +1462,22 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
-    << "VPoints array will have " << numNodes << " points."
-    << std::endl;
+                      << "VPoints array will have " << numNodes << " points."
+                      << std::endl;
+    
     vpoints->SetNumberOfPoints(numNodes);
     void* dataPtr = vpoints->GetVoidPointer(0);
+
     if (!dataPtr) {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Unable to allocate the points.  Cleaning up."
-        << std::endl;
+                          << "Unable to allocate the points.  Cleaning up."
+                          << std::endl;
+        
         ugridPtr->Delete();
+        
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Returning NULL." << std::endl;
+                          << "Returning NULL." << std::endl;
+        
         return NULL;
     }
 
@@ -1586,7 +1485,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     if (unstructuredMesh->usesSplitPoints())
     {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Using split-points method" << std::endl;
+                          << "Using split-points method" << std::endl;
 
         // Kind of grim but read each of the coordinate components in
         // using the generic reader.
@@ -1630,8 +1529,9 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
             if (err < 0) {
                 VsLog::debugLog() << CLASSFUNCLINE
-                << "Call to getDataSet returned error: "
-                << err << "Returning NULL." << std::endl;
+                                  << "Call to getDataSet returned error: "
+                                  << err << "Returning NULL." << std::endl;
+                
                 return NULL;
             }
         }
@@ -1641,7 +1541,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         for (size_t i=numSpatialDims; i<3; ++i)
         {
             VsLog::debugLog() << CLASSFUNCLINE
-            << "Zeroing data at unused positions." << std::endl;
+                              << "Zeroing data at unused positions."
+                              << std::endl;
 
             if (isDouble) {
 
@@ -1670,7 +1571,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     else
     {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Using all-in-one method" << std::endl;
+                          << "Using all-in-one method" << std::endl;
 
         VsDataset* pointsDataset = unstructuredMesh->getPointsDataset();
 
@@ -1692,12 +1593,13 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                     &(srcMins[0]), &(srcMaxs[0]), &(srcStrides[0]) );
         }
         else
-        err = reader->getData(pointsDataset, dataPtr);
+          err = reader->getData(pointsDataset, dataPtr);
 
         if (err < 0) {
             VsLog::debugLog() << CLASSFUNCLINE
-            << "Call to getDataSet returned error: "
-            << err << "Returning NULL." << std::endl;
+                              << "Call to getDataSet returned error: "
+                              << err << "Returning NULL." << std::endl;
+
             return NULL;
         }
 
@@ -1706,16 +1608,17 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         if (numSpatialDims < 3)
         {
             VsLog::debugLog() << CLASSFUNCLINE
-            << "Point spatial dimensionality ("
-            << numSpatialDims << " is less than 3.  "
-            << "Moving data into correct location." << std::endl;
+                              << "Point spatial dimensionality ("
+                              << numSpatialDims << " is less than 3.  "
+                              << "Moving data into correct location."
+                              << std::endl;
 
             for (int i=numNodes-1; i>=0; --i)
             {
-                unsigned char* destPtr
-                = (unsigned char*) dataPtr + i*3*dsize;
-                unsigned char* srcPtr
-                = (unsigned char*) dataPtr + i*numSpatialDims*dsize;
+                unsigned char* destPtr =
+                  (unsigned char*) dataPtr + i*3*dsize;
+                unsigned char* srcPtr =
+                  (unsigned char*) dataPtr + i*numSpatialDims*dsize;
 
                 memmove(destPtr, srcPtr, numSpatialDims*dsize);
                 destPtr += numSpatialDims*dsize;
@@ -1723,7 +1626,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             }
 
             VsLog::debugLog() << CLASSFUNCLINE
-            << "Data move succeeded." << std::endl;
+                              << "Data move succeeded." << std::endl;
         }
     }
 
@@ -1732,12 +1635,13 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     if (unstructuredMesh->isPointMesh())
     {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Mesh was registered as a point mesh."
-        << "Because no connectivity data was found. "
-        << "Adding vertices as single points and returning."
-        << std::endl;
+                          << "Mesh was registered as a point mesh."
+                          << "Because no connectivity data was found. "
+                          << "Adding vertices as single points and returning."
+                          << std::endl;
 
         vtkIdType vertex;
+        
         for (size_t i=0; i<numNodes; ++i) {
             vertex = i;
             ugridPtr->InsertNextCell(VTK_VERTEX, 1, &vertex);
@@ -1812,12 +1716,12 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
-    << "Found connectivity data. "
-    << "Connectivity dataset name is "
-    << connectivityDatasetName << "  "
-    << "haveConnectivityCount = "
-    << haveConnectivityCount
-    << std::endl;
+                      << "Found connectivity data. "
+                      << "Connectivity dataset name is "
+                      << connectivityDatasetName << "  "
+                      << "haveConnectivityCount = "
+                      << haveConnectivityCount
+                      << std::endl;
 
     std::vector<int> connectivityDims = connectivityMeta->getDims();
 
@@ -1828,18 +1732,20 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
     // Vertices
     VsLog::debugLog() << CLASSFUNCLINE
-    << "Allocating space for " << datasetLength
-    << " integers of connectivity data." << std::endl;
+                      << "Allocating space for " << datasetLength
+                      << " integers of connectivity data." << std::endl;
 
     int* vertices = new int[datasetLength];
     if (!vertices) {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Unable to allocate vertices.  Cleaning up." << std::endl;
+                          << "Unable to allocate vertices.  Cleaning up."
+                          << std::endl;
 
         ugridPtr->Delete();
 
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Returning NULL." << std::endl;
+                          << "Returning NULL." << std::endl;
+        
         return NULL;
     }
 
@@ -1869,9 +1775,9 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             mins[0] = 0;
 
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Have a zonal inclusive selection for unstructured mesh cells "
-        << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
-        << std::endl;
+                          << "Have a zonal inclusive selection for unstructured mesh cells "
+                          << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
+                          << std::endl;
 
         // New number of cells based on the above.
         numCells = (maxs[0]-mins[0]) / strides[0] + 1;
@@ -1929,8 +1835,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
     // Log some debug info
     VsLog::debugLog() << CLASSFUNCLINE
-    << "numCells = " << numCells
-    << ", numVerts = " << numVerts << "." << std::endl;
+                      << "numCells = " << numCells
+                      << ", numVerts = " << numVerts << "." << std::endl;
 
     // Check for connectivity list type
     if (!isIntType( connectivityMeta->getType() )) {
@@ -1950,41 +1856,47 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
 
     if (loadDataErr < 0) {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Call to getDataSet returned error: " << loadDataErr
-        << "Returning NULL." << std::endl;
+                          << "Call to getDataSet returned error: " << loadDataErr
+                          << "Returning NULL." << std::endl;
         return NULL;
     }
 
     try {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Allocating " << numCells << " cells.  "
-        << "If old VTK and this fails, it will just abort."
-        << std::endl;
-
+                          << "Allocating " << numCells << " cells.  "
+                          << "If old VTK and this fails, it will just abort."
+                          << std::endl;
+        
         ugridPtr->Allocate(numCells);
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Allocation succeeded." << std::endl;
+                          << "Allocation succeeded." << std::endl;
     }
     // JRC: what goes here to detect failure to allocate?
     catch (std::bad_alloc) {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Caught std::bad_alloc exception. "
-        << "Unable to allocate space for cells.  Cleaning up."
-        << "Returning NULL." << std::endl;
+                          << "Caught std::bad_alloc exception. "
+                          << "Unable to allocate space for cells.  Cleaning up."
+                          << "Returning NULL." << std::endl;
+
         delete [] vertices;
         ugridPtr->Delete();
+
         return NULL;
     } catch (...) {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Unknown exception allocating cells.  Cleaning up."
-        << "Returning NULL." << std::endl;
+                          << "Unknown exception allocating cells.  Cleaning up."
+                          << "Returning NULL." << std::endl;
+
         delete [] vertices;
         ugridPtr->Delete();
+
         return NULL;
     }
 
-    //Tweak for Nautilus
-    //Prepare to fix up the connectivity list if node correction data is available
+    // Tweak for Nautilus
+    
+    // Prepare to fix up the connectivity list if node correction data
+    // is available
     int* correctionList = NULL;
     size_t correctionListSize = 0;
     if (unstructuredMesh->hasNodeCorrectionData()) {
@@ -1994,8 +1906,9 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             int* localToGlobalNodeMapping = new int[correctionListSize]; // Memory leak?
             reader->getData(correctionDataset, localToGlobalNodeMapping);
 
-            //Build up a list of which global ids are "taken" by more than one node
-            //And when that happens, remember the local ids that need to be mapped to the original local id
+            // Build up a list of which global ids are "taken" by more
+            // than one node And when that happens, remember the local
+            // ids that need to be mapped to the original local id
             correctionList = new int[correctionListSize];
             int* globalToLocalNodeMapping = new int[correctionListSize];
             for (size_t i = 0; i < correctionListSize; i++) {
@@ -2003,7 +1916,7 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                 globalToLocalNodeMapping[i] = -1;
             }
 
-            //Build up the correction list
+            // Build up the correction list
             for (int i = 0; i < (int)correctionListSize; i++) {
                 int localId = i;
                 int globalId = localToGlobalNodeMapping[i];
@@ -2020,7 +1933,8 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     //end tweak
 
     VsLog::debugLog() << CLASSFUNCLINE
-    << "Inserting cells into grid." << std::endl;
+                      << "Inserting cells into grid." << std::endl;
+    
     int warningCount = 0;
     int cellCount = 0;
     unsigned int cellVerts = 0; // total verts (for VTK_POLYHEDRON this value is not topologically meaningful - see below)
@@ -2031,18 +1945,18 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     if( haveConnectivityCount ) {
         cellVerts = haveConnectivityCount;
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Inserting " << cellVerts
-        << " vertices into each cell." << std::endl;
+                          << "Inserting " << cellVerts
+                          << " vertices into each cell." << std::endl;
     }
 
     for (size_t i = 0; i < numCells; ++i) {
         if (k >= datasetLength) {
             VsLog::debugLog() << CLASSFUNCLINE
-            << "While iterating over the vertices, "
-            << "the index variable 'k' "
-            << "went beyond the end of the array. "
-            << "Existing cells will be returned "
-            << "but the loop is terminating now." << std::endl;
+                              << "While iterating over the vertices, "
+                              << "the index variable 'k' "
+                              << "went beyond the end of the array. "
+                              << "Existing cells will be returned "
+                              << "but the loop is terminating now." << std::endl;
             break;
         }
 
@@ -2078,43 +1992,44 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
         {
           switch (cellVerts) {
             case 1:
-            cellType = VTK_VERTEX;
+              cellType = VTK_VERTEX;
             break;
             case 2:
-            cellType = VTK_LINE;
+              cellType = VTK_LINE;
             break;
             case 3:
-            cellType = VTK_TRIANGLE;
-            break;
+              cellType = VTK_TRIANGLE;
+              break;
             case 4:
-            if( numTopologicalDims == 2 ) cellType = VTK_QUAD;
-            else if( numTopologicalDims == 3 ) cellType = VTK_TETRA;
+              if( numTopologicalDims == 2 ) cellType = VTK_QUAD;
+              else if( numTopologicalDims == 3 ) cellType = VTK_TETRA;
             break;
             case 5:
-            if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
-            else if( numTopologicalDims == 3 ) cellType = VTK_PYRAMID;
-            break;
+              if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
+              else if( numTopologicalDims == 3 ) cellType = VTK_PYRAMID;
+              break;
             case 6:
-            if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
-            else if( numTopologicalDims == 3 ) cellType = VTK_WEDGE;
-            break;
+              if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
+              else if( numTopologicalDims == 3 ) cellType = VTK_WEDGE;
+              break;
             case 8:
-            if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
-            else if( numTopologicalDims == 3 ) cellType = VTK_HEXAHEDRON;
+              if( numTopologicalDims == 2 ) cellType = VTK_POLYGON;
+              else if( numTopologicalDims == 3 ) cellType = VTK_HEXAHEDRON;
             break;
             default:
-            if (numTopologicalDims == 2) cellType = VTK_POLYGON;
-            else {
+              if (numTopologicalDims == 2) cellType = VTK_POLYGON;
+              else {
                 if (warningCount < 30) {
                     VsLog::debugLog() << CLASSFUNCLINE
-                    << "Error: invalid number of vertices for cell #"
-                    << cellCount << ": " << cellVerts << std::endl;
+                                      << "Error: invalid number of vertices for cell #"
+                                      << cellCount << ": " << cellVerts << std::endl;
                 } else if (warningCount == 30) {
-                    VsLog::debugLog() << CLASSFUNCLINE
-                    << "Exceeded maximum number of errors.  "
-                    << "Error messages disabled for remaining cells."
-                    << std::endl;
+                  VsLog::debugLog() << CLASSFUNCLINE
+                                    << "Exceeded maximum number of errors.  "
+                                    << "Error messages disabled for remaining cells."
+                                    << std::endl;
                 }
+                
                 ++warningCount;
                 cellType = VTK_EMPTY_CELL;
             }
@@ -2122,22 +2037,22 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             }
         }
 
-        //create cell and insert into mesh
+        // Create cell and insert into mesh
         if (cellType != VTK_EMPTY_CELL) {
             std::vector<vtkIdType> verts(cellVerts);
             for (size_t j = 0; j < cellVerts; ++j) {
                 verts[j] = (vtkIdType) vertices[k++];
                 if ((verts[j] < 0) || ((size_t)verts[j] >= numNodes)) {
                     VsLog::debugLog() << CLASSFUNCLINE
-                    << "ERROR in connectivity dataset - requested vertex number "
-                    << verts[j] << " exceeds number of vertices" << std::endl;
+                                      << "ERROR in connectivity dataset - requested vertex number "
+                                      << verts[j] << " exceeds number of vertices" << std::endl;
 
                     verts[j] = 0;
                 }
             }
 
-            //Tweak for Nautilus
-            //Apply node corrections
+            // Tweak for Nautilus
+            // Apply node corrections
             if (correctionList) {
                 for (size_t j = 0; j < cellVerts; j++) {
                     if ((verts[j] >= 0) && (verts[j] < (int)correctionListSize)) {
@@ -2150,14 +2065,17 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
                     }
                 }
             }
-            //end tweak
+            // end tweak
 
             if ((haveConnectivityCount == 0) && !bUseCompressedPolygonsOrPolyhedraFormat) {
                 k += (numVerts - 1 - cellVerts);  // backwards compatibility mode for Polygons
             }
 
-            // insert cell into mesh - note that for InsertNextCell, VTK_POLYHEDRON type takes face count, not vertex count
-            vtkIdType cellOrFaceCount = (cellType == VTK_POLYHEDRON) ? cellFaces : cellVerts;
+            // Insert cell into mesh - note that for InsertNextCell,
+            // VTK_POLYHEDRON type takes face count, not vertex count
+            vtkIdType cellOrFaceCount =
+              (cellType == VTK_POLYHEDRON) ? cellFaces : cellVerts;
+            
             ugridPtr->InsertNextCell(cellType, cellOrFaceCount, &verts[0]);
         }
         else {
@@ -2170,9 +2088,9 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
             for (size_t j = 0; j < numVerts; ++j) {
                 if (warningCount < 30) {
                     VsLog::debugLog() << CLASSFUNCLINE
-                    << "WARNING: ADDING cell #"
-                    << cellCount << " as cell: "
-                    << vertices[k] << std::endl;
+                                      << "WARNING: ADDING cell #"
+                                      << cellCount << " as cell: "
+                                      << vertices[k] << std::endl;
                 }
                 verts[j] = (vtkIdType) vertices[k++];
             }
@@ -2181,12 +2099,11 @@ avtVsFileFormat::getUnstructuredMesh(VsUnstructuredMesh* unstructuredMesh,
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
-    << "Finished.  Cleaning up." << std::endl;
+                      << "Finished.  Cleaning up." << std::endl;
     // Done, so clean up memory and return
     delete [] vertices;
 
-    VsLog::debugLog() << CLASSFUNCLINE
-    << "Returning data." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 
     return ugridPtr;
 }
@@ -2211,8 +2128,8 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    VsLog::debugLog() << CLASSFUNCLINE
-    << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     hid_t meshDataType = variableWithMesh->getType();
@@ -2451,8 +2368,8 @@ vtkDataSet* avtVsFileFormat::getPointMesh(VsVariableWithMesh* variableWithMesh,
     }
 
     // Clean up memory
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Returning data." << std::endl;
+
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 
     return meshPtr;
 }
@@ -2474,8 +2391,8 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
     // TODO - make "cleanupAndReturnNull" label, and do a "go to"
     // instead of just returning NULL all the time.
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     // Save the original name in a temporary variable
@@ -2504,11 +2421,11 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
                           << "Looking for information in component registry."
                           << std::endl;
 
-        // Is this variable a component?  If so, swap the component name
-        // with the "real" variable name and remember that it is a
-        // component.
+        // Is this variable a component?  If so, swap the component
+        // name with the "real" variable name and remember that it is
+        // a component.
         bool isAComponent = false; (void) isAComponent;
-        int componentIndex = -2;// No components
+        int componentIndex = -2; // No components
         NamePair foundName;
         registry->getComponentInfo(name, &foundName);
 
@@ -2516,10 +2433,12 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
           name = foundName.first.c_str();
           varMeta = registry->getVariable(foundName.first);
           componentIndex = foundName.second;
+          isAComponent = true;
+
           VsLog::debugLog() << CLASSFUNCLINE
                             << "Found a component, which refers to variable "
-                            << name << " and index " << componentIndex << std::endl;
-          isAComponent = true;
+                            << name << " and index " << componentIndex 
+                            << std::endl;         
         }
     }
 
@@ -2543,7 +2462,7 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
                           << "Var is int" << std::endl;
     } else {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Var is unknown type (known are double, float, int).  "
+                          << "Var is type is not double, float, or int.  "
                           << "Returning NULL" << std::endl;
         return NULL;
     }
@@ -2553,13 +2472,15 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
         varData = GetVar(domain, requestedName.c_str());
     } catch (...) {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Caught exception from GetVar().  Returning NULL." << std::endl;
+                          << "Caught exception from GetVar().  "
+                          << "Returning NULL." << std::endl;
         return NULL;
     }
 
     if (varData == NULL) {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Failed to load var data.  Returning NULL." << std::endl;
+                          << "Failed to load var data.  "
+                          << "Returning NULL." << std::endl;
         return NULL;
     }
 
@@ -2569,7 +2490,8 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
 
     if (meshMeta == NULL) {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "No mesh metadata found.  Returning NULL." << std::endl;
+                          << "No mesh metadata found.  "
+                          << "Returning NULL." << std::endl;
         return NULL;
     }
 
@@ -2578,7 +2500,8 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
         meshData = GetMesh(domain, meshName.c_str());
     } catch (...) {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Caught exception from GetMesh().  Returning NULL."
+                          << "Caught exception from GetMesh().  "
+                          << "Returning NULL."
                           << std::endl;
         varData->Delete();
         return NULL;
@@ -2586,40 +2509,45 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
 
     if (meshData == NULL) {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Failed to load mesh data.  Returning NULL." << std::endl;
+                          << "Failed to load mesh data.  "
+                          << "Returning NULL." << std::endl;
         varData->Delete();
         return NULL;
     }
 
     // Get the number of points on the curve.
-    int nPts = 0;
+    int nPts;
+    
     if (varMeta->isCompMinor()) {
-        nPts = varMeta->getDims()[0];
+      nPts = varMeta->getDims()[0];
     } else {
-        nPts = varMeta->getDims()[1];
+      nPts = varMeta->getDims()[1];
     }
 
     // Cross-reference against the number of points in the mesh
-    int nPtsInOutput = nPts;
     std::vector<int> meshDims;
     meshMeta->getCellDims(meshDims);
-    int nPtsInMesh = meshDims[0];
-    if (varMeta->isZonal()) {
-        if (nPts != (nPtsInMesh - 1)) {
-            VsLog::debugLog() << CLASSFUNCLINE
-                              << "ERROR - mesh and var dimensionalities don't match." <<std::endl;
-            //Use the lower of the two values
-            if (nPts > (nPtsInMesh - 1)) {
-                nPtsInOutput = nPtsInMesh - 1;
-            }
-        }
-    } else if (nPts != nPtsInMesh) {
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "ERROR - mesh and var dimensionalities don't match." <<std::endl;
-        //Use the lower of the two values
-        if (nPts > nPtsInMesh) {
-            nPtsInOutput = nPtsInMesh;
-        }
+
+    int nPtsInMesh;
+    if (varMeta->isZonal())
+      nPtsInMesh = meshDims[0];      // Get the number of cells.
+    else 
+      nPtsInMesh = meshDims[0] + 1;  // Get the number of nodes.
+
+    int nPtsInOutput;
+    if (nPts == nPtsInMesh) {
+      nPtsInOutput = nPts;
+    }
+    else {
+      VsLog::debugLog() << CLASSFUNCLINE
+                        << "ERROR - mesh and var dimensionas don't match."
+                        << std::endl;
+        
+      // Use the lower of the two values
+      if (nPts < nPtsInMesh)
+        nPtsInOutput = nPts;
+      else
+        nPtsInOutput = nPtsInMesh;
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
@@ -2627,18 +2555,20 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
     VsLog::debugLog() << CLASSFUNCLINE
                       << "Mesh has " << nPtsInMesh << " points." << std::endl;
     VsLog::debugLog() << CLASSFUNCLINE
-                      << "Output will have " << nPtsInOutput << " points." << std::endl;
+                      << "Output will have " << nPtsInOutput << " points."
+                      << std::endl;
 
-    // Create 1-D RectilinearGrid
+    // Create 1D RectilinearGrid
     VsLog::debugLog() << CLASSFUNCLINE
                       << "Building Rectilinear grid." << std::endl;
+    
     vtkFloatArray* vals = vtkFloatArray::New();
     vals->SetNumberOfComponents(1);
     vals->SetNumberOfTuples(nPtsInOutput);
     vals->SetName(requestedName.c_str());
 
     vtkRectilinearGrid* rg =
-    vtkVisItUtility::Create1DRGrid(nPtsInOutput, VTK_FLOAT);
+      vtkVisItUtility::Create1DRGrid(nPtsInOutput, VTK_FLOAT);
     rg->GetPointData()->SetScalars(vals);
 
     vtkFloatArray* xc = vtkFloatArray::SafeDownCast(rg->GetXCoordinates());
@@ -2653,18 +2583,21 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
         for (int i = 0; i < nPtsInOutput; i++) {
             double* var_i = varData->GetTuple(i);
             double* mesh_i = meshXCoord->GetTuple(i);
+
             xc->SetValue(i, mesh_i[0]);
             vals->SetValue(i, var_i[0]);
         }
     } else {
         //Handles the incoming mesh as a structured mesh
         vtkStructuredGrid* meshDataStructuredGrid =
-        dynamic_cast<vtkStructuredGrid*>(meshData);
+          dynamic_cast<vtkStructuredGrid*>(meshData);
 
         if (!meshDataStructuredGrid) {
             VsLog::debugLog() << CLASSFUNCLINE
-            << "Unable to extract points from mesh to construct curve.  Giving up." << std::endl;
+                              << "Unable to extract points from mesh to construct curve.  "
+                              << "Giving up." << std::endl;
             vals->Delete();
+
             return NULL;
         }
 
@@ -2673,19 +2606,19 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
         for (int i = 0; i < nPtsInOutput; i++) {
             double* var_i = varData->GetTuple(i);
             double* mesh_i = points->GetPoint(i);
+
             xc->SetValue(i, mesh_i[0]);
             vals->SetValue(i, var_i[0]);
         }
     }
 
-    // Done, so clean up memory and return
+    // Done, so clean up memory and return.
     meshData->Delete();
     varData->Delete();
     vals->Delete();
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Returning data." << std::endl;
-    
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
+
     return rg;
 }
 
@@ -2693,7 +2626,8 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
 //  Method: avtVsFileFormat::nameIsComponent
 //
 //  Purpose:
-//      How do you do the voododo that you do
+//    If this variable a component swap the component name with the
+//    "real" variable name and remember that it is a component.
 //
 //  Programmer: Marc Durant
 //  Creation:   June, 2010
@@ -2701,22 +2635,23 @@ vtkDataSet* avtVsFileFormat::getCurve(int domain,
 //  Modifications:
 //
 bool avtVsFileFormat::nameIsComponent(std::string& name, int& componentIndex) {
-    // Is this variable a component?  If so, swap the component name
-    // with the "real" variable name and remember that it is a
-    // component.
+
     bool isAComponent = false;
-//int componentIndex = -2; // No components
+    // int componentIndex = -2; // No components
     NamePair foundName;
     registry->getComponentInfo(name, &foundName);
 
     if (!foundName.first.empty()) {
         name = foundName.first.c_str();
         componentIndex = foundName.second;
+        isAComponent = true;
+
         VsLog::debugLog() << CLASSFUNCLINE
                           << "Found a component, which refers to variable "
-                          << name << " and index " << componentIndex << std::endl;
-        isAComponent = true;
+                          << name << " and index " << componentIndex
+                          << std::endl;
     }
+    
     return isAComponent;
 }
 
@@ -2724,7 +2659,8 @@ bool avtVsFileFormat::nameIsComponent(std::string& name, int& componentIndex) {
 //  Method: avtVsFileFormat::isTransformedName
 //
 //  Purpose:
-//      How do you do the voododo that you do
+//    Check if this var name is a transformed var name. If
+//    so, use the original var name to get data associated
 //
 //  Programmer: Marc Durant
 //  Creation:   June, 2010
@@ -2732,19 +2668,21 @@ bool avtVsFileFormat::nameIsComponent(std::string& name, int& componentIndex) {
 //  Modifications:
 //
 bool avtVsFileFormat::isTransformedName(std::string& name) {
-    // Check if this var name is a transformed var name. If
-    // so, use the original var name to get data associated
+
     bool transform = false;
     std::string origVarName = registry->getOriginalVarName(name);
+    
     if (!origVarName.empty()) {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Original var for the transformed var " << name << " is "
-                          << origVarName << std::endl;
+                          << "Original var for the transformed var "
+                          << name << " is " << origVarName << std::endl;
         transform = true;
         name = origVarName;
+        
     } else {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Unable to find an original var for the possible transform name " <<name <<std::endl;
+                          << "Unable to find an original var for the possible transform name "
+                          << name <<std::endl;
     }
 
     return transform;
@@ -2761,31 +2699,35 @@ bool avtVsFileFormat::isTransformedName(std::string& name) {
 //
 //  Modifications:
 //
-vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName) {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+vtkDataArray* avtVsFileFormat::StandardVar(int domain,
+                                           const char* requestedName)
+{
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
-    // Save the original name in a temporary variable
-    // so that we can do some string manipulation on it
+    // Save the original name in a temporary variable so that we can
+    // do some string manipulation on it
     std::string name = requestedName;
 
     bool haveDataSelections;
     int mins[3], maxs[3], strides[3];
 
     // Adjust for the data selections which are NODAL (typical) or ZONAL.
-    if( (haveDataSelections = ProcessDataSelections(mins, maxs, strides)) ) ///TODO: check on fix for assignment
+    if( (haveDataSelections = ProcessDataSelections(mins, maxs, strides)) )
     {
+        ///TODO: check on fix for assignment
+      
         VsLog::debugLog()
           << CLASSFUNCLINE
-          << "have a data selection for a variable "
+          << "Have a data selection for variable " << name << "  "
           << "(" << mins[0] << "," << maxs[0] << " stride " << strides[0] << ") "
           << "(" << mins[1] << "," << maxs[1] << " stride " << strides[1] << ") "
           << "(" << mins[2] << "," << maxs[2] << " stride " << strides[2] << ") "
           << std::endl;
     }
 
-    int componentIndex = -2;
+    int componentIndex = -2; // No components
     bool isAComponent = nameIsComponent(name, componentIndex);
     bool transform = isTransformedName(name); (void) transform;
 
@@ -2795,12 +2737,14 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     VsVariableWithMesh* vmMeta = NULL;
     VsDataset* variableDataset = NULL;
 
-    // It could be an MD variable if so, retrieve the md metadata,
-    // look up the "real" variable name using the domain number, and
-    // replace "name" with the name of that variable.
+    // If a MD variable retrieve the md metadata, look up the "real"
+    // variable name using the domain number, and replace "name" with
+    // the name of that variable.
     VsLog::debugLog() << CLASSFUNCLINE
                       << "Checking for possible MD var." << std::endl;
+
     VsMDVariable* mdMeta = registry->getMDVariable(name);
+
     if (mdMeta) {
         VsLog::debugLog() << CLASSFUNCLINE
                           << "Found MD metadata for this name: "
@@ -2828,17 +2772,18 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         meta = registry->getVariable(name);
         
         if( meta )
-        variableDataset = registry->getDataset(meta->getFullName());
+          variableDataset = registry->getDataset(meta->getFullName());
     }
 
     // No meta data so, look for a VarWithMesh with this name.
     if (meta == NULL) {
         VsLog::debugLog() << CLASSFUNCLINE
                           << "Looking for VarWithMesh variable." << std::endl;
+
         vmMeta = registry->getVariableWithMesh(name);
 
         if( vmMeta )
-        variableDataset = registry->getDataset(vmMeta->getFullName());
+          variableDataset = registry->getDataset(vmMeta->getFullName());
     }
 
     // Haven't found metadata yet, so give up.
@@ -2873,6 +2818,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     std::string indexOrder;
 
     size_t numTopologicalDims;
+    size_t numLogicalDims;
 
     // VarWithMesh variable - Note that there is no mesh metadata for
     // VarWithMesh.
@@ -2885,7 +2831,22 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         indexOrder = vmMeta->getIndexOrder();
         isCompMajor = vmMeta->isCompMajor();
 
+        numTopologicalDims = vmMeta->getNumTopologicalDims();
+        numLogicalDims = 1;
         numTopologicalDims = 1;
+
+        // For a VarWithMesh the varDims.size() will be 2 and the
+        // variable will be a component while the logical dims will be
+        // 1 as the values are nodal/zonal (for point clouds nodal==zonal).
+        if (varDims.size() - (int) isAComponent != numLogicalDims )
+        {
+            VsLog::debugLog() << CLASSFUNCLINE
+                              << "WARNING: The variable and the mesh do not "
+                              << "have the same logical dimension. "
+                              // << "Returning NULL."
+                              << std::endl;
+            // return NULL;
+        }
     }
 
     else {
@@ -2893,10 +2854,10 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         varType = meta->getType();
 
         if (meta->isFortranOrder())
-        isFortranOrder = true;
+          isFortranOrder = true;
 
         if (meta->isZonal())
-        isZonal = true;
+          isZonal = true;
 
         if (meta->hasNodeOffset()) {
             hasOffset = true;
@@ -2907,38 +2868,45 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         isCompMajor = meta->isCompMajor();
 
         std::string meshName = meta->getMeshName();
-        VsMesh* meshMetaPtr = registry->getMesh(meshName);
 
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Mesh for variable is '" << meshName << "'." << std::endl;
-        VsLog::debugLog() << CLASSFUNCLINE
+                          << "Mesh for variable is '" << meshName << "'. "
                           << "Getting metadata for mesh." << std::endl;
+
+        VsMesh* meshMetaPtr = registry->getMesh(meshName);
+
+        numTopologicalDims = meshMetaPtr->getNumTopologicalDims();
+
+        if( meshMetaPtr->isUnstructuredMesh() )
+          numLogicalDims = 1;
+        else
+          numLogicalDims = numTopologicalDims;
 
         if (!meshMetaPtr) {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Metadata not found for mesh '" << meshName
-                              << "'." << std::endl;
-            VsLog::debugLog() << CLASSFUNCLINE
-                              << "Returning NULL" << std::endl;
+                              << "'. Returning NULL" << std::endl;
             return NULL;
         }
 
-        std::vector<int> meshDims;
-        meshMetaPtr->getCellDims(meshDims);
-        numTopologicalDims = meshDims.size();
+        // varDims.size() will always be one more than the logical
+        // dims because it has an extra dim regardless if the vaiarble
+        // is a component or not.
+        
+        // For a Structured Mesh the VarDims.size() will match the
+        // numLogicalDims (numTopologicalDims) plus 1.
 
-        // Structured and unstructured mesh dimension contain the
-        // spatial dimension so subtract it off.
-        if( meshMetaPtr->isStructuredMesh() ||
-            meshMetaPtr->isUnstructuredMesh() )
-          numTopologicalDims -= 1;
+        // For an Unstructured Mesh the VarDims.size() is 2 regardless
+        // if the values are nodal or zonal).
 
-        if (varDims.size() - (int) isAComponent != numTopologicalDims )
+        if (varDims.size() != numLogicalDims + 1)
         {
             VsLog::debugLog() << CLASSFUNCLINE
-                              << "WARNING: We don't think that var and mesh have the same topological dimension." <<std::endl;
-            //                          << "Returning NULL." << std::endl;
-            //return NULL;
+                              << "WARNING: The variable and the mesh do not "
+                              << "have the same logical dimension. "
+                              // << "Returning NULL."
+                              << std::endl;
+            // return NULL;
         }
 
         // For unstructured data, the variable can be subselected only when
@@ -2962,33 +2930,42 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
+                      << "varDims[" << varDims.size() << "] = (";
+
+    for (size_t i=0; i<varDims.size(); ++i)
+      VsLog::debugLog() << " " << varDims[i];
+
+    VsLog::debugLog() << ")" << std::endl;
+    
+    VsLog::debugLog() << CLASSFUNCLINE
                       << "Variable " << name << " has dimensions =";
-    for (size_t i=0; i<numTopologicalDims; ++i)
+
+    for (size_t i=0; i<numLogicalDims; ++i)
       VsLog::debugLog() << " " << varDims[i+isCompMajor];
     
-    VsLog::debugLog() << ", numTopologicalDims = " << numTopologicalDims
+    VsLog::debugLog() << ", numLogicalDims = " << numLogicalDims
                       << ", isComponent = " << isAComponent << "." << std::endl;
 
     // Temporary array for variable counts as the selection is NODAL.
-    std::vector<int> numVars(numTopologicalDims);
+    std::vector<int> numVars(numLogicalDims);
 
-    for (size_t i=0; i<numTopologicalDims; ++i)
+    for (size_t i=0; i<numLogicalDims; ++i)
       numVars[i] = varDims[i+isCompMajor];
 
-    // The variable dims should reflect the topological dims plus one
+    // The variable dims should reflect the logical dims plus one
     // more dimension for the spatial dimension of the variable.
-    size_t vsdim = numTopologicalDims;
+    size_t vsdim = numLogicalDims;
     std::vector<int> vdims(vsdim+1);
 
     // Adjust for the data selections which are NODAL. If no selection
     // the bounds are set to 0 and max with a stride of 1.
-    GetSelectionBounds( numTopologicalDims, numVars, vdims,
+    GetSelectionBounds( numLogicalDims, numVars, vdims,
                         mins, maxs, strides, haveDataSelections, !isZonal );
 
 #if (defined PARALLEL && defined VIZSCHEMA_DECOMPOSE_DOMAINS)
     if (parallelRead)
     {
-        if( !GetParallelDecomp( numTopologicalDims, vdims, mins, maxs, strides,
+        if( !GetParallelDecomp( numLogicalDims, vdims, mins, maxs, strides,
                                 !isZonal ) )
           return NULL; // No work for this processor.
 
@@ -2997,7 +2974,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
 #endif
 
     int numVariables = 1;
-    for (size_t i=0; i<numTopologicalDims; ++i)
+    for (size_t i=0; i<numLogicalDims; ++i)
       numVariables *= vdims[i];
 
     VsLog::debugLog() << CLASSFUNCLINE
@@ -3038,24 +3015,23 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     if (vmMeta || isAComponent)
     {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "Entering VarWithMesh section." << std::endl;
+                          << "Loading VarWithMesh data." << std::endl;
 
         herr_t err = reader->getData(variableDataset, dataPtr,
                                      indexOrder, componentIndex,
                                      mins, &(vdims[0]), strides);
 
         if (err < 0) {
-            VsLog::debugLog()
-              << CLASSFUNCLINE
-              << "GetVarWithMeshComponent returned error: "
-              << err << "  " << "Returning NULL." << std::endl;
+            VsLog::debugLog() << CLASSFUNCLINE
+                              << "GetVarWithMeshComponent returned error: "
+                              << err << ".  Returning NULL." << std::endl;
 
             if (isDouble)
-            delete [] dblDataPtr;
+              delete [] dblDataPtr;
             else if (isFloat)
-            delete [] fltDataPtr;
+              delete [] fltDataPtr;
             else if (isInteger)
-            delete [] intDataPtr;
+              delete [] intDataPtr;
 
             return NULL;
         }
@@ -3076,10 +3052,9 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
           err = reader->getData( variableDataset, dataPtr );
 
         if (err < 0) {
-            VsLog::debugLog()
-              << CLASSFUNCLINE
-              << "GetDataSet returned error: " << err << "  "
-              << "Returning NULL." << std::endl;
+            VsLog::debugLog() << CLASSFUNCLINE
+                              << "GetDataSet returned error: " << err
+                              << ".  Returning NULL." << std::endl;
 
             if (isDouble)
               delete [] dblDataPtr;
@@ -3093,24 +3068,29 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
-                      << "Finished reading the data, building VTK structures." << std::endl;
+                      << "Finished reading the data, building VTK structures."
+                      << std::endl;
 
-    //DEBUG
-    /*
-     VsLog::debugLog() << CLASSFUNCLINE
-     << "Dumping data: " << std::endl;
-     for (int i = 0; i < numVariables; i++) {
-     if (H5Tequal(type, H5T_NATIVE_DOUBLE)) {
-     VsLog::debugLog() << "data[" << i << "] = " << ((double*)data)[i] << std::endl;}
-     else if (H5Tequal(type, H5T_NATIVE_FLOAT)) {
-     VsLog::debugLog() << "data[" << i << "] = " << ((float*)data)[i] << std::endl;}
-     else if (H5Tequal(type, H5T_NATIVE_INT)) {
-     VsLog::debugLog() << "data[" << i << "] = " << ((int*)data)[i] << std::endl;}
-     }
-     VsLog::debugLog() << CLASSFUNCLINE
-     << "Finished dumping data. " << std::endl;
-     */
-    //END DEBUG
+    /* DEBUG
+
+    VsLog::debugLog() << CLASSFUNCLINE
+                      << "Dumping data: " << std::endl;
+    for (int i = 0; i < numVariables; i++) {
+      if (H5Tequal(type, H5T_NATIVE_DOUBLE)) {
+        VsLog::debugLog() << "data[" << i << "] = " << ((double*)data)[i]
+                          << std::endl;}
+      else if (H5Tequal(type, H5T_NATIVE_FLOAT)) {
+        VsLog::debugLog() << "data[" << i << "] = " << ((float*)data)[i]
+                          << std::endl;}
+      else if (H5Tequal(type, H5T_NATIVE_INT)) {
+        VsLog::debugLog() << "data[" << i << "] = " << ((int*)data)[i]
+                          << std::endl;}
+    }
+
+    VsLog::debugLog() << CLASSFUNCLINE
+                      << "Finished dumping data. " << std::endl;
+    END DEBUG */
+    
     vtkDataArray* rv = 0;
 
     if (isDouble) {
@@ -3143,13 +3123,14 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     // If in C order, perform permutation of index as VTK expect Fortran order
 
     // The index tuple is initially all zeros
-    size_t* indices = new size_t[numTopologicalDims];
-    for (size_t k=0; k<numTopologicalDims; ++k)
+    size_t* indices = new size_t[numLogicalDims];
+    for (size_t k=0; k<numLogicalDims; ++k)
       indices[k] = 0;
 
     // Store data
     VsLog::debugLog() << CLASSFUNCLINE
-                      << "Storing " << numVariables << " data elements" << std::endl;
+                      << "Storing " << numVariables << " data elements."
+                      << std::endl;
 
     // Attempt to reverse data in place
     //#define IN_PLACE
@@ -3161,12 +3142,12 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     int* intDataPtr = (int*) data;
 
     // Step through by global C index and reverse
-    if (numTopologicalDims > 1) {
+    if (numLogicalDims > 1) {
         for (size_t k = 0; k<numVariables; ++k) {
             // Accumulate the Fortran index
-            size_t indx = indices[numTopologicalDims-1];
-            for (size_t j = 2; j<=numTopologicalDims; ++j)
-              indx = indx*dims[numTopologicalDims-j] + indices[numTopologicalDims-j];
+            size_t indx = indices[numLogicalDims-1];
+            for (size_t j = 2; j<=numLogicalDims; ++j)
+              indx = indx*dims[numLogicalDims-j] + indices[numLogicalDims-j];
             // Set the value in the VTK array at the Fortran index to the
             // value in the C array at the C index
             if (isDouble) {
@@ -3189,7 +3170,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
                 return NULL;
             }
             // Update the index tuple
-            size_t j = numTopologicalDims;
+            size_t j = numLogicalDims;
             do {
                 --j;
                 ++indices[j];
@@ -3255,10 +3236,10 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         for (size_t k = 0; k<(size_t)numVariables; ++k) {
 
             // Accumulate the Fortran index
-            size_t indx = indices[numTopologicalDims-1];
-            for (size_t j = 2; j<=numTopologicalDims; ++j) {
-                indx = indx*vdims[numTopologicalDims-j] +
-                indices[numTopologicalDims-j];
+            size_t indx = indices[numLogicalDims-1];
+            for (size_t j = 2; j<=numLogicalDims; ++j) {
+                indx = indx*vdims[numLogicalDims-j] +
+                indices[numLogicalDims-j];
             }
 
             // Set the value in the VTK array at the Fortran index to the
@@ -3276,7 +3257,7 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
             }
 
             // Update the index tuple
-            size_t j = numTopologicalDims;
+            size_t j = numLogicalDims;
             do {
                 --j;
                 ++indices[j];
@@ -3289,8 +3270,8 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
-                      << "Done swapping data into correct places, NOT using 'in place' code."
-                      << std::endl;
+                      << "Done swapping data into correct places, "
+                      << "NOT using 'in place' code." << std::endl;
 #endif
 
     // Done with data
@@ -3304,19 +3285,32 @@ vtkDataArray* avtVsFileFormat::StandardVar(int domain, const char* requestedName
         delete [] intDataPtr;
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Returning data." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
+
     return rv;
 }
 
-VsVariable* avtVsFileFormat::getVariableMeta(int domain, std::string requestedName, int &componentIndex) {
+// *****************************************************************************
+//  Method: avtVsFileFormat::getVariableMeta
+//
+//  Purpose:
+//      How do you do the voododo that you do
+//
+//  Programmer: Marc Durant
+//  Creation:   June, 2010
+//
+//  Modifications:
+//
+VsVariable* avtVsFileFormat::getVariableMeta(int domain,
+                                             std::string requestedName,
+                                             int &componentIndex) {
 
-// Save the original name in a temporary variable
+    // Save the original name in a temporary variable
     // so that we can do some string manipulation on it
     std::string name = requestedName;
 
-    componentIndex = -2;
-    bool isAComponent = nameIsComponent(name, componentIndex); (void) isAComponent;
+    componentIndex = -2;  // No components
+    bool isAComponent = nameIsComponent(name, componentIndex);
     bool transform = isTransformedName(name); (void) transform;
 
     // The goal in all of the metadata loading is to fill one of
@@ -3329,7 +3323,8 @@ VsVariable* avtVsFileFormat::getVariableMeta(int domain, std::string requestedNa
     // look up the "real" variable name using the domain number, and
     // replace "name" with the name of that variable.
     VsLog::debugLog() << CLASSFUNCLINE
-    << "Checking for possible MD var." << std::endl;
+                      << "Checking for possible MD var." << std::endl;
+    
     VsMDVariable* mdMeta = registry->getMDVariable(name);
     if (mdMeta) {
         VsLog::debugLog() << CLASSFUNCLINE
@@ -3341,7 +3336,7 @@ VsVariable* avtVsFileFormat::getVariableMeta(int domain, std::string requestedNa
             name = meta->getFullName();
 
             if( meta )
-            variableDataset = registry->getDataset(meta->getFullName());
+              variableDataset = registry->getDataset(meta->getFullName());
 
         } else {
             VsLog::warningLog()
@@ -3397,9 +3392,14 @@ vtkDataArray* avtVsFileFormat::NodalVar(VsVariable* meta,
                                         std::string name, int component)
 {
     VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+
     LoadData();
+    
     thisData.setReader(reader);
     thisData.setRegistry(registry);
+
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
+
     return thisData.getData(meta, name, component);
 }
 
@@ -3418,18 +3418,21 @@ vtkDataArray* avtVsFileFormat::NodalVar(VsVariable* meta,
 vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 {
     VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+
     int component;
     VsVariable* meta = getVariableMeta(domain, requestedName, component);
-    if(meta!=NULL) {
+    
+    if( meta != NULL) {
         if(meta->getMesh()->isHighOrder()) {
             VsLog::debugLog() << CLASSFUNCLINE
-                              << "exiting Nodal case." << std::endl;
+                              << "Exiting nodal case." << std::endl;
+
             return NodalVar(meta, requestedName, component);
         }
     }
 
     VsLog::debugLog() << CLASSFUNCLINE
-                      << "exiting Standard case." << std::endl;
+                      << "Exiting standard case." << std::endl;
 
     return StandardVar(domain, requestedName);
 }
@@ -3448,8 +3451,8 @@ vtkDataArray* avtVsFileFormat::GetVar(int domain, const char* requestedName)
 
 void avtVsFileFormat::FreeUpResources(void)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering/Exiting function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+
     if (reader != NULL) {
         delete reader;
         reader = NULL;
@@ -3460,9 +3463,7 @@ void avtVsFileFormat::FreeUpResources(void)
         registry = NULL;
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "exiting" << std::endl;
-
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -3479,8 +3480,8 @@ void avtVsFileFormat::FreeUpResources(void)
 
 void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     //get list of expressions from reader
@@ -3505,7 +3506,8 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
         if (iv->first == "Rho") {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Ignoring expression " << iv->first << " = "
-                              << iv->second << " because it crashesVisIt." <<std::endl;
+                              << iv->second << " because it crashesVisIt."
+                              << std::endl;
             continue;
         }
 
@@ -3533,9 +3535,10 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 
             e.SetType(Expression::VectorMeshVar);
         }
-        else { //CURVE variable
-               //Although this is not universally true, we make the assumption that
-               //an expression defined on curve variables will be a curve expression
+        else { // CURVE variable
+               // Although this is not universally true, we make the
+               // assumption that an expression defined on curve
+               // variables will be a curve expression
             for (std::vector<std::string>::const_iterator it = curveNames.begin();
                     it != curveNames.end();
                     it++)
@@ -3544,18 +3547,18 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
                 foundIndex = iv->second.find(*it);
                 if (foundIndex != std::string::npos) {
                     VsLog::debugLog() << CLASSFUNCLINE
-                                      << "It is a curve expression." << std::endl;
-                    VsLog::debugLog() << CLASSFUNCLINE
-                                      << "Because we found an embedded curve name: "
-                                      << *it <<std::endl;
+                                      << "It is a curve expression."
+                                      << "Because an embedded curve name: "
+                                      << *it << "  was found." << std::endl;
+
                     e.SetType(Expression::CurveMeshVar);
-                    //No need to stay in the loop
-                    break;
+                    
+                    break;  // No need to stay in the loop
                 }
             }
         }
 
-        //If we've still got scalar, tell the user
+        // If we've still got scalar, tell the user
         if (e.GetType() == Expression::ScalarMeshVar) {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "It is a scalar expression." << std::endl;
@@ -3565,8 +3568,7 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
         md->AddExpression(&e);
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting normally." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -3583,8 +3585,8 @@ void avtVsFileFormat::RegisterExpressions(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     // Get var names
@@ -3778,12 +3780,12 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
         else {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Variable '" << *it
-                              << "' has no components. Not being added." << std::endl;
+                              << "' has no components. Not being added."
+                              << std::endl;
         }
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting normally." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -3800,8 +3802,8 @@ void avtVsFileFormat::RegisterVars(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     // All meshes names
@@ -3822,7 +3824,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
         VsMesh* meta = registry->getMesh(*it);
 
-        size_t numSpatialDims = meta->getNumSpatialDims();
+        size_t numSpatialDims     = meta->getNumSpatialDims();
         size_t numTopologicalDims = meta->getNumTopologicalDims();
 
         VsLog::debugLog() << CLASSFUNCLINE
@@ -3831,14 +3833,14 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                           << numTopologicalDims << " topological dimensions."
                           << std::endl;
 
-        // If this mesh is 1D (a curve) leave it for later.
+        // If this mesh is a 1D curve leave it for later.
         if (numTopologicalDims == 1 && numSpatialDims == 1) {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Found a topologically and spatially 1D mesh. "
-                              << "Skipping for now, it will be added as a curve."
+                              << "Skipping for now, it will be added as a 1D curve mesh."
                               << std::endl;
             continue;
-        } else if ((numSpatialDims <= 0) || (3 < numSpatialDims)) {
+        } else if (((int)numSpatialDims <= 0) || (3 < numSpatialDims)) {
             VsLog::errorLog() << CLASSFUNCLINE
                               << "NumSpatialDims is out of range: "
                               << numSpatialDims << ".  "
@@ -3850,10 +3852,10 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                               << numTopologicalDims << ".  "
                               << "Skipping mesh." << std::endl;
             continue;
-        } else if (numTopologicalDims < numSpatialDims ) {
+        } else if (numSpatialDims < numTopologicalDims ) {
             VsLog::errorLog() << CLASSFUNCLINE
                               << "numTopologicalDims ("
-                              << numTopologicalDims << ") than the "
+                              << numTopologicalDims << ") is greater than the "
                               << "numSpatialDims ("
                               << numSpatialDims << ").  "
                               << "Skipping mesh." << std::endl;
@@ -3891,13 +3893,6 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
             // numSpatialDimss = dims.size();
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Mesh's dimension = " << numSpatialDims << std::endl;
-            // 11.08.01 MDurant We are no longer going to do this.  2d is 2d.
-            //if (numSpatialDims != 3) {
-            //  VsLog::debugLog() << CLASSFUNCLINE
-            //                    << "But reporting as dimension 3 to side-step VisIt bug."
-            //                    << std::endl;
-            //  numSpatialDims = 3;
-            //}
 
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Adding uniform mesh " << *it << "." << std::endl;
@@ -3905,7 +3900,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
             meshType = AVT_RECTILINEAR_MESH;
 
             // Add in the logical bounds of the mesh.
-            static_cast<VsUniformMesh*>(meta)->getCellDims(dims);
+            static_cast<VsUniformMesh*>(meta)->getNodeDims(dims);
             for( size_t i=0; i<dims.size(); ++i )
             {
                 bounds[i] = dims[i]; // Logical bounds are node centric.
@@ -3923,7 +3918,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
             meshType = AVT_RECTILINEAR_MESH;
 
             // Add in the logical bounds of the mesh.
-            rectMesh->getCellDims(dims);
+            rectMesh->getNodeDims(dims);
             for( size_t i=0; i<dims.size(); ++i )
             {
                 bounds[i] = dims[i]; // Logical bounds are node centric.
@@ -3964,7 +3959,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
             meshType = AVT_CURVILINEAR_MESH;
 
             // Add in the logical bounds of the mesh.
-            static_cast<VsRectilinearMesh*>(meta)->getCellDims(dims);
+            static_cast<VsStructuredMesh*>(meta)->getNodeDims(dims);
             for( size_t i=0; i<dims.size(); ++i )
             {
                 bounds[i] = dims[i]; // Logical bounds are node centric.
@@ -3979,17 +3974,12 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
             // Unstructured meshes without connectivity data are registered
             // as point meshes
-
-            
             if (unstructuredMesh->isPointMesh()) {
                 VsLog::debugLog() << CLASSFUNCLINE
                                   << "Registering mesh " << it->c_str()
                                   << " as AVT_POINT_MESH" << std::endl;
                 
                 meshType = AVT_POINT_MESH;
-
-                // Add in the logical bounds of the mesh.
-                numCells = unstructuredMesh->getNumPoints();
             }
             else {
                 VsLog::debugLog() << CLASSFUNCLINE
@@ -3997,37 +3987,12 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                                   << " as AVT_UNSTRUCTURED_MESH" << std::endl;
 
                 meshType = AVT_UNSTRUCTURED_MESH;
-
-                // For now users can have only one connectivity dataset.
-                if( unstructuredMesh->getLinesDataset() ||
-                    
-                    unstructuredMesh->getPolygonsDataset() ||
-                    unstructuredMesh->getTrianglesDataset() ||
-                    unstructuredMesh->getQuadrilateralsDataset() ||
-
-                    unstructuredMesh->getPolyhedraDataset() ||
-                    unstructuredMesh->getTetrahedralsDataset() ||
-                    unstructuredMesh->getPyramidsDataset() ||
-                    unstructuredMesh->getPrismsDataset() ||
-                    unstructuredMesh->getHexahedralsDataset() ) {
-
-                  // No-Op
-
-                } else {
-                    VsLog::debugLog()
-                      << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                      << "ERROR - unable to find connectivity dataset. "
-                      << "Returning points data without connectivity."
-                      << std::endl;
-                    
-                    continue;
-                }
-
-                // Add in the logical bounds of the mesh.
-                numCells = unstructuredMesh->getNumCells();
             }
 
-            bounds[0] = (int)numCells;
+            // Add in the logical bounds of the mesh.
+            numCells = unstructuredMesh->getNumCells();
+            
+            bounds[0] = (int) numCells;
             bounds[1] = bounds[2] = 0;
         }
 
@@ -4043,29 +4008,6 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
                            << " as AVT_UNSTRUCTURED_MESH" << std::endl;
 
          meshType = AVT_UNSTRUCTURED_MESH;
-
-         // For now users can have only one connectivity dataset.
-         if( dgMesh->getLinesDataset() ||
-
-             dgMesh->getPolygonsDataset() ||
-             dgMesh->getTrianglesDataset() ||
-             dgMesh->getQuadrilateralsDataset() ) {
-
-             dgMesh->getPolyhedraDataset() ||
-             dgMesh->getTetrahedralsDataset() ||
-             dgMesh->getPyramidsDataset() ||
-             dgMesh->getPrismsDataset() ||
-             dgMesh->getHexahedralsDataset() ) {
-             // No-Op
-         } else {
-           VsLog::debugLog()
-             << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-             << "ERROR - unable to find connectivity dataset. "
-             << "Returning points data without connectivity."
-             << std::endl;
-
-           continue;
-         }
 
          // Add in the logical bounds of the mesh.  Number of cells
          // before each cell is triangulated
@@ -4101,8 +4043,7 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
         }
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting normally." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -4119,8 +4060,8 @@ void avtVsFileFormat::RegisterMeshes(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     // Get vars names
@@ -4203,12 +4144,12 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
         } else {
             VsLog::debugLog() << CLASSFUNCLINE
                               << "Variable '" << *it
-                              << "' has no components. Not being added." << std::endl;
+                              << "' has no components. Not being added."
+                              << std::endl;
         }
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting normally." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -4225,8 +4166,8 @@ void avtVsFileFormat::RegisterMdVars(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     std::vector<std::string> names;
@@ -4283,8 +4224,7 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
         md->Add(vmd);
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting normally." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -4300,8 +4240,8 @@ void avtVsFileFormat::RegisterMdMeshes(avtDatabaseMetaData* md)
 //
 void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     std::vector<std::string> names;
@@ -4319,76 +4259,62 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
     }
 
     std::vector<std::string>::const_iterator it;
+
     for (it = names.begin(); it != names.end(); ++it) {
         VsLog::debugLog() << CLASSFUNCLINE
                           << "Processing varWithMesh '"
                           << *it << "'." << std::endl;
+
         VsVariableWithMesh* vMeta = registry->getVariableWithMesh(*it);
 
-        // add var components
-        std::vector<int> dims;
-        vMeta->getCellDims(dims);
-        if (dims.size() <= 0) {
-            std::ostringstream msg;
-            msg << CLASSFUNCLINE
-                << "could not get dimensions of variable with mesh.";
-            VsLog::debugLog() << msg.str() << std::endl;
-            throw std::out_of_range(msg.str().c_str());
-        }
-
-        size_t lastDim = 0;
-        if (vMeta->isCompMinor())
-          lastDim = dims[dims.size()-1];
-        else
-          lastDim = dims[0];
-
-        if (lastDim < vMeta->getNumSpatialDims()) {
-            VsLog::debugLog() << CLASSFUNCLINE
-                              << "Error: for variable with mesh '" << *it
-                              << "', numSpatialDims = "
-                              << vMeta->getNumSpatialDims()
-                              << " must be larger then the last dimension, "
-                              << "lastDim = " << lastDim << "." << std::endl;
-            //JRC: Remove the associated mesh from the system!  Actually,
-            //the associated mesh doesn't get added until the end of this
-            //method So there is no associated mesh to remove We just drop
-            //through the loop and start on the next varWithMesh
-            continue;
-        }
-
         // This loop registers all VARIABLES
-        // SS: we need all components so going to lastDim here.
-        //    for (size_t i = 0; i < lastDim-vm->numSpatialDims; ++i) {
-        for (size_t i = 0; i < lastDim; ++i) {
+        size_t numComps = vMeta->getNumComps();
+
+        for (size_t i = 0; i < numComps; ++i) {
+
             //first, get a unique name for this component
             std::string compName = registry->getComponentName(*it, (int)i);
 
             if (!compName.empty()) {
                 //register with VisIt
                 VsLog::debugLog() << CLASSFUNCLINE
-                                  << "Adding variable component " << compName << "." << std::endl;
-                avtScalarMetaData* smd = new avtScalarMetaData(compName.c_str(), it->c_str(), AVT_NODECENT);
+                                  << "Adding variable component "
+                                  << compName << "." << std::endl;
+
+                avtScalarMetaData* smd =
+                  new avtScalarMetaData(compName.c_str(), it->c_str(),
+                                        AVT_NODECENT);
+                
                 smd->hasUnits = false;
                 md->Add(smd);
 
-                // Register the transformed var (if this variable has a transform)
+                // Register the transformed var (if this variable has
+                // a transform)
                 if (vMeta->hasTransform()) {
-                    std::string transformMeshName = vMeta->getTransformedMeshName();
-                    std::string transformVarName = vMeta->getFullTransformedName();
-                    std::string transformComponentName = registry->getComponentName(transformVarName, (int)i);
+                    std::string transformMeshName =
+                      vMeta->getTransformedMeshName();
+                    std::string transformVarName =
+                      vMeta->getFullTransformedName();
+                    std::string transformComponentName =
+                      registry->getComponentName(transformVarName, (int)i);
+
                     VsLog::debugLog() << CLASSFUNCLINE
                                       << "Registering a transformed component: "
                                       <<transformComponentName << std::endl;
+
                     avtScalarMetaData* smd_transformed =
-                    new avtScalarMetaData(transformComponentName.c_str(),
-                                          transformMeshName.c_str(), AVT_NODECENT);
+                      new avtScalarMetaData(transformComponentName.c_str(),
+                                            transformMeshName.c_str(),
+                                            AVT_NODECENT);
+                    
                     smd_transformed->hasUnits = false;
                     md->Add(smd_transformed);
                 }
             } else {
-                VsLog::debugLog() << CLASSFUNCLINE
-                                  << "Unable to get component name for variable "
-                                  << *it << " and index " << i << std::endl;
+                VsLog::debugLog()
+                  << CLASSFUNCLINE
+                  << "Unable to get component name for variable "
+                  << *it << " and index " << i << std::endl;
             }
         }
 
@@ -4401,15 +4327,21 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
 
         if (numSpatialDims == 1) {
             VsLog::debugLog() << CLASSFUNCLINE
-                              <<"Found 1-d var with mesh, artificially elevating it to 2-d." <<std::endl;
+                              << "Found a 1D var with mesh, "
+                              << "artificially elevating it to 2D."
+                              << std::endl;
             numSpatialDims = 2;
         }
         
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Adding point mesh for this variable." << std::endl;
+        VsLog::debugLog()
+          << CLASSFUNCLINE
+          << "Adding point mesh for this variable." << std::endl;
+        
         avtMeshMetaData* vmd =
           new avtMeshMetaData(it->c_str(), 1, 1, 1, 0,
-                              numSpatialDims, numTopologicalDims, AVT_POINT_MESH);
+                              numSpatialDims, numTopologicalDims,
+                              AVT_POINT_MESH);
+        
         vmd->SetBounds(bounds);
         vmd->SetNumberCells(numCells);
         setAxisLabels(vmd);
@@ -4425,7 +4357,9 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
             
             avtMeshMetaData* vmd_transform =
               new avtMeshMetaData(transformMeshName.c_str(), 1, 1, 1, 0,
-                                  numSpatialDims, numTopologicalDims, AVT_POINT_MESH);
+                                  numSpatialDims, numTopologicalDims,
+                                  AVT_POINT_MESH);
+            
             vmd_transform->SetBounds(bounds);
 
             // This is the change for ticket 3340: the transformed
@@ -4437,8 +4371,7 @@ void avtVsFileFormat::RegisterVarsWithMesh(avtDatabaseMetaData* md)
         }
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting normally." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -4473,8 +4406,8 @@ void avtVsFileFormat::ActivateTimestep()
 //
 void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     if (!md) {
@@ -4590,6 +4523,8 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
       std::vector<float> upperBounds;
       registry->getUpperBounds(&upperBounds);
     }
+
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -4607,27 +4542,31 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
 void avtVsFileFormat::LoadData()
 {
     if (reader)
-    return;
+      return;
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Initializing VsReader()" << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
 
     //Actually open the file & read metadata for the first time
-
     try {
-        if (!registry) registry = new VsRegistry();
+        VsLog::debugLog() << CLASSFUNCLINE
+                          << "Initializing VsReader()" << std::endl;
+
+        if (!registry)
+          registry = new VsRegistry();
+        
         reader = new VsReader(dataFileName, registry);
     }
     catch (std::invalid_argument& ex) {
         std::ostringstream msg;
         msg << CLASSFUNCLINE
             << " Error initializing VsReader: " << ex.what();
+
         VsLog::debugLog() << msg.str() << std::endl;
+
         EXCEPTION1(InvalidDBTypeException, msg.str().c_str());
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting" << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -4644,8 +4583,8 @@ void avtVsFileFormat::LoadData()
 
 void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
+    
     LoadData();
 
     // Tell visit that we can split meshes into subparts when running
@@ -4698,11 +4637,10 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
         md->Add(mmd);
     }
 
-    //VsLog::debugLog() <<"Calling UpdateCyclesAndTimes for file: " <<dataFileName <<std::endl;
+    //VsLog::debugLog() << "Calling UpdateCyclesAndTimes for file: " << dataFileName << std::endl;
     UpdateCyclesAndTimes(md);
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting normally." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -4719,12 +4657,11 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
 
 void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd, bool transform)
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Entering function." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
 
     if (mmd == NULL) {
         VsLog::debugLog() << CLASSFUNCLINE
-        << "Input pointer was NULL?" << std::endl;
+                          << "Input pointer was NULL?" << std::endl;
         return;
     }
 
@@ -4746,7 +4683,7 @@ void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd, bool transform)
                          << "Exiting normally." << std::endl;
        return;
     }
-// Both are zero, do default
+    // Both are zero, do default
     if (transform) {
        mmd->xLabel = "z";
        mmd->yLabel = "r";
@@ -4757,8 +4694,7 @@ void avtVsFileFormat::setAxisLabels(avtMeshMetaData* mmd, bool transform)
        mmd->zLabel = "z";
     }
 
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "Exiting normally." << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
 
 // *****************************************************************************
@@ -4808,21 +4744,22 @@ void avtVsFileFormat::setGlobalExtents(avtMeshMetaData* mmd)
 
 int avtVsFileFormat::GetCycle()
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "entering for file " <<dataFileName << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering" << std::endl;
+
     LoadData();
 
     if (registry->hasCycle())
     {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "The file " <<dataFileName <<" supplies cycle: "
+                          << "The file " << dataFileName << " has cycle: "
                           << registry->getCycle() << std::endl;
+
         return registry->getCycle();
     }
     else
     {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "The file " <<dataFileName <<" does not supply cycle.  "
+                          << "The file " << dataFileName << " has no cycle.  "
                           << "Returning INVALID_CYCLE." << std::endl;
 
         return INVALID_CYCLE;
@@ -4844,22 +4781,24 @@ int avtVsFileFormat::GetCycle()
 
 double avtVsFileFormat::GetTime()
 {
-    VsLog::debugLog() << CLASSFUNCLINE
-                      << "entering" << std::endl;
+    VsLog::debugLog() << CLASSFUNCLINE << "entering" << std::endl;
+    
     LoadData();
 
     if (registry->hasTime())
     {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "The file " <<dataFileName <<" supplies time: "
+                          << "The file " << dataFileName << " has time: "
                           <<registry->getTime() << std::endl;
+        
         return registry->getTime();
     }
     else
     {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "The file " <<dataFileName <<" does not supply time.  "
+                          << "The file " << dataFileName << " has no time.  "
                           << "Returning INVALID_TIME." << std::endl;
+
         return INVALID_TIME;
     }
 }
@@ -4868,7 +4807,18 @@ double avtVsFileFormat::GetTime()
 //  Method: avtVsFileFormat::GetSelectionBounds
 //
 //  Purpose:
-//      How do you do the voododo that you do
+//    The selction bounds does double duty for both structured and
+//    unstructred mesh selections.
+//
+//    When the mesh is structured the numLogicalDims is the
+//    numSpatialDims of the points and gdims.size() will be 3 because
+//    mesh storage in VisIt are spatially 3D so the points must also
+//    be 3D. The return values represent indexs in to the point
+//    coordinates.
+//
+//    When the mesh is unstructured the numLogicalDims will be 1 as
+//    will be gdims.size(). The return values represent indexs in to
+//    the cells.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   July, 2011
@@ -4876,7 +4826,7 @@ double avtVsFileFormat::GetTime()
 //  Modifications:
 //
 
-void avtVsFileFormat::GetSelectionBounds( size_t numTopologicalDims,
+void avtVsFileFormat::GetSelectionBounds( size_t numLogicalDims,
                                           std::vector<int> &numNodes,
                                           std::vector<int> &gdims,
                                           int *mins,
@@ -4885,20 +4835,22 @@ void avtVsFileFormat::GetSelectionBounds( size_t numTopologicalDims,
                                           bool haveDataSelections,
                                           bool isNodal )
 {
-    // Adjust for the data selections which are NODAL (typically) or ZONAL.
+    // Adjust for the data selections which structured meshes are
+    // NODAL or ZONAL based or for unstructured meshes are ZONAL based.
     if( haveDataSelections )
     {
-        for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
+        for (size_t i=0; i<numLogicalDims; ++i)
         {
             if( maxs[i] < 0 || numNodes[i] - 1 < maxs[i] )
-            maxs[i] = numNodes[i] - 1; // last node index, not number of nodes
+            maxs[i] = numNodes[i] - 1; // last index, not size
 
             if( maxs[i] < mins[i] )
             mins[i] = 0;
 
             if( strides[i] > 1 )
             {
-                int lastNode = mins[i] + ((maxs[i] - mins[i]) / strides[i]) * strides[i];
+                int lastNode =
+                  mins[i] + ((maxs[i] - mins[i]) / strides[i]) * strides[i];
 
                 if( isNodal )
                 {
@@ -4906,7 +4858,7 @@ void avtVsFileFormat::GetSelectionBounds( size_t numTopologicalDims,
                     if( lastNode + strides[i] > maxs[i] )
                     maxs[i] = lastNode;
                 }
-                else
+                else // zonal
                 {
                     // Make sure a complete stride can be taken
                     if( lastNode + strides[i] - 1 > maxs[i] - 1 )
@@ -4917,39 +4869,41 @@ void avtVsFileFormat::GetSelectionBounds( size_t numTopologicalDims,
     }
     else
     {
-        for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
+        for (size_t i=0; i<numLogicalDims; ++i)
         {
             mins[i] = 0;
-            maxs[i] = numNodes[i] - 1; // last node index, not number of nodes
+            maxs[i] = numNodes[i] - 1; // last index, not size
             strides[i] = 1;
         }
     }
 
-    for (size_t i=numTopologicalDims; i<3; ++i)
+    // The mins and maxs have three components so fill them in though
+    // not used.
+    for (size_t i=numLogicalDims; i<3; ++i)
     {
         mins[i] = 0;
         maxs[i] = 1;
         strides[i] = 1;
     }
-    
-    // Storage for meshes in VisIt, which is is topologically 3D so
-    // the points must also be 3D.
-    for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
-      gdims[i] = (maxs[i]-mins[i]) / strides[i] + 1; // Number of nodes
 
-    for (size_t i=numTopologicalDims; i<gdims.size(); ++i)
+    for (size_t i=0; i<numLogicalDims; ++i)
+      gdims[i] = (maxs[i]-mins[i]) / strides[i] + 1; // Number of values
+
+    // This gets executed for structured meshes when the
+    // numLogicalDims (i.e. the numSpatialDims) is less than 3.
+    for (size_t i=numLogicalDims; i<gdims.size(); ++i)
       gdims[i] = 1;
 
     if( haveDataSelections )
     {
-        VsLog::debugLog()
-          << CLASSFUNCLINE
-          << "Have a " << (isNodal ? "nodal" : "zonal") << " inclusive selection  ";
+        VsLog::debugLog() << CLASSFUNCLINE
+                          << "Have a " << (isNodal ? "nodal" : "zonal")
+                          << " inclusive selection  ";
 
-        for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
+        for (size_t i=0; i<(size_t)numLogicalDims; ++i)
         {
-            VsLog::debugLog()
-              << "(" << mins[i] << "," << maxs[i] << " stride " << strides[i] << ") ";
+            VsLog::debugLog() << "(" << mins[i] << "," << maxs[i]
+                              << " stride " << strides[i] << ") ";
         }
 
         VsLog::debugLog() << std::endl;
@@ -4957,7 +4911,7 @@ void avtVsFileFormat::GetSelectionBounds( size_t numTopologicalDims,
 
     VsLog::debugLog() << CLASSFUNCLINE << "Dimensions ";
 
-    for (size_t i=0; i<(size_t)numTopologicalDims; ++i)
+    for (size_t i=0; i<numLogicalDims; ++i)
       VsLog::debugLog() << gdims[i] << "  ";
 
     VsLog::debugLog() << std::endl;
@@ -4967,7 +4921,13 @@ void avtVsFileFormat::GetSelectionBounds( size_t numTopologicalDims,
 //  Method: avtVsFileFormat::GetParallelDecomp
 //
 //  Purpose:
-//      How do you do the voododo that you do
+//    The selction bounds does double duty for both structured and
+//    unstructred mesh selections.
+//
+//    When the mesh is structured the numLogicalDims is the
+//    numSpatialDims of the points.
+//
+//    When the mesh is unstructured the numLogicalDims will be 1.
 //
 //  Programmer: Allen Sanderson
 //  Creation:   July, 2011
@@ -4975,7 +4935,7 @@ void avtVsFileFormat::GetSelectionBounds( size_t numTopologicalDims,
 //  Modifications:
 //
 
-bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
+bool avtVsFileFormat::GetParallelDecomp( int numLogicalDims,
                                          std::vector<int> &dims,
                                          int *mins,
                                          int *maxs,
@@ -4991,7 +4951,7 @@ bool avtVsFileFormat::GetParallelDecomp( int numTopologicalDims,
     // Get the axis with greatest number of nodes.
     int splitAxis = 0;
 
-    for (size_t i=0; i<numTopologicalDims; ++i)
+    for (size_t i=0; i<numLogicalDims; ++i)
     {
         if( dims[splitAxis] < dims[i] )
         splitAxis = i;

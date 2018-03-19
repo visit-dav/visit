@@ -364,8 +364,12 @@ VsUnstructuredMesh* VsUnstructuredMesh::buildUnstructuredMesh(VsGroup* group) {
 
 
 bool VsUnstructuredMesh::initialize() {
-  //For an unstructured mesh, spatial dimensionality is... complicated
+
+  VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+                    << "Entering" <<std::endl;
+  
   VsDataset* pointsDataset = getPointsDataset();
+
   if (pointsDataset != NULL) {
     splitPoints = false;
 
@@ -373,52 +377,63 @@ bool VsUnstructuredMesh::initialize() {
     {
       numPoints = pointsDataset->getDims()[0];
       numSpatialDims = pointsDataset->getDims()[1];
-      //guess that topological == spatial
-      numTopologicalDims = numSpatialDims;
     }
     else
     {
       numSpatialDims = pointsDataset->getDims()[0];
-      //guess that topological == spatial
-      numTopologicalDims = numSpatialDims;
       numPoints = pointsDataset->getDims()[1];
     }
   }
   else {
     splitPoints = true;
 
-    //it's possible that we have multiple points datasets
+    // It's possible to have multiple points datasets
     VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
-                      << "Path = " <<getPath() << "  "
-                      << "vsPoints0 = " <<getPointsDatasetName(0) << "  "
-                      << "vsPoints1 = " <<getPointsDatasetName(1) << "  "
-                      << "vsPoints2 = " <<getPointsDatasetName(2) << std::endl;
+                      << "Path = " << getPath() << "  "
+                      << "vsPoints0 = " << getPointsDatasetName(0) << "  "
+                      << "vsPoints1 = " << getPointsDatasetName(1) << "  "
+                      << "vsPoints2 = " << getPointsDatasetName(2) << std::endl;
     
-    VsDataset* points0 = getPointsDataset(0);
-    VsDataset* points1 = getPointsDataset(1);
-    VsDataset* points2 = getPointsDataset(2);
- 
-    if (!points0) {
-    VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
-                      << "Unable to load points data.  Returning false."
-                      << std::endl;
+    if (!getPointsDataset(0)) {
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
+                        << "Unable to load points data set 0.  Returning false."
+                        << std::endl;
       return false;
     }
     
-    //spatial dimensionality = number of vspoints datasets
-    numSpatialDims = 1;
+    if (!getPointsDataset(1) && getPointsDataset(2)) {
+      VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
+                        << "Unable to load points data set 1.  Returning false."
+                        << std::endl;
+      return false;
+    }
+    
+    // The spatial dimension is the number of point datasets.
+    numSpatialDims = 0;
 
-    if (points1) {
-      if (points2) {
-        numSpatialDims = 3;
-      } else {
-        numSpatialDims = 2;
-      }
+    for( int i=0; i<3; ++i ) {
+      if( getPointsDataset(i) )
+        numSpatialDims = i;
+      else
+        break;
     }
 
-    numPoints = points0->getDims()[0];
+    // Make sure all point dataset have the same number of coordinates.
+    numPoints = getPointsDataset(0)->getDims()[0];
+
+    for( int i=1; i<numSpatialDims; ++i ) {
+      if( numPoints != getPointsDataset(0)->getDims()[0] ) {
+        VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "  
+                          << "Number of coordinates in point dataset " << i
+                          << "  does not match the number of point expected "
+                          << numPoints << ".  Returning false."
+                          << std::endl;
+        return false;
+      }
+    }
   }
 
+  // If no connectivity assume a point mesh.
   if( isPointMesh() )
   {
     numCells = numPoints;
@@ -475,8 +490,11 @@ bool VsUnstructuredMesh::initialize() {
   }
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-                    << "Unstructured mesh " <<getShortName() <<" has num topological dims = " 
-                    << numTopologicalDims <<std::endl;
+                    << "Unstructured Mesh " << getShortName() << " "
+                    << "has num spatial dims = "
+                    << numSpatialDims << " and "
+                    << "has num topological dims = "
+                    << numTopologicalDims << std::endl;
 
   return initializeRoot();
 }
@@ -504,19 +522,8 @@ void VsUnstructuredMesh::getCellDims(std::vector<int>& dims) const
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "entering" << std::endl;
   
-  // Unstructured mesh is meshDataDims is: [#points][#spatialDims]
-  dims.resize(2);
-
-  if( isCompMinor() )
-  {
-    dims[0] = (int)numPoints;
-    dims[1] = (int)numSpatialDims;
-  }
-  else
-  {
-    dims[0] = (int)numSpatialDims;
-    dims[1] = (int)numPoints;
-  }
+  dims.resize(1);
+  dims[0] = (int) numCells;
 
   VsLog::debugLog() << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
                     << "exiting" << std::endl;  
