@@ -57,6 +57,11 @@
 #   Eric Brugger, Fri Feb 17 12:17:29 PST 2017
 #   I changed the bank for all the LLNL systems from bdivp to wbronze.
 #
+#   Eric Brugger, Mon Mar 19 14:23:59 PDT 2018
+#   I removed the modifications to the internallauncher for toss3 
+#   systems. I made a change in internallauncher and customlauncher
+#   that made this unnecessary.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -237,12 +242,6 @@ rm -rf /usr/gapps/visit/toss3
 ./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-x86_64-jade /usr/gapps/visit/toss3 > installlog 2>&1
 mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 rm -rf /usr/gapps/visit/toss3
-sed -i "/arch = \"linux-x86_64\"/ i 16SPACESif GETENV(\"SYS_TYPE\") == \"toss_3_x86_64_ib\" or GETENV(\"SYS_TYPE\") == \"toss_3_x86_64\":" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "/arch = \"linux-x86_64\"/ i 20SPACESarch = \"linux-x86_64-toss3\"" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "/arch = \"linux-x86_64\"/ i 16SPACESelse:" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/arch = \"linux-x86_64\"/    arch = \"linux-x86_64\"/" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/16SPACES/                /" /usr/gapps/visit/$ver+/bin/internallauncher
-sed -i "s/20SPACES/                    /" /usr/gapps/visit/$ver+/bin/internallauncher
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so.1
