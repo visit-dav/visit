@@ -9564,13 +9564,27 @@ ViewerPlotList::CanMeshPlotBeOpaque()
     bool canBeOpaque = true;
     for (i = 0; i < nPlots && canBeOpaque; ++i)
     {
-        if (plots[i].plot->IsInRange() && plots[i].realized && 
-            !plots[i].hidden && !plots[i].plot->IsLabel() &&
-            !(plots[i].plot->NoActorExists() && 
-              plots[i].plot->GetErrorFlag()) && 
-            (!plots[i].plot->IsMesh() ||
-             plots[i].plot->GetMeshType() == AVT_POINT_MESH))
-            canBeOpaque = false;
+        // ignore this plot if it is NOT in range
+        if (!plots[i].plot->IsInRange()) continue;
+
+        // ignore this plot if it is NOT realized
+        if (!plots[i].realized) continue;
+
+        // ignore this plot if it IS hidden
+        if (plots[i].hidden) continue; 
+
+        // ignore this plot if it IS a label plot
+        if (plots[i].plot->IsLabel()) continue;
+
+        // ignore this plot if it IS in a bad state
+        if (plots[i].plot->NoActorExists() && 
+            plots[i].plot->GetErrorFlag()) continue;
+
+        // ignore this plot if it IS a non-point mesh
+        if (plots[i].plot->IsMesh() && 
+           !plots[i].plot->GetMeshType() == AVT_POINT_MESH) continue;
+
+        canBeOpaque = false;
     }
 
     for (i = 0; i < nPlots; ++i)
