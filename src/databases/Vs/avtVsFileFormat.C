@@ -4461,56 +4461,52 @@ void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
     }
 
     // If time data is present, tell VisIt
-    // if (registry->hasTime()) {
-    //     VsLog::debugLog() << CLASSFUNCLINE
-    //     << "This file supplies time: "
-    //     << registry->getTime() << std::endl;
-
-    //     md->SetTime(timeStep, registry->getTime());
-    //     md->SetTimeIsAccurate(true, registry->getTime());
-
-    //  // md->SetTimesAreAccurate(true);
-    // }
-
-    // If time cycle is present, tell VisIt
-    // if (registry->hasCycle()) {
-    //     VsLog::debugLog() << CLASSFUNCLINE
-    //     << "This file supplies cycle: "
-    //     << registry->getCycle() << std::endl;
-
-    //     md->SetCycle(timeStep, registry->getCycle());
-    //     md->SetCycleIsAccurate(true, registry->getCycle());
-
-    //  // md->SetCyclesAreAccurate(true);
-    // }
-
-    // If time data is present, tell VisIt
     if (registry->hasTime()) {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "This file supplies time: "
-                          << registry->getTime() << std::endl;
+        << "This file supplies time: "
+        << registry->getTime() << std::endl;
 
-        std::vector<double> times;
-        times.resize( 1 );
-        times[0] = registry->getTime();
-
-        md->SetTimesAreAccurate(true);
-        md->SetTimes( times );
+        md->SetTime(timeStep, registry->getTime());
+        md->SetTimeIsAccurate(true, registry->getTime());
     }
-    
-    // If cycle data is present, tell VisIt
+
+    // If time cycle is present, tell VisIt
     if (registry->hasCycle()) {
         VsLog::debugLog() << CLASSFUNCLINE
-                          << "This file supplies cycle: "
-                          << registry->getCycle() << std::endl;
+        << "This file supplies cycle: "
+        << registry->getCycle() << std::endl;
 
-        std::vector<int> cycles;
-        cycles.resize( 1 );
-        cycles[0] = registry->getCycle();
-
-        md->SetCyclesAreAccurate(true);
-        md->SetCycles( cycles );
+        md->SetCycle(timeStep, registry->getCycle());
+        md->SetCycleIsAccurate(true, registry->getCycle());
     }
+
+    // If time data is present, tell VisIt
+    // if (registry->hasTime()) {
+    //     VsLog::debugLog() << CLASSFUNCLINE
+    //                       << "This file supplies time: "
+    //                       << registry->getTime() << std::endl;
+
+    //     std::vector<double> times;
+    //     times.resize( 1 );
+    //     times[0] = registry->getTime();
+
+    //     md->SetTimesAreAccurate(true);
+    //     md->SetTimes( times );
+    // }
+    
+    // If cycle data is present, tell VisIt
+    // if (registry->hasCycle()) {
+    //     VsLog::debugLog() << CLASSFUNCLINE
+    //                       << "This file supplies cycle: "
+    //                       << registry->getCycle() << std::endl;
+
+    //     std::vector<int> cycles;
+    //     cycles.resize( 1 );
+    //     cycles[0] = registry->getCycle();
+
+    //     md->SetCyclesAreAccurate(true);
+    //     md->SetCycles( cycles );
+    // }
 
     if (registry->hasLowerBounds() && registry->hasUpperBounds()) {
 
