@@ -9577,12 +9577,12 @@ ViewerPlotList::CanMeshPlotBeOpaque()
         if (plots[i].plot->IsLabel()) continue;
 
         // ignore this plot if it IS in a bad state
-        if (plots[i].plot->NoActorExists() && 
+        if (plots[i].plot->NoActorExists() &&
             plots[i].plot->GetErrorFlag()) continue;
 
         // ignore this plot if it IS a non-point mesh
         if (plots[i].plot->IsMesh() && 
-           !plots[i].plot->GetMeshType() == AVT_POINT_MESH) continue;
+            plots[i].plot->GetMeshType() != AVT_POINT_MESH) continue;
 
         canBeOpaque = false;
     }

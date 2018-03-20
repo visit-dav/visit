@@ -2104,7 +2104,7 @@ DecodeQualifiedFilename(const QVariant &v)
 {
     QualifiedFilename f;
     QList<QVariant> values = v.toList();
-    if(values.size() == 6)
+    if(values.size() == 5)
     {
         f.host      = values[0].toString().toStdString();
         f.path      = values[1].toString().toStdString();
