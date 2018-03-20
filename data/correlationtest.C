@@ -38,9 +38,7 @@
 
 #include <stdio.h>
 #include <math.h>
-#ifdef _WIN32
-#define rint(x) (floor(x+.5))
-#endif
+
 //
 // Include classes that help write PDB files.
 //
