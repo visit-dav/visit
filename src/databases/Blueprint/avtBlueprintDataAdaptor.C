@@ -300,7 +300,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.id() == CONDUIT_NATIVE_LONG_LONG_ID)
     {
         retval = vtkLongLongArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_LONG_LONG_ID>(n,
+        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_LONG_LONG>(n,
                                                                               ncomps,
                                                                               ntuples,
                                                                               retval);
@@ -533,7 +533,7 @@ ExplicitCoordsToVTKPoints(const Node &n_coords)
         double z = have_z ? z_vals[i] : 0;
         points->SetPoint(i, x, y, z);
     }
-    
+
     return points;
 }
 

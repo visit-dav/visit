@@ -229,7 +229,7 @@
 # if defined(visitmodule_EXPORTS)
 #  define VISITMODULE_API __declspec(dllexport)
 # else
-#  define VISITMODULE_API 
+#  define VISITMODULE_API __declspec(dllimport)
 # endif
 #else
 # if __GNUC__ >= 4
@@ -474,11 +474,12 @@ static std::map<std::string, AnnotationObjectRef> localObjectMap;
 
 static bool                  suppressQueryOutputState = false;
 
-static enum QueryOutputReturnType {
+typedef enum QueryOutputReturnType {
     QueryString = 0,
     QueryValue,
     QueryObject
-} queryOutputReturnType = QueryString;
+};
+static QueryOutputReturnType queryOutputReturnType = QueryString;
 
 // pickle related
 bool      pickleReady=false;
