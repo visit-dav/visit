@@ -46,6 +46,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <algorithm>
 using std::cout;
 using std::cerr;
 using std::endl;
