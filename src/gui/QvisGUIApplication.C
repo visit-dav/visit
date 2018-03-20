@@ -39,7 +39,6 @@
 #include <stdio.h>
 #include <algorithm>
 #include <map>
-#include <unistd.h>
 
 #include <visit-config.h> // To get the version number
 #include <QColor>
@@ -172,7 +171,13 @@
 #include <AccessViewerSession.h>
 
 #if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h> // for LoadLibrary
+#include <TlHelp32.h> // for Tool help
+#else
+#include <unistd.h>
 #endif
 
 #include <snprintf.h>
@@ -8777,24 +8782,24 @@ QvisGUIApplication::GetSystemPIDs(std::vector<int> &outPIDs)
     
     pclose(f);
 #else
-//    HANDLE hProcessSnap;
-//    PROCESSENTRY32 pe32;
-//    
-//    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-//    
-//    if(hProcessSnap != INVALID_HANDLE_VALUE)
-//    {
-//        pe32.dwSize = sizeof(PROCESSENTRY32);
-//        
-//        while(Process32Next(hProcessSnap, &pe32))
-//        {
-//            int pid = static_cast<int>(pe32.th32ProcessID);
-//            outPIDs.push_back(pid);
-//        }
-//    }
-//    
-//    CloseHandle(hProcessSnap);
-    
+    HANDLE hProcessSnap;
+    PROCESSENTRY32 pe32;
+
+    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
+    if(hProcessSnap != INVALID_HANDLE_VALUE)
+    {
+        pe32.dwSize = sizeof(PROCESSENTRY32);
+
+        while(Process32Next(hProcessSnap, &pe32))
+        {
+            int pid = static_cast<int>(pe32.th32ProcessID);
+            outPIDs.push_back(pid);
+        }
+    }
+
+    CloseHandle(hProcessSnap);
+
 #endif
 }
 
