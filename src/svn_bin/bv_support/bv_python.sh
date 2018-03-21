@@ -769,6 +769,7 @@ function build_numpy
 
     pushd $NUMPY_BUILD_DIR > /dev/null
     info "Installing numpy (~ 2 min) ..."
+    sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
     popd > /dev/null
 
