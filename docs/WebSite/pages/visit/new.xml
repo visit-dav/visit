@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <page>
   <title><![CDATA[What's New in VisIt]]></title>
-  <IM>LLNL-WEB-739935</IM>
+  <IM>LLNL-WEB-748158</IM>
   <owner><![CDATA[Page Owner Name]]></owner>
-  <lastchanged><![CDATA[October 30, 2017]]></lastchanged>
+  <lastchanged><![CDATA[March 26, 2018]]></lastchanged>
   <template><![CDATA[l2]]></template> 
   <content>
     <![CDATA[
@@ -22,8 +22,10 @@
 	<li><a href="simulation/computer-codes/visit/faqs">FAQs</a></li>
 </ul>
 
+<h2>March, 2018 - VisIt 2.13.1 released</h2>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.13.1 contains almost three dozen bug-fixes. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.1">VisIt 2.13.1 Release Notes</a>.</p>
 <h2>October, 2017 - VisIt 2.13 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.13 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.0">VisIt 2.13 Release Notes</a>.</p>
+<p>VisIt 2.13 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.0">VisIt 2.13 Release Notes</a>.</p>
 <h4>1.  VisIt now supports OpenSWR for rendering.</h4>
 <p>You can now use build_visit to build a version of VisIt that supports using OpenSWR for software rendering. OpenSWR is an Intel software renderer that is now part of Mesa.</p>
 <h4>2.  Added an SPCTH reader.</h4>
