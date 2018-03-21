@@ -26,10 +26,10 @@ VsStaggeredField<TYPE>::VsStaggeredField(size_t subRes) {
   this->indexOrder = VsSchema::compMajorCKey;
   this->centering = VsSchema::nodalCenteringKey;
 
-  this->oriCellDims.clear();
-  this->oriCellDimProd.clear();
-  this->newCellDims.clear();
-  this->newCellDimProd.clear();
+  // this->oriCellDims.clear();
+  // this->oriCellDimProd.clear();
+  // this->newCellDims.clear();
+  // this->newCellDimProd.clear();
 }
 
 template<class TYPE>

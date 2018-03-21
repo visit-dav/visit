@@ -138,7 +138,7 @@ private:
   std::string centering;
   
   /** number of cells along each direction for the original data */
-  std::valarray<int> oriCellDim;
+  std::valarray<int> oriCellDims;
 
   /** number of cells along each direction for the new data */
   std::valarray<int> newCellDims;
