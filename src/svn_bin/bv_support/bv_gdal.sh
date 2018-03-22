@@ -20,12 +20,12 @@ function bv_gdal_depends_on
 
 function bv_gdal_info
 {
-    export GDAL_FILE=${GDAL_FILE:-"gdal-1.10.0.tar.gz"}
-    export GDAL_VERSION=${GDAL_VERSION:-"1.10.0"}
-    export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"1.10"}
-    export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-1.10.0"}
+    export GDAL_FILE=${GDAL_FILE:-"gdal-2.2.4.tar.gz"}
+    export GDAL_VERSION=${GDAL_VERSION:-"2.2.4"}
+    export GDAL_COMPATIBILITY_VERSION=${GDAL_COMPATIBILITY_VERSION:-"2.2"}
+    export GDAL_BUILD_DIR=${GDAL_BUILD_DIR:-"gdal-2.2.4"}
     export GDAL_URL=${GDAL_URL:-"http://download.osgeo.org/gdal/${GDAL_VERSION}"}
-    export GDAL_MD5_CHECKSUM="a2062d6ad09250e2ade40064bcd1a384"
+    export GDAL_MD5_CHECKSUM="798c66cc8df26f204f6248358fe4fceb"
     export GDAL_SHA256_CHECKSUM=""
 }
 
@@ -215,7 +215,7 @@ function build_gdal
         #
         info "Fixing install_name of dynamic libraries for GDAL . . ."
 
-        cp .libs/libgdal.1.10.0.${SO_EXT} libgdal.${SO_EXT}
+        cp .libs/libgdal.2.2.4.${SO_EXT} libgdal.${SO_EXT}
         INSTALLNAMEPATH="$VISITDIR/gdal/${GDAL_VERSION}/$VISITARCH/lib"
 
         install_name_tool -id \
