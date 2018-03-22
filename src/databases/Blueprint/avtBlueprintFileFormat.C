@@ -1111,8 +1111,9 @@ avtBlueprintFileFormat::GetVar(int domain, const char *abs_varname)
         // create an mfem mesh 
         mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(n_mesh);
         // refine the coloring to a vtk data array
-        res =  avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mesh, m_selected_lod+1);
-        
+        res = avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mesh, 
+                                                                        domain,
+                                                                        m_selected_lod+1);
         // clean up the mfem mesh 
         delete mesh;
         

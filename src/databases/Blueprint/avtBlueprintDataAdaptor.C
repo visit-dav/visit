@@ -1485,8 +1485,9 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 //   finite elements of a mfem mesh.
 //
 //  Arguments:
-//   mesh:  MFEM mesh object
-//   lod:   number of refinement steps 
+//   mesh:        MFEM mesh object
+//   domain_id :  domain id, use for rng seed
+//   lod:         number of refinement steps 
 //
 //  Programmer: Cyrus Harrison
 //  Creation:   Sat Jul  5 11:38:31 PDT 2014
@@ -1496,6 +1497,7 @@ avtBlueprintDataAdaptor::MFEM::RefineGridFunctionToVTK(mfem::Mesh *mesh,
 // ****************************************************************************
 vtkDataArray *
 avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
+                                                          int domain_id,
                                                           int lod)
 {
     BP_PLUGIN_INFO("Creating Refined MFEM Element Coloring with lod:" << lod);
@@ -1526,7 +1528,9 @@ avtBlueprintDataAdaptor::MFEM::RefineElementColoringToVTK(mfem::Mesh *mesh,
     // Use mfem's mesh coloring algo
     //
     
-    //srandom(time(0)); don't seed, may have side effects for other parts of visit
+    // seed using domain id for predictable results
+    srand(domain_id);
+    
 #ifdef _WIN32
     double a = double(rand()) / (double(RAND_MAX) + 1.);
 #else

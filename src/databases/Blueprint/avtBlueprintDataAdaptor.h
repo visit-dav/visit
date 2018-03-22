@@ -106,7 +106,8 @@ public:
                                                      int lod);
 
     static vtkDataArray *RefineElementColoringToVTK(mfem::Mesh *mesh,
-                                                        int lod);
+                                                    int domain_id,
+                                                    int lod);
 
     static vtkDataArray *RefineElementAttributeToVTK(mfem::Mesh *mesh,
                                                      int lod);
