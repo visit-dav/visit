@@ -156,7 +156,7 @@ VTKCellTypeSize(int cell_type)
 
 // ****************************************************************************
 template<typename T> void 
-Blueprint_MulitCompArray_To_VTKDataArray(const Node &n,
+Blueprint_MultiCompArray_To_VTKDataArray(const Node &n,
                                          int ncomps,
                                          int ntuples,
                                          vtkDataArray *darray)
@@ -242,7 +242,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     if (vals_dtype.is_unsigned_char())
     {
         retval = vtkUnsignedCharArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_CHAR>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_CHAR>(n,
                                                                                ncomps,
                                                                                ntuples,
                                                                                retval);
@@ -250,7 +250,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.is_unsigned_short())
     {
         retval = vtkUnsignedShortArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_SHORT>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_SHORT>(n,
                                                                                 ncomps,
                                                                                 ntuples,
                                                                                 retval);
@@ -258,7 +258,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.is_unsigned_int())
     {
         retval = vtkUnsignedIntArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_INT>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_UNSIGNED_INT>(n,
                                                                               ncomps,
                                                                               ntuples,
                                                                               retval);
@@ -266,7 +266,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.is_char())
     {
         retval = vtkCharArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_CHAR>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_CHAR>(n,
                                                                       ncomps,
                                                                       ntuples,
                                                                       retval);
@@ -275,7 +275,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.is_short())
     {
         retval = vtkShortArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_SHORT>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_SHORT>(n,
                                                                        ncomps,
                                                                        ntuples,
                                                                        retval);
@@ -283,7 +283,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.is_int())
     {
         retval = vtkIntArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_INT>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_INT>(n,
                                                                      ncomps,
                                                                      ntuples,
                                                                      retval);
@@ -291,7 +291,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.is_long())
     {
         retval = vtkLongArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_LONG>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_LONG>(n,
                                                                       ncomps,
                                                                       ntuples,
                                                                       retval);
@@ -300,7 +300,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.id() == CONDUIT_NATIVE_LONG_LONG_ID)
     {
         retval = vtkLongLongArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_LONG_LONG>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_LONG_LONG>(n,
                                                                               ncomps,
                                                                               ntuples,
                                                                               retval);
@@ -309,7 +309,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.is_float())
     {
         retval = vtkFloatArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_FLOAT>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_FLOAT>(n,
                                                                        ncomps,
                                                                        ntuples,
                                                                        retval);
@@ -317,7 +317,7 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     else if (vals_dtype.is_double())
     {
         retval = vtkDoubleArray::New();
-        Blueprint_MulitCompArray_To_VTKDataArray<CONDUIT_NATIVE_DOUBLE>(n,
+        Blueprint_MultiCompArray_To_VTKDataArray<CONDUIT_NATIVE_DOUBLE>(n,
                                                                         ncomps,
                                                                         ntuples,
                                                                         retval);
