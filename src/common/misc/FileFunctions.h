@@ -58,6 +58,9 @@ struct dirent;
 //
 //    Mark C. Miller, Thu Mar 15 14:18:43 PDT 2018
 //    Added FileType enum and GetFileType methods.
+//
+//    Mark C. Miller, Fri Mar 23 12:10:59 PDT 2018
+//    Added LINK to FileTypes.
 // ****************************************************************************
 
 namespace FileFunctions
@@ -104,6 +107,7 @@ typedef enum
 {
     FILE_TYPE_REG,
     FILE_TYPE_DIR,
+    FILE_TYPE_LINK,
     FILE_TYPE_OTHER,
     FILE_TYPE_NOT_KNOWN
 } FileType;
