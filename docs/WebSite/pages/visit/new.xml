@@ -23,7 +23,7 @@
 </ul>
 
 <h2>March, 2018 - VisIt 2.13.1 released</h2>
-<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.13.1 contains almost three dozen bug-fixes. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.1">VisIt 2.13.1 Release Notes</a>.</p>
+<p>VisIt is a distributed, parallel visualization and graphical analysis tool for data defined on two- and three-dimensional (2D and 3D) meshes. Version 2.13.1 contains over three dozen bug-fixes. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.1">VisIt 2.13.1 Release Notes</a>.</p>
 <h2>October, 2017 - VisIt 2.13 released</h2>
 <p>VisIt 2.13 contains many bug-fixes and new features. For a complete list of changes see the <a href="simulation/computer-codes/visit/releases/release-notes-2.13.0">VisIt 2.13 Release Notes</a>.</p>
 <h4>1.  VisIt now supports OpenSWR for rendering.</h4>
