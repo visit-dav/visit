@@ -1220,6 +1220,11 @@ FileFunctions::FileMatchesPatternCB(void *cbdata, const std::string &filename, b
 //
 //  Mark C. Miller, Wed Mar 14 22:36:48 PDT 2018
 //
+//  Modifications:
+//
+//    Mark C. Miller, Fri Mar 23 12:11:40 PDT 2018
+//    Added processing of LINK file type.
+//
 // ****************************************************************************
 
 FileFunctions::FileType
@@ -1249,6 +1254,8 @@ FileFunctions::GetFileType(char const *filename, struct dirent const *dent,
             return FILE_TYPE_DIR;
         if (dent->d_type == DT_REG)
             return FILE_TYPE_REG;
+        if (dent->d_type == DT_LNK)
+            return FILE_TYPE_LINK;
         if (dent->d_type != DT_UNKNOWN)
             return FILE_TYPE_OTHER;
     }
