@@ -84,6 +84,39 @@ function bv_xdmf_dry_run
 #                         Function 8.19, build_xdmf                           #
 # *************************************************************************** #
 
+function apply_xdmf_patch
+{
+   patch -p0 << \EOF
+diff -c a/libsrc/FXdmfValuesBinary.cxx Xdmf/libsrc/XdmfValuesBinary.cxx
+*** a/libsrc/XdmfValuesBinary.cxx
+--- Xdmf/libsrc/XdmfValuesBinary.cxx
+***************
+*** 282,288 ****
+      }
+      FullFileName << DataSetName << ends;
+      char * path = FullFileName.rdbuf()->str();
+!     XdmfDebug("Opening Binary Data for Reading : " << FullFileName);
+  
+  
+      //char * path = new char [ strlen(this->DOM->GetWorkingDirectory())+strlen(DataSetName) + 1 ];
+--- 282,288 ----
+      }
+      FullFileName << DataSetName << ends;
+      char * path = FullFileName.rdbuf()->str();
+!     XdmfDebug("Opening Binary Data for Reading : " << path);
+  
+  
+      //char * path = new char [ strlen(this->DOM->GetWorkingDirectory())+strlen(DataSetName) + 1 ];
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "boxlib patch failed."
+        return 1
+    fi
+
+    return 0;
+
+}
+
 function build_xdmf
 {
     CMAKE_BIN="${CMAKE_COMMAND}"
@@ -92,17 +125,35 @@ function build_xdmf
     # Prepare build dir
     #
     prepare_build_dir $XDMF_BUILD_DIR $XDMF_FILE
-    untarred_XDMF=$?
-    if [[ $untarred_XDMF == -1 ]] ; then
+    untarred_xdmf=$?
+    if [[ $untarred_xdmf == -1 ]] ; then
         warn "Unable to prepare Xdmf Build Directory. Giving up"
         return 1
     fi
 
-    # We need to patch the CMakeLists.txt so it uses our HDF5 by default
-    # when we tell it to use the system versions.
+    #
+    # Apply patches
+    #
+    info "Patching Xdmf . . ."
+    apply_xdmf_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_xdmf == 1 ]] ; then
+            warn "Giving up on Xdmf build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
     cd $XDMF_BUILD_DIR || error "Can't cd to Xdmf build dir."
     rm -f CMakeCache.txt #remove any CMakeCache that may have existed 
+
+    #
     # Configure Xdmf
+    #
     info "Executing CMake on Xdmf"
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         XDMF_SHARED_LIBS="OFF"
