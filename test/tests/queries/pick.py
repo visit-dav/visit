@@ -2784,7 +2784,7 @@ def PickScatter():
     TestText("PickScatter", s)
     DeleteAllPlots()
     ResetPickLetter()
-    
+
 def PickHighlight():
     OpenDatabase(silo_data_path("noise.silo"))
     TurnOffAllAnnotations()
@@ -2890,7 +2890,7 @@ def PickLines3D():
     ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
-    
+
 def PickZoneLabel():
     OpenDatabase(data_path("mili_test_data2/sslide14ball_l.plt.mili"))
     TurnOffAllAnnotations()

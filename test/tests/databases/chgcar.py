@@ -119,7 +119,6 @@ VolumeAtts = VolumeAttributes()
 VolumeAtts.lightingFlag = 0
 VolumeAtts.opacityAttenuation = .1
 VolumeAtts.resampleTarget = 450000
-VolumeAtts.rendererType = VolumeAtts.Splatting
 SetPlotOptions(VolumeAtts)
 
 Test("chgcar_05")
@@ -130,7 +129,6 @@ ReplaceDatabase(data_path("chgcar_test_data/CHGCAR"))
 
 
 VolumeAtts.opacityAttenuation = .2
-VolumeAtts.rendererType = VolumeAtts.Texture3D
 SetPlotOptions(VolumeAtts)
 
 Test("chgcar_07")

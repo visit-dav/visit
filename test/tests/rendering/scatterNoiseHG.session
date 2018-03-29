@@ -117,7 +117,7 @@
                                         <Field name="var4Max" type="double">1</Field>
                                         <Field name="var4Scaling" type="string">Linear</Field>
                                         <Field name="var4SkewFactor" type="double">1</Field>
-                                        <Field name="pointSize" type="double">0.05</Field>
+                                        <Field name="pointSize" type="double">0.004</Field>
                                         <Field name="pointSizePixels" type="int">10</Field>
                                         <Field name="pointType" type="string">Sphere</Field>
                                         <Field name="scaleCube" type="bool">false</Field>
