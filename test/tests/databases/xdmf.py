@@ -165,7 +165,7 @@ def test2(datapath):
     Test("xdmf_2_00")
 
     DeleteAllPlots()
-    CloseDatabase(pjoin(datapath, "Mixed.xmf"))
+    CloseDatabase(datapath + "Mixed.xmf")
 
 def test3(datapath):
     TestSection("Polygon (no hdf5)")

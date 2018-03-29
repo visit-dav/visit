@@ -63,29 +63,23 @@ def TestCorrelations(testname):
     TestText(testname, s)
 
 def CleanSlate():
-    print "CleanSlate"
     # Delete all but the first window.
     windows = list(GetGlobalAttributes().windows)
     windows.sort()
     for win in windows[1:]:
         SetActiveWindow(win)
-        print "Deleting window: ", win
         DeleteWindow()
-        print "Deleting window: ", win, ".. done"
 
     # Delete all of the plots.
-    print "Deleting all plots"
     DeleteAllPlots()
 
     # Delete all of the database correlations:
     sources = GetGlobalAttributes().sources
     cL = GetDatabaseCorrelationNames()
-    print "Deleting database correlations"
     for name in cL:
         if name not in sources:
             DeleteDatabaseCorrelation(name)
  
-    print "Closing all sources"
     # Close all of the sources.
     for src in sources:
         CloseDatabase(src)
@@ -96,7 +90,6 @@ def CleanSlate():
     # Make sure that window 1 is not locked in time!
     if GetWindowInformation().lockTime == 1:
         ToggleLockTime()
-    print "CleanSlate ... done"
 
 #
 # Returns whether all files in the list are in the current directory.

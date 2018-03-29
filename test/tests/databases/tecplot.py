@@ -202,6 +202,7 @@ OpenDatabase(data_path("tecplot_test_data/sample.tp"))
 AddPlot("Mesh","mesh")
 AddPlot("Volume","X Velocity")
 v=VolumeAttributes()
+v.opacityAttenuation=.05
 SetPlotOptions(v)
 DrawPlots()
 SetTheView()

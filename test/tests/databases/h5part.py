@@ -43,7 +43,7 @@ DeleteActivePlots()
 AddPlot("Pseudocolor", "px", 1, 0)
 PseudocolorAtts = PseudocolorAttributes()
 PseudocolorAtts.pointType = PseudocolorAtts.Sphere
-PseudocolorAtts.pointSize = 1.5
+PseudocolorAtts.pointSizePixels = 5
 SetPlotOptions(PseudocolorAtts)
 DrawPlots()
 Test("h5part_03")
