@@ -16,12 +16,15 @@
 #   Eric Brugger, Mon Jan  9 13:43:22 PST 2017
 #   I modified the script to no longer set usettc when on inca.
 #
+#   Eric Brugger, Thu Mar 29 08:32:40 PDT 2018
+#   I modified the script to set ttc when running on rztrona.
+#
 ###############################################################################
 
 class JobSubmitter_qsub_LLNL(JobSubmitter_qsub):
     def __init__(self, launcher):
         super(JobSubmitter_qsub_LLNL, self).__init__(launcher)
-        self.usettc = self.sectorname() in ("agate", "borax", "rzalastor")
+        self.usettc = self.sectorname() in ("agate", "borax", "rzalastor", "rztrona")
         self.useppn = (self.sectorname() == "graph") or (self.sectorname() == "tr-fe")
 
 ###############################################################################
