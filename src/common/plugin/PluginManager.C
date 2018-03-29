@@ -662,6 +662,7 @@ PluginManager::ReadPluginInfo()
     int prefixLen = 4;
     string prefix("lib");
 #endif
+
     for (size_t i=0; i<libs.size(); i++)
     {
         const string &dirname  = libs[i].first;
@@ -680,23 +681,25 @@ PluginManager::ReadPluginInfo()
           case MDServer:  str += string("M") + filename.substr(prefixLen); break;
           case Engine:
 #ifdef _WIN32
-                          if(filename.substr(0,5) == "ISimV")
+              if(filename.substr(0,5) == "ISimV")
 #else
-                          if(filename.substr(0,8) == "libISimV")
+              if(filename.substr(0,8) == "libISimV")
 #endif
-                          {
-                              debug1 << "Skipping plugin " << filename
-                                     << " because it is a simulation plugin."
-                                     << endl;
-                              continue;
-                          }
-                          // Fall through to Simulation
-          case Simulation:str += string("E") +
+              {
+                  debug1 << "Skipping plugin " << filename
+                         << " because it is a simulation plugin."
+                         << endl;
+                  continue;
+              }
+              // Fall through to Simulation
+              
+        case Simulation:str += string("E") +
                           filename.substr(prefixLen, filename.length() - prefixLen - ext.size())
                           + (parallel ? string("_par") : string("_ser"))
                           + ext;
                           break;
         }
+        
         bool match = false;
         for (size_t j=0; j<libs.size() && !match; j++)
         {
@@ -724,6 +727,9 @@ PluginManager::ReadPluginInfo()
         // We're okay, now try to open the plugin info.
         string pluginFile(dirname + VISIT_SLASH_STRING + filename);
         bool success = true;
+
+        debug2 << "Attempting to open plugin: " << pluginFile << "  ";
+
         TRY
         {
             PluginOpen(pluginFile);
@@ -753,11 +759,15 @@ PluginManager::ReadPluginInfo()
 
         if (success)
         {
+            debug2 << "SUCCESS" << std::endl;
+            
             // Add the name of the category plugin to the list of plugins
             // that will be loaded later.
             alreadyLoaded.push_back(filename);
             alreadyLoadedDir.push_back(dirname);
             libfiles.push_back(dirname + VISIT_SLASH_STRING + str);
+        } else {
+            debug2 << "FAILED" << std::endl;
         }
     }
 
