@@ -91,7 +91,8 @@ public:
     //-------------------------------------------------------------------------
     // blueprint to mfem 
     //-------------------------------------------------------------------------
-    static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh);
+    static mfem::Mesh         *MeshToMFEM(const conduit::Node &mesh,
+                                          const std::string &topo_name = "");
 
     static mfem::GridFunction *FieldToMFEM(mfem::Mesh *mesh, 
                                            const conduit::Node &field);

@@ -643,6 +643,9 @@ UnstructuredTopologyToVTKUnstructuredGrid(const Node &n_coords,
 vtkDataSet *
 avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
 {
+    //NOTE: this assumes one coordset and one topo
+    // that is the case for the blueprint plugin, but may not be the case
+    // generally if we want to reuse this code. 
     BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet Begin");
 
     const Node &n_coords = n_mesh["coordsets"][0];
@@ -817,7 +820,8 @@ ShapeNameToGeomType(const std::string &shape_name)
 // we will those, instead of VisIt's own implementation.
 //---------------------------------------------------------------------------//
 mfem::Mesh *
-avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
+avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh,
+                                          const std::string &topology_name)
 {
    bool zero_copy = true;
    // n_conv holds converted data (when necessary for mfem api)
@@ -825,12 +829,31 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
    // now that some data allocation was necessary, so we
    // can't return a mesh that zero copies the conduit data
    Node n_conv;
+   
+   // we need to find the topology and its coordset.
+   //
+   
+   std::string topo_name = topology_name;
+   // if topo name is not set, look for first topology
+   if (topo_name == "")
+   {
+       topo_name = n_mesh["topologies"].schema().child_name(0);
+   }
+   
+   MFEM_ASSERT(n_mesh.has_path("topologies/" + topo_name),
+               "Expected topology named \"" + topo_name + "\" "
+               "(node is missing path \"topologies/" + topo_name + "\")");
+   
+   // find coord set
+   
+   std::string coords_name = n_mesh["topologies"][topo_name]["coordset"].as_string();
+   
 
-   MFEM_ASSERT(n_mesh.has_path("coordsets/coords"),
-               "Expected topology named \"coords\" "
-               "(node is missing path \"coordsets/coords\")");
+   MFEM_ASSERT(n_mesh.has_path("coordsets/" + coords_name),
+               "Expected topology named \"" + coords_name + "\" "
+               "(node is missing path \"coordsets/" + coords_name + "\")");
 
-   const Node &n_coordset = n_mesh["coordsets/coords"];
+   const Node &n_coordset = n_mesh["coordsets"][coords_name];
    const Node &n_coordset_vals = n_coordset["values"];
 
    // get the number of dims of the coordset
@@ -892,17 +915,14 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
          n_tmp["y"].set(DataType::c_double(num_verts));
       }
 
-      Node &n_conv_coords_vals = n_conv["coordsets/coords/values"];
+      Node &n_conv_coords_vals = n_conv["coordsets"][coords_name]["values"];
       blueprint::mcarray::to_interleaved(n_tmp,
                                          n_conv_coords_vals);
       verts_ptr = n_conv_coords_vals[0].value();
    }
 
-   MFEM_ASSERT(n_mesh.has_path("topologies/main"),
-               "Expected topology named \"main\" "
-               "(node is missing path \"topologies/main\")");
 
-   const Node &n_mesh_topo    = n_mesh["topologies/main"];
+   const Node &n_mesh_topo    = n_mesh["topologies"][topo_name];
    std::string mesh_ele_shape = n_mesh_topo["elements/shape"].as_string();
 
    mfem::Geometry::Type mesh_geo = ShapeNameToGeomType(mesh_ele_shape);
@@ -919,7 +939,7 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
    }
    else
    {
-      Node &n_mesh_conn_conv= n_conv["topologies/main/elements/connectivity"];
+      Node &n_mesh_conn_conv= n_conv["topologies"][topo_name]["elements/connectivity"];
       n_mesh_conn.to_int_array(n_mesh_conn_conv);
       elem_indices = n_mesh_conn_conv.value();
    }
@@ -935,9 +955,10 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
    // table lookup, even if we don't have boundary info.
    mfem::Geometry::Type bndry_geo = mfem::Geometry::POINT;
 
-   if ( n_mesh.has_path("topologies/boundary") )
+   if ( n_mesh_topo.has_child("boundary_topology") )
    {
-      const Node &n_bndry_topo    = n_mesh["topologies/boundary"];
+      std::string bndry_topo_name = n_mesh_topo["boundary_topology"].as_string();
+      const Node &n_bndry_topo    = n_mesh["topologies"][bndry_topo_name];
       std::string bndry_ele_shape = n_bndry_topo["elements/shape"].as_string();
 
       bndry_geo = ShapeNameToGeomType(bndry_ele_shape);
@@ -953,7 +974,7 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh)
       }
       else
       {
-         Node &(n_bndry_conn_conv) = n_conv["topologies/boundary/elements/connectivity"];
+         Node &(n_bndry_conn_conv) = n_conv["topologies"][bndry_topo_name]["elements/connectivity"];
          n_bndry_conn.to_int_array(n_bndry_conn_conv);
          bndry_indices = (n_bndry_conn_conv).value();
 
