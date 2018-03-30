@@ -135,6 +135,13 @@ blueprint_plugin_warning_handler(const std::string &msg,
                                  int line)
 {
     blueprint_plugin_print_msg(msg,file,line);
+    
+    std::ostringstream oss;
+    oss << "File:"    << file
+        << "Line:"    << line
+        << "Message:" << msg  << std::endl;
+    
+    EXCEPTION1(ImproperUseException, oss.str().c_str());
 }
 
 //-----------------------------------------------------------------------------
@@ -145,6 +152,7 @@ blueprint_plugin_error_handler(const std::string &msg,
 {
     // TODO, plumb to visit exception
     blueprint_plugin_print_msg(msg,file,line);
+    
 }
 
 // ****************************************************************************
