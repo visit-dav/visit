@@ -65,25 +65,28 @@ def set_3d_view():
     SetView3D(v)
 
 
+def set_test_view(tag_name):
+    if "3d" in tag_name:
+        set_3d_view()
+    else:
+        ResetView()
+
 def test(mesh_name,tag_name):
     #
     AddPlot("Mesh","%s" % full_mesh_name(mesh_name))
     DrawPlots()
-    if "3d" in tag_name:
-        set_3d_view()
+    set_test_view(tag_name)
     Test(tag_name + "_" +  mesh_name + "_mesh")
     DeleteAllPlots()
     #
     AddPlot("Pseudocolor", full_var_name(mesh_name,"braid"))
     DrawPlots()
-    if "3d" in tag_name:
-        set_3d_view()
+    set_test_view(tag_name)
     Test(tag_name + "_" +  mesh_name + "_braid")
     #
     DeleteAllPlots()
     AddPlot("Pseudocolor", full_var_name(mesh_name,"radial"))
-    if "3d" in tag_name:
-        set_3d_view()
+    set_test_view(tag_name)
     DrawPlots()
     Test(tag_name + "_" +  mesh_name + "_radial")
     DeleteAllPlots()
