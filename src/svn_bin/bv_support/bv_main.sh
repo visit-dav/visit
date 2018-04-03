@@ -1263,7 +1263,7 @@ function run_build_visit()
 
     check_minimum_compiler_version
 
-    if [[ $DO_MESAGL == "no" && $DO_CONTEXT_CHECK != "no"  && $DO_DBIO_ONLY == "no" ]] ; then 
+    if [[ "$OPSYS" != "Darwin" && $DO_MESAGL == "no" && $DO_CONTEXT_CHECK != "no"  && $DO_DBIO_ONLY == "no" ]] ; then 
         if [[ $DO_VTK == "yes" || $DO_VISIT == "yes" ]] ; then
             check_opengl_context
         fi
