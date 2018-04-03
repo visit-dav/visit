@@ -122,12 +122,12 @@ do
    $cmd visit${version}_x64.exe                           >> ../$output
    $cmd visit$version2.darwin-x86_64.tar.gz               >> ../$output
    $cmd visit${version2}-10.11.darwin-x86_64.tar.gz       >> ../$output
-   $cmd visit$version2.linux-x86_64-ubuntu11.tar.gz       >> ../$output
-   $cmd visit$version2.linux-x86_64-ubuntu11-wmesa.tar.gz >> ../$output
    $cmd visit$version2.linux-x86_64-ubuntu14.tar.gz       >> ../$output
    $cmd visit$version2.linux-x86_64-ubuntu14-wmesa.tar.gz >> ../$output
    $cmd visit$version2.linux-x86_64-rhel7.tar.gz          >> ../$output
    $cmd visit$version2.linux-x86_64-rhel7-wmesa.tar.gz    >> ../$output
+   $cmd visit$version2.linux-x86_64-fc27.tar.gz           >> ../$output
+   $cmd visit$version2.linux-x86_64-fc27-wmesa.tar.gz     >> ../$output
 
    echo ""                                                >> ../$output
    echo "The VisIt source code $property"                 >> ../$output
