@@ -87,13 +87,26 @@
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 14.04, 3.13.0-91-generic #138-Ubuntu SMP, gcc 4.8</td>
+          <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit2_13_1.linux-x86_64-ubuntu14.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
           Ubuntu 14.04, 3.13.0-91-generic #138-Ubuntu SMP, gcc 4.8<br />
-          <i>(With Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
+          <i>(Includes parallel VisIt with self-contained MPICH MPI and Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
           <td><a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit2_13_1.linux-x86_64-ubuntu14-wmesa.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Fedora Core 27, 4.15.9-300.fc27.x86_64 #1 SMP, gcc 7.3</td>
+          <i>(Includes parallel VisIt with self-contained MPICH MPI)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit2_13_1.linux-x86_64-fc27.tar.gz">Download</a></td>
+        </tr>
+        <tr>
+          <td>Linux - x86_64 64 bit<br />
+          Fedora Core 27, 4.15.9-300.fc27.x86_64 #1 SMP, gcc 7.3</td>
+          <i>(Includes parallel VisIt with self-contained MPICH MPI and Mesa support for rendering without a display. Only use on servers without a display.)</i></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.13.1/visit2_13_1.linux-x86_64-fc27-wmesa.tar.gz">Download</a></td>
         </tr>
         <tr>
           <td>Java client library (jar file, compiled classes, source code, examples) </td>
