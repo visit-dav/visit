@@ -388,6 +388,7 @@ def TestSpecifyTimeQueryWindow():
 
     # Prepare for next test
     DeleteAllPlots()
+    DeleteWindow()
     SetActiveWindow(3)
     DeleteWindow()
     SetActiveWindow(1)
@@ -454,7 +455,7 @@ def TestTimeVaryingSIL():
 
     # Prepare for next test
     DeleteAllPlots()
-    SetActiveWindow(3)
+    SetActiveWindow(2)
     DeleteWindow()
     SetActiveWindow(1)
     DeleteAllPlots()

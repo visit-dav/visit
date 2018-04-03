@@ -51,7 +51,6 @@ DeleteAllPlots()
 
 AddPlot("Volume", "Primitive Var _number_0")
 vol_atts = VolumeAttributes()
-vol_atts.rendererType = vol_atts.Splatting
 vol_atts.smoothData = 0
 vol_atts.useColorVarMin = 1
 vol_atts.colorVarMin = 22
