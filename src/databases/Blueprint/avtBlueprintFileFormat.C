@@ -333,7 +333,7 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
             BP_PLUGIN_INFO("boundary topology path " << bnd_topo_path);
             m_tree_cache->FetchBlueprintTree(domain,
                                              bnd_topo_path,
-                                             out["boundary"]);
+                                             out["topologies"][bndry_topo_name]);
         }
         else
         {
@@ -1014,11 +1014,18 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
     if(!blueprint::mesh::verify(data, verify_info))
     { 
         BP_PLUGIN_INFO("blueprint::mesh::verify failed for mesh "
-                       << abs_meshname << " [domain " << domain << "]"
+                       << abs_meshname << " [domain " << domain << "]" << endl
                        << "Verify Info " << endl
                        << verify_info.to_json() << endl
                        << "Data Schema " << endl
                        << data.schema().to_json());
+       
+        BP_PLUGIN_INFO("warning: "
+                       "avtBlueprintFileFormat::GetMesh returning NULL "
+                       << abs_meshname 
+                       << " [domain " << domain << "]"
+                       << " will be missing" << endl);
+        // TODO: Should we throw an error instead of blanking the domain?
         return NULL;
     }
 
