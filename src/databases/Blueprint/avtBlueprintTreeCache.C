@@ -654,8 +654,8 @@ avtBlueprintTreeCache::IO::LoadSidreGroup(Node &sidre_meta,
     {
         Node &g = g_itr.next();
         string g_name = g_itr.name();
-        BP_PLUGIN_INFO("loading " << group_path << "/" << g_name << " as group");
-        std::string cld_path = group_path + "/" + g_name;
+        BP_PLUGIN_INFO("loading " << group_path << g_name << " as group");
+        std::string cld_path = group_path + g_name;
         // LoadSidreGroup(g,h5_file_id,tree_root,cld_path,out[g_name]);
         LoadSidreGroup(g,
                        tree_cache,
@@ -670,8 +670,8 @@ avtBlueprintTreeCache::IO::LoadSidreGroup(Node &sidre_meta,
     {
         Node &v = v_itr.next();
         string v_name = v_itr.name();
-        BP_PLUGIN_INFO("loading " << group_path << "/" <<  v_name << " as view");
-        std::string cld_path = group_path + "/" + v_name;
+        BP_PLUGIN_INFO("loading " << group_path << v_name << " as view");
+        std::string cld_path = group_path + v_name;
         // LoadSidreView(v,h5_file_id,tree_root,cld_path,out[v_name]);
          LoadSidreView(v,
                        tree_cache,

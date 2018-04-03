@@ -806,7 +806,7 @@ ShapeNameToGeomType(const std::string &shape_name)
    }
    else
    {
-      MFEM_ABORT("Unsupported Element Shape: " << shape_name);
+      BP_PLUGIN_ERROR("Unsupported Element Shape: " << shape_name);
    }
 
    return res;
@@ -840,18 +840,22 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh,
        topo_name = n_mesh["topologies"].schema().child_name(0);
    }
    
-   MFEM_ASSERT(n_mesh.has_path("topologies/" + topo_name),
-               "Expected topology named \"" + topo_name + "\" "
-               "(node is missing path \"topologies/" + topo_name + "\")");
+   if(!n_mesh.has_path("topologies/" + topo_name))
+   {
+        BP_PLUGIN_ERROR("Expected topology named \"" + topo_name + "\" "
+                        "(node is missing path \"topologies/" + topo_name + "\")");
+   }
    
    // find coord set
    
    std::string coords_name = n_mesh["topologies"][topo_name]["coordset"].as_string();
    
 
-   MFEM_ASSERT(n_mesh.has_path("coordsets/" + coords_name),
-               "Expected topology named \"" + coords_name + "\" "
-               "(node is missing path \"coordsets/" + coords_name + "\")");
+   if(!n_mesh.has_path("coordsets/" + coords_name))
+   {
+        BP_PLUGIN_ERROR("Expected topology named \"" + coords_name + "\" "
+                       "(node is missing path \"coordsets/" + coords_name + "\")")
+   }
 
    const Node &n_coordset = n_mesh["coordsets"][coords_name];
    const Node &n_coordset_vals = n_coordset["values"];
