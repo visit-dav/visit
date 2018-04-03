@@ -3544,10 +3544,6 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
             windows[index]->SetSurfaceRepresentation((int)
             ratts->GetGeometryRepresentation());
 
-        if (windows[index]->GetDisplayListMode() != 
-            ratts->GetDisplayListMode())
-            windows[index]->SetDisplayListMode(ratts->GetDisplayListMode());
-
         if ((windows[index]->GetStereo() != ratts->GetStereoRendering()) ||
             (windows[index]->GetStereoType() != (int) ratts->GetStereoType()))
             windows[index]->SetStereoRendering(ratts->GetStereoRendering(),
@@ -5203,8 +5199,6 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetMultiresolutionCellSize(win->GetMultiresolutionCellSize());
         GetViewerState()->GetRenderingAttributes()->SetGeometryRepresentation(
             (RenderingAttributes::GeometryRepresentation)win->GetSurfaceRepresentation());
-        GetViewerState()->GetRenderingAttributes()->SetDisplayListMode(
-            (RenderingAttributes::TriStateMode) win->GetDisplayListMode());
         GetViewerState()->GetRenderingAttributes()->SetStereoRendering(win->GetStereo());
         GetViewerState()->GetRenderingAttributes()->SetStereoType((RenderingAttributes::StereoTypes)
             win->GetStereoType());
@@ -8155,7 +8149,6 @@ ViewerWindowManager::SetWindowAttributes(int windowIndex, bool copyAtts)
     w->SetMultiresolutionCellSize(GetViewerState()->GetRenderingAttributes()->GetMultiresolutionCellSize());
     int rep = (int)GetViewerState()->GetRenderingAttributes()->GetGeometryRepresentation();
     w->SetSurfaceRepresentation(rep);
-    w->SetDisplayListMode(GetViewerState()->GetRenderingAttributes()->GetDisplayListMode());
     w->SetStereoRendering(GetViewerState()->GetRenderingAttributes()->GetStereoRendering(),
         (int)GetViewerState()->GetRenderingAttributes()->GetStereoType());
     w->SetNotifyForEachRender(GetViewerState()->GetRenderingAttributes()->GetNotifyForEachRender());

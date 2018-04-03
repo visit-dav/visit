@@ -645,7 +645,6 @@ avtPLOT3DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
         }
     }
 
-    reader->SetGridNumber(0);
     reader->RequestInformation();
     mesh->numBlocks = reader->GetNumberOfGrids();
     mesh->blockOrigin = 0;

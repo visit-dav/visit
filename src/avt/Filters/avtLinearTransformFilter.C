@@ -132,6 +132,9 @@ avtLinearTransformFilter::SetAtts(const AttributeGroup *a)
 //    Tom Fogal, Thu Jul 29 10:27:34 MDT 2010
 //    Account for 4x4 transforms.
 //
+//    Kathleen Biagas, Mon Aug 15 14:15:54 PDT 2016
+//    VTK-8: vtkMatrix4x4 no longer has operator[], use SetElement instead.
+//
 // ****************************************************************************
 
 void
@@ -146,25 +149,25 @@ avtLinearTransformFilter::SetupMatrix()
     invM->Identity();
 
     M->Identity();
-    (*M)[0][0] = atts.GetM00();
-    (*M)[0][1] = atts.GetM01();
-    (*M)[0][2] = atts.GetM02();
-    (*M)[0][3] = atts.GetM03();
+    M->SetElement(0, 0, atts.GetM00());
+    M->SetElement(0, 1, atts.GetM01());
+    M->SetElement(0, 2, atts.GetM02());
+    M->SetElement(0, 3, atts.GetM03());
 
-    (*M)[1][0] = atts.GetM10();
-    (*M)[1][1] = atts.GetM11();
-    (*M)[1][2] = atts.GetM12();
-    (*M)[1][3] = atts.GetM13();
+    M->SetElement(1, 0, atts.GetM10());
+    M->SetElement(1, 1, atts.GetM11());
+    M->SetElement(1, 2, atts.GetM12());
+    M->SetElement(1, 3, atts.GetM13());
 
-    (*M)[2][0] = atts.GetM20();
-    (*M)[2][1] = atts.GetM21();
-    (*M)[2][2] = atts.GetM22();
-    (*M)[2][3] = atts.GetM23();
+    M->SetElement(2, 0, atts.GetM20());
+    M->SetElement(2, 1, atts.GetM21());
+    M->SetElement(2, 2, atts.GetM22());
+    M->SetElement(2, 3, atts.GetM23());
 
-    (*M)[3][0] = atts.GetM30();
-    (*M)[3][1] = atts.GetM31();
-    (*M)[3][2] = atts.GetM32();
-    (*M)[3][3] = atts.GetM33();
+    M->SetElement(3, 0, atts.GetM30());
+    M->SetElement(3, 1, atts.GetM31());
+    M->SetElement(3, 2, atts.GetM32());
+    M->SetElement(3, 3, atts.GetM33());
 
     if (atts.GetInvertLinearTransform())
     {
@@ -218,12 +221,17 @@ avtLinearTransformFilter::ModifyContract(avtContract_p spec)
 //  Creation:   April 15, 2008
 //
 //  Modifications:
+//    Kathleen Biagas, Mon Aug 15 14:15:54 PDT 2016
+//    VTK-8: vtkMatrix4x4 no longer has operator[], use DeepCopy instead.
 //
 // ****************************************************************************
 
 void
 avtLinearTransformFilter::PostExecute()
 {
-    GetOutput()->GetInfo().GetAttributes().SetInvTransform((*invM)[0]);
-    GetOutput()->GetInfo().GetAttributes().SetTransform((*M)[0]);
+    double m[16];
+    vtkMatrix4x4::DeepCopy(m, invM);
+    GetOutput()->GetInfo().GetAttributes().SetInvTransform(m);
+    vtkMatrix4x4::DeepCopy(m, M);
+    GetOutput()->GetInfo().GetAttributes().SetTransform(m);
 }

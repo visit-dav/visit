@@ -49,10 +49,10 @@
 
 
 class     vtkActor;
-class     vtkDataObjectCollection;
+class     vtkActor2D;
+class     vtkProp;
 
-class     avtMapper;
-
+class     avtMapperBase;
 class     ColorAttribute;
 
 // ****************************************************************************
@@ -79,11 +79,11 @@ class     ColorAttribute;
 //    Kathleen Bonnell, Fri Jul 12 16:21:37 PDT 2002
 //    Added method ScaleByVector.
 //
-//    Kathleen Bonnell, Fri Jul 19 08:39:04 PDT 2002 
+//    Kathleen Bonnell, Fri Jul 19 08:39:04 PDT 2002
 //    Added method UpdateScaleFactor.
 //
-//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002   
-//    Added methods in support of lighting. 
+//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
+//    Added methods in support of lighting.
 //
 //    Brad Whitlock, Mon Sep 23 15:57:46 PST 2002
 //    Added a method to set the surface representation. I added another method
@@ -95,10 +95,10 @@ class     ColorAttribute;
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Removed SetExternallyRenderedImagesActor method
 //
-//    Kathleen Bonnell, Mon Sep 27 10:21:15 PDT 2004 
-//    Added MakePickable and MakeUnPickable. 
+//    Kathleen Bonnell, Mon Sep 27 10:21:15 PDT 2004
+//    Added MakePickable and MakeUnPickable.
 //
-//    Kathleen Bonnell, Mon Jun 27 15:19:14 PDT 2005 
+//    Kathleen Bonnell, Mon Jun 27 15:19:14 PDT 2005
 //    Added GetZPosition.
 //
 //    Brad Whitlock, Mon Sep 18 11:23:02 PDT 2006
@@ -107,15 +107,19 @@ class     ColorAttribute;
 //    Brad Whitlock, Wed Aug 22 11:40:09 PDT 2007
 //    Added reduced detail mode.
 //
+//    Kathleen Biagas, Thu Apr 13 10:15:06 PDT 2017
+//    Allows creating using vtkActor2D.  Use avtMapperBase instead of avtMapper.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtGeometryDrawable : public avtDrawable
 {
   public:
                                 avtGeometryDrawable(int, vtkActor **);
+                                avtGeometryDrawable(int, vtkActor2D **);
     virtual                    ~avtGeometryDrawable();
 
-    void                        SetMapper(avtMapper *);
+    void                        SetMapper(avtMapperBase *);
 
     virtual bool                Interactive(void)  { return true; };
 
@@ -135,7 +139,6 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
     virtual void                SetAmbientCoefficient(const double);
 
     virtual void                SetSurfaceRepresentation(int rep);
-    virtual void                SetImmediateModeRendering(bool val);
 
     virtual void                SetSpecularProperties(bool,double,double,
                                                       const ColorAttribute&);
@@ -152,10 +155,10 @@ class PLOTTER_API avtGeometryDrawable : public avtDrawable
     virtual bool                ReducedDetailModeOff();
   protected:
     int                         nActors;
-    vtkActor                  **actors;
+    vtkProp                   **actors;
     vtkRenderer                *renderer;
     int                        *actorsVisibility;
-    avtMapper                  *mapper;
+    avtMapperBase              *mapper;
 };
 
 

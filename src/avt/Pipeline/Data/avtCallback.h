@@ -143,11 +143,6 @@ class PIPELINE_API avtCallback
     static bool                  GetSoftwareRendering(void)
                                      { return swRendering; };
 
-    static void                  SetMantaMode(bool b)
-                                     { useManta = b; }
-    static bool                  UseManta(void)
-                                     { return useManta; }
-
     static void                  SetOSPRayMode(bool b)
                                      { useOSPRay = b; }
     static bool                  UseOSPRay(void)
@@ -193,7 +188,6 @@ class PIPELINE_API avtCallback
     static bool                  nowinMode;
     static bool                  nowinInteractionMode;
     static bool                  swRendering;
-    static bool                  useManta;
     static bool                  useOSPRay;
     static bool                  safeMode;
 

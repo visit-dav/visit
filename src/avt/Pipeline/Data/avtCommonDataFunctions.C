@@ -53,7 +53,6 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetMapper.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>

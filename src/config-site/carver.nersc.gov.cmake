@@ -58,11 +58,6 @@ VISIT_OPTION_DEFAULT(VISIT_USE_BOOST ON TYPE BOOL)
 ##############################################################
 
 ##
-## R
-##
-VISIT_OPTION_DEFAULT(VISIT_R_DIR ${VISITHOME}/R/2.13.2/${VISITARCH}/lib/R)
-
-##
 ## Mesa
 ##
 #VISIT_OPTION_DEFAULT(VISIT_MESA_DIR ${VISITHOME}/mesa/7.10.2/${VISITARCH})

@@ -171,25 +171,7 @@ avtLowerResolutionVolumeFilter::CalculateHistograms(vtkDataSet *ds)
         }
         else
         {
-            // Since SPH gradient is slow, only calculate it when we have a
-            // 2D transfer function since that's the only time we need it for
-            // histogram calculation.
-            if(atts.GetTransferFunctionDim() == 1)
-            {
-                memset(gm->GetVoidPointer(0), 0, sizeof(float)*nels);
-            }
-            else
-            {
-                VolumeCalculateGradient_SPH(ds, opac, 
-                                            0, // gx
-                                            0, // gy
-                                            0, // gz
-                                            (float *)gm->GetVoidPointer(0),
-                                            0, // gmn
-                                            0, // hs
-                                            true,
-                                            ghostval);
-            }
+            memset(gm->GetVoidPointer(0), 0, sizeof(float)*nels);
         }
 
         if(hist2 != 0)

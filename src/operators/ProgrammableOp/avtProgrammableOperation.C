@@ -740,109 +740,6 @@ avtProgrammableOperation::avtVisItForEachLocation::getSignature(std::string& nam
     return ProgrammableOperation::VTK_MULTI_DIMENSIONAL_DATA_ARRAY;
 }
 
-#ifdef HAVE_LIB_R
-bool
-avtProgrammableOperation::avtVisItForEachLocationR::func(ProgrammableOpArguments& args, vtkShapedDataArray &result)
-{
-    Variant windowArray = args.getArg(0);
-    vtkShapedDataArray var = args.getArgAsShapedDataArray(1);
-    Variant kernelName = args.getArg(2); //name of the function to call..
-    Variant primaryVariable = args.getArg(3); // primary variable name to modify..
-
-    std::vector<Variant> kernelArgs = args.getArgAsVariantVector(4);
-
-    avtPythonFilterEnvironment* environ = args.GetPythonEnvironment();
-
-    std::ostringstream rsetup;
-    rsetup << "import rpy2, rpy2.robjects\n"
-           << kernelName.AsString() <<  " = rpy2.robjects.r('" << kernelName.AsString() << "')\n";
-    environ->Interpreter()->RunScript(rsetup.str());
-
-    std::string arglist = "";
-
-    for(int i = 0; i < kernelArgs.size(); ++i)
-        arglist += kernelArgs[i].ConvertToString() + (i == kernelArgs.size()-1 ? "" : ",");
-
-    std::ostringstream resultKernel;
-    resultKernel << "res = " << kernelName.AsString() <<  "(numpy.asarray(__internal_array)";
-
-    if(arglist.size() > 0)
-        resultKernel << "," << arglist << ")\n";
-    else
-        resultKernel << ")\n";
-
-    resultKernel << "res = numpy.asarray(res).tolist()\n";
-
-    /// run the time loop filter..
-
-    //std::cout << resultKernel << std::endl;
-    avtTimeWindowLoopFilter *filt = new avtTimeWindowLoopFilter;
-    filt->environment = args.GetPythonEnvironment();
-    filt->inputDataSet = args.GetInputDataSet();
-    filt->inputDomain = args.GetInputDomain();
-    filt->script = resultKernel.str();
-
-    filt->SetInput(args.GetInput());
-    avtDataObject_p dob = filt->GetOutput();
-
-    dob->Update(args.GetContract());
-
-    result = filt->globalOutputDataArray;
-
-//    result.shape = var.shape;
-//    result.vtkarray = var.vtkarray->NewInstance();
-//    result.vtkarray->DeepCopy(var.vtkarray);
-
-    return true;
-}
-
-ProgrammableOperation::ResponseType
-avtProgrammableOperation::avtVisItForEachLocationR::getSignature(std::string& name,
-                          stringVector& argnames,
-                          std::vector<ScriptType>& argtypes)
-{
-    name = "visit_foreach_location_r";
-    argnames.push_back("window");
-    argtypes.push_back(ProgrammableOperation::INT_VECTOR_TYPE);
-
-    argnames.push_back("variableName");
-    argtypes.push_back(ProgrammableOperation::VTK_DATA_ARRAY_TYPE);
-
-    argnames.push_back("kernelName");
-    argtypes.push_back(ProgrammableOperation::STRING_TYPE);
-
-    argnames.push_back("primaryVariable");
-    argtypes.push_back(ProgrammableOperation::STRING_TYPE);
-
-    argnames.push_back("kernelArgs");
-    argtypes.push_back(ProgrammableOperation::VARIANT_VECTOR_TYPE);
-    return ProgrammableOperation::VTK_MULTI_DIMENSIONAL_DATA_ARRAY;
-}
-
-bool
-avtProgrammableOperation::avtVisItGetRSupportDirectory::func(ProgrammableOpArguments& args, Variant& result)
-{
-    std::string vlibdir = GetVisItLibraryDirectory() + VISIT_SLASH_CHAR + "r_support";
-    std::string vlibrdir  = vlibdir  + VISIT_SLASH_CHAR + "Rscripts" + VISIT_SLASH_CHAR;
-    result = vlibrdir;
-    return true;
-}
-
-ProgrammableOperation::ResponseType
-avtProgrammableOperation::avtVisItGetRSupportDirectory::getSignature(std::string& name,
-                          stringVector& argnames,
-                          std::vector<ProgrammableOperation::ScriptType>& argtypes)
-{
-    (void) argnames;
-    (void) argtypes;
-
-    name = "visit_get_r_support_dir";
-
-    return ProgrammableOperation::CONSTANT;
-}
-
-#endif
-
 bool
 avtProgrammableOperation::avtVisItForEachLocationPython::func(ProgrammableOpArguments& args, vtkShapedDataArray& result)
 {
@@ -1157,9 +1054,4 @@ avtProgrammableOperation::RegisterOperations(ProgrammableOpManager *manager)
     manager->Register(&vgmi);
     manager->Register(&vmax);
     manager->Register(&avwd);
-
-#ifdef HAVE_LIB_R
-   manager->Register(&vfelr);
-   manager->Register(&avag);
-#endif
 }

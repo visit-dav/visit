@@ -52,7 +52,6 @@
 #include <vtkPolyData.h>
 #include <vtkPolyLine.h>
 #include <vtkCleanPolyData.h>
-#include <vtkStreamer.h>
 
 #include <avtParallel.h>
 #include <avtCallback.h>
@@ -67,6 +66,12 @@
 
 #include <vector>
 #include <limits>
+
+
+// from Filters/FlowPaths/vtkStreamer.h  (now deprecated, so defined here).
+#define VTK_INTEGRATE_FORWARD          0
+#define VTK_INTEGRATE_BACKWARD         1
+#define VTK_INTEGRATE_BOTH_DIRECTIONS  2
 
 std::string avtIntegralCurveFilter::colorVarArrayName = "colorVar";
 std::string avtIntegralCurveFilter::thetaArrayName = "theta";

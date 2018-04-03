@@ -38,21 +38,6 @@
     
 #include <visit-config.h>
 #include <QvisVolumePlotWindow.h>
-#ifdef HAVE_LIBSLIVR
-#   include <QvisCMap2Widget.h>
-#else
-// We need to have a pointer to a QvisCMap2Widget object in the QvisVolumeWindow
-// object all the time, even when we don't use it. That makes the object size
-// consistent in the moc data and the real object. When we don't want the real
-// widget, use this dummy class.
-class QvisCMap2Widget
-{
-public:
-    QvisCMap2Widget() : a(0) { }
-    ~QvisCMap2Widget() { }
-    int a;
-};
-#endif
 #include <QApplication>
 #include <QComboBox>
 #include <QDesktopWidget>
@@ -100,11 +85,6 @@ public:
 #include <PlotInfoAttributes.h>
 
 #define MAX_RENDERER_SAMPLE_VALUE 20.f
-#ifdef HAVE_LIBSLIVR
-#   define SLIVR_ONLY(stmt) stmt
-#else
-#   define SLIVR_ONLY(stmt) /* nothing */
-#endif
 
 // XPM data for pixmaps.
 static const char * black_xpm[] = {
@@ -260,6 +240,7 @@ QvisVolumePlotWindow::QvisVolumePlotWindow(const int type,
     const QString &shortName, QvisNotepadArea *notepad) :
     QvisPostableWindowObserver(volumeAtts_, caption, shortName, notepad)
 {
+
     plotType    = type;
     volumeAtts = volumeAtts_;
 
@@ -338,13 +319,7 @@ QvisVolumePlotWindow::CreateWindowContents()
     tfTabs->addTab(tfRendererOptions, tr("Renderer Options"));
 
     tfParent1D = Create1DTransferFunctionGroup(maxWidth);
-    tfTabs->addTab(tfParent1D, tr("1D transfer function"));
-
-#ifdef HAVE_LIBSLIVR 
-    // Create the transfer function pages.
-    tfParent2D = Create2DTransferFunctionGroup();
-    tfTabs->addTab(tfParent2D, tr("2D transfer function"));
-#endif
+    tfTabs->addTab(tfParent1D, tr("transfer function"));
 
     // Create the color selection widget.
     colorSelect = new QvisColorSelectionWidget(0);
@@ -358,7 +333,7 @@ QvisVolumePlotWindow::CreateWindowContents()
 // Method: QvisVolumePlot::CreateMatLightGroup
 //
 // Purpose: 
-//   Creates the different Light Shading options for SLIVR
+//   Creates the different Light Shading options
 //
 // Programmer: Pascal Grosset
 // Creation:   Tue Apr 10
@@ -912,41 +887,6 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 }
 
 // ****************************************************************************
-// Method: QvisVolumePlot::Create2DTransferFunctionGroup
-//
-// Purpose: 
-//   Create the widgets that we need for 2D transfer functions.
-//
-// Programmer: Brad Whitlock
-// Creation:   Thu Dec 18 15:20:08 PST 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-QWidget *
-QvisVolumePlotWindow::Create2DTransferFunctionGroup()
-{
-    QWidget *parent = 0;
-
-#ifdef HAVE_LIBSLIVR
-    parent = new QWidget(central);
-    QVBoxLayout *pLayout = new QVBoxLayout(parent);
-    pLayout->setMargin(0);
-
-    // Add the 2D transfer function widget (SLIVR)
-    transferFunc2D = new QvisCMap2Widget(parent);
-    connect(transferFunc2D, SIGNAL(widgetListChanged()),
-            this, SLOT(updateTransferFunc2D()));
-    connect(transferFunc2D, SIGNAL(widgetChanged(WidgetID)),
-            this, SLOT(updateTransferFunc2D(WidgetID))); 
-    pLayout->addWidget(transferFunc2D);
-#endif
-
-    return parent;
-}
-
-// ****************************************************************************
 // Method: QvisVolumePlotWindow::CreateRendererOptionsGroup
 //
 // Purpose: 
@@ -976,11 +916,20 @@ QvisVolumePlotWindow::Create2DTransferFunctionGroup()
 //   Set keyboard tracking to false for spin boxes so that 'valueChanged'
 //   signal will only emit when 'enter' is pressed or spinbox loses focus.
 //
+//   Alister Maguire, Fri May 12 10:15:45 PDT 2017
+//   Removed Splatting and Texture3D, and added a Default Renderer. 
+//
+//   Alister Maguire, Tue Sep 19 16:42:26 PDT 2017
+//   Moved num3DSlices initializer to the tuvok group. 
+//
+//   Kathleen Biagas, Fri Mar  2 14:55:01 MST 2018
+//   Removed tuvok.
+//
 // ****************************************************************************
 
 void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayout)
 {
-    //resample group (shared by splatting, texture3d, tuvok, and slivr)
+    //resample group 
     {
         resampleGroup = new QGroupBox(parent);
         resampleGroup->setFlat(true);
@@ -1007,44 +956,16 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         resampleGroup->setVisible(false);
     }
 
-    //splatting group
+    //default group
     {
-        splattingGroup = new QGroupBox(parent);
-        splattingGroup->setTitle(tr("Splatting Options"));
-        splattingGroupLayout                = new QVBoxLayout(                                                      splattingGroup);
-        splattingOptions                    = new QWidget(                                                          splattingGroup);
-        QHBoxLayout        *splattingLayout = new QHBoxLayout(                                                      splattingOptions);
-        QLabel             *compactVarLabel = new QLabel(tr("Compact support variable"),                            splattingOptions);
-        QvisVariableButton *compactVariable = new QvisVariableButton(true, true, true, QvisVariableButton::Scalars, splattingOptions);
-        compactVarLabel->setBuddy(compactVariable);
-        connect(compactVariable, SIGNAL(activated(const QString &)), this, SLOT(compactVariableChanged(const QString &)));
-        splattingLayout->addWidget(compactVarLabel);
-        splattingLayout->addWidget(compactVariable);
-        splattingLayout->addStretch(QSizePolicy::Maximum);
-        splattingGroupLayout->addWidget(splattingOptions);
-        pLayout->addWidget(splattingGroup);
-    }
-
-    //texture3d group
-    {
-        texture3dGroup = new QGroupBox(parent);
-        texture3dGroup->setTitle(tr("3D Texturing Options"));
-        texture3dGroupLayout            = new QVBoxLayout(                  texture3dGroup);
-        texture3dOptions                = new QWidget(                      texture3dGroup);
-        QHBoxLayout *texture3dLayout    = new QHBoxLayout(                  texture3dOptions);
-        QLabel      *num3DSlicesLabel   = new QLabel(tr("Number of slices"),texture3dOptions);
-        num3DSlices                     = new QSpinBox(                     texture3dOptions);
-        num3DSlices->setKeyboardTracking(false);
-        num3DSlices->setMinimum(1);
-        num3DSlices->setMaximum(1000);
-        num3DSlices->setSingleStep(10);
-        num3DSlicesLabel->setBuddy(num3DSlices);
-        connect(num3DSlices, SIGNAL(valueChanged(int)), this, SLOT(num3DSlicesChanged(int)));
-        texture3dLayout->addWidget(num3DSlicesLabel);
-        texture3dLayout->addWidget(num3DSlices);
-        texture3dLayout->addStretch(QSizePolicy::Maximum);
-        texture3dGroupLayout->addWidget(texture3dOptions);
-        pLayout->addWidget(texture3dGroup);
+        defaultGroup = new QGroupBox(parent);
+        defaultGroup->setTitle(tr("Default Rendering Options"));
+        defaultGroupLayout              = new QVBoxLayout(                  defaultGroup);
+        defaultOptions                  = new QWidget(                      defaultGroup);
+        QHBoxLayout *defaultLayout      = new QHBoxLayout(                  defaultOptions);
+        defaultLayout->addStretch(QSizePolicy::Maximum);
+        defaultGroupLayout->addWidget(defaultOptions);
+        pLayout->addWidget(defaultGroup);
     }
 
     //raycasting group
@@ -1101,50 +1022,6 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         raycastingLayout->addWidget(rendererSamplesWidget,1,4,1,2);
         pLayout->addWidget(raycastingGroup);
     }
-    
-    //slivr group
-    {
-        slivrGroup = new QGroupBox(parent);
-        slivrGroup->setTitle(tr("SLIVR Options"));
-        slivrGroupLayout             = new QVBoxLayout(                  slivrGroup);
-        slivrOptions                 = new QWidget(                      slivrGroup);
-        QHBoxLayout *slivrLayout     = new QHBoxLayout(                  slivrOptions);
-        rendererSamplesSLIVRLabel    = new QLabel(tr("Sampling rate"),   slivrOptions);
-        rendererSamplesSLIVR         = new QDoubleSpinBox(               slivrOptions);
-        rendererSamplesSLIVR->setKeyboardTracking(false);
-        rendererSamplesSLIVR->setMinimum(1);
-        rendererSamplesSLIVR->setMaximum(20);
-        rendererSamplesSLIVR->setSingleStep(.1);
-        rendererSamplesSLIVRLabel->setBuddy(rendererSamplesSLIVR);
-        connect(rendererSamplesSLIVR, SIGNAL(valueChanged(double)), this, SLOT(rendererSamplesChanged(double)));
-        slivrLayout->addWidget(rendererSamplesSLIVRLabel);
-        slivrLayout->addWidget(rendererSamplesSLIVR);
-        slivrLayout->addStretch(QSizePolicy::Maximum);
-        slivrGroupLayout->addWidget(slivrOptions);
-        pLayout->addWidget(slivrGroup);
-    }
-
-    //tuvok group
-    {
-        tuvokGroup = new QGroupBox(parent);
-        tuvokGroup->setTitle(tr("Tuvok Options"));
-        tuvokGroupLayout                = new QVBoxLayout(                  tuvokGroup);
-        tuvokOptions                    = new QWidget(                      tuvokGroup);
-        QHBoxLayout *tuvokLayout        = new QHBoxLayout(                  tuvokOptions);
-        QLabel      *num3DSlicesLabel   = new QLabel(tr("Number of slices"),tuvokOptions);
-        QSpinBox    *num3DSlices        = new QSpinBox(                     tuvokOptions);
-        num3DSlices->setKeyboardTracking(false);
-        num3DSlices->setMinimum(1);
-        num3DSlices->setMaximum(1000);
-        num3DSlices->setSingleStep(10);
-        num3DSlicesLabel->setBuddy(num3DSlices);
-        connect(num3DSlices, SIGNAL(valueChanged(int)), this, SLOT(num3DSlicesChanged(int)));
-        tuvokLayout->addWidget(num3DSlicesLabel);
-        tuvokLayout->addWidget(num3DSlices);
-        tuvokLayout->addStretch(QSizePolicy::Maximum);
-        tuvokGroupLayout->addWidget(tuvokOptions);
-        pLayout->addWidget(tuvokGroup);
-    }
 }
 
 void QvisVolumePlotWindow::EnableSamplingMethods(bool enable)
@@ -1167,67 +1044,30 @@ void QvisVolumePlotWindow::UpdateLowGradientGroup(bool enable)
     lowGradientClamp->setEnabled(enable);
 }
 
-void QvisVolumePlotWindow::EnableSplattingGroup()
+void QvisVolumePlotWindow::EnableDefaultGroup()
 {
     //resampleGroup is shared between several renderers' options
-    splattingGroupLayout->addWidget(resampleGroup);
+    defaultGroupLayout->addWidget(resampleGroup);
     resampleGroup->setVisible(true);
     resampleGroup->setEnabled(true);
-    splattingGroup->setVisible(true);
-    splattingOptions->setEnabled(!volumeAtts->GetResampleFlag());
-}
-
-void QvisVolumePlotWindow::EnableTexture3dGroup()
-{
-    //resampleGroup is shared between several renderers' options
-    texture3dGroupLayout->addWidget(resampleGroup);
-    resampleGroup->setVisible(true);
-    resampleGroup->setEnabled(true);
-    texture3dGroup->setVisible(true);
-    texture3dOptions->setEnabled(true);
-}
-
-void QvisVolumePlotWindow::EnableTuvokGroup()
-{
-    //resampleGroup is shared between several renderers' options
-    tuvokGroupLayout->addWidget(resampleGroup);
-    resampleGroup->setVisible(true);
-    resampleGroup->setEnabled(true);
-    tuvokGroup->setVisible(true);
-    tuvokOptions->setEnabled(true);
-}
-
-void QvisVolumePlotWindow::EnableSLIVRGroup()
-{
-    //resampleGroup is shared between several renderers' options
-    slivrGroupLayout->addWidget(resampleGroup);
-    resampleGroup->setVisible(true);
-    resampleGroup->setEnabled(true);
-    slivrGroup->setVisible(true);
-    //slivrOptions->setEnabled(!volumeAtts->GetResampleFlag());
-    rendererSamplesSLIVRLabel->setEnabled(true);
-    rendererSamplesSLIVR->setEnabled(true);
+    defaultGroup->setVisible(true);
+    defaultOptions->setEnabled(true);
 }
 
 void QvisVolumePlotWindow::UpdateSamplingGroup()
 {
     //hide all groups
     resampleGroup->setVisible(false);
-    splattingGroup->setVisible(false);
-    texture3dGroup->setVisible(false);
-    tuvokGroup->setVisible(false);
+    defaultGroup->setVisible(false);
     raycastingGroup->setVisible(false);
-    slivrGroup->setVisible(false);
 
-    //disable 2d transfer function tab (only enabled for SLIVR)
     tfTabs->setTabEnabled(1, true);
-    tfTabs->setTabEnabled(2, false);
 
     //lighting and material properties group, enabled for all but RayCastingIntegration
     lightMaterialPropGroup->setEnabled(true);
     lightingToggle->setEnabled(true);
 
-    //disable material properties (only enabled with lighting for SLIVR, RayCasting w/ Trilinear Sampling)
+    //disable material properties (only enabled with lighting for RayCasting w/ Trilinear Sampling)
     materialProperties->setEnabled(false);
 
     //enable/disable resampleTarget
@@ -1248,26 +1088,18 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     VolumeAttributes::Renderer renderer_type=volumeAtts->GetRendererType();
     switch (renderer_type)
     {
-    case VolumeAttributes::Splatting:
-        EnableSplattingGroup();
-        UpdateLowGradientGroup(true);
-        break;
-
-    case VolumeAttributes::Texture3D:
-        EnableTexture3dGroup();
-        UpdateLowGradientGroup(true);
-        break;
-
-    case VolumeAttributes::Tuvok:
-        EnableTuvokGroup();
+    case VolumeAttributes::Default:
+        EnableDefaultGroup();
         UpdateLowGradientGroup(false);
+        centeredDiffButton->setEnabled(false);
+        sobelButton->setEnabled(false);
+        smoothDataToggle->setEnabled(false);
         break;
-
     case VolumeAttributes::RayCasting:
         resampleGroup->setEnabled(false);
         raycastingGroup->setVisible(true);
         UpdateLowGradientGroup(true);
-        materialProperties->setEnabled(volumeAtts->GetSampling()==VolumeAttributes::Trilinear);
+        materialProperties->setEnabled(volumeAtts->GetSampling()==VolumeAttributes::Trilinear && volumeAtts->GetLightingFlag());
         EnableSamplingMethods(true);
         samplesPerRayWidget->setEnabled(volumeAtts->GetSampling()!=VolumeAttributes::Trilinear);
         rendererSamplesWidget->setEnabled(volumeAtts->GetSampling()==VolumeAttributes::Trilinear);
@@ -1285,35 +1117,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         EnableSamplingMethods(false);
         samplesPerRayWidget->setEnabled(true);
         rendererSamplesWidget->setEnabled(false);
-        rendererSamples->setEnabled(true);
-        rendererSamplesLabel->setEnabled(true);
         break;
-
-    case VolumeAttributes::SLIVR:
-        EnableSLIVRGroup();
-        UpdateLowGradientGroup(false);
-        materialProperties->setEnabled(true);
-        // Enable selected transfer function widget.
-        tfTabs->setTabEnabled(1, volumeAtts->GetTransferFunctionDim()==1);
-        tfTabs->setTabEnabled(2, volumeAtts->GetTransferFunctionDim()==2);
-        break;
-
-    case VolumeAttributes::RayCastingSLIVR:
-        EnableSLIVRGroup();
-        resampleGroup->setEnabled(false);
-        raycastingGroup->setVisible(false);
-        UpdateLowGradientGroup(false);
-        materialProperties->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingSLIVR);
-        EnableSamplingMethods(true);
-        samplesPerRayWidget->setEnabled(volumeAtts->GetRendererType()!=VolumeAttributes::RayCastingSLIVR);
-        rendererSamplesWidget->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingSLIVR);
-        rendererSamplesSLIVRLabel->setEnabled(true);
-        rendererSamplesSLIVR->setEnabled(true);
-        centeredDiffButton->setEnabled(true);
-        centeredDiffButton->setChecked(true);
-        sobelButton->setEnabled(false);
-        break;
-
     default:
         EXCEPTION1(ImproperUseException, "No such renderer type.");
     }        
@@ -1347,44 +1151,14 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 
     QHBoxLayout *renderLayout = new QHBoxLayout(renderGroup);
     rendererTypesComboBox = new QComboBox(renderGroup);
-    rendererTypesComboBox->addItem(tr("Splatting"));
-    rendererTypesComboBox->addItem(tr("3D Texturing"));
+    rendererTypesComboBox->addItem(tr("Default Rendering"));
     rendererTypesComboBox->addItem(tr("Ray casting: compositing"));
     rendererTypesComboBox->addItem(tr("Ray casting: integration (grey scale)"));
-#ifdef USE_TUVOK
-    rendererTypesComboBox->addItem(tr("Tuvok"));
-#endif
-#ifdef HAVE_LIBSLIVR
-    rendererTypesComboBox->addItem(tr("SLIVR"));
-    rendererTypesComboBox->addItem(tr("Ray casting: SLIVR"));
-#endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
 
     renderLayout->addWidget(rendererTypesComboBox);
     renderLayout->addStretch(QSizePolicy::Maximum);
-
-#ifdef HAVE_LIBSLIVR
-    // Create the transfer function dimension button
-    tfWidget = new QWidget(renderGroup);
-    renderLayout->addWidget(tfWidget);
-
-    QHBoxLayout *tfLayout = new QHBoxLayout(tfWidget);
-    tfLayout->setMargin(0);
-
-    QLabel *tfLabel=new QLabel(tr("Transfer function"), tfWidget);
-    tfLabel->setBuddy(tfWidget);
-    tfLayout->addWidget(tfLabel);
-    transferFunctionGroup = new QButtonGroup(tfWidget);
-    connect(transferFunctionGroup, SIGNAL(buttonClicked(int)),
-            this, SLOT(transferDimChanged(int)));
-    oneDimButton = new QRadioButton(tr("1D"), tfWidget);
-    transferFunctionGroup->addButton(oneDimButton, 0);
-    tfLayout->addWidget(oneDimButton);
-    twoDimButton = new QRadioButton(tr("2D"), tfWidget);
-    transferFunctionGroup->addButton(twoDimButton, 1);
-    tfLayout->addWidget(twoDimButton);
-#endif
 
     //
     //Create sampling groups
@@ -1504,7 +1278,7 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 // ****************************************************************************
 
 void
-QvisVolumePlotWindow::UpdateHistogram(bool need2D)
+QvisVolumePlotWindow::UpdateHistogram()
 {
     PlotInfoAttributes *info = GetViewerState()->GetPlotInformation(plotType);
     bool invalid = true;
@@ -1522,17 +1296,7 @@ QvisVolumePlotWindow::UpdateHistogram(bool need2D)
             scribbleAlphaWidget->setHistogramTexture(&hist[0], hist_size);
         }
 
-#ifdef HAVE_LIBSLIVR
-        const unsignedCharVector &hist2 = vhist["histogram_2d"].AsUnsignedCharVector();
-        if(!hist2.empty())
-        {
-            unsignedCharVector decompressed;
-            VolumeRLEDecompress(hist2, decompressed);
-            transferFunc2D->setHistogramTexture(&decompressed[0], hist_size);
-        }
-#endif
-        // Ugh.  Sorry this looks so gross.
-        if(!hist.empty() SLIVR_ONLY(&& (!need2D || !hist2.empty())))
+        if(!hist.empty())
         {
             invalid = false;
         }
@@ -1542,9 +1306,6 @@ QvisVolumePlotWindow::UpdateHistogram(bool need2D)
     {
         // We don't have histogram data, get rid of histograms in the
         // widgets.
-#ifdef HAVE_LIBSLIVR
-        transferFunc2D->setHistogramTexture(0, 0);
-#endif
         alphaWidget->setHistogramTexture(0, 0);
         scribbleAlphaWidget->setHistogramTexture(0, 0);
     }
@@ -1668,6 +1429,9 @@ QvisVolumePlotWindow::UpdateHistogram(bool need2D)
 //   UpdateSamplingGroup needs to be called in more instances: also when
 //   sampling or resampling changes.
 //
+//   Kathleen Biagas, Fri Mar  2 14:55:01 MST 2018
+//   Removed tuvok.
+//
 // ****************************************************************************
 
 void
@@ -1678,10 +1442,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
     // If the plot info atts changed then update the histogram.
     if(doAll || SelectedSubject() == GetViewerState()->GetPlotInformation(plotType))
     {
-        bool need2D = false;
-        if (volumeAtts->GetRendererType() == VolumeAttributes::SLIVR)
-            need2D = true;
-        UpdateHistogram(need2D);
+        UpdateHistogram();
         if(!doAll)
             return;
     }
@@ -1890,50 +1651,22 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
         case VolumeAttributes::ID_rendererType:
             updateSamplingGroup = true;
             rendererTypesComboBox->blockSignals(true);
-            if (volumeAtts->GetRendererType() == VolumeAttributes::Splatting)
+          
+            if (volumeAtts->GetRendererType() == VolumeAttributes::Default)
             {
                 rendererTypesComboBox->setCurrentIndex(0);
             }
-            else if (volumeAtts->GetRendererType() == VolumeAttributes::Texture3D)
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting)
             {
                 rendererTypesComboBox->setCurrentIndex(1);
             }
-            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCasting)
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingIntegration)
             {
                 rendererTypesComboBox->setCurrentIndex(2);
             }
-            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingIntegration)
-            {
-                rendererTypesComboBox->setCurrentIndex(3);
-            }
-            else if (volumeAtts->GetRendererType() == VolumeAttributes::Tuvok)
-            {
-                int idx=std::max(1,rendererTypesComboBox->findText("Tuvok"));
-                rendererTypesComboBox->setCurrentIndex(idx);
-            }
-            else if (volumeAtts->GetRendererType() == VolumeAttributes::SLIVR)
-            {
-                int idx=std::max(1,rendererTypesComboBox->findText("SLIVR"));
-                rendererTypesComboBox->setCurrentIndex(idx);
-            }
-            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingSLIVR)
-            {
-                int idx=std::max(1,rendererTypesComboBox->findText("Ray casting: SLIVR"));
-                rendererTypesComboBox->setCurrentIndex(idx);
-            }
 
+            opacityVariable->setEnabled(true);
 
-            // Just for now, disable the opacity variable if we are using the
-            // SLIVR renderer -- until I figure out how to do color and opacity
-            // using separate variables.
-            opacityVariable->setEnabled(volumeAtts->GetRendererType() != VolumeAttributes::SLIVR);
-
-#ifdef HAVE_LIBSLIVR
-            // Disable the 1D/2D transfer function buttons if the renderer is not SLIVR.
-            tfWidget->setEnabled(volumeAtts->GetRendererType() == VolumeAttributes::SLIVR);
-            // oneDimButton->setEnabled(volumeAtts->GetRendererType() == VolumeAttributes::SLIVR);
-            // twoDimButton->setEnabled(volumeAtts->GetRendererType() == VolumeAttributes::SLIVR);
-#endif
             rendererTypesComboBox->blockSignals(false);
             break;
         case VolumeAttributes::ID_gradientType:
@@ -1943,11 +1676,6 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             else
                 gradientButtonGroup->button(1)->setChecked(true);
             gradientButtonGroup->blockSignals(false);
-            break;
-        case VolumeAttributes::ID_num3DSlices:
-            num3DSlices->blockSignals(true);
-            num3DSlices->setValue(volumeAtts->GetNum3DSlices());
-            num3DSlices->blockSignals(false);
             break;
         case VolumeAttributes::ID_scaling:
             scalingButtons->blockSignals(true);
@@ -1975,25 +1703,7 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             rendererSamples->blockSignals(true);
             rendererSamples->setValue(volumeAtts->GetRendererSamples());
             rendererSamples->blockSignals(false);
-            rendererSamplesSLIVR->blockSignals(true);
-            rendererSamplesSLIVR->setValue(volumeAtts->GetRendererSamples());
-            rendererSamplesSLIVR->blockSignals(false);
             break;
-        case VolumeAttributes::ID_transferFunction2DWidgets:
-#ifdef HAVE_LIBSLIVR
-            Update2DTransferFunction();
-#endif
-            break;
-        case VolumeAttributes::ID_transferFunctionDim:
-#ifdef HAVE_LIBSLIVR
-            transferFunctionGroup->blockSignals(true);
-            if(volumeAtts->GetTransferFunctionDim() == 1 ||
-               volumeAtts->GetTransferFunctionDim() == 2)
-                transferFunctionGroup->button(volumeAtts->GetTransferFunctionDim()-1)->setChecked(true);
-            transferFunctionGroup->blockSignals(false);
-#endif
-            break;
-
         case VolumeAttributes::ID_materialProperties:
             matKa->blockSignals(true);
             matKd->blockSignals(true);
@@ -2272,120 +1982,6 @@ QvisVolumePlotWindow::CopyGaussianOpacitiesToFreeForm()
 }
 
 // ****************************************************************************
-// Method: QvisVolumePlotWindow::Update2DTransferFunction
-//
-// Purpose: 
-//   This method updates the 2D transfer function widget with the new
-//   widget values.
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Jan 12 14:00:05 PST 2009
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVolumePlotWindow::Update2DTransferFunction()
-{
-#ifdef HAVE_LIBSLIVR
-    // Get the name of the active widget, if there is one.
-    QString selectedName = transferFunc2D->getName(transferFunc2D->getSelectedWidget());
-
-    // Disconnect the signals.
-    disconnect(transferFunc2D, SIGNAL(widgetListChanged()),
-               this, SLOT(updateTransferFunc2D()));
-    disconnect(transferFunc2D, SIGNAL(widgetChanged(WidgetID)),
-               this, SLOT(updateTransferFunc2D(WidgetID))); 
-
-    // Clear out the old list of widgets
-    transferFunc2D->clear();
-
-    // Add new widgets based on the ones from the atts.
-    int i;
-    for(i = 0; i < volumeAtts->GetNumTransferFunction2DWidgets(); ++i)
-    {
-        const TransferFunctionWidget &w = volumeAtts->GetTransferFunction2DWidgets(i);
-        QString wName(w.GetName().c_str());
-        WidgetID id = QvisCMap2Display::WIDGET_NOT_FOUND;
-
-        if(w.GetType() == TransferFunctionWidget::Rectangle)
-        {
-            id = transferFunc2D->addRectangleWidget(wName,
-                w.GetPosition()[0],
-                w.GetPosition()[1],
-                w.GetPosition()[2],
-                w.GetPosition()[3],
-                w.GetPosition()[4]);
-        }
-        else if(w.GetType() == TransferFunctionWidget::Triangle)
-        {
-            id = transferFunc2D->addTriangleWidget(wName,
-                w.GetPosition()[0],
-                w.GetPosition()[1],
-                w.GetPosition()[2],
-                w.GetPosition()[3],
-                w.GetPosition()[4]);
-        }
-        else if(w.GetType() == TransferFunctionWidget::Paraboloid)
-        {
-            id = transferFunc2D->addParaboloidWidget(wName,
-                w.GetPosition()[0],
-                w.GetPosition()[1],
-                w.GetPosition()[2],
-                w.GetPosition()[3],
-                w.GetPosition()[4],
-                w.GetPosition()[5],
-                w.GetPosition()[6],
-                w.GetPosition()[7]);
-        }
-        else if(w.GetType() == TransferFunctionWidget::Ellipsoid)
-        {
-            id = transferFunc2D->addEllipsoidWidget(wName,
-                w.GetPosition()[0],
-                w.GetPosition()[1],
-                w.GetPosition()[2],
-                w.GetPosition()[3],
-                w.GetPosition()[4]);
-        }
-
-        int r = (int)(w.GetBaseColor()[0] * 255.f);
-        int g = (int)(w.GetBaseColor()[1] * 255.f);
-        int b = (int)(w.GetBaseColor()[2] * 255.f);
-        transferFunc2D->setColor(id, QColor(r,g,b));
-        transferFunc2D->setAlpha(id, w.GetBaseColor()[3]);
-    }
-
-    // Reconnect the signals.
-    connect(transferFunc2D, SIGNAL(widgetListChanged()),
-            this, SLOT(updateTransferFunc2D()));
-    connect(transferFunc2D, SIGNAL(widgetChanged(WidgetID)),
-            this, SLOT(updateTransferFunc2D(WidgetID))); 
-
-    // See if we can reactivate the previously selected widget
-    bool selected = false;
-    for(int i = 0; i < transferFunc2D->numWidgets(); ++i)
-    {
-         WidgetID id = transferFunc2D->getID(i);
-         if(transferFunc2D->getName(id) == selectedName)
-         {
-             transferFunc2D->selectWidget(id);
-             selected = true;
-             break;
-         }
-    }
-    if(!selected && transferFunc2D->numWidgets() > 0)
-        transferFunc2D->selectWidget(transferFunc2D->getID(0));
-#endif
-}
-
-// ****************************************************************************
 // Method: QvisVolumePlotWindow::GetCurrentValues
 //
 // Purpose: 
@@ -2614,13 +2210,6 @@ QvisVolumePlotWindow::GetCurrentValues(int which_widget)
     {
         if (samplesPerRay->value() != volumeAtts->GetSamplesPerRay())
             volumeAtts->SetSamplesPerRay(samplesPerRay->value());
-    }
-
-    // Get the number of slices for 3D texturing.
-    if(which_widget == VolumeAttributes::ID_num3DSlices || doAll)
-    {
-        if (num3DSlices->value() != volumeAtts->GetNum3DSlices())
-            volumeAtts->SetNum3DSlices(num3DSlices->value());
     }
 
     // Do the skew factor value
@@ -3768,6 +3357,9 @@ QvisVolumePlotWindow::samplingTypeChanged(int val)
 //    Brad Whitlock, Tue Jan 31 16:30:58 PST 2012
 //    Force resampling for HW accelerated renderers except for Splatting.
 //
+//    Kathleen Biagas, Fri Mar  2 14:55:01 MST 2018
+//    Removed tuvok.
+//
 // ****************************************************************************
 
 void
@@ -3776,29 +3368,14 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
     switch (val)
     {
       case 0:
-        volumeAtts->SetRendererType(VolumeAttributes::Splatting);
+        volumeAtts->SetRendererType(VolumeAttributes::Default);
         break;
       case 1:
-        volumeAtts->SetRendererType(VolumeAttributes::Texture3D);
-        break;
-      case 2:
         volumeAtts->SetRendererType(VolumeAttributes::RayCasting);
         break;
-      case 3:
+      case 2:
         volumeAtts->SetRendererType(VolumeAttributes::RayCastingIntegration);
         break;
-      case 4:
-      case 5:
-      case 6:
-      {
-          if (rendererTypesComboBox->findText("Tuvok") == val)
-              volumeAtts->SetRendererType(VolumeAttributes::Tuvok);
-          else if (rendererTypesComboBox->findText("SLIVR") == val)
-              volumeAtts->SetRendererType(VolumeAttributes::SLIVR);
-          else if (rendererTypesComboBox->findText("Ray casting: SLIVR") == val)
-              volumeAtts->SetRendererType(VolumeAttributes::RayCastingSLIVR);
-          break;
-      }
       default:
         EXCEPTION1(ImproperUseException,
                    "The Volume plot received a signal for a renderer "
@@ -3808,27 +3385,6 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
 
     Apply();
 }
-
-// ****************************************************************************
-//  Method:  QvisVolumePlotWindow::num3DSlicesProcessText
-//
-//  Purpose:
-//    Update the number of 3D texturing slices based on user input
-//
-//  Arguments:
-//    none
-//
-//  Programmer:  Jeremy Meredith
-//  Creation:    October  2, 2003
-//
-// ****************************************************************************
-void
-QvisVolumePlotWindow::num3DSlicesChanged(int val)
-{
-    volumeAtts->SetNum3DSlices(val);
-    Apply();
-}
-
 
 // ****************************************************************************
 //  Method:  QvisVolumePlotWindow::scaleClicked
@@ -3921,146 +3477,6 @@ QvisVolumePlotWindow::rendererSamplesChanged(double val)
 {
     volumeAtts->SetRendererSamples(val);
     Apply();
-}
-
-// ****************************************************************************
-//  Method:  QvisVolumePlotWindow::transferDimChanged
-//
-//  Purpose:
-//    Update the UI to handle 1D or 2D transfer functions
-//
-//  Arguments:
-//    val        the dimension of the transfer function
-//
-//  Programmer:  Josh Stratton
-//  Creation:    Fri Sep  5 13:26:47 MDT 2008
-//
-//  Modifications:
-//    Call Apply.
-//
-// ****************************************************************************
-void
-QvisVolumePlotWindow::transferDimChanged(int val)
-{
-    volumeAtts->SetTransferFunctionDim(val + 1);
-    Apply();
-}
-
-// ****************************************************************************
-// Method:  QvisVolumePlotWindow::updateTransferFunc2D
-//
-// Purpose:
-//   Qt slot function, called when SLIVR transfer function changes
-//
-// Arguments:
-//   none
-//
-// Programmer:  Josh Stratton
-// Creation:    Fri May 23 12:43:38 MDT 2008
-//
-// Modifications:
-//   Tom Fogal, Fri Sep 19 11:02:10 MDT 2008
-//   Wrap definition in HAVE_LIBSLIVR.
-//
-//   Brad Whitlock, Tue Sep 30 09:56:49 PDT 2008
-//   Rewrote.
-//
-//   Brad Whitlock, Mon Jan 12 14:52:00 PST 2009
-//   Added code to save the widget name.
-//
-// ****************************************************************************
-
-void
-QvisVolumePlotWindow::updateTransferFunc2D()
-{
-#ifdef HAVE_LIBSLIVR
-    // scrap all current widgets
-    volumeAtts->ClearTransferFunction2DWidgets();
-
-    int num_widgets = transferFunc2D->numWidgets();
-    for (int i = 0; i < num_widgets; i++)
-    {
-        WidgetID id = transferFunc2D->getID(i);
-        QString qdef = transferFunc2D->getString(id);
-        QString shapeType(qdef.left(1));
-        QString shapeArgs(qdef.right(qdef.length()-1));
-
-        TransferFunctionWidget widget;
-        float position[8];
-        bool okay = false;
-
-        if (shapeType == "r")
-        {
-            float tmp[6];
-            // Compensate for an extra zero on the front of the rect string.
-            okay = QStringToFloats(shapeArgs, tmp, 6);
-            for(int i = 0; i < 5; ++i)
-                position[i] = tmp[i+1];
-            widget.SetType(TransferFunctionWidget::Rectangle);
-        }
-        else if (shapeType == "t")
-        {
-            okay = QStringToFloats(shapeArgs, position, 5);
-            widget.SetType(TransferFunctionWidget::Triangle);
-        }
-        else if (shapeType == "p")
-        {
-            okay = QStringToFloats(shapeArgs, position, 8);
-            widget.SetType(TransferFunctionWidget::Paraboloid);
-        }
-        else if (shapeType == "e")
-        {
-            okay = QStringToFloats(shapeArgs, position, 5);
-            widget.SetType(TransferFunctionWidget::Ellipsoid);
-        }
-
-        if(okay)
-        {
-            // Save the widget name
-            widget.SetName(transferFunc2D->getName(id).toStdString());
-
-            // parse color
-            QColor qcolor = transferFunc2D->getColor(id);
-            float color[4];
-            color[0] = qcolor.red() / 255.0f;
-            color[1] = qcolor.green() / 255.0f;
-            color[2] = qcolor.blue() / 255.0f;
-            color[3] = transferFunc2D->getAlpha(id);
-            widget.SetBaseColor(color);
-            widget.SetPosition(position);
-            volumeAtts->AddTransferFunction2DWidgets(widget);
-        }
-    }
-
-    SetUpdate(false);
-    Apply();
-#endif /* HAVE_LIBSLIVR */
-}
-
-// ****************************************************************************
-// Method:  QvisVolumePlotWindow::updateTransferFunc2D
-//
-// Purpose:
-//   Qt slot function, called when SLIVR transfer function changes
-//
-// Arguments:
-//   none
-//
-// Programmer:  Josh Stratton
-// Creation:    Fri May 23 12:43:38 MDT 2008
-//
-// Modifications:
-//
-//   Tom Fogal, Fri Sep 19 11:02:10 MDT 2008
-//   Wrap definition in HAVE_LIBSLIVR.
-//
-// ****************************************************************************
-void
-QvisVolumePlotWindow::updateTransferFunc2D(WidgetID id)
-{
-#ifdef HAVE_LIBSLIVR
-    updateTransferFunc2D();
-#endif /* HAVE_LIBSLIVR */
 }
 
 

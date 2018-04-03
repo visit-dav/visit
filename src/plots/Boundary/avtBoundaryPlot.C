@@ -84,8 +84,12 @@ using std::vector;
 //    Kathleen Bonnell, Fri Nov 12 10:23:09 PST 2004 
 //    Changed mapper type to avtLevelsPointGlyphMapper.
 //
+//    Kathleen Biagas, Tue Aug 23 11:16:20 PDT 2016
+//    Added LevelsMapper, as points and surfaces are no longer be mapped
+//    by the same mapper.
+//
 //    Kathleen Biagas, Tue Dec 20 14:13:23 PST 2016
-//    Changed maapper back to avtLevelsMapper as point glyphing not supported.
+//    Changed mapper back to avtLevelsMapper as point glyphing not supported.
 //
 // ****************************************************************************
 
@@ -374,7 +378,7 @@ avtBoundaryPlot::SetLineWidth(int lw)
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtBoundaryPlot::GetMapper(void)
 {
     return levelsMapper;
@@ -565,17 +569,17 @@ avtBoundaryPlot::SetColors()
     LevelColorMap levelColorMap;
 
     behavior->GetInfo().GetAttributes().GetLabels(labels);
-   
+
     if (labels.size() == 0)
     {
         levelsLegend->SetColorBarVisibility(0);
         levelsLegend->SetMessage("No boundaries present");
     }  
-    else 
+    else
     {
         levelsLegend->SetColorBarVisibility(1);
         levelsLegend->SetMessage(NULL);
-    }  
+    }
 
     if (atts.GetColorType() == BoundaryAttributes::ColorBySingleColor)
     {
@@ -650,14 +654,14 @@ avtBoundaryPlot::SetColors()
         }
 
         //
-        //  Create a label-to-color-index mapping 
+        //  Create a label-to-color-index mapping
         //
         for(int i = 0; i < numColors; ++i)
             levelColorMap.insert(LevelColorMap::value_type(allLabels[i], i));
 
         bool invert = atts.GetInvertColorTable();
 
-        // 
+        //
         // Add a color for each boundary name.
         //
         if(ct->IsDiscrete(ctName.c_str()))
@@ -823,7 +827,6 @@ avtBoundaryPlot::SortLabels()
         return;
     }
 
-    
     sort(sortedUsedLabels.begin(), sortedUsedLabels.end());
     vector < string > sortedLabels(sortedUsedLabels.size());
     for (i = 0; i < sortedUsedLabels.size(); i++)

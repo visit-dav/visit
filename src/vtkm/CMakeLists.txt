@@ -46,7 +46,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
 
 # NOTE: we're not set up to do both CUDA and TBB right now the way the sources are done.
 # Q: As the code for vtkmDataSet is mainly for the control interface, do we need to worry

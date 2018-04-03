@@ -141,7 +141,6 @@ class PLOTTER_API avtDrawable
     virtual void               SetAmbientCoefficient(const double) = 0;
 
     virtual void               SetSurfaceRepresentation(int) {;};
-    virtual void               SetImmediateModeRendering(bool) {;};
 
     virtual void               SetSpecularProperties(bool,double,double,
                                                      const ColorAttribute&) {;}

@@ -54,6 +54,7 @@
 
 #include <QvisColorTableWidget.h>
 #include <QvisColorButton.h>
+#include <QvisPointControl.h>
 #include <QvisVariableButton.h>
 
 
@@ -157,6 +158,9 @@ QvisScatterPlotWindow::~QvisScatterPlotWindow()
 //
 //   Kathleen Bonnell, Mon Jan 17 18:10:28 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
+//   Kathleen Biagas, Tue Sep 20 16:32:25 PDT 2016
+//   Use QvisPointControl for point type/size controls.
 //
 // ****************************************************************************
 
@@ -730,30 +734,17 @@ QvisScatterPlotWindow::CreateWindowContents()
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
     styleLayout->setMargin(5);
     styleLayout->setSpacing(10);
- 
-    pointType = new QComboBox(appearanceGroup);
-    pointType->addItem(tr("Box"));
-    pointType->addItem(tr("Axis"));
-    pointType->addItem(tr("Icosahedron"));
-    pointType->addItem(tr("Octahedron"));
-    pointType->addItem(tr("Tetrahedron"));
-    pointType->addItem(tr("Sphere Geometry"));
-    pointType->addItem(tr("Point"));
-    pointType->addItem(tr("Sphere"));
-    connect(pointType, SIGNAL(activated(int)),
-            this, SLOT(pointTypeChanged(int)));
-    styleLayout->addWidget(pointType, 0, 1);
-    QLabel *pointTypeLabel = new QLabel(tr("Point Type"), appearanceGroup);
-    pointTypeLabel->setBuddy(pointType);
-    styleLayout->addWidget(pointTypeLabel, 0, 0);
 
-    pointSize = new QLineEdit(appearanceGroup);
-    connect(pointSize, SIGNAL(returnPressed()),
-            this, SLOT(pointSizeProcessText()));
-    styleLayout->addWidget(pointSize, 0, 3);
-    pointSizeLabel = new QLabel(tr("Point size"), appearanceGroup);
-    pointSizeLabel->setBuddy(pointSize);
-    styleLayout->addWidget(pointSizeLabel, 0, 2);
+    pointControl = new QvisPointControl(appearanceGroup, false);
+
+    connect(pointControl, SIGNAL(pointSizeChanged(double)),
+            this, SLOT(pointSizeChanged(double)));
+    connect(pointControl, SIGNAL(pointSizePixelsChanged(int)),
+            this, SLOT(pointSizePixelsChanged(int)));
+    connect(pointControl, SIGNAL(pointTypeChanged(int)),
+            this, SLOT(pointTypeChanged(int)));
+
+    styleLayout->addWidget(pointControl, 0, 1, 1, 4);
 
     //
     // Role labels.
@@ -818,6 +809,9 @@ QvisScatterPlotWindow::CreateWindowContents()
 //
 //   Kathleen Bonnell, Mon Jan 17 18:10:28 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
+//   Kathleen Biagas, Tue Sep 20 16:32:25 PDT 2016
+//   Use QvisPointControl for point type/size controls.
 //
 // ****************************************************************************
 
@@ -1007,16 +1001,19 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             var4SkewFactor->setText(DoubleToQString(atts->GetVar4SkewFactor()));
             break;
         case ScatterAttributes::ID_pointSize:
-            updatePointSize = true;
+            pointControl->blockSignals(true);
+            pointControl->SetPointSize(atts->GetPointSize());
+            pointControl->blockSignals(false);
             break;
         case ScatterAttributes::ID_pointSizePixels:
-            updatePointSize = true;
+            pointControl->blockSignals(true);
+            pointControl->SetPointSizePixels(atts->GetPointSizePixels());
+            pointControl->blockSignals(false);
             break;
         case ScatterAttributes::ID_pointType:
-            pointType->blockSignals(true);
-            pointType->setCurrentIndex(atts->GetPointType());
-            pointType->blockSignals(false);
-            updatePointSize = true;
+            pointControl->blockSignals(true);
+            pointControl->SetPointType(atts->GetPointType());
+            pointControl->blockSignals(false);
             break;
         case ScatterAttributes::ID_scaleCube:
             scaleCube->blockSignals(true);
@@ -1057,20 +1054,6 @@ QvisScatterPlotWindow::UpdateWindow(bool doAll)
             legendToggle->setChecked(atts->GetLegendFlag());
             legendToggle->blockSignals(false);
             break;
-        }
-    }
-
-    if(updatePointSize)
-    {
-        if(atts->GetPointType() != Point && atts->GetPointType() != Sphere)
-        {
-            pointSize->setText(DoubleToQString(atts->GetPointSize()));
-            pointSizeLabel->setText(tr("Point size"));
-        }
-        else
-        {
-            pointSize->setText(IntToQString(atts->GetPointSizePixels()));
-            pointSizeLabel->setText(tr("Point size (pixels)"));
         }
     }
 
@@ -1366,32 +1349,10 @@ QvisScatterPlotWindow::GetCurrentValues(int which_widget)
     }
 
     // Do pointSize
-    if(which_widget == ScatterAttributes::ID_pointSize || doAll)
+    if(doAll)
     {
-        if(atts->GetPointType() == Point || atts->GetPointType() == Sphere)
-        {
-            int val;
-            if(LineEditGetInt(pointSize, val))
-                atts->SetPointSizePixels(val);
-            else
-            {
-                ResettingError(tr("point size (pixels)"),
-                    IntToQString(atts->GetPointSizePixels()));
-                atts->SetPointSizePixels(atts->GetPointSizePixels());
-            }
-        }
-        else
-        {
-            double val;
-            if(LineEditGetDouble(pointSize, val))
-                atts->SetPointSize(val);
-            else
-            {
-                ResettingError(tr("point size"),
-                    DoubleToQString(atts->GetPointSize()));
-                atts->SetPointSize(atts->GetPointSize());
-            }
-        }
+        atts->SetPointSize(pointControl->GetPointSize());
+        atts->SetPointSizePixels(pointControl->GetPointSizePixels());
     }
 }
 
@@ -1826,9 +1787,16 @@ QvisScatterPlotWindow::var4SkewFactorProcessText()
 
 
 void
-QvisScatterPlotWindow::pointSizeProcessText()
+QvisScatterPlotWindow::pointSizeChanged(double size)
 {
-    GetCurrentValues(ScatterAttributes::ID_pointSize);
+    atts->SetPointSize(size);
+    Apply();
+}
+
+void
+QvisScatterPlotWindow::pointSizePixelsChanged(int size)
+{
+    atts->SetPointSizePixels(size);
     Apply();
 }
 
@@ -1851,17 +1819,17 @@ QvisScatterPlotWindow::pointSizeProcessText()
 //   before changing the point type. We also update the window since changing
 //   the point type will change the point size widgets.
 //
+//   Kathleen Biagas, Tue Sep 20 16:34:26 PDT 2016
+//   Using QvisPointControl, no need to call GetCurrentValues.
+//
 // ****************************************************************************
 
 void
 QvisScatterPlotWindow::pointTypeChanged(int val)
 {
-    if(val != atts->GetPointType())
-    {
-        GetCurrentValues(ScatterAttributes::ID_pointSize);
-        atts->SetPointType(GlyphType(val));
-        Apply();
-    }
+    atts->SetPointType(GlyphType(val));
+    SetUpdate(false);
+    Apply();
 }
 
 

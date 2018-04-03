@@ -929,31 +929,6 @@ avtActor::SetSurfaceRepresentation(int rep)
     }
 }
 
-// ****************************************************************************
-//  Method: avtActor::SetImmediateModeRendering
-//
-//  Purpose:
-//      Tells the drawable adn the decorations to set their immediate mode
-//      rendering flags. 
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Sep 23 15:54:15 PST 2002
-//
-// ****************************************************************************
-
-void
-avtActor::SetImmediateModeRendering(bool val)
-{
-    if (*(drawable) != NULL)
-    {
-        drawable->SetImmediateModeRendering(val);
-    }
-
-    if (*(decorations) != NULL)
-    {
-        decorations->SetImmediateModeRendering(val);
-    }
-}
 
 // ****************************************************************************
 //  Method: avtActor::SetSpecularProperties
@@ -1009,7 +984,7 @@ avtActor::SetColorTexturingFlag(bool val)
     } 
 }
 
-// *******************************************************************************
+// ****************************************************************************
 //   Method: avtActor::IsVisible
 //
 //   Purpose:
@@ -1019,7 +994,7 @@ avtActor::SetColorTexturingFlag(bool val)
 //   Programmer: Chris Wojtan
 //   Creation:   Fri Jul 23 14:00:09 PDT 2004
 //
-// *******************************************************************************
+// ****************************************************************************
 
 bool
 avtActor::IsVisible()

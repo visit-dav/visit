@@ -2911,38 +2911,6 @@ class AttsGeneratorGlyphType : public virtual GlyphType , public virtual PythonG
 
         c << Endl;
            
-#if 0
-        for(int i = 0; i < values_size; ++i)
-        {
-            c << "    ";
-            if(i == 0)
-            {
-                c << "if(atts->";
-                if(accessType == Field::AccessPublic)
-                    c << name;
-                else
-                    c << MethodNameGet() << "()";
-                c << " == " << values[i] << ")" << Endl;
-            }
-            else if(i < values_size - 1)
-            {
-                c << "else if";
-                c << "(atts->";
-                if(accessType == Field::AccessPublic)
-                    c << name;
-                else
-                    c << MethodNameGet() << "()";
-                c << " == " << values[i] << ")" << Endl;
-            }
-            else
-                c << "else" << Endl;
-            c << "    {" << Endl;
-            c << "        SNPRINTF(tmpStr, 1000, \"%s" << name << " = %s" << values[i] << "  # %s\\n\", prefix, prefix, " << name << "_names);" << Endl;
-            c << "        str += tmpStr;" << Endl;
-            c << "    }" << Endl;
-        }
-        c << Endl;
-#endif
     }
     virtual void WriteGetAttr(QTextStream &c, const QString &classname)
     {
@@ -3055,6 +3023,9 @@ class PythonFieldFactory
 //    Kathleen Biagas, Tue Feb 25 15:54:54 PST 2014
 //    We only need to use visitpy_api if the api needs exporting already.
 //
+//    Kathleen Biagas, Mon Apr 10 14:21:22 PDT 2017
+//    Write user-specified includes.
+//
 // ----------------------------------------------------------------------------
 #include <GeneratorBase.h>
 
@@ -3092,6 +3063,8 @@ class PythonGeneratorAttribute : public GeneratorBase
             fields[i]->Print(out);
         for (i=0; i<functions.size(); i++)
             functions[i]->Print(out, generatorName);
+        for (i=0; i<includes.size(); i++)
+            includes[i]->Print(out, generatorName);
     }
 
     void WriteHeader(QTextStream &h)
@@ -3143,6 +3116,18 @@ class PythonGeneratorAttribute : public GeneratorBase
     void WriteIncludedHeaders(QTextStream &c)
     {
         c << "#include <snprintf.h>" << Endl;
+
+       for (size_t i=0; i<includes.size(); i++)
+        {
+            if (includes[i]->destination=="source" &&
+                includes[i]->target == generatorName)
+            {
+                if (includes[i]->quoted == true)
+                    c << "#include \"" << includes[i]->include << "\"" << Endl;
+                else
+                    c << "#include <"  << includes[i]->include << ">"  << Endl;
+            }
+        }
 
         // Write the headers that are needed.
         for(size_t i = 0; i < fields.size(); ++i)

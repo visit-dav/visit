@@ -299,7 +299,7 @@ QvisCinemaWizard::CreateFilenameControl(QWidget *parent)
 
     QPushButton *outputSelectButton = new QPushButton("...", filenameParent);
     oLayout->addWidget(outputSelectButton);
-#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
+#if !defined(Q_OS_MAC)
     outputSelectButton->setMaximumWidth(
          fontMetrics().boundingRect("...").width() + 6);
 #endif

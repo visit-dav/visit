@@ -42,10 +42,6 @@ set(pyqtgui_include_paths ${CMAKE_CURRENT_SOURCE_DIR}
                     ${VISIT_PYTHON_DIR}/include
                     ${VISIT_SIP_DIR}/include
                     ${VISIT_SIP_DIR}/include/python${PYTHON_VERSION}
-                    ${QT_QTCORE_INCLUDE_DIR} 
-                    ${QT_QTGUI_INCLUDE_DIR} 
-                    ${QT_QTOPENGL_INCLUDE_DIR} 
-                    ${QT_INCLUDE_DIR} 
                     ${VISIT_SOURCE_DIR}/viewer/core 
                     ${VISIT_SOURCE_DIR}/viewer/main 
                     ${VISIT_SOURCE_DIR}/viewer/main/ui

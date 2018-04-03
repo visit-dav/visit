@@ -2,20 +2,10 @@
 
 #include <vtkQtRenderWindow.h>
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-  #include "QVTKWidget2.h"
-#else
-  #include "QVTKWidget.h"
-#endif
+#include "QVTKOpenGLWidget.h"
 
-#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
-  #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-    #include <QX11Info>
-  #endif
-#endif
-
-#include "vtkGenericOpenGLRenderWindow.h"
-#include "QVTKInteractor.h"
+#include <vtkGenericOpenGLRenderWindow.h>
+#include <QVTKInteractor.h>
 #include <vtkRenderWindow.h>
 
 #include <QApplication>
@@ -26,6 +16,10 @@
 #define GLX_GLXEXT_LEGACY
 #include <GL/glx.h>
 #endif
+
+#include <vtkAutoInit.h>
+VTK_MODULE_INIT(vtkRenderingOpenGL2);
+
 
 #ifdef Q_OS_OSX
 #include "osxHelper.h"
@@ -77,29 +71,19 @@ public:
         showEventCallback = NULL;
         showEventCallbackData = NULL;
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-        QGLFormat glFormat;
-
-        glFormat.setDepth(true);     // Enabled by default.
-        glFormat.setAlpha(true);     // Disabled by default.
-        glFormat.setStereo(stereo);  // Disabled by default.
-
-        // Create the VTK widget and force our custom render window
-        // into it.
-
-        // NOTE: vtkQtRenderWindow via the call to setCentralWidget()
-        // takes ownership of the gl widget pointer and deletes it at
-        // the appropriate time.
-        gl = new QVTKWidget2(glFormat, w);
-
-        if (!gl->format().alpha())
-            qWarning("Could not get alpha channel; results will be suboptimal");
-#else
         // With Qt5 there an issue with QVTKWidget2 asking for an
         // alpha channel (at least for OS X). However, not asking for
         // the channel seems to be benign. In addition, the 2D view
         // bounds and picking are off.
-        gl = new QVTKWidget(w);
+        gl = new QVTKOpenGLWidget(w);
+        if (!gl->GetRenderWindow())
+        {
+            vtkGenericOpenGLRenderWindow *renWin = vtkGenericOpenGLRenderWindow::New();
+            gl->SetRenderWindow(renWin);
+            renWin->Delete();
+        }
+        gl->GetRenderWindow()->AlphaBitPlanesOn();
+        gl->GetRenderWindow()->SetStereoRender( stereo );
 #if defined Q_OS_OSX && (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))
         if(QSysInfo::macVersion() >= QSysInfo::MV_YOSEMITE &&
            QSysInfo::macVersion() <= QSysInfo::MV_ELCAPITAN) // OSX 10.10 and 10.11
@@ -107,21 +91,13 @@ public:
             disableGLHiDPI(gl->winId());
         }
 #endif
-
-        gl->GetRenderWindow()->AlphaBitPlanesOn();
-        gl->GetRenderWindow()->SetStereoRender( stereo );
-#endif
     }
 
     virtual ~vtkQtRenderWindowPrivate()
     {
     }
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-    QVTKWidget2    *gl;
-#else
-    QVTKWidget     *gl;
-#endif
+    QVTKOpenGLWidget     *gl;
     
     void          (*resizeEventCallback)(void *);
     void           *resizeEventData;

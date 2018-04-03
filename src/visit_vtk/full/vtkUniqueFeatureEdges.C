@@ -440,10 +440,10 @@ void vtkUniqueFeatureEdges::SetLocator(vtkPointLocator *locator)
 //
 // ****************************************************************************
 
-unsigned long int vtkUniqueFeatureEdges::GetMTime()
+vtkMTimeType vtkUniqueFeatureEdges::GetMTime()
 {
-  unsigned long mTime=this->Superclass::GetMTime();
-  unsigned long time;
+  vtkMTimeType mTime = this->Superclass::GetMTime();
+  vtkMTimeType time;
 
   if ( this->Locator != NULL )
     {

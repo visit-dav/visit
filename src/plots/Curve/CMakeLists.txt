@@ -27,9 +27,9 @@ CurveViewerEnginePluginInfo.C
 CurveViewerPluginInfo.C
 avtCurvePlot.C
 avtCurveFilter.C
-avtCurveRenderer.C
-avtOpenGLCurveRenderer.C
+avtCurveMapper.C
 avtPolarToCartesianFilter.C
+vtkCurveMapper.C
 ${COMMON_SOURCES}
 )
 
@@ -38,18 +38,12 @@ CurveViewerEnginePluginInfo.C
 CurveEnginePluginInfo.C
 avtCurvePlot.C
 avtCurveFilter.C
-avtCurveRenderer.C
-avtOpenGLCurveRenderer.C
+avtCurveMapper.C
 avtPolarToCartesianFilter.C
+vtkCurveMapper.C
 ${COMMON_SOURCES}
 )
 
-IF (NOT WIN32)
-    SET_SOURCE_FILES_PROPERTIES(avtOpenGLCurveRenderer.C 
-        PROPERTIES
-        COMPILE_FLAGS "-I ${OPENGL_INCLUDE_DIR}"
-    )
-ENDIF (NOT WIN32)
 
 IF(VISIT_PYTHON_SCRIPTING)
     SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
@@ -87,17 +81,13 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${QT_INCLUDE_DIR}
-${QT_QTCORE_INCLUDE_DIR}
-${QT_QTGUI_INCLUDE_DIR}
 ${EAVL_INCLUDE_DIR}
 ${VTKM_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
-${GLEW_INCLUDE_DIR}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${QWT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} )
 
 ADD_LIBRARY(ICurvePlot ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(ICurvePlot visitcommon)

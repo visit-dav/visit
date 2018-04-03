@@ -185,7 +185,6 @@ class PLOTTER_API avtActor
     void                          SetAmbientCoefficient(const double);
 
     void                          SetSurfaceRepresentation(int rep);
-    void                          SetImmediateModeRendering(bool val);
 
     void                          SetSpecularProperties(bool,double,double,
                                                         const ColorAttribute&);

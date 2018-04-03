@@ -227,6 +227,8 @@ function uncompress_untar
         COMPRESSTYPE="targzip"
     elif [[ $(echo $1 | egrep "\.zip$" ) != "" ]] ; then
         COMPRESSTYPE="zip"
+    elif [[ $(echo $1 | egrep "\.xz$" ) != "" ]] ; then
+        COMPRESSTYPE="xz"
     else
         warn "unsupported decompression method"
         return 1
@@ -237,6 +239,7 @@ function uncompress_untar
             gzip|targzip) $TAR zxf $1;;
             bzip) $TAR jxf $1;;
             zip) unzip $1;;
+            xz) $TAR xf $1;;
         esac
         
         if [[ $? != 0 ]]; then
@@ -1180,7 +1183,6 @@ function build_hostconf
         echo "SET(CMAKE_CROSSCOMPILING    ON)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_X            OFF TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW         OFF TYPE BOOL)" >> $HOSTCONF
-        echo "VISIT_OPTION_DEFAULT(VISIT_SLIVR            OFF TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_DISABLE_SELECT   ON  TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_USE_NOSPIN_BCAST OFF TYPE BOOL)" >> $HOSTCONF
         echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR       \${VISITHOME}/mesa/$MESA_VERSION/\${VISITARCH})" >> $HOSTCONF
@@ -1256,30 +1258,10 @@ function build_hostconf
         "VISIT_OPTION_DEFAULT(VISIT_ENGINE_ONLY ON TYPE BOOL)" >> $HOSTCONF
     fi
 
-    # Are we using Mesa/OpenSWR as our GL?
-    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+    if [[ "$DO_STATIC_BUILD" == "yes"  && $DO_OSMESA == "yes" ]] ; then
         if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
-            if [[ "$DO_MESA" == "yes" ]] ; then
-                echo "# Set up VisIt to use Mesa as GL." >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_USE_X    OFF TYPE BOOL)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW OFF TYPE BOOL)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_SLIVR    OFF TYPE BOOL)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR  ${MESA_INSTALL_DIR})" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_LIBRARY ${MESA_LIB})" >> $HOSTCONF
-                if [[ "$DO_GLU" == "yes" ]] ; then
-                    echo "VISIT_OPTION_DEFAULT(VISIT_GLU_LIBRARY ${MESA_LIB_DIR}/libGLU.a)" >> $HOSTCONF
-                fi
-            elif [[ "$DO_OPENSWR" == "yes" ]] ; then
-                echo "# Set up VisIt to use OpenSWR as GL." >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_USE_X    OFF TYPE BOOL)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_USE_GLEW OFF TYPE BOOL)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_SLIVR    OFF TYPE BOOL)" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_DIR  ${OPENSWR_INSTALL_DIR})" >> $HOSTCONF
-                echo "VISIT_OPTION_DEFAULT(VISIT_OPENGL_LIBRARY ${OPENSWR_LIB};${LLVM_LIB})" >> $HOSTCONF
-                if [[ "$DO_GLU" == "yes" ]] ; then
-                    echo "VISIT_OPTION_DEFAULT(VISIT_GLU_LIBRARY ${OPENSWR_LIB_DIR}/libGLU.a)" >> $HOSTCONF
-                fi
-            fi
+            # Turn off VisIt's use of X
+            echo "VISIT_OPTION_DEFAULT(VISIT_USE_X OFF TYPE BOOL)" >> $HOSTCONF
         fi
     fi
     # Are we on Cray? We might need the socket relay.
@@ -1405,6 +1387,7 @@ function usage
     initialize_build_visit
     
     printf "Usage: %s [options]\n" $0
+    printf "%-15s %s [%s]\n" "--skip-opengl-context-check" "Skip check for minimum OpenGL context." "false"
 
     printf "\n"
     printf "BUILD OPTIONS\n" 
@@ -1466,7 +1449,6 @@ function usage
     printf "%-20s %s [%s]\n" "--no-hostconf" "Do not create host.conf file." "$DO_HOSTCONF"
     printf "%-20s %s [%s]\n" "--java" "Build with the Java client library" "${DO_JAVA}"
     printf "%-20s %s [%s]\n" "--paradis" "Build with the paraDIS client library" "$DO_PARADIS"
-    printf "%-20s %s [%s]\n" "--slivr" "Build with SLIVR shader support" "$DO_SLIVR"
     printf "%-20s %s [%s]\n" "--xdb" "Enable FieldView XDB plugin." "$DO_XDB"
     bv_visit_initialize
     bv_visit_print_usage

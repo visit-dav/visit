@@ -63,7 +63,6 @@ LightList                     avtCallback::lightList;
 bool                          avtCallback::nowinMode = false;
 bool                          avtCallback::nowinInteractionMode = false;
 bool                          avtCallback::swRendering = false;
-bool                          avtCallback::useManta = false;
 bool                          avtCallback::useOSPRay = false;
 bool                          avtCallback::safeMode = false;
 

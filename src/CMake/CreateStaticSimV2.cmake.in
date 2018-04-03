@@ -44,7 +44,8 @@
 
 
 set(VISIT_PARALLEL @VISIT_PARALLEL@)
-set(MESA_FOUND @MESA_FOUND@)
+set(OSMESA_FOUND @OSMESA_FOUND@)
+set(EGL_FOUND @EGL_FOUND@)
 set(VISIT_BINARY_DIR @VISIT_BINARY_DIR@)
 set(VISIT_FORTRAN @VISIT_FORTRAN@)
 set(VISIT_ENABLE_XDB @VISIT_ENABLE_XDB@)
@@ -59,8 +60,6 @@ unset(visit_libs_par)
 
 # want to build up a list of library files to merge into one simV2_static_ser
 # For this to work with cmake, need to list the cmake targets needed.
-set(SLIVR_LIBS air alan biff bow dye ell gage hest moss nrrd slivrG slivrV 
-    unrrdu)
 set(VISIT_LIBS enginerpc lightweight_visit_vtk mdserverproxy mdserverrpc 
                visit_verdict visit_vtk visitcommon simV2)
 set(AVT_LIBS avtdbatts avtmath avtqtviswindow avtshapelets avtview)
@@ -71,20 +70,20 @@ set(SIMV2_SER_LIBS simV2runtime_ser engine_ser viewercore_ser viewerrpc)
 set(AVT_PAR_LIBS cognomen avtdatabase_par avtdbin_par avtexpressions_par
                  avtfilters_par avtivp_par avtmir_par avtpipeline_par
                  avtplotter_par avtquery_par avtviswindow_par avtwriter_par)
-set(TP_LIBS visitGLEW tess2 nek5000_interp)
+set(TP_LIBS tess2 nek5000_interp)
 set(SIMV2_PAR_LIBS simV2runtime_par engine_par viewercore_par viewerrpc)
 set(DDTSIM_LIBS ddtsim_static)
 
 list(APPEND visit_libs_ser ${SIMV2_SER_LIBS} ${AVT_LIBS} ${AVT_SER_LIBS}
-                           ${VISIT_LIBS} ${TP_LIBS} ${SLIVR_LIBS})
+                           ${VISIT_LIBS} ${TP_LIBS})
 if(VISIT_PARALLEL)
     list(APPEND visit_libs_par ${SIMV2_PAR_LIBS} ${AVT_LIBS} ${AVT_PAR_LIBS}
-                               ${VISIT_LIBS} ${TP_LIBS} ${SLIVR_LIBS})
+                               ${VISIT_LIBS} ${TP_LIBS})
 endif()
 
-if(MESA_FOUND)
-    list(APPEND visit_libs_ser visit_vtk_osmesa)
-    list(APPEND visit_libs_par visit_vtk_osmesa)
+if(OSMESA_FOUND OR EGL_FOUND)
+    list(APPEND visit_libs_ser visit_vtk_offscreen)
+    list(APPEND visit_libs_par visit_vtk_offscreen)
 endif()
 
 macro(get_enabled_plugins fname type suffix plist)

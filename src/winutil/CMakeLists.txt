@@ -76,21 +76,17 @@ ${VISIT_SOURCE_DIR}/winutil
 ${VISIT_SOURCE_DIR}/avt/DBAtts/MetaData
 ${VISIT_SOURCE_DIR}/avt/DBAtts/SIL
 ${VTK_INCLUDE_DIRS}
-${QT_INCLUDE_DIR}
-${QT_QTCORE_INCLUDE_DIR}
-${QT_QTGUI_INCLUDE_DIR}
-${QT_QTOPENGL_INCLUDE_DIR}
 )
 
 # Add link directories needed to use Qt.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 
 ADD_LIBRARY(winutil ${WINUTIL_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
 TARGET_LINK_LIBRARIES(winutil visitcommon avtdbatts ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
-if(VISIT_QT5 AND LINUX)
+if(LINUX)
     target_link_libraries(winutil ${QT_QTX11EXTRAS_LIBRARY})
-ENDIF()
+endif()
 
 VISIT_INSTALL_TARGETS(winutil)

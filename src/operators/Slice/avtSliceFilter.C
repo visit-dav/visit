@@ -2735,8 +2735,11 @@ avtSliceFilter::PostExecute()
         avtDataAttributes &inAtts     =  GetInput()->GetInfo().GetAttributes();
         avtDataAttributes &outAtts    = GetOutput()->GetInfo().GetAttributes();
 
-        GetOutput()->GetInfo().GetAttributes().SetInvTransform((*invTrans)[0]);
-        GetOutput()->GetInfo().GetAttributes().SetTransform((*origTrans)[0]);
+        double m[16];
+        vtkMatrix4x4::DeepCopy(m, invTrans);
+        GetOutput()->GetInfo().GetAttributes().SetInvTransform(m);
+        vtkMatrix4x4::DeepCopy(m, origTrans);
+        GetOutput()->GetInfo().GetAttributes().SetTransform(m);
 
         inAtts.TransformSpatialExtents(outAtts, ProjectExtentsCallback, this);
     }

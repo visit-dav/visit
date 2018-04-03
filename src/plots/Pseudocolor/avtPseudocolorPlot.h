@@ -51,6 +51,7 @@
 class     avtLookupTable;
 class     avtPseudocolorFilter;
 class     avtShiftCenteringFilter;
+class     avtPseudocolorMapper;
 class     avtVariablePointGlyphMapper;
 class     avtVariableLegend;
 class     avtPolylineCleanupFilter;
@@ -140,6 +141,14 @@ class     avtStaggeringFilter;
 //    Added support for using per-color alpha values from a color table
 //    (instead of just a single global opacity for the whole plot).
 //
+//    Kathleen Biagas, Tue Aug 23 11:25:34 PDT 2016
+//    Add VariableMapper as points and surfaces no longer handled by the
+//    same mapper.
+//
+//    Kathleen Biagas, Wed Aug 24 15:42:56 PDT 2016
+//    Change use of avtVariableMapper to avtPseudcolorMapper, a specialization
+//    of avtVariableMapper that utilizes a special vtk mapper.
+//
 // ****************************************************************************
 
 class avtPseudocolorPlot : public avtSurfaceDataPlot
@@ -167,24 +176,25 @@ class avtPseudocolorPlot : public avtSurfaceDataPlot
     void                        SetScaling(int, double);
 
   protected:
-    avtVariablePointGlyphMapper  *glyphMapper;
-    avtVariableLegend          *varLegend;
-    avtLegend_p                 varLegendRefPtr;
-    PseudocolorAttributes       atts;
-    avtPseudocolorFilter       *pcfilter;
+    avtVariablePointGlyphMapper   *glyphMapper;
+    avtPseudocolorMapper          *mapper;
+    avtVariableLegend             *varLegend;
+    avtLegend_p                    varLegendRefPtr;
+    PseudocolorAttributes          atts;
+    avtPseudocolorFilter          *pcfilter;
 
-    avtPolylineCleanupFilter   *polylineCleanupFilter;
+    avtPolylineCleanupFilter      *polylineCleanupFilter;
     avtPolylineAddEndPointsFilter *polylineAddEndPointsFilter;
-    avtPolylineToRibbonFilter  *polylineToRibbonFilter;
-    avtPolylineToTubeFilter    *polylineToTubeFilter;
-    avtStaggeringFilter        *staggeringFilter;
-    avtShiftCenteringFilter    *filter;
-    bool                        colorsInitialized;
-    int                         topoDim;
-    avtLookupTable             *avtLUT;
-    bool                        colorTableIsFullyOpaque;
+    avtPolylineToRibbonFilter     *polylineToRibbonFilter;
+    avtPolylineToTubeFilter       *polylineToTubeFilter;
+    avtStaggeringFilter           *staggeringFilter;
+    avtShiftCenteringFilter       *filter;
+    bool                           colorsInitialized;
+    int                            topoDim;
+    avtLookupTable                *avtLUT;
+    bool                           colorTableIsFullyOpaque;
 
-    virtual avtMapper          *GetMapper(void);
+    virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     // virtual avtContract_p       EnhanceSpecification(avtContract_p);

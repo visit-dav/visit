@@ -110,6 +110,7 @@ public:
     // User-defined methods
     ColorAttribute(int red, int green, int blue, int alpha = 255);
     void SetRgb(int red, int green, int blue);
+    void GetRgb(double c[3]) const;
     void SetRgba(int red, int green, int blue, int alpha);
     void GetRgba(double c[4]) const;
     void SetRed(int red);

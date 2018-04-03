@@ -42,8 +42,7 @@
  
 #include <avtSurfacePlot.h>
 #include <avtSurfaceFilter.h>
-#include <avtWireframeFilter.h>
-#include <avtSurfaceAndWireframeRenderer.h>
+#include <avtSurfaceMapper.h>
 
 #include <InvalidDimensionsException.h>
 #include <InvalidLimitsException.h>
@@ -51,9 +50,7 @@
 #include <SurfaceFilterAttributes.h>
 
 #include <avtVariableLegend.h>
-#include <avtUserDefinedMapper.h>
 #include <avtLookupTable.h>
-#include <vtkProperty.h>
 
 #include <snprintf.h>
 
@@ -92,17 +89,17 @@
 //    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004
 //    Added avtWireframeFilter.
 //
+//    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
+//    VTK-8 port: Use surface-plot specific mapper instead of user-specified
+//    with avtSurfaceAndWireframeRenderer.  Remove wireFilter, property.
+//
 // ****************************************************************************
 
 avtSurfacePlot::avtSurfacePlot()
 {
-    renderer = avtSurfaceAndWireframeRenderer::New();
-    avtCustomRenderer_p cr;
-    CopyTo(cr, renderer);
-    mapper = new avtUserDefinedMapper(cr);
+    mapper = new avtSurfaceMapper();
 
     avtLUT = new avtLookupTable();
-    property = vtkProperty::New();
 
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Surface");
@@ -117,11 +114,7 @@ avtSurfacePlot::avtSurfacePlot()
     //
     varLegendRefPtr = varLegend;
 
-    renderer->SurfaceLinesOff();
-    renderer->EdgePolysOff();
-
     surfaceFilter = NULL;
-    wireFilter = NULL;
 }
 
 
@@ -145,6 +138,9 @@ avtSurfacePlot::avtSurfacePlot()
 //    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004
 //    Added avtWireframeFilter.
 //
+//    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
+//    VTK-8 port: Remove wireFilter, property.
+//
 // ****************************************************************************
 
 avtSurfacePlot::~avtSurfacePlot()
@@ -153,11 +149,6 @@ avtSurfacePlot::~avtSurfacePlot()
     {
         delete mapper;
         mapper = NULL;
-    }
-    if (property != NULL)
-    {
-        property->Delete();
-        property = NULL;
     }
     if (avtLUT != NULL)
     {
@@ -168,11 +159,6 @@ avtSurfacePlot::~avtSurfacePlot()
     {
         delete surfaceFilter;
         surfaceFilter = NULL;
-    }
-    if (wireFilter != NULL)
-    {
-        delete wireFilter;
-        wireFilter = NULL;
     }
 
     //
@@ -212,7 +198,7 @@ avtSurfacePlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtSurfacePlot::GetMapper(void)
 {
     return mapper;
@@ -289,19 +275,15 @@ avtSurfacePlot::ApplyOperators(avtDataObject_p input)
 //    Kathleen Bonnell, Mon May 24 14:13:55 PDT 2004
 //    Added avtWireframeFilter.
 //
+//    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
+//    Removed avtWireframeFilter (part of VTK-8 port).
+//
 // ****************************************************************************
 
 avtDataObject_p
 avtSurfacePlot::ApplyRenderingTransformation(avtDataObject_p input)
 {
-    if (wireFilter != NULL)
-    {
-        delete wireFilter;
-    }
-    wireFilter = new avtWireframeFilter((const AttributeGroup *)&atts);
-
-    wireFilter->SetInput(input);
-    return wireFilter->GetOutput();
+    return input;
 }
 
 
@@ -349,6 +331,9 @@ avtSurfacePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    Set AntialiasedRenderOrder depending upon whether or not the wireframe
 //    is being drawn without the surface. 
 //
+//    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
+//    VTK-8 port: Remove property.
+//
 // ****************************************************************************
 
 void
@@ -358,8 +343,6 @@ avtSurfacePlot::CustomizeBehavior()
     //  In case the correct data ranges weren't available before.
     //
     SetLimitsMode(atts.GetLimitsMode());
-
-    renderer->SetProperty(property);
 
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.9);
@@ -429,6 +412,10 @@ avtSurfacePlot::CustomizeBehavior()
 //    Kathleen Bonnell, Mon Jan 17 17:51:40 MST 2011
 //    Account for InvertColorTable when determining updateColors.
 //
+//    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
+//    VTK-8 port: Use surface-plot specific mapper instead of user-specified
+//    with avtSurfaceAndWireframeRenderer.
+//
 // ****************************************************************************
 
 void
@@ -451,11 +438,11 @@ avtSurfacePlot::SetAtts(const AttributeGroup *a)
         SetSurfaceAttributes(atts.GetColorByZFlag()); 
     }
     SetWireframeAttributes(atts.GetWireframeFlag());
-    SetLighting(atts.GetLightingFlag());
-    SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
-    renderer->CanApplyGlobalRepresentation(atts.GetSurfaceFlag());
-    SetRepresentation(!atts.GetSurfaceFlag() && atts.GetWireframeFlag());
+    mapper->SetIgnoreLighting(!atts.GetLightingFlag());
+    mapper->SetLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineWidth())));
+    mapper->SetLineStyle(LineStyle2StipplePattern(Int2LineStyle(atts.GetLineStyle())));
+    mapper->CanApplyGlobalRepresentation(atts.GetSurfaceFlag());
+    mapper->SetRepresentation(!atts.GetSurfaceFlag() && atts.GetWireframeFlag());
     SetLegend(atts.GetLegendFlag());
 
     // Update the plot's colors if needed.
@@ -468,7 +455,6 @@ avtSurfacePlot::SetAtts(const AttributeGroup *a)
 
     SetScaling(atts.GetScaling(), atts.GetSkewFactor());
     SetLimitsMode(atts.GetLimitsMode());
-    renderer->LUTColorsChanged(updateColors);
 
     if (atts.GetWireframeFlag() && !atts.GetSurfaceFlag())
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
@@ -527,60 +513,6 @@ avtSurfacePlot::SetColorTable(const char *ctName)
 
 
 // ****************************************************************************
-//  Method: avtSurfacePlot::SetLineWidth
-//
-//  Purpose:
-//    Tells the mapper to set it's line width.
-//
-//  Arguments:
-//    w         The width for the lines. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 05, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Tue Aug 21 10:54:58 PDT 2001
-//    Changed parameter from int to _LineWidth.  Set line width
-//    for property instead of mapper.
-//
-// ****************************************************************************
-
-void
-avtSurfacePlot::SetLineWidth(_LineWidth lw)
-{
-    property->SetLineWidth(LineWidth2Int(lw));
-}
-
-
-// ****************************************************************************
-//  Method: avtSurfacePlot::SetLineStyle
-//
-//  Purpose:
-//    Tells the mapper to set its line style.
-//
-//  Arguments:
-//    ls        The width for the lines. 
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   June 21, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Tue Aug 21 10:54:58 PDT 2001
-//    Changed parameter from int to _LineStyle.  Set line style
-//    for property instead of mapper.
-//
-// ****************************************************************************
-
-void
-avtSurfacePlot::SetLineStyle(_LineStyle ls)
-{
-    property->SetLineStipplePattern(LineStyle2StipplePattern(ls));
-}
-
-
-// ****************************************************************************
 //  Method: avtSurfacePlot::SetLegend
 //
 //  Purpose:
@@ -604,47 +536,6 @@ avtSurfacePlot::SetLegend(bool legendOn)
     else
     {
         varLegend->LegendOff();
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtSurfacePlot::SetLighting
-//
-//  Purpose:
-//    Turns the lighting on or off.
-//
-//  Arguments:
-//    lightingOn   true if the lighting should be turned on, false otherwise.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 05, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Tue Aug 21 10:54:58 PDT 2001
-//    Set property attributes instead of mapper. 
-//
-//    Kathleen Bonnell, Tue Nov 26 15:39:16 PST 2002
-//    Tell the renderer to ignore global lighting updates when our local 
-//    lighting is off. 
-//
-// ****************************************************************************
-
-void
-avtSurfacePlot::SetLighting(bool lightingOn)
-{
-    if (lightingOn)
-    {
-        property->SetAmbient(0.0); 
-        property->SetDiffuse(1.0); 
-        renderer->IgnoreLighting(false);
-    }
-    else
-    {
-        property->SetAmbient(1.0); 
-        property->SetDiffuse(0.0); 
-        renderer->IgnoreLighting(true);
     }
 }
 
@@ -689,45 +580,16 @@ avtSurfacePlot::SetScaling(const int mode, const double skew)
     if (mode == SurfaceAttributes::Log &&
         atts.GetColorByZFlag()) 
     {
-        renderer->SetLookupTable(avtLUT->GetLogLookupTable());
+        mapper->SetLookupTable(avtLUT->GetLogLookupTable());
     }
     else if (mode == SurfaceAttributes::Skew)
     {
         avtLUT->SetSkewFactor(skew);
-        renderer->SetLookupTable(avtLUT->GetSkewLookupTable());
+        mapper->SetLookupTable(avtLUT->GetSkewLookupTable());
     }
     else
     {
-        renderer->SetLookupTable(avtLUT->GetLookupTable());
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtSurfacePlot::SetRepresentation
-//
-//  Purpose:
-//    Sets the 'visibility' of the surface, by setting the appropriate
-//    represention in the property. 
-//
-//  Arguments:
-//    wireMode    True if we want to hide the surface, false otherwise. 
-//
-//  Programmer:   Kathleen Bonnell
-//  Creation:     August 21, 2001 
-//
-// ****************************************************************************
-
-void
-avtSurfacePlot::SetRepresentation(bool wireMode)
-{
-    if (wireMode)
-    {
-        property->SetRepresentationToWireframe();
-    }
-    else 
-    {
-        property->SetRepresentationToSurface();
+        mapper->SetLookupTable(avtLUT->GetLookupTable());
     }
 }
 
@@ -749,6 +611,7 @@ avtSurfacePlot::SetRepresentation(bool wireMode)
 void
 avtSurfacePlot::SetWireframeAttributes(bool on)
 {
+    mapper->SetEdgeVisibility(on);
     if (on)
     {
         const unsigned char * col = atts.GetWireframeColor().GetColor();
@@ -756,14 +619,7 @@ avtSurfacePlot::SetWireframeAttributes(bool on)
         rgb[0] = (double) col[0] / 255.0;
         rgb[1] = (double) col[1] / 255.0;
         rgb[2] = (double) col[2] / 255.0;
-        property->SetEdgeColor(rgb);
-        property->EdgeVisibilityOn();
-        renderer->ResolveTopologyOn();
-    }
-    else 
-    {
-        property->EdgeVisibilityOff();
-        renderer->ResolveTopologyOff();
+        mapper->SetEdgeColor(rgb);
     }
 }
 
@@ -790,21 +646,15 @@ avtSurfacePlot::SetWireframeAttributes(bool on)
 void
 avtSurfacePlot::SetSurfaceAttributes(bool useScalars)
 {
-    if (useScalars)
+    mapper->SetScalarVisibility(useScalars); 
+    if (!useScalars)
     {
-        if (!renderer->GetScalarVisibility())
-            property->Modified(); 
-        renderer->ScalarVisibilityOn(); 
-    }
-    else
-    {
-        renderer->ScalarVisibilityOff();
         const unsigned char * col = atts.GetSurfaceColor().GetColor();
         double rgb[3];
         rgb[0] = (float) col[0] / 255.0;
         rgb[1] = (float) col[1] / 255.0;
         rgb[2] = (float) col[2] / 255.0;
-        property->SetColor(rgb);
+        mapper->SetSurfaceColor(rgb);
     }
 }
 
@@ -884,7 +734,7 @@ avtSurfacePlot::SetLimitsMode(int mode)
         EXCEPTION1(InvalidLimitsException, true); 
     }
 
-    renderer->SetScalarRange(userMin, userMax);
+    mapper->SetScalarRange(userMin, userMax);
 
     // this sets range for labels
     varLegend->SetRange(userMin, userMax);
@@ -935,10 +785,6 @@ avtSurfacePlot::ReleaseData(void)
     if (surfaceFilter != NULL)
     {
         surfaceFilter->ReleaseData();
-    }
-    if (wireFilter != NULL)
-    {
-        wireFilter->ReleaseData();
     }
 }
 

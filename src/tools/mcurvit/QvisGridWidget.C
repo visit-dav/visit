@@ -947,11 +947,7 @@ QvisGridWidget::drawHighlightedItem(QPainter &paint, int index)
 
         // Draw the button and the color over the button.
         drawBox(paint, r, palette().color(QPalette::Light),
-#ifdef Q_WS_MACX
-                Qt::black
-#else
                 palette().color(QPalette::Shadow)
-#endif
                 );
         drawItem(paint, index);
  
@@ -1007,11 +1003,7 @@ QvisGridWidget::drawSelectedItem(QPainter &paint, int index)
 
         // Draw a sunken button.
         drawBox(paint, r,
-#ifdef Q_WS_MACX
-                Qt::black,
-#else
                 palette().color(QPalette::Dark),
-#endif
                 palette().color(QPalette::Light));
 
         // Draw the color over the button.

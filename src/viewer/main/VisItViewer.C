@@ -76,12 +76,7 @@ VisItViewer::Initialize(int *argc, char ***argv)
     bool nowin = false;
     for (int i = 0 ; i < *argc ; i++)
     {
-        if (strcmp((*argv)[i], "-manta") == 0)
-        {
-            std::cerr << "setting Manta mode\n";
-            avtCallback::SetMantaMode(true);
-        }
-        else if (strcmp((*argv)[i], "-ospray") == 0)
+        if (strcmp((*argv)[i], "-ospray") == 0)
         {
             debug5 << "Viewer launching with OSPRay" << endl;
             avtCallback::SetOSPRayMode(true);
@@ -950,7 +945,7 @@ ViewerWarningCallback(void *ptr, const char *msg)
     ((ViewerSubject *)ptr)->GetViewerMessaging()->Warning(msg);
 }
 
-#if !defined(_WIN32) && ! (defined(Q_WS_MACX) || defined(Q_OS_MAC))
+#if !defined(_WIN32) && !defined(Q_OS_MAC)
 // ****************************************************************************
 //  Function: Log output from a piped system command to debug logs
 //
@@ -1020,7 +1015,7 @@ LogCommand(const char *cmd, const char *truncate_at_pattern)
 static void
 LogGlxAndXdpyInfo()
 {
-#if !defined(_WIN32) && !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
+#if !defined(_WIN32) && !defined(Q_OS_MAC)
     if (DebugStream::Level5())
     {
         LogCommand("sh -c \"xdpyinfo 2>&1\"", "number of visuals"); // truncate at list of visuals

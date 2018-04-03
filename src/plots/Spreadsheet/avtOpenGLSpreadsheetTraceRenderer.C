@@ -39,12 +39,12 @@
 
 #include <float.h>
 
-#include <avtOpenGLExtensionManager.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkCell.h>
+#include <vtk_glew.h>
 
 #include <DebugStream.h>
 

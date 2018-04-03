@@ -260,7 +260,7 @@ function build_uintah
     ZLIB_ARGS=""
     
     if [[ "$DO_ZLIB" == "yes" ]]; then
-        ZLIB_ARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}"
+        ZLIB_ARGS="--with-zlib=$VISITDIR/zlib/$ZLIB_VERSION/$VISITARCH"
     fi
 
     if [[ "$OPSYS" == "Darwin" ]]; then

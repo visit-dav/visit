@@ -581,12 +581,12 @@ vtkAxesActor2D::SetYGridVisibility(bool vis)
 //
 // ****************************************************************************
 
-unsigned long 
+vtkMTimeType
 vtkAxesActor2D::GetMTime()
 {
-  unsigned long mTime = this->Superclass::GetMTime();
+  vtkMTimeType mTime = this->Superclass::GetMTime();
 
-  unsigned long time;
+  vtkMTimeType time;
   time = this->XAxis->GetMTime();
   mTime = (time > mTime ? time : mTime);
   time = this->YAxis->GetMTime();

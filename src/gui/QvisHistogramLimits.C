@@ -428,12 +428,8 @@ QvisHistogramLimits::paintEvent(QPaintEvent *pe)
     if(closeEnabled)
     {
         QIcon del(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
-#if QT_VERSION < 0x040500
-        QSize size(del.actualSize(QSize(20,20)));
-#else
         QList<QSize> sizes(del.availableSizes());
         QSize size(sizes[0]);
-#endif
         QPainter p(this);
 
         hitRect = QRect(width() - size.width() - 5, 0,

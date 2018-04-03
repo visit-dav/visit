@@ -58,7 +58,7 @@
 #include <algorithm>
 #include <vector>
 #include <vtksys/SystemTools.hxx>
-#include <vtksys/ios/sstream>
+#include <sstream>
 #include <vtk_zlib.h>
 
 #include <vtkCellArray.h>
@@ -429,22 +429,11 @@ private:
   typedef vtkStdString Superclass;
 
 public:
-  vtkFoamError() :
-    vtkStdString()
-  {
-  }
-  vtkFoamError(const vtkFoamError& e) :
-    vtkStdString(e)
-  {
-  }
-  ~vtkFoamError()
-  {
-  }
   // a super-easy way to make use of operator<<()'s defined in
-  // vtksys_ios::ostringstream class
+  // std::ostringstream class
   template <class T> vtkFoamError& operator<<(const T& t)
   {
-    vtksys_ios::ostringstream os;
+    std::ostringstream os;
     os << t;
     this->Superclass::operator+=(os.str());
     return *this;
@@ -518,9 +507,16 @@ protected:
       case IDENTIFIER:
         this->String = new vtkStdString(*value.String);
         break;
-        // required to suppress the 'enumeration value not handled' warning by
-        // g++ when compiled with -Wall
-      default:
+      case UNDEFINED:
+      case STRINGLIST:
+      case LABELLIST:
+      case SCALARLIST:
+      case VECTORLIST:
+      case LABELLISTLIST:
+      case ENTRYVALUELIST:
+      case EMPTYLIST:
+      case DICTIONARY:
+      case TOKEN_ERROR:
         break;
       }
   }
@@ -549,12 +545,12 @@ public:
   template <typename T> T To() const;
 #if defined(_MSC_VER)
   // workaround for Win32-64ids-nmake70
-  VTK_TEMPLATE_SPECIALIZE bool Is<int>() const;
-  VTK_TEMPLATE_SPECIALIZE bool Is<float>() const;
-  VTK_TEMPLATE_SPECIALIZE bool Is<double>() const;
-  VTK_TEMPLATE_SPECIALIZE int To<int>() const;
-  VTK_TEMPLATE_SPECIALIZE float To<float>() const;
-  VTK_TEMPLATE_SPECIALIZE double To<double>() const;
+  template<> bool Is<int>() const;
+  template<> bool Is<float>() const;
+  template<> bool Is<double>() const;
+  template<> int To<int>() const;
+  template<> float To<float>() const;
+  template<> double To<double>() const;
 #endif
 
   // workaround for SunOS-CC5.6-dbg
@@ -646,7 +642,7 @@ public:
     return !this->operator==(value);
   }
 
-  friend vtksys_ios::ostringstream& operator<<(vtksys_ios::ostringstream& str,
+  friend std::ostringstream& operator<<(std::ostringstream& str,
       const vtkFoamToken& value)
   {
     switch (value.GetType())
@@ -667,41 +663,47 @@ public:
       case IDENTIFIER:
         str << *value.String;
         break;
-        // required to suppress the 'enumeration value not handled' warning by
-        // g++ when compiled with -Wall
-      default:
+      case UNDEFINED:
+      case STRINGLIST:
+      case LABELLIST:
+      case SCALARLIST:
+      case VECTORLIST:
+      case LABELLISTLIST:
+      case ENTRYVALUELIST:
+      case EMPTYLIST:
+      case DICTIONARY:
         break;
       }
     return str;
   }
 };
 
-VTK_TEMPLATE_SPECIALIZE inline bool vtkFoamToken::Is<int>() const
+template<> inline bool vtkFoamToken::Is<int>() const
 {
   return this->Type == LABEL;
 }
 
-VTK_TEMPLATE_SPECIALIZE inline bool vtkFoamToken::Is<float>() const
+template<> inline bool vtkFoamToken::Is<float>() const
 {
   return this->Type == LABEL || this->Type == SCALAR;
 }
 
-VTK_TEMPLATE_SPECIALIZE inline bool vtkFoamToken::Is<double>() const
+template<> inline bool vtkFoamToken::Is<double>() const
 {
   return this->Type == SCALAR;
 }
 
-VTK_TEMPLATE_SPECIALIZE inline int vtkFoamToken::To<int>() const
+template<> inline int vtkFoamToken::To<int>() const
 {
   return this->Int;
 }
 
-VTK_TEMPLATE_SPECIALIZE inline float vtkFoamToken::To<float>() const
+template<> inline float vtkFoamToken::To<float>() const
 {
   return this->Type == LABEL ? this->Int : this->Double;
 }
 
-VTK_TEMPLATE_SPECIALIZE inline double vtkFoamToken::To<double>() const
+template<> inline double vtkFoamToken::To<double>() const
 {
   return this->Type == LABEL ? this->Int : this->Double;
 }
@@ -829,7 +831,7 @@ private:
 
   vtkFoamError StackString()
   {
-    vtksys_ios::ostringstream os;
+    std::ostringstream os;
     if (this->StackI > 0)
       {
       os << "\n included";
@@ -1081,7 +1083,7 @@ public:
             isExpanded = true;
             break;
             }
-          // fall through
+          VTK_FALLTHROUGH;
         default:
           wasPathSeparator = (c == '/' || c == '\\');
           expandedPath += c;
@@ -1176,7 +1178,7 @@ public:
           this->PutBack(c);
           return true;
           }
-        // fall through
+        VTK_FALLTHROUGH;
       case '.':
         // scalar token
         if (c == '.' && charI < MAXLEN)
@@ -2017,12 +2019,12 @@ public:
   static T ReadValue(vtkFoamIOobject &io);
 };
 
-VTK_TEMPLATE_SPECIALIZE inline int vtkFoamReadValue<int>::ReadValue(vtkFoamIOobject& io)
+template<> inline int vtkFoamReadValue<int>::ReadValue(vtkFoamIOobject& io)
 {
   return io.ReadIntValue();
 }
 
-VTK_TEMPLATE_SPECIALIZE inline float vtkFoamReadValue<float>::ReadValue(vtkFoamIOobject& io)
+template<> inline float vtkFoamReadValue<float>::ReadValue(vtkFoamIOobject& io)
 {
   return io.ReadFloatValue();
 }
@@ -2517,7 +2519,7 @@ public:
 
 // specialization for reading double precision binary into vtkFloatArray.
 // Must precede ReadNonuniformList() below (HP-UXia64-aCC).
-VTK_TEMPLATE_SPECIALIZE
+template<>
 void vtkFoamEntryValue::listTraits<vtkFloatArray, float>::ReadBinaryList(
     vtkFoamIOobject& io, const int size)
 {
@@ -3122,8 +3124,13 @@ vtkFoamEntryValue::vtkFoamEntryValue(
       break;
     case EMPTYLIST:
       break;
-      // required to suppress the 'enumeration value not handled' warning by
-      // g++ when compiled with -Wall
+    case UNDEFINED:
+    case PUNCTUATION:
+    case LABEL:
+    case SCALAR:
+    case STRING:
+    case IDENTIFIER:
+    case TOKEN_ERROR:
     default:
       break;
     }
@@ -3154,8 +3161,14 @@ void vtkFoamEntryValue::Clear()
       case DICTIONARY:
         delete this->DictPtr;
         break;
-        // required to suppress the 'enumeration value not handled' warning by
-        // g++ when compiled with -Wall
+      case UNDEFINED:
+      case PUNCTUATION:
+      case LABEL:
+      case SCALAR:
+      case STRING:
+      case IDENTIFIER:
+      case TOKEN_ERROR:
+      case EMPTYLIST:
       default:
         break;
       }
@@ -4302,31 +4315,31 @@ bool visit_vtkOpenFOAMReaderPrivate::ListTimeDirectoriesByControlDict(
 
   // determine time name based on Foam::Time::timeName()
   // cf. src/OpenFOAM/db/Time/Time.C
-  vtksys_ios::ostringstream parser;
+  std::ostringstream parser;
 #ifdef _MSC_VER
   bool correctExponent = true;
 #endif
   if (timeFormat == "general")
     {
-    parser.setf(vtksys_ios::ios_base::fmtflags(0), vtksys_ios::ios_base::floatfield);
+    parser.setf(std::ios_base::fmtflags(0), std::ios_base::floatfield);
     }
   else if (timeFormat == "fixed")
     {
-    parser.setf(vtksys_ios::ios_base::fmtflags(vtksys_ios::ios_base::fixed),
-        vtksys_ios::ios_base::floatfield);
+    parser.setf(std::ios_base::fmtflags(std::ios_base::fixed),
+        std::ios_base::floatfield);
 #ifdef _MSC_VER
     correctExponent = false;
 #endif
     }
   else if (timeFormat == "scientific")
     {
-    parser.setf(vtksys_ios::ios_base::fmtflags(vtksys_ios::ios_base::scientific),
-        vtksys_ios::ios_base::floatfield);
+    parser.setf(std::ios_base::fmtflags(std::ios_base::scientific),
+        std::ios_base::floatfield);
     }
   else
     {
     vtkWarningMacro("Warning: unsupported time format. Assuming general.");
-    parser.setf(vtksys_ios::ios_base::fmtflags(0), vtksys_ios::ios_base::floatfield);
+    parser.setf(std::ios_base::fmtflags(0), std::ios_base::floatfield);
     }
   parser.precision(timePrecision);
 
@@ -5642,7 +5655,7 @@ void visit_vtkOpenFOAMReaderPrivate::InsertCellsToGrid(
             else
               {
               nAdditionalCells++;
-              additionalCells->InsertNextTupleValue(cellPoints->GetPointer(0));
+              additionalCells->InsertNextTypedTuple(cellPoints->GetPointer(0));
               }
             }
 
@@ -5672,7 +5685,7 @@ void visit_vtkOpenFOAMReaderPrivate::InsertCellsToGrid(
               // set the 5th vertex number to -1 to distinguish a tetra cell
               cellPoints->SetId(4, -1);
               nAdditionalCells++;
-              additionalCells->InsertNextTupleValue(cellPoints->GetPointer(0));
+              additionalCells->InsertNextTypedTuple(cellPoints->GetPointer(0));
               }
             }
           }
@@ -6713,7 +6726,7 @@ void visit_vtkOpenFOAMReaderPrivate::ConstructDimensions(vtkStdString *dimString
         }
       static const char *units[7] =
       { "kg", "m", "s", "K", "mol", "A", "cd" };
-      vtksys_ios::ostringstream posDim, negDim;
+      std::ostringstream posDim, negDim;
       int posSpc = 0, negSpc = 0;
       if (dimSet[0] == 1 && dimSet[1] == -1 && dimSet[2] == -2)
         {

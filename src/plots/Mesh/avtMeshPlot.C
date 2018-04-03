@@ -36,21 +36,19 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* // 
+// ************************************************************************* //
 //                              avtMeshPlot.C                                //
 // ************************************************************************* // 
 
 #include <avtMeshPlot.h>
 
-#include <vtkProperty.h>
 #include <vtkLookupTable.h>
 
 #include <MeshAttributes.h>
 
 #include <avtMeshFilter.h>
 #include <avtSmoothPolyDataFilter.h>
-#include <avtSurfaceAndWireframeRenderer.h>
-#include <avtUserDefinedMapper.h>
+#include <avtMeshPlotMapper.h>
 #include <avtVariableLegend.h>
 #include <avtVariablePointGlyphMapper.h>
 
@@ -133,35 +131,12 @@ avtMeshPlot::avtMeshPlot()
     ghostAndFaceFilter = new avtGhostZoneAndFacelistFilter;
     ghostAndFaceFilter->SetUseFaceFilter(true);
     ghostAndFaceFilter->GhostDataMustBeRemoved();
-    renderer = avtSurfaceAndWireframeRenderer::New();
-    avtCustomRenderer_p cr;
-    CopyTo(cr, renderer);
-    mapper = new avtUserDefinedMapper(cr);
+
+    mapper = new avtMeshPlotMapper();
 
     glyphMapper = new avtVariablePointGlyphMapper;
+    glyphMapper->ColorByScalarOff();
     
-    property = vtkProperty::New();
-    property->SetAmbient(1.);
-    property->SetDiffuse(0.);
-    property->SetEdgeColor(0., 0., 0.); // black
-
-    property->EdgeVisibilityOn();
-    renderer->ScalarVisibilityOff();
-    renderer->IgnoreLighting(true);
-  
-    //
-    //  Since we know our MeshFilter returns lines for the mesh part
-    //  and polys for the opaque part, tell the renderer not to draw
-    //  the polys in the edge-drawing routine, and not to draw lines
-    //  in the surface-drawing routine.
-    //
-    renderer->EdgePolysOff();
-    renderer->EdgeStripsOff();
-    renderer->SurfaceVertsOff();
-    renderer->SurfaceLinesOff();
-
-    property->SetColor(1., 1., 1.); // white
-
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Mesh");
     vtkLookupTable *lut = vtkLookupTable::New();
@@ -235,11 +210,6 @@ avtMeshPlot::~avtMeshPlot()
     {
         delete mapper;
         mapper = NULL;
-    }
-    if (property != NULL)
-    {
-        property->Delete();
-        property = NULL;
     }
     if (smooth != NULL)
     {
@@ -381,14 +351,12 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     if (atts.GetMeshColorSource()==0)
     {
         SetMeshColor(fgColor);
-        glyphMapper->ColorBySingleColor(fgColor);
     }
     else 
     {
         SetMeshColor(atts.GetMeshColor().GetColor());
-        glyphMapper->ColorBySingleColor(atts.GetMeshColor().GetColor());
     }
-    SetPointSize(atts.GetPointSize());
+
     SetRenderOpaque();
     if (atts.GetOpaqueColorSource()==0)  
     {
@@ -404,6 +372,7 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     // Setup glyphMapper
     //
     glyphMapper->SetScale(atts.GetPointSize());
+
     if (atts.GetPointSizeVarEnabled() &&
         atts.GetPointSizeVar() != "default" &&
         atts.GetPointSizeVar() != "" &&
@@ -423,7 +392,7 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     // Do the opacity stuff
     //
     double opacity = atts.GetOpacity();
-    property->SetOpacity(opacity);
+    mapper->SetOpacity(opacity);
     behavior->SetRenderOrder((atts.GetOpacity() < 1.0) ?
                              ABSOLUTELY_LAST : DOES_NOT_MATTER);
     behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
@@ -459,7 +428,8 @@ avtMeshPlot::SetMeshColor(const unsigned char *col)
     rgb[0] = (double) col[0] / 255.0;
     rgb[1] = (double) col[1] / 255.0;
     rgb[2] = (double) col[2] / 255.0;
-    property->SetEdgeColor(rgb);
+    mapper->SetMeshColor(rgb);
+    glyphMapper->ColorBySingleColor(rgb);
  
     if (wireframeRenderingIsInappropriate)
     {
@@ -491,7 +461,8 @@ avtMeshPlot::SetMeshColor(const double *col)
     rgb[0] = col[0]; 
     rgb[1] = col[1];
     rgb[2] = col[2];
-    property->SetEdgeColor(rgb);
+    mapper->SetMeshColor(rgb);
+    glyphMapper->ColorBySingleColor(rgb);
  
     if (wireframeRenderingIsInappropriate)
     {
@@ -528,7 +499,7 @@ avtMeshPlot::SetOpaqueColor(const unsigned char *col, bool force)
         rgb[0] = (double) col[0] / 255.0;
         rgb[1] = (double) col[1] / 255.0;
         rgb[2] = (double) col[2] / 255.0;
-        property->SetColor(rgb);
+        mapper->SetSurfaceColor(rgb);
     }
 }
 
@@ -556,7 +527,7 @@ avtMeshPlot::SetOpaqueColor(const double *col, bool force)
         rgb[0] = col[0];
         rgb[1] = col[1];
         rgb[2] = col[2];
-        property->SetColor(rgb);
+        mapper->SetSurfaceColor(rgb);
     }
 }
 
@@ -611,7 +582,7 @@ avtMeshPlot::SetLegend(bool legendOn)
 void
 avtMeshPlot::SetLineWidth(_LineWidth lw)
 {
-    property->SetLineWidth(LineWidth2Int(lw));
+    mapper->SetLineWidth(LineWidth2Int(lw));
 }
 
 
@@ -637,25 +608,7 @@ avtMeshPlot::SetLineWidth(_LineWidth lw)
 void
 avtMeshPlot::SetLineStyle(_LineStyle ls)
 {
-    property->SetLineStipplePattern(LineStyle2StipplePattern(ls));
-}
-
-
-// ****************************************************************************
-//  Method: avtMeshPlot::SetPointSize
-//
-//  Purpose:
-//      Sets the point size.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 22, 2001
-//
-// ****************************************************************************
-
-void
-avtMeshPlot::SetPointSize(float ps)
-{
-    property->SetPointSize(ps);
+    mapper->SetLineStyle(LineStyle2StipplePattern(ls));
 }
 
 
@@ -694,20 +647,7 @@ avtMeshPlot::SetPointSize(float ps)
 void
 avtMeshPlot::SetRenderOpaque()
 {
-    if (ShouldRenderOpaque())
-    {
-        renderer->SurfacePolysOn();
-        renderer->SurfaceStripsOn();
-        renderer->ResolveTopologyOn();
-        property->SetRepresentationToSurface();
-    }
-    else 
-    {
-        renderer->SurfacePolysOff();
-        renderer->SurfaceStripsOff();
-        renderer->ResolveTopologyOff();
-        property->SetRepresentationToWireframe();
-    }
+    mapper->SetSurfaceVisibility(ShouldRenderOpaque());
 }
 
 
@@ -732,7 +672,7 @@ avtMeshPlot::SetRenderOpaque()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtMeshPlot::GetMapper(void)
 {
     if (topologicalDim != 0)
@@ -936,7 +876,6 @@ void
 avtMeshPlot::CustomizeBehavior(void)
 {
     SetPointGlyphSize();
-    renderer->SetProperty(property);
 
     behavior->SetLegend(varLegendRefPtr);
     behavior->SetShiftFactor(0.5);
@@ -1264,7 +1203,7 @@ void
 avtMeshPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
+    if(atts.GetPointType() == Point)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

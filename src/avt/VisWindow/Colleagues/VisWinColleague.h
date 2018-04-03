@@ -164,7 +164,6 @@ class VISWINDOW_API VisWinColleague
     virtual void              MotionEnd(void)      {;};
 
     virtual void              SetSurfaceRepresentation(int) {;};
-    virtual void              SetImmediateModeRendering(bool) {;};
 
     virtual void              SetSpecularProperties(bool,double,double,
                                                     const ColorAttribute&) {;};

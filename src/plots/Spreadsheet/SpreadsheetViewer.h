@@ -235,7 +235,7 @@ private:
     // Menu related members.
     QMenu                *fileMenu;
     QMenu                *editMenu;
-#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     QPushButton          *opButton;
 #endif
     QMenu                *operationsMenu;

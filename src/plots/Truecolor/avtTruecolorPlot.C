@@ -122,7 +122,7 @@ avtTruecolorPlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtTruecolorPlot::GetMapper(void)
 {
     return myMapper;

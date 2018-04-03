@@ -49,6 +49,7 @@
 #include <avtFacelistFilter.h>
 #include <avtGhostZoneFilter.h>
 #include <avtLevelsLegend.h>
+#include <avtLevelsMapper.h>
 #include <avtLevelsPointGlyphMapper.h>
 #include <avtLookupTable.h>
 #include <avtFilledBoundaryFilter.h>
@@ -86,11 +87,16 @@ using std::vector;
 //    Kathleen Bonnell, Fri Nov 12 10:42:08 PST 2004 
 //    Changed mapper to type avtLevelsPointGlyphMapper. 
 //
+//    Kathleen Biagas, Tue Aug 23 11:19:44 PDT 2016
+//    Added LevelsMapper as points and surfaces no longer handled by
+//    same mapper.
+//
 // ****************************************************************************
 
 avtFilledBoundaryPlot::avtFilledBoundaryPlot()
 {
-    levelsMapper = new avtLevelsPointGlyphMapper();
+    glyphMapper  = new avtLevelsPointGlyphMapper();
+    levelsMapper = new avtLevelsMapper();
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Filled Boundary");
     // there is no 'range' per se, so turn off range visibility.
@@ -131,6 +137,11 @@ avtFilledBoundaryPlot::avtFilledBoundaryPlot()
 
 avtFilledBoundaryPlot::~avtFilledBoundaryPlot()
 {
+    if (glyphMapper != NULL)
+    {
+        delete glyphMapper;
+        glyphMapper = NULL;
+    }
     if (levelsMapper != NULL)
     {
         delete levelsMapper;
@@ -248,27 +259,29 @@ avtFilledBoundaryPlot::SetAtts(const AttributeGroup *a)
     {
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
         levelsMapper->SetSpecularIsInappropriate(false);
+        glyphMapper->SetSpecularIsInappropriate(false);
     }
     else 
     {
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
         levelsMapper->SetSpecularIsInappropriate(true);
+        glyphMapper->SetSpecularIsInappropriate(true);
     }
 
-    levelsMapper->SetScale(atts.GetPointSize());
+    glyphMapper->SetScale(atts.GetPointSize());
     if (atts.GetPointSizeVarEnabled() &&
         atts.GetPointSizeVar() != "default" &&
         atts.GetPointSizeVar() != "" &&
         atts.GetPointSizeVar() != "\0")
     {
-        levelsMapper->ScaleByVar(atts.GetPointSizeVar());
+        glyphMapper->ScaleByVar(atts.GetPointSizeVar());
     }
-    else 
+    else
     {
-        levelsMapper->DataScalingOff();
+        glyphMapper->DataScalingOff();
     }
 
-    levelsMapper->SetGlyphType(atts.GetPointType());
+    glyphMapper->SetGlyphType(atts.GetPointType());
 
     SetPointGlyphSize();
 }
@@ -400,10 +413,17 @@ avtFilledBoundaryPlot::SetLineWidth(int lw)
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtFilledBoundaryPlot::GetMapper(void)
 {
-    return levelsMapper;
+    if (topologicalDim != 0)
+    {
+        return levelsMapper;
+    }
+    else
+    {
+        return glyphMapper;
+    }
 }
 
 
@@ -580,8 +600,8 @@ void
 avtFilledBoundaryPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
-        levelsMapper->SetPointSize(atts.GetPointSizePixels());
+    if(atts.GetPointType() == Point)
+        glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 
 // ****************************************************************************
@@ -654,6 +674,7 @@ avtFilledBoundaryPlot::SetColors()
 
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
         levelsMapper->SetColors(cal, needsRecalculation);
+        glyphMapper->SetColors(cal, needsRecalculation);
         // 
         //  Send an empty color map, rather than one where all
         //  entries map to same value. 
@@ -695,9 +716,11 @@ avtFilledBoundaryPlot::SetColors()
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColors);
         levelsMapper->SetColors(cal, needsRecalculation);
+        glyphMapper->SetColors(cal, needsRecalculation);
         levelsLegend->SetLevels(labels);
 
         levelsMapper->SetLabelColorMap(levelColorMap);
+        glyphMapper->SetLabelColorMap(levelColorMap);
         levelsLegend->SetLabelColorMap(levelColorMap);
 
         delete [] colors;
@@ -791,9 +814,11 @@ avtFilledBoundaryPlot::SetColors()
 
         avtLUT->SetLUTColorsWithOpacity(colors, numColorsFull);
         levelsMapper->SetColors(cal, needsRecalculation);
+        glyphMapper->SetColors(cal, needsRecalculation);
         levelsLegend->SetLevels(labels);
 
         levelsMapper->SetLabelColorMap(levelColorMap);
+        glyphMapper->SetLabelColorMap(levelColorMap);
         levelsLegend->SetLabelColorMap(levelColorMap);
 
         delete [] colors;

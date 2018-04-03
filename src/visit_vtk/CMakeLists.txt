@@ -38,13 +38,13 @@
 #
 #****************************************************************************/
 
-PROJECT(visit_vtk)
+project(visit_vtk)
 
-ADD_SUBDIRECTORY(lightweight)
-ADD_SUBDIRECTORY(full)
+add_subdirectory(lightweight)
+add_subdirectory(full)
 
-# if mesa is enabled, add our external mesa rendering lib
-IF(MESA_FOUND)
-    ADD_SUBDIRECTORY(osmesa)
-ENDIF(MESA_FOUND)
+# if osmesa or egl is enabled, add our offscreen rendering factory
+if(HAVE_OSMESA OR HAVE_EGL)
+    add_subdirectory(offscreen)
+endif()
 

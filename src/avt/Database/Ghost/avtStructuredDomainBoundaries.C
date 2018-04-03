@@ -47,6 +47,7 @@
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkRectilinearGrid.h>
@@ -2994,6 +2995,9 @@ avtStructuredDomainBoundaries::ResetCachedMembers(void)
 //    Hank Childs, Sun Oct 30 10:13:23 PDT 2011
 //    Fix bug with uninitialized data.
 //
+//    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
+//    VTK-8, API for updating GhostLevel changed.
+//
 // ****************************************************************************
 
 void
@@ -3052,7 +3056,7 @@ avtStructuredDomainBoundaries::CreateGhostZones(vtkDataSet *outMesh,
 
     outMesh->GetCellData()->AddArray(ghostCells);
     ghostCells->Delete();
-    vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(outMesh->GetInformation(), 0);
+    outMesh->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0); 
 
     //
     //  Create a field-data array indicating the extents of real zones.

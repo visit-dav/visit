@@ -338,9 +338,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
                                  { return stereo; };
     int                      GetStereoType() const
                                  { return stereoType; };
-    void                     SetDisplayListMode(int mode);
-    int                      GetDisplayListMode() const
-                                 { return displayListMode; };
     virtual void             SetSurfaceRepresentation(int rep);
     int                      GetSurfaceRepresentation() const
                                  { return surfaceRepresentation; };
@@ -436,7 +433,6 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     bool                          antialiasing;
     bool                          stereo;
     int                           stereoType;
-    int                           displayListMode;
     int                           surfaceRepresentation;
     bool                          specularFlag;
     double                        specularCoeff;

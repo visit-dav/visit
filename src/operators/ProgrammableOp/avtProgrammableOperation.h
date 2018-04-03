@@ -60,28 +60,6 @@ class avtProgrammableOperation : public ProgrammableOpController
                                   std::vector<ScriptType>& argtypes);
     };
 
-#ifdef HAVE_LIB_R
-    class avtVisItForEachLocationR : public ProgrammableOperation
-    {
-    public:
-        virtual bool func(ProgrammableOpArguments&, vtkShapedDataArray& result);
-
-        virtual ResponseType getSignature(std::string& name,
-                                  stringVector& argnames,
-                                  std::vector<ScriptType>& argtypes);
-    };
-
-    class avtVisItGetRSupportDirectory : public ProgrammableOperation
-    {
-    public:
-        virtual bool func(ProgrammableOpArguments&, Variant&);
-
-        virtual ResponseType getSignature(std::string& name,
-                                  stringVector& argnames,
-                                  std::vector<ScriptType>& argtypes);
-    };
-#endif
-
     class avtVisItForEachLocationPython : public ProgrammableOperation
     {
     public:
@@ -159,10 +137,6 @@ public:
 private:
     /// visit foreach location variations..
     avtVisItForEachLocation vfel;
-#ifdef HAVE_LIB_R
-    avtVisItForEachLocationR vfelr;
-    avtVisItGetRSupportDirectory avag;
-#endif
     avtVisItForEachLocationPython vfelp;
 
     avtVisItForEachFile vfef;

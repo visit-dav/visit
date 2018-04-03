@@ -294,10 +294,10 @@ void LabelAttributes::Init()
     drawLabelsFacing = Front;
     labelDisplayFormat = Natural;
     numberOfLabels = 200;
-    specifyTextColor1 = false;
-    textHeight1 = 0.02;
-    specifyTextColor2 = false;
-    textHeight2 = 0.02;
+    textFont1.GetColor().SetRgb(255, 0, 0);
+    textFont1.SetScale(0.04);
+    textFont2.GetColor().SetRgb(0, 0, 255);
+    textFont2.SetScale(0.04);
     horizontalJustification = HCenter;
     verticalJustification = VCenter;
     depthTestMode = LABEL_DT_AUTO;
@@ -331,12 +331,8 @@ void LabelAttributes::Copy(const LabelAttributes &obj)
     drawLabelsFacing = obj.drawLabelsFacing;
     labelDisplayFormat = obj.labelDisplayFormat;
     numberOfLabels = obj.numberOfLabels;
-    specifyTextColor1 = obj.specifyTextColor1;
-    textColor1 = obj.textColor1;
-    textHeight1 = obj.textHeight1;
-    specifyTextColor2 = obj.specifyTextColor2;
-    textColor2 = obj.textColor2;
-    textHeight2 = obj.textHeight2;
+    textFont1 = obj.textFont1;
+    textFont2 = obj.textFont2;
     horizontalJustification = obj.horizontalJustification;
     verticalJustification = obj.verticalJustification;
     depthTestMode = obj.depthTestMode;
@@ -366,8 +362,7 @@ const AttributeGroup::private_tmfs_t LabelAttributes::TmfsStruct = {LABELATTRIBU
 // ****************************************************************************
 
 LabelAttributes::LabelAttributes() : 
-    AttributeSubject(LabelAttributes::TypeMapFormatString),
-    textColor1(255, 0, 0, 0), textColor2(0, 0, 255, 0)
+    AttributeSubject(LabelAttributes::TypeMapFormatString)
 {
     LabelAttributes::Init();
 }
@@ -388,8 +383,7 @@ LabelAttributes::LabelAttributes() :
 // ****************************************************************************
 
 LabelAttributes::LabelAttributes(private_tmfs_t tmfs) : 
-    AttributeSubject(tmfs.tmfs),
-    textColor1(255, 0, 0, 0), textColor2(0, 0, 255, 0)
+    AttributeSubject(tmfs.tmfs)
 {
     LabelAttributes::Init();
 }
@@ -508,12 +502,8 @@ LabelAttributes::operator == (const LabelAttributes &obj) const
             (drawLabelsFacing == obj.drawLabelsFacing) &&
             (labelDisplayFormat == obj.labelDisplayFormat) &&
             (numberOfLabels == obj.numberOfLabels) &&
-            (specifyTextColor1 == obj.specifyTextColor1) &&
-            (textColor1 == obj.textColor1) &&
-            (textHeight1 == obj.textHeight1) &&
-            (specifyTextColor2 == obj.specifyTextColor2) &&
-            (textColor2 == obj.textColor2) &&
-            (textHeight2 == obj.textHeight2) &&
+            (textFont1 == obj.textFont1) &&
+            (textFont2 == obj.textFont2) &&
             (horizontalJustification == obj.horizontalJustification) &&
             (verticalJustification == obj.verticalJustification) &&
             (depthTestMode == obj.depthTestMode) &&
@@ -669,12 +659,8 @@ LabelAttributes::SelectAll()
     Select(ID_drawLabelsFacing,        (void *)&drawLabelsFacing);
     Select(ID_labelDisplayFormat,      (void *)&labelDisplayFormat);
     Select(ID_numberOfLabels,          (void *)&numberOfLabels);
-    Select(ID_specifyTextColor1,       (void *)&specifyTextColor1);
-    Select(ID_textColor1,              (void *)&textColor1);
-    Select(ID_textHeight1,             (void *)&textHeight1);
-    Select(ID_specifyTextColor2,       (void *)&specifyTextColor2);
-    Select(ID_textColor2,              (void *)&textColor2);
-    Select(ID_textHeight2,             (void *)&textHeight2);
+    Select(ID_textFont1,               (void *)&textFont1);
+    Select(ID_textFont2,               (void *)&textFont2);
     Select(ID_horizontalJustification, (void *)&horizontalJustification);
     Select(ID_verticalJustification,   (void *)&verticalJustification);
     Select(ID_depthTestMode,           (void *)&depthTestMode);
@@ -759,44 +745,28 @@ LabelAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("numberOfLabels", numberOfLabels));
     }
 
-    if(completeSave || !FieldsEqual(ID_specifyTextColor1, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_textFont1, &defaultObject))
     {
-        addToParent = true;
-        node->AddNode(new DataNode("specifyTextColor1", specifyTextColor1));
-    }
-
-        DataNode *textColor1Node = new DataNode("textColor1");
-        if(textColor1.CreateNode(textColor1Node, completeSave, true))
+        DataNode *textFont1Node = new DataNode("textFont1");
+        if(textFont1.CreateNode(textFont1Node, completeSave, false))
         {
             addToParent = true;
-            node->AddNode(textColor1Node);
+            node->AddNode(textFont1Node);
         }
         else
-            delete textColor1Node;
-    if(completeSave || !FieldsEqual(ID_textHeight1, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("textHeight1", textHeight1));
+            delete textFont1Node;
     }
 
-    if(completeSave || !FieldsEqual(ID_specifyTextColor2, &defaultObject))
+    if(completeSave || !FieldsEqual(ID_textFont2, &defaultObject))
     {
-        addToParent = true;
-        node->AddNode(new DataNode("specifyTextColor2", specifyTextColor2));
-    }
-
-        DataNode *textColor2Node = new DataNode("textColor2");
-        if(textColor2.CreateNode(textColor2Node, completeSave, true))
+        DataNode *textFont2Node = new DataNode("textFont2");
+        if(textFont2.CreateNode(textFont2Node, completeSave, false))
         {
             addToParent = true;
-            node->AddNode(textColor2Node);
+            node->AddNode(textFont2Node);
         }
         else
-            delete textColor2Node;
-    if(completeSave || !FieldsEqual(ID_textHeight2, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("textHeight2", textHeight2));
+            delete textFont2Node;
     }
 
     if(completeSave || !FieldsEqual(ID_horizontalJustification, &defaultObject))
@@ -917,18 +887,10 @@ LabelAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("numberOfLabels")) != 0)
         SetNumberOfLabels(node->AsInt());
-    if((node = searchNode->GetNode("specifyTextColor1")) != 0)
-        SetSpecifyTextColor1(node->AsBool());
-    if((node = searchNode->GetNode("textColor1")) != 0)
-        textColor1.SetFromNode(node);
-    if((node = searchNode->GetNode("textHeight1")) != 0)
-        SetTextHeight1(node->AsFloat());
-    if((node = searchNode->GetNode("specifyTextColor2")) != 0)
-        SetSpecifyTextColor2(node->AsBool());
-    if((node = searchNode->GetNode("textColor2")) != 0)
-        textColor2.SetFromNode(node);
-    if((node = searchNode->GetNode("textHeight2")) != 0)
-        SetTextHeight2(node->AsFloat());
+    if((node = searchNode->GetNode("textFont1")) != 0)
+        textFont1.SetFromNode(node);
+    if((node = searchNode->GetNode("textFont2")) != 0)
+        textFont2.SetFromNode(node);
     if((node = searchNode->GetNode("horizontalJustification")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1042,45 +1004,17 @@ LabelAttributes::SetNumberOfLabels(int numberOfLabels_)
 }
 
 void
-LabelAttributes::SetSpecifyTextColor1(bool specifyTextColor1_)
+LabelAttributes::SetTextFont1(const FontAttributes &textFont1_)
 {
-    specifyTextColor1 = specifyTextColor1_;
-    Select(ID_specifyTextColor1, (void *)&specifyTextColor1);
+    textFont1 = textFont1_;
+    Select(ID_textFont1, (void *)&textFont1);
 }
 
 void
-LabelAttributes::SetTextColor1(const ColorAttribute &textColor1_)
+LabelAttributes::SetTextFont2(const FontAttributes &textFont2_)
 {
-    textColor1 = textColor1_;
-    Select(ID_textColor1, (void *)&textColor1);
-}
-
-void
-LabelAttributes::SetTextHeight1(float textHeight1_)
-{
-    textHeight1 = textHeight1_;
-    Select(ID_textHeight1, (void *)&textHeight1);
-}
-
-void
-LabelAttributes::SetSpecifyTextColor2(bool specifyTextColor2_)
-{
-    specifyTextColor2 = specifyTextColor2_;
-    Select(ID_specifyTextColor2, (void *)&specifyTextColor2);
-}
-
-void
-LabelAttributes::SetTextColor2(const ColorAttribute &textColor2_)
-{
-    textColor2 = textColor2_;
-    Select(ID_textColor2, (void *)&textColor2);
-}
-
-void
-LabelAttributes::SetTextHeight2(float textHeight2_)
-{
-    textHeight2 = textHeight2_;
-    Select(ID_textHeight2, (void *)&textHeight2);
+    textFont2 = textFont2_;
+    Select(ID_textFont2, (void *)&textFont2);
 }
 
 void
@@ -1163,52 +1097,28 @@ LabelAttributes::GetNumberOfLabels() const
     return numberOfLabels;
 }
 
-bool
-LabelAttributes::GetSpecifyTextColor1() const
+const FontAttributes &
+LabelAttributes::GetTextFont1() const
 {
-    return specifyTextColor1;
+    return textFont1;
 }
 
-const ColorAttribute &
-LabelAttributes::GetTextColor1() const
+FontAttributes &
+LabelAttributes::GetTextFont1()
 {
-    return textColor1;
+    return textFont1;
 }
 
-ColorAttribute &
-LabelAttributes::GetTextColor1()
+const FontAttributes &
+LabelAttributes::GetTextFont2() const
 {
-    return textColor1;
+    return textFont2;
 }
 
-float
-LabelAttributes::GetTextHeight1() const
+FontAttributes &
+LabelAttributes::GetTextFont2()
 {
-    return textHeight1;
-}
-
-bool
-LabelAttributes::GetSpecifyTextColor2() const
-{
-    return specifyTextColor2;
-}
-
-const ColorAttribute &
-LabelAttributes::GetTextColor2() const
-{
-    return textColor2;
-}
-
-ColorAttribute &
-LabelAttributes::GetTextColor2()
-{
-    return textColor2;
-}
-
-float
-LabelAttributes::GetTextHeight2() const
-{
-    return textHeight2;
+    return textFont2;
 }
 
 LabelAttributes::LabelHorizontalAlignment
@@ -1246,15 +1156,15 @@ LabelAttributes::GetFormatTemplate()
 ///////////////////////////////////////////////////////////////////////////////
 
 void
-LabelAttributes::SelectTextColor1()
+LabelAttributes::SelectTextFont1()
 {
-    Select(ID_textColor1, (void *)&textColor1);
+    Select(ID_textFont1, (void *)&textFont1);
 }
 
 void
-LabelAttributes::SelectTextColor2()
+LabelAttributes::SelectTextFont2()
 {
-    Select(ID_textColor2, (void *)&textColor2);
+    Select(ID_textFont2, (void *)&textFont2);
 }
 
 void
@@ -1295,12 +1205,8 @@ LabelAttributes::GetFieldName(int index) const
     case ID_drawLabelsFacing:        return "drawLabelsFacing";
     case ID_labelDisplayFormat:      return "labelDisplayFormat";
     case ID_numberOfLabels:          return "numberOfLabels";
-    case ID_specifyTextColor1:       return "specifyTextColor1";
-    case ID_textColor1:              return "textColor1";
-    case ID_textHeight1:             return "textHeight1";
-    case ID_specifyTextColor2:       return "specifyTextColor2";
-    case ID_textColor2:              return "textColor2";
-    case ID_textHeight2:             return "textHeight2";
+    case ID_textFont1:               return "textFont1";
+    case ID_textFont2:               return "textFont2";
     case ID_horizontalJustification: return "horizontalJustification";
     case ID_verticalJustification:   return "verticalJustification";
     case ID_depthTestMode:           return "depthTestMode";
@@ -1337,12 +1243,8 @@ LabelAttributes::GetFieldType(int index) const
     case ID_drawLabelsFacing:        return FieldType_enum;
     case ID_labelDisplayFormat:      return FieldType_enum;
     case ID_numberOfLabels:          return FieldType_int;
-    case ID_specifyTextColor1:       return FieldType_bool;
-    case ID_textColor1:              return FieldType_color;
-    case ID_textHeight1:             return FieldType_float;
-    case ID_specifyTextColor2:       return FieldType_bool;
-    case ID_textColor2:              return FieldType_color;
-    case ID_textHeight2:             return FieldType_float;
+    case ID_textFont1:               return FieldType_att;
+    case ID_textFont2:               return FieldType_att;
     case ID_horizontalJustification: return FieldType_enum;
     case ID_verticalJustification:   return FieldType_enum;
     case ID_depthTestMode:           return FieldType_enum;
@@ -1379,12 +1281,8 @@ LabelAttributes::GetFieldTypeName(int index) const
     case ID_drawLabelsFacing:        return "enum";
     case ID_labelDisplayFormat:      return "enum";
     case ID_numberOfLabels:          return "int";
-    case ID_specifyTextColor1:       return "bool";
-    case ID_textColor1:              return "color";
-    case ID_textHeight1:             return "float";
-    case ID_specifyTextColor2:       return "bool";
-    case ID_textColor2:              return "color";
-    case ID_textHeight2:             return "float";
+    case ID_textFont1:               return "att";
+    case ID_textFont2:               return "att";
     case ID_horizontalJustification: return "enum";
     case ID_verticalJustification:   return "enum";
     case ID_depthTestMode:           return "enum";
@@ -1455,34 +1353,14 @@ LabelAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (numberOfLabels == obj.numberOfLabels);
         }
         break;
-    case ID_specifyTextColor1:
+    case ID_textFont1:
         {  // new scope
-        retval = (specifyTextColor1 == obj.specifyTextColor1);
+        retval = (textFont1 == obj.textFont1);
         }
         break;
-    case ID_textColor1:
+    case ID_textFont2:
         {  // new scope
-        retval = (textColor1 == obj.textColor1);
-        }
-        break;
-    case ID_textHeight1:
-        {  // new scope
-        retval = (textHeight1 == obj.textHeight1);
-        }
-        break;
-    case ID_specifyTextColor2:
-        {  // new scope
-        retval = (specifyTextColor2 == obj.specifyTextColor2);
-        }
-        break;
-    case ID_textColor2:
-        {  // new scope
-        retval = (textColor2 == obj.textColor2);
-        }
-        break;
-    case ID_textHeight2:
-        {  // new scope
-        retval = (textHeight2 == obj.textHeight2);
+        retval = (textFont2 == obj.textFont2);
         }
         break;
     case ID_horizontalJustification:
@@ -1525,5 +1403,84 @@ bool
 LabelAttributes::VarChangeRequiresReset()
 {
     return true;
+}
+
+// ****************************************************************************
+// Method: LabelAttributes::ProcessOldVersions
+//
+// Purpose: 
+//   This method allows handling of older config/session files that may
+//   contain fields that are no longer present or have been modified/renamed.
+//
+// Programmer: Kathleen Biagas
+// Creation:   April 4, 2017 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+LabelAttributes::ProcessOldVersions(DataNode *parentNode,
+                                    const char *configVersion)
+{
+    if(parentNode == 0)
+        return;
+
+    DataNode *searchNode = parentNode->GetNode("LabelAttributes");
+    if(searchNode == 0)
+        return;
+
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+        DataNode *k = 0;
+        if ((k = searchNode->GetNode("specifyTextColor1")) != 0)
+        {
+            bool specifyTextColor = k->AsBool();
+            searchNode->RemoveNode(k, true);
+            textFont1.SetUseForegroundColor(!specifyTextColor);
+        }
+        if ((k = searchNode->GetNode("specifyTextColor2")) != 0)
+        {
+            bool specifyTextColor = k->AsBool();
+            searchNode->RemoveNode(k, true);
+            textFont2.SetUseForegroundColor(!specifyTextColor);
+        }
+        if ((k = searchNode->GetNode("textHeight1")) != 0)
+        {
+            float height = k->AsFloat();
+            searchNode->RemoveNode(k, true);
+            textFont1.SetScale((double) height);
+        }
+        if ((k = searchNode->GetNode("textHeight2")) != 0)
+        {
+            float height = k->AsFloat();
+            searchNode->RemoveNode(k, true);
+            textFont2.SetScale((double) height);
+        }
+        if ((k = searchNode->GetNode("textColor1")) != 0)
+        {
+            ColorAttribute c1;
+            c1.SetFromNode(k);
+            textFont1.SetColor(c1);
+            searchNode->RemoveNode(k, true);
+        }
+        if ((k = searchNode->GetNode("textColor2")) != 0)
+        {
+            ColorAttribute c2;
+            c2.SetFromNode(k);
+            textFont2.SetColor(c2);
+            searchNode->RemoveNode(k, true);
+        }
+        DataNode *textFont1Node = new DataNode("textFont1");
+        if (textFont1.CreateNode(textFont1Node, true, false))
+            searchNode->AddNode(textFont1Node);
+        else
+            delete textFont1Node;
+        DataNode *textFont2Node = new DataNode("textFont2");
+        if (textFont2.CreateNode(textFont2Node, true, false))
+            searchNode->AddNode(textFont2Node);
+        else
+            delete textFont2Node;
+    }
 }
 

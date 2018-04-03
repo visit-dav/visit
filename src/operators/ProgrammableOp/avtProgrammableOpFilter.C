@@ -124,22 +124,6 @@ avtProgrammableOpFilter::avtProgrammableOpFilter()
     if(!pyEnv->Interpreter()->RunScript(script.str()))
         cout << "Initialization Script Failed.." << endl;
 
-#ifdef HAVE_LIB_R
-
-    /// register VisIt scriptable functions..
-    std::ostringstream renv;
-
-    renv << "import rpy2, rpy2.robjects\n"
-         << "rpy2.robjects.r('visit_internal_funcs = new.env()')\n";
-
-    if(!pyEnv->Interpreter()->RunScript(renv.str()))
-        cout << "R Initialization Script Failed.." << endl;
-
-    //scriptData->rfilter = dynamic_cast<avtRFilter*>(avtRFilter::Create());
-    //scriptData->rfilter->RegisterOperations(this);
-
-#endif
-
     scriptData->sfilter = new avtProgrammableOperation();
     scriptData->sfilter->RegisterOperations(this);
 
@@ -239,76 +223,6 @@ avtProgrammableOpFilter::Register(ProgrammableOperation *op)
 
     str << "sys.modules['visit_internal_funcs'].__dict__['"
         << name << "'] = " << name << "\n";
-
-    /// if R is there..
-    /// register r version of same python definition..
-#ifdef HAVE_LIB_R
-
-    str << "import rpy2\n"
-        << "import rpy2.robjects as robjects\n"
-        << "import rpy2.robjects.numpy2ri\n"
-        << "rpy2.robjects.numpy2ri.activate()\n"
-        << "import rpy2.rinterface as ri\n"
-        << "import visit_internal_funcs\n"
-        << "import numpy\n"
-        << "def _r_" << name << "(" << i_argstring << "):\n"
-        << "    def my_ri2py(obj):\n"
-        << "        res = robjects.default_ri2py(obj)\n"
-        << "        if isinstance(res, robjects.Vector) and (len(res) == 1):\n"
-        << "            return res[0]\n"
-        << "        return numpy.asarray(res)\n"
-        << "    import vtk,vtk.util.numpy_support\n";
-
-    for(size_t i = 0; i < args.size(); ++i)
-    {
-        if( argtypes[i] == ProgrammableOperation::BOOL_VECTOR_TYPE ||
-            argtypes[i] == ProgrammableOperation::INT_VECTOR_TYPE ||
-            argtypes[i] == ProgrammableOperation::LONG_VECTOR_TYPE ||
-            argtypes[i] == ProgrammableOperation::FLOAT_VECTOR_TYPE ||
-            argtypes[i] == ProgrammableOperation::DOUBLE_VECTOR_TYPE ||
-            argtypes[i] == ProgrammableOperation::STRING_VECTOR_TYPE ||
-            argtypes[i] == ProgrammableOperation::VARIANT_VECTOR_TYPE)
-        {
-            str << "    " << args[i] << " = numpy.asarray(" << args[i] << ").tolist()\n";
-        }
-        else if(argtypes[i] == ProgrammableOperation::VTK_DATA_ARRAY_TYPE)
-        {
-            /// convert from R array to Numpy Array then collapse multi dimensional array
-            str << "    " << args[i] << " = numpy.ascontiguousarray(" << args[i] << ")\n"
-                << "    _shape = " << args[i] << ".shape\n"
-                << "    " << args[i] << "_tmp = vtk.util.numpy_support.numpy_to_vtk(numpy.ravel(" << args[i] << "))\n"
-                << "    " << args[i] << "_in = [list(_shape), " << args[i] << "_tmp]\n";
-        }
-        else {
-            str << "    " << args[i] << " = my_ri2py(" << args[i] << ")\n";
-        }
-    }
-
-    if(o_argstring.size() == 0)
-        str << "    res = visit_internal_funcs.visit_functions('" << name << "')\n";
-    else
-        str << "    res = visit_internal_funcs.visit_functions('" << name << "',(" << o_argstring << "))\n";
-
-    str << "    if isinstance(res,list) and len(res) == 2 and isinstance(res[0],list) and isinstance(res[1],vtk.vtkAbstractArray):\n"
-        << "        res_shape = tuple(res[0])\n"
-        << "        res = vtk.util.numpy_support.vtk_to_numpy(res[1])\n"
-        << "        res.shape = res_shape\n";
-
-    str << "    if isinstance(res,vtk.vtkAbstractArray) :\n"
-        << "        res = vtk.util.numpy_support.vtk_to_numpy(res)\n";
-
-    str << "    return rpy2.robjects.default_py2ro(res)\n"
-
-         << "sys.modules['visit_internal_funcs'].__dict__['_r_"
-         << name << "'] = _r_" << name << "\n"
-
-         << "_rxp_" << name << "= ri.rternalize(visit_internal_funcs._r_" << name << ")\n"
-         << "ri.globalenv['" << name << "'] = _rxp_" << name << "\n"
-         << "rpy2.robjects.r('assign(\"" << name << "\"," << name << ",visit_internal_funcs)')\n";
-
-#endif
-    //std::cout << str.str() << std::endl;
-    //std::cout << "--------------------------------" << std::endl;
 
     if(!pyEnv->Interpreter()->RunScript(str.str()))
         std::cerr << "function : " << name << " registration failed" << std::endl;

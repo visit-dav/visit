@@ -3,9 +3,6 @@ function bv_qt_initialize
     export DO_QT="yes"
     export FORCE_QT="no"
     export USE_SYSTEM_QT="no"
-    # NOTE: IS_QT4 is used in bv_pyside.sh
-    export IS_QT4="no"
-    add_extra_commandline_args "qt" "qt4" 0 "Build Qt4 instead of Qt5"
     add_extra_commandline_args "qt" "system-qt" 0 "Use qt found on system"
     add_extra_commandline_args "qt" "alt-qt-dir" 1 "Use qt found in alternative directory"
 }
@@ -38,11 +35,6 @@ function qt_set_vars_helper
     QT_INCLUDE_DIR=`$QT_QMAKE_COMMAND -query QT_INSTALL_HEADERS`
     QT_LIB_DIR=`"$QT_QMAKE_COMMAND" -query QT_INSTALL_LIBS`
     QT_QTUITOOLS_INCLUDE_DIR="$QT_INCLUDE_DIR/QtUiTools"
-
-    IS_QT4="no"
-    if [[ "${QT_VERSION%%.*}" == "4" ]]; then
-        IS_QT4="yes"
-    fi 
 }
 
 function bv_qt_system_qt
@@ -52,9 +44,7 @@ function bv_qt_system_qt
     QTEXEC="qmake"
     TEST=`which $QTEXEC`
     if [[ $? != 0 ]]; then
-        QTEXEC="qmake-qt4"
-        TEST=`which $QTEXEC`
-        [ $? != 0 ] && error "System Qt not found"
+        error "System Qt not found"
     fi
 
     bv_qt_enable
@@ -71,8 +61,7 @@ function bv_qt_alt_qt_dir
 
     QTEXEC="qmake"
     if [[ ! -e "$1/bin/$QTEXEC" ]]; then
-        QTEXEC="qmake-qt4"
-        [ ! -e "$1/bin/$QTEXEC" ] && error "qmake was not found in directory: $1/bin"
+        error "qmake was not found in directory: $1/bin"
     fi
 
     bv_qt_enable
@@ -108,48 +97,15 @@ function bv_qt_depends_on
     echo ""
 }
 
-function bv_qt_qt4
-{
-    bv_qt_enable
-
-    # if we are on osx 10.8 or later, we need to use 4.8.6
-    if [[ "$OPSYS" == "Darwin" ]]; then
-        if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.8" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.9" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ||
-              "${MACOSX_DEPLOYMENT_TARGET}" == "10.12" ]]; then
-            QT_VERSION="4.8.6"
-            QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
-            QT_MD5_CHECKSUM="2edbe4d6c2eff33ef91732602f3518eb"
-            QT_SHA256_CHECKSUM=""
-        fi
-    else
-        QT_VERSION="4.8.3"
-        QT_FILE="qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"
-        QT_MD5_CHECKSUM="a663b6c875f8d7caa8ac9c30e4a4ec3b"
-        QT_SHA256_CHECKSUM=""
-    fi
-    
-    QT_BUILD_DIR="${QT_FILE%.tar*}"
-    QT_BIN_DIR="${QT_BUILD_DIR}/bin"
-
-    info "enabling Qt${QT_VERSION}..."
-
-    IS_QT4="yes"
-}
 
 function bv_qt_info
 {
     bv_qt_enable
 
-#    Note: Qt 5.8 is not yet compatible with Pyside2.
-#    export QT_VERSION=${QT_VERSION:-"5.8.0"}
-    
-    export QT_VERSION=${QT_VERSION:-"5.6.1"}
-    export QT_FILE=${QT_FILE:-"qt-everywhere-opensource-src-${QT_VERSION}.tar.gz"}
-    export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"a9f2494f75f966e2f22358ec367d8f41"}
-    export QT_SHA256_CHECKSUM=${QT_SHA256_CHECKSUM:-"9dc5932307ae452855863f6405be1f7273d91173dcbe4257561676a599bd58d3"}
+    export QT_VERSION=${QT_VERSION:-"5.10.1"}
+    export QT_FILE=${QT_FILE:-"qt-everywhere-src-${QT_VERSION}.tar.xz"}
+    export QT_MD5_CHECKSUM=${QT_MD5_CHECKSUM:-"7e167b9617e7bd64012daaacb85477af"}
+    export QT_SHA256_CHECKSUM=${QT_SHA256_CHECKSUM:-"05ffba7b811b854ed558abf2be2ddbd3bb6ddd0b60ea4b5da75d277ac15e740a"}
 
     export QT_BUILD_DIR=${QT_BUILD_DIR:-"${QT_FILE%.tar*}"}
     export QT_BIN_DIR=${QT_BIN_DIR:-"${QT_BUILD_DIR}/bin"}
@@ -167,7 +123,6 @@ function bv_qt_print
 function bv_qt_print_usage
 {
     printf "%-20s %s\n" "--qt" "Build Qt5" 
-    printf "%-20s %s [%s]\n" "--qt4" "Build Qt4 instead of Qt5" "$IS_QT4"
     printf "%-20s %s [%s]\n" "--system-qt" "Use the system installed Qt"
     printf "%-20s %s [%s]\n" "--alt-qt-dir" "Use Qt from alternative directory"
 }
@@ -188,14 +143,7 @@ function bv_qt_host_profile
                     echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN ${QT_BIN_DIR})" >> $HOSTCONF
                     echo "SET(VISIT_QT_SKIP_INSTALL ON)" >> $HOSTCONF
                 else
-                    if [[ "$IS_QT4" == "yes" ]]; then
-                        echo "VISIT_OPTION_DEFAULT(VISIT_QT4 ON TYPE BOOL)" >> $HOSTCONF
-                    else 
-                        echo "VISIT_OPTION_DEFAULT(VISIT_QT5 ON TYPE BOOL)" >> $HOSTCONF
-                    fi
-                    
                     echo "VISIT_OPTION_DEFAULT(VISIT_QT_DIR \${VISITHOME}/qt/\${QT_VERSION}/\${VISITARCH})" >> $HOSTCONF
-                    echo "VISIT_OPTION_DEFAULT(VISIT_QT_BIN \${VISIT_QT_DIR}/bin)" >> $HOSTCONF
                 fi
             fi
         fi
@@ -251,16 +199,6 @@ function qt_license_prompt
 
 function apply_qt_patch
 {
-    if [[ ${QT_VERSION} == 4.8.6 ]] ; then
-        if [[ "$OPSYS" == "Darwin" ]]; then
-            if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.10" ||
-                  "${MACOSX_DEPLOYMENT_TARGET}" == "10.11" ||
-                  "${MACOSX_DEPLOYMENT_TARGET}" == "10.12" ]]; then
-                apply_qt_486_osx10_patch 
-            fi
-        fi
-    fi
-
     if [[ ${QT_VERSION} == 5.6.1 ]] ; then
         if [[ "$OPSYS" == "Darwin" ]]; then
 
@@ -277,48 +215,6 @@ function apply_qt_patch
     fi
 
     return 0
-}
-
-function apply_qt_486_osx10_patch
-{
-    # fix for OS X 10.10
-    info "Patching qt 4.8.6 for OS X 10.10 and above"
-    patch -p0 << \EOF
-
-diff -c src/gui/painting/qpaintengine_mac.cpp.orig src/gui/painting/qpaintengine_mac.cpp
-*** src/gui/painting/qpaintengine_mac.cpp.orig  2014-04-10 12:37:12.000000000 -0600
---- src/gui/painting/qpaintengine_mac.cpp       2016-01-05 15:43:29.000000000 -0700
-***************
-*** 340,352 ****
-      }
-  
-      // Get the color space from the display profile.
-!     CGColorSpaceRef colorSpace = 0;
-!     CMProfileRef displayProfile = 0;
-!     CMError err = CMGetProfileByAVID((CMDisplayIDType)displayID, &displayProfile);
-!     if (err == noErr) {
-!         colorSpace = CGColorSpaceCreateWithPlatformColorSpace(displayProfile);
-!         CMCloseProfile(displayProfile);
-!     }
-  
-      // Fallback: use generic DeviceRGB
-      if (colorSpace == 0)
---- 340,346 ----
-      }
-  
-      // Get the color space from the display profile.
-!     CGColorSpaceRef colorSpace = CGDisplayCopyColorSpace(displayID);
-  
-      // Fallback: use generic DeviceRGB
-      if (colorSpace == 0)
-
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "qt 4.8.6 patch failed."
-        return 1
-    fi
-
-    return 0;
 }
 
 function apply_qt_561_osx_xcode_8_patch
@@ -460,11 +356,7 @@ function build_qt
         fi
 
         QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
-        # webkit causes the linker on Hank's mac to run out of memory
-        # Hari: for Qt5 I have disabled webkit all together
-        if [[ "$IS_QT4" == "yes" ]]; then
-            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-webkit -no-phonon -no-phonon-backend"
-        fi
+        
         # Figure out whether we need to build 64-bit version of Qt
         echo "int main() {}" >> arch_test.c
         ${C_COMPILER} arch_test.c -o arch_test
@@ -475,11 +367,6 @@ function build_qt
         fi
 
     elif [[ "$OPSYS" == "Linux" ]] ; then
-        # w/ Qt 4.8.3, these guys will on fail on linux
-        # if gstreamer isn't installed ...
-        if [[ "$IS_QT4" == "yes" ]]; then
-            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-webkit -no-phonon -no-phonon-backend"
-        fi
         
         # For OLD versions of linux, disable openssl
         VER=$(uname -r)
@@ -545,32 +432,33 @@ function build_qt
     qt_flags="${qt_flags} -opensource"
     qt_flags="${qt_flags} -confirm-license"
 
-    if [[ $IS_QT4 == "yes" ]]; then
-        QT_VER_MSG="Qt4"
-        qt_flags="${qt_flags} -fast"
-        qt_flags="${qt_flags} -no-libtiff"
-        qt_flags="${qt_flags} -no-qt3support"
-        qt_flags="${qt_flags} -nomake docs"
-        qt_flags="${qt_flags} -nomake demos"
-        qt_flags="${qt_flags} -nomake examples"
-        qt_flags="${qt_flags} ${EXTRA_QT_FLAGS}"
-    else
-        QT_VER_MSG="Qt5"
-        qt_flags="${qt_flags} -skip 3d"
-        qt_flags="${qt_flags} -skip sensors"
-        qt_flags="${qt_flags} -skip doc"
-        qt_flags="${qt_flags} -skip serialport"
-        qt_flags="${qt_flags} -skip quickcontrols"
-        qt_flags="${qt_flags} -skip quickcontrols2"
-        qt_flags="${qt_flags} -skip connectivity"
-        qt_flags="${qt_flags} -skip multimedia"
-        qt_flags="${qt_flags} -nomake examples"
-        qt_flags="${qt_flags} -nomake tests"
-        qt_flags="${qt_flags} -no-qml-debug"
+    QT_VER_MSG="Qt5"
+    qt_flags="${qt_flags} -skip 3d"
+    qt_flags="${qt_flags} -skip canvas3d"
+    qt_flags="${qt_flags} -skip charts"
+    qt_flags="${qt_flags} -skip connectivity"
+    qt_flags="${qt_flags} -skip datavis3d"
+    qt_flags="${qt_flags} -skip doc"
+    qt_flags="${qt_flags} -skip gamepad"
+    qt_flags="${qt_flags} -skip graphicaleffects"
+    qt_flags="${qt_flags} -skip location"
+    qt_flags="${qt_flags} -skip multimedia"
+    qt_flags="${qt_flags} -skip networkauth"
+    qt_flags="${qt_flags} -skip purchasing"
+    qt_flags="${qt_flags} -skip quickcontrols"
+    qt_flags="${qt_flags} -skip quickcontrols2"
+    qt_flags="${qt_flags} -skip remoteobjects"
+    qt_flags="${qt_flags} -skip scxml"
+    qt_flags="${qt_flags} -skip sensors"
+    qt_flags="${qt_flags} -skip serialport"
+    qt_flags="${qt_flags} -skip speech"
+    qt_flags="${qt_flags} -skip wayland"
+    qt_flags="${qt_flags} -nomake examples"
+    qt_flags="${qt_flags} -nomake tests"
+    qt_flags="${qt_flags} -no-qml-debug"
 
-        if [[ "$OPSYS" == "Linux" ]] ; then
-            qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
-        fi
+    if [[ "$OPSYS" == "Linux" ]] ; then
+        qt_flags="${qt_flags} -qt-xcb -qt-xkbcommon"
     fi
 
     info "Configuring ${QT_VER_MSG}: " \
@@ -593,28 +481,28 @@ function build_qt
     #
     # Figure out if configure found the OpenGL libraries
     #
-    if [[ "${DO_DBIO_ONLY}" != "yes" && "${DO_ENGINE_ONLY}" != "yes" && "${DO_SERVER_COMPONENTS_ONLY}" != "yes" ]] ; then
-        HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
-        if [[ "$IS_QT4" == "yes" && "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
-            warn "Qt4 configure did not find OpenGL." \
-                 "VisIt needs Qt4 with enabled OpenGL support. Giving up.\n" \
-                 "Here are some common reasons why Qt will not build with GL support.\n" \
-                 "\t- The OpenGL development environment is not installed.\n" \
-                 "\t  (You can check this by searching for /usr/include/GL/GL.h)\n" \
-                 "\t- libGLU is not available\n"\
-                 "\t- libGLU is available, but only as a shared library\n"\
-                 "You can learn more about exactly why Qt failed by doing the following:\n"\
-                 "\t- cd $QT_BUILD_DIR\n" \
-                 "\t- ./configure -opengl -verbose\n" \
-                 "\t  (this will produce the details of the failed OpenGL tests.)\n" \
-                 "\t  (also note you will need to respond with \"o\" to opt for\n" \
-                 "\t   the open source license and \"yes\" to accept.)\n"
-            return 1
-        fi
-    fi
+    #if [[ "${DO_DBIO_ONLY}" != "yes" && "${DO_ENGINE_ONLY}" != "yes" && "${DO_SERVER_COMPONENTS_ONLY}" != "yes" ]] ; then
+    #    HAS_OPENGL_SUPPORT=`grep "OpenGL support" qt.config.out | sed -e 's/.*\. //'  | cut -c 1-3`
+    #    if [[ "$HAS_OPENGL_SUPPORT" != "yes" ]]; then
+    #        warn "Qt configure did not find OpenGL." \
+    #             "VisIt needs Qt with enabled OpenGL support. Giving up.\n" \
+    #             "Here are some common reasons why Qt will not build with GL support.\n" \
+    #             "\t- The OpenGL development environment is not installed.\n" \
+    #             "\t  (You can check this by searching for /usr/include/GL/GL.h)\n" \
+    #             "\t- libGLU is not available\n"\
+    #             "\t- libGLU is available, but only as a shared library\n"\
+    #             "You can learn more about exactly why Qt failed by doing the following:\n"\
+    #             "\t- cd $QT_BUILD_DIR\n" \
+    #             "\t- ./configure -opengl -verbose\n" \
+    #             "\t  (this will produce the details of the failed OpenGL tests.)\n" \
+    #             "\t  (also note you will need to respond with \"o\" to opt for\n" \
+    #             "\t   the open source license and \"yes\" to accept.)\n"
+    #        return 1
+    #    fi
+    #fi
 
     #
-    # Build Qt4. Config options above make sure we only build the libs & tools.
+    # Build Qt. Config options above make sure we only build the libs & tools.
     #
     info "Building ${QT_VER_MSG} . . . (~60 minutes)"
     if [[ "${DO_QT_SILENT}" == "yes" ]] ; then
@@ -695,7 +583,7 @@ function bv_qt_build
     if [[ "$DO_QT" == "yes"  && "$USE_SYSTEM_QT" == "no" && "$DO_SERVER_COMPONENTS_ONLY" == "no" ]] ; then
         check_if_installed "qt" $QT_VERSION
         if [[ $? == 0 ]] ; then
-            info "Skipping Qt build.  Qt4 is already installed."
+            info "Skipping Qt build.  Qt is already installed."
         else
             info "Building Qt (~60 minutes)"
             build_qt

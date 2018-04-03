@@ -110,12 +110,7 @@ class GUI_API QvisGlobalLineoutWindow : public QvisPostableWindowObserver
     QLabel *windowIdLabel;
     QLabel *numSamplesLabel;
 
-#if QT_VERSION >= 0x030200
     QGroupBox *dynamic;
-#else
-    QCheckBox *dynamic;
-    QGroupBox *dynamicGroup;
-#endif
     QComboBox    *curveOptions;
     QLabel       *curveLabel;
     QComboBox    *colorOptions;

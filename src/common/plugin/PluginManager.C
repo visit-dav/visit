@@ -760,13 +760,15 @@ PluginManager::ReadPluginInfo()
         if (success)
         {
             debug2 << "SUCCESS" << std::endl;
-            
+
             // Add the name of the category plugin to the list of plugins
             // that will be loaded later.
             alreadyLoaded.push_back(filename);
             alreadyLoadedDir.push_back(dirname);
             libfiles.push_back(dirname + VISIT_SLASH_STRING + str);
-        } else {
+        }
+        else
+        {
             debug2 << "FAILED" << std::endl;
         }
     }

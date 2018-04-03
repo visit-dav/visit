@@ -42,7 +42,6 @@
 #include <snprintf.h>
 #include <PyColorControlPointList.h>
 #include <PyGaussianControlPointList.h>
-#include <PyTransferFunctionWidget.h>
 
 // ****************************************************************************
 // Module: PyVolumeAttributes
@@ -182,16 +181,11 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
     str += tmpStr;
-    const char *rendererType_names = "Splatting, Texture3D, RayCasting, RayCastingIntegration, SLIVR, "
-        "RayCastingSLIVR, Tuvok";
+    const char *rendererType_names = "Default, RayCasting, RayCastingIntegration";
     switch (atts->GetRendererType())
     {
-      case VolumeAttributes::Splatting:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sSplatting  # %s\n", prefix, prefix, rendererType_names);
-          str += tmpStr;
-          break;
-      case VolumeAttributes::Texture3D:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sTexture3D  # %s\n", prefix, prefix, rendererType_names);
+      case VolumeAttributes::Default:
+          SNPRINTF(tmpStr, 1000, "%srendererType = %sDefault  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::RayCasting:
@@ -200,18 +194,6 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
       case VolumeAttributes::RayCastingIntegration:
           SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingIntegration  # %s\n", prefix, prefix, rendererType_names);
-          str += tmpStr;
-          break;
-      case VolumeAttributes::SLIVR:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sSLIVR  # %s\n", prefix, prefix, rendererType_names);
-          str += tmpStr;
-          break;
-      case VolumeAttributes::RayCastingSLIVR:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingSLIVR  # %s\n", prefix, prefix, rendererType_names);
-          str += tmpStr;
-          break;
-      case VolumeAttributes::Tuvok:
-          SNPRINTF(tmpStr, 1000, "%srendererType = %sTuvok  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       default:
@@ -233,8 +215,6 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
     }
 
-    SNPRINTF(tmpStr, 1000, "%snum3DSlices = %d\n", prefix, atts->GetNum3DSlices());
-    str += tmpStr;
     const char *scaling_names = "Linear, Log, Skew";
     switch (atts->GetScaling())
     {
@@ -291,21 +271,6 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     }
 
     SNPRINTF(tmpStr, 1000, "%srendererSamples = %g\n", prefix, atts->GetRendererSamples());
-    str += tmpStr;
-    { // new scope
-        int index = 0;
-        // Create string representation of transferFunction2DWidgets from atts.
-        for(AttributeGroupVector::const_iterator pos = atts->GetTransferFunction2DWidgets().begin(); pos != atts->GetTransferFunction2DWidgets().end(); ++pos, ++index)
-        {
-            const TransferFunctionWidget *current = (const TransferFunctionWidget *)(*pos);
-            SNPRINTF(tmpStr, 1000, "GetTransferFunction2DWidgets(%d).", index);
-            std::string objPrefix(prefix + std::string(tmpStr));
-            str += PyTransferFunctionWidget_ToString(current, objPrefix.c_str());
-        }
-        if(index == 0)
-            str += "#transferFunction2DWidgets does not contain any TransferFunctionWidget objects.\n";
-    }
-    SNPRINTF(tmpStr, 1000, "%stransferFunctionDim = %d\n", prefix, atts->GetTransferFunctionDim());
     str += tmpStr;
     const char *lowGradientLightingReduction_names = "Off, Lowest, Lower, Low, Medium, "
         "High, Higher, Highest";
@@ -988,15 +953,14 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the rendererType in the object.
-    if(ival >= 0 && ival < 7)
+    if(ival >= 0 && ival < 3)
         obj->data->SetRendererType(VolumeAttributes::Renderer(ival));
     else
     {
         fprintf(stderr, "An invalid rendererType value was given. "
-                        "Valid values are in the range of [0,6]. "
+                        "Valid values are in the range of [0,2]. "
                         "You can also use the following names: "
-                        "Splatting, Texture3D, RayCasting, RayCastingIntegration, SLIVR, "
-                        "RayCastingSLIVR, Tuvok.");
+                        "Default, RayCasting, RayCastingIntegration.");
         return NULL;
     }
 
@@ -1042,30 +1006,6 @@ VolumeAttributes_GetGradientType(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGradientType()));
-    return retval;
-}
-
-/*static*/ PyObject *
-VolumeAttributes_SetNum3DSlices(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the num3DSlices in the object.
-    obj->data->SetNum3DSlices((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VolumeAttributes_GetNum3DSlices(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetNum3DSlices()));
     return retval;
 }
 
@@ -1213,147 +1153,6 @@ VolumeAttributes_GetRendererSamples(PyObject *self, PyObject *args)
 {
     VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(double(obj->data->GetRendererSamples()));
-    return retval;
-}
-
-/*static*/ PyObject *
-VolumeAttributes_GetTransferFunction2DWidgets(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    if(index < 0 || (size_t)index >= obj->data->GetTransferFunction2DWidgets().size())
-    {
-        char msg[400] = {'\0'};
-        if(obj->data->GetTransferFunction2DWidgets().size() == 0)
-            SNPRINTF(msg, 400, "In VolumeAttributes::GetTransferFunction2DWidgets : The index %d is invalid because transferFunction2DWidgets is empty.", index);
-        else
-            SNPRINTF(msg, 400, "In VolumeAttributes::GetTransferFunction2DWidgets : The index %d is invalid. Use index values in: [0, %ld).",  index, obj->data->GetTransferFunction2DWidgets().size());
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
-
-    // Since the new object will point to data owned by the this object,
-    // we need to increment the reference count.
-    Py_INCREF(self);
-
-    PyObject *retval = PyTransferFunctionWidget_Wrap(&obj->data->GetTransferFunction2DWidgets(index));
-    // Set the object's parent so the reference to the parent can be decref'd
-    // when the child goes out of scope.
-    PyTransferFunctionWidget_SetParent(retval, self);
-
-    return retval;
-}
-
-PyObject *
-VolumeAttributes_GetNumTransferFunction2DWidgets(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    return PyInt_FromLong((long)obj->data->GetTransferFunction2DWidgets().size());
-}
-
-PyObject *
-VolumeAttributes_AddTransferFunction2DWidgets(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *element = NULL;
-    if(!PyArg_ParseTuple(args, "O", &element))
-        return NULL;
-    if(!PyTransferFunctionWidget_Check(element))
-    {
-        char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "The VolumeAttributes::AddTransferFunction2DWidgets method only accepts TransferFunctionWidget objects.");
-        PyErr_SetString(PyExc_TypeError, msg);
-        return NULL;
-    }
-    TransferFunctionWidget *newData = PyTransferFunctionWidget_FromPyObject(element);
-    obj->data->AddTransferFunction2DWidgets(*newData);
-    obj->data->SelectTransferFunction2DWidgets();
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyObject *
-VolumeAttributes_Remove_One_TransferFunction2DWidgets(PyObject *self, int index)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    // Remove in the AttributeGroupVector instead of calling RemoveTransferFunction2DWidgets() because we don't want to delete the object; just remove it.
-    AttributeGroupVector &atts = obj->data->GetTransferFunction2DWidgets();
-    AttributeGroupVector::iterator pos = atts.begin();
-    // Iterate through the vector "index" times. 
-    for(int i = 0; i < index; ++i)
-        ++pos;
-
-    // If pos is still a valid iterator, remove that element.
-    if(pos != atts.end())
-    {
-        // NOTE: Leak the object since other Python objects may reference it. Ideally,
-        // we would put the object into some type of pool to be cleaned up later but
-        // this will do for now.
-        //
-        // delete *pos;
-        atts.erase(pos);
-    }
-
-    obj->data->SelectTransferFunction2DWidgets();
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-PyObject *
-VolumeAttributes_RemoveTransferFunction2DWidgets(PyObject *self, PyObject *args)
-{
-    int index;
-    if(!PyArg_ParseTuple(args, "i", &index))
-        return NULL;
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    if(index < 0 || index >= obj->data->GetNumTransferFunction2DWidgets())
-    {
-        char msg[400] = {'\0'};
-        SNPRINTF(msg, 400, "In VolumeAttributes::RemoveTransferFunction2DWidgets : Index %d is out of range", index);
-        PyErr_SetString(PyExc_IndexError, msg);
-        return NULL;
-    }
-
-    return VolumeAttributes_Remove_One_TransferFunction2DWidgets(self, index);
-}
-
-PyObject *
-VolumeAttributes_ClearTransferFunction2DWidgets(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    int n = obj->data->GetNumTransferFunction2DWidgets();
-    for(int i = 0; i < n; ++i)
-    {
-        VolumeAttributes_Remove_One_TransferFunction2DWidgets(self, 0);
-        Py_DECREF(Py_None);
-    }
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VolumeAttributes_SetTransferFunctionDim(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the transferFunctionDim in the object.
-    obj->data->SetTransferFunctionDim((int)ival);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VolumeAttributes_GetTransferFunctionDim(PyObject *self, PyObject *args)
-{
-    VolumeAttributesObject *obj = (VolumeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetTransferFunctionDim()));
     return retval;
 }
 
@@ -1544,8 +1343,6 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetRendererType", VolumeAttributes_GetRendererType, METH_VARARGS},
     {"SetGradientType", VolumeAttributes_SetGradientType, METH_VARARGS},
     {"GetGradientType", VolumeAttributes_GetGradientType, METH_VARARGS},
-    {"SetNum3DSlices", VolumeAttributes_SetNum3DSlices, METH_VARARGS},
-    {"GetNum3DSlices", VolumeAttributes_GetNum3DSlices, METH_VARARGS},
     {"SetScaling", VolumeAttributes_SetScaling, METH_VARARGS},
     {"GetScaling", VolumeAttributes_GetScaling, METH_VARARGS},
     {"SetSkewFactor", VolumeAttributes_SetSkewFactor, METH_VARARGS},
@@ -1556,13 +1353,6 @@ PyMethodDef PyVolumeAttributes_methods[VOLUMEATTRIBUTES_NMETH] = {
     {"GetSampling", VolumeAttributes_GetSampling, METH_VARARGS},
     {"SetRendererSamples", VolumeAttributes_SetRendererSamples, METH_VARARGS},
     {"GetRendererSamples", VolumeAttributes_GetRendererSamples, METH_VARARGS},
-    {"GetTransferFunction2DWidgets", VolumeAttributes_GetTransferFunction2DWidgets, METH_VARARGS},
-    {"GetNumTransferFunction2DWidgets", VolumeAttributes_GetNumTransferFunction2DWidgets, METH_VARARGS},
-    {"AddTransferFunction2DWidgets", VolumeAttributes_AddTransferFunction2DWidgets, METH_VARARGS},
-    {"RemoveTransferFunction2DWidgets", VolumeAttributes_RemoveTransferFunction2DWidgets, METH_VARARGS},
-    {"ClearTransferFunction2DWidgets", VolumeAttributes_ClearTransferFunction2DWidgets, METH_VARARGS},
-    {"SetTransferFunctionDim", VolumeAttributes_SetTransferFunctionDim, METH_VARARGS},
-    {"GetTransferFunctionDim", VolumeAttributes_GetTransferFunctionDim, METH_VARARGS},
     {"SetLowGradientLightingReduction", VolumeAttributes_SetLowGradientLightingReduction, METH_VARARGS},
     {"GetLowGradientLightingReduction", VolumeAttributes_GetLowGradientLightingReduction, METH_VARARGS},
     {"SetLowGradientLightingClampFlag", VolumeAttributes_SetLowGradientLightingClampFlag, METH_VARARGS},
@@ -1650,20 +1440,12 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return VolumeAttributes_GetSamplesPerRay(self, NULL);
     if(strcmp(name, "rendererType") == 0)
         return VolumeAttributes_GetRendererType(self, NULL);
-    if(strcmp(name, "Splatting") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::Splatting));
-    if(strcmp(name, "Texture3D") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::Texture3D));
+    if(strcmp(name, "Default") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::Default));
     if(strcmp(name, "RayCasting") == 0)
         return PyInt_FromLong(long(VolumeAttributes::RayCasting));
     if(strcmp(name, "RayCastingIntegration") == 0)
         return PyInt_FromLong(long(VolumeAttributes::RayCastingIntegration));
-    if(strcmp(name, "SLIVR") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::SLIVR));
-    if(strcmp(name, "RayCastingSLIVR") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::RayCastingSLIVR));
-    if(strcmp(name, "Tuvok") == 0)
-        return PyInt_FromLong(long(VolumeAttributes::Tuvok));
 
     if(strcmp(name, "gradientType") == 0)
         return VolumeAttributes_GetGradientType(self, NULL);
@@ -1672,8 +1454,6 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "SobelOperator") == 0)
         return PyInt_FromLong(long(VolumeAttributes::SobelOperator));
 
-    if(strcmp(name, "num3DSlices") == 0)
-        return VolumeAttributes_GetNum3DSlices(self, NULL);
     if(strcmp(name, "scaling") == 0)
         return VolumeAttributes_GetScaling(self, NULL);
     if(strcmp(name, "Linear") == 0)
@@ -1703,10 +1483,6 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "rendererSamples") == 0)
         return VolumeAttributes_GetRendererSamples(self, NULL);
-    if(strcmp(name, "transferFunction2DWidgets") == 0)
-        return VolumeAttributes_GetTransferFunction2DWidgets(self, NULL);
-    if(strcmp(name, "transferFunctionDim") == 0)
-        return VolumeAttributes_GetTransferFunctionDim(self, NULL);
     if(strcmp(name, "lowGradientLightingReduction") == 0)
         return VolumeAttributes_GetLowGradientLightingReduction(self, NULL);
     if(strcmp(name, "Off") == 0)
@@ -1792,8 +1568,6 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetRendererType(self, tuple);
     else if(strcmp(name, "gradientType") == 0)
         obj = VolumeAttributes_SetGradientType(self, tuple);
-    else if(strcmp(name, "num3DSlices") == 0)
-        obj = VolumeAttributes_SetNum3DSlices(self, tuple);
     else if(strcmp(name, "scaling") == 0)
         obj = VolumeAttributes_SetScaling(self, tuple);
     else if(strcmp(name, "skewFactor") == 0)
@@ -1804,8 +1578,6 @@ PyVolumeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VolumeAttributes_SetSampling(self, tuple);
     else if(strcmp(name, "rendererSamples") == 0)
         obj = VolumeAttributes_SetRendererSamples(self, tuple);
-    else if(strcmp(name, "transferFunctionDim") == 0)
-        obj = VolumeAttributes_SetTransferFunctionDim(self, tuple);
     else if(strcmp(name, "lowGradientLightingReduction") == 0)
         obj = VolumeAttributes_SetLowGradientLightingReduction(self, tuple);
     else if(strcmp(name, "lowGradientLightingClampFlag") == 0)

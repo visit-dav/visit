@@ -46,7 +46,6 @@
 #include <DebugStream.h>
 #include <VisItStreamUtil.h>
 
-#include <vtkStreamer.h>
 
 // ****************************************************************************
 //  Method: avtSerialICAlgorithm::avtSerialICAlgorithm
@@ -193,7 +192,7 @@ avtSerialICAlgorithm::AddIntegralCurves(std::vector<avtIntegralCurve *> &ics)
         // and backwards seed are on the same rank. If the number of
         // seeds for this rank is odd then adjust the seed count.
         if (picsFilter->GetIntegrationDirection() ==
-            VTK_INTEGRATE_BOTH_DIRECTIONS &&
+            PICS_INTEGRATE_BOTH_DIRECTIONS &&
             (i1-i0) % 2)
         {
           // Odd rank so give up a seed to make the seed count even.

@@ -26,40 +26,22 @@ SET(LIBV_SOURCES
 MoleculeViewerEnginePluginInfo.C
 MoleculeViewerPluginInfo.C
 avtMoleculePlot.C
-avtMoleculeRenderer.C
-avtOpenGLMoleculeRenderer.C
-avtOpenGLAtomTexturer2D.C
-avtOpenGLAtomTexturer3D.C
 avtMoleculeFilter.C
+avtMoleculeMapper.C
+vtkVisItMoleculeMapper.cxx
 ${COMMON_SOURCES}
 )
-
-IF(VISIT_MANTA)
-    SET(LIBV_SOURCES ${LIBV_SOURCES} avtMantaMoleculeRenderer.C)
-ENDIF(VISIT_MANTA)
 
 SET(LIBE_SOURCES
 MoleculeViewerEnginePluginInfo.C
 MoleculeEnginePluginInfo.C
 avtMoleculePlot.C
-avtMoleculeRenderer.C
-avtOpenGLMoleculeRenderer.C
-avtOpenGLAtomTexturer2D.C
-avtOpenGLAtomTexturer3D.C
 avtMoleculeFilter.C
+avtMoleculeMapper.C
+vtkVisItMoleculeMapper.cxx
 ${COMMON_SOURCES}
 )
 
-IF(VISIT_MANTA)
-    SET(LIBE_SOURCES ${LIBE_SOURCES} avtMantaMoleculeRenderer.C)
-ENDIF(VISIT_MANTA)
-
-IF (NOT WIN32)
-    SET_SOURCE_FILES_PROPERTIES(avtOpenGLAtomTexturer2D.C avtOpenGLAtomTexturer3D.C avtOpenGLMoleculeRenderer.C 
-        PROPERTIES
-        COMPILE_FLAGS "-I ${OPENGL_INCLUDE_DIR}"
-    )
-ENDIF (NOT WIN32)
 
 IF(VISIT_PYTHON_SCRIPTING)
     SET(PYINCLUDES ${PYTHON_INCLUDE_PATH} ${VISIT_INCLUDE_DIR}/visitpy/visitpy)
@@ -97,21 +79,14 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${QT_INCLUDE_DIR}
-${QT_QTCORE_INCLUDE_DIR}
-${QT_QTGUI_INCLUDE_DIR}
 ${EAVL_INCLUDE_DIR}
 ${VTKM_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
-${GLEW_INCLUDE_DIR}
+${VISIT_INCLUDE_DIR}/avt/Plotter/vtk
 )
 
-IF(VISIT_MANTA)
-    INCLUDE_DIRECTORIES(${VISIT_INCLUDE_DIR}/avt/Plotter/Manta)
-ENDIF(VISIT_MANTA)
-
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${QWT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} )
 
 ADD_LIBRARY(IMoleculePlot ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IMoleculePlot visitcommon)
@@ -123,7 +98,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GMoleculePlot visitcommon gui )
 
     ADD_LIBRARY(VMoleculePlot ${LIBV_SOURCES})
-    TARGET_LINK_LIBRARIES(VMoleculePlot visitcommon viewer ${GLEW_LIB} ${OPENGL_gl_LIBRARY} avtplotter_ser )
+    TARGET_LINK_LIBRARIES(VMoleculePlot visitcommon viewer avtplotter_ser )
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GMoleculePlot VMoleculePlot)
 
@@ -147,13 +122,13 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 ENDIF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EMoleculePlot_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EMoleculePlot_ser visitcommon avtplotter_ser avtpipeline_ser ${GLEW_LIB} ${OPENGL_gl_LIBRARY} avtplotter_ser )
+TARGET_LINK_LIBRARIES(EMoleculePlot_ser visitcommon avtplotter_ser avtpipeline_ser avtplotter_ser )
 SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_ser)
 ADD_TARGET_DEFINITIONS(EMoleculePlot_ser ENGINE)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EMoleculePlot_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EMoleculePlot_par visitcommon avtplotter_par avtpipeline_par ${GLEW_LIB} ${OPENGL_gl_LIBRARY} avtplotter_par )
+    TARGET_LINK_LIBRARIES(EMoleculePlot_par visitcommon avtplotter_par avtpipeline_par avtplotter_par )
     SET(INSTALLTARGETS ${INSTALLTARGETS} EMoleculePlot_par)
     ADD_TARGET_DEFINITIONS(EMoleculePlot_par ENGINE)
 ENDIF(VISIT_PARALLEL)

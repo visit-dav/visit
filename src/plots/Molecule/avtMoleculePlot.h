@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtMoleculePlot.h                               //
+//                           avtMoleculePlot.h                               //
 // ************************************************************************* //
 
 #ifndef AVT_MOLECULE_PLOT_H
@@ -45,14 +45,13 @@
 
 #include <avtPlot.h>
 #include <MoleculeAttributes.h>
-#include <avtMoleculeRenderer.h>
 #include <avtLevelsLegend.h>
 
 class avtVariableLegend;
 class avtLevelsLegend;
 class avtLookupTable;
-class avtUserDefinedMapper;
 class avtMoleculeFilter;
+class avtMoleculeMapper;
 class avtExtractMolInfoFilter;
 
 // ****************************************************************************
@@ -93,8 +92,7 @@ avtMoleculePlot : public avtPointDataPlot
   protected:
     MoleculeAttributes       atts;
 
-    avtUserDefinedMapper    *mapper;
-    avtMoleculeRenderer_p    renderer;
+    avtMoleculeMapper       *mapper;
 
     avtMoleculeFilter       *moleculeFilter;
     avtExtractMolInfoFilter *extractMolInfoFilter;
@@ -112,7 +110,7 @@ avtMoleculePlot : public avtPointDataPlot
     LevelColorMap            residueColorMap;
     LevelColorMap            blankColorMap;
 
-    virtual avtMapper       *GetMapper(void);
+    virtual avtMapperBase   *GetMapper(void);
     virtual avtDataObject_p  ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p  ApplyRenderingTransformation(avtDataObject_p);
     virtual void             CustomizeBehavior(void);

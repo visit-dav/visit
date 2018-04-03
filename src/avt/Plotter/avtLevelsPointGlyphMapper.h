@@ -46,7 +46,7 @@
 #include <plotter_exports.h>
 
 #include <avtLevelsMapper.h>
-#include <avtPointGlypher.h>
+#include <avtPointMapper.h>
 
 
 // ****************************************************************************
@@ -67,22 +67,22 @@
 //    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
 //    Changed signature of InsertFilters.
 //
+//    Kathleen Biagas, Tue Aug 23 11:34:11 PDT 2016
+//    Changed inheritance from avtPointGlypher to avtPointMapper. Removed
+//    Glyph related methods.
+//
 // ****************************************************************************
 
 class PLOTTER_API  avtLevelsPointGlyphMapper : virtual public avtLevelsMapper,
-                                               virtual public avtPointGlypher
+                                               virtual public avtPointMapper
 {
   public:
                                avtLevelsPointGlyphMapper();
     virtual                   ~avtLevelsPointGlyphMapper();
 
-    virtual void               ScaleByVar(const std::string &);
-    void                       SetGlyphType(GlyphType type);
 
   protected:
     virtual void               CustomizeMappers(void);
-    virtual vtkAlgorithmOutput *InsertFilters(vtkDataSet *, int);
-    virtual void               SetUpFilters(int);
 
   private:
 

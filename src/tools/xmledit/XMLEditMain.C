@@ -50,11 +50,6 @@
 QTextStream cOut(stdout), cErr(stderr);
 QString Endl("\n");
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#ifndef __APPLE__
-#include <qwindowsstyle.h>
-#endif
-#endif
 
 // ****************************************************************************
 //  Main Function: XMLEditMain()  

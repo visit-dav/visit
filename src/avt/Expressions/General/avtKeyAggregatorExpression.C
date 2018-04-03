@@ -480,6 +480,9 @@ avtKeyAggregatorExpression::Aggregate(vector<vtkDataArray*> &key_arrays,
 //   Cyrus Harrison, Thu Oct 29 10:26:42 PDT 2009
 //   Switch to generic use of vtkDataArray to support non integer key types.
 //
+//   Kathleen Biagas, Mon Aug 15 14:30:23 PDT 2016
+//   VTK-8, SetTupleValue became SetTypedTuple.
+// 
 // ****************************************************************************
 
 vtkDoubleArray *
@@ -506,7 +509,7 @@ avtKeyAggregatorExpression::CreateResultArray(vtkDataArray  *key_array,
         // get pointer to tuple data for this key
         double *key_tuple_ptr = &key_results[key * num_val_comps];
         // set its result to the key's aggregate value.
-        res_array->SetTupleValue(i,key_tuple_ptr);
+        res_array->SetTypedTuple(i,key_tuple_ptr);
     }
 
     // return result array.

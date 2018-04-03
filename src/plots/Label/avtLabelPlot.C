@@ -47,13 +47,10 @@
 #include <avtExtents.h>
 #include <avtGhostZoneAndFacelistFilter.h>
 #include <avtLabelFilter.h>
-#include <avtLabelsMapper.h>
+#include <avtLabelMapper.h>
 #include <avtLabelSubsetsFilter.h>
 
-#include <vtkToolkits.h>
-#include <avtOpenGLLabelRenderer.h>
 #include <vtkLookupTable.h>
-#include <avtUserDefinedMapper.h>
 #include <avtVariableLegend.h>
 
 #include <avtVertexNormalsFilter.h>
@@ -82,6 +79,9 @@
 //   The distinction between Mesa and OpenGL no longer exists at the plot
 //   level.
 //
+//   Kathleen Biagas, Thu Apr 13 11:19:02 PDT 2017
+//   Utilize vtk mappers instead of custom renderer, for VTK-8.
+//
 // ****************************************************************************
 
 avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
@@ -92,8 +92,6 @@ avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
     normalFilter = NULL;
     labelSubsetsFilter = NULL;
 
-    renderer = new avtOpenGLLabelRenderer;
-
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Label");
     vtkLookupTable *lut = vtkLookupTable::New();
@@ -103,9 +101,7 @@ avtLabelPlot::avtLabelPlot() : avtSurfaceDataPlot()
     varLegend->SetVarRangeVisibility(0);
     varLegendRefPtr = varLegend;
 
-    avtCustomRenderer_p cr;
-    CopyTo(cr, renderer);
-    labelMapper = new avtLabelsMapper(cr);
+    labelMapper = new avtLabelMapper();
 }
 
 
@@ -147,8 +143,6 @@ avtLabelPlot::~avtLabelPlot()
         labelSubsetsFilter = NULL;
     }
 
-    renderer = NULL;
-
     if (labelMapper != NULL)
     {
         delete labelMapper;
@@ -180,7 +174,7 @@ avtLabelPlot::Create()
 // ****************************************************************************
 // Method: avtLabelPlot::GetMapper
 //
-// Purpose: 
+// Purpose:
 //   Returns the label plot's mapper.
 //
 // Returns:    A pointer to the plot's mapper.
@@ -189,10 +183,10 @@ avtLabelPlot::Create()
 // Creation:   Mon Oct 25 08:48:48 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtLabelPlot::GetMapper(void)
 {
     return labelMapper;
@@ -201,7 +195,7 @@ avtLabelPlot::GetMapper(void)
 // ****************************************************************************
 // Method: avtLabelPlot::SetForegroundColor
 //
-// Purpose: 
+// Purpose:
 //   Sets the foreground color into the label plot's renderer.
 //
 // Arguments:
@@ -213,19 +207,19 @@ avtLabelPlot::GetMapper(void)
 // Creation:   Mon Oct 25 08:49:08 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
 avtLabelPlot::SetForegroundColor(const double *c)
 {
-    return renderer->SetForegroundColor(c);
+    return labelMapper->SetForegroundColor(c);
 }
 
 // ****************************************************************************
 // Method: avtLabelPlot::SetLegend
 //
-// Purpose: 
+// Purpose:
 //   Sets whether the legend is on or off.
 //
 // Arguments:
@@ -235,7 +229,7 @@ avtLabelPlot::SetForegroundColor(const double *c)
 // Creation:   Mon Oct 25 08:50:17 PDT 2004
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -255,7 +249,7 @@ avtLabelPlot::SetLegend(bool legendOn)
 // Method: avtLabelPlot::ApplyOperators
 //
 // Purpose:
-//     Applies the operators associated with a Label plot.  
+//     Applies the operators associated with a Label plot.
 //     The output from this method is a query-able object.
 //
 // Arguments:
@@ -282,7 +276,7 @@ avtLabelPlot::ApplyOperators(avtDataObject_p input)
 // Method: avtLabelPlot::ApplyRenderingTransformation
 //
 // Purpose:
-//     Applies the rendering transformation associated with a Label plot.  
+//     Applies the rendering transformation associated with a Label plot.
 //
 // Arguments:
 //     input   The input data object.
@@ -343,22 +337,22 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
     //
     if(condenseFilter != NULL)
     {
-        delete condenseFilter; 
+        delete condenseFilter;
         condenseFilter = NULL;
     }
     bool removeExtraNodes = true;
     if (dob->GetInfo().GetAttributes().ValidVariable(varname))
     {
-        removeExtraNodes = (AVT_NODECENT == 
+        removeExtraNodes = (AVT_NODECENT ==
             dob->GetInfo().GetAttributes().GetCentering(varname));
     }
-    else 
+    else
     {
         debug1 << "We could not determine the variable centering for "
                << varname << " so let's assume that we need to remove "
                <<"extra nodes." << endl;
     }
-    
+
     if(removeExtraNodes)
     {
         onefilter = visitTimer->StartTimer();
@@ -398,7 +392,7 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
         if(labelSubsetsFilter != NULL)
             delete labelSubsetsFilter;
         labelSubsetsFilter = new avtLabelSubsetsFilter;
-        labelSubsetsFilter->SetNeedMIR(atts.GetVarType() == 
+        labelSubsetsFilter->SetNeedMIR(atts.GetVarType() ==
             LabelAttributes::LABEL_VT_MATERIAL);
         labelSubsetsFilter->SetInput(dob);
         dob = labelSubsetsFilter->GetOutput();
@@ -413,7 +407,7 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
         delete labelFilter;
     labelFilter = new avtLabelFilter;
     labelFilter->SetMayBeLogical(
-        atts.GetLabelDisplayFormat() == LabelAttributes::Natural || 
+        atts.GetLabelDisplayFormat() == LabelAttributes::Natural ||
         atts.GetLabelDisplayFormat() == LabelAttributes::LogicalIndex);
     labelFilter->SetCellOrigin(dob->GetInfo().GetAttributes().GetCellOrigin());
     labelFilter->SetNodeOrigin(dob->GetInfo().GetAttributes().GetNodeOrigin());
@@ -437,6 +431,8 @@ avtLabelPlot::ApplyRenderingTransformation(avtDataObject_p input)
 // Creation:   Wed Jan 7 14:58:26 PST 2004
 //
 // Modifications:
+//   Kathleen Biagas, Thu Apr 13 11:19:02 PDT 2017
+//   Utilize vtk mappers instead of custom renderer, for VTK-8.
 //
 // ****************************************************************************
 
@@ -464,7 +460,7 @@ avtLabelPlot::CustomizeBehavior(void)
 //
 // Purpose:
 //     A hook from the base class that allows the plot to change its mapper
-//     based on the dataset input. 
+//     based on the dataset input.
 //
 // Arguments:
 //     doi     The data object information.
@@ -493,30 +489,30 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
     //
     // Tell the renderer the variable that we care about.
     //
-    renderer->SetVariable(varname);
+    labelMapper->SetVariable(varname);
 
     //
     // Tell the renderer whether to treat the label data as ASCII.
     //
     if (doi.GetAttributes().ValidVariable(varname))
     {
-        renderer->SetTreatAsASCII(doi.GetAttributes().GetTreatAsASCII(varname));
+        labelMapper->SetTreatAsASCII(doi.GetAttributes().GetTreatAsASCII(varname));
     }
-    else 
+    else
     {
         // Could not get the information so set the flag to false.
-        renderer->SetTreatAsASCII(false);
+        labelMapper->SetTreatAsASCII(false);
     }
 
     // Tell the renderer about the cell and node origin.
-    renderer->SetCellOrigin(doi.GetAttributes().GetCellOrigin());
-    renderer->SetNodeOrigin(doi.GetAttributes().GetNodeOrigin());
+    labelMapper->SetCellOrigin(doi.GetAttributes().GetCellOrigin());
+    labelMapper->SetNodeOrigin(doi.GetAttributes().GetNodeOrigin());
 
     //
     // Tell the renderer whether the data is 3D or not so it can make
     // some 2D optimizations.
     //
-    renderer->Set3D(doi.GetAttributes().GetSpatialDimension() == 3);
+    labelMapper->Set3D(doi.GetAttributes().GetSpatialDimension() == 3);
 
     //
     // Set the dataset's extents into the renderer so we can create
@@ -528,11 +524,11 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
     // GetAnySpatialExtents
     double e[6] = {0.,1.,0.,1.,0.,1.};
     doi.GetAttributes().GetOriginalSpatialExtents()->CopyTo(e);
-    renderer->SetExtents(e);
+    labelMapper->SetExtents(e);
 
     bool ugl = atts.GetVarType() == LabelAttributes::LABEL_VT_MATERIAL ||
                atts.GetVarType() == LabelAttributes::LABEL_VT_SUBSET;
-    renderer->SetUseGlobalLabel(ugl);
+    labelMapper->SetUseGlobalLabel(ugl);
 
     debug4 << "avtLabelPlot::CustomizeMapper: Labels = " << endl;
     std::vector<std::string> labels;
@@ -545,7 +541,7 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
 // ****************************************************************************
 // Method: avtLabelPlot::EnhanceSpecification
 //
-// Purpose: 
+// Purpose:
 //   Turns on global cell and node numbers in the data specification.
 //
 // Arguments:
@@ -553,7 +549,7 @@ avtLabelPlot::CustomizeMapper(avtDataObjectInformation &doi)
 //
 // Returns:    A new data specification.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 08:53:04 PDT 2004
@@ -612,7 +608,7 @@ avtLabelPlot::SetAtts(const AttributeGroup *a)
     const LabelAttributes *newAtts = (const LabelAttributes *)a;
 
     // Set the label plot attributes into the renderer.
-    renderer->SetAtts(newAtts);
+    labelMapper->SetAtts(newAtts);
 
     // See if any attributes that require the plot to be regenerated were
     // changed and copy the state object.
@@ -626,14 +622,14 @@ avtLabelPlot::SetAtts(const AttributeGroup *a)
 // ****************************************************************************
 // Method: avtLabelPlot::ReleaseData
 //
-// Purpose: 
+// Purpose:
 //   Causes the label plot to release its data.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Oct 25 08:54:25 PDT 2004
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Tue Nov  2 05:16:53 PST 2004
 //   Go ahead and release data for the normals filter, now that a memory issue
 //   has been cleaned up.

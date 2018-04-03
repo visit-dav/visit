@@ -134,11 +134,11 @@ function bv_python_depends_on
 function bv_python_info
 {
     export PYTHON_FILE_SUFFIX="tgz"
-    export PYTHON_VERSION=${PYTHON_VERSION:-"2.7.11"}
+    export PYTHON_VERSION=${PYTHON_VERSION:-"2.7.14"}
     export PYTHON_COMPATIBILITY_VERSION=${PYTHON_COMPATIBILITY_VERSION:-"2.7"}
     export PYTHON_FILE="Python-$PYTHON_VERSION.$PYTHON_FILE_SUFFIX"
     export PYTHON_BUILD_DIR="Python-$PYTHON_VERSION"
-    export PYTHON_MD5_CHECKSUM="6b6076ec9e93f05dd63e47eb9c15728b"
+    export PYTHON_MD5_CHECKSUM="cee2e4b33ad3750da77b2e85f2f8b724"
     export PYTHON_SHA256_CHECKSUM=""
 
     export PIL_URL=${PIL_URL:-"http://effbot.org/media/downloads"}

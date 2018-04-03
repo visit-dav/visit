@@ -589,9 +589,6 @@ avtTransparencyActor::avtTransparencyActor() :
 #endif
 
     lastCamera = vtkMatrix4x4::New();
-
-    // use display lists
-    SetImmediateMode(false);
 }
 
 
@@ -716,6 +713,9 @@ avtTransparencyActor::UsePerfectSort(bool perfect)
 //    Mark C. Miller, Thu Jan 20 22:27:39 PST 2005
 //    Initialized inputsOpacities
 //
+//    Kathleen Biagas, Tue Jul 12 13:43:22 MST 2016
+//    Store actor's current visibility state.
+//
 // ****************************************************************************
 
 int
@@ -735,6 +735,16 @@ avtTransparencyActor::AddInput(vector<vtkDataSet *> &d,
     for (size_t i = 0 ; i < size ; ++i)
         pd.push_back(NULL);
     preparedDataset.push_back(pd);
+
+    vector<int> vis;
+    for (size_t i = 0 ; i < a.size(); ++i)
+    {
+        if (a[i] != NULL)
+            vis.push_back(a[i]->GetVisibility());
+        else
+            vis.push_back(1);
+    }
+    actorVis.push_back(vis);
 
     inputModified = true;
 
@@ -760,6 +770,10 @@ avtTransparencyActor::AddInput(vector<vtkDataSet *> &d,
 //  Programmer: Hank Childs
 //  Creation:   July 7, 2002
 //
+//  Modifications:
+//    Kathleen Biagas, Tue Jul 12 13:43:22 MST 2016
+//    Store actor's current visibility state.
+//
 // ****************************************************************************
 
 void
@@ -774,6 +788,16 @@ avtTransparencyActor::ReplaceInput(int ind, vector<vtkDataSet *> &d,
     datasets[ind] = d;
     mappers[ind]  = m;
     actors[ind]   = a;
+
+    vector<int> vis;
+    for (size_t i = 0 ; i < a.size() ; i++)
+    {
+        if (a[i] != NULL)
+            vis.push_back(a[i]->GetVisibility());
+        else
+            vis.push_back(1);
+    }
+    actorVis[ind] = vis;
 
     for (size_t i = 0 ; i < preparedDataset[ind].size() ; i++)
     {
@@ -1199,27 +1223,6 @@ avtTransparencyActor::PrepareForRender(vtkCamera *cam)
     }
 }
 
-// ****************************************************************************
-//  Method: avtTransparencyActor::SetImmediateMode
-//
-//  Purpose:
-//      enable/disable display lists
-//
-//  Programmer: Burlen Loring
-//  Creation: Wed Aug 19 13:50:52 PDT 2015
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtTransparencyActor::SetImmediateMode(bool m)
-{
-    if (m)
-        myMapper->ImmediateModeRenderingOn();
-    else
-        myMapper->ImmediateModeRenderingOff();
-}
 
 // ****************************************************************************
 //  Method: avtTransparencyActor::CameraChanged
@@ -1621,11 +1624,17 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
 //    Don't recalculate unecessarily in parallel. specifically remove the
 //    PAR_Size > 1 condition while keeping the appender update.
 //
+//    Kathleen Biagas, Tue Jul 12 13:45:40 MST 2016
+//    Added early return if there are no datasets.
+//
 // ****************************************************************************
 
 void
 avtTransparencyActor::SetUpActor(void)
 {
+    if(datasets.empty())
+        return;
+
 #ifdef avtTransparencyActorDEBUG
     debug2 << "avtTransparencyActor::SetUpActor" << endl;
 #endif
@@ -1749,6 +1758,9 @@ avtTransparencyActor::SetUpActor(void)
 //    Burlen Loring, Sat Sep 12 08:55:19 PDT 2015
 //    Eliminate an unessary memcpy of scalar colors. Fix leak of vtk transform
 //
+//    Kathleen Biagas, Tue Jul 12 13:46:14 MST 2016
+//    Retrieved and preserve stored actor's visibility state.
+//
 // ****************************************************************************
 
 void
@@ -1763,7 +1775,7 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     vtkDataSet       *in_ds  = datasets[input][subinput];
     vtkActor         *actor  = actors[input][subinput];
     vtkDataSetMapper *mapper = mappers[input][subinput];
-
+    int               avis   = actorVis[input][subinput];
     //
     // If we don't have valid input, there isn't a lot we can do.
     //
@@ -1806,7 +1818,7 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     //
     if (actor->GetProperty()->GetOpacity() >= 1.)
     {
-        actor->SetVisibility(1);
+        actor->SetVisibility(avis);
         return;
     }
     else
@@ -1820,7 +1832,7 @@ avtTransparencyActor::PrepareDataset(size_t input, size_t subinput)
     //
     // If the actor is fully transparent, there's no need for us to process it.
     //
-    if (actor->GetProperty()->GetOpacity() <= 0.)
+    if (actor->GetProperty()->GetOpacity() <= 0. || avis == 0)
     {
         return;
     }
@@ -2322,4 +2334,29 @@ avtTransparencyActor::SetIs2Dimensional(bool val)
     }
 
     is2Dimensional = val;
+}
+
+// ****************************************************************************
+//  Method: avtTransparencyActor::ReplaceActorVisibility
+//
+//  Purpose:
+//    Repaces the stored actor's visibility state for the given
+//    index.   Used when a mapper changes visibility state of its actor.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   July 12, 2016
+//
+// ****************************************************************************
+
+void
+avtTransparencyActor::ReplaceActorVisibility(int ind, vector<int> &v)
+{
+    if (ind < 0 || (size_t)ind >= datasets.size())
+    {
+        EXCEPTION2(BadIndexException, ind, (int)datasets.size());
+    }
+
+    actorVis[ind] = v;
+
+    inputModified = true;
 }

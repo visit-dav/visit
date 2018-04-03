@@ -88,6 +88,10 @@ class     avtSmoothPolyDataFilter;
 //    Kathleen Biagas, Wed Feb 29 13:10:11 MST 2012
 //    Add GetExtraInfoForPick.
 //
+//    Kathleen Biagas, Tue Aug 23 11:16:20 PDT 2016
+//    Added LevelsMapper, as points and surfaces are no longer mapped
+//    by the same mapper.
+//
 //    Kathleen Biagas, Tue Dec 20 13:53:40 PST 2016
 //    Changed inheritance from avtVolumeDataPlot to avtSurfaceDataPlot.
 //    Removed glyph mapper.
@@ -135,7 +139,7 @@ avtBoundaryPlot : public avtSurfaceDataPlot
     void                       SetColors(void); 
     void                       SortLabels(void);
     void                       SetPointGlyphSize();
-    virtual avtMapper         *GetMapper(void);
+    virtual avtMapperBase     *GetMapper(void);
     virtual avtDataObject_p    ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p    ApplyRenderingTransformation(avtDataObject_p);
     virtual void               CustomizeBehavior(void);

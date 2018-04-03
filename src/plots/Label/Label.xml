@@ -6,16 +6,16 @@
     <Files components="V">
       avtLabelFilter.C
       avtLabelSubsetsFilter.C
-      avtLabelsMapper.C
-      avtLabelRenderer.C
-      avtOpenGLLabelRenderer.C
+      avtLabelMapper.C
+      vtkLabelMapperBase.C
+      vtkLabelMapper.C
     </Files>
     <Files components="E">
       avtLabelFilter.C
       avtLabelSubsetsFilter.C
-      avtLabelsMapper.C
-      avtLabelRenderer.C
-      avtOpenGLLabelRenderer.C
+      avtLabelMapper.C
+      vtkLabelMapperBase.C
+      vtkLabelMapper.C
     </Files>
     <Attribute name="LabelAttributes" purpose="This class contains the fields that we need to set the attributes for the Label plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="LabelAttributes.code">
       <Enum name="LabelIndexDisplay">
@@ -79,29 +79,9 @@
       <Field name="numberOfLabels" label="numberOfLabels" type="int">
         200
       </Field>
-      <Field name="specifyTextColor1" label="Specify text color1" type="bool">
-        false
+      <Field name="textFont1" label="textFont1" type="att" subtype="FontAttributes" init="true">
       </Field>
-      <Field name="textColor1" label="Text color1" type="color" length="4" enabler="specifyTextColor1:true">
-        255
-        0
-        0
-        0
-      </Field>
-      <Field name="textHeight1" label="textHeight1" type="float">
-        0.020000
-      </Field>
-      <Field name="specifyTextColor2" label="Specify text color2" type="bool">
-        false
-      </Field>
-      <Field name="textColor2" label="Text color2" type="color" length="4" enabler="specifyTextColor2:true">
-        0
-        0
-        255
-        0
-      </Field>
-      <Field name="textHeight2" label="textHeight2" type="float">
-        0.020000
+      <Field name="textFont2" label="textFont2" type="att" subtype="FontAttributes" init="true">
       </Field>
       <Field name="horizontalJustification" label="Horizontal justification" type="enum" subtype="LabelHorizontalAlignment">
         HCenter
@@ -113,11 +93,13 @@
         LABEL_DT_AUTO
       </Field>
       <Field name="formatTemplate" label="Format template" type="string">
-        "%g"
+        %g
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
       <Function name="VarChangeRequiresReset" user="true" member="true">
+      </Function>
+      <Function name="ProcessOldVersions" user="true" member="true">
       </Function>
       <Function name="PyLabelAttributes_SetDefaults" user="false" member="true">
       </Function>
@@ -129,5 +111,8 @@
       </Function>
       <Function name="LabelViewerEnginePluginInfo::PrivateSetPlotAtts" user="true" member="true" access="private">
       </Function>
+      <Include file="source" quoted="false" target="xml2python">
+        PyColorAttribute.h
+      </Include>
     </Attribute>
   </Plugin>

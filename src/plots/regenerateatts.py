@@ -1,5 +1,5 @@
 #!/usr/local/apps/bin/python
-import os, string
+import os, sys, string
 
 #
 # Get the output of a command as a tuple of strings.
@@ -43,26 +43,26 @@ def systemCommand(command):
 #
 ###############################################################################
 
-def main():
+def main(exeDir):
     # Get the names of the XML files in this directory.
     files = GetFilenames("ls */*.xml")
 
     # Check out each XML file and regenerate the C and h files.
     for f in files:
         index = string.find(f, "/")
-	dirName = ""
-	if(index == -1):
-	    continue
-	else:
-	    dirName = f[:index]
-	    os.chdir(dirName)
-	    
+        dirName = ""
+        if(index == -1):
+            continue
+        else:
+            dirName = f[:index]
+            os.chdir(dirName)
+
         bname = f[index+1:-5]
-        command = "../../bin/xml2atts -clobber %s.xml" % bname
+        command = "%s/xml2atts -clobber %s.xml" % (exeDir,bname)
         systemCommand(command)
-	
-	# Go back up
-	os.chdir("..")
+
+        # Go back up
+        os.chdir("..")
 
     # Warn about files that have special CreateNode functions.
     cnfiles = GetCreateNodeFiles()
@@ -79,5 +79,8 @@ def main():
 #
 # Call the main function
 #
-main()
+if len(sys.argv) > 1:
+    main(sys.argv[1])
+else:
+    print "usage: regenerateatts.py /path/to/xml2atts"
 

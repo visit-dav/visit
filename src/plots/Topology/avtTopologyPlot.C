@@ -158,7 +158,7 @@ avtTopologyPlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtTopologyPlot::GetMapper(void)
 {
     return levelsMapper;

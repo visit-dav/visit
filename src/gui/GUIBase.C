@@ -496,11 +496,7 @@ GUIBase::ConnectMessageAttr(MessageAttributes *attr)
 void
 GUIBase::SetWaitCursor()
 {
-#if QT_VERSION >= 300
     QApplication::setOverrideCursor(Qt::WaitCursor);
-#else
-    QApplication::setOverrideCursor(WaitCursor);
-#endif
 }
 
 // ****************************************************************************

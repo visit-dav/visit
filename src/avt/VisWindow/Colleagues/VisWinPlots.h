@@ -246,7 +246,6 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
     void                          SetAmbientCoefficient(const double);
 
     virtual void                  SetSurfaceRepresentation(int rep);
-    virtual void                  SetImmediateModeRendering(bool val);
 
     virtual void                  SetSpecularProperties(bool,double,double,
                                                         const ColorAttribute&);

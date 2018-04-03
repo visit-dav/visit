@@ -48,9 +48,9 @@
 #include <vtkRubberBandMapper2D.h>
 #include <vtkDashedXorGridMapper2D.h>
 #include <vtkOpenGLRenderWindow.h>
-#include <vtkOpenGLExtensionManager.h>
+#include <vtkOpenGL.h>
 
-#if defined(Q_WS_X11) || defined(Q_OS_LINUX)
+#if defined(Q_OS_LINUX)
 // We only need WindowMetrics here if we're on X11.
 #include <WindowMetrics.h>
 #endif
@@ -139,6 +139,7 @@ VisWinRenderingWithWindow::~VisWinRenderingWithWindow()
 //    Report some capabilities in the debug log.
 //
 // ****************************************************************************
+#define safes(arg) (arg?((const char *)arg):"")
 
 void
 VisWinRenderingWithWindow::RealizeRenderWindow(void)
@@ -148,20 +149,17 @@ VisWinRenderingWithWindow::RealizeRenderWindow(void)
     else
         renWin->show();
 
-#ifdef Q_WS_X11
-    if(ownRenderWindow)
-        WindowMetrics::WaitForWindowManagerToGrabWindow(renWin);
-#endif
 
     renWin->GetRenderWindow()->Render();
 
     debug2 << "render window is a vtkQtRenderWindow" << endl;
     vtkOpenGLRenderWindow *glrw = dynamic_cast<vtkOpenGLRenderWindow*>(renWin->GetRenderWindow());
     if (!glrw) return;
-    vtkOpenGLExtensionManager *em = glrw->GetExtensionManager();
-    debug2 << "GLVendor = " << em->GetDriverGLVendor() << endl
-        << "GLVersion = " << em->GetDriverGLVersion() << endl
-        << "GLRenderer = " << em->GetDriverGLRenderer() << endl;
+
+    const char *glvers = safes(glGetString(GL_VERSION));
+    debug2 << "  GLVersion: " << glvers << endl;
+    // if we want more information than just Version, perhaps should call
+    // vtkOpenGLRenderWindow::ReportCapabilities
 }
 
 // ****************************************************************************
@@ -309,7 +307,7 @@ VisWinRenderingWithWindow::Iconify(void)
 {
     if (realized && ownRenderWindow)
     {
-#if defined(Q_WS_WIN) || defined(Q_WS_MACX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
         renWin->hide();
 #else
         if (! renWin->isMinimized())
@@ -470,7 +468,7 @@ VisWinRenderingWithWindow::DeIconify(void)
 {
     if (realized)
     {
-#if defined(Q_WS_WIN) || defined(Q_WS_MACX) || defined(Q_OS_WIN) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
         renWin->show();
 #else
         renWin->showNormal();

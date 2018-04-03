@@ -119,14 +119,13 @@ main(int argc, char *argv[])
     // Create the actor.
     //
     cerr << "Creating the actor." << endl;
-    avtVariablePointGlyphMapper *mapper = new avtVariablePointGlyphMapper;
+    avtVariableMapper *mapper = new avtVariableMapper;
     avtLookupTable *LUT = new avtLookupTable;
     mapper->SetLookupTable(LUT->GetLookupTable());
     mapper->SetMin(0.);
     mapper->SetMax(1.);
     mapper->SetLineWidth(LW_0);
     mapper->SetLineStyle(SOLID);
-    mapper->SetPointSize(5.);
     // The following 2 lines are necessary to get an image rendered on
     // LLNL clusters because of nvidia driver bug that affects texture
     // mapping.

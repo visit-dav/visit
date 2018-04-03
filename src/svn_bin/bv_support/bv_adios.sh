@@ -103,7 +103,7 @@ function bv_adios_host_profile
 
         if [[ "$USE_SYSTEM_ADIOS" == "yes" ]]; then
             warn "Assuming version 1.11.0 for Adios"
-            echo "SETUP_APP_VERSION(UINTAH 1.11.0)" >> $HOSTCONF
+            echo "SETUP_APP_VERSION(ADIOS 1.11.0)" >> $HOSTCONF
             echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR $ADIOS_INSTALL_DIR)" >> $HOSTCONF 
         else
             echo "SETUP_APP_VERSION(ADIOS $ADIOS_VERSION)" >> $HOSTCONF

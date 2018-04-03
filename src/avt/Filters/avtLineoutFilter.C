@@ -49,6 +49,7 @@
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkGenericCell.h>
 #include <vtkIdList.h>
+#include <vtkInformation.h>
 #include <vtkLineoutFilter.h>
 #include <vtkMath.h>
 #include <vtkPointData.h>
@@ -841,6 +842,9 @@ avtLineoutFilter::NoSampling(vtkDataSet *in_ds, int domain)
 //    Eric Brugger, Mon Jul 21 14:09:11 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
+//    VTK-8, API for updating GhostLevel changed.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -855,7 +859,7 @@ avtLineoutFilter::Sampling(vtkDataSet *in_ds, int domain)
     filter->SetPoint1(point1);
     filter->SetPoint2(point2);
     filter->SetNumberOfSamplePoints(numberOfSamplePoints);
-    vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(filter->GetInformation(), 0);
+    filter->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
     filter->Update();
     vtkPolyData *outPolys = filter->GetOutput();
     outPolys->Register(NULL);

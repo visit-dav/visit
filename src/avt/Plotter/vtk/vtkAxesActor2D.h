@@ -218,7 +218,7 @@ public:
 
   // Description:
   // Return this object's MTime.
-  unsigned long GetMTime(); 
+  vtkMTimeType GetMTime();
    
 protected:
   vtkAxesActor2D();

@@ -40,10 +40,6 @@
 
 set(guiwrapper_include_paths
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${QT_QTCORE_INCLUDE_DIR}
-    ${QT_QTGUI_INCLUDE_DIR}
-    ${QT_QTOPENGL_INCLUDE_DIR}
-    ${QT_INCLUDE_DIR}
     ${VISIT_SOURCE_DIR}/gui/
     ${VISIT_SOURCE_DIR}/gui/main
     ${VISIT_SOURCE_DIR}/viewer/subjectproxy
@@ -73,7 +69,7 @@ set(guiwrapper_include_paths
 
 include_directories(${guiwrapper_include_paths})
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${QWT_LIBRARY_DIR})
+link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${QWT_LIBRARY_DIR})
 set(guiwrapper_link_libs 
     gui
     viewer
@@ -92,10 +88,9 @@ set(guiwrapper_sources ${CMAKE_CURRENT_SOURCE_DIR}/guiwrapper.C)
 #
 # For dev build, we may need to link to mesa on Linux.
 ##
-IF(MESA_FOUND)
-    set(guiwrapper_link_libs ${guiwrapper_link_libs} ${MESA_LIB})
-    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${MESA_LIBRARY_DIR})
-ENDIF(MESA_FOUND)
+if(OSMESA_FOUND)
+    set(guiwrapper_link_libs ${guiwrapper_link_libs} ${OSMESA_LIBRARIES})
+endif()
 
 add_library(guiwrapper SHARED ${guiwrapper_sources})
 target_link_libraries(guiwrapper ${guiwrapper_link_libs})

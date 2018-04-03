@@ -54,13 +54,12 @@
 #include <avtMRTestFileFormat.h>
 
 #include <vtkFloatArray.h>
+#include <vtkMatrix4x4.h>
 #include <vtkRectilinearGrid.h>
 
 #include <avtDatabaseMetaData.h>
 #include <avtParallel.h>
 #include <avtMultiresSelection.h>
-#include <avtView2D.h>
-#include <avtView3D.h>
 
 #include <vector>
 
@@ -417,7 +416,67 @@ avtMRTestFileFormat::GetSelection()
 //    Eric Brugger, Wed Jan  8 17:09:17 PST 2014
 //    I modified the reader to also create 3d meshes.
 //
+//    Kathleen Biagas, Tue Mar 27 10:06:21 PDT 2018
+//    Copied avtView2D::CalculateExtentsAndArea to remove dependence upon
+//    avtView, and thus OpenGL.
+//
 // ****************************************************************************
+
+void
+Calculate2DExtentsAndArea(double *extents, double &area, double *matrix)
+{
+    //
+    // Invert the matrix.
+    //
+    double matrix2[16];
+    vtkMatrix4x4::Invert(matrix, matrix2);
+
+    //
+    // Transform the corners in normalized device coordinates to
+    // world coordinates.
+    //
+    double c[8][4];
+    c[0][0] = -1.; c[0][1] = -1.; c[0][2] = -1.; c[0][3] = 1.;
+    c[1][0] = +1.; c[1][1] = -1.; c[1][2] = -1.; c[1][3] = 1.;
+    c[2][0] = +1.; c[2][1] = +1.; c[2][2] = -1.; c[2][3] = 1.;
+    c[3][0] = -1.; c[3][1] = +1.; c[3][2] = -1.; c[3][3] = 1.;
+    c[4][0] = -1.; c[4][1] = -1.; c[4][2] = +1.; c[4][3] = 1.;
+    c[5][0] = +1.; c[5][1] = -1.; c[5][2] = +1.; c[5][3] = 1.;
+    c[6][0] = +1.; c[6][1] = +1.; c[6][2] = +1.; c[6][3] = 1.;
+    c[7][0] = -1.; c[7][1] = +1.; c[7][2] = +1.; c[7][3] = 1.;
+    for (int i = 0; i < 8; i++)
+    {
+        vtkMatrix4x4::MultiplyPoint(matrix2, c[i], c[i]);
+        c[i][0] /= c[i][3]; c[i][1] /= c[i][3]; c[i][2] /= c[i][3];
+    }
+
+    //
+    // Calculate the extents from the corners.
+    //
+    double xmin, xmax, ymin, ymax, zmin, zmax;
+    xmin = c[0][0]; xmax = c[0][0];
+    ymin = c[0][1]; ymax = c[0][1];
+    zmin = c[0][2]; zmax = c[0][2];
+    for (int i = 1; i < 8; i++)
+    {
+        xmin = std::min(xmin, c[i][0]);
+        xmax = std::max(xmax, c[i][0]);
+        ymin = std::min(ymin, c[i][1]);
+        ymax = std::max(ymax, c[i][1]);
+        zmin = std::min(zmin, c[i][2]);
+        zmax = std::max(zmax, c[i][2]);
+    }
+
+    extents[0] = xmin;
+    extents[1] = xmax;
+    extents[2] = ymin;
+    extents[3] = ymax;
+    extents[4] = zmin;
+    extents[5] = zmax;
+
+    // Assumes 2D.
+    area = (xmax - xmin) * (ymax - ymin);
+}
 
 void
 avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
@@ -431,7 +490,7 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
     if (transformMatrix[0] != DBL_MAX && transformMatrix[1] != DBL_MAX &&
         transformMatrix[2] != DBL_MAX && transformMatrix[3] != DBL_MAX)
     {
-        avtView2D::CalculateExtentsAndArea(extents, viewArea, transformMatrix);
+        Calculate2DExtentsAndArea(extents, viewArea, transformMatrix);
     }
 
     //
@@ -551,8 +610,84 @@ avtMRTestFileFormat::CalculateMesh2d(double &tileXmin, double &tileXmax,
 //  Creation:   Wed Jan  8 17:09:17 PST 2014
 //
 //  Modifications:
+//    Kathleen Biagas, Tue Mar 27 10:06:21 PDT 2018
+//    Copied avtView3D::CalculateExtentsAndArea to remove dependence upon
+//    avtView, and thus OpenGL.
 //
 // ****************************************************************************
+
+void
+Calculate3DExtentsAndArea(double *extents, double &area, double *matrix)
+{
+    //
+    // Invert the matrix.
+    //
+    double matrix2[16];
+    vtkMatrix4x4::Invert(matrix, matrix2);
+
+    //
+    // Transform the corners of the back plane, front plane and view plane
+    // in normalized device coordinates to world coordinates.
+    //
+    double c[12][4];
+    c[0][0]  = -1.; c[0][1]  = -1.; c[0][2]  = -1.; c[0][3]  = 1.;
+    c[1][0]  = +1.; c[1][1]  = -1.; c[1][2]  = -1.; c[1][3]  = 1.;
+    c[2][0]  = +1.; c[2][1]  = +1.; c[2][2]  = -1.; c[2][3]  = 1.;
+    c[3][0]  = -1.; c[3][1]  = +1.; c[3][2]  = -1.; c[3][3]  = 1.;
+    c[4][0]  = -1.; c[4][1]  = -1.; c[4][2]  = +1.; c[4][3]  = 1.;
+    c[5][0]  = +1.; c[5][1]  = -1.; c[5][2]  = +1.; c[5][3]  = 1.;
+    c[6][0]  = +1.; c[6][1]  = +1.; c[6][2]  = +1.; c[6][3]  = 1.;
+    c[7][0]  = -1.; c[7][1]  = +1.; c[7][2]  = +1.; c[7][3]  = 1.;
+    c[8][0]  = -1.; c[8][1]  = -1.; c[8][2]  =  0.; c[8][3]  = 1.;
+    c[9][0]  = +1.; c[9][1]  = -1.; c[9][2]  =  0.; c[9][3]  = 1.;
+    c[10][0] = +1.; c[10][1] = +1.; c[10][2] =  0.; c[10][3] = 1.;
+    c[11][0] = -1.; c[11][1] = +1.; c[11][2] =  0.; c[11][3] = 1.;
+    for (int i = 0; i < 12; i++)
+    {
+        vtkMatrix4x4::MultiplyPoint(matrix2, c[i], c[i]);
+        c[i][0] /= c[i][3]; c[i][1] /= c[i][3]; c[i][2] /= c[i][3];
+    }
+
+    //
+    // Calculate the extents from the corners.
+    //
+    double xmin, xmax, ymin, ymax, zmin, zmax;
+    xmin = c[0][0]; xmax = c[0][0];
+    ymin = c[0][1]; ymax = c[0][1];
+    zmin = c[0][2]; zmax = c[0][2];
+    for (int i = 1; i < 8; i++)
+    {
+        xmin = std::min(xmin, c[i][0]);
+        xmax = std::max(xmax, c[i][0]);
+        ymin = std::min(ymin, c[i][1]);
+        ymax = std::max(ymax, c[i][1]);
+        zmin = std::min(zmin, c[i][2]);
+        zmax = std::max(zmax, c[i][2]);
+    }
+    
+    extents[0] = xmin;
+    extents[1] = xmax;
+    extents[2] = ymin;
+    extents[3] = ymax;
+    extents[4] = zmin;
+    extents[5] = zmax;
+
+    //
+    // Calculate the area from the corners of the view plane.
+    //
+    double v1[3], v2[3], v3[3];
+    v1[0] = c[11][0] - c[8][0];
+    v1[1] = c[11][1] - c[8][1];
+    v1[2] = c[11][2] - c[8][2];
+    v2[0] = c[9][0] - c[8][0];
+    v2[1] = c[9][1] - c[8][1];
+    v2[2] = c[9][2] - c[8][2];
+    v3[0] = v1[1] * v2[2] - v1[2] * v2[1];
+    v3[1] = v1[2] * v2[0] - v1[0] * v2[2];
+    v3[2] = v1[0] * v2[1] - v1[1] * v2[0];
+    area = std::sqrt(v3[0] * v3[0] + v3[1] * v3[1] + v3[2] * v3[2]);
+}
+
 
 void
 avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
@@ -568,7 +703,7 @@ avtMRTestFileFormat::CalculateMesh3d(double &tileXmin, double &tileXmax,
     if (transformMatrix[0] != DBL_MAX && transformMatrix[1] != DBL_MAX &&
         transformMatrix[2] != DBL_MAX && transformMatrix[3] != DBL_MAX)
     {
-        avtView3D::CalculateExtentsAndArea(extents, viewArea, transformMatrix);
+        Calculate3DExtentsAndArea(extents, viewArea, transformMatrix);
     }
 
     //

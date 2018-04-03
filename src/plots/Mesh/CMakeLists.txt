@@ -13,6 +13,14 @@ SET(LIBI_SOURCES
 MeshPluginInfo.C
 )
 
+set(MESH_OPENGL_SOURCES
+vtkOpenGLMeshPlotMapper.C
+)
+
+include(${VISIT_SOURCE_DIR}/CMake/VisItObjectFactory.cmake)
+visit_add_override(MeshPlot vtkMeshPlotMapper vtkOpenGLMeshPlotMapper)
+visit_object_factory_configure(MeshPlot "${visit_module_overrides}")
+
 SET(LIBG_SOURCES
 MeshGUIPluginInfo.C
 QvisMeshPlotWindow.C
@@ -27,6 +35,10 @@ MeshViewerEnginePluginInfo.C
 MeshViewerPluginInfo.C
 avtMeshPlot.C
 avtMeshFilter.C
+avtMeshPlotMapper.C
+vtkMeshPlotMapper.C
+${MESH_OPENGL_SOURCES}
+${CMAKE_CURRENT_BINARY_DIR}/MeshPlotObjectFactory.C
 ${COMMON_SOURCES}
 )
 
@@ -35,8 +47,13 @@ MeshViewerEnginePluginInfo.C
 MeshEnginePluginInfo.C
 avtMeshPlot.C
 avtMeshFilter.C
+avtMeshPlotMapper.C
+vtkMeshPlotMapper.C
+${MESH_OPENGL_SOURCES}
+${CMAKE_CURRENT_BINARY_DIR}/MeshPlotObjectFactory.C
 ${COMMON_SOURCES}
 )
+
 
 
 IF(VISIT_PYTHON_SCRIPTING)
@@ -75,16 +92,13 @@ ${VISIT_INCLUDE_DIR}/viewer/rpc
 ${VISIT_INCLUDE_DIR}/winutil
 ${VISIT_INCLUDE_DIR}/visit_vtk/full
 ${VISIT_INCLUDE_DIR}/visit_vtk/lightweight
-${QT_INCLUDE_DIR}
-${QT_QTCORE_INCLUDE_DIR}
-${QT_QTGUI_INCLUDE_DIR}
 ${EAVL_INCLUDE_DIR}
 ${VTKM_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 ${PYINCLUDES}
 )
 
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${QT_LIBRARY_DIR} ${QWT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} )
 
 ADD_LIBRARY(IMeshPlot ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IMeshPlot visitcommon)
@@ -96,7 +110,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
     TARGET_LINK_LIBRARIES(GMeshPlot visitcommon gui )
 
     ADD_LIBRARY(VMeshPlot ${LIBV_SOURCES})
-    TARGET_LINK_LIBRARIES(VMeshPlot visitcommon viewer )
+    TARGET_LINK_LIBRARIES(VMeshPlot visitcommon viewer)
 
     SET(INSTALLTARGETS ${INSTALLTARGETS} GMeshPlot VMeshPlot)
 

@@ -36,7 +36,6 @@
 *
 *****************************************************************************/
 #include "vtkOpenGLTexturedBackgroundMapper.h"
-#include <avtOpenGLExtensionManager.h>
 #include <vtkCamera.h>
 #include <vtkTexture.h>
 #include <vtkViewport.h>
@@ -44,6 +43,7 @@
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 #include <vtkMatrix4x4.h>
+#include <vtk_glew.h>
 
 #include <math.h>
 

@@ -37,6 +37,7 @@
 *****************************************************************************/
 #ifndef QVIS_FONT_ATTRIBUTES_WIDGET_H
 #define QVIS_FONT_ATTRIBUTES_WIDGET_H
+#include <gui_exports.h>
 #include <QFrame>
 #include <FontAttributes.h>
 
@@ -64,9 +65,12 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Thu Jun  5 16:05:23 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Mon Apr 10 16:01:45 PDT 2017
+//   Add ability to completely hide opacity widget.
+//
 // ****************************************************************************
 
-class QvisFontAttributesWidget : public QFrame
+class GUI_API QvisFontAttributesWidget : public QFrame
 {
     Q_OBJECT
 public:
@@ -76,6 +80,7 @@ public:
     void setFontAttributes(const FontAttributes &);
     const FontAttributes &getFontAttributes();
 
+    void hideOpacity();
     void disableOpacity();
 signals:
     void fontChanged(const FontAttributes &);
@@ -92,6 +97,7 @@ private:
     void GetCurrentValues(FontAttributes &, int = -1);
     void Update(int = -1);
     bool               opacityEnabled;
+    bool               opacityHidden;
 
     FontAttributes     atts;
     QNarrowLineEdit   *fontScale;

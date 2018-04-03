@@ -45,7 +45,6 @@
 #include <float.h>
 #include <vector>
 
-#include <vtkDataObjectCollection.h>
 #include <avtDecorationsDrawable.h>
 
 #include <DebugStream.h>

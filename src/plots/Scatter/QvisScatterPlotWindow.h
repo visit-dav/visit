@@ -51,6 +51,7 @@ class QButtonGroup;
 class QRadioButton;
 class QvisColorTableWidget;
 class QvisColorButton;
+class QvisPointControl;
 class QvisVariableButton;
 
 // ****************************************************************************
@@ -76,6 +77,9 @@ class QvisVariableButton;
 //
 //   Kathleen Bonnell, Mon Jan 17 18:10:28 MST 2011
 //   Change colorTableButton to colorTableWidget to gain invert toggle.
+//
+//   Kathleen Biagas, Tue Sep 20 16:30:47 PDT 2016
+//   Use QvisPointControl, for consistency.
 //
 // ****************************************************************************
 
@@ -132,8 +136,11 @@ private slots:
     void var4MaxProcessText();
     void var4ScalingChanged(int val);
     void var4SkewFactorProcessText();
-    void pointSizeProcessText();
+
+    void pointSizeChanged(double);
+    void pointSizePixelsChanged(int);
     void pointTypeChanged(int val);
+
     void scaleCubeChanged(bool val);
     void colorModeChanged(int index);
     void colorTableNameChanged(bool useDefault, const QString &ctName);
@@ -186,9 +193,7 @@ private:
     QLabel    *zCoordRoleLabel;
     QLabel    *colorRoleLabel;
 
-    QLineEdit *pointSize;
-    QLabel    *pointSizeLabel;
-    QComboBox *pointType;
+    QvisPointControl *pointControl;
     QCheckBox *scaleCube;
     QButtonGroup *colorModeButtons;
     QRadioButton *colorTableRadioButton;

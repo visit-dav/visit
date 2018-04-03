@@ -99,8 +99,6 @@ const struct Setting s::settings[] = {
      "Library with mangled offscreen mesa symbols."},
     {"system-gl", lib_gl, true, "--system-gl-lib", "VISIT_GL_LIB",
      "Library which implements OpenGL."},
-    {"tuvok-shader-dir", "./share/Shaders", true, "--tuvok-shaders",
-     "VISIT_TUVOK_SHADER_DIR", "Directory which holds Tuvok's GLSL shaders."},
     {"x-args", "", false, "-x-args", "VISIT_X_ARGS",
      "Arguments to pass to X servers that VisIt starts up."},
     {"x-display", "", false, "-display", "VISIT_DISPLAY",

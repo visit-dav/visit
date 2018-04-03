@@ -51,6 +51,7 @@
 #include <vtkDataSet.h>
 #include <vtkDataSetRemoveGhostCells.h>
 #include <vtkGeometryFilter.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkPoints.h>
 #include <vtkPolyData.h>
@@ -153,7 +154,10 @@ avtRevolvedSurfaceArea::PreExecute(void)
 //
 //    Kathleen Biagas, Fri Jan 25 16:30:50 PST 2013
 //    Call Update on filter not data object.
-//   
+//
+//    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
+//    VTK-8, API for updating GhostLevel changed.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -192,7 +196,7 @@ avtRevolvedSurfaceArea::DeriveVariable(vtkDataSet *in_ds, int currentDomainsInde
         boundaryFilter->ColoringOff();
     
         boundaryFilter->SetInputConnection(geomFilter->GetOutputPort());
-        vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(boundaryFilter->GetInformation(), 2);
+        boundaryFilter->GetInformation()->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 2);
         boundaryFilter->Update();
 
         allLines = boundaryFilter->GetOutput();

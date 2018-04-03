@@ -44,20 +44,6 @@
 #
 #*****************************************************************************
 
-if(VISIT_QT5)
-    set(pyside_qt_includes
-        ${Qt5Core_INCLUDE_DIRS}
-        ${Qt5Gui_INCLUDE_DIRS}
-        ${Qt5Widgets_INCLUDE_DIRS}
-        ${Qt5OpenGL_INCLUDE_DIRS})
-else()
-    set(pyside_qt_includes
-        ${QT_QTCORE_INCLUDE_DIR}
-        ${QT_QTGUI_INCLUDE_DIR}
-        ${QT_QTOPENGL_INCLUDE_DIR}
-        ${QT_INCLUDE_DIR})
-endif()
-
 set(pyside_gui_include_paths
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${SHIBOKEN_INCLUDE_DIR}
@@ -109,18 +95,14 @@ ${CMAKE_CURRENT_BINARY_DIR}/pyside_gui/pysidegui_wrapper.cpp
 ${CMAKE_CURRENT_BINARY_DIR}/pyside_gui/guiwrapper_wrapper.cpp
 ${CMAKE_CURRENT_BINARY_DIR}/pyside_gui/pyside_gui_module_wrapper.cpp)
 
-IF(WIN32)
-  LINK_DIRECTORIES(${QT_SHAREDLIB_DIR} ${QT_LIBRARY_DIR})
-ENDIF(WIN32)
 LINK_DIRECTORIES(${QWT_LIBRARY_DIR})
 
 #
 # For dev build, we may need to link to mesa on Linux.
 #
-IF(MESA_FOUND)
-    set(pyside_gui_link_libs ${pyside_gui_link_libs} ${MESA_LIB})
-    LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${MESA_LIBRARY_DIR})
-ENDIF(MESA_FOUND)
+IF(OSMESA_FOUND)
+    set(pyside_gui_link_libs ${pyside_gui_link_libs} ${OSMESA_LIBRARIES})
+ENDIF()
 
 #
 # If we enable eavl, it will appear in the link line, so add ${EAVL_LIBRARY_DIR}

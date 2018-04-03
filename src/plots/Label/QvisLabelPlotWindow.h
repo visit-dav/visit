@@ -43,6 +43,8 @@
 #include <AttributeSubject.h>
 
 class LabelAttributes;
+class FontAttributes;
+class QFrame;
 class QLabel;
 class QButtonGroup;
 class QCheckBox;
@@ -51,7 +53,7 @@ class QGroupBox;
 class QDoubleSpinBox;
 class QLineEdit;
 class QSpinBox;
-class QvisColorButton;
+class QvisFontAttributesWidget;
 
 // ****************************************************************************
 // Class: QvisLabelPlotWindow
@@ -104,12 +106,8 @@ private slots:
     void depthTestButtonGroupChanged(int);
     void labelDisplayFormatChanged(int val);
 
-    void specifyTextColor1Toggled(bool val);
-    void textColor1Changed(const QColor &color);
-    void textHeight1Changed(double val);
-    void specifyTextColor2Toggled(bool val);
-    void textColor2Changed(const QColor &color);
-    void textHeight2Changed(double val);
+    void textFont1Changed(const FontAttributes &);
+    void textFont2Changed(const FontAttributes &);
 
     void horizontalJustificationChanged(int val);
     void verticalJustificationChanged(int val);
@@ -130,14 +128,15 @@ private:
 
     QGroupBox       *formattingGroupBox;
     QComboBox       *labelDisplayFormatComboBox;
-    QvisColorButton *textColor1Button;
-    QCheckBox       *specifyTextColor1Toggle;
-    QvisColorButton *textColor2Button;
-    QCheckBox       *specifyTextColor2Toggle;
-    QLabel          *textHeight1Label;
-    QDoubleSpinBox  *textHeight1SpinBox;
-    QLabel          *textHeight2Label;
-    QDoubleSpinBox  *textHeight2SpinBox;
+
+    QvisFontAttributesWidget  *textFont1;
+    QvisFontAttributesWidget  *textFont2;
+    QFrame          *cellFrame;
+    QLabel          *cellLabel;
+    QFrame          *nodeFrame;
+    QLabel          *nodeLabel;
+    QFrame          *bottomFrame;
+
     QComboBox       *horizontalJustificationComboBox;
     QComboBox       *verticalJustificationComboBox;
     QLineEdit       *formatTemplate;

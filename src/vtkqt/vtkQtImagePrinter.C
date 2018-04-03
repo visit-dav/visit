@@ -211,17 +211,8 @@ vtkQtImagePrinter::WriteFile(ofstream *, vtkImageData *data, int extent[6], int 
     //
     int vptX = (print.width() - vptW) / 2;
     int vptY = (print.height() - vptH) / 2;
-#if defined(_WIN32) && QT_VERSION == 302
-    // At this point, I'm not sure whether this is because of Windows
-    // or because of printing support in Qt 3.0.2. Just make the image's
-    // viewport larger for now.
-    float scale = 6.3333f;
-    paint.setViewport(vptX*scale, vptY*scale, vptW*scale, vptH*scale);
-//    qDebug("paint.setViewport1(%d,%d,%d,%d)", vptX*scale, vptY*scale, vptW*scale, vptH*scale);
-#else
     paint.setViewport(vptX, vptY, vptW, vptH);
 //    qDebug("paint.setViewport2(%d,%d,%d,%d)", vptX, vptY, vptW, vptH);
-#endif
     paint.setWindow(0, 0, rowLength, columnHeight);
 //    qDebug("paint.setWindow(0,0,%d,%d)", rowLength, columnHeight);
 

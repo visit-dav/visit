@@ -51,7 +51,7 @@
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkOpenGLRenderWindow.h>
-#include <vtkOpenGLExtensionManager.h>
+#include <vtkOpenGL.h>
 
 #define DS_NOT_CHECKED    0
 #define DS_NOT_AVAILABLE  1
@@ -224,6 +224,10 @@ VisWinRenderingWithoutWindow::RenderRenderWindow(void)
 //
 // ****************************************************************************
 
+
+#define safes(arg) (arg?((const char *)arg):"")
+
+
 void
 VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
 {
@@ -255,34 +259,11 @@ VisWinRenderingWithoutWindow::RealizeRenderWindow(void)
     debug2 << "render window is a " << renWin->GetClassName() << endl;
     vtkOpenGLRenderWindow *glrw = dynamic_cast<vtkOpenGLRenderWindow*>(renWin);
     if (!glrw) return;
-    vtkOpenGLExtensionManager *em = glrw->GetExtensionManager();
-    debug2 << "GLVendor = " << em->GetDriverGLVendor() << endl
-        << "GLVersion = " << em->GetDriverGLVersion() << endl
-        << "GLRenderer = " << em->GetDriverGLRenderer() << endl;
+
+    const char *glvers = safes(glGetString(GL_VERSION));
+    debug2 << "  GLVersion: " << glvers << endl;
+    // if we need more information, perhaps we should call
+    // vtkOpenGLRenderWindow::ReportCapabilities()
+
 }
 
-// ****************************************************************************
-//  Method: VisWinRenderingWithoutWindow::SetImmediateRenderingMode
-//
-//  Purpose:
-//      Prevent VTK from using display lists.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Fri Sep 30 18:20:10 PDT 2011
-//
-//  Notes: This offscreen rendering colleague is responsible for rendering
-//         using Mesa. As of VTK 5.8 and Mesa 7.8.2, there are some rare
-//         glitches with offscreen Mesa vbo's that cause text to go missing.
-//         By forcing all of VTK to not use display lists, we avoid the 
-//         problems.
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-VisWinRenderingWithoutWindow::SetImmediateModeRendering(bool)
-{
-    // In offscreen rendering, never use display lists.
-    vtkMapper::GlobalImmediateModeRenderingOn();
-}

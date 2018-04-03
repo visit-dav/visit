@@ -1,11 +1,15 @@
 function bv_glu_initialize
 {
-    export DO_GLU="no"
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        export DO_GLU="yes"
+    else 
+        export DO_GLU="no"
+    fi
 }
 
 function bv_glu_enable
 {
-    if [[ "$DO_MESA" == "yes" || "$DO_OPENSWR" == "yes" ]] ; then
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
         DO_GLU="yes"
     fi
 }
@@ -17,8 +21,11 @@ function bv_glu_disable
 
 function bv_glu_depends_on
 {
-    # We install into the openswr directory so it needs to be on.
-    echo "openswr"
+    # We install into the mesagl directory so it needs to be on.
+
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        echo "mesagl"
+    fi
 }
 
 function bv_glu_info
@@ -71,10 +78,8 @@ function bv_glu_initialize_vars
 {
     info "initalizing glu vars"
     if [[ "$DO_GLU" == "yes" ]]; then
-        if [[ "$DO_MESA" == "yes" ]] ; then
-            GLU_INSTALL_DIR="${MESA_INSTALL_DIR}"
-        elif [[ "$DO_OPENSWR" == "yes" ]] ; then
-            GLU_INSTALL_DIR="${OPENSWR_INSTALL_DIR}"
+        if [[ "$DO_MESAGL" == "yes" ]] ; then
+            GLU_INSTALL_DIR="${MESAGL_INSTALL_DIR}"
         else
             GLU_INSTALL_DIR="${VISITDIR}/glu/${GLU_VERSION}/${VISITARCH}"
         fi
@@ -107,8 +112,47 @@ function bv_glu_dry_run
     fi
 }
 
+function apply_glu_ppc64le_config_patch
+{
+  # patch glu's config.guess to allow it to recognize ppc64le
+  patch -p0 << \EOF
+*** ./glu-9.0.0/config.guess.orig 2018-03-22 11:22:30.000000000 
+--- ./glu-9.0.0/config.guess 2018-03-22 11:23:23.000000000 
+***************
+*** 984,995 ****
+--- 984,998 ----
+  	  *)    echo hppa-unknown-linux-${LIBC} ;;
+  	esac
+  	exit ;;
+      ppc64:Linux:*:*)
+  	echo powerpc64-unknown-linux-${LIBC}
+  	exit ;;
++     ppc64le:Linux:*:*)
++ 	echo powerpc64-unknown-linux-${LIBC}
++ 	exit ;;
+      ppc:Linux:*:*)
+  	echo powerpc-unknown-linux-${LIBC}
+  	exit ;;
+      s390:Linux:*:* | s390x:Linux:*:*)
+  	echo ${UNAME_MACHINE}-ibm-linux
+  	exit ;;
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "glu patch for config.guess failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_glu_patch
 {
+    apply_glu_ppc64le_config_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
     return 0
 }
 
@@ -153,21 +197,12 @@ function build_glu
         GLU_STATIC_DYNAMIC="--disable-shared --enable-static"
     fi
 
-    # NOTE: we install the library into the Mesa or OpenSWR directories.
-    if [[ "$DO_MESA" == "yes" ]] ; then
-        issue_command env PKG_CONFIG_LIBDIR=${MESA_INSTALL_DIR}/lib \
+    # NOTE: we install the library into the MesaGL directories.
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        issue_command env PKG_CONFIG_LIBDIR=${MESAGL_INSTALL_DIR}/lib \
             CC=${C_COMPILER} CFLAGS="${C_OPT_FLAGS}" \
             CXX=${CXX_COMPILER} CXXFLAGS="${CXX_OPT_FLAGS}" \
-           ./configure --prefix=${MESA_INSTALL_DIR} ${GLU_STATIC_DYNAMIC}
-        if [[ $? != 0 ]] ; then
-            warn "GLU: 'configure' failed.  Giving up"
-            return 1
-        fi
-    elif [[ "$DO_OPENSWR" == "yes" ]] ; then
-        issue_command env PKG_CONFIG_LIBDIR=${OPENSWR_INSTALL_DIR}/lib \
-            CC=${C_COMPILER} CFLAGS="${C_OPT_FLAGS}" \
-            CXX=${CXX_COMPILER} CXXFLAGS="${CXX_OPT_FLAGS}" \
-           ./configure --prefix=${OPENSWR_INSTALL_DIR} ${GLU_STATIC_DYNAMIC}
+           ./configure --prefix=${MESAGL_INSTALL_DIR} ${GLU_STATIC_DYNAMIC}
         if [[ $? != 0 ]] ; then
             warn "GLU: 'configure' failed.  Giving up"
             return 1
@@ -212,12 +247,8 @@ function bv_glu_is_installed
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         EXT="a"
     fi
-    if [[ "$DO_MESA" == "yes" ]] ; then
-        if [[ -e $VISITDIR/mesa/$MESA_VERSION/$VISITARCH/lib/libGLU.${EXT} ]] ; then
-            return 1
-        fi
-    elif [[ "$DO_OPENSWR" == "yes" ]] ; then
-        if [[ -e $VISITDIR/openswr/$OPENSWR_VERSION/$VISITARCH/lib/libGLU.${EXT} ]] ; then
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        if [[ -e $VISITDIR/mesagl/$MESAGL_VERSION/$VISITARCH/lib/libGLU.${EXT} ]] ; then
             return 1
         fi
     fi

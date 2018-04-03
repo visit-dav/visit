@@ -71,13 +71,9 @@ IF(VISIT_PYSIDE_DIR)
     set(CMAKE_PREFIX_PATH ${VISIT_PYSIDE_DIR}/lib/cmake/ ${CMAKE_PREFIX_PATH})
     set(CMAKE_LIBRARY_PATH ${VISIT_PYSIDE_DIR}/lib ${CMAKE_LIBRARY_PATH})
 
-    if (VISIT_QT5)
-       set(PYSIDE_VERSION "2.0.0")
-       set(PYSIDE_SHORT_VERSION "2.0")
-       set(pyside_suffix "2")
-    else()
-       set(PYSIDE_VERSION "1.2.2")
-    endif()
+    set(PYSIDE_VERSION "2.0.0")
+    set(PYSIDE_SHORT_VERSION "2.0")
+    set(pyside_suffix "2")
 
     if(NOT Shiboken${pyside_suffix}_FOUND)
         find_package(Shiboken${pyside_suffix} ${PYSIDE_VERSION})
@@ -102,35 +98,29 @@ else()
 ENDIF()
 
 IF(PySide_FOUND)
-    if(VISIT_QT5)
-        SET(pysidename "PySide2")
+    SET(pysidename "PySide2")
 
-        IF(NOT APPLE)
-            SET_UP_THIRD_PARTY(PYSIDE lib include 
-                    pyside2-python${PYTHON_VERSION} shiboken2-python${PYTHON_VERSION})
-        ELSE(NOT APPLE)
-            IF(PYSIDE_LIBNAMES_AFFIX_V)
-                    SET(PYTHON_VERSION_V ${PYTHON_VERSION}v)
-            ELSE(PYSIDE_LIBNAMES_AFFIX_V)
-                    SET(PYTHON_VERSION_V ${PYTHON_VERSION})
-            ENDIF(PYSIDE_LIBNAMES_AFFIX_V)
+    IF(NOT APPLE)
+        SET_UP_THIRD_PARTY(PYSIDE lib include 
+                pyside2-python${PYTHON_VERSION} shiboken2-python${PYTHON_VERSION})
+    ELSE(NOT APPLE)
+        IF(PYSIDE_LIBNAMES_AFFIX_V)
+                SET(PYTHON_VERSION_V ${PYTHON_VERSION}v)
+        ELSE(PYSIDE_LIBNAMES_AFFIX_V)
+                SET(PYTHON_VERSION_V ${PYTHON_VERSION})
+        ENDIF(PYSIDE_LIBNAMES_AFFIX_V)
 
-            SET(PySide2_LIBRARIES
-                    pyside2-python${PYTHON_VERSION_V}
-                    pyside2-python${PYTHON_VERSION_V}.${PYSIDE_VERSION}
-                    pyside2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
-                    
-            SET(Shiboken2_LIBRARIES
-                    shiboken2-python${PYTHON_VERSION_V}
-                    shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_VERSION}
-                    shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
-            SET_UP_THIRD_PARTY(PYSIDE lib include ${PySide2_LIBRARIES} ${Shiboken2_LIBRARIES})
-        ENDIF(NOT APPLE)
-    else()
-        SET(pysidename "PySide")
-        SET_UP_THIRD_PARTY(PYSIDE lib include
-          pyside-python${PYTHON_VERSION} shiboken-python${PYTHON_VERSION})
-    endif()
+        SET(PySide2_LIBRARIES
+                pyside2-python${PYTHON_VERSION_V}
+                pyside2-python${PYTHON_VERSION_V}.${PYSIDE_VERSION}
+                pyside2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
+
+        SET(Shiboken2_LIBRARIES
+                shiboken2-python${PYTHON_VERSION_V}
+                shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_VERSION}
+                shiboken2-python${PYTHON_VERSION_V}.${PYSIDE_SHORT_VERSION})
+        SET_UP_THIRD_PARTY(PYSIDE lib include ${PySide2_LIBRARIES} ${Shiboken2_LIBRARIES})
+    ENDIF(NOT APPLE)
     # The PySide module is symlinked into the python install VisIt uses for 
     # dev builds.  For 'make install' and 'make package' we need to actually 
     # install the PySide SOs.

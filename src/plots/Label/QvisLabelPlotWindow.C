@@ -53,7 +53,7 @@
 #include <QLineEdit>
 #include <QRadioButton>
 #include <QSpinBox>
-#include <QvisColorButton.h>
+#include <QvisFontAttributesWidget.h>
 #include <snprintf.h>
 
 
@@ -237,51 +237,34 @@ QvisLabelPlotWindow::CreateWindowContents()
                                     formattingGroupBox), 0, 0);
 
 
-    specifyTextColor1Toggle = new QCheckBox(tr("Specify label color"),
-                                            formattingGroupBox);
-    connect(specifyTextColor1Toggle, SIGNAL(toggled(bool)),
-            this, SLOT(specifyTextColor1Toggled(bool)));
-    fmtLayout->addWidget(specifyTextColor1Toggle, 1, 0);
+    cellFrame = new QFrame(formattingGroupBox);
+    cellFrame->setFrameStyle(QFrame::HLine);
+    fmtLayout->addWidget(cellFrame, 1, 0, 1, 2);
+    cellLabel = new QLabel(tr("Cell labels"), formattingGroupBox);
+    fmtLayout->addWidget(cellLabel, 2, 0);
 
-    textColor1Button = new QvisColorButton(formattingGroupBox);
-    connect(textColor1Button, SIGNAL(selectedColor(const QColor&)),
-            this, SLOT(textColor1Changed(const QColor&)));
-    fmtLayout->addWidget(textColor1Button, 1, 1, Qt::AlignLeft);
+    textFont1 = new QvisFontAttributesWidget(formattingGroupBox);
+    textFont1->hideOpacity();
+    connect(textFont1, SIGNAL(fontChanged(const FontAttributes &)),
+            this, SLOT(textFont1Changed(const FontAttributes &)));
+    fmtLayout->addWidget(textFont1, 3, 0, 1, 2);
 
-    specifyTextColor2Toggle = new QCheckBox(tr("Specify node label color"),
-                                            formattingGroupBox);
-    connect(specifyTextColor2Toggle, SIGNAL(toggled(bool)),
-            this, SLOT(specifyTextColor2Toggled(bool)));
-    fmtLayout->addWidget(specifyTextColor2Toggle, 2, 0);
+    nodeFrame = new QFrame(formattingGroupBox);
+    nodeFrame->setFrameStyle(QFrame::HLine);
+    fmtLayout->addWidget(nodeFrame, 4, 0, 1, 2);
+    nodeLabel = new QLabel(tr("Node labels"), formattingGroupBox);
+    fmtLayout->addWidget(nodeLabel, 5, 0);
 
-    textColor2Button = new QvisColorButton(formattingGroupBox);
-    connect(textColor2Button, SIGNAL(selectedColor(const QColor&)),
-            this, SLOT(textColor2Changed(const QColor&)));
-    fmtLayout->addWidget(textColor2Button, 2, 1, Qt::AlignLeft);
 
-    textHeight1SpinBox = new QDoubleSpinBox(formattingGroupBox);
-    textHeight1SpinBox->setKeyboardTracking(false);
-    textHeight1SpinBox->setMinimum(0.0);
-    textHeight1SpinBox->setMaximum(100.0);
-    textHeight1SpinBox->setSingleStep(0.1);
-    textHeight1SpinBox->setSuffix("%");
-    connect(textHeight1SpinBox, SIGNAL(valueChanged(double)),
-            this, SLOT(textHeight1Changed(double)));
-    textHeight1Label = new QLabel(tr("Label height"),formattingGroupBox);
-    fmtLayout->addWidget(textHeight1Label, 3, 0);
-    fmtLayout->addWidget(textHeight1SpinBox, 3, 1);
+    textFont2 = new QvisFontAttributesWidget(formattingGroupBox);
+    textFont2->hideOpacity();
+    connect(textFont2, SIGNAL(fontChanged(const FontAttributes &)),
+            this, SLOT(textFont2Changed(const FontAttributes &)));
+    fmtLayout->addWidget(textFont2, 6, 0, 1, 2);
 
-    textHeight2SpinBox = new QDoubleSpinBox(formattingGroupBox);
-    textHeight2SpinBox->setKeyboardTracking(false);
-    textHeight2SpinBox->setMinimum(0.0);
-    textHeight2SpinBox->setMaximum(100.0);
-    textHeight2SpinBox->setSingleStep(0.1);
-    textHeight2SpinBox->setSuffix("%");
-    connect(textHeight2SpinBox, SIGNAL(valueChanged(double)),
-            this, SLOT(textHeight2Changed(double)));
-    textHeight2Label = new QLabel(tr("Node label height"),formattingGroupBox);
-    fmtLayout->addWidget(textHeight2Label, 4, 0);
-    fmtLayout->addWidget(textHeight2SpinBox, 4, 1);
+    bottomFrame = new QFrame(formattingGroupBox);
+    bottomFrame->setFrameStyle(QFrame::HLine);
+    fmtLayout->addWidget(bottomFrame, 7, 0, 1, 2);
 
     horizontalJustificationComboBox = new QComboBox(formattingGroupBox);
     horizontalJustificationComboBox->addItem(tr("Center"));
@@ -289,9 +272,9 @@ QvisLabelPlotWindow::CreateWindowContents()
     horizontalJustificationComboBox->addItem(tr("Right"));
     connect(horizontalJustificationComboBox, SIGNAL(activated(int)),
             this, SLOT(horizontalJustificationChanged(int)));
-    fmtLayout->addWidget(horizontalJustificationComboBox, 5, 1);
+    fmtLayout->addWidget(horizontalJustificationComboBox, 8, 1);
     fmtLayout->addWidget(new QLabel(tr("Horizontal justification"), 
-                                    formattingGroupBox), 5, 0);
+                                    formattingGroupBox), 8, 0);
 
     verticalJustificationComboBox = new QComboBox(formattingGroupBox);
     verticalJustificationComboBox->addItem(tr("Center"));
@@ -299,9 +282,9 @@ QvisLabelPlotWindow::CreateWindowContents()
     verticalJustificationComboBox->addItem(tr("Bottom"));
     connect(verticalJustificationComboBox, SIGNAL(activated(int)),
             this, SLOT(verticalJustificationChanged(int)));
-    fmtLayout->addWidget(verticalJustificationComboBox, 6, 1);
+    fmtLayout->addWidget(verticalJustificationComboBox, 9, 1);
     fmtLayout->addWidget(new QLabel(tr("Vertical justification"), 
-                                    formattingGroupBox), 6, 0);
+                                    formattingGroupBox), 9, 0);
 
     
     formatTemplate = new QLineEdit(QString(labelAtts->GetFormatTemplate().c_str()), 
@@ -309,8 +292,8 @@ QvisLabelPlotWindow::CreateWindowContents()
     connect(formatTemplate, SIGNAL(returnPressed()), 
             this, SLOT(formatTemplateChanged()));
 
-    fmtLayout->addWidget(formatTemplate, 7, 1);
-    fmtLayout->addWidget(new QLabel(tr("Format template"), formattingGroupBox), 7, 0);
+    fmtLayout->addWidget(formatTemplate, 10, 1);
+    fmtLayout->addWidget(new QLabel(tr("Format template"), formattingGroupBox), 10, 0);
 
     //
     // Create the misc stuff
@@ -382,22 +365,25 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             bool varIsMesh = labelAtts->GetVarType() == LabelAttributes::LABEL_VT_MESH;
             showNodesToggle->setEnabled(varIsMesh);
             showCellsToggle->setEnabled(varIsMesh);
-            specifyTextColor1Toggle->setText(varIsMesh?tr("Specify cell label color"):tr("Specify label color"));  
-            textHeight1Label->setText(varIsMesh?tr("Cell label height") : tr("Label height"));
+
             if(varIsMesh)
             {
-                textColor2Button->show();
-                specifyTextColor2Toggle->show();
-                textHeight2Label->show();
-                textHeight2SpinBox->show();
+                textFont2->show();
+                cellFrame->show();
+                cellLabel->show();
+                nodeFrame->show();
+                nodeLabel->show();
+                bottomFrame->show();
                 updateGeometry();
             }
             else
             {
-                textColor2Button->hide();
-                specifyTextColor2Toggle->hide();
-                textHeight2Label->hide();
-                textHeight2SpinBox->hide();
+                textFont2->hide();
+                cellFrame->hide();
+                cellLabel->hide();
+                nodeFrame->hide();
+                nodeLabel->hide();
+                bottomFrame->hide();
                 updateGeometry();
             }
             }
@@ -438,42 +424,19 @@ QvisLabelPlotWindow::UpdateWindow(bool doAll)
             numberOfLabelsSpinBox->setValue(labelAtts->GetNumberOfLabels());
             numberOfLabelsSpinBox->blockSignals(false);
             break;
-        case LabelAttributes::ID_specifyTextColor1:
-            specifyTextColor1Toggle->blockSignals(true);
-            specifyTextColor1Toggle->setChecked(labelAtts->GetSpecifyTextColor1());
-            specifyTextColor1Toggle->blockSignals(false);
-
-            textColor1Button->setEnabled(labelAtts->GetSpecifyTextColor1());
+        case LabelAttributes::ID_textFont1:
+             {
+             FontAttributes f = labelAtts->GetTextFont1();
+             f.SetScale(f.GetScale() *100.);
+             textFont1->setFontAttributes(f);
+             }
             break;
-        case LabelAttributes::ID_textColor1:
-            tempcolor = QColor(labelAtts->GetTextColor1().Red(),
-                               labelAtts->GetTextColor1().Green(),
-                               labelAtts->GetTextColor1().Blue());
-            textColor1Button->setButtonColor(tempcolor);
-            break;
-        case LabelAttributes::ID_textHeight1:
-            textHeight1SpinBox->blockSignals(true);
-            textHeight1SpinBox->setValue(labelAtts->GetTextHeight1() * 100.f);
-            textHeight1SpinBox->blockSignals(false);
-            break;
-
-        case LabelAttributes::ID_specifyTextColor2:
-            specifyTextColor2Toggle->blockSignals(true);
-            specifyTextColor2Toggle->setChecked(labelAtts->GetSpecifyTextColor2());
-            specifyTextColor2Toggle->blockSignals(false);
-
-            textColor2Button->setEnabled(labelAtts->GetSpecifyTextColor2());
-            break;
-        case LabelAttributes::ID_textColor2:
-            tempcolor = QColor(labelAtts->GetTextColor2().Red(),
-                               labelAtts->GetTextColor2().Green(),
-                               labelAtts->GetTextColor2().Blue());
-            textColor2Button->setButtonColor(tempcolor);
-            break;
-        case LabelAttributes::ID_textHeight2:
-            textHeight2SpinBox->blockSignals(true);
-            textHeight2SpinBox->setValue(labelAtts->GetTextHeight2() * 100.f);
-            textHeight2SpinBox->blockSignals(false);
+        case LabelAttributes::ID_textFont2:
+             {
+             FontAttributes f = labelAtts->GetTextFont2();
+             f.SetScale(f.GetScale() *100.);
+             textFont2->setFontAttributes(f);
+             }
             break;
         case LabelAttributes::ID_horizontalJustification:
             horizontalJustificationComboBox->blockSignals(true);
@@ -559,54 +522,20 @@ QvisLabelPlotWindow::GetCurrentValues(int which_widget)
         }
     }
 
-    // Do textHeight1
-    if(which_widget == LabelAttributes::ID_textHeight1  || doAll)
+    // Do textFont1
+    if(which_widget == LabelAttributes::ID_textFont1  || doAll)
     {
-        temp = textHeight1SpinBox->text();
-        int plen = (temp.indexOf(textHeight1SpinBox->prefix()) != -1) ? 
-            textHeight1SpinBox->prefix().length() : 0;
-        int slen = (temp.indexOf(textHeight1SpinBox->suffix()) != -1) ? 
-            textHeight1SpinBox->suffix().length() : 0;
-        temp = temp.mid(plen, temp.length() - plen - slen).simplified();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double val = temp.toDouble(&okay) * 0.01f;
-            if(okay)
-                labelAtts->SetTextHeight1(val);
-        }
-
-        if(!okay)
-        {
-            ResettingError(tr("text height"),
-                DoubleToQString(labelAtts->GetTextHeight1() * 100.));
-            labelAtts->SetTextHeight1(labelAtts->GetTextHeight1());
-        }
+        FontAttributes f = textFont1->getFontAttributes();
+        f.SetScale(f.GetScale() *0.01);
+        labelAtts->SetTextFont1(f);
     }
 
-    // Do textHeight2
-    if(which_widget == LabelAttributes::ID_textHeight2 || doAll)
+    // Do textFont2
+    if(which_widget == LabelAttributes::ID_textFont2  || doAll)
     {
-        temp = textHeight2SpinBox->text();
-        int plen = (temp.indexOf(textHeight2SpinBox->prefix()) != -1) ? 
-            textHeight2SpinBox->prefix().length() : 0;
-        int slen = (temp.indexOf(textHeight2SpinBox->suffix()) != -1) ? 
-            textHeight2SpinBox->suffix().length() : 0;
-        temp = temp.mid(plen, temp.length() - plen - slen).simplified();
-        okay = !temp.isEmpty();
-        if(okay)
-        {
-            double val = temp.toDouble(&okay)*0.01f;
-            if(okay)
-                labelAtts->SetTextHeight2(val);
-        }
-
-        if(!okay)
-        {
-            ResettingError(tr("text height"),
-                DoubleToQString(labelAtts->GetTextHeight2() * 100.));
-            labelAtts->SetTextHeight2(labelAtts->GetTextHeight2());
-        }
+        FontAttributes f = textFont2->getFontAttributes();
+        f.SetScale(f.GetScale() *0.01);
+        labelAtts->SetTextFont2(f);
     }
 
     // Do formatTemplate
@@ -806,51 +735,21 @@ QvisLabelPlotWindow::labelDisplayFormatChanged(int val)
 }
 
 void
-QvisLabelPlotWindow::textColor1Changed(const QColor &color)
+QvisLabelPlotWindow::textFont1Changed(const FontAttributes &f)
 {
-    ColorAttribute temp(color.red(), color.green(), color.blue());
-    labelAtts->SetTextColor1(temp);
+    FontAttributes f2 = const_cast<FontAttributes &>(f);
+    f2.SetScale(f2.GetScale() *0.01);
+    labelAtts->SetTextFont1(f2);
     SetUpdate(false);
     Apply();
 }
 
 void
-QvisLabelPlotWindow::textColor2Changed(const QColor &color)
+QvisLabelPlotWindow::textFont2Changed(const FontAttributes &f)
 {
-    ColorAttribute temp(color.red(), color.green(), color.blue());
-    labelAtts->SetTextColor2(temp);
-    SetUpdate(false);
-    Apply();
-}
-
-void
-QvisLabelPlotWindow::specifyTextColor1Toggled(bool val)
-{
-    labelAtts->SetSpecifyTextColor1(val);
-    Apply();
-}
-
-void
-QvisLabelPlotWindow::specifyTextColor2Toggled(bool val)
-{
-    labelAtts->SetSpecifyTextColor2(val);
-    Apply();
-}
-
-void
-QvisLabelPlotWindow::textHeight1Changed(double val)
-{
-    float textHeight = val * 0.01f;
-    labelAtts->SetTextHeight1(textHeight);
-    SetUpdate(false);
-    Apply();
-}
-
-void
-QvisLabelPlotWindow::textHeight2Changed(double val)
-{
-    float textHeight = val * 0.01f;
-    labelAtts->SetTextHeight2(textHeight);
+    FontAttributes f2 = const_cast<FontAttributes &>(f);
+    f2.SetScale(f2.GetScale() *0.01);
+    labelAtts->SetTextFont2(f2);
     SetUpdate(false);
     Apply();
 }

@@ -83,7 +83,7 @@ QvisDialogLineEdit::QvisDialogLineEdit(QWidget *parent)
             this, SIGNAL(textChanged(const QString &)));
     hLayout->addWidget(lineEdit);
     pushButton = new QPushButton("...", this);
-#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
+#if !defined(Q_OS_MAC)
     pushButton->setMaximumWidth(
         fontMetrics().boundingRect("...").width() + 6);
 #endif
@@ -198,7 +198,7 @@ QvisDialogLineEdit::setFallbackPath(const QString &p)
 void
 QvisDialogLineEdit::changeEvent(QEvent *e)
 {
-#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
+#if !defined(Q_OS_MAC)
     if(e->type() == QEvent::FontChange)
     {
         pushButton->setMaximumWidth(

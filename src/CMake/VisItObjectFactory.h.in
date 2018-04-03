@@ -1,0 +1,26 @@
+#ifndef __@visit-module@ObjectFactory_h
+#define __@visit-module@ObjectFactory_h
+
+#include <vtkObjectFactory.h>
+
+class @visit-module@ObjectFactory : public vtkObjectFactory
+{
+public:
+  static @visit-module@ObjectFactory * New();
+  vtkTypeMacro(@visit-module@ObjectFactory, vtkObjectFactory)
+
+  const char * GetDescription() { return "@visit-module@ factory overrides."; }
+
+  const char * GetVTKSourceVersion();
+
+  void PrintSelf(ostream &os, vtkIndent indent);
+
+protected:
+  @visit-module@ObjectFactory();
+
+private:
+  @visit-module@ObjectFactory(const @visit-module@ObjectFactory&); // Not implemented
+  void operator=(const @visit-module@ObjectFactory&);      // Not implemented
+};
+
+#endif // __@visit-module@ObjectFactory_h

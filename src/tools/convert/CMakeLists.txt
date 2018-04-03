@@ -96,10 +96,7 @@ ${VTK_INCLUDE_DIRS}
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY}
-${MESA_LIBRARY_DIR}
-${GLEW_LIBRARY_DIR}
 ${EAVL_LIBRARY_DIR}
-${VTK_LIBRARY_DIRS}
 ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 ${ICET_LIBRARY_DIR}
 )
@@ -109,7 +106,6 @@ vtkjpeg
 vtkpng
 ${VTKZLIB_LIB}
 ${VTK_FREETYPE_LIBRARIES}
-vtkftgl
 )
 
 IF(VISIT_STATIC)
@@ -123,50 +119,52 @@ VISIT_TOOLS_ADD_FOLDER(convert visitconvert_ser)
 
 IF(VISIT_DBIO_ONLY)
     SET_TARGET_PROPERTIES(visitconvert_ser PROPERTIES OUTPUT_NAME visitconvert_ser_lite)
-    TARGET_LINK_LIBRARIES(visitconvert_ser 
+    TARGET_LINK_LIBRARIES(visitconvert_ser
         ${VISIT_EXE_LINKER_FLAGS}
         ${engine_ser_exe_IDatabase}
         ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
         avtdbatts
         avtpipeline_ser
-        lightweight_visit_vtk 
+        lightweight_visit_vtk
         visitcommon
         visit_vtk
-        ${ALL_THIRDPARTY_IO_LIB} 
+        ${ALL_THIRDPARTY_IO_LIB}
         ${VTK_EXTRA_LIBS}
-        ${MESA_LIBS}
-        ${OPENGL_LIBRARIES}
-        ${CMAKE_THREAD_LIBS} 
+        ${CMAKE_THREAD_LIBS}
         ${ZLIB_LIB}
     )
-ELSE(VISIT_DBIO_ONLY)
-    TARGET_LINK_LIBRARIES(visitconvert_ser 
+ELSE()
+    TARGET_LINK_LIBRARIES(visitconvert_ser
         ${VISIT_EXE_LINKER_FLAGS}
         ${engine_ser_exe_IDatabase}
         ${engine_ser_exe_EDatabase_ser}
         avtdatabase_ser
         avtdbatts
-        avtdbin_ser 
+        avtdbin_ser
         avtexpressions_ser
-        avtfilters_ser 
+        avtfilters_ser
         avtmath
         avtmir_ser
         avtpipeline_ser
-        avtplotter_ser 
-        avtview 
-        lightweight_visit_vtk 
+        avtplotter_ser
+        avtview
+        lightweight_visit_vtk
         visitcommon
-        visit_verdict  
-        visit_vtk 
-        ${ALL_THIRDPARTY_IO_LIB} 
+        visit_verdict
+        visit_vtk
+        ${ALL_THIRDPARTY_IO_LIB}
         ${VTK_EXTRA_LIBS}
-        ${MESA_LIBS}
         ${OPENGL_LIBRARIES}
-        ${CMAKE_THREAD_LIBS} 
+        ${CMAKE_THREAD_LIBS}
         ${ZLIB_LIB}
     )
-ENDIF(VISIT_DBIO_ONLY)
+    if(HAVE_OSMESA)
+        target_link_libraries(visitconvert_ser ${OSMESA_LIBRARIES})
+    elseif(HAVE_EGL)
+        target_link_libraries(visitconvert_ser ${EGL_LIBRARIES})
+    endif()
+ENDIF()
 
 # If we're building statically then convert can't be linked until the plugin
 # sources are built
@@ -185,49 +183,51 @@ IF(VISIT_PARALLEL)
 
     IF(VISIT_DBIO_ONLY)
         SET_TARGET_PROPERTIES(visitconvert_par PROPERTIES OUTPUT_NAME visitconvert_par_lite)
-        PARALLEL_EXECUTABLE_LINK_LIBRARIES(visitconvert_par 
+        PARALLEL_EXECUTABLE_LINK_LIBRARIES(visitconvert_par
             ${engine_par_exe_IDatabase_par}
             ${engine_par_exe_EDatabase_par}
             avtdatabase_par
             avtdbatts
             avtpipeline_par
-            lightweight_visit_vtk 
+            lightweight_visit_vtk
             visitcommon
-            visit_verdict  
-            visit_vtk 
-            ${ALL_THIRDPARTY_IO_LIB} 
+            visit_verdict
+            visit_vtk
+            ${ALL_THIRDPARTY_IO_LIB}
             ${VTK_EXTRA_LIBS}
-            ${MESA_LIBS}
-            ${OPENGL_LIBRARIES}
-            ${CMAKE_THREAD_LIBS} 
-            ${ZLIB_LIB} 
+            ${CMAKE_THREAD_LIBS}
+            ${ZLIB_LIB}
         )
-    ELSE(VISIT_DBIO_ONLY)
-        PARALLEL_EXECUTABLE_LINK_LIBRARIES(visitconvert_par 
+    ELSE()
+        PARALLEL_EXECUTABLE_LINK_LIBRARIES(visitconvert_par
             ${engine_par_exe_IDatabase_par}
             ${engine_par_exe_EDatabase_par}
             avtdatabase_par
             avtdbatts
-            avtdbin_par 
+            avtdbin_par
             avtexpressions_par
-            avtfilters_par 
+            avtfilters_par
             avtmath
             avtmir_par
             avtpipeline_par
-            avtplotter_par 
-            avtview 
-            lightweight_visit_vtk 
+            avtplotter_par
+            avtview
+            lightweight_visit_vtk
             visitcommon
-            visit_verdict  
-            visit_vtk 
-            ${ALL_THIRDPARTY_IO_LIB} 
+            visit_verdict
+            visit_vtk
+            ${ALL_THIRDPARTY_IO_LIB}
             ${VTK_EXTRA_LIBS}
-            ${MESA_LIBS}
             ${OPENGL_LIBRARIES}
-            ${CMAKE_THREAD_LIBS} 
-            ${ZLIB_LIB} 
+            ${CMAKE_THREAD_LIBS}
+            ${ZLIB_LIB}
         )
-    ENDIF(VISIT_DBIO_ONLY)
+        if(HAVE_OSMESA)
+            target_link_libraries(visitconvert_par ${OSMESA_LIBRARIES})
+        elseif(HAVE_EGL)
+            target_link_libraries(visitconvert_par ${EGL_LIBRARIES})
+        endif()
+    ENDIF()
 
     # If we're building statically then visitconvert_par can't be linked until the 
     # plugin sources are built

@@ -14,6 +14,8 @@
     </Function>
     <Function name="SetRgb" user="true" member="true">
     </Function>
+    <Function name="GetRgb" user="true" member="true">
+    </Function>
     <Function name="SetRgba" user="true" member="true">
     </Function>
     <Function name="GetRgba" user="true" member="true">

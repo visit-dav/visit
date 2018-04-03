@@ -66,7 +66,6 @@
 #include <avtDatasetExaminer.h>
 #include <avtHexahedronExtractor.h>
 #include <avtHexahedron20Extractor.h>
-#include <avtSLIVRVoxelExtractor.h>
 #include <avtMassVoxelExtractor.h>
 #include <avtMemory.h>
 #include <avtParallel.h>
@@ -156,7 +155,6 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     hexExtractor        = NULL;
     hex20Extractor      = NULL;
     massVoxelExtractor  = NULL;
-    slivrVoxelExtractor = NULL;
     pointExtractor      = NULL;
     pyramidExtractor    = NULL;
     tetExtractor        = NULL;
@@ -182,21 +180,7 @@ avtSamplePointExtractor::avtSamplePointExtractor(int w, int h, int d)
     arbitratorPrefersMinimum = false;
     arbitrator               = NULL;
 
-    patchCount = 0;
-
     trilinearInterpolation = false;
-    rayCastingSLIVR = false;
-    rayCastingSLIVRParallel = false;
-
-    modelViewProj = vtkMatrix4x4::New();
-
-    lighting = false;
-    lightPosition[0] = lightPosition[1] = lightPosition[2] = 0.0;   lightPosition[3] = 1.0;
-    lightDirection[0] = 0; lightDirection[1] = 0; lightDirection[2] = -1;
-    materialProperties[0] = 0.4; materialProperties[1] = 0.75; materialProperties[3] = 0.0; materialProperties[3] = 15.0;
-
-    depthBuffer = NULL;
-    rgbColorBuffer = NULL;
 
     transferFn1D = NULL;
 }
@@ -241,11 +225,6 @@ avtSamplePointExtractor::~avtSamplePointExtractor()
         delete massVoxelExtractor;
         massVoxelExtractor = NULL;
     }
-    if (slivrVoxelExtractor != NULL)
-    {
-        delete slivrVoxelExtractor;
-        slivrVoxelExtractor = NULL;
-    }
     if (tetExtractor != NULL)
     {
         delete tetExtractor;
@@ -271,8 +250,6 @@ avtSamplePointExtractor::~avtSamplePointExtractor()
         delete arbitrator;
         arbitrator = NULL;
     }
-
-    delImgPatches();
 }
 
 
@@ -458,10 +435,6 @@ avtSamplePointExtractor::SetUpExtractors(void)
     {
         delete massVoxelExtractor;
     }
-    if (slivrVoxelExtractor != NULL)
-    {
-        delete slivrVoxelExtractor;
-    }
     if (tetExtractor != NULL)
     {
         delete tetExtractor;
@@ -486,7 +459,6 @@ avtSamplePointExtractor::SetUpExtractors(void)
     hexExtractor = new avtHexahedronExtractor(width, height, depth, volume,cl);
     hex20Extractor = new avtHexahedron20Extractor(width, height, depth, volume,cl);
     massVoxelExtractor = new avtMassVoxelExtractor(width, height, depth, volume,cl);
-    slivrVoxelExtractor = new avtSLIVRVoxelExtractor(width, height, depth, volume,cl);
     tetExtractor = new avtTetrahedronExtractor(width, height, depth,volume,cl);
     wedgeExtractor = new avtWedgeExtractor(width, height, depth, volume, cl);
     pointExtractor = new avtPointExtractor(width, height, depth, volume, cl);
@@ -498,8 +470,6 @@ avtSamplePointExtractor::SetUpExtractors(void)
     int weightIndex = (rayfoo != NULL) ? rayfoo->GetWeightVariableIndex() : -1;
     massVoxelExtractor->SetWeightVariableIndex(weightIndex);
 
-    slivrVoxelExtractor->SetTrilinear(trilinearInterpolation);
-
     hexExtractor->SendCellsMode(sendCells);
     hex20Extractor->SendCellsMode(sendCells);
     tetExtractor->SendCellsMode(sendCells);
@@ -510,7 +480,6 @@ avtSamplePointExtractor::SetUpExtractors(void)
     hexExtractor->SetJittering(jitter);
     hex20Extractor->SetJittering(jitter);
 //    massVoxelExtractor->SetJittering(jitter);
-//    slivrVoxelExtractor->SetJittering(jitter);
     tetExtractor->SetJittering(jitter);
     wedgeExtractor->SetJittering(jitter);
     pointExtractor->SetJittering(jitter);
@@ -524,8 +493,6 @@ avtSamplePointExtractor::SetUpExtractors(void)
                                  height_min, height_max-1);
         massVoxelExtractor->Restrict(width_min, width_max-1,
                                      height_min, height_max-1);
-        slivrVoxelExtractor->Restrict(width_min, width_max-1,
-                                      height_min, height_max-1);
         tetExtractor->Restrict(width_min, width_max-1,
                                height_min, height_max-1);
         wedgeExtractor->Restrict(width_min, width_max-1, height_min, 
@@ -741,12 +708,6 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
     debug5 << PAR_Rank() << " ~ avtSamplePointExtractor::ExecuteTree  .. .  " 
            << "    Memory use before: " << m_size << "  rss (MB): " << m_rss/(1024*1024) << endl;
 
-    //initialize rayCastingSLIVR sampling state
-    totalAssignedPatches = dt->GetNChildren();
-    patchCount = 0;
-    imageMetaPatchVector.clear();
-    imgDataHashMap.clear();
-
     if (*dt == NULL || (dt->GetNChildren() <= 0 && (!(dt->HasData()))))
         return;
 
@@ -798,23 +759,6 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
             KernelBasedSample(ds);
         else
         {
-            if (rayCastingSLIVR == true)
-            {
-                double _scalarRange[2];
-                ds->GetScalarRange(_scalarRange);
-
-                double _tfRange[2];
-                _tfRange[0] = transferFn1D->GetMin();
-                _tfRange[1] = transferFn1D->GetMax();
-
-                double _tfVisibleRange[2];
-                _tfVisibleRange[0] = transferFn1D->GetMinVisibleScalar();
-                _tfVisibleRange[1] = transferFn1D->GetMaxVisibleScalar();
-
-                slivrVoxelExtractor->SetScalarRange(_scalarRange);
-                slivrVoxelExtractor->SetTFVisibleRange(_tfVisibleRange);
-            }
-
             RasterBasedSample(ds,ci->idx);
         }
 
@@ -827,91 +771,6 @@ avtSamplePointExtractor::ExecuteTree(avtDataTree_p dt)
     avtMemory::GetMemorySize(m_size, m_rss);
     debug5 << PAR_Rank() << " ~ Memory use after: " << m_size << "  rss (MB): " << m_rss/(1024*1024)
            <<  "   ... avtSamplePointExtractor::ExecuteTree done@!!!" << endl;
-}
-
-
-// ****************************************************************************
-//  Method: avtSamplePointExtractor::delImgPatches
-//
-//  Purpose:
-//      allocates space to the pointer address and copy the image generated to it
-//
-//  Programmer: 
-//  Creation:   
-//
-//  Modifications:
-//
-// ****************************************************************************
-void
-avtSamplePointExtractor::delImgPatches(){
-    imageMetaPatchVector.clear();
-
-    for (iter_t it=imgDataHashMap.begin(); it!=imgDataHashMap.end(); it++)
-    {
-        if ((*it).second.imagePatch != NULL)
-            delete [](*it).second.imagePatch;
-
-        (*it).second.imagePatch = NULL;
-;
-    }
-
-    imgDataHashMap.clear();
-}
-
-
-
-// ****************************************************************************
-//  Method: avtSamplePointExtractor::getImgData
-//
-//  Purpose:
-//      copies a patchover
-//
-//  Programmer: 
-//  Creation:   
-//
-//  Modifications:
-//
-// ****************************************************************************
-void 
-avtSamplePointExtractor::getnDelImgData(int patchId, imgData &tempImgData){
-    iter_t it = imgDataHashMap.find(patchId);
-
-    tempImgData.procId = it->second.procId;
-    tempImgData.patchNumber = it->second.patchNumber;
-    memcpy(tempImgData.imagePatch,it->second.imagePatch,imageMetaPatchVector[patchId].dims[0] * 4 * imageMetaPatchVector[patchId].dims[1] * sizeof(float));
-
-    delete [](*it).second.imagePatch;
-    it->second.imagePatch = NULL;
-}
-
-
-// ****************************************************************************
-//  Method: avtSamplePointExtractor::
-//
-//  Purpose:
-//      allocates space to the pointer address and copy the image generated to it
-//
-//  Programmer: 
-//  Creation:   
-//
-//  Modifications:
-//
-// ****************************************************************************
-imgMetaData
-avtSamplePointExtractor::initMetaPatch(int id){
-    imgMetaData temp;
-    temp.inUse = 0;
-    temp.procId = PAR_Rank();
-    temp.destProcId = PAR_Rank();
-    temp.patchNumber = id;
-    temp.dims[0] = temp.dims[1] = -1;
-    temp.screen_ll[0] = temp.screen_ll[1] = -1;
-    temp.screen_ur[0] = temp.screen_ur[1] = -1;
-    temp.avg_z = -1.0;
-    temp.eye_z = -1.0;
-    temp.clip_z = -1.0;
-
-    return temp;
 }
 
 
@@ -1082,71 +941,11 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds, int num)
             varsizes.push_back(samples->GetVariableSize(i));
         }
 
-        if (rayCastingSLIVR)
-        {
-            // Use SLIVR mass voxel extractor.
+        massVoxelExtractor->SetGridsAreInWorldSpace(
+            rectilinearGridsAreInWorldSpace, viewInfo, aspect, xform);
+        massVoxelExtractor->SetTransferFn(transferFn1D);
 
-            //
-            // Compositing Setup
-            slivrVoxelExtractor->SetGridsAreInWorldSpace(
-                rectilinearGridsAreInWorldSpace, viewInfo, aspect, xform);
-
-            slivrVoxelExtractor->setDepthBuffer(depthBuffer, bufferExtents[1]*bufferExtents[3]);
-            slivrVoxelExtractor->setRGBBuffer(rgbColorBuffer, bufferExtents[1],bufferExtents[3]);
-            slivrVoxelExtractor->setBufferExtents(bufferExtents);
-
-            slivrVoxelExtractor->SetViewDirection(view_direction);
-            slivrVoxelExtractor->SetMVPMatrix(modelViewProj);
-            slivrVoxelExtractor->SetClipPlanes(clipPlanes);
-            slivrVoxelExtractor->SetPanPercentages(panPercentage);
-            slivrVoxelExtractor->SetDepthExtents(depthExtents);
-
-            slivrVoxelExtractor->setProcIdPatchID(PAR_Rank(),num);
-
-            slivrVoxelExtractor->SetLighting(lighting);
-            slivrVoxelExtractor->SetLightDirection(lightDirection);
-            slivrVoxelExtractor->SetMatProperties(materialProperties);
-            slivrVoxelExtractor->SetTransferFn(transferFn1D);
-
-            //debug5 << PAR_Rank() << " avtSamplePointExtractor::RasterBasedSample extract ...  " << num << std::endl;
-
-            slivrVoxelExtractor->Extract((vtkRectilinearGrid *) ds, varnames, varsizes);
-
-            //debug5 << PAR_Rank() << " avtSamplePointExtractor::RasterBasedSample extract done!" << num << std::endl;
-
-            //
-            // Get rendering results
-            //
-            imgMetaData      tmpImageMetaPatch;
-            tmpImageMetaPatch = initMetaPatch(patchCount);
-
-            slivrVoxelExtractor->getImageDimensions(tmpImageMetaPatch.inUse, tmpImageMetaPatch.dims, tmpImageMetaPatch.screen_ll, tmpImageMetaPatch.screen_ur, tmpImageMetaPatch.eye_z, tmpImageMetaPatch.clip_z);
-            if (tmpImageMetaPatch.inUse == 1)
-            {
-                tmpImageMetaPatch.avg_z = tmpImageMetaPatch.eye_z;
-                tmpImageMetaPatch.destProcId = tmpImageMetaPatch.procId;
-                imageMetaPatchVector.push_back(tmpImageMetaPatch);
-
-                imgData tmpImageDataHash;
-                tmpImageDataHash.procId = tmpImageMetaPatch.procId;
-                tmpImageDataHash.patchNumber = tmpImageMetaPatch.patchNumber;
-                tmpImageDataHash.imagePatch = new float[ tmpImageMetaPatch.dims[0]*tmpImageMetaPatch.dims[1] * 4 ];
-
-                slivrVoxelExtractor->getComputedImage(tmpImageDataHash.imagePatch);
-                imgDataHashMap.insert( std::pair<int, imgData> (tmpImageDataHash.patchNumber , tmpImageDataHash) );
-                //writeArrayToPPM("/home/pascal/Desktop/debugImages/local_" + toStr(tmpImageMetaPatch.procId) + "_"+ toStr(tmpImageMetaPatch.patchNumber), tmpImageDataHash.imagePatch, tmpImageMetaPatch.dims[0], tmpImageMetaPatch.dims[1]);
-
-                patchCount++;
-            }
-        }
-        else
-        {
-            massVoxelExtractor->SetGridsAreInWorldSpace(
-                rectilinearGridsAreInWorldSpace, viewInfo, aspect, xform);
-            massVoxelExtractor->SetTransferFn(transferFn1D);
-
-            massVoxelExtractor->Extract((vtkRectilinearGrid *) ds, varnames, varsizes);
-        }
+        massVoxelExtractor->Extract((vtkRectilinearGrid *) ds, varnames, varsizes);
 
         return;
     }
@@ -2347,10 +2146,6 @@ avtSamplePointExtractor::SetJittering(bool j)
     if (massVoxelExtractor != NULL)
     {
         massVoxelExtractor->SetJittering(jitter);
-    }
-    if (slivrVoxelExtractor != NULL)
-    {
-        slivrVoxelExtractor->SetJittering(jitter);
     }
 }
 

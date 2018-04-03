@@ -124,7 +124,9 @@ QvisPointControl::QvisPointControl(QWidget *parent,
     connect(sizeVarToggle, SIGNAL(toggled(bool)),
             this, SLOT(sizeVarToggled(bool)));
     topLayout->addWidget(sizeVarToggle, 1, 0, 1, 2);
-    int query_types = QvisVariableButton::Scalars | QvisVariableButton::Tensors;
+    int query_types = QvisVariableButton::Scalars |
+                      QvisVariableButton::Vectors |
+                      QvisVariableButton::Tensors;
     sizeVarButton = new QvisVariableButton(true, true, true,query_types, this);
     sizeVarButton->setEnabled(false);
     connect(sizeVarButton, SIGNAL(activated(const QString &)),
@@ -179,6 +181,9 @@ QvisPointControl::~QvisPointControl()
 //   Brad Whitlock, Thu Aug 25 09:52:13 PDT 2005
 //   Added support for sphere points.
 //
+//   Kathleen Biagas, Tue Sep 20 17:07:28 PDT 2016
+//   Sphere points now uses pointSize instead of pointSizePixels.
+//
 // ****************************************************************************
 
 void
@@ -188,8 +193,7 @@ QvisPointControl::processSizeText()
     {
         if(!signalsBlocked())
         {
-            if(lastGoodPointType == POINT_TYPE_POINTS ||
-               lastGoodPointType == POINT_TYPE_SPHERE)
+            if(lastGoodPointType == POINT_TYPE_POINTS)
             {
                 emit pointSizePixelsChanged(lastGoodSizePixels);
             }
@@ -219,6 +223,9 @@ QvisPointControl::processSizeText()
 //   Brad Whitlock, Thu Aug 25 09:51:31 PDT 2005
 //   Added support for sphere points.
 //
+//   Kathleen Biagas, Tue Sep 20 17:07:28 PDT 2016
+//   Sphere points now uses pointSize instead of pointSizePixels.
+//
 // ****************************************************************************
 
 bool
@@ -227,8 +234,7 @@ QvisPointControl::ProcessSizeText(int pointType)
     QString temp = sizeLineEdit->displayText().trimmed();
     bool okay = !temp.isEmpty();
 
-    if(pointType == POINT_TYPE_POINTS ||
-       pointType == POINT_TYPE_SPHERE)
+    if(pointType == POINT_TYPE_POINTS)
     {
         int val;
         if (okay)
@@ -263,13 +269,15 @@ QvisPointControl::ProcessSizeText(int pointType)
 // Creation:   November 4, 2004
 //
 // Modifications:
+//   Kathleen Biagas, Tue Sep 20 17:07:28 PDT 2016
+//   Sphere points now uses pointSize instead of pointSizePixels.
 //
 // ****************************************************************************
 
 double
 QvisPointControl::GetPointSize()
 {
-    if(lastGoodPointType < POINT_TYPE_POINTS)
+    if(lastGoodPointType != POINT_TYPE_POINTS)
     {
         blockSignals(true);
         ProcessSizeText(lastGoodPointType);
@@ -291,13 +299,15 @@ QvisPointControl::GetPointSize()
 //   Brad Whitlock, Thu Aug 25 09:49:50 PDT 2005
 //   Added support for sphere points.
 //
+//   Kathleen Biagas, Tue Sep 20 17:07:28 PDT 2016
+//   Sphere points now uses pointSize instead of pointSizePixels.
+//
 // ****************************************************************************
 
 int
 QvisPointControl::GetPointSizePixels()
 {
-    if(lastGoodPointType == POINT_TYPE_POINTS ||
-       lastGoodPointType == POINT_TYPE_SPHERE)
+    if(lastGoodPointType == POINT_TYPE_POINTS)
     {
         blockSignals(true);
         ProcessSizeText(lastGoodPointType);
@@ -483,12 +493,15 @@ QvisPointControl::SetPointSizePixels(int val)
 //   Use helper function DoubleToQString for consistency in formatting across
 //   all windows.
 //
+//   Kathleen Biagas, Tue Sep 20 17:07:28 PDT 2016
+//   Sphere points now uses pointSize instead of pointSizePixels.
+//
 // ****************************************************************************
 
 void
 QvisPointControl::UpdateSizeText()
 {
-    if(lastGoodPointType < POINT_TYPE_POINTS)
+    if(lastGoodPointType != POINT_TYPE_POINTS)
     {
         sizeLineEdit->setText(GUIBase::DoubleToQString(lastGoodSize));
     }
@@ -648,17 +661,19 @@ void QvisPointControl::SetPointType(int type)
 //   Combine point type test ... we wanted an 'and', where the current test
 //   was just giving us a last one in.
 //
+//   Kathleen Biagas, Tue Sep 20 17:07:28 PDT 2016
+//   Sphere points now uses pointSize instead of pointSizePixels.
+//
 // ****************************************************************************
 
 void
 QvisPointControl::UpdatePointType()
 {
     bool e = false;
-    if(lastGoodPointType != POINT_TYPE_POINTS &&
-       lastGoodPointType != POINT_TYPE_SPHERE)
+    if(lastGoodPointType != POINT_TYPE_POINTS)
     {
         sizeLabel->setText(tr("Point size"));
-        e = true;
+        e = lastGoodPointType != POINT_TYPE_SPHERE;
     }
     else
         sizeLabel->setText(tr("Point size (pixels)"));

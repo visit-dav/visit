@@ -588,7 +588,7 @@ avtContourPlot::SetLineStyle(int ls)
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtContourPlot::GetMapper(void)
 {
     return levelsMapper;

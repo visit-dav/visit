@@ -81,8 +81,6 @@
 # Copy necessary bin files & directories to the build dir.
 #----------------------------------------------------------------------------
 
-SET(VISIT_BIN_DIRECTORIES shaders)
-
 SET(VISIT_BIN_FILES
         Doxyfile
         curv3dprep
@@ -112,15 +110,6 @@ SET(VISIT_BIN_FILES
         xml2window
         xmledit
         xmltest)
-
-FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_DIRECTORIES})
-    # Resolve symlink 
-    GET_FILENAME_COMPONENT(ITM_RP ${CMAKE_CURRENT_SOURCE_DIR}/${VISIT_BIN_ITEM} 
-                           REALPATH)
-    FILE(COPY ${ITM_RP}
-         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
-         PATTERN ".svn" EXCLUDE)
-ENDFOREACH(VISIT_BIN_ITEM)
 
 IF (NOT WIN32)
     FOREACH(VISIT_BIN_ITEM ${VISIT_BIN_FILES} internallauncher makemovie.py makemoviemain.py visitcinema.py visitcinemamain.py)

@@ -130,25 +130,6 @@ PyRenderingAttributes_ToString(const RenderingAttributes *atts, const char *pref
           break;
     }
 
-    const char *displayListMode_names = "Never, Always, Auto";
-    switch (atts->GetDisplayListMode())
-    {
-      case RenderingAttributes::Never:
-          SNPRINTF(tmpStr, 1000, "%sdisplayListMode = %sNever  # %s\n", prefix, prefix, displayListMode_names);
-          str += tmpStr;
-          break;
-      case RenderingAttributes::Always:
-          SNPRINTF(tmpStr, 1000, "%sdisplayListMode = %sAlways  # %s\n", prefix, prefix, displayListMode_names);
-          str += tmpStr;
-          break;
-      case RenderingAttributes::Auto:
-          SNPRINTF(tmpStr, 1000, "%sdisplayListMode = %sAuto  # %s\n", prefix, prefix, displayListMode_names);
-          str += tmpStr;
-          break;
-      default:
-          break;
-    }
-
     if(atts->GetStereoRendering())
         SNPRINTF(tmpStr, 1000, "%sstereoRendering = 1\n", prefix);
     else
@@ -615,39 +596,6 @@ RenderingAttributes_GetGeometryRepresentation(PyObject *self, PyObject *args)
 {
     RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetGeometryRepresentation()));
-    return retval;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_SetDisplayListMode(PyObject *self, PyObject *args)
-{
-    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the displayListMode in the object.
-    if(ival >= 0 && ival < 3)
-        obj->data->SetDisplayListMode(RenderingAttributes::TriStateMode(ival));
-    else
-    {
-        fprintf(stderr, "An invalid displayListMode value was given. "
-                        "Valid values are in the range of [0,2]. "
-                        "You can also use the following names: "
-                        "Never, Always, Auto.");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-RenderingAttributes_GetDisplayListMode(PyObject *self, PyObject *args)
-{
-    RenderingAttributesObject *obj = (RenderingAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetDisplayListMode()));
     return retval;
 }
 
@@ -1284,8 +1232,6 @@ PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH] = {
     {"GetMultiresolutionCellSize", RenderingAttributes_GetMultiresolutionCellSize, METH_VARARGS},
     {"SetGeometryRepresentation", RenderingAttributes_SetGeometryRepresentation, METH_VARARGS},
     {"GetGeometryRepresentation", RenderingAttributes_GetGeometryRepresentation, METH_VARARGS},
-    {"SetDisplayListMode", RenderingAttributes_SetDisplayListMode, METH_VARARGS},
-    {"GetDisplayListMode", RenderingAttributes_GetDisplayListMode, METH_VARARGS},
     {"SetStereoRendering", RenderingAttributes_SetStereoRendering, METH_VARARGS},
     {"GetStereoRendering", RenderingAttributes_GetStereoRendering, METH_VARARGS},
     {"SetStereoType", RenderingAttributes_SetStereoType, METH_VARARGS},
@@ -1382,15 +1328,6 @@ PyRenderingAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(RenderingAttributes::Wireframe));
     if(strcmp(name, "Points") == 0)
         return PyInt_FromLong(long(RenderingAttributes::Points));
-
-    if(strcmp(name, "displayListMode") == 0)
-        return RenderingAttributes_GetDisplayListMode(self, NULL);
-    if(strcmp(name, "Never") == 0)
-        return PyInt_FromLong(long(RenderingAttributes::Never));
-    if(strcmp(name, "Always") == 0)
-        return PyInt_FromLong(long(RenderingAttributes::Always));
-    if(strcmp(name, "Auto") == 0)
-        return PyInt_FromLong(long(RenderingAttributes::Auto));
 
     if(strcmp(name, "stereoRendering") == 0)
         return RenderingAttributes_GetStereoRendering(self, NULL);
@@ -1498,8 +1435,6 @@ PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RenderingAttributes_SetMultiresolutionCellSize(self, tuple);
     else if(strcmp(name, "geometryRepresentation") == 0)
         obj = RenderingAttributes_SetGeometryRepresentation(self, tuple);
-    else if(strcmp(name, "displayListMode") == 0)
-        obj = RenderingAttributes_SetDisplayListMode(self, tuple);
     else if(strcmp(name, "stereoRendering") == 0)
         obj = RenderingAttributes_SetStereoRendering(self, tuple);
     else if(strcmp(name, "stereoType") == 0)

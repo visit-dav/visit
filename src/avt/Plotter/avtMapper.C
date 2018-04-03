@@ -42,27 +42,20 @@
 
 #include <avtMapper.h>
 
-#include <float.h>
 #include <vector>
 #include <string>
 
 #include <vtkActor.h>
-#include <vtkDataObjectCollection.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetMapper.h>
 #include <vtkProperty.h>
 
 #include <avtCallback.h>
-#include <avtDatasetExaminer.h>
-#include <avtExtents.h>
 #include <avtGeometryDrawable.h>
 #include <avtTransparencyActor.h>
 
 #include <ColorAttribute.h>
-#include <BadIndexException.h>
 #include <DebugStream.h>
-#include <ImproperUseException.h>
-#include <NoInputException.h>
 
 using std::vector;
 using std::string;
@@ -80,7 +73,7 @@ using std::string;
 //    Added initialization of new members nRenderingModes, modeVisibility,
 //    modeRepresentation.
 //
-//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001 
+//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001
 //    Removed functionality related to having multiple rendering modes.
 //    No longer needed.
 //
@@ -90,7 +83,7 @@ using std::string;
 //    Brad Whitlock, Mon Sep 23 16:56:08 PST 2002
 //    I initialized the new immediateMode flag.
 //
-//    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002  
+//    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002
 //    Initialize globalAmbient.
 //
 //    Mark C. Miller, Thu Jan  9 13:31:32 PST 2003
@@ -100,36 +93,24 @@ using std::string;
 //    Mark C. Miller, Tue May 11 20:21:24 PDT 2004
 //    Removed extRenderedImagesActor data member
 //
-//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004
 //    Initialize specularIsInappropriate.
 //
 //    Hank Childs, Sat Dec  3 20:32:37 PST 2005
 //    Change test for whether or not we are doing software rendering.
 //
+//    Kathleen Biagas, Tue Jul 12 13:29:26 MST 2016
+//    Remove drawSurfaces/Wireframe/Points and similar.
+//
+//    Kathleen Biagas, Thu Apr 13 09:20:38 PDT 2017
+//    Some settings moved to new base class.
+//
 // ****************************************************************************
 
-avtMapper::avtMapper()
+avtMapper::avtMapper() : avtMapperBase()
 {
-    immediateMode = avtCallback::GetSoftwareRendering();
-    drawable = NULL;
     mappers  = NULL;
     actors   = NULL;
-    nMappers = 0;
-    transparencyActor = NULL;
-    transparencyIndex = -1;
-    globalAmbient = 0.;
-    specularIsInappropriate = false;
-    
-    drawSurfaces = true;
-    drawWireframe = false;
-    drawPoints = false;
-    wireframeColorByScalar =  pointsColorByScalar = false;
-    wireframeColor[0] = 0;
-    wireframeColor[1] = 0;
-    wireframeColor[2] = 0;
-    pointColor[0] = 0;
-    pointColor[1] = 0;
-    pointColor[2] = 0;
 }
 
 
@@ -142,7 +123,7 @@ avtMapper::avtMapper()
 //    Kathleen Bonnell, Thu Mar 15 19:15:10 PST 2001
 //    Added destruction of new members modeVisibility, modeRepresentation.
 //
-//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001 
+//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001
 //    Removed functionality related to having multiple rendering modes.
 //    No longer needed.
 //
@@ -150,80 +131,28 @@ avtMapper::avtMapper()
 
 avtMapper::~avtMapper()
 {
-    ClearSelf();
 }
 
 
 // ****************************************************************************
-//  Method: avtMapper::ChangedInput
+//  Method: avtMapper::SetUpDrawable
 //
 //  Purpose:
-//      A hook from avtDatasetSink telling us the input has changed.  We will
-//      invalidate the drawable we previously had.
+//      Creates a geometry drawable.
 //
-//  Programmer: Hank Childs
-//  Creation:   December 27, 2000
-//
-// ****************************************************************************
-
-void
-avtMapper::ChangedInput(void)
-{
-    MapperChangedInput();
-    ClearSelf();
-}
-
-
-// ****************************************************************************
-//  Method: avtMapper::InputIsReady
-//
-//  Purpose:
-//      Since we now know that the input is ready, this sets up the mappers.
-//
-//  Programmer: Hank Childs
-//  Creation:   June 6, 2001
+//  Programmer: Kathleen Biagas
+//  Creation:   April 13, 2017
 //
 //  Modifications:
-//    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
-//    Added support for rectilinear grids with an inherent transform.
 //
 // ****************************************************************************
 
 void
-avtMapper::InputIsReady(void)
+avtMapper::SetUpDrawable()
 {
-    avtDataAttributes &inatts = GetInput()->GetInfo().GetAttributes();
-    if (inatts.GetRectilinearGridHasTransform())
-    {
-        // The renderer is smart enough to apply any extra transform
-        // needed for rectilinear grids, but it will not have access
-        // to the avtDataAttributes.  Instead, we insert the transform
-        // as a field variable in any vtkRectilinearGrids.
-        avtDataTree_p tree = GetInputDataTree();
-        bool dummy;
-        tree->Traverse(CInsertRectilinearTransformInfoIntoDataset,
-                       (void*)inatts.GetRectilinearGridTransform(), dummy);
-    }
-    SetUpMappers();
-}
-
-
-// ****************************************************************************
-//  Method: avtMapper::MapperChangedInput
-//
-//  Purpose:
-//      This is a hook to allow derived types of avtMapper to reset their
-//      state.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 27, 2000
-//
-// ****************************************************************************
-
-void
-avtMapper::MapperChangedInput(void)
-{
-    ;
+    avtGeometryDrawable *gd = new avtGeometryDrawable(nMappers, actors);
+    gd->SetMapper(this);
+    drawable = gd;
 }
 
 
@@ -238,24 +167,18 @@ avtMapper::MapperChangedInput(void)
 //
 //  Modifications:
 //    Dave Bremer, Fri Mar  7 10:43:49 PST 2008
-//    When this object clears itself, it should clear the drawable's 
+//    When this object clears itself, it should clear the drawable's
 //    reference to 'this' as well.
+//
+//    Kathleen Biagas, Thu Apr 13 09:22:00 PDT 2017
+//    Some settings moved to new base class.
+//
 // ****************************************************************************
 
 void
 avtMapper::ClearSelf(void)
 {
-    if (*drawable != NULL)
-    {
-        ((avtGeometryDrawable *)*drawable)->SetMapper(NULL);
-
-        //
-        // This probably doesn't need to be done, but it will guarantee that we are
-        // never in an inconsistent state (where we have a valid drawable, but no
-        // mappers).
-        //
-        drawable = NULL;
-    }
+    avtMapperBase::ClearSelf();
 
     if (mappers != NULL)
     {
@@ -287,269 +210,25 @@ avtMapper::ClearSelf(void)
     actors = NULL;
 }
 
-void
-avtMapper::ReleaseData(void)
-{
-   ClearSelf();
-}
-
 
 // ****************************************************************************
-//  Method: avtMapper::GetDrawable
+//  Method: avtMapper::SetUpTransparencyActor
 //
 //  Purpose:
-//      Gets a drawable from the input dataset.
+//      Sets up the transparancy actor with the current inputs.
 //
-//  Programmer: Hank Childs
-//  Creation:   December 27, 2000
+//  Notes:  Pulled from old SetUpMappers method.
 //
-// ****************************************************************************
-
-avtDrawable_p
-avtMapper::GetDrawable(void)
-{
-    avtDataObject_p input = GetInput();
-    if (*drawable == NULL || *input == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    return drawable;
-}
-
-
-// ****************************************************************************
-//  Method: avtMapper::SetUpMappers
-//
-//  Purpose:
-//      Sets up the mappers and creates a drawable based on the input.
-//
-//  Programmer: Hank Childs
-//  Creation:   December 27, 2000
+//  Programmer: Kathleen Biagas
+//  Creation:   July 11, 2016
 //
 //  Modifications:
-//    Kathleen Bonnell, Fri Feb  9 15:44:57 PST 2001
-//    Modified to reflect that GetInputDomain returns and avtDomainTree.
-//
-//    Kathleen Bonnell, Thu Feb 15 10:06:43 PST 2001 
-//    Add check for NULL tree on return from call to GetInputDomain. 
-//
-//    Kathleen Bonnell, Thu Mar 15 19:15:10 PST 2001 
-//    Added logic to handle multiple rendering modes (creating extra
-//    mappers/actors to handle this), and for setting actor visibility
-//    and representation. 
-//
-//    Hank Childs, Fri Mar 23 14:44:49 PST 2001
-//    Added hook to allow derived classes to insert filters into the pipeline.
-//
-//    Hank Childs, Mon Mar 26 19:44:21 PST 2001
-//    Added hook to allow derived classes to use their own mappers.
-//
-//    Kathleen Bonnell, Thu Apr 19 12:22:15 PDT 2001 
-//    Reflect that input now stored as single avtDatTree instead of multiple
-//    avtDomainTrees.  Changed parameter in call to InsertFilters from 
-//    j (child num) to i (domain num).
-//
-//    Hank Childs, Sun Jun 24 19:52:13 PDT 2001
-//    Added explicit initializations that only come up during error cases.
-//
-//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001 
-//    Removed functionality related to having multiple rendering modes.
-//    No longer needed.
-//
-//    Kathleen Bonnell, Fri Sep 21 10:54:37 PDT 2001 
-//    Reflect that data trees are now compacted before being sent to viewer.  
-//    
-//    Kathleen Bonnell, Mon Sep 24 15:24:18 PDT 2001 
-//    Retrieve labels from input tree and from info attributes.  Call 
-//    SetLabels method so derived types may make us of the labels. 
-//    
-//    Hank Childs, Fri May 24 15:41:49 PDT 2002
-//    Tell the drawable which mapper it came from.
-//
-//    Hank Childs, Sun Jul  7 12:31:10 PDT 2002
-//    Add support for transparency.
-//
-//    Hank Childs, Sun Aug 18 21:06:24 PDT 2002
-//    Do not use display lists if we have more than 250,000 cells.
-//
-//    Hank Childs, Wed Sep 18 11:04:10 PDT 2002
-//    Do not use display lists if we are in no-win mode.
-//
-//    Brad Whitlock, Mon Sep 23 16:56:50 PST 2002
-//    Changed the immediate mode rendering test so it uses a new member.
-//
-//    Hank Childs, Thu Mar 18 16:02:27 PST 2004
-//    Do not create actors and mappers for empty datasets.
-//
-//    Hank Childs, Tue May 25 13:30:16 PDT 2004
-//    Allow display lists of 250,000 polygons or more again, since the display
-//    list generation was made much faster by breaking it into chunks.
-//
-//    Hank Childs, Tue Nov 18 05:46:45 PST 2008
-//    Do not assume the tree is going to be non-NULL.
-//
-//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
-//    Changed signature of InsertFilters to return vtkAlgorithmOutput, so
-//    connections are set up properly with vtk-6.
 //
 // ****************************************************************************
 
 void
-avtMapper::SetUpMappers(void)
+avtMapper::SetUpTransparencyActor()
 {
-    avtDataObject_p input = GetInput();
-    if (*input == NULL)
-    {
-        EXCEPTION0(NoInputException);
-    }
-
-    avtDataTree_p tree = GetInputDataTree();
-   
-    vector<string> labels;
-    if (*tree != NULL)
-        tree->GetAllLabels(labels);
-    if (!labels.empty() )
-    {
-        int n = labels.size();
-        if (drawWireframe)
-            for (int i = 0; i < n; i++)
-                labels.push_back(labels[i]);
-        if (drawPoints)
-            for (int i = 0; i < n; i++)
-                labels.push_back(labels[i]);
-        SetLabels(labels, true);
-        labels.clear();
-    }
-
-    input->GetInfo().GetAttributes().GetLabels(labels);
-    if (!labels.empty())
-    {
-        int n = labels.size();
-        if (drawWireframe)
-            for (int i = 0; i < n; i++)
-                labels.push_back(labels[i]);
-        if (drawPoints)
-            for (int i = 0; i < n; i++)
-                labels.push_back(labels[i]);
-        
-        SetLabels(labels, false);
-        labels.clear();
-    }
-
-    vtkDataSet **children = NULL;
-    int nChildren = 0;
-    if (*tree != NULL)
-        children = tree->GetAllLeaves(nChildren);
-
-    nMappers = nChildren;
-    //Add mapper/actors for wire/points.
-    if (drawWireframe)
-        nMappers += nChildren;
-    if (drawPoints)
-        nMappers += nChildren;
-
-    mappers  = new vtkDataSetMapper*[nMappers];
-    actors   = new vtkActor*[nMappers];
-    mapperType = new MapperType[nMappers];
-
-    for (int j = 0 ; j < nMappers ; j++)
-    {
-        mappers[j] = NULL;
-        actors[j]  = NULL;
-    }
-    SetUpFilters(nMappers);
-    //Do the regular stuff.
-    int mi = 0;
-    if (drawSurfaces)
-    {
-        for (int i = 0; i < nChildren; i++, mi++)
-        {
-            // We might have some dummy data (SR-mode).  If so, just continue.
-            if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
-                continue;
-            mappers[mi] = CreateMapper();
-            vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
-            if (outputPort != NULL)
-                mappers[mi]->SetInputConnection(outputPort);
-            else
-                mappers[mi]->SetInputData(children[i]);
-            if (immediateMode)
-                mappers[mi]->ImmediateModeRenderingOn();
-            actors[mi]  = vtkActor::New();
-            actors[mi]->SetMapper(mappers[mi]);
-            mapperType[mi] = DEFAULT;
-        }
-    }
-    if (drawWireframe)
-    {
-        for (int i = 0; i < nChildren; i++, mi++)
-        {
-            // We might have some dummy data (SR-mode).  If so, just continue.
-            if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
-                continue;
-            mappers[mi] = vtkDataSetMapper::New();
-            //mappers[mi] = CreateMapper();
-            vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
-            if (outputPort != NULL)
-                mappers[mi]->SetInputConnection(outputPort);
-            else
-                mappers[mi]->SetInputData(children[i]);
-            if (immediateMode)
-                mappers[mi]->ImmediateModeRenderingOn();
-            actors[mi]  = vtkActor::New();
-            actors[mi]->SetMapper(mappers[mi]);
-            actors[mi]->GetProperty()->SetRepresentationToWireframe();
-            actors[mi]->GetProperty()->SetAmbient(1.);
-            actors[mi]->GetProperty()->SetDiffuse(0.);
-            if (wireframeColorByScalar)
-                mappers[mi]->ScalarVisibilityOn();
-            else
-            {
-                mappers[mi]->ScalarVisibilityOff();
-                actors[mi]->GetProperty()->SetColor(wireframeColor);
-            }
-            mapperType[mi] = WIREFRAME;
-        }
-    }
-    if (drawPoints)
-    {
-        for (int i = 0; i < nChildren; i++, mi++)
-        {
-            // We might have some dummy data (SR-mode).  If so, just continue.
-            if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
-                continue;
-            mappers[mi] = CreateMapper();
-            vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
-            if (outputPort != NULL)
-                mappers[mi]->SetInputConnection(outputPort);
-            else
-                mappers[mi]->SetInputData(children[i]);
-            if (immediateMode)
-                mappers[mi]->ImmediateModeRenderingOn();
-            actors[mi]  = vtkActor::New();
-            actors[mi]->SetMapper(mappers[mi]);
-            actors[mi]->GetProperty()->SetRepresentationToPoints();
-            actors[mi]->GetProperty()->SetAmbient(1.);
-            actors[mi]->GetProperty()->SetDiffuse(0.);
-            if (pointsColorByScalar)
-                mappers[mi]->ScalarVisibilityOn();
-            else
-            {
-                mappers[mi]->ScalarVisibilityOff();
-                actors[mi]->GetProperty()->SetColor(pointColor);
-            }
-            mapperType[mi] = POINT;
-        }
-    }
-
-    // this was allocated in GetAllLeaves, need to free it now
-    if (children != NULL)
-        delete [] children;
-
-    PrepareExtents();
-    CustomizeMappers();
-
     if (transparencyActor != NULL)
     {
         vector<vtkDataSet *> d;
@@ -565,9 +244,48 @@ avtMapper::SetUpMappers(void)
         }
         transparencyActor->ReplaceInput(transparencyIndex, d, m, a);
     }
-    avtGeometryDrawable *gd = new avtGeometryDrawable(nMappers, actors);
-    gd->SetMapper(this);
-    drawable = gd;
+}
+
+
+// ****************************************************************************
+//  Method: avtMapper::CreateActorMapperPairs
+//
+//  Purpose:
+//      Creates actor and mappers.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   April 13, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMapper::CreateActorMapperPairs(vtkDataSet **children)
+{
+    mappers  = new vtkDataSetMapper*[nMappers];
+    actors   = new vtkActor*[nMappers];
+
+    SetUpFilters(nMappers);
+
+    for (int i = 0; i < nMappers; i++)
+    {
+        // We might have some dummy data (SR-mode).  If so, just continue.
+        if (children[i] == NULL || children[i]->GetNumberOfCells() <= 0)
+        {
+            mappers[i] = NULL;
+            actors[i]  = NULL;
+            continue;
+        }
+        mappers[i] = CreateMapper();
+        vtkAlgorithmOutput * outputPort = InsertFilters(children[i], i);
+        if (outputPort != NULL)
+            mappers[i]->SetInputConnection(outputPort);
+        else
+            mappers[i]->SetInputData(children[i]);
+        actors[i]  = vtkActor::New();
+        actors[i]->SetMapper(mappers[i]);
+    }
 }
 
 
@@ -584,9 +302,9 @@ avtMapper::SetUpMappers(void)
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2001
 //
-//  Modifications: 
+//  Modifications:
 //
-//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001 
+//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001
 //    Removed argument related to having multiple rendering modes.
 //    No longer needed.
 //
@@ -609,13 +327,13 @@ avtMapper::SetUpFilters(int)
 //  Arguments:
 //      ds          The input dataset.
 //      <unnamed>   The index of the domain.
-//      
+//
 //  Programmer: Hank Childs
 //  Creation:   March 23, 2001
 //
-//  Modifications: 
+//  Modifications:
 //
-//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001 
+//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001
 //    Removed argument related to having multiple rendering modes.
 //    No longer needed.
 //
@@ -667,7 +385,6 @@ avtMapper::SetDefaultRange(void)
         return;
     }
 
-    int  i;
     double minRange;
     double maxRange;
     if (!GetRange(minRange, maxRange))
@@ -679,7 +396,7 @@ avtMapper::SetDefaultRange(void)
     //
     // Set each mapper with those extents.
     //
-    for (i = 0 ; i < nMappers ; i++)
+    for (int i = 0 ; i < nMappers ; i++)
     {
         if (mappers[i] != NULL)
         {
@@ -710,266 +427,6 @@ avtMapper::CreateMapper(void)
 
 
 // ****************************************************************************
-//  Method: avtMapper::GetRange
-//
-//  Purpose:
-//      Gets the range of the input.  This will looks at the extents in the
-//      information if they are set and look at the dataset otherwise.
-//
-//  Arguments:
-//      rmin    Will hold the minimum value.
-//      rmax    Will hold the maximum value.
-//
-//  Returns:    True if the extents were calculated successfully,
-//              False otherwise.
-//
-//  Programmer: Hank Childs
-//  Creation:   April 20, 2001
-//
-//  Modifications:
-//
-//    Hank Childs, Fri Sep  7 18:30:33 PDT 2001
-//    Sent a double into GetDataExtents for new interface.
-//
-//    Hank Childs, Fri Mar 15 18:11:12 PST 2002
-//    Account for dataset examiner.
-//
-//    Sean Ahern, Thu May 16 12:13:40 PDT 2002
-//    Added some debugging.
-//
-//    Hank Childs, Thu Oct 10 08:22:31 PDT 2002
-//    Added a return value.
-//
-//    Brad Whitlock, Wed Dec 4 11:39:48 PDT 2002
-//    I changed the code so it supports calculating extents of vector
-//    magnitudes.
-//
-//    Hank Childs, Tue Sep 23 23:08:19 PDT 200
-//    Support tensor magnitudes as the eigenvalues extents.
-//
-//    Kathleen Bonnell, Thu Mar 11 10:07:35 PST 2004 
-//    Tensor, vectors and scalars all handled by GetDataExtents. 
-//
-//    Jeremy Meredith, Fri Jun 18 14:18:23 PDT 2004
-//    Allow variable dimension of 4.  This will be used for colors.
-//
-// ****************************************************************************
-
-bool
-avtMapper::GetRange(double &rmin, double &rmax)
-{
-    if(*GetInput() == 0)
-    {
-        debug1 << "avtMapper::GetRange: The mapper has no input!" << endl;
-        EXCEPTION0(ImproperUseException);
-    }
-
-    bool gotExtents = false;
-    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-    if ((data.GetVariableDimension() == 1) ||
-        (data.GetVariableDimension() <= 3) ||
-        (data.GetVariableDimension() == 4) ||
-        (data.GetVariableDimension() == 9))
-    {
-        double extents[2];
-        gotExtents = data.GetDataExtents(extents);
-    
-        if (gotExtents)
-        {
-            rmin = extents[0];
-            rmax = extents[1];
-        }
-        else
-        {
-            double de[2];
-            avtDataset_p input = GetTypedInput();
-            gotExtents = avtDatasetExaminer::GetDataExtents(input, de);
-
-            rmin = de[0];
-            rmax = de[1];
-        }
-    }
-    else
-    {
-        debug1 << "avtMapper::GetRange: Invalid variable dimension: dim=" <<
-            data.GetVariableDimension() << endl;
-        EXCEPTION0(ImproperUseException);
-    }
-
-    return gotExtents;
-}
-
-
-// ****************************************************************************
-//  Method: avtMapper::PrepareExtents
-//
-//  Purpose:
-//      Prepares the extents of a dataset.  This means trying to figure out
-//      what the current extents are by looking at the original extents and
-//      finally the data itself.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 15, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Wed Sep  5 16:56:35 PDT 2001
-//    Removed unnecessary temporary variable to fix compiler warnings.
-//
-//    Hank Childs, Fri Sep  7 18:30:33 PDT 2001
-//    Sent doubles into avtDataset::Get...Extent routines.
-//
-//    Kathleen Bonnell, Wed Oct 10 13:32:31 PDT 2001 
-//    Retrieve/set current data extents. 
-//
-//    Hank Childs, Fri Mar 15 18:11:12 PST 2002
-//    Account for dataset examiner.
-//
-//    Hank Childs, Fri Feb 27 08:29:54 PST 2004
-//    Account for multiple variables.
-//
-//    Mark C. Miller, Sun Feb 29 18:35:00 PST 2004
-//    Added calls to GetAnySpatialExtents before arbitrarily setting to [0,1]
-//
-//    Kathleen Bonnell, Thu Mar 11 10:07:35 PST 2004 
-//    DataExtents now always have only 2 components.
-//
-//    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
-//    Change extents names.
-//
-// ****************************************************************************
-
-void
-avtMapper::PrepareExtents(void)
-{
-    avtDataset_p input = GetTypedInput();
-
-    avtDataAttributes &atts = input->GetInfo().GetAttributes();    
-
-    int nvars = atts.GetNumberOfVariables();
-    double exts[2];
-    for (int var = 0 ; var < nvars ; var++)
-    {
-        const char *vname = atts.GetVariableName(var).c_str();
-        bool gotDataExtents = atts.GetDataExtents(exts, vname);
-        if (!gotDataExtents)
-        {
-            if (!(avtDatasetExaminer::GetDataExtents(input, exts, vname)))
-            {
-                exts[0] = 0.;
-                exts[1] = 1.;
-            }
-        }
-        atts.GetOriginalDataExtents(vname)->Set(exts);
-
-        bool gotActualDataExtents = atts.GetActualDataExtents(exts, vname);
-        if (!gotActualDataExtents)
-        {
-            if (!(avtDatasetExaminer::GetDataExtents(input, exts, vname)))
-            {
-                exts[0] = 0.;
-                exts[1] = 1.;
-            }
-        }
-        atts.GetActualDataExtents(vname)->Set(exts);
-    }
-
-    double bounds[6];
-    bool gotBounds = atts.GetSpatialExtents(bounds);
-    if (!gotBounds)
-    {
-        if (!(avtDatasetExaminer::GetSpatialExtents(input, bounds)))
-        {
-            if (!atts.GetAnySpatialExtents(bounds))
-            {
-                for (int i = 0 ; i < 3 ; i++)
-                {
-                    bounds[2*i] = 0.;
-                    bounds[2*i+1] = 1.;
-                }
-            }
-        }
-    }
-    atts.GetOriginalSpatialExtents()->Set(bounds);
-}
-
-
-// ****************************************************************************
-//  Method: avtMapper::SetLabels
-//
-//  Purpose:
-//      A hook to allow derived types to make use of labels. 
-// 
-//  Arguments:    
-//    <unnamed>  The labels. 
-//    <unnamed>  True if labels were retrieved from the input data tree,
-//               false if labels were retrieved from input info.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 24, 2001 
-//
-// ****************************************************************************
-
-void
-avtMapper::SetLabels(vector<string> &, bool)
-{
-   ; 
-}
-
-// ****************************************************************************
-//  Method: avtMapper::GetCurrentRange
-//
-//  Purpose:
-//      Gets the current range of the input.  This will look at the extents 
-//      in the information if they are set and look at the dataset otherwise.
-//
-//  Arguments:
-//      rmin     Will hold the minimum value.
-//      rmax     Will hold the maximum value.
-//
-//  Returns:    True, if it successfully calculated the extents,
-//              False otherwise.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 3, 2001 
-//
-//  Modifications:
-//
-//    Hank Childs, Thu Oct 10 08:25:18 PDT 2002
-//    Added a return value.
-//
-//    Kathleen Bonnell, Wed Dec 22 16:36:29 PST 2004
-//    Removed exception for variable dimension != 1, as all var extents now
-//    contain two elements, regardless of dimension.
-//
-// ****************************************************************************
-
-bool
-avtMapper::GetCurrentRange(double &rmin, double &rmax)
-{
-    avtDataAttributes &data = GetInput()->GetInfo().GetAttributes();
-
-    double extents[2];
-    bool gotExtents = data.GetActualDataExtents(extents);
-
-    if (!gotExtents)
-    {
-        //
-        //  avtDataset retrives extents from the tree, so this will get us
-        //  the proper current range.
-        //
-        avtDataset_p input = GetTypedInput();
-        gotExtents = avtDatasetExaminer::GetDataExtents(input, extents);
-    }
-
-    rmin = extents[0];
-    rmax = extents[1];
-
-    return gotExtents;
-}
-
-
-// ****************************************************************************
 //  Method: avtMapper::SetTransparencyActor
 //
 //  Purpose:
@@ -989,7 +446,7 @@ avtMapper::GetCurrentRange(double &rmin, double &rmax)
 //
 // ****************************************************************************
 
-int 
+int
 avtMapper::SetTransparencyActor(avtTransparencyActor *act)
 {
     // record whether this data is all 2D or all 3D
@@ -1026,40 +483,17 @@ avtMapper::SetTransparencyActor(avtTransparencyActor *act)
 
 
 // ****************************************************************************
-//  Method: avtMapper::GetLighting
-//
-//  Purpose:
-//      Returns the lighting state for a particular mapper. 
-//      Derived classes may override as necessary.
-//
-//  Returns:
-//      True if lighting for this mapper is ON, false otherwise. 
-//      Default is ON.
-//
-//  Programmer: Kathleen Bonnell 
-//  Creation:   August 13, 2002
-//
-// ****************************************************************************
-
-bool
-avtMapper::GetLighting()
-{
-   return true; 
-}
-
-
-// ****************************************************************************
 //  Method: avtMapper::GlobalLightingOn
 //
 //  Purpose:
-//      Sets the lighting coefficients necessary for a Lights On state. 
+//      Sets the lighting coefficients necessary for a Lights On state.
 //      Derived classes may override as necessary.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   August 13, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002  
+//    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002
 //    Allow lighting only for surface representations.
 //
 // ****************************************************************************
@@ -1074,9 +508,8 @@ avtMapper::GlobalLightingOn()
         //
         return;
     }
-    int i; 
-    for (i = 0; i < nMappers; i++)
-    { 
+    for (int i = 0; i < nMappers; i++)
+    {
         if (actors[i] != NULL)
         {
             vtkProperty *prop = actors[i]->GetProperty();
@@ -1085,7 +518,7 @@ avtMapper::GlobalLightingOn()
                 prop->SetAmbient(0.);
                 prop->SetDiffuse(1.);
             }
-            else 
+            else
             {
                 prop->SetAmbient(1.);
                 prop->SetDiffuse(0.);
@@ -1099,10 +532,10 @@ avtMapper::GlobalLightingOn()
 //  Method: avtMapper::GlobalLightingOff
 //
 //  Purpose:
-//      Sets the lighting coefficients necessary for a Lights Off state. 
+//      Sets the lighting coefficients necessary for a Lights Off state.
 //      Derived classes may override if necessary.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   August 13, 2002
 //
 // ****************************************************************************
@@ -1110,9 +543,8 @@ avtMapper::GlobalLightingOn()
 void
 avtMapper::GlobalLightingOff()
 {
-    int i; 
-    for (i = 0; i < nMappers; i++)
-    { 
+    for (int i = 0; i < nMappers; i++)
+    {
         if (actors[i] != NULL)
         {
             vtkProperty *prop = actors[i]->GetProperty();
@@ -1133,11 +565,11 @@ avtMapper::GlobalLightingOff()
 //  Arguments:
 //      amb    The new ambient lighting coefficient.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   August 13, 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002  
+//    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002
 //    Store the coefficient in globalAmbient.
 //
 // ****************************************************************************
@@ -1145,73 +577,15 @@ avtMapper::GlobalLightingOff()
 void
 avtMapper::GlobalSetAmbientCoefficient(const double amb)
 {
-    int i; 
     globalAmbient = amb;
-    for (i = 0; i < nMappers; i++)
-    { 
+    for (int i = 0; i < nMappers; i++)
+    {
         if (actors[i] != NULL)
         {
             actors[i]->GetProperty()->SetAmbient(amb);
         }
     }
 }
-
-// ****************************************************************************
-// Method: avtMapper::SetImmediateNodeRendering
-//
-// Purpose: 
-//   Sets the immediate mode flag into all of the vtkMappers.
-//
-// Arguments:
-//   val : The new immediate mode flag.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 17:01:30 PST 2002
-//
-// Modifications:
-//   
-//    Hank Childs, Sat Dec  3 20:32:37 PST 2005
-//    Change test for whether or not we are doing software rendering.
-//
-// ****************************************************************************
-
-void
-avtMapper::SetImmediateModeRendering(bool val)
-{
-    if (!avtCallback::GetSoftwareRendering())
-    {
-        immediateMode = val;
-        for (int i = 0; i < nMappers; i++)
-        {
-            if (mappers[i] != NULL)
-            {
-                if (immediateMode != 
-                                 (mappers[i]->GetImmediateModeRendering()?1:0))
-                    mappers[i]->SetImmediateModeRendering(immediateMode?1:0);
-            }
-        }
-    }
-}
-
-// ****************************************************************************
-// Method: avtMapper::GetImmediateModeRendering
-//
-// Purpose: 
-//   Returns the immediate rendering flag.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 17:02:43 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-avtMapper::GetImmediateModeRendering()
-{
-    return immediateMode;
-}
-
 
 
 // ****************************************************************************
@@ -1232,8 +606,8 @@ avtMapper::GetImmediateModeRendering()
 //  Modifications:
 //    Kathleen Bonnell, Thu Sep  2 08:52:56 PDT 2004
 //    Moved from avtGeometryDrawable so that derived mappers may override.
-//    Only set the specular properties when appropriate (eg. only for surface 
-//     renderings.)
+//    Only set the specular properties when appropriate (eg. only for surface
+//    renderings.)
 //
 // ****************************************************************************
 
@@ -1264,91 +638,5 @@ avtMapper::SetSpecularProperties(bool flag, double coeff, double power,
             }
         }
     }
-}
-
-
-// ****************************************************************************
-//  Method: avtMapper::SetSurfaceRepresentation
-//
-//  Purpose:
-//      Sets the drawable's surface representation.
-//
-//  Arguments:
-//      rep : The new surface representation.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Sep 23 15:58:48 PST 2002
-//
-//  Modifications:
-//    Kathleen Bonnell, Sat Oct 19 15:07:04 PDT 2002 
-//    Disable lighting for Wireframe and Points representation.
-//
-//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
-//    Moved from avtGeometryDrawable so that derived mappers may override. 
-//
-// ****************************************************************************
-
-void
-avtMapper::SetSurfaceRepresentation(int rep)
-{
-    for (int i = 0 ; i < nMappers ; i++)
-    {
-        if (mapperType[i] != DEFAULT)
-            continue;
-        
-        if (actors[i] != NULL)
-        {
-            vtkProperty *prop = actors[i]->GetProperty();
-            if(prop != NULL)
-            {
-                int actorRep = prop->GetRepresentation();
-                if(rep == 0 && actorRep != VTK_SURFACE)
-                {
-                    prop->SetRepresentation(VTK_SURFACE);
-                    if (GetLighting())
-                    {
-                        prop->SetAmbient(GetGlobalAmbientCoefficient());
-                        prop->SetDiffuse(1.);
-                    }
-                }
-                else if(rep == 1 && actorRep != VTK_WIREFRAME)
-                {
-                    prop->SetRepresentation(VTK_WIREFRAME);
-                    prop->SetAmbient(1.);
-                    prop->SetDiffuse(0.);
-                }
-                else if(rep == 2 && actorRep != VTK_POINTS)
-                {
-                    prop->SetRepresentation(VTK_POINTS);
-                    prop->SetAmbient(1.);
-                    prop->SetDiffuse(0.);
-                }
-            }
-        }
-    }
-}
-
-// ****************************************************************************
-//  Method: avtMapper::InvalidateTransparencyCache
-//
-//  Purpose:
-//      Invalidates transparency cache.
-//
-//  Notes:
-//      Can be used by plots when transparency cache won't be invalidated
-//      through normal methods.  Eg during a SetColorTable call from viewer.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   April 13, 2016
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtMapper::InvalidateTransparencyCache()
-{
-    if (transparencyActor != NULL)
-        transparencyActor->InvalidateTransparencyCache();
 }
 

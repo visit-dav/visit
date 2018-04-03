@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                    avtMapper.h                            //
+//                             avtMapper.h                                   //
 // ************************************************************************* //
 
 #ifndef AVT_MAPPER_H
@@ -45,7 +45,7 @@
 
 #include <plotter_exports.h>
 
-#include <avtTerminatingDatasetSink.h>
+#include <avtMapperBase.h>
 #include <avtDrawable.h>
 
 #include <vector>
@@ -53,7 +53,6 @@
 
 class   vtkActor;
 class   vtkAlgorithmOutput;
-class   vtkDataObjectCollection;
 class   vtkDataSetMapper;
 
 class   avtTransparencyActor;
@@ -64,7 +63,7 @@ class   ColorAttribute;
 //  Class:  avtMapper
 //
 //  Purpose:
-//      This takes geometry and makes a drawable by mapping the variable to 
+//      This takes geometry and makes a drawable by mapping the variable to
 //      colors.
 //
 //  Programmer: Hank Childs
@@ -76,36 +75,36 @@ class   ColorAttribute;
 //    Added members nRenderingModes, modeVisibility,
 //    modeRepresentation, and supporting Set methods.
 //
-//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001 
+//    Kathleen Bonnell, Mon Aug 20 17:53:30 PDT 2001
 //    Removed methods setting Mode Visibility, Representation,
-//    nRenderingModes.  These are no longer needed. 
+//    nRenderingModes.  These are no longer needed.
 //
-//    Kathleen Bonnell, Mon Sep 24 08:27:42 PDT 2001 
-//    Added virtual method SetLabels. 
-//    
-//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001 
-//    Added GetCurrentRange. 
-//    
+//    Kathleen Bonnell, Mon Sep 24 08:27:42 PDT 2001
+//    Added virtual method SetLabels.
+//
+//    Kathleen Bonnell, Thu Oct  4 16:28:16 PDT 2001
+//    Added GetCurrentRange.
+//
 //    Hank Childs, Sun Jul  7 12:31:10 PDT 2002
 //    Added support for transparency.
 //
-//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002  
+//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    Added support for lighting.
 //
 //    Brad Whitlock, Mon Sep 23 16:54:10 PST 2002
 //    Added ability to toggle immediate mode rendering.
 //
-//    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002 
+//    Kathleen Bonnell, Sat Oct 19 15:08:41 PDT 2002
 //    Added storage for the global Ambient coefficient, and a method
-//    to retrieve it. 
+//    to retrieve it.
 //
 //    Mark C. Miller Tue May 11 20:21:24 PDT 2004
 //    Removed extRenderdImagesActor data member and method to set it
 //
-//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
-//    Added specularIsInappropriate to control whether or not specular 
-//    properties get applied.  Moved SetSpecularProperties and 
-//    SetSurfaceRepresentation from avtGeometryDrawable so that derived 
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004
+//    Added specularIsInappropriate to control whether or not specular
+//    properties get applied.  Moved SetSpecularProperties and
+//    SetSurfaceRepresentation from avtGeometryDrawable so that derived
 //    mappers may override.
 //
 //    Brad Whitlock, Mon Jul 24 13:53:46 PST 2006
@@ -123,111 +122,43 @@ class   ColorAttribute;
 //    Kathleen Biagas, Wed Apr 13 18:02:22 MST 2016
 //    Added InvalidateTransparencyCache.
 //
+//    Kathleen Biagas, Tue Jul 12 13:27:25 MST 2016
+//    Simplify this class by removing surface/wireframe/points settings.
+//    Add SetUpTransparencyActor.
+//
+//    Kathleen Biagas, Thu Apr 13 09:05:05 PDT 2017
+//    Inherit from new avtMapperBase.
+//
 // ****************************************************************************
 
-class PLOTTER_API avtMapper : public avtTerminatingDatasetSink
+class PLOTTER_API avtMapper : public avtMapperBase
 {
   public:
                                avtMapper();
     virtual                   ~avtMapper();
 
-    void                       ReleaseData();
-    avtDrawable_p              GetDrawable();
-    virtual bool               GetRange(double &, double &);
-    virtual bool               GetCurrentRange(double &, double &);
-
-    virtual bool               GetLighting(void);
-
     virtual void               GlobalLightingOn(void);
     virtual void               GlobalLightingOff(void);
     virtual void               GlobalSetAmbientCoefficient(const double);
-    double                     GetGlobalAmbientCoefficient() 
-                                   { return globalAmbient; };
-
-    void                       SetImmediateModeRendering(bool val);
-    bool                       GetImmediateModeRendering();
-
-    int                        SetTransparencyActor(avtTransparencyActor *);
-
-    void                       SetSpecularIsInappropriate(bool val)
-                                   { specularIsInappropriate = val; };
-    bool                       GetSpecularIsInappropriate()
-                                   { return specularIsInappropriate; };
-
-    virtual void               SetSurfaceRepresentation(int rep);
+    virtual int                SetTransparencyActor(avtTransparencyActor *);
     virtual void               SetSpecularProperties(bool,double,double,
                                                      const ColorAttribute&);
-
-    virtual void               SetColorTexturingFlag(bool) {; }
-
-    virtual bool               SetFullFrameScaling(bool, const double *)
-                                   { return false; };
-
-    virtual void               SetAlternateDisplay(void *) {; }
-
-    virtual void               ReducedDetailModeOn() {; }
-    virtual bool               ReducedDetailModeOff() { return false; }
-    virtual void               SetDrawSurfaces(bool v) {drawSurfaces=v;}
-    virtual void               SetDrawWireframe(bool v) {drawWireframe=v;}
-    virtual void               SetWireframeColorScalars(){wireframeColorByScalar=true;}
-    virtual void               SetWireframeColor(double r,double g, double b)
-                               {
-                                   wireframeColor[0]=r;
-                                   wireframeColor[1]=g;
-                                   wireframeColor[2]=b;
-                                   wireframeColorByScalar=false;
-                               }
-    virtual void               SetDrawPoints(bool v) {drawPoints=v;}
-    virtual void               SetPointsColorScalars() {pointsColorByScalar=true;}
-    virtual void               SetPointsColor(double r,double g, double b)
-                               {
-                                   pointColor[0]=r;
-                                   pointColor[1]=g;
-                                   pointColor[2]=b;
-                                   pointsColorByScalar=false;
-                               }
-
-    void                       InvalidateTransparencyCache(void);
-
   protected:
-    bool                       immediateMode;
-    bool                       specularIsInappropriate;
-    avtDrawable_p              drawable;
-    avtTransparencyActor      *transparencyActor;
-    int                        transparencyIndex;
-
-    bool drawSurfaces, drawWireframe, drawPoints;
-    bool wireframeColorByScalar, pointsColorByScalar;
-    double wireframeColor[3], pointColor[3];
-
-    //DRP. Or call DEFAULT SURFACE??
-    typedef enum {DEFAULT, WIREFRAME, POINT} MapperType;
     vtkDataSetMapper         **mappers;
-    int                        nMappers;
-    MapperType                *mapperType;
     vtkActor                 **actors;
 
-    double                     globalAmbient;
-
-    void                       ClearSelf(void);
-    void                       SetUpMappers(void);
+    virtual void               ClearSelf(void);
     void                       SetDefaultRange(void);
-    void                       PrepareExtents(void);
-    void                       SetUpTransparency(void);
-
-    virtual void               ChangedInput(void);
-    virtual void               CustomizeMappers(void) = 0;
-    virtual void               MapperChangedInput(void);
-    virtual void               InputIsReady(void);
+    void                       SetUpDrawable(void);
+    virtual void               CreateActorMapperPairs(vtkDataSet **);
+    virtual void               SetUpTransparencyActor(void);
 
     virtual void               SetUpFilters(int nDoms);
     virtual vtkAlgorithmOutput *InsertFilters(vtkDataSet *, int dom);
 
     virtual vtkDataSetMapper  *CreateMapper(void);
-    virtual void               SetLabels(std::vector<std::string> &, bool);
 };
 
 
 #endif
-
 

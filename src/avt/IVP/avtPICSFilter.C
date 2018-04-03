@@ -62,8 +62,6 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
 
-#include <vtkVisItStreamLine.h>
-
 #include <avtCallback.h>
 #include <avtCellLocatorClassic.h>
 #include <avtCellLocatorBIH.h>
@@ -129,6 +127,7 @@ Consider the leaveDomains ICs and the balancing at the same time.
 #include <windows.h>
 #endif
 
+
 bool PRINT = false;
 
 static const double epsilon = std::numeric_limits<double>::epsilon();
@@ -172,7 +171,7 @@ avtPICSFilter::avtPICSFilter()
     fieldConstant = 1.0;
 
     maxStepLength = 0.;
-    integrationDirection = VTK_INTEGRATE_FORWARD;
+    integrationDirection = PICS_INTEGRATE_FORWARD;
     directionlessField = false;
     integrationType = PICS_INTEGRATE_DORMAND_PRINCE;
     relTol = 1e-7;
@@ -644,7 +643,7 @@ avtPICSFilter::LoadNextTimeSlice()
 
     if( period == 0 )
     {
-      if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+      if (integrationDirection == PICS_INTEGRATE_BACKWARD)
       {
         // When going backwards can not use the first time slice.
         if ((curTimeSlice-1) <= 0)
@@ -663,7 +662,7 @@ avtPICSFilter::LoadNextTimeSlice()
     // Reset the timeout for the next iteration.
     avtCallback::ResetTimeout(60*60);
     
-    if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+    if (integrationDirection == PICS_INTEGRATE_BACKWARD)
     {
         curTimeSlice--;
 
@@ -787,7 +786,7 @@ avtPICSFilter::GetTimeStep(double t) const
     {
         for (size_t i = 0; i < domainTimeIntervals.size(); i++)
         {
-            if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+            if (integrationDirection == PICS_INTEGRATE_BACKWARD)
             {
                 if (t >  domainTimeIntervals[i][0] &&
                     t <= domainTimeIntervals[i][1])
@@ -979,7 +978,7 @@ avtPICSFilter::SetPathlines(bool pathlines,
     period = _period;
     pathlineCMFE = _pathlineCMFE;
 
-    if (doPathlines && (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS))
+    if (doPathlines && (integrationDirection == PICS_INTEGRATE_BOTH_DIRECTIONS))
     {
         EXCEPTION1(VisItException, "VisIt is not capable of doing pathlines "
                    "calculations both forwards and backwards.  Please contact "
@@ -1076,20 +1075,10 @@ avtPICSFilter::SetTolerances(double reltol, double abstol, bool isFraction)
 void
 avtPICSFilter::SetIntegrationDirection(int dir)
 {
-    // Note the direction is based on the VTK definitions in vtkStreamer.h 
-    // #define VTK_INTEGRATE_FORWARD         0
-    // #define VTK_INTEGRATE_BACKWARD        1
-    // #define VTK_INTEGRATE_BOTH_DIRECTIONS 2
-
-    // The directionless attribute is specific to VisIt.
-    // #define VTK_INTEGRATE_FORWARD_DIRECTIONLESS  3
-    // #define VTK_INTEGRATE_BACKWARD_DIRECTIONLESS 4
-    // #define VTK_INTEGRATE_BOTH_DIRECTIONLESS     5
-
     integrationDirection = dir % 3;
     directionlessField = (dir >= 3);
 
-    if (doPathlines && (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS))
+    if (doPathlines && (integrationDirection == PICS_INTEGRATE_BOTH_DIRECTIONS))
     {
         EXCEPTION1(VisItException, "VisIt is not capable of doing pathlines "
                      "calculations both forwards and backwards. Please contact "
@@ -1544,7 +1533,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         if( period > 0 )
         {
           // The base time will always be at the current time slice
-          if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+          if (integrationDirection == PICS_INTEGRATE_BACKWARD)
             baseTime = md->GetTimes()[currentTimeSliderIndex] - period;
           else
             baseTime = md->GetTimes()[currentTimeSliderIndex];
@@ -1638,7 +1627,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
         // Check if we have a restart.
         if( restart == -1 )
         {
-            if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+            if (integrationDirection == PICS_INTEGRATE_BACKWARD)
             {
                 if (seedTime0 == md->GetTimes()[0])
                     EXCEPTION1(VisItException,
@@ -1661,7 +1650,7 @@ avtPICSFilter::InitializeTimeInformation(int currentTimeSliderIndex)
             seedTimeStep0 = -1;
             for (size_t i = 0; i < domainTimeIntervals.size(); i++)
             {
-                if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+                if (integrationDirection == PICS_INTEGRATE_BACKWARD)
                 {
                     if (seedTime0 > domainTimeIntervals[i][0] &&
                         seedTime0 <= domainTimeIntervals[i][1])
@@ -2152,7 +2141,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
     {
       if( fieldType == PICS_FIELD_DEFAULT )
       {
-        if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+        if (integrationDirection == PICS_INTEGRATE_BACKWARD)
             return new avtIVPVTKTimeVaryingField(ds, *locator, 
                                        domainTimeIntervals[curTimeSlice-1][1],
                                        domainTimeIntervals[curTimeSlice-1][0]);
@@ -2163,7 +2152,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
       }
       else if( fieldType == PICS_FIELD_NEK5000 )
       {
-        if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+        if (integrationDirection == PICS_INTEGRATE_BACKWARD)
             return new avtIVPNek5000TimeVaryingField(ds, *locator, 
                                        domainTimeIntervals[curTimeSlice-1][1],
                                        domainTimeIntervals[curTimeSlice-1][0]);
@@ -2175,7 +2164,7 @@ avtPICSFilter::GetFieldForDomain(const BlockIDType &domain, vtkDataSet *ds)
       else if( fieldType == PICS_FIELD_NEKTARPP )
       {
 #ifdef HAVE_NEKTAR_PP
-        if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+        if (integrationDirection == PICS_INTEGRATE_BACKWARD)
             return new avtIVPNektarPPTimeVaryingField(ds, *locator, 
                                        domainTimeIntervals[curTimeSlice-1][1],
                                        domainTimeIntervals[curTimeSlice-1][0]);
@@ -3159,7 +3148,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
         // Need a single ID for the IC even if there are many domains.
         int currentID = GetNextCurveID();
 
-        if (integrationDirection == VTK_INTEGRATE_FORWARD)
+        if (integrationDirection == PICS_INTEGRATE_FORWARD)
         {
             solver->SetDirection( avtIVPSolver::DIRECTION_FORWARD );
             avtIntegralCurve *ic =
@@ -3171,7 +3160,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             curves.push_back(ic);
             seedPtIds.push_back(ic->id);
         }
-        else if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+        else if (integrationDirection == PICS_INTEGRATE_BACKWARD)
         {
             solver->SetDirection( avtIVPSolver::DIRECTION_BACKWARD );
             avtIntegralCurve *ic =
@@ -3183,7 +3172,7 @@ avtPICSFilter::CreateIntegralCurvesFromSeeds(std::vector<avtVector> &pts,
             curves.push_back(ic);
             seedPtIds.push_back(ic->id);
         }
-        else if (integrationDirection == VTK_INTEGRATE_BOTH_DIRECTIONS)
+        else if (integrationDirection == PICS_INTEGRATE_BOTH_DIRECTIONS)
         {
             solver->SetDirection( avtIVPSolver::DIRECTION_FORWARD );
             avtIntegralCurve *ic0 =
@@ -3380,9 +3369,9 @@ avtPICSFilter::ModifyContract(avtContract_p in_contract)
         GetPathlineVelocityMeshVariables(out_dr, pathlineName, meshName);
 
         int timeOffset;
-        if (integrationDirection == VTK_INTEGRATE_FORWARD)
+        if (integrationDirection == PICS_INTEGRATE_FORWARD)
             timeOffset = +1;
-        else //if (integrationDirection == VTK_INTEGRATE_BACKWARD)
+        else //if (integrationDirection == PICS_INTEGRATE_BACKWARD)
             timeOffset = -1;
 
         // Same mesh between the two time steps

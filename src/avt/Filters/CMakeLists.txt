@@ -87,7 +87,6 @@ avtGhostZoneAndFacelistFilter.C
 avtGhostZoneFilter.C
 avtImageCommunicator.C
 avtImageCompositer.C
-avtImgCommunicator.C
 avtLinearTransformFilter.C
 avtLineoutFilter.C
 avtLineScanFilter.C
@@ -110,7 +109,6 @@ avtSamplePointExtractor.C
 avtSamplePointToSurfaceFilter.C
 avtShiftCenteringFilter.C
 avtSimilarityTransformFilter.C
-avtSLIVRVoxelExtractor.C
 avtSmoothPolyDataFilter.C
 avtStaggeringFilter.C
 avtSubsetBlockMergeFilter.C
@@ -160,7 +158,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
 
 IF(VTKM_FOUND)
     SET(VISIT_VTKM_LIB visit_vtkm)

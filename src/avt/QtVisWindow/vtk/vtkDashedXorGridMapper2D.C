@@ -65,11 +65,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <QPainter>
 #include <QLine>
 #if defined(HAVE_XLIB)
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-#  include <QX11Info>
-#else
 #  include <QtX11Extras/QX11Info>
-#endif
 #  include <X11/Intrinsic.h>
 #endif
 

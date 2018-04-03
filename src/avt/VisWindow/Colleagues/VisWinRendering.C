@@ -60,7 +60,6 @@
 #include <VisWindowColleagueProxy.h>
 
 #include <avtCallback.h>
-#include <avtOpenGLExtensionManager.h>
 #include <avtSourceFromImage.h>
 
 #include <ImproperUseException.h>
@@ -69,9 +68,10 @@
 
 #include <vtkCallbackCommand.h>
 #include <vtkSmartPointer.h>
+#include <vtk_glew.h>
 
 // We'd do it another way in VTK8
-#define VALUE_IMAGE_RENDERING_PRE_VTK8
+//#define VALUE_IMAGE_RENDERING_PRE_VTK8
 #ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
 #include <vtkVisItDataSetMapper.h>
 #include <vtkProperty.h>
@@ -165,7 +165,7 @@ bool VisWinRendering::stereoEnabled = false;
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     VisWinColleague(p), background(NULL), foreground(NULL), needsUpdate(false),
     realized(false), antialiasing(false), stereo(false), stereoType(2),
-    displayListMode(2), surfaceRepresentation(0), specularFlag(false),
+    surfaceRepresentation(0), specularFlag(false),
     specularCoeff(0.6), specularPower(10.0),
     specularColor(ColorAttribute(255,255,255,255)), colorTexturingFlag(true),
     orderComposite(true), depthCompositeThreads(2), depthCompositeBlocking(65536),
@@ -1014,10 +1014,8 @@ VisWinRendering::Realize(void)
 {
     if (realized == false)
     {
-        debug3 << "Forcing GL context initialization..." << std::endl;
         RealizeRenderWindow();
         realized = true;
-        avt::glew::initialize();
     }
 }
 
@@ -1817,6 +1815,8 @@ VisWinRendering::ScreenCaptureValues(bool readZ)
     // Get the float values from the value pass.
     // wrap up the floats as an avtImage.
     // restore bg/fg renderers.
+    avtImage_p output = new avtImage(NULL);
+    return output;
 #endif
 }
 
@@ -2356,25 +2356,6 @@ VisWinRendering::SetStereoRendering(bool enabled, int type)
     }
 }
 
-// ****************************************************************************
-// Method: VisWinRendering::SetDisplayListMode
-//
-// Purpose: 
-//    Sets the display list mode.
-//
-// Arguments:
-//   mode : The new display list mode.
-//
-// Programmer: Hank Childs
-// Creation:   May 10, 2004
-//
-// ****************************************************************************
-
-void
-VisWinRendering::SetDisplayListMode(int mode)
-{
-    displayListMode = mode;
-}
 
 // ****************************************************************************
 // Method: VisWinRendering::SetSurfaceRepresentation

@@ -49,6 +49,7 @@
 #include <avtFacelistFilter.h>
 #include <avtGhostZoneFilter.h>
 #include <avtLevelsLegend.h>
+#include <avtLevelsMapper.h>
 #include <avtLevelsPointGlyphMapper.h>
 #include <avtLookupTable.h>
 #include <avtSubsetFilter.h>
@@ -77,19 +78,19 @@ using std::vector;
 // ****************************************************************************
 //  Method: avtSubsetPlot constructor
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 //  Modifications:
 //
-//    Hank Childs, Thu Sep 12 13:44:13 PDT 2002 
+//    Hank Childs, Thu Sep 12 13:44:13 PDT 2002
 //    Keep track of all of our filters to prevent memory leaks.
 //
 //    Jeremy Meredith, Tue Dec 10 10:00:09 PST 2002
 //    Added poly data smooth filter.
 //
-//    Kathleen Bonnell, Mon May 19 13:46:55 PDT 2003 
-//    Tell the legend to draw in top-to-bottom order (ReverseOrder). 
+//    Kathleen Bonnell, Mon May 19 13:46:55 PDT 2003
+//    Tell the legend to draw in top-to-bottom order (ReverseOrder).
 //
 //    Eric Brugger, Wed Jul 16 11:17:28 PDT 2003
 //    Modified to work with the new way legends are managed.
@@ -97,8 +98,8 @@ using std::vector;
 //    Hank Childs, Wed Oct 15 20:30:10 PDT 2003
 //    Tell facelist filter to consolidate faces.
 //
-//    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004 
-//    Changed mapper type to avtLevelsPointGlyphMapper. 
+//    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004
+//    Changed mapper type to avtLevelsPointGlyphMapper.
 //
 //    Hank Childs, Wed Dec 20 09:25:42 PST 2006
 //    Make new method calls in response to changing behavior from facelist
@@ -110,16 +111,21 @@ using std::vector;
 //    Jeremy Meredith, Tue Oct 14 14:00:06 EDT 2008
 //    Changed interface to SetMustCreatePolyData to allow either setting.
 //
+//    Kathleen Biagas, Tue Aug 23 11:20:32 PDT 2016
+//    Added LevelsMapper as points and surfaces no longer handled by the
+//    same mapper.
+//
 // ****************************************************************************
 
 avtSubsetPlot::avtSubsetPlot()
 {
-    levelsMapper = new avtLevelsPointGlyphMapper();
+    glyphMapper  = new avtLevelsPointGlyphMapper();
+    levelsMapper = new avtLevelsMapper();
     levelsLegend = new avtLevelsLegend();
     levelsLegend->SetTitle("Subset");
     // there is no 'range' per se, so turn off range visibility.
     levelsLegend->SetVarRangeVisibility(0);
-    // Tell the legend to draw top-to-bottom (default is bottom-to-top). 
+    // Tell the legend to draw top-to-bottom (default is bottom-to-top).
     levelsLegend->SetReverseOrder(true);
 
     avtLUT = new avtLookupTable();
@@ -153,12 +159,12 @@ avtSubsetPlot::avtSubsetPlot()
 // ****************************************************************************
 //  Method: avtLevelsMapper destructor
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 //  Modifications:
 //
-//    Hank Childs, Thu Sep 12 13:44:13 PDT 2002 
+//    Hank Childs, Thu Sep 12 13:44:13 PDT 2002
 //    Keep track of all of our filters to prevent memory leaks.
 //
 //    Jeremy Meredith, Tue Dec 10 10:00:09 PST 2002
@@ -171,6 +177,11 @@ avtSubsetPlot::avtSubsetPlot()
 
 avtSubsetPlot::~avtSubsetPlot()
 {
+    if (glyphMapper != NULL)
+    {
+        delete glyphMapper;
+        glyphMapper = NULL;
+    }
     if (levelsMapper != NULL)
     {
         delete levelsMapper;
@@ -217,14 +228,14 @@ avtSubsetPlot::~avtSubsetPlot()
         delete smooth;
         smooth = NULL;
     }
-    if (sbmf != NULL) 
+    if (sbmf != NULL)
     {
         delete sbmf;
         sbmf = NULL;
     }
- 
+
     //
-    // Do not delete the levelsLegend since it is being held by levLegendRefPtr.    
+    // Do not delete the levelsLegend since it is being held by levLegendRefPtr.
     //
 }
 
@@ -235,8 +246,8 @@ avtSubsetPlot::~avtSubsetPlot()
 //  Purpose:
 //    Call the constructor.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 // ****************************************************************************
 
@@ -256,8 +267,8 @@ avtSubsetPlot::Create()
 //  Arguments:
 //      atts    The attributes for this subset plot.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 //  Modifications:
 //    Brad Whitlock, Fri Feb 1 16:13:14 PST 2002
@@ -266,17 +277,17 @@ avtSubsetPlot::Create()
 //    Jeremy Meredith, Wed Mar 13 11:08:38 PST 2002
 //    Added line style and line width.
 //
-//    Kathleen Bonnell, Wed Apr 10 09:45:43 PDT 2002  
-//    Moved color-related code to new SetColors method. 
+//    Kathleen Bonnell, Wed Apr 10 09:45:43 PDT 2002
+//    Moved color-related code to new SetColors method.
 //
-//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
-//    Set AntialiasedRenderOrder depending upon wireframe mode. 
+//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003
+//    Set AntialiasedRenderOrder depending upon wireframe mode.
 //
-//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004
 //    Ensure that specular properties aren't used in wireframe mode.
 //
-//    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004 
-//    Incorporate pointSize, pointtype and pointSizeVar. 
+//    Kathleen Bonnell, Fri Nov 12 11:47:49 PST 2004
+//    Incorporate pointSize, pointtype and pointSizeVar.
 //
 //    Brad Whitlock, Wed Jul 20 13:26:13 PST 2005
 //    I made the pointSize in the atts be used for to set the point size for
@@ -303,33 +314,35 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
     {
         behavior->SetAntialiasedRenderOrder(DOES_NOT_MATTER);
         levelsMapper->SetSpecularIsInappropriate(false);
+        glyphMapper->SetSpecularIsInappropriate(false);
     }
-    else 
+    else
     {
         behavior->SetAntialiasedRenderOrder(ABSOLUTELY_LAST);
         levelsMapper->SetSpecularIsInappropriate(true);
+        glyphMapper->SetSpecularIsInappropriate(true);
     }
 
-    levelsMapper->SetScale(atts.GetPointSize());
+    glyphMapper->SetScale(atts.GetPointSize());
     if (atts.GetPointSizeVarEnabled() &&
         atts.GetPointSizeVar() != "default" &&
         atts.GetPointSizeVar() != "" &&
         atts.GetPointSizeVar() != "\0")
     {
-        levelsMapper->ScaleByVar(atts.GetPointSizeVar());
+        glyphMapper->ScaleByVar(atts.GetPointSizeVar());
     }
-    else 
+    else
     {
-        levelsMapper->DataScalingOff();
+        glyphMapper->DataScalingOff();
     }
-    levelsMapper->SetGlyphType(atts.GetPointType());
+    glyphMapper->SetGlyphType(atts.GetPointType());
     SetPointGlyphSize();
 }
 
 // ****************************************************************************
 // Method: avtSubsetPlot::SetColorTable
 //
-// Purpose: 
+// Purpose:
 //   Sets the plot's color table if the color table is the same as that of
 //   the plot or we are using the default color table for the plot.
 //
@@ -342,7 +355,7 @@ avtSubsetPlot::SetAtts(const AttributeGroup *a)
 // Creation:   Tue Nov 26 11:07:03 PDT 2002
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -374,8 +387,8 @@ avtSubsetPlot::SetColorTable(const char *ctName)
 //  Arguments:
 //      legendOn     true if the legend should be turned on, false otherwise.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 // ****************************************************************************
 
@@ -417,8 +430,8 @@ avtSubsetPlot::SetLineStyle(int ls)
 //  Purpose:
 //      Sets the line width.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 // ****************************************************************************
 
@@ -438,15 +451,22 @@ avtSubsetPlot::SetLineWidth(int lw)
 //
 //  Returns:    The mapper for this plot.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtSubsetPlot::GetMapper(void)
 {
-    return levelsMapper;
+    if (topologicalDim != 0)
+    {
+        return levelsMapper;
+    }
+    else
+    {
+        return glyphMapper;
+    }
 }
 
 
@@ -461,8 +481,8 @@ avtSubsetPlot::GetMapper(void)
 //
 //  Returns:    The data object after the subset plot.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 //  Modifications:
 //    Eric Brugger, Fri Dec 14 13:05:27 PST 2001
@@ -479,16 +499,16 @@ avtSubsetPlot::GetMapper(void)
 //    Added support for all combinations of wireframe mode and requested
 //    drawing of internal boundaries for all subset plot types.
 //
-//    Kathleen Bonnell, Wed Sep  4 16:14:12 PDT 2002  
-//    Removed NeedDomainLabels, functionality replace by new attribute 
-//    subsetType. 
-//    
-//    Hank Childs, Thu Sep 12 13:44:13 PDT 2002 
+//    Kathleen Bonnell, Wed Sep  4 16:14:12 PDT 2002
+//    Removed NeedDomainLabels, functionality replace by new attribute
+//    subsetType.
+//
+//    Hank Childs, Thu Sep 12 13:44:13 PDT 2002
 //    Clean up memory leaks.
 //
-//    Kathleen Bonnell, Tue Oct 22 08:41:29 PDT 2002  
+//    Kathleen Bonnell, Tue Oct 22 08:41:29 PDT 2002
 //    Moved entire method to ApplyRenderingTransformation, so that the output
-//    of this method could serve as accurate input to a query. 
+//    of this method could serve as accurate input to a query.
 //
 //    Hank Childs, Wed Mar 19 10:03:28 PST 2003
 //    Move the wireframe portion into this routine (from
@@ -512,15 +532,15 @@ avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 //
 //  Purpose:
 //      Does the rendering transformation for a subset plot, namely, the
-//      subset, ghost-zone and facelist filters. 
+//      subset, ghost-zone and facelist filters.
 //
 //  Arguments:
 //      input   The input data object.
 //
 //  Returns:    The data object after the subset plot.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 22, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 22, 2002
 //
 //  Modifications:
 //    Jeremy Meredith, Tue Dec 10 10:00:09 PST 2002
@@ -543,7 +563,7 @@ avtSubsetPlot::ApplyOperators(avtDataObject_p input)
 //    Hank Childs, Fri Aug  3 13:46:26 PDT 2007
 //    Add a second ghost zone filter in the case of wireframe rendering.
 //    This addresses the coarse-fine boundary issues for AMR meshes.
-//   
+//
 //    Kevin Griffin, Mon Nov 3 13:05:42 PDT 2014
 //    Added the block merge filter to the pipeline for the block wireframe
 //    option.
@@ -578,7 +598,7 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
 
         // Set the amount of smoothing required
         smooth->SetSmoothingLevel(atts.GetSmoothingLevel());
-    
+
         //
         // Apply the needed filters
         //
@@ -651,13 +671,13 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
             {
                 sub->SetInput(fl->GetOutput());
             }
-            
+
             if ((type == SubsetAttributes::Group) && !atts.GetDrawInternal())
             {
                 sbmf->SetInput(sub->GetOutput());
                 wf->SetInput(sbmf->GetOutput());
             }
-            else 
+            else
             {
                 wf->SetInput(sub->GetOutput());
             }
@@ -700,26 +720,26 @@ avtSubsetPlot::ApplyRenderingTransformation(avtDataObject_p input)
 //  Method: avtSubsetPlot::CustomizeBehavior
 //
 //  Purpose:
-//      Customizes the behavior of the output.  Since we do not yet have a 
+//      Customizes the behavior of the output.  Since we do not yet have a
 //      levels mapper, this is only satisfying the requirement that the hook
 //      must be defined so the type can be concrete.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   October 17, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   October 17, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Wed Apr 10 09:45:43 PDT 2002  
+//    Kathleen Bonnell, Wed Apr 10 09:45:43 PDT 2002
 //    Added call to SetColors, so that legend will correspond to current
 //    subselection.
 //
 //    Hank Childs, Wed Oct 23 13:57:55 PDT 2002
 //    Shift the plot to the front if we are in wireframe mode.
 //
-//    Kathleen Bonnell, Thu Dec 19 12:27:09 PST 2002  
-//    Added call to SortLabels. 
+//    Kathleen Bonnell, Thu Dec 19 12:27:09 PST 2002
+//    Added call to SortLabels.
 //
-//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003 
-//    Set AntialiasedRenderOrder depending upon wireframe mode. 
+//    Kathleen Bonnell, Mon Sep 29 12:31:18 PDT 2003
+//    Set AntialiasedRenderOrder depending upon wireframe mode.
 //
 //    Brad Whitlock, Thu Jul 21 15:39:12 PST 2005
 //    Set the point glyph size.
@@ -750,7 +770,7 @@ avtSubsetPlot::CustomizeBehavior(void)
 // ****************************************************************************
 // Method: avtSubsetPlot::SetPointGlyphSize
 //
-// Purpose: 
+// Purpose:
 //   Sets the point glyph size into the mapper.
 //
 // Programmer: Brad Whitlock
@@ -766,8 +786,8 @@ void
 avtSubsetPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
-        levelsMapper->SetPointSize(atts.GetPointSizePixels());
+    if(atts.GetPointType() == Point)
+        glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 
 
@@ -777,7 +797,7 @@ avtSubsetPlot::SetPointGlyphSize()
 //  Purpose:
 //      Tells the compositer that it needs zbuffer info to composite correctly,
 //      in the case that the subset plot is bleeding over the domain boundary,
-//      which means it can spill into other processor's portion of image 
+//      which means it can spill into other processor's portion of image
 //      space.
 //
 //  Programmer: Hank Childs
@@ -805,8 +825,8 @@ avtSubsetPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    color based on the flag set in atts, or colors corrsponding to the
 //    current subselection.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 9, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 9, 2002
 //
 //  Modifications:
 //    Eric Brugger, Mon Apr 22 15:36:34 PDT 2002
@@ -814,19 +834,19 @@ avtSubsetPlot::NeedZBufferToCompositeEvenIn2D(void)
 //    account for the fact that the subsetted list might have its labels in
 //    a different order from the non-subsetted list when run in parallel.
 //
-//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002  
-//    Turn off color bar and send message to legend if no subsets are present.  
-//    
-//    Kathleen Bonnell, Tue Sep 10 14:14:18 PDT 2002 
+//    Kathleen Bonnell, Mon Apr 29 13:37:14 PDT 2002
+//    Turn off color bar and send message to legend if no subsets are present.
+//
+//    Kathleen Bonnell, Tue Sep 10 14:14:18 PDT 2002
 //    Create a label-to-color-index map for use by mapper and legend.  Provides
 //    consistency in color mapping, regardless of the order of labels,
-//    or whether run in parallel. 
+//    or whether run in parallel.
 //
 //    Brad Whitlock, Fri Nov 15 10:10:47 PDT 2002
 //    I changed the map type.
 //
-//    Kathleen Bonnell, Mon Nov 25 17:36:27 PST 2002 
-//    Allow the levels to be set in the legend, even if doing single-color. 
+//    Kathleen Bonnell, Mon Nov 25 17:36:27 PST 2002
+//    Allow the levels to be set in the legend, even if doing single-color.
 //
 //    Brad Whitlock, Tue Nov 26 10:42:25 PDT 2002
 //    I added a color table coloring mode.
@@ -849,7 +869,7 @@ avtSubsetPlot::NeedZBufferToCompositeEvenIn2D(void)
 //
 // ****************************************************************************
 
-void 
+void
 avtSubsetPlot::SetColors()
 {
     const vector < string > &allLabels = atts.GetSubsetNames();
@@ -872,11 +892,11 @@ avtSubsetPlot::SetColors()
         levelsLegend->SetMessage(msg);
         colorBarVisible = false;
     }
-    else 
+    else
     {
         levelsLegend->SetColorBarVisibility(1);
         levelsLegend->SetMessage(NULL);
-    }  
+    }
 
     if (atts.GetColorType() == SubsetAttributes::ColorBySingleColor)
     {
@@ -887,10 +907,10 @@ avtSubsetPlot::SetColors()
 
         avtLUT->SetLUTColorsWithOpacity(ca.GetColor(), 1);
         levelsMapper->SetColors(cal, needsRecalculation);
-
-        // 
+        glyphMapper->SetColors(cal, needsRecalculation);
+        //
         //  Send an empty color map, rather than one where all
-        //  entries map to same value. 
+        //  entries map to same value.
         //
         if(colorBarVisible)
         {
@@ -904,7 +924,7 @@ avtSubsetPlot::SetColors()
         int numColors = cal.GetNumColors();
 
         //
-        //  Create colors from original color table. 
+        //  Create colors from original color table.
         //
         unsigned char *colors = new unsigned char[numColors * 4];
         unsigned char *cptr = colors;
@@ -918,7 +938,7 @@ avtSubsetPlot::SetColors()
             *cptr++ = (unsigned char)cal[i].Alpha();
 
             //
-            //  Create a label-to-color-index mapping 
+            //  Create a label-to-color-index mapping
             //
             levelColorMap.insert(LevelColorMap::value_type(allLabels[i], i));
         }
@@ -928,6 +948,8 @@ avtSubsetPlot::SetColors()
             StackTimer t0("Set up levels mapper");
             levelsMapper->SetColors(cal, needsRecalculation);
             levelsMapper->SetLabelColorMap(levelColorMap);
+            glyphMapper->SetColors(cal, needsRecalculation);
+            glyphMapper->SetLabelColorMap(levelColorMap);
         }
         if(colorBarVisible)
         {
@@ -961,13 +983,13 @@ avtSubsetPlot::SetColors()
         }
 
         //
-        //  Create a label-to-color-index mapping 
+        //  Create a label-to-color-index mapping
         //
         for(int i = 0; i < numColors; ++i)
             levelColorMap.insert(LevelColorMap::value_type(allLabels[i], i));
 
         bool invert = atts.GetInvertColorTable();
-        // 
+        //
         // Add a color for each subset name.
         //
         if(ct->IsDiscrete(ctName.c_str()))
@@ -1011,6 +1033,8 @@ avtSubsetPlot::SetColors()
             StackTimer t0("Set up levels mapper");
             levelsMapper->SetColors(cal, needsRecalculation);
             levelsMapper->SetLabelColorMap(levelColorMap);
+            glyphMapper->SetColors(cal, needsRecalculation);
+            glyphMapper->SetLabelColorMap(levelColorMap);
         }
 
         if(colorBarVisible)
@@ -1039,12 +1063,12 @@ avtSubsetPlot::SetColors()
 //    Release data with smooth filter.
 //
 // ****************************************************************************
- 
+
 void
 avtSubsetPlot::ReleaseData(void)
 {
     avtVolumeDataPlot::ReleaseData();
- 
+
     if (wf != NULL)
     {
         wf->ReleaseData();
@@ -1079,7 +1103,7 @@ avtSubsetPlot::ReleaseData(void)
 //    Ensure that the labels used by the legend are in the same order
 //    as listed in plot atts.
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   December 19, 2002
 //
 //  Modifications:
@@ -1092,7 +1116,7 @@ avtSubsetPlot::ReleaseData(void)
 //    practice, but a different bug was causing a crash here.
 //
 // ****************************************************************************
- 
+
 void
 avtSubsetPlot::SortLabels()
 {
@@ -1110,7 +1134,7 @@ avtSubsetPlot::SortLabels()
         originalLabelPairs.push_back(pair<string, int>(originalLabels[i], (int)i));
     }
     sort(originalLabelPairs.begin(), originalLabelPairs.end());
-    
+
     vector < string > usedLabels;
     behavior->GetInfo().GetAttributes().GetLabels(usedLabels);
     sort(usedLabels.begin(), usedLabels.end());
@@ -1128,7 +1152,7 @@ avtSubsetPlot::SortLabels()
             break;
 
         sortedUsedLabels.push_back(
-         pair<int, string>(originalLabelPairs[origLabelIndex].second, 
+         pair<int, string>(originalLabelPairs[origLabelIndex].second,
                            usedLabels[i]));
     }
 

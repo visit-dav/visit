@@ -46,18 +46,24 @@ ${VISIT_SOURCE_DIR}/common/utility
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} )
 
 ADD_EXECUTABLE(text2polys text2polys.C arial_font.C)
 ADD_EXECUTABLE(time_annotation time_annotation.C arial_font.C)
 
 # Specify the libraries to link against
 TARGET_LINK_LIBRARIES(text2polys vtkIOLegacy)
-IF(HAVE_LIB_R)
-TARGET_LINK_LIBRARIES(time_annotation vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtkFiltersStatisticsGnuR vtksys vtkIOImage)
-ELSE(HAVE_LIB_R)
-TARGET_LINK_LIBRARIES(time_annotation vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtksys vtkIOImage)
-ENDIF(HAVE_LIB_R)
+
+TARGET_LINK_LIBRARIES(time_annotation
+    vtkRenderingOpenGL2 vtkRenderingFreeType vtkInteractionStyle
+    vtksys vtkIOImage)
+
+if(HAVE_OSMESA)
+    target_link_libraries(time_annotation ${OSMESA_LIBRARIES})
+elseif(HAVE_EGL)
+    target_link_libraries(time_annotation ${EGL_LIBRARIES})
+endif()
+
 # add vtk definitions
 ADD_TARGET_DEFINITIONS(time_annotation "${VTK_DEFINITIONS}")
 

@@ -317,6 +317,7 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
     }
     bool allLogBndGhost = allLogBndZonesGhost || allLogBndNodesGhost;
     
+#if 0
     if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID && 
         !ghostDataMustBeRemoved && !allLogBndGhost)
     {
@@ -334,6 +335,7 @@ avtGhostZoneFilter::ExecuteData(avtDataRepresentation *in_dr)
                << endl;
         return in_dr;
     }
+#endif
 
     debug5 << "Using vtkDataSetRemoveGhostCells" << endl;
 

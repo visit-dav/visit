@@ -41,12 +41,6 @@
 #include <QvisPostableWindowObserver.h>
 #include <AttributeSubject.h>
 
-// SLIVR and Qt share 'emit' causing a conflict
-#ifdef HAVE_LIBSLIVR
-#   undef emit
-#   include <QvisCMap2Display.h>
-#endif
-
 // Forward declarations
 class VolumeAttributes;
 class QButtonGroup;
@@ -67,8 +61,6 @@ class QvisOpacitySlider;
 class QvisScribbleOpacityBar;
 class QvisSpectrumBar;
 class QvisVariableButton;
-class QvisCMap2Widget;
-class TransferFunction2D;
 typedef int WidgetID;
 
 // ****************************************************************************
@@ -156,6 +148,12 @@ typedef int WidgetID;
 //    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
 //    Make resampling optional.
 //
+//    Alister Maguire, Fri May 12 10:15:45 PDT 2017
+//    Removed Splatting and Texture3D, and added the Default renderer. 
+//
+//    Kathleen Biagas, Fri Mar  2 14:53:14 MST 2018
+//    Removed Tuvok.
+//
 // ****************************************************************************
 
 class QvisVolumePlotWindow : public QvisPostableWindowObserver
@@ -176,16 +174,14 @@ public slots:
     virtual void reset();
 protected:
     void UpdateWindow(bool doAll);
-    void UpdateHistogram(bool need2D);
+    void UpdateHistogram();
     void UpdateColorControlPoints();
     void UpdateGaussianControlPoints();
     void UpdateFreeform();
-    void Update2DTransferFunction();
     void Apply(bool ignore = false);
     void GetCurrentValues(int which_widget);
     void CopyGaussianOpacitiesToFreeForm();
     QWidget *Create1DTransferFunctionGroup(int);
-    QWidget *Create2DTransferFunctionGroup();
     QWidget *CreateRendererOptionsGroup(int);
     void CreateMatLightGroup(QWidget *parent, QLayout *pLayout, int maxWidth);
     void CreateColorGroup(QWidget *, QVBoxLayout *, int);
@@ -226,14 +222,10 @@ private slots:
     void rendererTypeChanged(int val);
     void gradientTypeChanged(int val);
     void samplingTypeChanged(int val);
-    void num3DSlicesChanged(int val);
     void processSkewText();
     void scaleClicked(int scale);
     void colorTableClicked(bool useDefault, const QString &ctName);
     void rendererSamplesChanged(double val);
-    void transferDimChanged(int);
-    void updateTransferFunc2D();
-    void updateTransferFunc2D(WidgetID id);
     void setMaterialKa(double val);
     void setMaterialKd(double val);
     void setMaterialKs(double val);
@@ -300,11 +292,8 @@ private:
     QPushButton              *smoothButton;
     QvisOpacitySlider        *attenuationSlider;
 
-    // 2D transfer function widgets
-    QWidget                  *tfParent2D;
-    QvisCMap2Widget          *transferFunc2D;
 
-    // 2D transfer function widgets
+    // transfer function widgets
     QWidget                  *tfRendererOptions;
 
     // General widgets
@@ -323,9 +312,6 @@ private:
     QButtonGroup             *samplingButtonGroup;
     QWidget                  *samplingMethodWidget;
     QButtonGroup             *transferFunctionGroup;
-    QWidget                  *tfWidget;
-    QRadioButton             *oneDimButton;
-    QRadioButton             *twoDimButton;
     QLabel                   *samplingMethodLabel;
     QRadioButton             *rasterizationButton;
     QRadioButton             *kernelButton;
@@ -335,15 +321,12 @@ private:
     QWidget                  *resampleTargetWidget;
     QLabel                   *resampleTargetLabel;
     QSpinBox                 *resampleTarget;
-    QSpinBox                 *num3DSlices;
     QWidget                  *samplesPerRayWidget;
     QLabel                   *samplesPerRayLabel;
     QSpinBox                 *samplesPerRay;
     QWidget                  *rendererSamplesWidget;
     QLabel                   *rendererSamplesLabel;
     QDoubleSpinBox           *rendererSamples;
-    QLabel                   *rendererSamplesSLIVRLabel;
-    QDoubleSpinBox           *rendererSamplesSLIVR;
     QWidget                  *materialProperties;
     QGroupBox                *lightMaterialPropGroup;
     QDoubleSpinBox           *matKa; // ambient
@@ -369,26 +352,14 @@ private:
 
     //Sampling group
     QGroupBox               *resampleGroup;
-    QWidget                 *splattingOptions;
-    QVBoxLayout             *splattingGroupLayout;
-    QGroupBox               *splattingGroup;
-    QWidget                 *texture3dOptions;
-    QVBoxLayout             *texture3dGroupLayout;
-    QGroupBox               *texture3dGroup;
+    QWidget                 *defaultOptions;
+    QVBoxLayout             *defaultGroupLayout;
+    QGroupBox               *defaultGroup;
     QGroupBox               *raycastingGroup;
-    QWidget                 *slivrOptions;
-    QVBoxLayout             *slivrGroupLayout;
-    QGroupBox               *slivrGroup;
-    QWidget                 *tuvokOptions;
-    QVBoxLayout             *tuvokGroupLayout;
-    QGroupBox               *tuvokGroup;
     void                    CreateSamplingGroups(QWidget *parent, QLayout *pLayout);
     void                    UpdateSamplingGroup();
     void                    EnableSamplingMethods(bool enable);
-    void                    EnableSplattingGroup();
-    void                    EnableTexture3dGroup();
-    void                    EnableTuvokGroup();
-    void                    EnableSLIVRGroup();
+    void                    EnableDefaultGroup();
     void                    UpdateLowGradientGroup(bool enable);
 
 };

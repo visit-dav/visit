@@ -49,17 +49,9 @@
 #include <avtVolume.h>
 
 #include <avtViewInfo.h>
-#include <avtImgCommunicator.h>
-
-#include <imgMetaData.h>
 
 #include <avtOpacityMap.h>
-#include <fstream>
 #include <vector>
-#include <map>
-#include <algorithm>
-#include <utility>
-
 #include <vtkCamera.h>
 #include <vtkMatrix4x4.h>
 
@@ -82,7 +74,6 @@ class  avtMassVoxelExtractor;
 class  avtPointExtractor;
 class  avtPyramidExtractor;
 class  avtSamplePointArbitrator;
-class  avtSLIVRVoxelExtractor;
 class  avtTetrahedronExtractor;
 class  avtWedgeExtractor;
 
@@ -177,41 +168,8 @@ class AVTFILTERS_API avtSamplePointExtractor
     void                      SetUpArbitrator(std::string &name, bool min);
 
     void                      SetTrilinear(bool t) {trilinearInterpolation = t;  };
-    void                      SetRayCastingSLIVR(bool s) {rayCastingSLIVR = s;  };
-    void                      SetRayCastingSLIVRParallel(bool p) {rayCastingSLIVRParallel = p;  };
-    void                      SetLighting(bool l) {lighting = l; };
-    void                      SetLightPosition(double _lightPos[4]) { for (int i=0;i<4;i++) lightPosition[i]=_lightPos[i]; }
-    void                      SetLightDirection(double _lightDir[3]) { for (int i=0;i<3;i++) lightDirection[i]=_lightDir[i]; }
-    void                      SetMatProperties(double _matProp[4]) { for (int i=0;i<4;i++) materialProperties[i]=_matProp[i]; }
     void                      SetTransferFn(avtOpacityMap *_transferFn1D) {transferFn1D = _transferFn1D; };
-    void                      SetViewDirection(double *vD){ for (int i=0; i<3; i++) viewDirection[i]=view_direction[i] = vD[i]; }
-    void                      SetClipPlanes(double _camClip[2]){ clipPlanes[0]=_camClip[0]; clipPlanes[1]=_camClip[1]; }
-    void                      SetPanPercentages(double _pan[2]){ panPercentage[0]=_pan[0]; panPercentage[1]=_pan[1]; }
-    void                      SetDepthExtents(double _depthExtents[2]){ depthExtents[0]=_depthExtents[0]; depthExtents[1]=_depthExtents[1]; }
-    void                      SetMVPMatrix(vtkMatrix4x4 *_mvp){ modelViewProj->DeepCopy(_mvp); }
 
-    void                      getSpatialExtents(double _spatialExtents[6]){ for (int i=0; i<6; i++) _spatialExtents[i] = minMaxSpatialBounds[i]; }
-    void                      getAvgPatchExtents(double _avgPatchExtents[6]){ for (int i=0; i<3; i++) _avgPatchExtents[i] = avgPatchExtents[i]; }
-    void                      getCellDimension(double _cellDimension[6]){ for (int i=0; i<3; i++) _cellDimension[i] = cellDimension[i]; }
-
-    void                      getProjectedExents(int _projectedExtents[4]){ for (int i=0; i<4; i++) _projectedExtents[i]=projectedImageExtents[i]; }
-
-    // Getting image information
-    int                       getTotalAssignedPatches() { return totalAssignedPatches; }              // gets the max number of patches it could have
-    int                       getImgPatchSize(){ return patchCount;};                                 // gets the number of patches
-    imgMetaData               getImgMetaPatch(int patchId){ return imageMetaPatchVector.at(patchId);} // gets the metadata
-    void                      getnDelImgData(int patchId, imgData &tempImgData);                      // gets the image & erase its existence
-    void                      delImgPatches();                                                        // deletes patches
-
-    // Set background buffer
-    void                      setDepthBuffer(float *_zBuffer, int size){ depthBuffer=_zBuffer; }
-    void                      setRGBBuffer(unsigned char  *_colorBuffer, int width, int height){ rgbColorBuffer=_colorBuffer; };
-    void                      setBufferExtents(int _extents[4]){ for (int i=0;i<4; i++) bufferExtents[i]=_extents[i]; }
-
-    // Output data for RC SLIVR
-    std::vector<imgMetaData>    imageMetaPatchVector;
-    std::multimap<int, imgData> imgDataHashMap;
-    typedef std::multimap<int, imgData>::iterator iter_t;
   protected:
     int                       width, height, depth;
     int                       currentNode, totalNodes;
@@ -222,14 +180,6 @@ class AVTFILTERS_API avtSamplePointExtractor
     bool                      modeIs3D;
     bool                      kernelBasedSampling;
     double                    point_radius;
-    double                    minMaxSpatialBounds[6];
-    double                    avgPatchExtents[3];
-    double                    cellDimension[3];
-
-    // Background + other plots
-    float                     *depthBuffer;             // depth buffer for the background and other plots
-    unsigned char             *rgbColorBuffer;          // bounding box + pseudo color + ...
-    int                       bufferExtents[4];         // extents of the buffer( minX, maxX, minY, maxY)
 
     bool                      shouldSetUpArbitrator;
     std::string               arbitratorVarName;
@@ -239,7 +189,6 @@ class AVTFILTERS_API avtSamplePointExtractor
     avtHexahedronExtractor   *hexExtractor;
     avtHexahedron20Extractor *hex20Extractor;
     avtMassVoxelExtractor    *massVoxelExtractor;
-    avtSLIVRVoxelExtractor   *slivrVoxelExtractor;
     avtPointExtractor        *pointExtractor;
     avtPyramidExtractor      *pyramidExtractor;
     avtTetrahedronExtractor  *tetExtractor;
@@ -254,34 +203,17 @@ class AVTFILTERS_API avtSamplePointExtractor
     double                    aspect;
     int                       projectedImageExtents[4];
 
-    int                       patchCount;
     int                       totalAssignedPatches;
-
     // triliniear / raycastin SLIVR
     bool                      trilinearInterpolation;
-    bool                      rayCastingSLIVR;
-    bool                      rayCastingSLIVRParallel;
 
-    // Camera stuff
-    double                    view_direction[3];
-    double                    viewDirection[3];
-    double                    depthExtents[2];
-    double                    clipPlanes[2];
-    double                    panPercentage[2];
-    vtkMatrix4x4              *modelViewProj;
 
-    // lighting & material
-    bool                      lighting;
-    double                    lightPosition[4];
-    double                    lightDirection[3];
-    double                    materialProperties[4];
     avtOpacityMap             *transferFn1D;
     virtual void              Execute(void);
     virtual void              PreExecute(void);
     virtual void              PostExecute(void);
     virtual void              ExecuteTree(avtDataTree_p);
     void                      SetUpExtractors(void);
-    imgMetaData               initMetaPatch(int id);    // initialize a patch
 
     typedef struct 
     {

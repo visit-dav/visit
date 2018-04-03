@@ -41,7 +41,7 @@
 #include <string>
 #include <AttributeSubject.h>
 
-#include <ColorAttribute.h>
+#include <FontAttributes.h>
 
 // ****************************************************************************
 // Class: LabelAttributes
@@ -130,8 +130,8 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
-    void SelectTextColor1();
-    void SelectTextColor2();
+    void SelectTextFont1();
+    void SelectTextFont2();
     void SelectFormatTemplate();
 
     // Property setting methods
@@ -143,12 +143,8 @@ public:
     void SetDrawLabelsFacing(LabelDrawFacing drawLabelsFacing_);
     void SetLabelDisplayFormat(LabelIndexDisplay labelDisplayFormat_);
     void SetNumberOfLabels(int numberOfLabels_);
-    void SetSpecifyTextColor1(bool specifyTextColor1_);
-    void SetTextColor1(const ColorAttribute &textColor1_);
-    void SetTextHeight1(float textHeight1_);
-    void SetSpecifyTextColor2(bool specifyTextColor2_);
-    void SetTextColor2(const ColorAttribute &textColor2_);
-    void SetTextHeight2(float textHeight2_);
+    void SetTextFont1(const FontAttributes &textFont1_);
+    void SetTextFont2(const FontAttributes &textFont2_);
     void SetHorizontalJustification(LabelHorizontalAlignment horizontalJustification_);
     void SetVerticalJustification(LabelVerticalAlignment verticalJustification_);
     void SetDepthTestMode(DepthTestMode depthTestMode_);
@@ -163,14 +159,10 @@ public:
     LabelDrawFacing      GetDrawLabelsFacing() const;
     LabelIndexDisplay    GetLabelDisplayFormat() const;
     int                  GetNumberOfLabels() const;
-    bool                 GetSpecifyTextColor1() const;
-    const ColorAttribute &GetTextColor1() const;
-          ColorAttribute &GetTextColor1();
-    float                GetTextHeight1() const;
-    bool                 GetSpecifyTextColor2() const;
-    const ColorAttribute &GetTextColor2() const;
-          ColorAttribute &GetTextColor2();
-    float                GetTextHeight2() const;
+    const FontAttributes &GetTextFont1() const;
+          FontAttributes &GetTextFont1();
+    const FontAttributes &GetTextFont2() const;
+          FontAttributes &GetTextFont2();
     LabelHorizontalAlignment GetHorizontalJustification() const;
     LabelVerticalAlignment GetVerticalJustification() const;
     DepthTestMode        GetDepthTestMode() const;
@@ -222,6 +214,7 @@ public:
     // User-defined methods
     virtual bool ChangesRequireRecalculation(const LabelAttributes &) const;
     virtual bool VarChangeRequiresReset(void);
+    virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -233,12 +226,8 @@ public:
         ID_drawLabelsFacing,
         ID_labelDisplayFormat,
         ID_numberOfLabels,
-        ID_specifyTextColor1,
-        ID_textColor1,
-        ID_textHeight1,
-        ID_specifyTextColor2,
-        ID_textColor2,
-        ID_textHeight2,
+        ID_textFont1,
+        ID_textFont2,
         ID_horizontalJustification,
         ID_verticalJustification,
         ID_depthTestMode,
@@ -255,12 +244,8 @@ private:
     int            drawLabelsFacing;
     int            labelDisplayFormat;
     int            numberOfLabels;
-    bool           specifyTextColor1;
-    ColorAttribute textColor1;
-    float          textHeight1;
-    bool           specifyTextColor2;
-    ColorAttribute textColor2;
-    float          textHeight2;
+    FontAttributes textFont1;
+    FontAttributes textFont2;
     int            horizontalJustification;
     int            verticalJustification;
     int            depthTestMode;
@@ -270,6 +255,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LABELATTRIBUTES_TMFS "ibbbbiiibafbafiiis"
+#define LABELATTRIBUTES_TMFS "ibbbbiiiaaiiis"
 
 #endif

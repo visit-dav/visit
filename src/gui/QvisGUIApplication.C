@@ -402,44 +402,7 @@ LongFileName(const std::string &shortName)
 //   X server.
 //
 // ****************************************************************************
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-static void
-GUI_LogQtMessages(QtMsgType type, const char *msg)
-{
-    const int n_strs_to_suppress = 1;
-    const char *strs_to_suppress[] = 
-       { "Invalid XLFD" };
-    bool shouldPrint = true;
-    for (int i = 0 ; i < n_strs_to_suppress ; i++)
-    {
-        if (strstr(msg, strs_to_suppress[i]) != NULL)
-        {
-            shouldPrint = false;
-            break;
-        }
-    }
 
-    if (shouldPrint)
-        cerr << msg << endl;
-
-    switch(type)
-    {
-    case QtDebugMsg:
-        debug1 << "Qt: Debug: " << msg << endl;
-        break;
-    case QtWarningMsg:
-        debug1 << "Qt: Warning: " << msg << endl;
-        break;
-    case QtCriticalMsg:
-        debug1 << "Qt: Critical: " << msg << endl;
-        break;
-    case QtFatalMsg:
-        debug1 << "Qt: Fatal: " << msg << endl;
-        abort(); // HOOKS_IGNORE
-        break;
-    }
-}
-#else
 static void
 GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
@@ -479,7 +442,7 @@ GUI_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QStri
         break;
     }
 }
-#endif
+
 
 // ****************************************************************************
 // Method: QvisGUIApplication::QvisGUIApplication
@@ -818,11 +781,7 @@ QvisGUIApplication::QvisGUIApplication(int &argc, char **argv, ViewerProxy *prox
     qt_argv[argc+4] = NULL;
 
     debug1 << "QvisApplication::QvisApplication: -font " << qt_argv[argc+1] << endl;
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    qInstallMsgHandler(GUI_LogQtMessages);
-#else
     qInstallMessageHandler(GUI_LogQtMessages);
-#endif
 
     if(QApplication::instance()) //if application instance already exists..
     {
@@ -1731,7 +1690,7 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 3");
         break;
     case 4:
-#if !(defined(Q_WS_MACX) || defined(Q_OS_MAC))
+#if !defined(Q_OS_MAC)
         // If we're not on MacOS X, hide the splashscreen now.
         if(splash)
             splash->hide();
@@ -1801,7 +1760,7 @@ QvisGUIApplication::FinalInitialization()
         visitTimer->StopTimer(timeid, "stage 9");
         break;
     case 10:
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
         // On MacOS X, we hide the splashscreen last thing so we are very
         // near 100% likely to get the GUI's menu in the main Mac menu.
         if(splash)
@@ -1826,7 +1785,7 @@ QvisGUIApplication::FinalInitialization()
             if(code == CONFIGSTATE_FIRSTTIME)
             {
                 QTimer::singleShot(1000, this, SLOT(displayReleaseNotesIfAvailable()));
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
                 QTimer::singleShot(1001, this, SLOT(setupHostProfilesAndConfig()));
 #endif
             }
@@ -2791,7 +2750,7 @@ QvisGUIApplication::MoveAndResizeMainWindow(int orientation)
     mainWin->setMinimumHeight(h);
 #endif
 // GUI need to be offset 20 pixels from the MenuBar, only on i386?
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     if (y == 0) {
        y = 20;
        if (orientation < 2) h = h - y;
@@ -6846,7 +6805,7 @@ QvisGUIApplication::SplashScreenProgress(const QString &msg, int prog)
 {
     if(splash)
     {
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
         splash->activateWindow();
 #endif
         splash->Progress(msg, prog);
@@ -7075,18 +7034,6 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
 {
     // Only set the printer name if it is a valid name.
     QString printerName(p->GetPrinterName().c_str());
-#if QT_VERSION < QT_VERSION_CHECK(5, 3, 0)
-    QList<QPrinterInfo> availablePrinters(QPrinterInfo::availablePrinters());
-    for(int i = 0; i < availablePrinters.size(); ++i)
-    {
-        if(availablePrinters[i].printerName() == printerName)
-        {
-            printer->setPrinterName(printerName);
-            break;
-        }
-    }
-#else
-    // less expensive call introduced in Qt 5.3
     QStringList availablePrinters(QPrinterInfo::availablePrinterNames());
     for(int i = 0; i < availablePrinters.size(); ++i)
     {
@@ -7096,7 +7043,6 @@ PrinterAttributesToQPrinter(PrinterAttributes *p, QPrinter *printer)
             break;
         }
     }
-#endif
 
     printer->setPrintProgram(p->GetPrintProgram().c_str());
     printer->setCreator(p->GetCreator().c_str());

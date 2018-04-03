@@ -127,7 +127,7 @@ public:
 
   // Description:
   // Return MTime also considering the locator.
-  unsigned long GetMTime();
+  vtkMTimeType GetMTime();
 
 protected:
   vtkUniqueFeatureEdges();

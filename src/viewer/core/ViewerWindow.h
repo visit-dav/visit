@@ -718,8 +718,6 @@ public:
     void SetStereoRendering(bool enabled, int type);
     bool GetStereo() const;
     int  GetStereoType() const;
-    void SetDisplayListMode(int);
-    int  GetDisplayListMode(void) const;
     void SetSurfaceRepresentation(int rep);
     int  GetSurfaceRepresentation() const;
     int  GetNumPrimitives() const;

@@ -93,6 +93,14 @@ class avtICAlgorithm;
 
 #define PICS_PARALLEL_COMM_DOMAINS 4
 
+#define PICS_INTEGRATE_FORWARD         0
+#define PICS_INTEGRATE_BACKWARD        1
+#define PICS_INTEGRATE_BOTH_DIRECTIONS 2
+#define PICS_INTEGRATE_FORWARD_DIRECTIONLESS  3
+#define PICS_INTEGRATE_BACKWARD_DIRECTIONLESS 4
+#define PICS_INTEGRATE_BOTH_DIRECTIONLESS     5
+
+
 
 // ****************************************************************************
 // Class: avtPICSFilter

@@ -115,11 +115,6 @@ class PLOTTER_API avtCustomRenderer
     virtual void            GlobalLightingOff(void);
     virtual void            GlobalSetAmbientCoefficient(const double); 
 
-    virtual void            ImmediateModeRenderingOn(void); 
-    virtual void            ImmediateModeRenderingOff(void);
-    virtual void            SetImmediateModeRendering(bool);
-    virtual bool            GetImmediateModeRendering(void);
-
     virtual void            SetSurfaceRepresentation(int rep);
     virtual void            SetSpecularProperties(bool,double,double,
                                                   const ColorAttribute&);
@@ -140,7 +135,6 @@ class PLOTTER_API avtCustomRenderer
     double                  bbox[6];
     vtkRenderer            *VTKRen;
     vtkActor               *VTKActor;
-    bool                    immediateModeRendering;
 
     virtual void            Render(vtkDataSet *) = 0;
 

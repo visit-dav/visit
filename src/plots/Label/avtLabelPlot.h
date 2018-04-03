@@ -46,14 +46,12 @@
 
 #include <avtLegend.h>
 #include <avtPlot.h>
-#include <avtLabelRenderer.h>
 
 class avtGhostZoneAndFacelistFilter;
 class avtCondenseDatasetFilter;
 class avtLabelFilter;
-class avtLabelsMapper;
+class avtLabelMapper;
 class avtLabelSubsetsFilter;
-class avtUserDefinedMapper;
 class avtVariableLegend;
 class avtVertexNormalsFilter;
 
@@ -75,6 +73,9 @@ class avtVertexNormalsFilter;
 //
 //    Kathleen Biagas, Wed Feb 29 13:09:36 MST 2012
 //    Added GetExtraInfoForPick.
+//
+//    Kathleen Biagas, Thu Apr 13 11:06:13 PDT 2017
+//    Use vtkMappers instead of custom renderer, for VTK-8.
 //
 // ****************************************************************************
 
@@ -104,12 +105,11 @@ class avtLabelPlot : public avtSurfaceDataPlot
     avtVertexNormalsFilter        *normalFilter;
     avtLabelSubsetsFilter         *labelSubsetsFilter;
     avtLabelFilter                *labelFilter;
-    avtLabelRenderer_p             renderer;
-    avtLabelsMapper               *labelMapper; 
+    avtLabelMapper                *labelMapper;
     avtVariableLegend             *varLegend;
     avtLegend_p                    varLegendRefPtr;
 
-    virtual avtMapper          *GetMapper(void);
+    virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);

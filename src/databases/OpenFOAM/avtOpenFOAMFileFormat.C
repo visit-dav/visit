@@ -213,14 +213,18 @@ avtOpenFOAMFileFormat::FreeUpResources(void)
 //    Change how we read time information, to be more VTK compliant. Patch
 //    provided by Takuya Oshima.
 //
+//    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
+//    VTK-8, API for updating TimeStep changed.
+// 
 // ****************************************************************************
 
 void
 avtOpenFOAMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, 
     int timeState)
 {
-    vtkStreamingDemandDrivenPipeline::SetUpdateTimeStep(
-        reader->GetOutputInformation(0), timeSteps[timeState]);
+    reader->GetOutputInformation(0)->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(),
+        timeSteps[timeState]);
     if (readZones)
     {
         // turn on ReadZones so we can get the names of the pointZones,
@@ -756,6 +760,9 @@ avtOpenFOAMFileFormat::GetVectorVar(int timestate, int domain,
 //    Change how we read time information, to be more VTK compliant. Patch
 //    provided by Takuya Oshima.
 //
+//    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
+//    VTK-8, API for updating TimeStep changed.
+//
 // ****************************************************************************
 
 void
@@ -767,8 +774,9 @@ avtOpenFOAMFileFormat::ActivateTimestep(int timestate)
     }
     if (timestate != currentTimeStep)
     {
-        vtkStreamingDemandDrivenPipeline::SetUpdateTimeStep(
-            reader->GetOutputInformation(0), timeSteps[timestate]);
+        reader->GetOutputInformation(0)->Set(
+            vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(),
+            timeSteps[timestate]);
         currentTimeStep = timestate;
     }
 }

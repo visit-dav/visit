@@ -41,11 +41,10 @@
 // Written by Hank Childs, May 27, 2002.
 
 #include "vtkOBJWriter.h"
-#include <vtkAssemblyNode.h>
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
-#include <vtkGeometryFilter.h>
 #include <vtkObjectFactory.h>
+#include <vtkPolyData.h>
 #include <vtkPointData.h>
 
 vtkStandardNewMacro(vtkOBJWriter);

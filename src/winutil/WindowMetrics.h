@@ -116,7 +116,7 @@ class WINUTIL_API WindowMetrics
 
     WindowMetrics();
     static WindowMetrics *instance;
-#if defined(Q_WS_X11) || defined(Q_OS_LINUX) 
+#if defined(Q_OS_LINUX) 
     QWidget              *testWindow;
 #endif
 };

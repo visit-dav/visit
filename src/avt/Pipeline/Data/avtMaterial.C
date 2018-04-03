@@ -829,6 +829,10 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, const char **names,
 //    increase mixlen for already clean zones for which some non-zero fracs
 //    are encountered, fixed one-origin indexing in mix_zone array, clean
 //    up any zones left in notSet status to one of the used materials.
+//
+//    Kathleen Biagas, Wed Dec  6 07:53:48 PST 2017
+//    Removed asserts.
+//
 // ****************************************************************************
 
 avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
@@ -890,7 +894,7 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
     vector<int> emptyZones;
     for (z = 0; z < ncells; z++)
     {
-        int nmixing = 0;
+        int reset_mixl = mixl;
         for (m = 0; m < nTotMats; m++)
         {
             double vf = vfracs[m] ? vfracs[m][z] : 0;
@@ -898,13 +902,12 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
 
             if (vf >= 1.0)
             {
-                assert(ml[z] == notSet);
+                mixl = reset_mixl;
                 ml[z] = mats[m];
                 foundNonZeroFrac = true;
             }
             else if (vf > 0.0)
             {
-                nmixing++;
                 foundNonZeroFrac = true;
                 if (ml[z] == notSet)
                 {
@@ -944,7 +947,6 @@ avtMaterial::avtMaterial(int nTotMats, const int *mats, char **names,
             if (foundNonZeroFrac)
                 matUsed[m] = true;
         }
-        assert(nmixing==0 || nmixing >=2);
         if (ml[z] == notSet)
             emptyZones.push_back(z);
     }

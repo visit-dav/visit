@@ -277,7 +277,7 @@ avtParallelCoordinatesPlot::SetColors()
 //   
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtParallelCoordinatesPlot::GetMapper(void)
 {
     return levelsMapper;

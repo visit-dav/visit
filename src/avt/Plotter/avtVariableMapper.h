@@ -107,9 +107,13 @@ class vtkLookupTable;
 //    ever taking place if this mapper is being used for a plot should not
 //    ever use color texturing.
 //
+//    Kathleen Biagas, Tue Aug 23 11:42:20 PDT 2016
+//    Added virtual inheritance from avtMapper, Removed SetPointSize as
+//    this mapper no loner handles points.
+//
 // ****************************************************************************
 
-class PLOTTER_API  avtVariableMapper : public avtMapper
+class PLOTTER_API  avtVariableMapper : virtual public avtMapper
 {
   public:
                                avtVariableMapper();
@@ -132,7 +136,6 @@ class PLOTTER_API  avtVariableMapper : public avtMapper
     void                       SetLookupTable(vtkLookupTable *);
     void                       SetLineWidth(_LineWidth);
     void                       SetLineStyle(_LineStyle);
-    void                       SetPointSize(double);
 
     virtual void               SetColorTexturingFlag(bool);
     void                       SetColorTexturingFlagAllowed(bool);

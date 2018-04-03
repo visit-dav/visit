@@ -43,13 +43,13 @@ function bv_silo_depends_on
 
 function bv_silo_info
 {
-    export SILO_VERSION=${SILO_VERSION:-"4.10.1"}
+    export SILO_VERSION=${SILO_VERSION:-"4.10.2"}
     export SILO_FILE=${SILO_FILE:-"silo-${SILO_VERSION}.tar.gz"}
-    export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.1"}
+    export SILO_COMPATIBILITY_VERSION=${SILO_COMPATIBILITY_VERSION:-"4.10.2"}
     export SILO_BUILD_DIR=${SILO_BUILD_DIR:-"silo-${SILO_VERSION}"}
     export SILO_URL=${SILO_URL:-https://wci.llnl.gov/codes/silo/silo-${SILO_VERSION}}
-    export SILO_MD5_CHECKSUM="29e6cdf25e98aef96e1f541167839c6f"
-    export SILO_SHA256_CHECKSUM="8549167d1315ab27d3752ee463c45a6919d68a3bdad4acc8389a1d5f73071028"
+    export SILO_MD5_CHECKSUM=""
+    export SILO_SHA256_CHECKSUM=""
 }
 
 function bv_silo_print
@@ -174,16 +174,16 @@ function build_silo
     if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
         WITHSHAREDARG="--disable-shared"
     fi
-    if [[ "$DO_SILEX" == "no" || "$DO_QT" != "yes" || "$DO_STATIC_BUILD" == "yes" || "$IS_QT4" == "no" ]] ; then
+    #if [[ "$DO_SILEX" == "no" || "$DO_QT" != "yes" || "$DO_STATIC_BUILD" == "yes" ]] ; then
         WITHSILOQTARG='--disable-silex'
-    else
-        export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
-        if [[ "$OPSYS" == "Darwin" ]] ; then
-            WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="m -F${SILOQTDIR}/lib -framework QtGui -framework QtCore"'
-        else
-            WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
-        fi
-    fi
+    #else
+    #    export SILOQTDIR="$QT_INSTALL_DIR" #"${VISITDIR}/qt/${QT_VERSION}/${VISITARCH}"
+    #    if [[ "$OPSYS" == "Darwin" ]] ; then
+    #        WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="m -F${SILOQTDIR}/lib -framework QtGui -framework QtCore"'
+    #    else
+    #        WITHSILOQTARG='--enable-silex --with-Qt-dir=$SILOQTDIR --with-Qt-lib="QtGui -lQtCore"'
+    #    fi
+    #fi
 
     if [[ "$DO_ZLIB" == "yes" ]] ; then
         ZLIBARGS="--with-zlib=${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/include,${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib"

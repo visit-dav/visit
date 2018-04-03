@@ -2396,7 +2396,6 @@ ViewerWindow::CopyGeneralAttributes(const ViewerWindow *source)
     SetMultiresolutionMode(source->GetMultiresolutionMode());
     SetMultiresolutionCellSize(source->GetMultiresolutionCellSize());
     SetStereoRendering(source->GetStereo(), source->GetStereoType());
-    SetDisplayListMode(source->GetDisplayListMode());
     SetSurfaceRepresentation(source->GetSurfaceRepresentation());
     SetNotifyForEachRender(source->GetNotifyForEachRender());
     SetScalableAutoThreshold(source->GetScalableAutoThreshold());
@@ -6394,9 +6393,6 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
     renderAtts.SetCompactDomainsAutoThreshold(GetCompactDomainsAutoThreshold());
     renderAtts.SetCompactDomainsActivationMode((RenderingAttributes::TriStateMode) GetCompactDomainsActivationMode());
 
-    renderAtts.SetDisplayListMode(
-        (RenderingAttributes::TriStateMode) GetDisplayListMode());
-
     renderAtts.SetAntialiasing(GetAntialiasing());
 
     renderAtts.SetOrderComposite(GetOrderComposite());
@@ -7570,40 +7566,6 @@ ViewerWindow::GetStereoType() const
 }
 
 // ****************************************************************************
-// Method: ViewerWindow::SetDisplayListMode
-//
-// Purpose: 
-//     Sets the display list mode -- never, always, or auto.
-//
-// Programmer: Hank Childs
-// Creation:   May 10, 2004
-//
-// ****************************************************************************
-
-void
-ViewerWindow::SetDisplayListMode(int mode)
-{
-    visWindow->SetDisplayListMode(mode);
-}
-
-// ****************************************************************************
-// Method: ViewerWindow::GetDisplayListMode
-//
-// Purpose: 
-//     Gets the display list mode.
-//
-// Programmer: Hank Childs
-// Creation:   May 10, 2004
-//
-// ****************************************************************************
-
-int
-ViewerWindow::GetDisplayListMode() const
-{
-    return visWindow->GetDisplayListMode();
-}
-
-// ****************************************************************************
 // Method: ViewerWindow::SetSurfaceRepresentation
 //
 // Purpose: 
@@ -8607,7 +8569,6 @@ ViewerWindow::CreateNode(DataNode *parentNode,
         windowNode->AddNode(new DataNode("compactDomainsActivationMode", GetCompactDomainsActivationMode()));
         windowNode->AddNode(new DataNode("notifyForEachRender", GetNotifyForEachRender()));
         windowNode->AddNode(new DataNode("surfaceRepresentation", GetSurfaceRepresentation()));
-        windowNode->AddNode(new DataNode("displayListMode", GetDisplayListMode()));
         windowNode->AddNode(new DataNode("stereoRendering", GetStereo()));
         windowNode->AddNode(new DataNode("stereoType", GetStereoType()));
         windowNode->AddNode(new DataNode("antialiasing", GetAntialiasing()));
@@ -8956,8 +8917,6 @@ ViewerWindow::SetFromNode(DataNode *parentNode,
         SetNotifyForEachRender(node->AsBool());
     if((node = windowNode->GetNode("surfaceRepresentation")) != 0)
         SetSurfaceRepresentation(node->AsInt());
-    if((node = windowNode->GetNode("displayListMode")) != 0)
-        SetDisplayListMode(node->AsInt());
     int stereoType = 0;
     if((node = windowNode->GetNode("stereoType")) != 0)
         stereoType = node->AsInt();

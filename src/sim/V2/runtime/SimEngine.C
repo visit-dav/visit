@@ -281,8 +281,6 @@ SimEngine::InitializeViewer(const std::vector<std::string> &plotPlugins,
 
         // Force scalable rendering.
         GetViewerState()->GetRenderingAttributes()->
-            SetDisplayListMode(RenderingAttributes::Never);
-        GetViewerState()->GetRenderingAttributes()->
             SetScalableActivationMode(RenderingAttributes::Always);
         GetViewerState()->GetRenderingAttributes()->
             SetScalableAutoThreshold(1);

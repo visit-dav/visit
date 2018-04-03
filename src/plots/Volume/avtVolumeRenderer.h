@@ -88,6 +88,9 @@ class avtVolumeRendererImplementation;
 //    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
 //    Added value for holding a compact support variable
 //
+//    Aliste Maguire, Thu Sep 14 13:36:16 PDT 2017
+//    Added dataIs2D for early return from volume rendering.
+//
 // ****************************************************************************
 
 class avtVolumeRenderer : public avtCustomRenderer
@@ -103,8 +106,6 @@ class avtVolumeRenderer : public avtCustomRenderer
     virtual void            ReleaseGraphicsResources();
     virtual void            Render(vtkDataSet *);
 
-    virtual void            ReducedDetailModeOn();
-    virtual bool            ReducedDetailModeOff();
   protected:
     avtVolumeRendererImplementation  *rendererImplementation;
     bool                              currentRendererIsValid;
@@ -120,7 +121,7 @@ class avtVolumeRenderer : public avtCustomRenderer
     
     float                  *gx, *gy, *gz, *gm, *gmn, gm_max;
 
-    bool                    reducedDetail;
+    bool                    dataIs2D; // needed to tell renderers to return early
 
     bool                    GetScalars(vtkDataSet *ds, vtkDataArray *&d, vtkDataArray *&o);
 };

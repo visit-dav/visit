@@ -75,39 +75,39 @@
     if(data == 0 && atts.GetVarType() == LabelAttributes::LABEL_VT_VECTOR_VAR)
     {
         data = input->GetCellData()->GetVectors();
-        debug3 << "avtLabelRenderer looking for a vector variable." << endl;
+        debug3 << "CellLabels_body looking for a vector variable." << endl;
     }
     if(data == 0)
     {
-        debug3 << "avtLabelRenderer could not find LabelFilterOriginalCellNumbers" << endl;
+        debug3 << "CellLabels_body could not find LabelFilterOriginalCellNumbers" << endl;
     }
     else if(!data->IsA("vtkUnsignedIntArray"))
     {
-        debug3 << "avtLabelRenderer found LabelFilterOriginalCellNumbers but it "
+        debug3 << "CellLabels_body found LabelFilterOriginalCellNumbers but it "
                   "was not a vtkUnsignedIntArray. It was a " << data->GetClassName() << endl;
     }
     else
     {
-        debug3 << "avtLabelRenderer setting originalCells=data." << endl;
+        debug3 << "CellLabels_body setting originalCells=data." << endl;
         originalCells = (vtkUnsignedIntArray *)data;
     }
 
     //
     // Look for the variable that we want to plot.
     //
-    data = input->GetCellData()->GetArray(varname);
+    data = input->GetCellData()->GetArray(this->VarName.c_str());
 
     vtkUnsignedIntArray *logIndices = vtkUnsignedIntArray::SafeDownCast(
         input->GetCellData()->GetArray("LabelFilterCellLogicalIndices"));
 
-    if(useGlobalLabel)
+    if(this->UseGlobalLabel)
     {
-        debug3 << "avtLabelRenderer using global label." << endl;
-        const char *gl = globalLabel.c_str();
+        debug3 << "CellLabels_body using global label." << endl;
+        const char *gl = this->GlobalLabel.c_str();
         for(vtkIdType id = 0; id < nCells; id += skipIncrement)
         {
             BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%s", gl);
+                CREATE_LABEL(labelString, this->MaxLabelSize, "%s", gl);
             END_LABEL
         }
     }
@@ -122,7 +122,7 @@
                  << ", while the #cells is: " << nCells << endl;
         }
 
-        if(treatAsASCII)
+        if(this->TreatAsASCII)
         {
             int labelLength = data->GetNumberOfComponents();
 
@@ -134,7 +134,7 @@
                 {
                     BEGIN_LABEL
                         unsigned char scalarVal = (unsigned char)data->GetTuple1(id);
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%c", scalarVal);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%c", scalarVal);
                     END_LABEL
                 }
             }
@@ -144,7 +144,7 @@
                 for(vtkIdType id = 0; id < nCells; id += skipIncrement)
                 {
                     BEGIN_LABEL
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%s", label);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%s", label);
                     END_LABEL
 
                     label += labelLength;
@@ -163,7 +163,7 @@
 
                     // Use the label.
                     BEGIN_LABEL
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%s", tempstr);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%s", tempstr);
                     END_LABEL
                 }
                 delete [] tempstr;
@@ -178,7 +178,7 @@
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     double scalarVal = data->GetTuple1(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, atts.GetFormatTemplate().c_str(), scalarVal);
+                    CREATE_LABEL(labelString, this->MaxLabelSize, atts.GetFormatTemplate().c_str(), scalarVal);
                 END_LABEL
             }
         }
@@ -195,7 +195,7 @@
             {
                 BEGIN_LABEL
                     double *vectorVal = data->GetTuple2(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
+                    CREATE_LABEL(labelString, this->MaxLabelSize, tmp,
                              vectorVal[0], vectorVal[1]);
                 END_LABEL
             }
@@ -214,7 +214,7 @@
             {
                 BEGIN_LABEL
                     double *vectorVal = data->GetTuple3(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
+                    CREATE_LABEL(labelString, this->MaxLabelSize, tmp,
                              vectorVal[0], vectorVal[1], vectorVal[2]);
                 END_LABEL
             }
@@ -240,7 +240,7 @@
             {
                 BEGIN_LABEL
                     double *tensorVal = data->GetTuple9(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
+                    CREATE_LABEL(labelString, this->MaxLabelSize, tmp,
                              tensorVal[0], tensorVal[1], tensorVal[2],
                              tensorVal[3], tensorVal[4], tensorVal[5],
                              tensorVal[6], tensorVal[7], tensorVal[8]);
@@ -285,7 +285,7 @@
                         else
                             formatString = formatStringMiddle;
                         CREATE_LABEL(labelString + strlen(labelString),
-                                     MAX_LABEL_SIZE-strlen(labelString),
+                                     this->MaxLabelSize-strlen(labelString),
                                      formatString, vals[comp]);
                     }
                 END_LABEL
@@ -307,7 +307,7 @@ debug3 << "Labelling cells with logical Indices: " << endl;
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
                 BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d", intptr[id*2+0], intptr[id*2+1]);
+                CREATE_LABEL(labelString, this->MaxLabelSize, "%d,%d", intptr[id*2+0], intptr[id*2+1]);
                 END_LABEL
             }
         }
@@ -316,7 +316,7 @@ debug3 << "Labelling cells with logical Indices: " << endl;
             for(vtkIdType id = 0; id < nCells; id += skipIncrement)
             {
                 BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d,%d", intptr[id*3+0], intptr[id*3+1], intptr[id*3+2]);
+                CREATE_LABEL(labelString, this->MaxLabelSize, "%d,%d,%d", intptr[id*3+0], intptr[id*3+1], intptr[id*3+2]);
                 END_LABEL
             }
         }
@@ -344,9 +344,9 @@ debug3 << "Labelling cells with original cell indices: "
             ybase = iptr2[2];
             zbase = iptr2[4];
         }
-        xbase -= cellOrigin;
-        ybase -= cellOrigin;
-        zbase -= cellOrigin;
+        xbase -= this->CellOrigin;
+        ybase -= this->CellOrigin;
+        zbase -= this->CellOrigin;
 
         vtkDataArray *sDims = input->GetFieldData()->
             GetArray("avtOriginalStructuredDimensions");
@@ -373,7 +373,7 @@ debug3 << "Labelling cells as 2D structured indices" << endl;
                         unsigned int realCellId = originalCells->GetValue(id);
                         unsigned int y = (realCellId / xdims) - ybase;
                         unsigned int x = (realCellId % xdims) - xbase;
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d", x, y);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%d,%d", x, y);
                     END_LABEL
                 }
             }
@@ -389,7 +389,7 @@ debug3 << "Labelling cells as 3D structured indices" << endl;
                         unsigned int offset = realCellId % xydims;
                         unsigned int y = (offset / xdims) - ybase;
                         unsigned int x = (offset % xdims) - xbase;
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d,%d", x, y, z);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%d,%d,%d", x, y, z);
                     END_LABEL
                 }
             }
@@ -401,18 +401,18 @@ debug3 << "Labelling as indices" << endl;
             {
                 BEGIN_LABEL
                     unsigned int realCellId = originalCells->GetValue(id);
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", realCellId + cellOrigin);
+                CREATE_LABEL(labelString, this->MaxLabelSize, "%lld", realCellId + this->CellOrigin);
                 END_LABEL
             }
         }
     }
     else
     {
-        debug3 << "avtLabelRenderer: backup case for labelling cells." << endl;
+        debug3 << "CellLabels_body: backup case for labelling cells." << endl;
         for(vtkIdType id = 0; id < nCells; id += skipIncrement)
         {
             BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", id + cellOrigin);
+                CREATE_LABEL(labelString, this->MaxLabelSize, "%lld", id + this->CellOrigin);
             END_LABEL
         }
     }

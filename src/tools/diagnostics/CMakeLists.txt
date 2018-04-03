@@ -38,13 +38,13 @@
 #
 #****************************************************************************/
 
-IF(VISIT_PARALLEL)
-    ADD_SUBDIRECTORY(mpitest)
-ENDIF(VISIT_PARALLEL)
+if(VISIT_PARALLEL)
+    add_subdirectory(mpitest)
+endif()
 
-ADD_SUBDIRECTORY(networktest)
-ADD_SUBDIRECTORY(exceptiontest)
+add_subdirectory(networktest)
+add_subdirectory(exceptiontest)
 
-IF(MESA_FOUND)
-    ADD_SUBDIRECTORY(osmesatest)
-ENDIF(MESA_FOUND)
+#if(HAVE_OSMESA)
+#    add_subdirectory(osmesatest)
+#endif()

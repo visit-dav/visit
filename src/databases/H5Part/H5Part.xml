@@ -3,15 +3,20 @@
     <CXXFLAGS>
       ${HDF5_INCLUDE_DIR}
       ${FASTBIT_INCLUDE_DIR}
+      ${FASTQUERY_INCLUDE_DIR}
+      ${FASTBIT_INCLUDE_DIR}/..
+      ${FASTQUERY_INCLUDE_DIR}/..
       ${H5PART_INCLUDE_DIR}
     </CXXFLAGS>
     <LDFLAGS>
       ${HDF5_LIBRARY_DIR}
       ${FASTBIT_LIBRARY_DIR}
+      ${FASTQUERY_LIBRARY_DIR}
       ${H5PART_LIBRARY_DIR}
     </LDFLAGS>
     <LIBS>
       ${FASTBIT_LIB}
+      ${FASTQUERY_LIB}
       ${H5PART_LIB}
       ${HDF5_LIB}
       ${RT}
@@ -25,31 +30,13 @@
     <Files components="M">
       avtH5PartFileFormat.C
       avtH5PartOptions.C
-      hdf5_a.C
-      hdf5_d.C
-      hdf5_f.C
-      hdf5_g.C
-      hdf5_s.C
-      fqindex.C
-      indexfileC.C
-      indexfile.C
-      timestep.C
-      hdf5_fastquery.C
+      avtH5PartWriter.C
       HistogramCache.C
     </Files>
     <Files components="E">
       avtH5PartFileFormat.C
       avtH5PartOptions.C
-      hdf5_a.C
-      hdf5_d.C
-      hdf5_f.C
-      hdf5_g.C
-      hdf5_s.C
-      fqindex.C
-      indexfileC.C
-      indexfile.C
-      timestep.C
-      hdf5_fastquery.C
+      avtH5PartWriter.C
       HistogramCache.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

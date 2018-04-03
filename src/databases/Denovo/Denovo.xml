@@ -9,9 +9,6 @@
     <LIBS>
       ${HDF5_LIB}
     </LIBS>
-    <DEFINES>
-      ${HDF5_LIB}
-    </DEFINES>
     <FilePatterns>
       *.h5
     </FilePatterns>

@@ -44,12 +44,7 @@
 
 #include <vtkActor.h>
 #include <vtkProperty.h>
-#include <vtkDataSetMapper.h>
-#include <vtkLookupTable.h>
 
-#include <vtkVisItDataSetMapper.h>
-
-#include <string>
 
 // ****************************************************************************
 //  Method: avtVariablePointGlyphMapper constructor
@@ -63,10 +58,13 @@
 //    Jeremy Meredith, Thu Aug  7 14:37:30 EDT 2008
 //    Made constructor initializers match true initializer order.
 //
+//    Kathleen Biagas, Tue Aug 23 11:38:11 PDT 2016
+//    Changed inheritance from avtPointGlypher to avtPointMapper.
+//
 // ****************************************************************************
 
 avtVariablePointGlyphMapper::avtVariablePointGlyphMapper():
-    avtVariableMapper(), avtPointGlypher()
+    avtVariableMapper(), avtPointMapper()
 {
     singleColor[0] = 0.;
     singleColor[1] = 0.;
@@ -109,6 +107,9 @@ avtVariablePointGlyphMapper::~avtVariablePointGlyphMapper()
 //    Brad Whitlock, Tue Jan 24 17:04:26 PST 2012
 //    Work around mapper/painter issue when setting point type.
 //
+//    Kathleen Biagas, Tue Aug 23 11:41:14 PDT 2016
+//    Glyph-related customization now handled by avtPointMapper.
+//
 // ****************************************************************************
 
 void
@@ -118,7 +119,7 @@ avtVariablePointGlyphMapper::CustomizeMappers(void)
     {
         avtVariableMapper::CustomizeMappers();
     }
-    else     
+    else
     {
         if (lighting)
         {
@@ -131,134 +132,9 @@ avtVariablePointGlyphMapper::CustomizeMappers(void)
 
         SetOpacity(opacity);
 
-        for (int i = 0; i < nMappers; i++)
-        {
-            if (mappers[i] != NULL)
-            {
-                mappers[i]->SetLookupTable(lut);
-            }
-            if (actors[i] != NULL)
-            {
-                vtkProperty *prop = actors[i]->GetProperty();
-                prop->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
-                prop->SetLineWidth(LineWidth2Int(lineWidth));
-            }
-        }
+        ColorBySingleColor(singleColor);
     }
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
-    {
-        CustomizeGlyphs(GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
-
-        //
-        // Set the appropriate point texturing mode based on the glyph type.
-        // This might not be the best VTK way to do it because we have to have
-        // a little knowledge about which type of mapper was created but
-        // it seems a lot more efficient to enhance the mapper than to create
-        // some special textured glyph or have an actor for each point. Since
-        // I'm changing the mapper and there's no base class support for
-        // anything like this, I have to cast to the concrete types that
-        // I care about.
-        //
-        for (int i = 0; i < nMappers; i++)
-        {
-            if (mappers[i] != NULL)
-            {
-                if(strcmp(mappers[i]->GetClassName(), 
-                          "vtkVisItDataSetMapper") == 0)
-                {
-                    vtkVisItDataSetMapper *dsm = (vtkVisItDataSetMapper *)mappers[i];
-                    // Set the modified property on the actors' properties
-                    // to invalidate the polydata mapper so it sets things up 
-                    // again, calling the appropriate delegate to handle
-                    // point drawing whether textured or not. An alternate fix
-                    // would be down in VTK's painters to see if a painter's
-                    // MTime has been changed when choosing delegates.
-                    if(actors != NULL && actors[i] != NULL &&
-                       (glyphType == Sphere || glyphType == Point))
-                    {
-                        actors[i]->GetProperty()->Modified();
-                    }
-
-                    dsm->SetPointTextureMethod(glyphType == Sphere ?
-                         vtkVisItDataSetMapper::TEXTURE_USING_POINTSPRITES :
-                         vtkVisItDataSetMapper::TEXTURE_NO_POINTS);
-
-                    dsm->SetVertsReplacedWithGeomGlyphs(glyphType != Point && glyphType != Sphere);
-                }
-            }
-        }
-
-        if (!colorByScalar)
-            ColorBySingleColor(singleColor);
-        if (dataScaling)
-            ScaleByVar(scalingVarName);
-        else 
-            DataScalingOff();
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtVariablePointGlyphMapper::SetUpFilters
-//
-//  Purpose:
-//    The glyph mapper inserts filters into the VTK pipeline, but can
-//    only do so inside another routines (avtMapper::SetUpMappers) loop.
-//    This is called before InsertFilters to allow for initialization work.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   November 12, 2004 
-//
-//  Modifications:
-//
-//    Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
-//    Glyph if topological dimension is <= 1.
-//
-// ****************************************************************************
-
-void
-avtVariablePointGlyphMapper::SetUpFilters(int nDoms)
-{
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
-    {
-        SetUpGlyphs(nDoms);
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtVariablePointGlyphMapper::InsertFilters
-//
-//  Purpose:
-//    Inserts a glyph filter into the vtk Pipeline.
-//
-//  Arguments:
-//    ds        The upstream dataset.
-//    dom       The domain number.
-//
-//  Returns:      The dataset to be sent downstream.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   November 12, 2004 
-//
-//  Modifications:
-//
-//    Dave Pugmire, Mon Jul 12 15:34:29 EDT 2010
-//    Glyph if topological dimension is <= 1.
-//
-//    Kathleen Biagas, Wed Feb 6 19:38:27 PDT 2013
-//    Changed signature of InsertFilters.
-//
-// ****************************************************************************
-
-vtkAlgorithmOutput *
-avtVariablePointGlyphMapper::InsertFilters(vtkDataSet *ds, int dom)
-{
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() <= 1)
-        return InsertGlyphs(ds, dom, 
-                            GetInput()->GetInfo().GetAttributes().GetSpatialDimension());
-    else
-        return NULL;
+    avtPointMapper::CustomizeMappers();
 }
 
 
@@ -323,138 +199,3 @@ avtVariablePointGlyphMapper::ColorBySingleColor(const unsigned char col[3])
     ColorBySingleColor(fc);
 }
 
-
-// ****************************************************************************
-//  Method: avtVariablePointGlyphMapper::ScaleByVar
-//
-//  Purpose:
-//    Turns on data scaling for the glyph portion of this mapper. 
-//
-//  Arguments:
-//    sname     The name of the variable to be used for scaling.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   November 11, 2004 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtVariablePointGlyphMapper::ScaleByVar(const std::string &sname)
-{
-    if (sname == "" || sname == "\0")
-    {
-        DataScalingOff();
-        return; 
-    }
-    scalingVarName = sname;       
-    scalingVarDim = 1;
-    if (*(GetInput()) != NULL && 
-        GetInput()->GetInfo().GetAttributes().ValidVariable(sname.c_str()))
-    {
-        scalingVarDim = GetInput()->GetInfo().GetAttributes().
-                        GetVariableDimension(sname.c_str()); 
-    }
-    DataScalingOn(scalingVarName, scalingVarDim);
-}
-
-// ****************************************************************************
-// Method: avtVariablePointGlyphMapper::SetGlyphType
-//
-// Purpose: 
-//   This method sets the point glyph type.
-//
-// Arguments:
-//
-// Returns:    
-//
-// Note:       This method overrides avtPointGlypher::SetGlyphType and allows
-//             us to change the mapper's input if we're switching to and fro
-//             between point glyphing mode. We do the switch because we don't
-//             want to expend any effort in a glyph filter or a normals filter
-//             if we're just drawing points so we set the mapper's input to
-//             the point dataset directly. If we're switching out of points
-//             mode then we have to add the glyph and normals filters to make
-//             sure that the points get glyphed appropriately.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Jul 22 11:17:08 PDT 2005
-//
-// Modifications:
-//   Brad Whitlock, Thu Aug 25 10:26:57 PDT 2005
-//   Added support for sphere glyphs.
-//
-// ****************************************************************************
-
-void
-avtVariablePointGlyphMapper::SetGlyphType(GlyphType type)
-{
-    if (glyphType != type)
-    {
-        // If we're going into point glyphing mode or out of point
-        // glyphing mode then change the mapper's input accordingly.
-        // We do this switch so we don't have to glyph points but we
-        // can still switch from points to glyphs and vice versa.
-        if(nMappers > 0 && 
-          (glyphType == Point || type == Point || glyphType == Sphere || type == Sphere))
-        {
-            avtDataObject_p input = GetInput();
-            if (*input != NULL)
-            {
-                GlyphType tmp = glyphType;
-                glyphType = type;
-                avtDataTree_p tree = GetInputDataTree();
-                vtkDataSet **children = tree->GetAllLeaves(nMappers);
-                for (int i = 0; i < nMappers; i++)
-                {
-                    if (mappers[i] != NULL)
-                    {
-                        vtkAlgorithmOutput *output = InsertFilters(children[i], i);
-                        if (output != NULL)
-                            mappers[i]->SetInputConnection(output);
-                        else 
-                            mappers[i]->SetInputData(children[i]);
-                    }
-                }
-                // this was allocated in GetAllLeaves, need to free it now
-                delete [] children;
-
-                PrepareExtents();
-                CustomizeMappers();
-
-                glyphType = tmp;
-            }
-        }
-
-        avtPointGlypher::SetGlyphType(type);
-    }
-}
-
-// ****************************************************************************
-// Method: avtVariablePointGlyphMapper::SetFullFrameScaling
-//
-// Purpose: 
-//   Sets a fullframe scale factor that can be used by the mapper to compensate
-//   for the stretching that fullframe mode performs on geometry.
-//
-// Arguments:
-//   useScale : True if the scale is used.
-//   s        : The fullframe scale vector.
-//
-// Returns:    True if any vtk mappers use the scale.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Jul 24 13:55:54 PST 2006
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-avtVariablePointGlyphMapper::SetFullFrameScaling(bool useScale, const double *s)
-{
-    return avtPointGlypher::ProtectedSetFullFrameScaling(useScale, s);
-}

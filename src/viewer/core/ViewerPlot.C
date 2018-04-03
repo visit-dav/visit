@@ -3292,6 +3292,10 @@ ViewerPlot::GetReader() const
 //    Removed maintain data; moved maintain view from Global settings
 //    (Main window) to per-window Window Information (View window).
 //
+//    Kathleen Biagas, Tue Aug 23 11:30:47 PDT 2016
+//    Moved call to Set the plot's atts after sething the varname, so plots
+//    could utilize the varname.
+//
 //    Kathleen Biagas, Mon Feb 26 16:59:52 MST 2018
 //    Moved setting of the plots VarUnits to avtPlot, so that plugins can
 //    override in their CustomizeBehavior call.
@@ -3461,7 +3465,6 @@ ViewerPlot::CreateActor(bool createNew,
         }
     }
 
-    plotList[cacheIndex]->SetAtts(curPlotAtts);
 
     // Set the variable name first as there may be multiple legends
     // and the variable name determines which legend is used.
@@ -3475,6 +3478,8 @@ ViewerPlot::CreateActor(bool createNew,
       plotList[cacheIndex]->SetPlotTitle(plotDescription.c_str());
     else
       plotList[cacheIndex]->SetPlotTitle(GetMenuName());
+
+    plotList[cacheIndex]->SetAtts(curPlotAtts);
 
     plotList[cacheIndex]->SetBackgroundColor(bgColor);
     plotList[cacheIndex]->SetForegroundColor(fgColor);

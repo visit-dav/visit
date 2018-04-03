@@ -54,21 +54,13 @@
 
 #include <avtCallback.h>
 #include <avtVolumeRendererImplementation.h>
-#include <avtOpenGLSplattingVolumeRenderer.h>
-#include <avtOpenGL3DTextureVolumeRenderer.h>
-#ifdef USE_TUVOK
-# include <avtOpenGLTuvokVolumeRenderer.h>
-#endif
-#ifdef HAVE_LIBSLIVR
-# include <avtOpenGLSLIVRVolumeRenderer.h>
-#endif
+#include <avtDefaultRenderer.h>
 
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 #include <InvalidLimitsException.h>
 #include <StackTimer.h>
 #include <VolumeFunctions.h>
-
 
 // ****************************************************************************
 //  Constructor:  avtVolumeRenderer::avtVolumeRenderer
@@ -96,7 +88,6 @@ avtVolumeRenderer::avtVolumeRenderer()
 
     rendererImplementation = NULL;
     currentRendererIsValid = false;
-    reducedDetail = false;
 
     gx  = NULL;
     gy  = NULL;
@@ -178,52 +169,6 @@ avtVolumeRenderer::New(void)
     return new avtVolumeRenderer;
 }
 
-// ****************************************************************************
-// Method: avtVolumeRenderer::ReducedDetailModeOn
-//
-// Purpose: 
-//   Turns on reduced detail mode.
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Aug 22 11:55:40 PDT 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtVolumeRenderer::ReducedDetailModeOn()
-{
-    reducedDetail = true;
-}
-
-// ****************************************************************************
-// Method: avtVolumeRenderer::ReducedDetailModeOff
-//
-// Purpose: 
-//   Turns off reduced detail mode.
-//
-// Returns:    True if we're using the SLIVR renderer; false otherwise.
-//
-// Note:       
-//
-// Programmer: Brad Whitlock
-// Creation:   Wed Aug 22 11:55:56 PDT 2007
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-avtVolumeRenderer::ReducedDetailModeOff()
-{
-    reducedDetail = false;
-#ifdef HAVE_LIBSLIVR
-    return (atts.GetRendererType() == VolumeAttributes::SLIVR);
-#else
-    return false;
-#endif
-}
 
 // ****************************************************************************
 //  Method:  avtVolumeRenderer::Render
@@ -274,6 +219,11 @@ avtVolumeRenderer::ReducedDetailModeOff()
 //    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
 //    Added support for holding a compact support variable
 //
+//    Alister Maguire, Wed Mar  8 10:40:09 PST 2017
+//    I added a statement setting the rendererImpementation's
+//    vtkRenderer to VTKRen. I also removed the splatting
+//    and texture 3D renderers and added a default renderer.
+//
 // ****************************************************************************
 
 void
@@ -284,30 +234,8 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
     {
         delete rendererImplementation;
 
-        if (atts.GetRendererType() == VolumeAttributes::Splatting)
-        {
-            debug5 << "Creating a Splatting renderer." << std::endl;
-            rendererImplementation = new avtOpenGLSplattingVolumeRenderer;
-        }
-#ifdef HAVE_LIBSLIVR
-        else if(atts.GetRendererType() == VolumeAttributes::SLIVR)
-        {
-            debug5 << "Creating a SLIVR renderer." << std::endl;
-            rendererImplementation = new avtOpenGLSLIVRVolumeRenderer;
-        }
-#endif
-#ifdef USE_TUVOK
-        else if(atts.GetRendererType() == VolumeAttributes::Tuvok)
-        {
-            debug5 << "Creating a Tuvok renderer." << std::endl;
-            rendererImplementation = new avtOpenGLTuvokVolumeRenderer;
-        }
-#endif
-        else // it == VolumeAttributes::Texture3D
-        {
-            debug5 << "Creating a 3DTexture renderer." << std::endl;
-            rendererImplementation = new avtOpenGL3DTextureVolumeRenderer;
-        }
+        debug5 << "Creating a default renderer." << std::endl;
+        rendererImplementation = new avtDefaultRenderer;
         currentRendererIsValid = true;
     }
 
@@ -333,7 +261,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         props.windowSize[1] = sz[1];
         props.view = view;
         props.atts = atts;
-        props.reducedDetail = reducedDetail;
+        props.dataIs2D = dataIs2D;
 
         avtVolumeRendererImplementation::VolumeData vd;
         vd.grid = ds;
@@ -355,6 +283,7 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
         vd.hs = hs;
 
         StackTimer t2("Implementation Render");
+        rendererImplementation->SetVTKRenderer(VTKRen);
         rendererImplementation->Render(props, vd);
 
         vd.data.data->Delete();
@@ -424,6 +353,9 @@ avtVolumeRenderer::Render(vtkDataSet *ds)
 //    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
 //    Added support for holding a compact support variable
 //
+//    Alister Maguire, Thu Sep 14 13:36:16 PDT 2017
+//    Added a check for 2D data.
+//
 // ****************************************************************************
 
 void
@@ -446,11 +378,12 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
     // calculate gradient
     if (ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
+        vtkRectilinearGrid *grid = (vtkRectilinearGrid*)ds;
+        int dims[3];
+        grid->GetDimensions(dims);
+
         if (atts.GetLightingFlag() && gm == NULL) // make sure the gradient was invalidated first
-        { 
-            vtkRectilinearGrid *grid = (vtkRectilinearGrid*)ds;
-            int dims[3];
-            grid->GetDimensions(dims);
+        {
 
             int nels = dims[0] * dims[1] * dims[2];
             gx  = new float[nels];
@@ -462,6 +395,11 @@ avtVolumeRenderer::Initialize(vtkDataSet *ds)
             float ghostval = omax+osize;
             gm_max = VolumeCalculateGradient(atts, grid, opac, gx, gy, gz, gm, gmn, ghostval);
         }
+
+        if (dims[2] == 1)
+            dataIs2D = true;
+        else
+            dataIs2D = false;
     }
     else
     {

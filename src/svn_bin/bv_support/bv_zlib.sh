@@ -22,7 +22,7 @@ function bv_zlib_depends_on
 
 function bv_zlib_info
 {
-    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.7"}
+    export ZLIB_VERSION=${ZLIB_VERSION:-"1.2.8"}
     export ZLIB_FILE=${ZLIB_FILE:-"zlib-${ZLIB_VERSION}.tar.gz"}
     export ZLIB_COMPATIBILITY_VERSION=${ZLIB_COMPATIBILITY_VERSION:-"1.2"}
     export ZLIB_BUILD_DIR=${ZLIB_BUILD_DIR:-"zlib-${ZLIB_VERSION}"}

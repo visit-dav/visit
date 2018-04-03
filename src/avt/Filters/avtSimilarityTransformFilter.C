@@ -151,6 +151,9 @@ avtSimilarityTransformFilter::SetAtts(const AttributeGroup *a)
 //    Kathleen Bonnell, Thu Apr 10 11:07:48 PDT 2003
 //    Compute the inverse matrix. 
 //
+//    Kathleen Biagas, Mon Aug 15 14:17:39 PDT 2016
+//    VTK-8, vtkMatrix4x4 no longer has operator[], use SetElement instead.
+//
 // ****************************************************************************
 
 void
@@ -214,29 +217,29 @@ avtSimilarityTransformFilter::SetupMatrix()
 
         // Pre-translate
         T1->Identity();
-        (*T1)[0][3] = -oX;
-        (*T1)[1][3] = -oY;
-        (*T1)[2][3] = -oZ;
+        T1->SetElement(0, 3, -oX);
+        T1->SetElement(1, 3, -oY);
+        T1->SetElement(2, 3, -oZ);
         
         // Rotate
         R->Identity();
-        (*R)[0][0] = 1.0 - 2.0 * (q[1] * q[1] + q[2] * q[2]);
-        (*R)[0][1] = 2.0 * (q[0] * q[1] - q[2] * q[3]);
-        (*R)[0][2] = 2.0 * (q[2] * q[0] + q[1] * q[3]);
+        R->SetElement(0, 0, 1.0 - 2.0 * (q[1] * q[1] + q[2] * q[2]));
+        R->SetElement(0, 1, 2.0 * (q[0] * q[1] - q[2] * q[3]));
+        R->SetElement(0, 2, 2.0 * (q[2] * q[0] + q[1] * q[3]));
 
-        (*R)[1][0] = 2.0 * (q[0] * q[1] + q[2] * q[3]);
-        (*R)[1][1] = 1.0 - 2.0 * (q[2] * q[2] + q[0] * q[0]);
-        (*R)[1][2] = 2.0 * (q[1] * q[2] - q[0] * q[3]);
+        R->SetElement(1, 0, 2.0 * (q[0] * q[1] + q[2] * q[3]));
+        R->SetElement(1, 1, 1.0 - 2.0 * (q[2] * q[2] + q[0] * q[0]));
+        R->SetElement(1, 2, 2.0 * (q[1] * q[2] - q[0] * q[3]));
 
-        (*R)[2][0] = 2.0 * (q[2] * q[0] - q[1] * q[3]);
-        (*R)[2][1] = 2.0 * (q[1] * q[2] + q[0] * q[3]);
-        (*R)[2][2] = 1.0 - 2.0 * (q[1] * q[1] + q[0] * q[0]);
+        R->SetElement(2, 0, 2.0 * (q[2] * q[0] - q[1] * q[3]));
+        R->SetElement(2, 1, 2.0 * (q[1] * q[2] + q[0] * q[3]));
+        R->SetElement(2, 2, 1.0 - 2.0 * (q[1] * q[1] + q[0] * q[0]));
 
         // Post-translate
         T2->Identity();
-        (*T2)[0][3] = oX;
-        (*T2)[1][3] = oY;
-        (*T2)[2][3] = oZ;
+        T2->SetElement(0, 3, oX);
+        T2->SetElement(1, 3, oY);
+        T2->SetElement(2, 3, oZ);
 
         // apply it
         vtkMatrix4x4::Multiply4x4(T1,  M,  tmp);   M->DeepCopy(tmp);
@@ -277,21 +280,21 @@ avtSimilarityTransformFilter::SetupMatrix()
 
         // Pre-translate
         T1->Identity();
-        (*T1)[0][3] = -oX;
-        (*T1)[1][3] = -oY;
-        (*T1)[2][3] = -oZ;
+        T1->SetElement(0, 3, -oX);
+        T1->SetElement(1, 3, -oY);
+        T1->SetElement(2, 3, -oZ);
 
         // Scale
         S->Identity();
-        (*S)[0][0] = X;
-        (*S)[1][1] = Y;
-        (*S)[2][2] = Z;
+        S->SetElement(0, 0, X);
+        S->SetElement(1, 1, Y);
+        S->SetElement(2, 2, Z);
 
         // Post-translate
         T2->Identity();
-        (*T2)[0][3] = oX;
-        (*T2)[1][3] = oY;
-        (*T2)[2][3] = oZ;
+        T2->SetElement(0, 3, oX);
+        T2->SetElement(1, 3, oY);
+        T2->SetElement(2, 3, oZ);
 
         // apply it
         vtkMatrix4x4::Multiply4x4(T1,  M,  tmp);   M->DeepCopy(tmp);
@@ -301,9 +304,9 @@ avtSimilarityTransformFilter::SetupMatrix()
         // create the inverse scale
         vtkMatrix4x4 *S_i= vtkMatrix4x4::New();
         S_i->Identity();
-        (*S_i)[0][0] = (X != 0. ? 1./X : 0.);
-        (*S_i)[1][1] = (Y != 0. ? 1./Y : 0.);
-        (*S_i)[2][2] = (Z != 0. ? 1./Z : 0.);
+        S_i->SetElement(0, 0, (X != 0. ? 1./X : 0.));
+        S_i->SetElement(1, 1, (Y != 0. ? 1./Y : 0.));
+        S_i->SetElement(2, 2, (Z != 0. ? 1./Z : 0.));
         vtkMatrix4x4::Multiply4x4(T1,  IS,  tmp);   IS->DeepCopy(tmp);
         vtkMatrix4x4::Multiply4x4(S_i, IS,  tmp);   IS->DeepCopy(tmp);
         vtkMatrix4x4::Multiply4x4(T2,  IS,  tmp);   IS->DeepCopy(tmp);
@@ -323,17 +326,17 @@ avtSimilarityTransformFilter::SetupMatrix()
         vtkMatrix4x4 *tmp = vtkMatrix4x4::New();
 
         // Translate
-        (*T)[0][3] = atts.GetTranslateX();
-        (*T)[1][3] = atts.GetTranslateY();
-        (*T)[2][3] = atts.GetTranslateZ();
+        T->SetElement(0, 3, atts.GetTranslateX());
+        T->SetElement(1, 3, atts.GetTranslateY());
+        T->SetElement(2, 3, atts.GetTranslateZ());
 
         // apply it
         vtkMatrix4x4::Multiply4x4(T,  M,   tmp);   M->DeepCopy(tmp);
 
         // Inverse translation
-        (*IT)[0][3] = -atts.GetTranslateX();
-        (*IT)[1][3] = -atts.GetTranslateY();
-        (*IT)[2][3] = -atts.GetTranslateZ();
+        IT->SetElement(0, 3, -atts.GetTranslateX());
+        IT->SetElement(1, 3, -atts.GetTranslateY());
+        IT->SetElement(2, 3, -atts.GetTranslateZ());
 
         T  ->Delete();
         tmp->Delete();
@@ -516,13 +519,19 @@ avtSimilarityTransformFilter::UpdateDataObjectInfo(void)
 //    Kathleen Bonnell, Wed Jun  2 09:08:35 PDT 2004
 //    Set both InvTransform and Transform in the output.
 //
+//    Kathleen Biagas, Mon Aug 15 14:17:39 PDT 2016
+//    VTK-8, vtkMatrix4x4 no longer has operator[], use DeepCopy instead.
+//
 // ****************************************************************************
 
 void
 avtSimilarityTransformFilter::PostExecute()
 {
-    GetOutput()->GetInfo().GetAttributes().SetInvTransform((*invM)[0]);
-    GetOutput()->GetInfo().GetAttributes().SetTransform((*M)[0]);
+    double m[16];
+    vtkMatrix4x4::DeepCopy(m, invM);
+    GetOutput()->GetInfo().GetAttributes().SetInvTransform(m);
+    vtkMatrix4x4::DeepCopy(m, M);
+    GetOutput()->GetInfo().GetAttributes().SetTransform(m);
 }
 
 

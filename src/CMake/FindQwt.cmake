@@ -38,30 +38,30 @@
 #   Kevin Griffin, Thu Jan  4 12:45:28 PST 2018
 #   Changed the linked directory lib/qwt.framework/Headers to the actual path
 #   it was linked to. This fixes the make install symlink error. 
+#
+#   Kathleen Biagas, Thu Feb  8 08:30:19 PST 2018
+#   Set QWT_LIBRARY to full path, for use in target_link_libraries.
+#
 #*****************************************************************************
 
-IF (NOT (EXISTS "${VISIT_QWT_DIR}"))
-    MESSAGE(FATAL_ERROR "Qwt installation directory is not specified or does not exist")
-ENDIF()
+if(NOT EXISTS ${VISIT_QWT_DIR})
+    message(FATAL_ERROR "Qwt installation directory is not specified or does not exist")
+endif()
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+include(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-IF (WIN32)
-  SET_UP_THIRD_PARTY(QWT lib include qwt)
-  SET(QWT_LIBRARY ${QWT_LIB} CACHE STRING "name of qwt library" FORCE)
-ELSEIF (APPLE)
-  IF(VISIT_STATIC)
+if(APPLE)
+    if(VISIT_STATIC)
+        SET_UP_THIRD_PARTY(QWT lib include qwt)
+    else()
+        SET_UP_THIRD_PARTY(QWT lib lib/qwt.framework/Versions/Current/Headers qwt)
+    endif()
+else()
     SET_UP_THIRD_PARTY(QWT lib include qwt)
-    SET(QWT_LIBRARY ${QWT_LIB})
-  ELSE(VISIT_STATIC)
-          SET_UP_THIRD_PARTY(QWT lib lib/qwt.framework/Versions/Current/Headers qwt)
-    SET(QWT_LIBRARY ${QWT_LIBRARY_DIR}/${QWT_LIB}/qwt)
-  ENDIF(VISIT_STATIC)
-ELSE (WIN32)
-  SET_UP_THIRD_PARTY(QWT lib include qwt)
-  SET(QWT_LIBRARY ${QWT_LIB} CACHE STRING "name of qwt library" FORCE)
-ENDIF (WIN32)
+endif()
 
-IF(NOT QWT_FOUND)
-    MESSAGE(FATAL_ERROR "Qwt installation could not be used.")
-ENDIF(NOT QWT_FOUND)
+if(NOT QWT_FOUND)
+    message(FATAL_ERROR "Qwt installation could not be used.")
+endif()
+
+SET(QWT_LIBRARY ${QWT_LIBRARY_DIR}/${QWT_LIB} CACHE FILEPATH "full path to qwt library" FORCE)

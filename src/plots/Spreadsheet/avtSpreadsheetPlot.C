@@ -120,7 +120,7 @@ avtSpreadsheetPlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtSpreadsheetPlot::GetMapper(void)
 {
     return mapper;

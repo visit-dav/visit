@@ -66,8 +66,8 @@ function bv_visit_ensure_built_or_ready
         if [[ -d $SVN_DESTINATION_PATH ]] ; then
             info "Found existing VisIt SVN src directory, using that . . ."
         else
-	    mkdir -p $SVN_DESTINATION_PATH
-	    
+            mkdir -p $SVN_DESTINATION_PATH
+
             # Print a dialog screen
             info "SVN check-out of VisIt ($SVN_ROOT_PATH/$SVN_SOURCE_PATH) . . ."
             if [[ "$DO_REVISION" == "yes" && "$SVNREVISION" != "" ]] ; then
@@ -280,21 +280,16 @@ function build_visit
     # Set up the VisIt build dir which is a sibling to the VisIt src dir
     #
     if [[ "$DO_SVN" == "yes" && "$USE_VISIT_FILE" == "no" ]] ; then
-	#remove the src from the destination path and replace it with build.
-	VISIT_BUILD_DIR="${SVN_DESTINATION_PATH/src/build}" 
+        #remove the src from the destination path and replace it with build.
+        VISIT_BUILD_DIR="${SVN_DESTINATION_PATH/src/build}"
     else
-	VISIT_BUILD_DIR="${VISIT_FILE%.tar*}/build"
-    
-        #visit2.5.0 needs a patch for ModelFit operator
-        if [[ "${VISIT_FILE%.tar*}" == "visit2.5.0" ]]; then
-            bv_patch_2_5_0
-        fi
+        VISIT_BUILD_DIR="${VISIT_FILE%.tar*}/build"
     fi
 
     if [[ ! -e $VISIT_BUILD_DIR ]] ; then
         mkdir $VISIT_BUILD_DIR || error "Can't make VisIt build dir."
     else
-	rm -rf $VISIT_BUILD_DIR/* || error "Can't clean VisIt build dir."
+        rm -rf $VISIT_BUILD_DIR/* || error "Can't clean VisIt build dir."
     fi
 
     info "Building VisIt in ${VISIT_BUILD_DIR} . . ."
@@ -334,9 +329,6 @@ function build_visit
     fi
     if [[ "${DO_JAVA}" == "yes" ]] ; then
         FEATURES="${FEATURES} -DVISIT_JAVA:BOOL=ON"
-    fi
-    if [[ "${DO_SLIVR}" == "no" ]] ; then
-        FEATURES="${FEATURES} -DVISIT_SLIVR:BOOL=OFF"
     fi
     if [[ "${VISIT_INSTALL_PREFIX}" != "" ]] ; then
         FEATURES="${FEATURES} -DCMAKE_INSTALL_PREFIX:PATH=${VISIT_INSTALL_PREFIX}"

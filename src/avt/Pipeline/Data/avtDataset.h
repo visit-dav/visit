@@ -167,11 +167,6 @@ class PIPELINE_API avtDataset : public avtDataObject
     friend                   class avtXRayImageQuery;
     friend                   class avtResampleExpression;
     friend                   class avtIndexSelectFilter;
-#ifdef HAVE_LIB_R
-    friend                   class  avtExtremeValueAnalysisFilter;
-    friend                   class  avtPeaksOverThresholdFilter;
-    friend                   class  avtModelBasedClusteringFilter;
-#endif
 
   public:
                              avtDataset(avtDataObjectSource *);

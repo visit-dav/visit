@@ -181,11 +181,7 @@ QvisSequenceView::QvisSequenceView(QWidget *parent) : QTableView(parent)
     setSelectionMode(QAbstractItemView::SingleSelection);
 
     horizontalHeader()->hide();
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-#else
     verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-#endif
 
     setTextElideMode(Qt::ElideMiddle);
 

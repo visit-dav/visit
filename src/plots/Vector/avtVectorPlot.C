@@ -224,7 +224,7 @@ avtVectorPlot::SetCellCountMultiplierForSRThreshold(const avtDataObject_p dob)
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtVectorPlot::GetMapper(void)
 {
     return glyphMapper;

@@ -50,7 +50,6 @@
 #include <avtDatasetToDatasetFilter.h>
 #include <avtDataObjectString.h>
 #include <avtDataSetWriter.h>
-#include <avtDrawer.h>
 #include <avtExtents.h>
 #include <avtGhostZoneAndFacelistFilter.h>
 #include <avtImageDrawable.h>
@@ -149,7 +148,6 @@ avtPlot::avtPlot()
     behavior           = new avtBehavior;
     actor->SetBehavior(behavior);
 
-    drawer             = NULL;
     condenseDatasetFilter      = new avtCondenseDatasetFilter;
     ghostZoneAndFacelistFilter = new avtGhostZoneAndFacelistFilter;
     compactTreeFilter          = new avtCompactTreeFilter;
@@ -224,11 +222,6 @@ avtPlot::avtPlot()
 
 avtPlot::~avtPlot()
 {
-    if (drawer != NULL)
-    {
-        delete drawer;
-        drawer = NULL;
-    }
     if (condenseDatasetFilter != NULL)
     {
         delete condenseDatasetFilter;
@@ -738,6 +731,9 @@ avtPlot::Execute(avtDataObjectReader_p reader)
 //    Changed test for curve plots (before SetScaleMode) to use windwowmode
 //    instead of spatial/topological dimensions.
 //
+//    Kathleen Biagas, Thu Apr 13 10:43:35 PDT 2017
+//    GetMapper now returns avtMapperBase.
+//
 //    Kathleen Biagas, Mon Feb 26 16:58:55 MST 2018
 //    Added call to SetVarUnits.  Moved from ViewerPlot so that plugins can
 //    override the default units in their CustomizeBehavior method.
@@ -777,7 +773,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 
         topologicalDim = geometry->GetInfo().GetAttributes().GetTopologicalDimension();
         spatialDim = geometry->GetInfo().GetAttributes().GetSpatialDimension();
-        avtMapper *mapper = GetMapper();
+        avtMapperBase *mapper = GetMapper();
         avtDataObject_p geo;
         CopyTo(geo, geometry);
 
@@ -859,7 +855,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 
         // although we're creating bogus geometry data here, we still need
         // to pass valid dobInfo through the mapper
-        avtMapper *mapper = GetMapper();
+        avtMapperBase *mapper = GetMapper();
         avtDataObjectInformation& geoInfo = geo->GetInfo();
         geoInfo.Copy(nullData->GetInfo());
         mapper->SetInput(geo);
@@ -900,7 +896,7 @@ avtPlot::Execute(avtDataObjectReader_p reader, avtDataObject_p dob)
 
         // although we're creating bogus geometry data here, we still need
         // to pass valid dobInfo through the mapper
-        avtMapper *mapper = GetMapper();
+        avtMapperBase *mapper = GetMapper();
         avtDataObjectInformation& geoInfo = geo->GetInfo();
         geoInfo.Copy(working_dob->GetInfo());
         mapper->SetInput(geo);

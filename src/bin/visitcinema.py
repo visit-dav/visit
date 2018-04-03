@@ -1323,11 +1323,7 @@ class VisItCinema(object):
 
         theta,phi = self.compute_theta_phi()
 
-        # We save a bunch of images per time step. Try forcing display lists.
-        backup_ra = GetRenderingAttributes()
-        ra = GetRenderingAttributes()
-        ra.displayListMode = ra.Always
-        SetRenderingAttributes(ra)
+        # We save a bunch of images per time step.
         # Save a back up view.
         backup_view = GetView3D()
 
@@ -1337,8 +1333,7 @@ class VisItCinema(object):
         # Save the frames.
         timeAtts = self.IterateAndSaveFrames(imageDir, phi_theta_save)
 
-        # Restore view and render atts.
-        SetRenderingAttributes(backup_ra)
+        # Restore view.
         SetView3D(backup_view)
 
         if self.specification == "D":
@@ -1495,11 +1490,7 @@ class VisItCinema(object):
 
         theta,phi = self.compute_theta_phi()
 
-        # We save a bunch of images per time step. Try forcing display lists.
-        backup_ra = GetRenderingAttributes()
-        ra = GetRenderingAttributes()
-        ra.displayListMode = ra.Always
-        SetRenderingAttributes(ra)
+        # We save a bunch of images per time step.
         # Save a back up view.
         backup_view = GetView3D()
 
@@ -1529,8 +1520,7 @@ class VisItCinema(object):
         # Save the frames.
         timeAtts = self.IterateAndSaveFrames(imageDir, theta_phi_save)
 
-        # Restore view and render atts.
-        SetRenderingAttributes(backup_ra)
+        # Restore view.
         SetView3D(backup_view)
 
         # Make the JSON file

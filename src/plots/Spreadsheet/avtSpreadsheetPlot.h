@@ -97,7 +97,7 @@ class avtSpreadsheetPlot : public avtVolumeDataPlot
     avtSpreadsheetRenderer_p    renderer;
     bool                        colorsInitialized;
 
-    virtual avtMapper          *GetMapper(void);
+    virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);

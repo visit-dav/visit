@@ -10,8 +10,8 @@
 
 // Adds an implementation of NewInstanceInternal() that returns a standard
 // (unmapped) VTK array, if possible. Use this with classes that derive from
-// vtkTypeTemplate, otherwise, use vtkMappedDataArrayTypeMacro.
-#define vtkMappedDataArrayNewInstanceMacro(thisClass) \
+// vtkTypeTemplate, otherwise, use vtkComponentDataArrayTypeMacro.
+#define vtkComponentDataArrayNewInstanceMacro(thisClass) \
   protected: \
   vtkObjectBase *NewInstanceInternal() const \
   { \
@@ -26,9 +26,9 @@
 
 // Same as vtkTypeMacro, but adds an implementation of NewInstanceInternal()
 // that returns a standard (unmapped) VTK array, if possible.
-#define vtkMappedDataArrayTypeMacro(thisClass, superClass) \
-  vtkAbstractTypeMacroWithNewInstanceType(thisClass, superClass, vtkDataArray) \
-  vtkMappedDataArrayNewInstanceMacro(thisClass)
+#define vtkComponentDataArrayTypeMacro(thisClass, superClass) \
+  vtkAbstractTypeMacroWithNewInstanceType(thisClass, superClass, vtkDataArray, "vtkComponentDataArray") \
+  vtkComponentDataArrayNewInstanceMacro(thisClass)
 
 int zc_getvoidpointer();
 
@@ -53,6 +53,9 @@ int zc_getvoidpointer();
 // Creation:   Fri Jun 19 12:15:08 PDT 2015
 //
 // Modifications:
+//    Kathleen Biagas, Tue May 10 16:54:28 PDT 2016
+//    Modified for VTK-8: GetTupleValue->GetTypedTuple, etc, and deal with
+//    inconsistent const-ness.
 //
 // ****************************************************************************
 
@@ -61,7 +64,7 @@ class vtkComponentDataArray : public vtkTypedDataArray<Scalar>
 {
 public:
     typedef vtkComponentDataArray<Scalar,ComponentData> ThisClass;
-    vtkMappedDataArrayTypeMacro( vtkComponentDataArray, vtkTypedDataArray<Scalar> );
+    vtkComponentDataArrayTypeMacro( vtkComponentDataArray, vtkTypedDataArray<Scalar> );
 
     static vtkComponentDataArray<Scalar,ComponentData> *New()
     {
@@ -153,9 +156,10 @@ public:
         GatherValues(id, this->GetNumberOfComponents(), out);
     }
 
-    virtual void GetTupleValue(vtkIdType id, Scalar *out)
+    virtual void GetTypedTuple(vtkIdType id, Scalar *out) const
     {
-        GatherValues(id, this->GetNumberOfComponents(), out);
+        ThisClass *tmp = const_cast<vtkComponentDataArray*>(this);
+        tmp->GatherValues(id, tmp->GetNumberOfComponents(), out);
     }
 
     virtual Scalar &GetValueReference(vtkIdType arrayIndex)
@@ -168,9 +172,10 @@ public:
         return tempReference;
     }
 
-    virtual Scalar GetValue(vtkIdType arrayIndex)
+    virtual Scalar GetValue(vtkIdType arrayIndex) const
     {
-        return this->GetValueReference(arrayIndex);
+        ThisClass *tmp = const_cast<vtkComponentDataArray*>(this);
+        return tmp->GetValueReference(arrayIndex);
     }
 
     vtkVariant GetVariantValue(vtkIdType arrayIndex)
@@ -197,7 +202,7 @@ public:
         Scalar *ptr = reinterpret_cast<Scalar *>(voidPtrValues);
         for(vtkIdType i = 0; i < this->GetNumberOfTuples(); ++i)
         {
-            this->GetTupleValue(i, ptr);
+            this->GetTypedTuple(i, ptr);
             ptr += this->GetNumberOfComponents();
         }
 
@@ -300,12 +305,12 @@ public:
     { vtkWarningMacro( << "SetVariantValue: read only do nothing");/* read only; do nothing. */ }
     virtual void ClearLookup()
     { vtkWarningMacro( << "ClearLookup: read only do nothing");/* read only; do nothing. */ }
-    void SetTupleValue(vtkIdType, const Scalar*)
-    { vtkWarningMacro( << "SetTupleValue: read only do nothing");/* read only; do nothing. */ }
-    void InsertTupleValue(vtkIdType, const Scalar*)
-    { vtkWarningMacro( << "InsertTupleValue: read only do nothing");/* read only; do nothing. */ }
-    vtkIdType InsertNextTupleValue(const Scalar*)
-    { vtkWarningMacro( << "InsertNextTupleValue: read only do nothing"); return 0; /* read only; do nothing. */ }
+    void SetTypedTuple(vtkIdType, const Scalar*)
+    { vtkWarningMacro( << "SetTypedTuple: read only do nothing");/* read only; do nothing. */ }
+    void InsertTypedTuple(vtkIdType, const Scalar*)
+    { vtkWarningMacro( << "InsertTypedTuple: read only do nothing");/* read only; do nothing. */ }
+    vtkIdType InsertNextTypedTuple(const Scalar*)
+    { vtkWarningMacro( << "InsertNextTypedTuple: read only do nothing"); return 0; /* read only; do nothing. */ }
 
     vtkIdType LookupTypedValue(Scalar)
     {
@@ -389,7 +394,7 @@ protected:
     }
 
     template <typename DestinationType>
-    void GatherValues(vtkIdType id, int nComps, DestinationType *out) 
+    void GatherValues(vtkIdType id, int nComps, DestinationType *out)
     {
         if(id >= this->GetNumberOfTuples())
             return;

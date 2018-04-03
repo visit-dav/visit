@@ -40,20 +40,17 @@
 //                             avtCurvePlot.C                                //
 // ************************************************************************* //
 
-#include <vtkToolkits.h>
 
 
 #include <avtCurvePlot.h>
-#include <avtOpenGLCurveRenderer.h>
+#include <avtCurveMapper.h>
 
 #include <avtCallback.h>
 #include <avtCompactTreeFilter.h>
 #include <avtCurveFilter.h>
 #include <avtCurveLegend.h>
 #include <avtLabeledCurveMapper.h>
-#include <avtSurfaceAndWireframeRenderer.h> 
 #include <avtWarpFilter.h>
-#include <avtUserDefinedMapper.h>
 #include <avtPolarToCartesianFilter.h>
 
 #include <LineAttributes.h>
@@ -97,11 +94,8 @@ avtCurvePlot::avtCurvePlot()
     CurveFilter = new avtCurveFilter();
     WarpFilter = new avtWarpFilter();
     PolarFilter = new avtPolarToCartesianFilter();
-    renderer = new avtOpenGLCurveRenderer;
-    avtCustomRenderer_p ren;
-    CopyTo(ren, renderer);
-    mapper = new avtUserDefinedMapper(ren);
- 
+    mapper = new avtCurveMapper();
+
     decoMapper = new avtLabeledCurveMapper();
 
     //
@@ -200,7 +194,7 @@ avtCurvePlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtCurvePlot::GetMapper(void)
 {
     return mapper;
@@ -395,9 +389,17 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
         atts.ChangesRequireRecalculation(*(const CurveAttributes*)a);
     atts = *(const CurveAttributes*)a;
 
-    double rgba[4];
-    atts.GetCurveColor().GetRgba(rgba);
-    curveLegend->SetColor(rgba);
+    double rgb[4];
+    atts.GetCurveColor().GetRgb(rgb);
+    curveLegend->SetColor(rgb);
+    mapper->SetColor(rgb);
+    mapper->SetDrawCurve(atts.GetShowLines());
+    mapper->SetDrawPoints(atts.GetShowPoints());
+    mapper->SetPointSize(atts.GetPointSize());
+    mapper->SetPointStride(atts.GetPointStride());
+    mapper->SetSymbolType(atts.GetSymbol());
+    mapper->SetStaticPoints(atts.GetPointFillMode() == CurveAttributes::Static);
+    mapper->SetPointDensity(atts.GetSymbolDensity());
 
     if (atts.GetShowLegend())
     {
@@ -411,10 +413,9 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     SetLineWidth(atts.GetLineWidth());
     SetLineStyle(atts.GetLineStyle());
 
-    decoMapper->SetLabelColor(rgba);
+    decoMapper->SetLabelColor(rgb);
     decoMapper->SetLabelVisibility(atts.GetShowLabels());
 
-    renderer->SetAtts(atts);
     behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
 }
 
@@ -440,6 +441,7 @@ void
 avtCurvePlot::SetLineWidth(int lw)
 {
     curveLegend->SetLineWidth(Int2LineWidth(lw));
+    mapper->SetLineWidth(Int2LineWidth(lw));
 }
  
  
@@ -465,6 +467,7 @@ void
 avtCurvePlot::SetLineStyle(int ls)
 {
     curveLegend->SetLineStyle(Int2LineStyle(ls));
+    mapper->SetLineStyle(Int2LineStyle(ls));
 }
 
 

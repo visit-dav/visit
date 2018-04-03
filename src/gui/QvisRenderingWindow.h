@@ -165,7 +165,6 @@ private slots:
     void processMultiresolutionSmallestCellText();
     void processMultiresolutionSmallestCellText(const QString &);
     void objectRepresentationChanged(int);
-    void displayListModeChanged(int);
     void stereoToggled(bool);
     void stereoTypeChanged(int);
     void renderNotifyToggled(bool);
@@ -213,7 +212,6 @@ private:
     QLabel            *multiresolutionSmallestCellLabel;
     QLineEdit         *multiresolutionSmallestCellLineEdit;
     QButtonGroup      *objectRepresentation;
-    QButtonGroup      *dlMode;
     QCheckBox         *stereoToggle;
     QButtonGroup      *stereoType;
     QRadioButton      *redblue;

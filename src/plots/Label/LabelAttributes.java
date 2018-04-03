@@ -41,7 +41,7 @@ package llnl.visit.plots;
 import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
-import llnl.visit.ColorAttribute;
+import llnl.visit.FontAttributes;
 
 // ****************************************************************************
 // Class: LabelAttributes
@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class LabelAttributes extends AttributeSubject implements Plugin
 {
-    private static int LabelAttributes_numAdditionalAtts = 18;
+    private static int LabelAttributes_numAdditionalAtts = 14;
 
     // Enum values
     public final static int LABELINDEXDISPLAY_NATURAL = 0;
@@ -107,12 +107,8 @@ public class LabelAttributes extends AttributeSubject implements Plugin
         drawLabelsFacing = LABELDRAWFACING_FRONT;
         labelDisplayFormat = LABELINDEXDISPLAY_NATURAL;
         numberOfLabels = 200;
-        specifyTextColor1 = false;
-        textColor1 = new ColorAttribute(255, 0, 0, 0);
-        textHeight1 = 0.02f;
-        specifyTextColor2 = false;
-        textColor2 = new ColorAttribute(0, 0, 255, 0);
-        textHeight2 = 0.02f;
+        textFont1 = new FontAttributes();
+        textFont2 = new FontAttributes();
         horizontalJustification = LABELHORIZONTALALIGNMENT_HCENTER;
         verticalJustification = LABELVERTICALALIGNMENT_VCENTER;
         depthTestMode = DEPTHTESTMODE_LABEL_DT_AUTO;
@@ -131,12 +127,8 @@ public class LabelAttributes extends AttributeSubject implements Plugin
         drawLabelsFacing = LABELDRAWFACING_FRONT;
         labelDisplayFormat = LABELINDEXDISPLAY_NATURAL;
         numberOfLabels = 200;
-        specifyTextColor1 = false;
-        textColor1 = new ColorAttribute(255, 0, 0, 0);
-        textHeight1 = 0.02f;
-        specifyTextColor2 = false;
-        textColor2 = new ColorAttribute(0, 0, 255, 0);
-        textHeight2 = 0.02f;
+        textFont1 = new FontAttributes();
+        textFont2 = new FontAttributes();
         horizontalJustification = LABELHORIZONTALALIGNMENT_HCENTER;
         verticalJustification = LABELVERTICALALIGNMENT_VCENTER;
         depthTestMode = DEPTHTESTMODE_LABEL_DT_AUTO;
@@ -155,12 +147,8 @@ public class LabelAttributes extends AttributeSubject implements Plugin
         drawLabelsFacing = obj.drawLabelsFacing;
         labelDisplayFormat = obj.labelDisplayFormat;
         numberOfLabels = obj.numberOfLabels;
-        specifyTextColor1 = obj.specifyTextColor1;
-        textColor1 = new ColorAttribute(obj.textColor1);
-        textHeight1 = obj.textHeight1;
-        specifyTextColor2 = obj.specifyTextColor2;
-        textColor2 = new ColorAttribute(obj.textColor2);
-        textHeight2 = obj.textHeight2;
+        textFont1 = new FontAttributes(obj.textFont1);
+        textFont2 = new FontAttributes(obj.textFont2);
         horizontalJustification = obj.horizontalJustification;
         verticalJustification = obj.verticalJustification;
         depthTestMode = obj.depthTestMode;
@@ -190,12 +178,8 @@ public class LabelAttributes extends AttributeSubject implements Plugin
                 (drawLabelsFacing == obj.drawLabelsFacing) &&
                 (labelDisplayFormat == obj.labelDisplayFormat) &&
                 (numberOfLabels == obj.numberOfLabels) &&
-                (specifyTextColor1 == obj.specifyTextColor1) &&
-                (textColor1 == obj.textColor1) &&
-                (textHeight1 == obj.textHeight1) &&
-                (specifyTextColor2 == obj.specifyTextColor2) &&
-                (textColor2 == obj.textColor2) &&
-                (textHeight2 == obj.textHeight2) &&
+                (textFont1.equals(obj.textFont1)) &&
+                (textFont2.equals(obj.textFont2)) &&
                 (horizontalJustification == obj.horizontalJustification) &&
                 (verticalJustification == obj.verticalJustification) &&
                 (depthTestMode == obj.depthTestMode) &&
@@ -254,64 +238,40 @@ public class LabelAttributes extends AttributeSubject implements Plugin
         Select(7);
     }
 
-    public void SetSpecifyTextColor1(boolean specifyTextColor1_)
+    public void SetTextFont1(FontAttributes textFont1_)
     {
-        specifyTextColor1 = specifyTextColor1_;
+        textFont1 = textFont1_;
         Select(8);
     }
 
-    public void SetTextColor1(ColorAttribute textColor1_)
+    public void SetTextFont2(FontAttributes textFont2_)
     {
-        textColor1 = textColor1_;
+        textFont2 = textFont2_;
         Select(9);
-    }
-
-    public void SetTextHeight1(float textHeight1_)
-    {
-        textHeight1 = textHeight1_;
-        Select(10);
-    }
-
-    public void SetSpecifyTextColor2(boolean specifyTextColor2_)
-    {
-        specifyTextColor2 = specifyTextColor2_;
-        Select(11);
-    }
-
-    public void SetTextColor2(ColorAttribute textColor2_)
-    {
-        textColor2 = textColor2_;
-        Select(12);
-    }
-
-    public void SetTextHeight2(float textHeight2_)
-    {
-        textHeight2 = textHeight2_;
-        Select(13);
     }
 
     public void SetHorizontalJustification(int horizontalJustification_)
     {
         horizontalJustification = horizontalJustification_;
-        Select(14);
+        Select(10);
     }
 
     public void SetVerticalJustification(int verticalJustification_)
     {
         verticalJustification = verticalJustification_;
-        Select(15);
+        Select(11);
     }
 
     public void SetDepthTestMode(int depthTestMode_)
     {
         depthTestMode = depthTestMode_;
-        Select(16);
+        Select(12);
     }
 
     public void SetFormatTemplate(String formatTemplate_)
     {
         formatTemplate = formatTemplate_;
-        Select(17);
+        Select(13);
     }
 
     // Property getting methods
@@ -323,12 +283,8 @@ public class LabelAttributes extends AttributeSubject implements Plugin
     public int            GetDrawLabelsFacing() { return drawLabelsFacing; }
     public int            GetLabelDisplayFormat() { return labelDisplayFormat; }
     public int            GetNumberOfLabels() { return numberOfLabels; }
-    public boolean        GetSpecifyTextColor1() { return specifyTextColor1; }
-    public ColorAttribute GetTextColor1() { return textColor1; }
-    public float          GetTextHeight1() { return textHeight1; }
-    public boolean        GetSpecifyTextColor2() { return specifyTextColor2; }
-    public ColorAttribute GetTextColor2() { return textColor2; }
-    public float          GetTextHeight2() { return textHeight2; }
+    public FontAttributes GetTextFont1() { return textFont1; }
+    public FontAttributes GetTextFont2() { return textFont2; }
     public int            GetHorizontalJustification() { return horizontalJustification; }
     public int            GetVerticalJustification() { return verticalJustification; }
     public int            GetDepthTestMode() { return depthTestMode; }
@@ -354,24 +310,16 @@ public class LabelAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(7, buf))
             buf.WriteInt(numberOfLabels);
         if(WriteSelect(8, buf))
-            buf.WriteBool(specifyTextColor1);
+            textFont1.Write(buf);
         if(WriteSelect(9, buf))
-            textColor1.Write(buf);
+            textFont2.Write(buf);
         if(WriteSelect(10, buf))
-            buf.WriteFloat(textHeight1);
-        if(WriteSelect(11, buf))
-            buf.WriteBool(specifyTextColor2);
-        if(WriteSelect(12, buf))
-            textColor2.Write(buf);
-        if(WriteSelect(13, buf))
-            buf.WriteFloat(textHeight2);
-        if(WriteSelect(14, buf))
             buf.WriteInt(horizontalJustification);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(11, buf))
             buf.WriteInt(verticalJustification);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(12, buf))
             buf.WriteInt(depthTestMode);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(13, buf))
             buf.WriteString(formatTemplate);
     }
 
@@ -404,35 +352,23 @@ public class LabelAttributes extends AttributeSubject implements Plugin
             SetNumberOfLabels(buf.ReadInt());
             break;
         case 8:
-            SetSpecifyTextColor1(buf.ReadBool());
+            textFont1.Read(buf);
+            Select(8);
             break;
         case 9:
-            textColor1.Read(buf);
+            textFont2.Read(buf);
             Select(9);
             break;
         case 10:
-            SetTextHeight1(buf.ReadFloat());
-            break;
-        case 11:
-            SetSpecifyTextColor2(buf.ReadBool());
-            break;
-        case 12:
-            textColor2.Read(buf);
-            Select(12);
-            break;
-        case 13:
-            SetTextHeight2(buf.ReadFloat());
-            break;
-        case 14:
             SetHorizontalJustification(buf.ReadInt());
             break;
-        case 15:
+        case 11:
             SetVerticalJustification(buf.ReadInt());
             break;
-        case 16:
+        case 12:
             SetDepthTestMode(buf.ReadInt());
             break;
-        case 17:
+        case 13:
             SetFormatTemplate(buf.ReadString());
             break;
         }
@@ -484,12 +420,8 @@ public class LabelAttributes extends AttributeSubject implements Plugin
             str = str + "LABELINDEXDISPLAY_INDEX";
         str = str + "\n";
         str = str + intToString("numberOfLabels", numberOfLabels, indent) + "\n";
-        str = str + boolToString("specifyTextColor1", specifyTextColor1, indent) + "\n";
-        str = str + indent + "textColor1 = {" + textColor1.Red() + ", " + textColor1.Green() + ", " + textColor1.Blue() + ", " + textColor1.Alpha() + "}\n";
-        str = str + floatToString("textHeight1", textHeight1, indent) + "\n";
-        str = str + boolToString("specifyTextColor2", specifyTextColor2, indent) + "\n";
-        str = str + indent + "textColor2 = {" + textColor2.Red() + ", " + textColor2.Green() + ", " + textColor2.Blue() + ", " + textColor2.Alpha() + "}\n";
-        str = str + floatToString("textHeight2", textHeight2, indent) + "\n";
+        str = str + indent + "textFont1 = {\n" + textFont1.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "textFont2 = {\n" + textFont2.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "horizontalJustification = ";
         if(horizontalJustification == LABELHORIZONTALALIGNMENT_HCENTER)
             str = str + "LABELHORIZONTALALIGNMENT_HCENTER";
@@ -528,12 +460,8 @@ public class LabelAttributes extends AttributeSubject implements Plugin
     private int            drawLabelsFacing;
     private int            labelDisplayFormat;
     private int            numberOfLabels;
-    private boolean        specifyTextColor1;
-    private ColorAttribute textColor1;
-    private float          textHeight1;
-    private boolean        specifyTextColor2;
-    private ColorAttribute textColor2;
-    private float          textHeight2;
+    private FontAttributes textFont1;
+    private FontAttributes textFont2;
     private int            horizontalJustification;
     private int            verticalJustification;
     private int            depthTestMode;

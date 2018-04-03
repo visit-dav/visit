@@ -48,8 +48,15 @@
 #   Burlen Loring, Sun Oct 18 00:47:57 PDT 2015
 #   Added vtkDepthSortPolyData2
 #
+#   Kathleen Biagas, Mon Jul 18 09:57:06 PDT 2016
+#   Remove vtkVisItTIFFWriter (in favor of using VTK's directly).
+#
 #   Brad Whitlock, Tue Sep 19 14:35:20 PDT 2017
 #   OpenEXR support.
+#
+#   Kathleen Biagas, Mon Feb 5 17:22:22 PST 2018
+#   Move vtkDepthSortPolyData2 to avt/Plotter/vtk since it depends on the
+#   vtk rendering libs.  Remove vtk rendering libs from linker.
 #
 #****************************************************************************/
 
@@ -65,7 +72,6 @@ vtkCSGCell.C
 vtkCSGGrid.C
 vtkConnectedTubeFilter.C
 vtkDataSetRemoveGhostCells.C
-vtkDepthSortPolyData2.C
 vtkLineoutFilter.C
 vtkLinesFromOriginalCells.C
 vtkMergeTree.C
@@ -103,11 +109,8 @@ vtkVisItRectilinearGrid.C
 vtkVisItSTLWriter.C
 vtkVisItScalarTree.C
 vtkVisItSplitter.C
-vtkVisItStreamLine.C
 vtkVisItStructuredGrid.C
-vtkVisItStructuredGridNormals.C
 vtkVisItTubeFilter.C
-vtkVisItTIFFWriter.C
 vtkVisItTensorGlyph.C
 vtkVolumeFromCSGVolume.C
 vtkVolumeFromVolume.C
@@ -134,17 +137,11 @@ IF(HAVE_BOOST)
 ENDIF(HAVE_BOOST)
 
 # Add link directories needed to use our libraries and VTK.
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${VTK_LIBRARY_DIRS} ${OPENEXR_LIBRARY_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${OPENEXR_LIBRARY_DIR})
 
 ADD_LIBRARY(visit_vtk ${VISIT_VTK_SOURCES})
 
-IF(HAVE_LIB_R)
-    TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkImagingHybrid vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtktiff vtkFiltersStatisticsGnuR ${OPENEXR_LIB})
-ELSE(HAVE_LIB_R)
-    TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkImagingHybrid vtkRenderingOpenGL vtkRenderingFreeType vtkRenderingFreeTypeOpenGL vtkInteractionStyle vtktiff ${OPENEXR_LIB})
-ENDIF(HAVE_LIB_R)
-# Add vtk definitions
-ADD_TARGET_DEFINITIONS(visit_vtk "${VTK_DEFINITIONS}")
+TARGET_LINK_LIBRARIES(visit_vtk lightweight_visit_vtk vtkFiltersExtraction vtkFiltersFlowPaths vtkFiltersSources vtkImagingHybrid vtkIOImage vtktiff ${OPENEXR_LIB})
 
 
 VISIT_INSTALL_TARGETS(visit_vtk)

@@ -16,10 +16,3 @@ MoleculeAttributes::ChangesRequireRecalculation(const MoleculeAttributes &obj)
 
     return false;
 }
-
-Target: xml2cmake
-Condition: VISIT_MANTA
-VSources: avtMantaMoleculeRenderer.C
-ESources: avtMantaMoleculeRenderer.C
-Includes: ${VISIT_INCLUDE_DIR}/avt/Plotter/Manta
-

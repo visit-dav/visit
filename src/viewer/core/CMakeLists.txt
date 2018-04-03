@@ -31,7 +31,7 @@
 # SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
 # CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
 # LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
-# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN if ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 #
 # Modifications:
@@ -42,7 +42,7 @@
 # NOTE: This library is not allowed to have *any* Qt dependencies!
 #
 
-SET(VIEWERCORE_SOURCES
+set(VIEWERCORE_SOURCES
 ActionGroupDescription.C
 EngineKey.C
 LineoutListItem.C
@@ -94,12 +94,12 @@ actions/ViewActions.C
 actions/WindowActions.C
 )
 
-IF (NOT WIN32)
+if(NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
-    ADD_DEFINITIONS(-DCOMM_EXPORTS)
-ENDIF (NOT WIN32)
+    add_definitions(-DCOMM_EXPORTS)
+endif()
 
-INCLUDE_DIRECTORIES(
+include_directories(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/actions
 ${VISIT_COMMON_INCLUDES}
@@ -128,14 +128,14 @@ ${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${GLEW_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+link_directories(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR})
 
 
-#*************************** The viewercore_ser library ******************************
-ADD_LIBRARY(viewercore_ser ${VIEWERCORE_SOURCES})
-SET_TARGET_PROPERTIES(viewercore_ser PROPERTIES HAS_CXX ON)
+#******************** The viewercore_ser library ******************************
+add_library(viewercore_ser ${VIEWERCORE_SOURCES})
+set_target_properties(viewercore_ser PROPERTIES HAS_CXX ON)
 
-TARGET_LINK_LIBRARIES(viewercore_ser
+target_link_libraries(viewercore_ser
 viewerrpc
 visitcommon
 avtdbatts
@@ -149,35 +149,36 @@ avtwriter_ser
 ${CMAKE_THREAD_LIBS}
 )
 
-IF(MESA_FOUND)
-    TARGET_LINK_LIBRARIES(viewercore_ser visit_vtk_osmesa)
-ENDIF(MESA_FOUND)
+if(HAVE_OSMESA OR HAVE_EGL)
+    target_link_libraries(viewercore_ser visit_vtk_offscreen)
+endif()
 
-#*************************** The viewercore_par library ******************************
+#******************** The viewercore_par library ******************************
 # We build a _par version of viewercore because we can't allow it to have any _ser
 # library dependencies when we use it in the simV2 parallel runtime.
-IF(VISIT_PARALLEL)
-ADD_PARALLEL_LIBRARY(viewercore_par ${VIEWERCORE_SOURCES})
-SET_TARGET_PROPERTIES(viewercore_par PROPERTIES HAS_CXX ON)
+if(VISIT_PARALLEL)
+    ADD_PARALLEL_LIBRARY(viewercore_par ${VIEWERCORE_SOURCES})
+    set_target_properties(viewercore_par PROPERTIES HAS_CXX ON)
 
-TARGET_LINK_LIBRARIES(viewercore_par
-viewerrpc
-visitcommon
-avtdbatts
-avtview
-avtmath
-avtpipeline_par
-avtplotter_par
-avtfilters_par
-avtviswindow_par
-avtwriter_par
-${CMAKE_THREAD_LIBS}
-)
+    target_link_libraries(viewercore_par
+    viewerrpc
+    visitcommon
+    avtdbatts
+    avtview
+    avtmath
+    avtpipeline_par
+    avtplotter_par
+    avtfilters_par
+    avtviswindow_par
+    avtwriter_par
+    ${CMAKE_THREAD_LIBS}
+    )
 
-IF(MESA_FOUND)
-    TARGET_LINK_LIBRARIES(viewercore_par visit_vtk_osmesa)
-ENDIF(MESA_FOUND)
-SET(VIEWERCORE_PAR viewercore_par)
-ENDIF(VISIT_PARALLEL)
+    if(HAVE_OSMESA OR HAVE_EGL)
+        target_link_libraries(viewercore_par visit_vtk_offscreen)
+    endif()
+
+    set(VIEWERCORE_PAR viewercore_par)
+endif(VISIT_PARALLEL)
 
 VISIT_INSTALL_TARGETS(viewercore_ser ${VIEWERCORE_PAR})

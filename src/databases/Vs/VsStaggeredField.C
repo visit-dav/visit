@@ -11,8 +11,9 @@
 #include <valarray>
 
 template<class TYPE>
-VsStaggeredField<TYPE>::VsStaggeredField(size_t subRes) {
-
+VsStaggeredField<TYPE>::VsStaggeredField(size_t subRes) :
+  oriCellDims(), oriCellDimProd(), newCellDims(), newCellDimProd()
+{
   this->subRes = subRes;
   this->oriDataPtr = 0;
   this->totNumOriCells = 0;
@@ -25,11 +26,6 @@ VsStaggeredField<TYPE>::VsStaggeredField(size_t subRes) {
   this->indexComp = -1;
   this->indexOrder = VsSchema::compMajorCKey;
   this->centering = VsSchema::nodalCenteringKey;
-
-  // this->oriCellDims.clear();
-  // this->oriCellDimProd.clear();
-  // this->newCellDims.clear();
-  // this->newCellDimProd.clear();
 }
 
 template<class TYPE>

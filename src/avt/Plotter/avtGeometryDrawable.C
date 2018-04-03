@@ -43,11 +43,12 @@
 #include <avtGeometryDrawable.h>
 
 #include <vtkActor.h>
-#include <vtkDataObjectCollection.h>
+#include <vtkActor2D.h>
+#include <vtkProp.h>
 #include <vtkProperty.h>
 #include <vtkRenderer.h>
 
-#include <avtMapper.h>
+#include <avtMapperBase.h>
 #include <avtTransparencyActor.h>
 
 #include <ColorAttribute.h>
@@ -59,28 +60,64 @@
 //  Method: avtGeometryDrawable constructor
 //
 //  Arguments:
-//      nA       The number of actors in a.
+//      nA       The number of actors.
 //      a        A list of actors.
 //
 //  Programmer:  Hank Childs
 //  Creation:    December 21, 2000
-// 
+//
 //  Modifications:
 //    Kathleen Bonnell, Thu Mar 15 10:51:59 PST 2001
 //    Added member actorsVisibility, used to store visibility of passed
 //    actors, so that this visibility value can be restored to individual
-//    actors in the VisbilityOn method. 
+//    actors in the VisbilityOn method.
 //
-//    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004 
+//    Kathleen Bonnell, Tue Oct 12 16:18:37 PDT 2004
 //    Set all actor's Pickable flag to OFF by default.  Can be turned on/off
-//    as need by MakePickable and MakeUnPickable. 
+//    as need by MakePickable and MakeUnPickable.
 //
 // ****************************************************************************
 
 avtGeometryDrawable::avtGeometryDrawable(int nA, vtkActor **a)
 {
     nActors = nA;
-    actors  = new vtkActor*[nActors];
+    actors  = new vtkProp*[nActors];
+    actorsVisibility  = new int[nActors];
+  
+    for (int i = 0 ; i < nActors ; i++)
+    {
+        actors[i] = a[i];
+        if (actors[i] != NULL)
+        {
+            actors[i]->Register(NULL);
+            actorsVisibility[i] = actors[i]->GetVisibility();
+            actors[i]->PickableOff();
+        }
+    }
+
+    renderer = NULL;
+    mapper = NULL;
+}
+
+
+// ****************************************************************************
+//  Method: avtGeometryDrawable constructor
+//
+//  Arguments:
+//      nA       The number of 2D actors.
+//      a        A list of 2D actors.
+//
+//  Programmer:  Kathleen Biagas
+//  Creation:    April 13, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtGeometryDrawable::avtGeometryDrawable(int nA, vtkActor2D **a)
+{
+    nActors = nA;
+    actors  = new vtkProp*[nActors];
     actorsVisibility  = new int[nActors];
   
     for (int i = 0 ; i < nActors ; i++)
@@ -145,7 +182,7 @@ avtGeometryDrawable::~avtGeometryDrawable()
 // ****************************************************************************
 
 void
-avtGeometryDrawable::SetMapper(avtMapper *m)
+avtGeometryDrawable::SetMapper(avtMapperBase *m)
 {
     mapper = m;
 }
@@ -249,7 +286,7 @@ avtGeometryDrawable::Remove(vtkRenderer *ren)
 //  Modifications:
 //    Kathleen Bonnell, Thu Mar 15 10:51:59 PST 2001
 //    Changed to set visibility of individual actors based on stored
-//    visibility created in constructor.  
+//    visibility created in constructor.
 //
 // ****************************************************************************
 
@@ -304,13 +341,17 @@ avtGeometryDrawable::VisibilityOff(void)
 //  Method: avtGeometryDrawable::ShiftByVector
 //
 //  Purpose:
-//      Shifts the drawable by a vector. 
+//      Shifts the drawable by a vector.
 //
 //  Arguments:
 //      vec    The vector to shift by.
 //
 //  Programmer: Hank Childs
 //  Creation:   March 12, 2001
+//
+//  Modifications:
+//    Kathleen Biagas, Thu Apr 13 10:27:54 PDT 2017
+//    Only set position for vtkActor (not vtkActor2D).
 //
 // ****************************************************************************
 
@@ -319,14 +360,14 @@ avtGeometryDrawable::ShiftByVector(const double vec[3])
 {
     for (int i = 0 ; i < nActors ; i++)
     {
-        if (actors[i] != NULL)
+        if (actors[i] != NULL && actors[i]->IsA("vtkActor"))
         {
             // VTK is ridiculous -- needs const.
             double v[3];
             v[0] = vec[0];
             v[1] = vec[1];
             v[2] = vec[2];
-            actors[i]->SetPosition(v);
+            ((vtkActor*)actors[i])->SetPosition(v);
         }
     }
 }
@@ -341,8 +382,12 @@ avtGeometryDrawable::ShiftByVector(const double vec[3])
 //  Arguments:
 //      vec    The vector to scale by.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 12, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 12, 2002
+//
+//  Modifications:
+//    Kathleen Biagas, Thu Apr 13 10:27:54 PDT 2017
+//    Only set scale for vtkActor (not vtkActor2D).
 //
 // ****************************************************************************
 
@@ -351,14 +396,14 @@ avtGeometryDrawable::ScaleByVector(const double vec[3])
 {
     for (int i = 0 ; i < nActors ; i++)
     {
-        if (actors[i] != NULL)
+        if (actors[i] != NULL && actors[i]->IsA("vtkActor"))
         {
             // VTK is ridiculous -- needs const.
             double v[3];
             v[0] = vec[0];
             v[1] = vec[1];
             v[2] = vec[2];
-            actors[i]->SetScale(v);
+            ((vtkActor*)actors[i])->SetScale(v);
         }
     }
 }
@@ -517,12 +562,12 @@ avtGeometryDrawable::SetAmbientCoefficient(const double amb)
 //  Creation:   Mon Sep 23 15:58:48 PST 2002
 //
 //  Modifications:
-//    Kathleen Bonnell, Sat Oct 19 15:07:04 PDT 2002 
+//    Kathleen Bonnell, Sat Oct 19 15:07:04 PDT 2002
 //    Disable lighting for Wireframe and Points representation.
 //
-//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004 
+//    Kathleen Bonnell, Thu Sep  2 11:44:09 PDT 2004
 //    Moved logic into avtMapper so that derived mappers may have a chance
-//    to override the behavior. 
+//    to override the behavior.
 //
 // ****************************************************************************
 
@@ -551,12 +596,13 @@ avtGeometryDrawable::SetSurfaceRepresentation(int rep)
 //  Modifications:
 //    Kathleen Bonnell, Thu Sep  2 08:52:56 PDT 2004
 //    Moved logic into avtMapper so that derived mappers may have a chance
-//    to override the behavior. 
+//    to override the behavior.
 //
 // ****************************************************************************
 
 void
-avtGeometryDrawable::SetSpecularProperties(bool flag, double coeff, double power,
+avtGeometryDrawable::SetSpecularProperties(bool flag, double coeff,
+                                           double power,
                                            const ColorAttribute &color)
 {
     if (mapper != NULL)
@@ -566,7 +612,7 @@ avtGeometryDrawable::SetSpecularProperties(bool flag, double coeff, double power
 // ****************************************************************************
 // Method: avtGeometryDrawable::SetColorTexturingFlag
 //
-// Purpose: 
+// Purpose:
 //   Sets the mapper's color texturing flag.
 //
 // Arguments:
@@ -576,7 +622,7 @@ avtGeometryDrawable::SetSpecularProperties(bool flag, double coeff, double power
 // Creation:   Mon Sep 18 11:24:19 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -586,38 +632,15 @@ avtGeometryDrawable::SetColorTexturingFlag(bool val)
         mapper->SetColorTexturingFlag(val);
 }
 
-// ****************************************************************************
-// Method: avtGeometryDrawable::SetImmediateModeRendering
-//
-// Purpose: 
-//   Sets the rendering mode for the mappers.
-//
-// Arguments:
-//   val : The new immediate rendering mode.
-//
-// Programmer: Brad Whitlock
-// Creation:   Mon Sep 23 16:47:20 PST 2002
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-avtGeometryDrawable::SetImmediateModeRendering(bool val)
-{
-    if(mapper != NULL && mapper->GetImmediateModeRendering() != val)
-        mapper->SetImmediateModeRendering(val);
-}
-
 
 // ****************************************************************************
 //  Method: avtGeometryDrawable::MakePickable
 //
 //  Purpose:
-//    Turns on the pickability of the vtkActors. 
+//    Turns on the pickability of the vtkActors.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 27, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 27, 2004
 //
 // ****************************************************************************
 
@@ -638,10 +661,10 @@ avtGeometryDrawable::MakePickable()
 //  Method: avtGeometryDrawable::MakeUnPickable
 //
 //  Purpose:
-//    Turns off the pickability of the vtkActors. 
+//    Turns off the pickability of the vtkActors.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 27, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 27, 2004
 //
 // ****************************************************************************
 
@@ -664,8 +687,12 @@ avtGeometryDrawable::MakeUnPickable()
 //  Purpose:
 //    Retrieves the z-position of the vtk actor.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 27, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 27, 2005
+//
+//  Modifications:
+//    Kathleen Biagas, Thu Apr 13 10:27:54 PDT 2017
+//    Only get position for vtkActor (not vtkActor2D).
 //
 // ****************************************************************************
 
@@ -675,10 +702,10 @@ avtGeometryDrawable::GetZPosition()
     double zpos = 0.;
     for (int i = 0 ; i < nActors ; i++)
     {
-        if (actors[i] != NULL)
+        if (actors[i] != NULL && actors[i]->IsA("vtkActor"))
         {
-            zpos = actors[i]->GetPosition()[2];
-            break; 
+            zpos = static_cast<vtkActor*>(actors[i])->GetPosition()[2];
+            break;
         }
     }
     return zpos;
@@ -687,14 +714,14 @@ avtGeometryDrawable::GetZPosition()
 // ****************************************************************************
 // Method: avtGeometryDrawable::ReducedDetailModeOn
 //
-// Purpose: 
+// Purpose:
 //   Turn on reduced detail mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 22 11:30:08 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -707,14 +734,14 @@ avtGeometryDrawable::ReducedDetailModeOn()
 // ****************************************************************************
 // Method: avtGeometryDrawable::ReducedDetailModeOff
 //
-// Purpose: 
+// Purpose:
 //   Turn off reduced detail mode.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 22 11:30:08 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool

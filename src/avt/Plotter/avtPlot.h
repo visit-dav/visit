@@ -51,10 +51,9 @@
 #include <avtDataObjectReader.h>
 #include <avtDataObjectWriter.h>
 #include <avtDecorationsMapper.h>
-#include <avtDrawer.h>
 #include <avtImage.h>
 #include <avtLegend.h>
-#include <avtMapper.h>
+#include <avtMapperBase.h>
 #include <avtBehavior.h>
 #include <avtDatasetToDatasetFilter.h>
 
@@ -277,6 +276,9 @@ class     MapNode;
 //    Kathleen Biagas, Mon Apr 21 11:30:37 PDT 2014
 //    Removed no longer used CombinedExecute and protected Execute methods.
 //
+//    Kathleen Biagas, Thu Apr 13 10:42:01 PDT 2017
+//    Make GetMapper return an avtMapperBase.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPlot
@@ -333,7 +335,7 @@ class PLOTTER_API avtPlot
     bool                       RequiresReExecuteForQuery(const bool, const bool); 
     avtDataObject_p            GetIntermediateDataObject(void) 
                                   { return intermediateDataObject; };
-    virtual avtMapper         *GetMapper(void) = 0;
+    virtual avtMapperBase     *GetMapper(void) = 0;
     virtual bool               CanCacheWriterExternally(void) { return true; } 
     virtual bool               ManagesOwnTransparency(void) { return false; };
     virtual const AttributeSubject 
@@ -362,7 +364,6 @@ class PLOTTER_API avtPlot
     int                        topologicalDim;
     avtActor_p                 actor;
     avtBehavior_p              behavior;
-    avtDrawer                 *drawer;
     avtCondenseDatasetFilter  *condenseDatasetFilter;
     avtDatasetToDatasetFilter *ghostZoneAndFacelistFilter;
     avtCompactTreeFilter      *compactTreeFilter;

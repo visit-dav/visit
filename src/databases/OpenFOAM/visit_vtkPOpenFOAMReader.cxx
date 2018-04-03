@@ -43,7 +43,6 @@ visit_vtkPOpenFOAMReader::visit_vtkPOpenFOAMReader()
   this->ProcessId = 0;
   this->CaseType = RECONSTRUCTED_CASE;
   this->MTimeOld = 0;
-  this->MaximumNumberOfPieces = 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -57,8 +56,6 @@ void visit_vtkPOpenFOAMReader::PrintSelf(ostream &os, vtkIndent indent)
   this->Superclass::PrintSelf(os, indent);
   os << indent << "Case Type: " << this->CaseType << endl;
   os << indent << "MTimeOld: " << this->MTimeOld << endl;
-  os << indent << "Maximum Number of Pieces: " << this->MaximumNumberOfPieces
-      << endl;
   os << indent << "Number of Processes: " << this->NumProcesses << endl;
   os << indent << "Process Id: " << this->ProcessId << endl;
 }
@@ -242,8 +239,6 @@ int visit_vtkPOpenFOAMReader::RequestInformation(vtkInformation *request,
       timeValues->Delete();
       }
 
-    this->MaximumNumberOfPieces = procNames->GetNumberOfTuples();
-
     // create reader instances for other processor subdirectories
     // skip processor0 since it's already created
     for (int procI = (this->ProcessId ? this->ProcessId : this->NumProcesses); procI
@@ -271,11 +266,6 @@ int visit_vtkPOpenFOAMReader::RequestInformation(vtkInformation *request,
     this->GatherMetaData();
     this->Superclass::Refresh = false;
     }
-
-  // it seems MAXIMUM_NUMBER_OF_PIECES must be returned every time
-  // RequestInformation() is called
-  outputVector->GetInformationObject(0)->Set(vtkStreamingDemandDrivenPipeline::MAXIMUM_NUMBER_OF_PIECES(),
-      this->MaximumNumberOfPieces);
 
   return 1;
 }

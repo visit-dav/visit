@@ -166,7 +166,7 @@ avtMultiCurvePlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtMultiCurvePlot::GetMapper(void)
 {
     return levelsMapper;

@@ -163,7 +163,7 @@ avtWellBorePlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtWellBorePlot::GetMapper(void)
 {
     return levelsMapper;

@@ -40,8 +40,9 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <snprintf.h>
-#include <ColorAttribute.h>
-#include <ColorAttribute.h>
+#include <PyColorAttribute.h>
+#include <PyFontAttributes.h>
+#include <PyFontAttributes.h>
 
 // ****************************************************************************
 // Module: PyLabelAttributes
@@ -138,26 +139,16 @@ PyLabelAttributes_ToString(const LabelAttributes *atts, const char *prefix)
 
     SNPRINTF(tmpStr, 1000, "%snumberOfLabels = %d\n", prefix, atts->GetNumberOfLabels());
     str += tmpStr;
-    if(atts->GetSpecifyTextColor1())
-        SNPRINTF(tmpStr, 1000, "%sspecifyTextColor1 = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sspecifyTextColor1 = 0\n", prefix);
-    str += tmpStr;
-    const unsigned char *textColor1 = atts->GetTextColor1().GetColor();
-    SNPRINTF(tmpStr, 1000, "%stextColor1 = (%d, %d, %d, %d)\n", prefix, int(textColor1[0]), int(textColor1[1]), int(textColor1[2]), int(textColor1[3]));
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stextHeight1 = %g\n", prefix, atts->GetTextHeight1());
-    str += tmpStr;
-    if(atts->GetSpecifyTextColor2())
-        SNPRINTF(tmpStr, 1000, "%sspecifyTextColor2 = 1\n", prefix);
-    else
-        SNPRINTF(tmpStr, 1000, "%sspecifyTextColor2 = 0\n", prefix);
-    str += tmpStr;
-    const unsigned char *textColor2 = atts->GetTextColor2().GetColor();
-    SNPRINTF(tmpStr, 1000, "%stextColor2 = (%d, %d, %d, %d)\n", prefix, int(textColor2[0]), int(textColor2[1]), int(textColor2[2]), int(textColor2[3]));
-    str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%stextHeight2 = %g\n", prefix, atts->GetTextHeight2());
-    str += tmpStr;
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "textFont1.";
+        str += PyFontAttributes_ToString(&atts->GetTextFont1(), objPrefix.c_str());
+    }
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "textFont2.";
+        str += PyFontAttributes_ToString(&atts->GetTextFont2(), objPrefix.c_str());
+    }
     const char *horizontalJustification_names = "HCenter, Left, Right";
     switch (atts->GetHorizontalJustification())
     {
@@ -416,252 +407,74 @@ LabelAttributes_GetNumberOfLabels(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-LabelAttributes_SetSpecifyTextColor1(PyObject *self, PyObject *args)
+LabelAttributes_SetTextFont1(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
-
-    // Set the specifyTextColor1 in the object.
-    obj->data->SetSpecifyTextColor1(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LabelAttributes_GetSpecifyTextColor1(PyObject *self, PyObject *args)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetSpecifyTextColor1()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-LabelAttributes_SetTextColor1(PyObject *self, PyObject *args)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
-
-    int c[4];
-    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    if(!PyFontAttributes_Check(newValue))
     {
-        c[3] = 255;
-        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
-        {
-            double dr, dg, db, da;
-            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
-            {
-                c[0] = int(dr);
-                c[1] = int(dg);
-                c[2] = int(db);
-                c[3] = int(da);
-            }
-            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
-            {
-                c[0] = int(dr);
-                c[1] = int(dg);
-                c[2] = int(db);
-                c[3] = 255;
-            }
-            else
-            {
-                PyObject *tuple = NULL;
-                if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return NULL;
-
-                if(!PyTuple_Check(tuple))
-                    return NULL;
-
-                // Make sure that the tuple is the right size.
-                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return NULL;
-
-                // Make sure that all elements in the tuple are ints.
-                for(int i = 0; i < PyTuple_Size(tuple); ++i)
-                {
-                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                    if(PyInt_Check(item))
-                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
-                    else if(PyFloat_Check(item))
-                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
-                    else
-                        return NULL;
-                }
-            }
-        }
-        PyErr_Clear();
+        fprintf(stderr, "The textFont1 field can only be set with FontAttributes objects.\n");
+        return NULL;
     }
 
-    // Set the textColor1 in the object.
-    ColorAttribute ca(c[0], c[1], c[2], c[3]);
-    obj->data->SetTextColor1(ca);
+    obj->data->SetTextFont1(*PyFontAttributes_FromPyObject(newValue));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LabelAttributes_GetTextColor1(PyObject *self, PyObject *args)
+LabelAttributes_GetTextFont1(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the textColor1.
-    PyObject *retval = PyTuple_New(4);
-    const unsigned char *textColor1 = obj->data->GetTextColor1().GetColor();
-    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(textColor1[0])));
-    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(textColor1[1])));
-    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(textColor1[2])));
-    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(textColor1[3])));
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PyFontAttributes_Wrap(&obj->data->GetTextFont1());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyFontAttributes_SetParent(retval, self);
+
     return retval;
 }
 
 /*static*/ PyObject *
-LabelAttributes_SetTextHeight1(PyObject *self, PyObject *args)
+LabelAttributes_SetTextFont2(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
         return NULL;
-
-    // Set the textHeight1 in the object.
-    obj->data->SetTextHeight1(fval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LabelAttributes_GetTextHeight1(PyObject *self, PyObject *args)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetTextHeight1()));
-    return retval;
-}
-
-/*static*/ PyObject *
-LabelAttributes_SetSpecifyTextColor2(PyObject *self, PyObject *args)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the specifyTextColor2 in the object.
-    obj->data->SetSpecifyTextColor2(ival != 0);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LabelAttributes_GetSpecifyTextColor2(PyObject *self, PyObject *args)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(obj->data->GetSpecifyTextColor2()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-LabelAttributes_SetTextColor2(PyObject *self, PyObject *args)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
-
-    int c[4];
-    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    if(!PyFontAttributes_Check(newValue))
     {
-        c[3] = 255;
-        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
-        {
-            double dr, dg, db, da;
-            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
-            {
-                c[0] = int(dr);
-                c[1] = int(dg);
-                c[2] = int(db);
-                c[3] = int(da);
-            }
-            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
-            {
-                c[0] = int(dr);
-                c[1] = int(dg);
-                c[2] = int(db);
-                c[3] = 255;
-            }
-            else
-            {
-                PyObject *tuple = NULL;
-                if(!PyArg_ParseTuple(args, "O", &tuple))
-                    return NULL;
-
-                if(!PyTuple_Check(tuple))
-                    return NULL;
-
-                // Make sure that the tuple is the right size.
-                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
-                    return NULL;
-
-                // Make sure that all elements in the tuple are ints.
-                for(int i = 0; i < PyTuple_Size(tuple); ++i)
-                {
-                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
-                    if(PyInt_Check(item))
-                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
-                    else if(PyFloat_Check(item))
-                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
-                    else
-                        return NULL;
-                }
-            }
-        }
-        PyErr_Clear();
+        fprintf(stderr, "The textFont2 field can only be set with FontAttributes objects.\n");
+        return NULL;
     }
 
-    // Set the textColor2 in the object.
-    ColorAttribute ca(c[0], c[1], c[2], c[3]);
-    obj->data->SetTextColor2(ca);
+    obj->data->SetTextFont2(*PyFontAttributes_FromPyObject(newValue));
 
     Py_INCREF(Py_None);
     return Py_None;
 }
 
 /*static*/ PyObject *
-LabelAttributes_GetTextColor2(PyObject *self, PyObject *args)
+LabelAttributes_GetTextFont2(PyObject *self, PyObject *args)
 {
     LabelAttributesObject *obj = (LabelAttributesObject *)self;
-    // Allocate a tuple the with enough entries to hold the textColor2.
-    PyObject *retval = PyTuple_New(4);
-    const unsigned char *textColor2 = obj->data->GetTextColor2().GetColor();
-    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(textColor2[0])));
-    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(textColor2[1])));
-    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(textColor2[2])));
-    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(textColor2[3])));
-    return retval;
-}
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
 
-/*static*/ PyObject *
-LabelAttributes_SetTextHeight2(PyObject *self, PyObject *args)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
+    PyObject *retval = PyFontAttributes_Wrap(&obj->data->GetTextFont2());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyFontAttributes_SetParent(retval, self);
 
-    float fval;
-    if(!PyArg_ParseTuple(args, "f", &fval))
-        return NULL;
-
-    // Set the textHeight2 in the object.
-    obj->data->SetTextHeight2(fval);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-LabelAttributes_GetTextHeight2(PyObject *self, PyObject *args)
-{
-    LabelAttributesObject *obj = (LabelAttributesObject *)self;
-    PyObject *retval = PyFloat_FromDouble(double(obj->data->GetTextHeight2()));
     return retval;
 }
 
@@ -806,18 +619,10 @@ PyMethodDef PyLabelAttributes_methods[LABELATTRIBUTES_NMETH] = {
     {"GetLabelDisplayFormat", LabelAttributes_GetLabelDisplayFormat, METH_VARARGS},
     {"SetNumberOfLabels", LabelAttributes_SetNumberOfLabels, METH_VARARGS},
     {"GetNumberOfLabels", LabelAttributes_GetNumberOfLabels, METH_VARARGS},
-    {"SetSpecifyTextColor1", LabelAttributes_SetSpecifyTextColor1, METH_VARARGS},
-    {"GetSpecifyTextColor1", LabelAttributes_GetSpecifyTextColor1, METH_VARARGS},
-    {"SetTextColor1", LabelAttributes_SetTextColor1, METH_VARARGS},
-    {"GetTextColor1", LabelAttributes_GetTextColor1, METH_VARARGS},
-    {"SetTextHeight1", LabelAttributes_SetTextHeight1, METH_VARARGS},
-    {"GetTextHeight1", LabelAttributes_GetTextHeight1, METH_VARARGS},
-    {"SetSpecifyTextColor2", LabelAttributes_SetSpecifyTextColor2, METH_VARARGS},
-    {"GetSpecifyTextColor2", LabelAttributes_GetSpecifyTextColor2, METH_VARARGS},
-    {"SetTextColor2", LabelAttributes_SetTextColor2, METH_VARARGS},
-    {"GetTextColor2", LabelAttributes_GetTextColor2, METH_VARARGS},
-    {"SetTextHeight2", LabelAttributes_SetTextHeight2, METH_VARARGS},
-    {"GetTextHeight2", LabelAttributes_GetTextHeight2, METH_VARARGS},
+    {"SetTextFont1", LabelAttributes_SetTextFont1, METH_VARARGS},
+    {"GetTextFont1", LabelAttributes_GetTextFont1, METH_VARARGS},
+    {"SetTextFont2", LabelAttributes_SetTextFont2, METH_VARARGS},
+    {"GetTextFont2", LabelAttributes_GetTextFont2, METH_VARARGS},
     {"SetHorizontalJustification", LabelAttributes_SetHorizontalJustification, METH_VARARGS},
     {"GetHorizontalJustification", LabelAttributes_GetHorizontalJustification, METH_VARARGS},
     {"SetVerticalJustification", LabelAttributes_SetVerticalJustification, METH_VARARGS},
@@ -882,18 +687,10 @@ PyLabelAttributes_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "numberOfLabels") == 0)
         return LabelAttributes_GetNumberOfLabels(self, NULL);
-    if(strcmp(name, "specifyTextColor1") == 0)
-        return LabelAttributes_GetSpecifyTextColor1(self, NULL);
-    if(strcmp(name, "textColor1") == 0)
-        return LabelAttributes_GetTextColor1(self, NULL);
-    if(strcmp(name, "textHeight1") == 0)
-        return LabelAttributes_GetTextHeight1(self, NULL);
-    if(strcmp(name, "specifyTextColor2") == 0)
-        return LabelAttributes_GetSpecifyTextColor2(self, NULL);
-    if(strcmp(name, "textColor2") == 0)
-        return LabelAttributes_GetTextColor2(self, NULL);
-    if(strcmp(name, "textHeight2") == 0)
-        return LabelAttributes_GetTextHeight2(self, NULL);
+    if(strcmp(name, "textFont1") == 0)
+        return LabelAttributes_GetTextFont1(self, NULL);
+    if(strcmp(name, "textFont2") == 0)
+        return LabelAttributes_GetTextFont2(self, NULL);
     if(strcmp(name, "horizontalJustification") == 0)
         return LabelAttributes_GetHorizontalJustification(self, NULL);
     if(strcmp(name, "HCenter") == 0)
@@ -951,18 +748,10 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = LabelAttributes_SetLabelDisplayFormat(self, tuple);
     else if(strcmp(name, "numberOfLabels") == 0)
         obj = LabelAttributes_SetNumberOfLabels(self, tuple);
-    else if(strcmp(name, "specifyTextColor1") == 0)
-        obj = LabelAttributes_SetSpecifyTextColor1(self, tuple);
-    else if(strcmp(name, "textColor1") == 0)
-        obj = LabelAttributes_SetTextColor1(self, tuple);
-    else if(strcmp(name, "textHeight1") == 0)
-        obj = LabelAttributes_SetTextHeight1(self, tuple);
-    else if(strcmp(name, "specifyTextColor2") == 0)
-        obj = LabelAttributes_SetSpecifyTextColor2(self, tuple);
-    else if(strcmp(name, "textColor2") == 0)
-        obj = LabelAttributes_SetTextColor2(self, tuple);
-    else if(strcmp(name, "textHeight2") == 0)
-        obj = LabelAttributes_SetTextHeight2(self, tuple);
+    else if(strcmp(name, "textFont1") == 0)
+        obj = LabelAttributes_SetTextFont1(self, tuple);
+    else if(strcmp(name, "textFont2") == 0)
+        obj = LabelAttributes_SetTextFont2(self, tuple);
     else if(strcmp(name, "horizontalJustification") == 0)
         obj = LabelAttributes_SetHorizontalJustification(self, tuple);
     else if(strcmp(name, "verticalJustification") == 0)
@@ -972,6 +761,138 @@ PyLabelAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "formatTemplate") == 0)
         obj = LabelAttributes_SetFormatTemplate(self, tuple);
 
+    // Try to handle legacy fields
+    if(obj == NULL)
+    {
+#define GETCOLOR if(!PyArg_ParseTuple(tuple, "iiii", &c[0], &c[1], &c[2], &c[3])) \
+    { \
+        c[3] = 255; \
+        if(!PyArg_ParseTuple(tuple, "iii", &c[0], &c[1], &c[2])) \
+        { \
+            double dr, dg, db, da; \
+            if(PyArg_ParseTuple(tuple, "dddd", &dr, &dg, &db, &da)) \
+            { \
+                c[0] = int(dr); \
+                c[1] = int(dg); \
+                c[2] = int(db); \
+                c[3] = int(da); \
+            } \
+            else if(PyArg_ParseTuple(tuple, "ddd", &dr, &dg, &db)) \
+            { \
+                c[0] = int(dr); \
+                c[1] = int(dg); \
+                c[2] = int(db); \
+                c[3] = 255; \
+            } \
+            else \
+            { \
+                PyObject *obj = NULL; \
+                if(!PyArg_ParseTuple(tuple, "O", &obj)) \
+                    success = false; \
+                if(!PyTuple_Check(obj)) \
+                    success = false; \
+                if(PyTuple_Size(obj) < 3 || PyTuple_Size(obj) > 4) \
+                    success = false; \
+                for(int i = 0; i < PyTuple_Size(obj); ++i) \
+                { \
+                    PyObject *item = PyTuple_GET_ITEM(obj, i); \
+                    if(PyInt_Check(item)) \
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(obj, i))); \
+                    else if(PyFloat_Check(item)) \
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(obj, i))); \
+                    else \
+                        success = false; \
+                } \
+            } \
+        } \
+        PyErr_Clear(); \
+    }
+
+        LabelAttributesObject *LabelObj = (LabelAttributesObject *)self;
+        FontAttributes font1 = LabelObj->data->GetTextFont1();
+        FontAttributes font2 = LabelObj->data->GetTextFont2();
+        if(strcmp(name, "textHeight1") == 0)
+        {
+            double val;
+            if(!PyArg_ParseTuple(tuple, "d", &val))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            // Increase the value, new labels are smaller, we want
+            // a better approximation of the original size
+            font1.SetScale(val+0.02);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "textHeight2") == 0)
+        {
+            double val;
+            if(!PyArg_ParseTuple(tuple, "d", &val))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            // Increase the value, new labels are smaller, we want
+            // a better approximation of the original size
+            font2.SetScale(val+0.02);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "specifyTextColor1") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            font1.SetUseForegroundColor(ival == 0 ? 1: 0);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "specifyTextColor2") == 0)
+        {
+            int ival;
+            if(!PyArg_ParseTuple(tuple, "i", &ival))
+            {
+                Py_DECREF(tuple);
+                return -1;
+            }
+            font2.SetUseForegroundColor(ival == 0 ? 1: 0);
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "textColor1") == 0)
+        {
+            int c[4];
+            bool success = true;
+            GETCOLOR;
+            if (success)
+            {
+                font1.GetColor().SetRgba(c[0], c[1], c[2], c[3]);
+                Py_INCREF(Py_None);
+                obj = Py_None;
+            }
+        }
+        else if(strcmp(name, "textColor2") == 0)
+        {
+            int c[4];
+            bool success = true;
+            GETCOLOR;
+            if (success)
+            {
+                font2.GetColor().SetRgba(c[0], c[1], c[2], c[3]);
+                Py_INCREF(Py_None);
+                obj = Py_None;
+            }
+        }
+        if (obj != NULL)
+        {
+            LabelObj->data->SetTextFont1(font1);
+            LabelObj->data->SetTextFont2(font2);
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 

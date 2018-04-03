@@ -111,7 +111,7 @@
 
 // Since the Mac's tab bars don't have limits on their width, make the
 // window use just a single tab to display data on the Mac.
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
 #define SINGLE_TAB_WINDOW
 #endif
 
@@ -186,7 +186,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     QVBoxLayout *topLayout = new QVBoxLayout(top);
     topLayout->setSpacing(5);
     topLayout->setMargin(10);
-#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     QWidget *menuContainer = new QWidget(top);
     QHBoxLayout *menuLayout = new QHBoxLayout(menuContainer);
     topLayout->addWidget(menuContainer);
@@ -341,7 +341,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     // Do the main menu.
     //
     fileMenu = new QMenu(tr("&File"), this);
-#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     QPushButton *fileButton = new QPushButton(tr("&File"), menuContainer);
     menuLayout->addWidget(fileButton);
     fileButton->setMenu(fileMenu);
@@ -351,7 +351,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     fileMenu_SaveText = fileMenu->addAction(tr("Save as text . . ."), this, SLOT(saveAsText()), Qt::CTRL+Qt::Key_S);
 
     editMenu = new QMenu(tr("&Edit"), this);
-#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     QPushButton *editButton = new QPushButton(tr("&Edit"), menuContainer);
     menuLayout->addWidget(editButton);
     editButton->setMenu(editMenu);
@@ -364,7 +364,7 @@ SpreadsheetViewer::SpreadsheetViewer(ViewerPlot *p, QWidget *parent) :
     editMenu->addAction(tr("Select &None"), this, SLOT(selectNone()), Qt::CTRL+Qt::Key_N);
 
     operationsMenu = new QMenu(tr("&Operations"), this);
-#if defined(Q_WS_MAC) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     opButton = new QPushButton(tr("&Operations"), menuContainer);
     menuLayout->addWidget(opButton);
     opButton->setMenu(operationsMenu);
@@ -1807,7 +1807,7 @@ SpreadsheetViewer::updateMenuEnabledState(int tableIndex)
 
             fileMenu_SaveText->setEnabled(enabled);
             editMenu_Copy->setEnabled(enabled);
-#if !(defined(Q_WS_MAC) || defined(Q_OS_MAC))
+#if !defined(Q_OS_MAC)
             operationsMenu->setEnabled(enabled);
 #else
             opButton->setEnabled(enabled);

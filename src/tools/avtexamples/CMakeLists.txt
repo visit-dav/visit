@@ -79,10 +79,7 @@ ${VTK_INCLUDE_DIRS}
 )
 
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY}
-${MESA_LIBRARY_DIR}
-${GLEW_LIBRARY_DIR}
 ${EAVL_LIBRARY_DIR}
-${VTK_LIBRARY_DIR}
 ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 ${ICET_LIBRARY_DIR}
 )
@@ -103,11 +100,16 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB} 
 ${VTK_EXTRA_LIBS}
-${MESA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS} 
 ${ZLIB_LIB}
 )
+
+if(HAVE_OSMESA)
+    target_link_libraries(avtFilterExample ${OSMESA_LIBRARIES})
+elseif(HAVE_EGL)
+    target_link_libraries(avtFilterExample ${EGL_LIBRARIES})
+endif()
 
 ADD_EXECUTABLE(avtRenderExample avtRenderExample.C)
 VISIT_INSTALL_TARGETS(avtRenderExample)
@@ -129,11 +131,17 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB} 
 ${VTK_EXTRA_LIBS}
-${MESA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS} 
 ${ZLIB_LIB}
 )
+
+if(HAVE_OSMESA)
+    target_link_libraries(avtRenderExample ${OSMESA_LIBRARIES})
+elseif(HAVE_EGL)
+    target_link_libraries(avtRenderExample ${EGL_LIBRARIES})
+endif()
+
 
 ADD_EXECUTABLE(avtPluginExample avtPluginExample.C)
 VISIT_INSTALL_TARGETS(avtPluginExample)
@@ -151,11 +159,16 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB} 
 ${VTK_EXTRA_LIBS}
-${MESA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS} 
 ${ZLIB_LIB}
 )
+
+if(HAVE_OSMESA)
+    target_link_libraries(avtPluginExample ${OSMESA_LIBRARIES})
+elseif(HAVE_EGL)
+    target_link_libraries(avtPluginExample ${EGL_LIBRARIES})
+endif()
 
 ADD_EXECUTABLE(avtPlotPluginExample avtPlotPluginExample.C)
 VISIT_INSTALL_TARGETS(avtPlotPluginExample)
@@ -177,11 +190,16 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB} 
 ${VTK_EXTRA_LIBS}
-${MESA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS} 
 ${ZLIB_LIB}
 )
+
+if(HAVE_OSMESA)
+    target_link_libraries(avtPlotPluginExample ${OSMESA_LIBRARIES})
+elseif(HAVE_EGL)
+    target_link_libraries(avtPlotPluginExample ${EGL_LIBRARIES})
+endif()
 
 ADD_EXECUTABLE(networkManagerExample networkManagerExample.C)
 VISIT_INSTALL_TARGETS(networkManagerExample)
@@ -204,7 +222,6 @@ visitcommon
 visit_vtk
 ${ALL_THIRDPARTY_IO_LIB} 
 ${VTK_EXTRA_LIBS}
-${MESA_LIBS}
 ${OPENGL_LIBRARIES}
 ${CMAKE_THREAD_LIBS} 
 ${ZLIB_LIB}

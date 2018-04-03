@@ -1583,6 +1583,14 @@ ColorAttribute::SetRgb(int red, int green, int blue)
 }
 
 void
+ColorAttribute::GetRgb(double c[3]) const
+{
+    c[0] = double(color[0]) / 255.;
+    c[1] = double(color[1]) / 255.;
+    c[2] = double(color[2]) / 255.;
+}
+
+void
 ColorAttribute::SetRgba(int red, int green, int blue, int alpha)
 {
     color[0] = (unsigned char)red;

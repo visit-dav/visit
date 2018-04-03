@@ -100,7 +100,6 @@ QvisRenderingWindow::QvisRenderingWindow(const QString &caption,
     windowInfo = 0;
 
     objectRepresentation = 0;
-    dlMode = 0;
     stereoType = 0;
     scalrenActivationMode = 0;
     scalrenCompressMode = 0;
@@ -349,25 +348,6 @@ QvisRenderingWindow::CreateBasicPage()
     QRadioButton *points = new QRadioButton(tr("Points"), basicOptions);
     objectRepresentation->addButton(points, 2);
     basicLayout->addWidget(points, row, 3);
-    row++;
-
-    // Create the display list widgets.
-    QLabel *displayListLabel = new QLabel(tr("Use display lists"), basicOptions);
-    basicLayout->addWidget(displayListLabel, row, 0, 1, 3);
-    dlMode = new QButtonGroup(basicOptions);
-    connect(dlMode, SIGNAL(buttonClicked(int)),
-            this, SLOT(displayListModeChanged(int)));
-    row++;
-
-    QRadioButton *dl_auto = new QRadioButton(tr("Auto"), basicOptions);
-    dlMode->addButton(dl_auto, 0);
-    basicLayout->addWidget(dl_auto, row, 1);
-    QRadioButton *dl_always = new QRadioButton(tr("Always"), basicOptions);
-    dlMode->addButton(dl_always, 1);
-    basicLayout->addWidget(dl_always, row, 2);
-    QRadioButton *dl_never = new QRadioButton(tr("Never"), basicOptions);
-    dlMode->addButton(dl_never, 2);
-    basicLayout->addWidget(dl_never, row, 3);
     row++;
 
     // Create the stereo widgets.
@@ -848,18 +828,6 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             objectRepresentation->blockSignals(true);
             objectRepresentation->button(itmp)->setChecked(true);
             objectRepresentation->blockSignals(false);
-            break;
-        case RenderingAttributes::ID_displayListMode:
-            itmp = (int) renderAtts->GetDisplayListMode();
-            if (itmp == 2) // Auto for atts's enum type order
-                itmp2 = 0; // Order of Auto in window
-            else if (itmp == 1) // Always for atts' enum type order
-                itmp2 = 1; // Order of Always in window.
-            else           // Never for atts' enum type order
-                itmp2 = 2; // Order of Never in window.
-            dlMode->blockSignals(true);
-            dlMode->button(itmp2)->setChecked(true);
-            dlMode->blockSignals(false);
             break;
         case RenderingAttributes::ID_stereoRendering:
             stereoToggle->blockSignals(true);
@@ -1603,38 +1571,6 @@ QvisRenderingWindow::objectRepresentationChanged(int val)
 {
     renderAtts->SetGeometryRepresentation(
         (RenderingAttributes::GeometryRepresentation)val);
-    SetUpdate(false);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisRenderingWindow::displayListModeChanged
-//
-// Purpose: 
-//   This Qt slot function is called when we change the display list mode.
-//
-// Arguments:
-//   mode : The new display list mode.
-//
-// Programmer: Hank Childs
-// Creation:   May 9, 2004
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisRenderingWindow::displayListModeChanged(int mode)
-{
-    int itmp = 0;
-    if (mode == 0)      // Auto in Window
-        itmp = 2;       // Auto for atts' enum type
-    else if (mode == 1) // Always in window
-        itmp = 1;       // Always for atts' enum type
-    else                // Never in window.
-        itmp = 0;       // Never for atts' enum type
-
-    renderAtts->SetDisplayListMode((RenderingAttributes::TriStateMode)itmp);
     SetUpdate(false);
     Apply();
 }

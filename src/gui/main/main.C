@@ -107,12 +107,6 @@ GUIMain(int argc, char **argv)
 
         TRY
         {
-            // clear any static lib paths to avoid conflicts with
-            // loading qt after a make install or make package
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-            QStringList empty;
-            QCoreApplication::setLibraryPaths(empty); 
-#endif
             // Create the application instance.
             QvisGUIApplication VisitGUI(argc, argv);
             // Execute the GUI and return its return code.

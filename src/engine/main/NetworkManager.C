@@ -3403,9 +3403,6 @@ NetworkManager::SetWindowAttributes(EngineVisWinInfo &viswinInfo,
         if (viswin->GetSurfaceRepresentation() != renderAtts.GetGeometryRepresentation())
             viswin->SetSurfaceRepresentation(renderAtts.GetGeometryRepresentation());
 
-        // TODO -- why??
-        viswin->SetDisplayListMode(1);  // never
-
         // handle stereo rendering settings
         bool stereo = renderAtts.GetStereoRendering();
         int stereoType = renderAtts.GetStereoType();

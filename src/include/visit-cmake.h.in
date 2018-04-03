@@ -59,17 +59,11 @@
 /* Define if you have the FastQuery library. */
 #cmakedefine HAVE_LIBFASTQUERY
 
-/* Define if you have the GLEW library. */
-#cmakedefine HAVE_LIBGLEW
-
 /* Define to 1 if you have the `m' library (-lm). */
 #cmakedefine HAVE_LIBM 1
 
 /* Define if you have the MFEM library. */
 #cmakedefine HAVE_LIBMFEM
-
-/* Define if you have the R library. */
-#cmakedefine HAVE_LIB_R
 
 /* Define if you have the VTKm library. */
 #cmakedefine HAVE_LIBVTKM
@@ -85,6 +79,9 @@
 
 /* Define if you have the OSMESA */
 #cmakedefine HAVE_OSMESA
+
+/* Define if you have the EGL */
+#cmakedefine HAVE_EGL
 
 /*******************************************************************************
  * Header file checks

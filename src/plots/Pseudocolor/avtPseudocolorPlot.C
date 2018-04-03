@@ -55,6 +55,7 @@
 #include <avtStaggeringFilter.h>
 #include <avtShiftCenteringFilter.h>
 #include <avtVariableLegend.h>
+#include <avtPseudocolorMapper.h>
 #include <avtVariablePointGlyphMapper.h>
 
 #include <DebugStream.h>
@@ -62,6 +63,8 @@
 
 #include <string>
 #include <vector>
+
+using std::string;
 
 // ****************************************************************************
 //  Method: avtPseudocolorPlot constructor
@@ -104,6 +107,15 @@
 //    Added support for using per-color alpha values from a color table
 //    (instead of just a single global opacity for the whole plot).
 //
+//    Kathleen Biagas, Tue Aug 23 11:25:34 PDT 2016
+//    Add VariableMapper as points and surfaces no longer handled by the
+//    same mapper.
+//
+//    Kathleen Biagas, Wed Aug 24 15:44:12 PDT 2016
+//    Changed use of avtVariableMapper to avtPseudocolorMapper, which utilizes
+//    a special vtk mapper under the covers allowing for rendering multiple
+//    Representations (surface, wireframe, points) at the same time.
+//
 // ****************************************************************************
 
 avtPseudocolorPlot::avtPseudocolorPlot()
@@ -111,6 +123,7 @@ avtPseudocolorPlot::avtPseudocolorPlot()
     varLegend = new avtVariableLegend;
     varLegend->SetTitle("Pseudocolor");
     glyphMapper = new avtVariablePointGlyphMapper;
+    mapper      = new avtPseudocolorMapper;
 
     colorsInitialized = false;
     topoDim = 3;
@@ -207,6 +220,11 @@ avtPseudocolorPlot::~avtPseudocolorPlot()
         delete avtLUT;
         avtLUT = NULL;
     }
+    if (mapper != NULL)
+    {
+        delete mapper;
+        mapper = NULL;
+    }
     if (glyphMapper != NULL)
     {
         delete glyphMapper;
@@ -254,10 +272,17 @@ avtPseudocolorPlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtPseudocolorPlot::GetMapper(void)
 {
-    return glyphMapper;
+    if (topologicalDim != 0)
+    {
+        return mapper;
+    }
+    else 
+    {
+        return glyphMapper;
+    }
 }
 
 
@@ -530,6 +555,7 @@ avtPseudocolorPlot::ApplyRenderingTransformation(avtDataObject_p input)
     return dob;
 }
 
+
 // ****************************************************************************
 //  Method: avtPseudocolorPlot::CustomizeBehavior
 //
@@ -729,16 +755,21 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
         SetColorTable(atts.GetColorTableName().c_str());
     }
     else
+    {
       SetOpacityFromAtts();
+      // SetColorTable also calls SetScaling, so only call if not
+      // calling SetColorTable
+      SetScaling(atts.GetScaling(), atts.GetSkewFactor());
+    }
 
     SetLighting(atts.GetLightingFlag());
     SetLegend(atts.GetLegendFlag());
 
-    SetScaling(atts.GetScaling(), atts.GetSkewFactor());
     SetLimitsMode(atts.GetLimitsMode());
 
-    glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
+    mapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
+    mapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
+
     glyphMapper->SetScale(atts.GetPointSize());
 
     // ARS - FIX ME  - FIX ME  - FIX ME  - FIX ME  - FIX ME
@@ -797,18 +828,22 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
 
     if (varname != NULL)
     {
-        glyphMapper->ColorByScalarOn(std::string(varname));
+        glyphMapper->ColorByScalarOn(string(varname));
     }
 
-    glyphMapper->SetDrawSurfaces(atts.GetRenderSurfaces());
-    glyphMapper->SetDrawWireframe(atts.GetRenderWireframe());
-    glyphMapper->SetWireframeColor(atts.GetWireframeColor().Red()/255.,
-                                   atts.GetWireframeColor().Green()/255.,
-                                   atts.GetWireframeColor().Blue()/255.);
-    glyphMapper->SetDrawPoints(atts.GetRenderPoints());
-    glyphMapper->SetPointsColor(atts.GetPointColor().Red()/255.,
-                                atts.GetPointColor().Green()/255.,
-                                atts.GetPointColor().Blue()/255.);
+    mapper->SetDrawSurface(atts.GetRenderSurfaces());
+    mapper->SetDrawWireframe(atts.GetRenderWireframe());
+    mapper->SetDrawPoints(atts.GetRenderPoints());
+
+    double rgb[3];
+    rgb[0] = atts.GetWireframeColor().Red()/255.;
+    rgb[1] = atts.GetWireframeColor().Green()/255.;
+    rgb[2] = atts.GetWireframeColor().Blue()/255.;
+    mapper->SetWireframeColor(rgb);
+    rgb[0] = atts.GetPointColor().Red()/255.;
+    rgb[1] = atts.GetPointColor().Green()/255.;
+    rgb[2] = atts.GetPointColor().Blue()/255.;
+    mapper->SetPointsColor(rgb);
 }
 
 
@@ -895,7 +930,7 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
     colorTableIsFullyOpaque =
         avtColorTables::Instance()->ColorTableIsFullyOpaque(ctName);
     
-    bool namesMatch = (atts.GetColorTableName() == std::string(ctName));
+    bool namesMatch = (atts.GetColorTableName() == string(ctName));
     bool useOpacities = SetOpacityFromAtts();
 
     double rampOpacity;
@@ -931,7 +966,10 @@ avtPseudocolorPlot::SetColorTable(const char *ctName)
     // Invalidate transparencies if ct opaqueness changed and this plot
     // is using the ct's opacities.
     if (useOpacities && (oldColorTableIsFullyOpaque != colorTableIsFullyOpaque))
+    {
+        mapper->InvalidateTransparencyCache();
         glyphMapper->InvalidateTransparencyCache();
+    }
 
     return retval;
 }
@@ -998,16 +1036,19 @@ avtPseudocolorPlot::SetScaling(int mode, double skew)
 
     if (mode == 1)
     {
-       glyphMapper->SetLookupTable(avtLUT->GetLogLookupTable());
+       mapper->SetLookupTable(avtLUT->GetLogLookupTable());
+       glyphMapper->SetLUT(avtLUT->GetLogLookupTable());
     }
     else if (mode == 2)
     {
        avtLUT->SetSkewFactor(skew);
-       glyphMapper->SetLookupTable(avtLUT->GetSkewLookupTable());
+       mapper->SetLookupTable(avtLUT->GetSkewLookupTable());
+       glyphMapper->SetLUT(avtLUT->GetSkewLookupTable());
     }
     else
     {
-       glyphMapper->SetLookupTable(avtLUT->GetLookupTable());
+       mapper->SetLookupTable(avtLUT->GetLookupTable());
+       glyphMapper->SetLUT(avtLUT->GetLookupTable());
     }
 }
 
@@ -1039,11 +1080,15 @@ avtPseudocolorPlot::SetLighting(bool lightingOn)
 {
     if (lightingOn)
     {
+        mapper->TurnLightingOn();
+        mapper->SetSpecularIsInappropriate(false);
         glyphMapper->TurnLightingOn();
         glyphMapper->SetSpecularIsInappropriate(false);
     }
     else
     {
+        mapper->TurnLightingOff();
+        mapper->SetSpecularIsInappropriate(true);
         glyphMapper->TurnLightingOff();
         glyphMapper->SetSpecularIsInappropriate(true);
     }
@@ -1092,13 +1137,18 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
     //
     //  Retrieve the actual range of the data
     //
-    glyphMapper->GetVarRange(min, max);
+    if (topologicalDim != 0)
+        mapper->GetVarRange(min, max);
+    else
+        glyphMapper->GetVarRange(min, max);
 
     double userMin = atts.GetMinFlag() ? atts.GetMin() : min;
     double userMax = atts.GetMaxFlag() ? atts.GetMax() : max;
 
     if (dataExtents.size() == 2)
     {
+        mapper->SetMin(dataExtents[0]);
+        mapper->SetMax(dataExtents[1]);
         glyphMapper->SetMin(dataExtents[0]);
         glyphMapper->SetMax(dataExtents[1]);
     }
@@ -1110,39 +1160,50 @@ avtPseudocolorPlot::SetLimitsMode(int limitsMode)
         }
         else
         {
+            mapper->SetMin(userMin);
+            mapper->SetMax(userMax);
             glyphMapper->SetMin(userMin);
             glyphMapper->SetMax(userMax);
         }
     }
     else if (atts.GetMinFlag())
     {
+        mapper->SetMin(userMin);
         glyphMapper->SetMin(userMin);
         if (userMin > userMax)
         {
+            mapper->SetMax(userMin);
             glyphMapper->SetMax(userMin);
         }
         else
         {
+            mapper->SetMaxOff();
             glyphMapper->SetMaxOff();
         }
     }
     else if (atts.GetMaxFlag())
     {
+        mapper->SetMax(userMax);
         glyphMapper->SetMax(userMax);
         if (userMin > userMax)
         {
+            mapper->SetMin(userMax);
             glyphMapper->SetMin(userMax);
         }
         else
         {
+            mapper->SetMinOff();
             glyphMapper->SetMinOff();
         }
     }
     else
     {
+        mapper->SetMinOff();
+        mapper->SetMaxOff();
         glyphMapper->SetMinOff();
         glyphMapper->SetMaxOff();
     }
+    mapper->SetLimitsMode(limitsMode);
     glyphMapper->SetLimitsMode(limitsMode);
 
     SetLegendRanges();
@@ -1203,6 +1264,7 @@ avtPseudocolorPlot::SetOpacityFromAtts()
     // double realOpacity = atts.GetOpacityType() ?
     //     (colorTableIsFullyOpaque ? 1.0 : 0.99) : origOpacity;
 
+    mapper->SetOpacity(realOpacity);
     glyphMapper->SetOpacity(realOpacity);
 
     if (realOpacity < 1.0)
@@ -1257,11 +1319,17 @@ avtPseudocolorPlot::SetLegendRanges()
     bool validRange = false;
     if (atts.GetLimitsMode() == PseudocolorAttributes::OriginalData)
     {
-        validRange = glyphMapper->GetRange(min, max);
+        if (topologicalDim != 0)
+            validRange = mapper->GetRange(min, max);
+        else
+            validRange = glyphMapper->GetRange(min, max);
     }
     else
     {
-        validRange = glyphMapper->GetCurrentRange(min, max);
+        if (topologicalDim != 0)
+            validRange = mapper->GetCurrentRange(min, max);
+        else
+            validRange = glyphMapper->GetCurrentRange(min, max);
     }
 
     varLegend->SetRange(min, max);
@@ -1280,7 +1348,10 @@ avtPseudocolorPlot::SetLegendRanges()
     //
     // set and get the range for the legend's limits text
     //
-    glyphMapper->GetVarRange(min, max);
+    if (topologicalDim != 0)
+        mapper->GetVarRange(min, max);
+    else
+        glyphMapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
 }
 
@@ -1303,7 +1374,7 @@ void
 avtPseudocolorPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
+    if(atts.GetPointType() == Point)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

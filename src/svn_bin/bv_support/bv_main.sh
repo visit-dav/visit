@@ -1,3 +1,248 @@
+# --------------------------------------------------------------------------- #
+#   checking compiler minimum version                                         #
+# --------------------------------------------------------------------------- #
+function vercomp ()
+{
+    if [[ $1 == $2 ]]
+    then
+        return 0
+    fi
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+    # fill empty fields in ver1 with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++))
+    do
+        ver1[i]=0
+    done
+    for ((i=0; i<${#ver1[@]}; i++))
+    do
+        if [[ -z ${ver2[i]} ]]
+        then
+            # fill empty fields in ver2 with zeros
+            ver2[i]=0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        then
+            return 1
+        fi
+        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        then
+            return 2
+        fi
+    done
+    return 0
+}
+
+function testvercomp ()
+{
+    vercomp $1 $2
+    case $? in
+        0) op='=';;
+        1) op='>';;
+        2) op='<';;
+    esac
+    if [[ $op != $3 ]]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+
+function check_minimum_compiler_version()
+{
+   if [[ "$CXX_COMPILER" == "g++" ]] ; then
+        VERSION=$(g++ -v 2>&1 | grep "gcc version" | cut -d' ' -f3 )
+        echo "g++ version $VERSION"
+        testvercomp $VERSION 4.8 '<'
+        if [[ $? == 0 ]] ; then
+            echo "Need g++ version >= 4.8"
+            exit 1
+        fi
+    elif [[ "$OPSYS" == "Darwin"  &&  "$CXX_COMPILER" == "clang++" ]] ; then 
+        VERSION=$(clang++ -v 2>&1 | grep "clang version" | cut -d' ' -f3 )
+        echo "apple clang version $VERSION"
+        testvercomp $VERSION 5.0 '<'
+        if [[ $? == 0 ]] ; then
+            echo "Need clang++ version >= 0.0"
+            exit 1
+        fi
+    elif [[ "$CXX_COMPILER" == "clang++" ]] ; then 
+        VERSION=$(clang++ -v 2>&1 | grep "clang version" | cut -d' ' -f3 )
+        echo "clang version $VERSION"
+        testvercomp $VERSION 3.3 '<'
+        if [[ $? == 0 ]] ; then
+            echo "Need clang++ version >= 3.3"
+            exit 1
+        fi
+    elif [[ "$CXX_COMPILER" == "icpc" ]] ; then 
+        VERSION=$(icpc -v 2>&1 | grep "icpc version" | cut -d' ' -f3 )
+        if [[ $VERSION == "" ]] ; then
+            VERSION=$(icpc -v 2>&1 | grep "icpc.orig version" | cut -d' ' -f3 )
+        fi
+        echo "icpc version $VERSION"
+        testvercomp $VERSION 14.0 '<'
+        if [[ $? == 0 ]] ; then
+            echo "Need icpc version >= 14.0"
+            exit 1
+        fi
+    fi
+}
+
+# --------------------------------------------------------------------------- #
+#   checking opengl context creation (minimum required is 3.2)
+# --------------------------------------------------------------------------- #
+
+function check_opengl_context()
+{
+    # Check if we can create a 3.2 context with system gl
+    echo "#include <GL/gl.h>" >> checkogl.cpp
+    echo "#include <GL/glx.h>" >> checkogl.cpp
+    echo "#include <cstring>" >> checkogl.cpp
+    echo "#include <cstdlib>" >> checkogl.cpp
+    echo "#define GLX_CONTEXT_MAJOR_VERSION_ARB       0x2091" >> checkogl.cpp
+    echo "#define GLX_CONTEXT_MINOR_VERSION_ARB       0x2092" >> checkogl.cpp
+    echo "typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);" >> checkogl.cpp
+    echo "static bool isExtensionSupported(const char *extList, const char *extension) {" >> checkogl.cpp
+    echo "  const char *start;" >> checkogl.cpp
+    echo "  const char *where, *terminator;" >> checkogl.cpp
+    echo "  where = strchr(extension, ' ');" >> checkogl.cpp
+    echo "  if (where || *extension == '\0')" >> checkogl.cpp
+    echo "    return false;" >> checkogl.cpp
+    echo "  for (start=extList;;) {" >> checkogl.cpp
+    echo "    where = strstr(start, extension);" >> checkogl.cpp
+    echo "    if (!where)" >> checkogl.cpp
+    echo "      break;" >> checkogl.cpp
+    echo "    terminator = where + strlen(extension);" >> checkogl.cpp
+    echo "    if ( where == start || *(where - 1) == ' ' )" >> checkogl.cpp
+    echo "      if ( *terminator == ' ' || *terminator == '\0' )" >> checkogl.cpp
+    echo "        return true;" >> checkogl.cpp
+    echo "    start = terminator;" >> checkogl.cpp
+    echo "  }" >> checkogl.cpp
+    echo "  return false;" >> checkogl.cpp
+    echo "}" >> checkogl.cpp
+    echo "static bool ctxErrorOccurred = false;" >> checkogl.cpp
+    echo "static int ctxErrorHandler( Display *dpy, XErrorEvent *ev )" >> checkogl.cpp
+    echo "{" >> checkogl.cpp
+    echo "    ctxErrorOccurred = true;" >> checkogl.cpp
+    echo "    return 0;" >> checkogl.cpp
+    echo "}" >> checkogl.cpp
+    echo "int main(int argc, char* argv[])" >> checkogl.cpp
+    echo "{" >> checkogl.cpp
+    echo "  Display *display = XOpenDisplay(NULL);" >> checkogl.cpp
+    echo "  if (!display)" >> checkogl.cpp
+    echo " {" >> checkogl.cpp
+    echo "    exit(1);" >> checkogl.cpp
+    echo "  }" >> checkogl.cpp
+    echo "  static int visual_attribs[] =" >> checkogl.cpp
+    echo "    {" >> checkogl.cpp
+    echo "      GLX_X_RENDERABLE    , True," >> checkogl.cpp
+    echo "      GLX_DRAWABLE_TYPE   , GLX_WINDOW_BIT," >> checkogl.cpp
+    echo "      GLX_RENDER_TYPE     , GLX_RGBA_BIT," >> checkogl.cpp
+    echo "      GLX_X_VISUAL_TYPE   , GLX_TRUE_COLOR," >> checkogl.cpp
+    echo "      GLX_RED_SIZE        , 8," >> checkogl.cpp
+    echo "      GLX_GREEN_SIZE      , 8," >> checkogl.cpp
+    echo "      GLX_BLUE_SIZE       , 8," >> checkogl.cpp
+    echo "      GLX_ALPHA_SIZE      , 8," >> checkogl.cpp
+    echo "      GLX_DEPTH_SIZE      , 24," >> checkogl.cpp
+    echo "      GLX_STENCIL_SIZE    , 8," >> checkogl.cpp
+    echo "      GLX_DOUBLEBUFFER    , True," >> checkogl.cpp
+    echo "      //GLX_SAMPLE_BUFFERS  , 1," >> checkogl.cpp
+    echo "      //GLX_SAMPLES         , 4," >> checkogl.cpp
+    echo "      None" >> checkogl.cpp
+    echo "    };" >> checkogl.cpp
+    echo "  int glx_major, glx_minor;" >> checkogl.cpp
+    echo "  if ( !glXQueryVersion( display, &glx_major, &glx_minor ) || ( ( glx_major == 1 ) && ( glx_minor < 3 ) ) || ( glx_major < 1 ) )" >> checkogl.cpp
+    echo "  {" >> checkogl.cpp
+    echo "    exit(1);" >> checkogl.cpp
+    echo "  }" >> checkogl.cpp
+    echo "  int fbcount;" >> checkogl.cpp
+    echo "  GLXFBConfig* fbc = glXChooseFBConfig(display, DefaultScreen(display), visual_attribs, &fbcount);" >> checkogl.cpp
+    echo "  if (!fbc)" >> checkogl.cpp
+    echo "  {" >> checkogl.cpp
+    echo "    exit(1);" >> checkogl.cpp
+    echo "  }" >> checkogl.cpp
+    echo "  int best_fbc = -1, worst_fbc = -1, best_num_samp = -1, worst_num_samp = 999;" >> checkogl.cpp
+    echo "  int i;" >> checkogl.cpp
+    echo "  for (i=0; i<fbcount; ++i)" >> checkogl.cpp
+    echo "  {" >> checkogl.cpp
+    echo "    XVisualInfo *vi = glXGetVisualFromFBConfig( display, fbc[i] );" >> checkogl.cpp
+    echo "    if ( vi )" >> checkogl.cpp
+    echo "    {" >> checkogl.cpp
+    echo "      int samp_buf, samples;" >> checkogl.cpp
+    echo "      glXGetFBConfigAttrib( display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf );" >> checkogl.cpp
+    echo "      glXGetFBConfigAttrib( display, fbc[i], GLX_SAMPLES       , &samples  );" >> checkogl.cpp
+    echo "      if ( best_fbc < 0 || samp_buf && samples > best_num_samp )" >> checkogl.cpp
+    echo "        best_fbc = i, best_num_samp = samples;" >> checkogl.cpp
+    echo "      if ( worst_fbc < 0 || !samp_buf || samples < worst_num_samp )" >> checkogl.cpp
+    echo "        worst_fbc = i, worst_num_samp = samples;" >> checkogl.cpp
+    echo "    }" >> checkogl.cpp
+    echo "    XFree( vi );" >> checkogl.cpp
+    echo "  }" >> checkogl.cpp
+    echo "  GLXFBConfig bestFbc = fbc[ best_fbc ];" >> checkogl.cpp
+    echo "  XFree( fbc );" >> checkogl.cpp
+    echo "  XVisualInfo *vi = glXGetVisualFromFBConfig( display, bestFbc );" >> checkogl.cpp
+    echo "  XSetWindowAttributes swa;" >> checkogl.cpp
+    echo "  Colormap cmap;" >> checkogl.cpp
+    echo "  swa.colormap = cmap = XCreateColormap( display, RootWindow( display, vi->screen ), vi->visual, AllocNone );" >> checkogl.cpp
+    echo "  swa.background_pixmap = None ;" >> checkogl.cpp
+    echo "  swa.border_pixel      = 0;" >> checkogl.cpp
+    echo "  swa.event_mask        = StructureNotifyMask;" >> checkogl.cpp
+    echo "  Window win = XCreateWindow( display, RootWindow( display, vi->screen ), 0, 0, 100, 100, 0, vi->depth, InputOutput, vi->visual, CWBorderPixel|CWColormap|CWEventMask, &swa );" >> checkogl.cpp
+    echo "  if ( !win )" >> checkogl.cpp
+    echo "  {" >> checkogl.cpp
+    echo "    exit(1);" >> checkogl.cpp
+    echo " }" >> checkogl.cpp
+    echo "  XFree( vi );" >> checkogl.cpp
+    echo "  XStoreName( display, win, \"GL 3.0 Window\" );" >> checkogl.cpp
+    echo "  XMapWindow( display, win );" >> checkogl.cpp
+    echo "  const char *glxExts = glXQueryExtensionsString( display, DefaultScreen( display ) );" >> checkogl.cpp
+    echo "  glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;" >> checkogl.cpp
+    echo "  glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddressARB( (const GLubyte *) \"glXCreateContextAttribsARB\" );" >> checkogl.cpp
+    echo "  GLXContext ctx = 0;" >> checkogl.cpp
+    echo "  ctxErrorOccurred = false;" >> checkogl.cpp
+    echo "  int (*oldHandler)(Display*, XErrorEvent*) = XSetErrorHandler(&ctxErrorHandler);" >> checkogl.cpp
+    echo "  if ( !isExtensionSupported( glxExts, \"GLX_ARB_create_context\" ) || !glXCreateContextAttribsARB )" >> checkogl.cpp
+    echo "  {" >> checkogl.cpp
+    echo "      exit(1);" >> checkogl.cpp
+    echo "  }" >> checkogl.cpp
+    echo "  else" >> checkogl.cpp
+    echo "  {" >> checkogl.cpp
+    echo "    int context_attribs[] =" >> checkogl.cpp
+    echo "      {" >> checkogl.cpp
+    echo "        GLX_CONTEXT_MAJOR_VERSION_ARB, 3," >> checkogl.cpp
+    echo "        GLX_CONTEXT_MINOR_VERSION_ARB, 2," >> checkogl.cpp
+    echo "        //GLX_CONTEXT_FLAGS_ARB        , GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB," >> checkogl.cpp
+    echo "        None};" >> checkogl.cpp
+    echo "    ctx = glXCreateContextAttribsARB( display, bestFbc, 0, True, context_attribs );" >> checkogl.cpp
+    echo "    XSync( display, False );" >> checkogl.cpp
+    echo "    if ( ctxErrorOccurred || !ctx ){" >> checkogl.cpp
+    echo "        exit(1);" >> checkogl.cpp
+    echo "    }" >> checkogl.cpp
+    echo "  }" >> checkogl.cpp
+    echo "  XCloseDisplay( display );" >> checkogl.cpp
+    echo "  return 0;" >> checkogl.cpp
+    echo "}" >> checkogl.cpp
+
+    $CXX_COMPILER -Wl,-lGL -lSM -lICE -lX11 -lXext checkogl.cpp
+    if [[ $? != 0 ]]; then
+        echo "failed to compile checkogl.cpp"
+        exit 1
+    fi
+    a.out
+    if [[ $? != 0 ]]; then
+        echo "Could not obtain a 3.2 context with system GL."
+        echo "You may want to add --mesagl to the command line."
+        echo "To disable this check use --skip-opengl-context-check"
+        rm -f checkogl.cpp
+        rm -f a.out
+        exit 1
+    fi
+    rm -f checkogl.cpp
+    rm -f a.out
+}
+
+
 # ************************************************************************** #
 #                       Section 1, setting up inputs                          #
 # --------------------------------------------------------------------------- #
@@ -5,6 +250,7 @@
 # specify which compiler to use, which versions of the third party libraries, #
 # etc.  Note that this script is really only known to work with gcc.          #
 # *************************************************************************** #
+
 
 function initialize_build_visit()
 {
@@ -240,6 +486,7 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export QT_PLATFORM=${QT_PLATFORM:-"linux-g++"}
     fi
+
     export MAKE=${MAKE:-"make"}
     export THIRD_PARTY_PATH=${THIRD_PARTY_PATH:-"./visit"}
     export GROUP=${GROUP:-"visit"}
@@ -300,7 +547,6 @@ function initialize_build_visit()
     export DO_VERBOSE="no"
     export DO_JAVA="no"
     export DO_FORTRAN="no"
-    export DO_SLIVR="no"
     export DO_PARADIS="no"
     export PREVENT_ICET="no"
     verify="no"
@@ -317,6 +563,7 @@ function initialize_build_visit()
     export VISIT_BUILD_MODE="Release"
     export VISIT_SELECTED_DATABASE_PLUGINS=""
     export DO_XDB="no"
+    export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
     DOWNLOAD_ONLY="no"
 
@@ -937,7 +1184,6 @@ function run_build_visit()
             --prefix) next_arg="prefix";;
             --print-vars) next_action="print-vars";;
             --server-components-only) DO_SERVER_COMPONENTS_ONLY="yes";;
-            --slivr) DO_SLIVR="yes";;
             --paradis) DO_PARADIS="yes";;
             --static) DO_STATIC_BUILD="yes"
                       export USE_VISIBILITY_HIDDEN="no"
@@ -956,38 +1202,7 @@ function run_build_visit()
             --version) next_arg="version";;
             --xdb) DO_XDB="yes";;
             --console) ;;
-            -4) deprecated="${deprecated} --hdf4";;
-            -5) deprecated="${deprecated} --hdf5";;
-            -c) deprecated="${deprecated} --cgns";;
-            -C) deprecated="${deprecated} --ccmio";;
-            -d) deprecated="${deprecated} --cflags '$C_OPT_FLAGS -g'";;
-            -D) deprecated="${deprecated} --cflags '$C_OPT_FLAGS -g#'";;
-            -E) deprecated="${deprecated} --print-vars";;
-            -e) deprecated="${deprecated} --exodus";;
-            -H) deprecated="${deprecated} --help";;
-            -i) deprecated="${deprecated} --absolute";;
-            -J) deprecated="${deprecated} --makeflags '-j <something>'";;
-            -j) deprecated="${deprecated} --no-visit";;
-            -m) deprecated="${deprecated} --mili";;
-            -M) deprecated="${deprecated} --tcmalloc";;
-            -r) deprecated="${deprecated} --h5part";;
-            -R) deprecated="${deprecated} --svn <REVISION>";;
-            -s) deprecated="${deprecated} --svn HEAD";;
-            -S) deprecated="${deprecated} --slivr";;
-            -t) deprecated="${deprecated} --tarball '<file>'";;
-            -v) deprecated="${deprecated} --tarball 'visit<version>.tar.gz'";;
-            -b|-B) deprecated="${deprecated} --boxlib";;
-            -f|-F) deprecated="${deprecated} --cfitsio";;
-            -g|-G) deprecated="${deprecated} --gdal";;
-            -k|-K) deprecated="${deprecated} --no-thirdparty";;
-            -l|-L) deprecated="${deprecated} --group '<arg>'";;
-            -n|-N) deprecated="${deprecated} --netcdf";;
-            -o|-O) deprecated="${deprecated} --stdout";;
-            -p|-P) deprecated="${deprecated} --parallel";;
-            -u|-U) deprecated="${deprecated} --thirdparty-path <path>";;
-            -w|-W) deprecated="${deprecated} --python";;
-            -y|-Y) deprecated="${deprecated} --java";;
-            -z|-Z) deprecated="${deprecated} --console";;
+            --skip-opengl-context-check) DO_CONTEXT_CHECK="no";;
             *)
                 echo "Unrecognized option '${arg}'."
                 ANY_ERRORS="yes";;
@@ -1043,6 +1258,14 @@ function run_build_visit()
             DO_SVN="yes"
             DO_SVN_ANON="yes"
             export SVN_ROOT_PATH=$SVN_ANON_ROOT_PATH
+        fi
+    fi
+
+    check_minimum_compiler_version
+
+    if [[ $DO_MESAGL == "no" && $DO_CONTEXT_CHECK != "no"  && $DO_DBIO_ONLY == "no" ]] ; then 
+        if [[ $DO_VTK == "yes" || $DO_VISIT == "yes" ]] ; then
+            check_opengl_context
         fi
     fi
 

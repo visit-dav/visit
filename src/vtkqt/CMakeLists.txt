@@ -42,54 +42,44 @@
 #    Added Cocoa framework for OSX helper function.
 #
 #****************************************************************************/
-IF(APPLE)
-    SET(VTKQT_SOURCES 
-            osxHelper.mm
-            vtkQtRenderWindow.C
-            vtkQtImagePrinter.C
-    )
-ELSE(APPLE)
-    SET(VTKQT_SOURCES
-            vtkQtRenderWindow.C
-            vtkQtImagePrinter.C
-    )
-ENDIF(APPLE)
 
-
-INCLUDE_DIRECTORIES(
-${CMAKE_CURRENT_SOURCE_DIR}
-${VISIT_BINARY_DIR}/include
-${VISIT_SOURCE_DIR}/include
-${VISIT_SOURCE_DIR}/vtkqt
-${VISIT_SOURCE_DIR}/common/utility
-${VTK_INCLUDE_DIRS}
-${QT_INCLUDE_DIR}
-${QT_QTCORE_INCLUDE_DIR}
-${QT_QTGUI_INCLUDE_DIR}
-${QT_QTOPENGL_INCLUDE_DIR}
+set(VTKQT_SOURCES
+    vtkQtRenderWindow.C
+    vtkQtImagePrinter.C
 )
 
-# Add link directories needed to use Qt and VTK.
-LINK_DIRECTORIES(${QT_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+if(APPLE)
+    list(APPEND VTKQT_SOURCES osxHelper.mm)
+endif()
 
-ADD_LIBRARY(vtkqt ${VTKQT_SOURCES})
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${VISIT_BINARY_DIR}/include
+    ${VISIT_SOURCE_DIR}/include
+    ${VISIT_SOURCE_DIR}/vtkqt
+    ${VISIT_SOURCE_DIR}/common/utility
+    ${VTK_INCLUDE_DIRS}
+)
+
+add_library(vtkqt ${VTKQT_SOURCES})
 
 # Specify the libraries to link against on Windows & Mac
-IF(HAVE_LIB_R)
-        TARGET_LINK_LIBRARIES(vtkqt vtkCommonCore vtkGUISupportQtOpenGL vtkIOImage vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY} vtkFiltersStatisticsGnuR)
-ELSE(HAVE_LIB_R)
-         TARGET_LINK_LIBRARIES(vtkqt vtkCommonCore vtkGUISupportQtOpenGL vtkIOImage vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY})
-ENDIF(HAVE_LIB_R)
+target_link_libraries(vtkqt 
+    vtkCommonCore vtkGUISupportQt vtkGUISupportQtOpenGL vtkIOImage
+    vtkRenderingOpenGL2 vtkRenderingFreeType ${QT_QTCORE_LIBRARY}
+    ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_LIBRARIES})
 
-IF(APPLE)
-        SET_TARGET_PROPERTIES(vtkqt PROPERTIES 
-                COMPILE_FLAGS "-std=c++03"
-                LINK_FLAGS "-framework Cocoa"
-        )
-ENDIF(APPLE)
+if(HAVE_OSMESA)
+    target_link_libraries(vtkqt ${OSMESA_LIBRARIES})
+elseif(HAVE_EGL)
+    target_link_libraries(vtkqt ${EGL_LIBRARIES})
+endif()
 
-# Add vtk definitions
-ADD_TARGET_DEFINITIONS(vtkqt "${VTK_DEFINITIONS}")
+if(APPLE)
+    set_target_properties(vtkqt PROPERTIES
+        LINK_FLAGS "-framework Cocoa"
+    )
+endif()
 
 VISIT_INSTALL_TARGETS(vtkqt)
 

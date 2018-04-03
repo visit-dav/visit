@@ -191,7 +191,6 @@ void RenderingAttributes::Init()
     multiresolutionMode = false;
     multiresolutionCellSize = 0.002;
     geometryRepresentation = Surfaces;
-    displayListMode = Auto;
     stereoRendering = false;
     stereoType = CrystalEyes;
     notifyForEachRender = false;
@@ -247,7 +246,6 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
     multiresolutionMode = obj.multiresolutionMode;
     multiresolutionCellSize = obj.multiresolutionCellSize;
     geometryRepresentation = obj.geometryRepresentation;
-    displayListMode = obj.displayListMode;
     stereoRendering = obj.stereoRendering;
     stereoType = obj.stereoType;
     notifyForEachRender = obj.notifyForEachRender;
@@ -454,7 +452,6 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
             (multiresolutionMode == obj.multiresolutionMode) &&
             (multiresolutionCellSize == obj.multiresolutionCellSize) &&
             (geometryRepresentation == obj.geometryRepresentation) &&
-            (displayListMode == obj.displayListMode) &&
             (stereoRendering == obj.stereoRendering) &&
             (stereoType == obj.stereoType) &&
             (notifyForEachRender == obj.notifyForEachRender) &&
@@ -629,7 +626,6 @@ RenderingAttributes::SelectAll()
     Select(ID_multiresolutionMode,          (void *)&multiresolutionMode);
     Select(ID_multiresolutionCellSize,      (void *)&multiresolutionCellSize);
     Select(ID_geometryRepresentation,       (void *)&geometryRepresentation);
-    Select(ID_displayListMode,              (void *)&displayListMode);
     Select(ID_stereoRendering,              (void *)&stereoRendering);
     Select(ID_stereoType,                   (void *)&stereoType);
     Select(ID_notifyForEachRender,          (void *)&notifyForEachRender);
@@ -751,12 +747,6 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("geometryRepresentation", GeometryRepresentation_ToString(geometryRepresentation)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_displayListMode, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("displayListMode", TriStateMode_ToString(displayListMode)));
     }
 
     if(completeSave || !FieldsEqual(ID_stereoRendering, &defaultObject))
@@ -949,22 +939,6 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
                 SetGeometryRepresentation(value);
         }
     }
-    if((node = searchNode->GetNode("displayListMode")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
-                SetDisplayListMode(TriStateMode(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            TriStateMode value;
-            if(TriStateMode_FromString(node->AsString(), value))
-                SetDisplayListMode(value);
-        }
-    }
     if((node = searchNode->GetNode("stereoRendering")) != 0)
         SetStereoRendering(node->AsBool());
     if((node = searchNode->GetNode("stereoType")) != 0)
@@ -1147,13 +1121,6 @@ RenderingAttributes::SetGeometryRepresentation(RenderingAttributes::GeometryRepr
 {
     geometryRepresentation = geometryRepresentation_;
     Select(ID_geometryRepresentation, (void *)&geometryRepresentation);
-}
-
-void
-RenderingAttributes::SetDisplayListMode(RenderingAttributes::TriStateMode displayListMode_)
-{
-    displayListMode = displayListMode_;
-    Select(ID_displayListMode, (void *)&displayListMode);
 }
 
 void
@@ -1369,12 +1336,6 @@ RenderingAttributes::GetGeometryRepresentation() const
     return GeometryRepresentation(geometryRepresentation);
 }
 
-RenderingAttributes::TriStateMode
-RenderingAttributes::GetDisplayListMode() const
-{
-    return TriStateMode(displayListMode);
-}
-
 bool
 RenderingAttributes::GetStereoRendering() const
 {
@@ -1565,7 +1526,6 @@ RenderingAttributes::GetFieldName(int index) const
     case ID_multiresolutionMode:          return "multiresolutionMode";
     case ID_multiresolutionCellSize:      return "multiresolutionCellSize";
     case ID_geometryRepresentation:       return "geometryRepresentation";
-    case ID_displayListMode:              return "displayListMode";
     case ID_stereoRendering:              return "stereoRendering";
     case ID_stereoType:                   return "stereoType";
     case ID_notifyForEachRender:          return "notifyForEachRender";
@@ -1621,7 +1581,6 @@ RenderingAttributes::GetFieldType(int index) const
     case ID_multiresolutionMode:          return FieldType_bool;
     case ID_multiresolutionCellSize:      return FieldType_float;
     case ID_geometryRepresentation:       return FieldType_enum;
-    case ID_displayListMode:              return FieldType_enum;
     case ID_stereoRendering:              return FieldType_bool;
     case ID_stereoType:                   return FieldType_enum;
     case ID_notifyForEachRender:          return FieldType_bool;
@@ -1677,7 +1636,6 @@ RenderingAttributes::GetFieldTypeName(int index) const
     case ID_multiresolutionMode:          return "bool";
     case ID_multiresolutionCellSize:      return "float";
     case ID_geometryRepresentation:       return "enum";
-    case ID_displayListMode:              return "enum";
     case ID_stereoRendering:              return "bool";
     case ID_stereoType:                   return "enum";
     case ID_notifyForEachRender:          return "bool";
@@ -1781,11 +1739,6 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_geometryRepresentation:
         {  // new scope
         retval = (geometryRepresentation == obj.geometryRepresentation);
-        }
-        break;
-    case ID_displayListMode:
-        {  // new scope
-        retval = (displayListMode == obj.displayListMode);
         }
         break;
     case ID_stereoRendering:

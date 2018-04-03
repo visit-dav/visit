@@ -40,37 +40,35 @@
 #include <DataNode.h>
 #include <ColorControlPoint.h>
 #include <GaussianControlPoint.h>
-#include <TransferFunctionWidget.h>
 
 //
 // Enum conversion methods for VolumeAttributes::Renderer
 //
 
 static const char *Renderer_strings[] = {
-"Splatting", "Texture3D", "RayCasting", 
-"RayCastingIntegration", "SLIVR", "RayCastingSLIVR", 
-"Tuvok"};
+"Default", "RayCasting", "RayCastingIntegration"
+};
 
 std::string
 VolumeAttributes::Renderer_ToString(VolumeAttributes::Renderer t)
 {
     int index = int(t);
-    if(index < 0 || index >= 7) index = 0;
+    if(index < 0 || index >= 3) index = 0;
     return Renderer_strings[index];
 }
 
 std::string
 VolumeAttributes::Renderer_ToString(int t)
 {
-    int index = (t < 0 || t >= 7) ? 0 : t;
+    int index = (t < 0 || t >= 3) ? 0 : t;
     return Renderer_strings[index];
 }
 
 bool
 VolumeAttributes::Renderer_FromString(const std::string &s, VolumeAttributes::Renderer &val)
 {
-    val = VolumeAttributes::Splatting;
-    for(int i = 0; i < 7; ++i)
+    val = VolumeAttributes::Default;
+    for(int i = 0; i < 3; ++i)
     {
         if(s == Renderer_strings[i])
         {
@@ -344,15 +342,13 @@ void VolumeAttributes::Init()
     opacityVarMax = 0;
     smoothData = false;
     samplesPerRay = 500;
-    rendererType = Splatting;
+    rendererType = Default;
     gradientType = SobelOperator;
-    num3DSlices = 200;
     scaling = Linear;
     skewFactor = 1;
     limitsMode = OriginalData;
     sampling = Rasterization;
     rendererSamples = 3;
-    transferFunctionDim = 1;
     lowGradientLightingReduction = Lower;
     lowGradientLightingClampFlag = false;
     lowGradientLightingClampValue = 1;
@@ -381,7 +377,6 @@ void VolumeAttributes::Init()
 
 void VolumeAttributes::Copy(const VolumeAttributes &obj)
 {
-    AttributeGroupVector::const_iterator pos;
 
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
@@ -408,28 +403,11 @@ void VolumeAttributes::Copy(const VolumeAttributes &obj)
     samplesPerRay = obj.samplesPerRay;
     rendererType = obj.rendererType;
     gradientType = obj.gradientType;
-    num3DSlices = obj.num3DSlices;
     scaling = obj.scaling;
     skewFactor = obj.skewFactor;
     limitsMode = obj.limitsMode;
     sampling = obj.sampling;
     rendererSamples = obj.rendererSamples;
-    // *** Copy the transferFunction2DWidgets field ***
-    // Delete the AttributeGroup objects and clear the vector.
-    for(pos = transferFunction2DWidgets.begin(); pos != transferFunction2DWidgets.end(); ++pos)
-        delete *pos;
-    transferFunction2DWidgets.clear();
-    if(obj.transferFunction2DWidgets.size() > 0)
-        transferFunction2DWidgets.reserve(obj.transferFunction2DWidgets.size());
-    // Duplicate the transferFunction2DWidgets from obj.
-    for(pos = obj.transferFunction2DWidgets.begin(); pos != obj.transferFunction2DWidgets.end(); ++pos)
-    {
-        TransferFunctionWidget *oldTransferFunctionWidget = (TransferFunctionWidget *)(*pos);
-        TransferFunctionWidget *newTransferFunctionWidget = new TransferFunctionWidget(*oldTransferFunctionWidget);
-        transferFunction2DWidgets.push_back(newTransferFunctionWidget);
-    }
-
-    transferFunctionDim = obj.transferFunctionDim;
     lowGradientLightingReduction = obj.lowGradientLightingReduction;
     lowGradientLightingClampFlag = obj.lowGradientLightingClampFlag;
     lowGradientLightingClampValue = obj.lowGradientLightingClampValue;
@@ -548,11 +526,7 @@ VolumeAttributes::VolumeAttributes(const VolumeAttributes &obj, private_tmfs_t t
 
 VolumeAttributes::~VolumeAttributes()
 {
-    AttributeGroupVector::iterator pos;
-
-    // Destroy the transferFunction2DWidgets field.
-    for(pos = transferFunction2DWidgets.begin(); pos != transferFunction2DWidgets.end(); ++pos)
-        delete *pos;
+    // nothing here
 }
 
 // ****************************************************************************
@@ -603,15 +577,6 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
     for(int i = 0; i < 256 && freeformOpacity_equal; ++i)
         freeformOpacity_equal = (freeformOpacity[i] == obj.freeformOpacity[i]);
 
-    bool transferFunction2DWidgets_equal = (obj.transferFunction2DWidgets.size() == transferFunction2DWidgets.size());
-    for(size_t i = 0; (i < transferFunction2DWidgets.size()) && transferFunction2DWidgets_equal; ++i)
-    {
-        // Make references to TransferFunctionWidget from AttributeGroup *.
-        const TransferFunctionWidget &transferFunction2DWidgets1 = *((const TransferFunctionWidget *)(transferFunction2DWidgets[i]));
-        const TransferFunctionWidget &transferFunction2DWidgets2 = *((const TransferFunctionWidget *)(obj.transferFunction2DWidgets[i]));
-        transferFunction2DWidgets_equal = (transferFunction2DWidgets1 == transferFunction2DWidgets2);
-    }
-
     // Compare the materialProperties arrays.
     bool materialProperties_equal = true;
     for(int i = 0; i < 4 && materialProperties_equal; ++i)
@@ -641,14 +606,11 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
             (samplesPerRay == obj.samplesPerRay) &&
             (rendererType == obj.rendererType) &&
             (gradientType == obj.gradientType) &&
-            (num3DSlices == obj.num3DSlices) &&
             (scaling == obj.scaling) &&
             (skewFactor == obj.skewFactor) &&
             (limitsMode == obj.limitsMode) &&
             (sampling == obj.sampling) &&
             (rendererSamples == obj.rendererSamples) &&
-            transferFunction2DWidgets_equal &&
-            (transferFunctionDim == obj.transferFunctionDim) &&
             (lowGradientLightingReduction == obj.lowGradientLightingReduction) &&
             (lowGradientLightingClampFlag == obj.lowGradientLightingClampFlag) &&
             (lowGradientLightingClampValue == obj.lowGradientLightingClampValue) &&
@@ -819,39 +781,15 @@ VolumeAttributes::SelectAll()
     Select(ID_samplesPerRay,                 (void *)&samplesPerRay);
     Select(ID_rendererType,                  (void *)&rendererType);
     Select(ID_gradientType,                  (void *)&gradientType);
-    Select(ID_num3DSlices,                   (void *)&num3DSlices);
     Select(ID_scaling,                       (void *)&scaling);
     Select(ID_skewFactor,                    (void *)&skewFactor);
     Select(ID_limitsMode,                    (void *)&limitsMode);
     Select(ID_sampling,                      (void *)&sampling);
     Select(ID_rendererSamples,               (void *)&rendererSamples);
-    Select(ID_transferFunction2DWidgets,     (void *)&transferFunction2DWidgets);
-    Select(ID_transferFunctionDim,           (void *)&transferFunctionDim);
     Select(ID_lowGradientLightingReduction,  (void *)&lowGradientLightingReduction);
     Select(ID_lowGradientLightingClampFlag,  (void *)&lowGradientLightingClampFlag);
     Select(ID_lowGradientLightingClampValue, (void *)&lowGradientLightingClampValue);
     Select(ID_materialProperties,            (void *)materialProperties, 4);
-}
-
-// ****************************************************************************
-// Method: VolumeAttributes::CreateSubAttributeGroup
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-AttributeGroup *
-VolumeAttributes::CreateSubAttributeGroup(int)
-{
-    return new TransferFunctionWidget;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1034,12 +972,6 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
         node->AddNode(new DataNode("gradientType", GradientType_ToString(gradientType)));
     }
 
-    if(completeSave || !FieldsEqual(ID_num3DSlices, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("num3DSlices", num3DSlices));
-    }
-
     if(completeSave || !FieldsEqual(ID_scaling, &defaultObject))
     {
         addToParent = true;
@@ -1068,19 +1000,6 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("rendererSamples", rendererSamples));
-    }
-
-    if(completeSave || !FieldsEqual(ID_transferFunction2DWidgets, &defaultObject))
-    {
-        addToParent = true;
-        for(size_t i = 0; i < transferFunction2DWidgets.size(); ++i)
-            transferFunction2DWidgets[i]->CreateNode(node, completeSave, true);
-    }
-
-    if(completeSave || !FieldsEqual(ID_transferFunctionDim, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("transferFunctionDim", transferFunctionDim));
     }
 
     if(completeSave || !FieldsEqual(ID_lowGradientLightingReduction, &defaultObject))
@@ -1143,7 +1062,6 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
-    DataNode **children;
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
@@ -1206,7 +1124,7 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 7)
+            if(ival >= 0 && ival < 3)
                 SetRendererType(Renderer(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1232,8 +1150,6 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
                 SetGradientType(value);
         }
     }
-    if((node = searchNode->GetNode("num3DSlices")) != 0)
-        SetNum3DSlices(node->AsInt());
     if((node = searchNode->GetNode("scaling")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1286,32 +1202,6 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("rendererSamples")) != 0)
         SetRendererSamples(node->AsFloat());
-
-    // Clear all the TransferFunctionWidgets if we got any.
-    bool clearedTransferFunction2DWidgets = false;
-    // Go through all of the children and construct a new
-    // TransferFunctionWidget for each one of them.
-    children = searchNode->GetChildren();
-    if(children != 0)
-    {
-        for(int i = 0; i < searchNode->GetNumChildren(); ++i)
-        {
-            if(children[i]->GetKey() == std::string("TransferFunctionWidget"))
-            {
-                if (!clearedTransferFunction2DWidgets)
-                {
-                    ClearTransferFunction2DWidgets();
-                    clearedTransferFunction2DWidgets = true;
-                }
-                TransferFunctionWidget temp;
-                temp.SetFromNode(children[i]);
-                AddTransferFunction2DWidgets(temp);
-            }
-        }
-    }
-
-    if((node = searchNode->GetNode("transferFunctionDim")) != 0)
-        SetTransferFunctionDim(node->AsInt());
     if((node = searchNode->GetNode("lowGradientLightingReduction")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1496,8 +1386,6 @@ VolumeAttributes::SetRendererType(VolumeAttributes::Renderer rendererType_)
 {
     rendererType = rendererType_;
     Select(ID_rendererType, (void *)&rendererType);
-    if(rendererType != SLIVR && transferFunctionDim > 1)
-        SetTransferFunctionDim(1);
 }
 
 void
@@ -1505,13 +1393,6 @@ VolumeAttributes::SetGradientType(VolumeAttributes::GradientType gradientType_)
 {
     gradientType = gradientType_;
     Select(ID_gradientType, (void *)&gradientType);
-}
-
-void
-VolumeAttributes::SetNum3DSlices(int num3DSlices_)
-{
-    num3DSlices = num3DSlices_;
-    Select(ID_num3DSlices, (void *)&num3DSlices);
 }
 
 void
@@ -1547,16 +1428,6 @@ VolumeAttributes::SetRendererSamples(float rendererSamples_)
 {
     rendererSamples = rendererSamples_;
     Select(ID_rendererSamples, (void *)&rendererSamples);
-}
-
-void
-VolumeAttributes::SetTransferFunctionDim(int transferFunctionDim_)
-{
-    int d = transferFunctionDim_;
-    if(d < 1 || d > 2 || rendererType != SLIVR)
-        d = 1;
-    transferFunctionDim = d;
-    Select(ID_transferFunctionDim, (void *)&transferFunctionDim);
 }
 
 void
@@ -1762,12 +1633,6 @@ VolumeAttributes::GetGradientType() const
     return GradientType(gradientType);
 }
 
-int
-VolumeAttributes::GetNum3DSlices() const
-{
-    return num3DSlices;
-}
-
 VolumeAttributes::Scaling
 VolumeAttributes::GetScaling() const
 {
@@ -1796,24 +1661,6 @@ float
 VolumeAttributes::GetRendererSamples() const
 {
     return rendererSamples;
-}
-
-const AttributeGroupVector &
-VolumeAttributes::GetTransferFunction2DWidgets() const
-{
-    return transferFunction2DWidgets;
-}
-
-AttributeGroupVector &
-VolumeAttributes::GetTransferFunction2DWidgets()
-{
-    return transferFunction2DWidgets;
-}
-
-int
-VolumeAttributes::GetTransferFunctionDim() const
-{
-    return transferFunctionDim;
 }
 
 VolumeAttributes::LowGradientLightingReduction
@@ -1881,212 +1728,9 @@ VolumeAttributes::SelectFreeformOpacity()
 }
 
 void
-VolumeAttributes::SelectTransferFunction2DWidgets()
-{
-    Select(ID_transferFunction2DWidgets, (void *)&transferFunction2DWidgets);
-}
-
-void
 VolumeAttributes::SelectMaterialProperties()
 {
     Select(ID_materialProperties, (void *)materialProperties, 4);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AttributeGroupVector convenience methods.
-///////////////////////////////////////////////////////////////////////////////
-
-// ****************************************************************************
-// Method: VolumeAttributes::AddTransferFunction2DWidgets
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-VolumeAttributes::AddTransferFunction2DWidgets(const TransferFunctionWidget &obj)
-{
-    TransferFunctionWidget *newTransferFunctionWidget = new TransferFunctionWidget(obj);
-    transferFunction2DWidgets.push_back(newTransferFunctionWidget);
-
-    // Indicate that things have changed by selecting it.
-    Select(ID_transferFunction2DWidgets, (void *)&transferFunction2DWidgets);
-}
-
-// ****************************************************************************
-// Method: VolumeAttributes::ClearTransferFunction2DWidgets
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-VolumeAttributes::ClearTransferFunction2DWidgets()
-{
-    AttributeGroupVector::iterator pos;
-
-    for(pos = transferFunction2DWidgets.begin(); pos != transferFunction2DWidgets.end(); ++pos)
-        delete *pos;
-    transferFunction2DWidgets.clear();
-
-    // Indicate that things have changed by selecting the list.
-    Select(ID_transferFunction2DWidgets, (void *)&transferFunction2DWidgets);
-}
-
-// ****************************************************************************
-// Method: VolumeAttributes::RemoveTransferFunction2DWidgets
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-VolumeAttributes::RemoveTransferFunction2DWidgets(int index)
-{
-    AttributeGroupVector::iterator pos = transferFunction2DWidgets.begin();
-
-    // Iterate through the vector "index" times. 
-    for(int i = 0; i < index; ++i)
-        if(pos != transferFunction2DWidgets.end()) ++pos;
-
-    // If pos is still a valid iterator, remove that element.
-    if(pos != transferFunction2DWidgets.end())
-    {
-        delete *pos;
-        transferFunction2DWidgets.erase(pos);
-    }
-
-    // Indicate that things have changed by selecting the list.
-    Select(ID_transferFunction2DWidgets, (void *)&transferFunction2DWidgets);
-}
-
-// ****************************************************************************
-// Method: VolumeAttributes::GetNumTransferFunction2DWidgets
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-int
-VolumeAttributes::GetNumTransferFunction2DWidgets() const
-{
-    return (int)transferFunction2DWidgets.size();
-}
-
-// ****************************************************************************
-// Method: VolumeAttributes::GetTransferFunction2DWidgets
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-TransferFunctionWidget &
-VolumeAttributes::GetTransferFunction2DWidgets(int i)
-{
-    return *((TransferFunctionWidget *)transferFunction2DWidgets[i]);
-}
-
-// ****************************************************************************
-// Method: VolumeAttributes::GetTransferFunction2DWidgets
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-const TransferFunctionWidget &
-VolumeAttributes::GetTransferFunction2DWidgets(int i) const
-{
-    return *((TransferFunctionWidget *)transferFunction2DWidgets[i]);
-}
-
-// ****************************************************************************
-// Method: VolumeAttributes::operator []
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-TransferFunctionWidget &
-VolumeAttributes::operator [] (int i)
-{
-    return *((TransferFunctionWidget *)transferFunction2DWidgets[i]);
-}
-
-// ****************************************************************************
-// Method: VolumeAttributes::operator []
-//
-// Purpose: 
-//   This class contains the plot attributes for the volume plot.
-//
-// Note:       Autogenerated by xml2atts.
-//
-// Programmer: xml2atts
-// Creation:   omitted
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-const TransferFunctionWidget &
-VolumeAttributes::operator [] (int i) const
-{
-    return *((TransferFunctionWidget *)transferFunction2DWidgets[i]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2136,14 +1780,11 @@ VolumeAttributes::GetFieldName(int index) const
     case ID_samplesPerRay:                 return "samplesPerRay";
     case ID_rendererType:                  return "rendererType";
     case ID_gradientType:                  return "gradientType";
-    case ID_num3DSlices:                   return "num3DSlices";
     case ID_scaling:                       return "scaling";
     case ID_skewFactor:                    return "skewFactor";
     case ID_limitsMode:                    return "limitsMode";
     case ID_sampling:                      return "sampling";
     case ID_rendererSamples:               return "rendererSamples";
-    case ID_transferFunction2DWidgets:     return "transferFunction2DWidgets";
-    case ID_transferFunctionDim:           return "transferFunctionDim";
     case ID_lowGradientLightingReduction:  return "lowGradientLightingReduction";
     case ID_lowGradientLightingClampFlag:  return "lowGradientLightingClampFlag";
     case ID_lowGradientLightingClampValue: return "lowGradientLightingClampValue";
@@ -2195,14 +1836,11 @@ VolumeAttributes::GetFieldType(int index) const
     case ID_samplesPerRay:                 return FieldType_int;
     case ID_rendererType:                  return FieldType_enum;
     case ID_gradientType:                  return FieldType_enum;
-    case ID_num3DSlices:                   return FieldType_int;
     case ID_scaling:                       return FieldType_enum;
     case ID_skewFactor:                    return FieldType_double;
     case ID_limitsMode:                    return FieldType_enum;
     case ID_sampling:                      return FieldType_enum;
     case ID_rendererSamples:               return FieldType_float;
-    case ID_transferFunction2DWidgets:     return FieldType_attVector;
-    case ID_transferFunctionDim:           return FieldType_int;
     case ID_lowGradientLightingReduction:  return FieldType_enum;
     case ID_lowGradientLightingClampFlag:  return FieldType_bool;
     case ID_lowGradientLightingClampValue: return FieldType_double;
@@ -2254,14 +1892,11 @@ VolumeAttributes::GetFieldTypeName(int index) const
     case ID_samplesPerRay:                 return "int";
     case ID_rendererType:                  return "enum";
     case ID_gradientType:                  return "enum";
-    case ID_num3DSlices:                   return "int";
     case ID_scaling:                       return "enum";
     case ID_skewFactor:                    return "double";
     case ID_limitsMode:                    return "enum";
     case ID_sampling:                      return "enum";
     case ID_rendererSamples:               return "float";
-    case ID_transferFunction2DWidgets:     return "attVector";
-    case ID_transferFunctionDim:           return "int";
     case ID_lowGradientLightingReduction:  return "enum";
     case ID_lowGradientLightingClampFlag:  return "bool";
     case ID_lowGradientLightingClampValue: return "double";
@@ -2412,11 +2047,6 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (gradientType == obj.gradientType);
         }
         break;
-    case ID_num3DSlices:
-        {  // new scope
-        retval = (num3DSlices == obj.num3DSlices);
-        }
-        break;
     case ID_scaling:
         {  // new scope
         retval = (scaling == obj.scaling);
@@ -2440,25 +2070,6 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_rendererSamples:
         {  // new scope
         retval = (rendererSamples == obj.rendererSamples);
-        }
-        break;
-    case ID_transferFunction2DWidgets:
-        {  // new scope
-        bool transferFunction2DWidgets_equal = (obj.transferFunction2DWidgets.size() == transferFunction2DWidgets.size());
-        for(size_t i = 0; (i < transferFunction2DWidgets.size()) && transferFunction2DWidgets_equal; ++i)
-        {
-            // Make references to TransferFunctionWidget from AttributeGroup *.
-            const TransferFunctionWidget &transferFunction2DWidgets1 = *((const TransferFunctionWidget *)(transferFunction2DWidgets[i]));
-            const TransferFunctionWidget &transferFunction2DWidgets2 = *((const TransferFunctionWidget *)(obj.transferFunction2DWidgets[i]));
-            transferFunction2DWidgets_equal = (transferFunction2DWidgets1 == transferFunction2DWidgets2);
-        }
-
-        retval = transferFunction2DWidgets_equal;
-        }
-        break;
-    case ID_transferFunctionDim:
-        {  // new scope
-        retval = (transferFunctionDim == obj.transferFunctionDim);
         }
         break;
     case ID_lowGradientLightingReduction:
@@ -2545,7 +2156,6 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         return true;
 
     if (rendererType == VolumeAttributes::RayCasting ||
-        rendererType == VolumeAttributes::RayCastingSLIVR || 
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
@@ -2573,7 +2183,6 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // then we need to reexecute. Transferring between any of the hardware
         // modes does not require a reexecute.
         if(obj.rendererType == VolumeAttributes::RayCasting ||
-           obj.rendererType == VolumeAttributes::RayCastingSLIVR || 
            obj.rendererType == VolumeAttributes::RayCastingIntegration)
         {
             return true;

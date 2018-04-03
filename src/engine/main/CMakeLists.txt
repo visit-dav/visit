@@ -53,7 +53,7 @@
 #    Brad Whitlock, Fri May 18 16:09:34 PST 2012
 #    Use different resource file.
 #
-#    Kathleen Biagas, Thu Jun 21 15:19:02 MST 2012 
+#    Kathleen Biagas, Thu Jun 21 15:19:02 MST 2012
 #    Call ADD_TARGET_DEFINTIONS to add "HAVE_ICET", as the function deals
 #    correctly with a target already having some COMPILE_DEFINITIONS set.
 #
@@ -69,7 +69,7 @@
 #
 #****************************************************************************/
 
-SET(LIBENGINE_SOURCES
+set(LIBENGINE_SOURCES
 ProgrammableCompositer.C
 DataNetwork.C
 ClonedDataNetwork.C
@@ -84,19 +84,20 @@ VisItDisplay.C
 )
 
 # If the engine is static then we need some static symbol lookup functions
-IF(VISIT_STATIC)
-    SET(ENGINE_STATIC_SOURCES EngineStaticSymbolLocator.C)
-ENDIF(VISIT_STATIC)
+if(VISIT_STATIC)
+    set(ENGINE_STATIC_SOURCES EngineStaticSymbolLocator.C)
+endif()
 
-IF (NOT WIN32 AND NOT APPLE AND VISIT_USE_X)
-    SET(LIBENGINE_SOURCES ${LIBENGINE_SOURCES} XDisplay.C)
-ENDIF (NOT WIN32 AND NOT APPLE AND VISIT_USE_X)
-IF (NOT WIN32)
+if(NOT WIN32 AND NOT APPLE AND VISIT_USE_X)
+    set(LIBENGINE_SOURCES ${LIBENGINE_SOURCES} XDisplay.C)
+endif()
+
+if(NOT WIN32)
     # This keeps comm's exceptions visible when using -fvisibility=hidden
-    ADD_DEFINITIONS(-DCOMM_EXPORTS)
-ENDIF (NOT WIN32)
+    add_definitions(-DCOMM_EXPORTS)
+endif()
 
-INCLUDE_DIRECTORIES(
+include_directories(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_SOURCE_DIR}/third_party_builtin/cognomen/src
@@ -139,43 +140,42 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VTK_INCLUDE_DIRS}
-${OPENGL_INCLUDE_DIR}
 )
 
+if(HAVE_OSMESA OR HAVE_EGL)
+  include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
+endif()
+
 # Add link directories
-LINK_DIRECTORIES(
-${LIBRARY_OUTPUT_DIRECTORY}
-${GLEW_LIBRARY_DIR}
-${MESA_LIBRARY_DIR}
-${EAVL_LIBRARY_DIR}
-${VTK_LIBRARY_DIRS}
-${TCMALLOC_LIBRARY_DIR}
-${ALL_THIRDPARTY_IO_LIBRARY_DIR}
+link_directories(
+  ${LIBRARY_OUTPUT_DIRECTORY}
+  ${EAVL_LIBRARY_DIR}
+  ${TCMALLOC_LIBRARY_DIR}
+  ${ALL_THIRDPARTY_IO_LIBRARY_DIR}
 )
 
 
 #********************************* SERIAL ************************************
-ADD_LIBRARY(engine_ser ${LIBENGINE_SOURCES})
-IF (WIN32)
-    SET_TARGET_PROPERTIES(engine_ser PROPERTIES OUTPUT_NAME enginelib_ser)
-ENDIF (WIN32)
-TARGET_LINK_LIBRARIES(engine_ser
-visitcommon
-enginerpc
-avtview
-avtwriter_ser
-avtplotter_ser
-avtquery_ser
-avtviswindow_ser
-avtpipeline_ser
+add_library(engine_ser ${LIBENGINE_SOURCES})
+if(WIN32)
+    set_target_properties(engine_ser PROPERTIES OUTPUT_NAME enginelib_ser)
+endif()
+
+target_link_libraries(engine_ser
+    visitcommon
+    enginerpc
+    avtview
+    avtwriter_ser
+    avtplotter_ser
+    avtquery_ser
+    avtviswindow_ser
+    avtpipeline_ser
 )
 
-IF(MESA_FOUND)
-    TARGET_LINK_LIBRARIES(engine_ser visit_vtk_osmesa)
-ENDIF(MESA_FOUND)
-
+if(HAVE_OSMESA OR HAVE_EGL)
+    target_link_libraries(engine_ser visit_vtk_offscreen)
+endif()
 
 
 # These 3 variables are only defined when building statically.
@@ -183,14 +183,14 @@ ENDIF(MESA_FOUND)
 # engine_ser_exe_EOperator_ser = The list of operator libE libraries needed to link
 # engine_ser_exe_EPlot_ser = The list of plot libE libraries needed to link
 
-ADD_EXECUTABLE(engine_ser_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_SER_RESOURCE_FILE})
-SET_TARGET_PROPERTIES(engine_ser_exe PROPERTIES OUTPUT_NAME engine_ser)
+add_executable(engine_ser_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_SER_RESOURCE_FILE})
+set_target_properties(engine_ser_exe PROPERTIES OUTPUT_NAME engine_ser)
 
 if(WIN32 AND MSVC)
     set_target_properties(engine_ser_exe PROPERTIES LINK_FLAGS "/STACK:4000000")
 endif()
 
-TARGET_LINK_LIBRARIES(engine_ser_exe 
+target_link_libraries(engine_ser_exe
     ${VISIT_EXE_LINKER_FLAGS}
     ${engine_ser_exe_IDatabase}
     ${engine_ser_exe_EDatabase_ser}
@@ -198,24 +198,23 @@ TARGET_LINK_LIBRARIES(engine_ser_exe
     ${engine_ser_exe_EOperator_ser}
     ${engine_ser_exe_IPlot}
     ${engine_ser_exe_EPlot_ser}
-    engine_ser 
-    visit_verdict 
+    engine_ser
+    visit_verdict
     vtkjpeg
     vtkpng
     ${VTKZLIB_LIB}
     ${VTK_FREETYPE_LIBRARIES}
-    vtkftgl
     ${ALL_THIRDPARTY_IO_LIB}
     ${TCMALLOC_LIB}
-    ${CMAKE_THREAD_LIBS} 
+    ${CMAKE_THREAD_LIBS}
     ${ZLIB_LIB}
     ${EAVL_LIB}
 )
 
 # If we're building statically then the engine can't be linked until the plugin
 # sources are built
-IF(VISIT_STATIC)
-    ADD_DEPENDENCIES(engine_ser_exe
+if(VISIT_STATIC)
+    add_dependencies(engine_ser_exe
         ${engine_ser_exe_IDatabase}
         ${engine_ser_exe_EDatabase_ser}
         ${engine_ser_exe_IOperator}
@@ -223,41 +222,41 @@ IF(VISIT_STATIC)
         ${engine_ser_exe_IPlot}
         ${engine_ser_exe_EPlot_ser}
     )
-ENDIF(VISIT_STATIC)
+endif(VISIT_STATIC)
 
 VISIT_INSTALL_TARGETS(engine_ser engine_ser_exe)
 
 #********************************* PARALLEL **********************************
-IF(VISIT_PARALLEL)
-    SET(ENGINE_PAR_SOURCES MPIXfer.C)
+if(VISIT_PARALLEL)
+    set(ENGINE_PAR_SOURCES MPIXfer.C)
     # If we have Ice-T then add more sources to the build
-    IF(ICET_FOUND)
-        SET(ICET_SOURCES IceTNetworkManager.C)
-        INCLUDE_DIRECTORIES(${ICET_INCLUDE_DIR})
-        LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
-    ENDIF(ICET_FOUND)
+    if(ICET_FOUND)
+        set(ICET_SOURCES IceTNetworkManager.C)
+        include_directories(${ICET_INCLUDE_DIR})
+        link_directories(${ICET_LIBRARY_DIR})
+    endif()
 
     ADD_PARALLEL_LIBRARY(engine_par ${LIBENGINE_SOURCES} ${ENGINE_PAR_SOURCES} ${ICET_SOURCES})
-    IF (WIN32)
-        SET_TARGET_PROPERTIES(engine_par PROPERTIES OUTPUT_NAME enginelib_par)
-    ENDIF (WIN32)
+    if (WIN32)
+        set_target_properties(engine_par PROPERTIES OUTPUT_NAME enginelib_par)
+    endif (WIN32)
 
     # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
-    IF(ICET_FOUND)
+    if(ICET_FOUND)
         ADD_TARGET_DEFINITIONS(engine_par "HAVE_ICET")
-        IF(APPLE)
+        if(APPLE)
             # We need to link with OpenGL on Mac when we have IceT.
-            SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
-        ENDIF(APPLE)
+            set(ICET_OPENGL ${OPENGL_LIBRARIES})
+        endif()
 
-        IF(VISIT_STATIC)
-            SET(ICET_STATIC_LIB ${ICET_LIB} ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
-        ELSE(VISIT_STATIC)
-            SET(ICET_DYNAMIC_LIB ${ICET_LIB} ${ICET_OPENGL})
-        ENDIF(VISIT_STATIC)
-    ENDIF(ICET_FOUND)
+        if(VISIT_STATIC)
+            set(ICET_STATIC_LIB ${ICET_LIB} ${ICET_OPENGL} ${VISIT_PARALLEL_LIBS})
+        else()
+            set(ICET_DYNAMIC_LIB ${ICET_LIB} ${ICET_OPENGL})
+        endif()
+    endif(ICET_FOUND)
 
-    TARGET_LINK_LIBRARIES(engine_par
+    target_link_libraries(engine_par
         visitcommon
         enginerpc
         avtview
@@ -270,29 +269,29 @@ IF(VISIT_PARALLEL)
         ${ICET_DYNAMIC_LIB}
     )
 
-    IF(MESA_FOUND)
-        TARGET_LINK_LIBRARIES(engine_par visit_vtk_osmesa)
-    ENDIF(MESA_FOUND)
+    if(HAVE_OSMESA OR HAVE_EGL)
+        target_link_libraries(engine_par visit_vtk_offscreen)
+    endif()
 
-    IF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
-        ADD_LIBRARY(link_mpi_libs STATIC empty.c)
-        TARGET_LINK_LIBRARIES(link_mpi_libs ${VISIT_PARALLEL_LIBS})
-    ENDIF(VISIT_NOLINK_MPI_WITH_LIBRARIES)
+    if(VISIT_NOLINK_MPI_WITH_LIBRARIES)
+        add_library(link_mpi_libs STATIC empty.c)
+        target_link_libraries(link_mpi_libs ${VISIT_PARALLEL_LIBS})
+    endif(VISIT_NOLINK_MPI_WITH_LIBRARIES)
 
     # For static builds with icet, don't add the parallel libs automatically. We
     # try to control it explicitly so icet comes before mpi on the link line.
-    IF(ICET_FOUND AND VISIT_STATIC)
-        SET(tmpval ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
-        SET(VISIT_NOLINK_MPI_WITH_LIBRARIES OFF)
-    ENDIF(ICET_FOUND AND VISIT_STATIC)
+    if(ICET_FOUND AND VISIT_STATIC)
+        set(tmpval ${VISIT_NOLINK_MPI_WITH_LIBRARIES})
+        set(VISIT_NOLINK_MPI_WITH_LIBRARIES OFF)
+    endif(ICET_FOUND AND VISIT_STATIC)
 
     ADD_PARALLEL_EXECUTABLE(engine_par_exe ${VISIT_APPLICATION_STYLE} main.C ${ENGINE_STATIC_SOURCES} ${VISIT_ENGINE_PAR_RESOURCE_FILE})
 
-    IF(ICET_FOUND AND VISIT_STATIC)
-        SET(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
-    ENDIF(ICET_FOUND AND VISIT_STATIC)
+    if(ICET_FOUND AND VISIT_STATIC)
+        set(VISIT_NOLINK_MPI_WITH_LIBRARIES ${tmpval})
+    endif(ICET_FOUND AND VISIT_STATIC)
 
-    SET_TARGET_PROPERTIES(engine_par_exe PROPERTIES OUTPUT_NAME engine_par)
+    set_target_properties(engine_par_exe PROPERTIES OUTPUT_NAME engine_par)
     if(WIN32 AND MSVC)
         set_target_properties(engine_par_exe PROPERTIES
             LINK_FLAGS "/STACK:4000000")
@@ -306,23 +305,22 @@ IF(VISIT_PARALLEL)
         ${engine_par_exe_IPlot_par}
         ${engine_par_exe_EPlot_par}
         engine_par
-        visit_verdict 
+        visit_verdict
         vtkjpeg
         vtkpng
         ${VTKZLIB_LIB}
         ${VTK_FREETYPE_LIBRARIES}
-        vtkftgl
         ${ALL_THIRDPARTY_IO_LIB}
         ${ICET_STATIC_LIB}
         ${TCMALLOC_LIB}
-        ${CMAKE_THREAD_LIBS} 
+        ${CMAKE_THREAD_LIBS}
         ${ZLIB_LIB}
     )
 
     # If we're building statically then the engine can't be linked until the plugin
     # sources are built
-    IF(VISIT_STATIC)
-        ADD_DEPENDENCIES(engine_par_exe
+    if(VISIT_STATIC)
+        add_dependencies(engine_par_exe
             ${engine_par_exe_IDatabase_par}
             ${engine_par_exe_EDatabase_par}
             ${engine_par_exe_IOperator_par}
@@ -330,7 +328,7 @@ IF(VISIT_PARALLEL)
             ${engine_par_exe_IPlot_par}
             ${engine_par_exe_EPlot_par}
         )
-    ENDIF(VISIT_STATIC)
+    endif()
 
     VISIT_INSTALL_TARGETS(engine_par engine_par_exe)
-ENDIF(VISIT_PARALLEL)
+endif(VISIT_PARALLEL)

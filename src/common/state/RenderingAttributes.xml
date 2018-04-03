@@ -52,9 +52,6 @@
     <Field name="geometryRepresentation" label="geometryRepresentation" type="enum" subtype="GeometryRepresentation">
       Surfaces
     </Field>
-    <Field name="displayListMode" label="displayListMode" type="enum" subtype="TriStateMode">
-      Auto
-    </Field>
     <Field name="stereoRendering" label="stereoRendering" type="bool">
       false
     </Field>

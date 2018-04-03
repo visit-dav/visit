@@ -63,8 +63,8 @@
 #define CREATE_LABEL SNPRINTF
 #endif
 
-    vtkPoints    *p = input->GetPoints();
-    vtkDataArray *data = input->GetPointData()->GetArray(varname);
+    vtkPoints    *p = vtkVisItUtility::GetPoints(input);
+    vtkDataArray *data = input->GetPointData()->GetArray(this->VarName.c_str());
     vtkIdType     npts = p ? p->GetNumberOfPoints() : 0;
     vtkIdType     skipIncrement = 1;
 
@@ -79,23 +79,23 @@
     if(data == 0 && atts.GetVarType() == LabelAttributes::LABEL_VT_VECTOR_VAR)
     {
         data = input->GetPointData()->GetVectors();
-        debug3 << "avtLabelRenderer looking for a vector variable." << endl;
+        debug3 << "NodeLabels_body looking for a vector variable." << endl;
     }
     if(data == 0)
     {
         vtkDataArray *tmpNodes = input->GetPointData()->GetArray("LabelFilterOriginalNodeNumbers");
         if(tmpNodes == 0)
         {
-            debug3 << "avtLabelRenderer could not find LabelFilterOriginalNodeNumbers" << endl;
+            debug3 << "NodeLabels_body could not find LabelFilterOriginalNodeNumbers" << endl;
         }
         else if(!tmpNodes->IsA("vtkIntArray"))
         {
-            debug3 << "avtLabelRenderer found LabelFilterOriginalNodeNumbers but it "
+            debug3 << "NodeLabels_body found LabelFilterOriginalNodeNumbers but it "
                       "was not a vtkIntArray. It was a " << tmpNodes->GetClassName() << endl;
         }
         else
         {
-            debug3 << "avtLabelRenderer setting originalNodes=data." << endl;
+            debug3 << "NodeLabels_body setting originalNodes=data." << endl;
             originalNodes = (vtkIntArray *)tmpNodes;
         }
     }
@@ -115,7 +115,7 @@
                    << ", while the #points is: " << npts << endl;
         }
 
-        if(treatAsASCII)
+        if(this->TreatAsASCII)
         {
             debug3 << "Labelling nodes with label data" << endl;
 
@@ -127,7 +127,7 @@
                 {
                     BEGIN_LABEL
                         unsigned char scalarVal = (unsigned char)data->GetTuple1(id);
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%c", scalarVal);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%c", scalarVal);
                     END_LABEL
                 }
             }
@@ -137,7 +137,7 @@
                 for(vtkIdType id = 0; id < npts; ++id)
                 {
                     BEGIN_LABEL
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%s", label);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%s", label);
                     END_LABEL
 
                     label += labelLength;
@@ -156,7 +156,7 @@ debug3 << "*** WARNING - VisIt transformed the Label data from unsigned char. Th
 
                     // Use the label.
                     BEGIN_LABEL
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%s", tempstr);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%s", tempstr);
                     END_LABEL
                 }
                 delete [] tempstr;
@@ -169,7 +169,7 @@ debug3 << "*** WARNING - VisIt transformed the Label data from unsigned char. Th
             {
                 BEGIN_LABEL
                     double scalarVal = data->GetTuple1(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, atts.GetFormatTemplate().c_str(), scalarVal);
+                    CREATE_LABEL(labelString, this->MaxLabelSize, atts.GetFormatTemplate().c_str(), scalarVal);
                 END_LABEL
             }
         }
@@ -184,7 +184,7 @@ debug3 << "Labelling nodes with 2d vector data" << endl;
                 // const float *vert = p->GetPoint(id);
                 BEGIN_LABEL 
                     double *vectorVal = data->GetTuple2(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp, vectorVal[0], vectorVal[1]);
+                    CREATE_LABEL(labelString, this->MaxLabelSize, tmp, vectorVal[0], vectorVal[1]);
                 END_LABEL
             }
             free(tmp);
@@ -203,7 +203,7 @@ debug3 << "Labelling nodes with 3d vector data" << endl;
                 // const float *vert = p->GetPoint(id);
                 BEGIN_LABEL
                     double *vectorVal = data->GetTuple3(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp, vectorVal[0], vectorVal[1], vectorVal[2]);
+                    CREATE_LABEL(labelString, this->MaxLabelSize, tmp, vectorVal[0], vectorVal[1], vectorVal[2]);
                 END_LABEL
             }
             free(tmp);
@@ -229,7 +229,7 @@ debug3 << "Labelling nodes with 3d tensor data" << endl;
                 // float *vert = cellCenters->GetTuple3(id);
                 BEGIN_LABEL
                     double *tensorVal = data->GetTuple9(id);
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, tmp,
+                    CREATE_LABEL(labelString, this->MaxLabelSize, tmp,
                              tensorVal[0], tensorVal[1], tensorVal[2],
                              tensorVal[3], tensorVal[4], tensorVal[5],
                              tensorVal[6], tensorVal[7], tensorVal[8]);
@@ -274,7 +274,7 @@ debug3 << "Labelling nodes with 3d tensor data" << endl;
                         else
                             formatString = formatStringMiddle;
                         CREATE_LABEL(labelString + strlen(labelString),
-                                     MAX_LABEL_SIZE-strlen(labelString),
+                                     this->MaxLabelSize-strlen(labelString),
                                      formatString, vals[comp]);
                     }
                 END_LABEL
@@ -297,9 +297,9 @@ debug3 << "Labelling nodes with logical Indices: " << endl;
             {
                 BEGIN_LABEL
                 if (intptr[id*2+0] == -1)
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                    CREATE_LABEL(labelString, this->MaxLabelSize, " ");
                 else
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d", intptr[id*2+0], intptr[id*2+1]);
+                    CREATE_LABEL(labelString, this->MaxLabelSize, "%d,%d", intptr[id*2+0], intptr[id*2+1]);
                 END_LABEL
             }
         }
@@ -309,9 +309,9 @@ debug3 << "Labelling nodes with logical Indices: " << endl;
             {
                 BEGIN_LABEL
                 if (intptr[id*3+0] == -1)
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                    CREATE_LABEL(labelString, this->MaxLabelSize, " ");
                 else
-                    CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d,%d", intptr[id*3+0], intptr[id*3+1], intptr[id*3+2]);
+                    CREATE_LABEL(labelString, this->MaxLabelSize, "%d,%d,%d", intptr[id*3+0], intptr[id*3+1], intptr[id*3+2]);
                 END_LABEL
             }
         }
@@ -339,9 +339,9 @@ debug3 << "Labelling nodes with original node indices: "
             ybase = iptr[2];
             zbase = iptr[4];
         }
-        xbase -= nodeOrigin;
-        ybase -= nodeOrigin;
-        zbase -= nodeOrigin;
+        xbase -= this->NodeOrigin;
+        ybase -= this->NodeOrigin;
+        zbase -= this->NodeOrigin;
 
         vtkDataArray *sDims = input->GetFieldData()->
             GetArray("avtOriginalStructuredDimensions");
@@ -369,13 +369,13 @@ debug3 << "Labelling nodes with original node indices: "
                         unsigned int realNodeId = originalNodes->GetValue(id);
                         if(realNodeId == (unsigned int)-1)
                         {
-                            CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                            CREATE_LABEL(labelString, this->MaxLabelSize, " ");
                         }
                         else
                         {
                             unsigned int y = (realNodeId / xdims) - ybase;
                             unsigned int x = (realNodeId % xdims) - xbase;
-                            CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d", x,y);
+                            CREATE_LABEL(labelString, this->MaxLabelSize, "%d,%d", x,y);
                         }
                     END_LABEL
                 }
@@ -391,7 +391,7 @@ debug3 << "Labelling nodes with original node indices: "
                         unsigned int realNodeId = originalNodes->GetValue(id);
                         if(realNodeId == (unsigned int)-1)
                         {
-                            CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                            CREATE_LABEL(labelString, this->MaxLabelSize, " ");
                         }
                         else
                         {
@@ -399,7 +399,7 @@ debug3 << "Labelling nodes with original node indices: "
                             unsigned int offset = realNodeId % xydims;
                             unsigned int y = (offset / xdims) - ybase;
                             unsigned int x = (offset % xdims) - xbase;
-                            CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%d,%d,%d", x,y,z);
+                            CREATE_LABEL(labelString, this->MaxLabelSize, "%d,%d,%d", x,y,z);
                         }
                     END_LABEL
                 }
@@ -419,11 +419,11 @@ debug3 << "Labelling nodes with original node indices: "
                     unsigned int realNodeId = originalNodes->GetValue(id);
                     if(realNodeId == (unsigned int)-1)
                     {
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, " ");
+                        CREATE_LABEL(labelString, this->MaxLabelSize, " ");
                     }
                     else
                     {
-                        CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", realNodeId + nodeOrigin);
+                        CREATE_LABEL(labelString, this->MaxLabelSize, "%lld", realNodeId + this->NodeOrigin);
                     }
                 END_LABEL
             }
@@ -436,12 +436,13 @@ debug3 << "Labelling nodes with original node indices: "
         // we don't do any sort of lookup into the originalNodes array since it
         // was not available.
         //
-        debug3 << "avtLabelRenderer: backup case for labelling nodes." << endl;
+        debug3 << "NodeLabels_body: backup case for labelling nodes." << endl;
         for(vtkIdType id = 0; id < npts; id += skipIncrement)
         {
             // const float *vert = p->GetPoint(id);
             BEGIN_LABEL
-                CREATE_LABEL(labelString, MAX_LABEL_SIZE, "%lld", id + nodeOrigin);
+                CREATE_LABEL(labelString, this->MaxLabelSize, "%lld", id + this->NodeOrigin);
             END_LABEL
         }
     }
+    p->Delete();

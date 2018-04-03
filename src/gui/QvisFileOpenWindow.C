@@ -338,7 +338,7 @@ QvisFileOpenWindow::CreateWindowContents()
     // the intermediateFile list.
     intermediateFileList = fileServer->GetAppliedFileList();
 
-#if (defined(Q_WS_MACX) || defined(Q_OS_MAC)) && QT_VERSION >= 0x040800
+#if defined(Q_OS_MAC)
     // On Mac with Qt 4.8, we run into problems with the window not
     // coming back fully after calling setEnabled(true) on the window.
     // As a workaround, we disable the central widget instead of the

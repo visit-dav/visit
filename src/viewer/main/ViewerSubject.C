@@ -200,8 +200,8 @@ static int nConfigArgs = 1;
 #include <sstream>
 
 #include <visit-config.h>
-#ifdef HAVE_OSMESA
-#include <vtkVisItOSMesaRenderingFactory.h>
+#if defined(HAVE_OSMESA) || defined(HAVE_EGL)
+#  include <vtkOffScreenRenderingFactory.h>
 #endif
 
 // We do this so that the strings command on the .o file
@@ -2635,8 +2635,8 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         }
         else if (strcmp(argv[i], "-nowin") == 0)
         {
-#ifdef HAVE_OSMESA
-            vtkVisItOSMesaRenderingFactory::ForceMesa();
+#if defined(HAVE_OSMESA) || defined(HAVE_EGL)
+            vtkOffScreenRenderingFactory::ForceOffScreen();
 #endif
             RemoteProcess::DisablePTY();
             SetNowinMode(true);
@@ -2647,10 +2647,6 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
                  strcmp(argv[i], "-pysideclient") == 0)
         {
             WindowMetrics::SetEmbeddedWindowState(true);
-        }
-        else if (strcmp(argv[i], "-manta") == 0)
-        {
-            avtCallback::SetMantaMode(true);
         }
         else if (strcmp(argv[i], "-ospray") == 0)
         {

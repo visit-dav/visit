@@ -200,18 +200,16 @@ ${VISIT_SOURCE_DIR}/launcher/rpc
 ${VISIT_SOURCE_DIR}/mdserver/proxy
 ${VISIT_SOURCE_DIR}/mdserver/rpc
 ${VISIT_SOURCE_DIR}/visit_vtk/full
-${VISIT_SOURCE_DIR}/visit_vtk/osmesa
 ${VISIT_SOURCE_DIR}/vtkqt
 ${VISIT_SOURCE_DIR}/winutil
-${QT_INCLUDE_DIR}
-${QT_QTCORE_INCLUDE_DIR}
-${QT_QTGUI_INCLUDE_DIR}
-${QT_QTOPENGL_INCLUDE_DIR}
-${QT_QTNETWORK_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${QT_LIBRARY_DIR} ${GLEW_LIBRARY_DIR} ${MESA_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+if(HAVE_OSMESA OR HAVE_EGL)
+    include_directories(${VISIT_SOURCE_DIR}/visit_vtk/offscreen)
+endif()
+
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
 
 
 #*************************** The viewer library ******************************
@@ -258,11 +256,12 @@ avtqtviswindow
 winutil
 ${VIEWER_QT_LIBS}
 ${CMAKE_THREAD_LIBS}
+vtkGUISupportQt
 )
 
-IF(MESA_FOUND)
-    TARGET_LINK_LIBRARIES(viewer visit_vtk_osmesa)
-ENDIF(MESA_FOUND)
+if(HAVE_OSMESA OR HAVE_EGL)
+    target_link_libraries(viewer visit_vtk_offscreen)
+endif()
 
 #*************************** The viewer executable ***************************
 IF(NOT APPLE)
@@ -301,7 +300,6 @@ TARGET_LINK_LIBRARIES(viewer_exe
     vtkjpeg
     ${VTKZLIB_LIB}
     ${VTK_FREETYPE_LIBRARIES}
-    vtkftgl
 )
 
 # If we're building statically then the viewer can't be linked until the plugin

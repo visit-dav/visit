@@ -242,6 +242,9 @@ avtImageRepresentation::avtImageRepresentation(
 //    Burlen Loring, Tue Sep  1 07:28:33 PDT 2015
 //    use a vtk data array to store the z-buffer.
 //
+//    Kathleen Biagas, Tue May 10 17:03:10 PDT 2016
+//    Use vtkAbstractArray::VTK_DATA_ARRAY_DELETE.
+//
 // ****************************************************************************
 
 avtImageRepresentation::avtImageRepresentation(vtkImageData *d, float *z,
@@ -263,7 +266,7 @@ avtImageRepresentation::avtImageRepresentation(vtkImageData *d, float *z,
         const int *dims = asVTK->GetDimensions();
         int npix = dims[0]*dims[1];
        if (take)
-           zbuffer->SetArray(z, npix, 0, vtkDataArrayTemplate<float>::VTK_DATA_ARRAY_DELETE);
+           zbuffer->SetArray(z, npix, 0, vtkAbstractArray::VTK_DATA_ARRAY_DELETE);
        else
            memcpy(zbuffer->WritePointer(0, npix), z, npix*sizeof(float));
     }

@@ -388,7 +388,6 @@ VisWinPlots::AddPlot(avtActor_p &p)
     // Ensure that the new plot has the right immediate mode rendering flag.
     //
     VisWindow *vw = mediator;
-    p->SetImmediateModeRendering(vw->GetImmediateModeRendering());
 
     mediator.UpdatePlotList(plots);
 
@@ -1763,27 +1762,6 @@ VisWinPlots::SetSurfaceRepresentation(int rep)
                               mediator.GetSpecularCoeff(),
                               mediator.GetSpecularPower(),
                               mediator.GetSpecularColor());
-    }
-}
-
-// ****************************************************************************
-//  Method: VisWinPlots::SetImmediateModeRendering
-//
-//  Purpose:
-//      Allows actors to create or free their display lists.
-//
-//  Programmer: Brad Whitlock
-//  Creation:   Mon Sep 23 15:48:39 PST 2002
-//
-// ****************************************************************************
-
-void
-VisWinPlots::SetImmediateModeRendering(bool immediateMode)
-{
-    std::vector< avtActor_p >::iterator it;
-    for (it = plots.begin() ; it != plots.end() ; it++)
-    {
-        (*it)->SetImmediateModeRendering(immediateMode);
     }
 }
 

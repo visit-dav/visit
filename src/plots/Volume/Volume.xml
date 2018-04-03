@@ -1,29 +1,16 @@
 <?xml version="1.0"?>
   <Plugin name="Volume" type="plot" label="Volume" version="1.1" enabled="true" mdspecificcode="false" engspecificcode="true" onlyengine="false" noengine="false" vartype="scalar,species" iconFile="Volume.xpm">
     <CXXFLAGS>
-      ${QT_QTOPENGL_INCLUDE_DIR}
-      ${SLIVR_INCLUDE_DIR}
-      ${GLEW_INCLUDE_DIR}
-      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty/boost
-      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/IO/3rdParty
-      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty
-      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok/3rdParty/boost
-      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok/tuvok
-      ${VISIT_INCLUDE_DIR}/third_party_builtin/tuvok
       ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
       ${VISIT_INCLUDE_DIR}/avt/Expressions/General
     </CXXFLAGS>
     <Files components="G">
-      ${SLIVR_GUI_IMPL}
       TransferFunctionWidget.C
       VolumeRLEFunctions.C
     </Files>
     <LIBS components="G">
-      ${TUVOK_LIB}
       ${QT_QTOPENGL_LIB}
-      ${SLIVR_LIB}
-      ${GLEW_LIB}
-      ${OPENGL_gl_LIBRARY}
+      vtkRenderingVolumeOpenGL2
     </LIBS>
     <Files components="S">
       TransferFunctionWidget.C
@@ -35,18 +22,12 @@
       avtVolumeRenderer.C
       avtVolumeFilter.C
       avtLowerResolutionVolumeFilter.C
-      avtOpenGLSplattingVolumeRenderer.C
-      avtOpenGL3DTextureVolumeRenderer.C
-      avtOpenGLSLIVRVolumeRenderer.C
-      avtOpenGLTuvokVolumeRenderer.C
+      avtDefaultRenderer.C
       BoundingBoxContourer.C
       TransferFunctionWidget.C
     </Files>
     <LIBS components="V">
-      ${TUVOK_LIB}
-      ${SLIVR_LIB}
-      ${GLEW_LIB}
-      ${OPENGL_gl_LIBRARY}
+      vtkRenderingVolumeOpenGL2
     </LIBS>
     <Files components="E">
       VolumeFunctions.C
@@ -54,42 +35,26 @@
       avtVolumeRenderer.C
       avtVolumeFilter.C
       avtLowerResolutionVolumeFilter.C
-      avtOpenGLSplattingVolumeRenderer.C
-      avtOpenGL3DTextureVolumeRenderer.C
-      avtOpenGLSLIVRVolumeRenderer.C
-      avtOpenGLTuvokVolumeRenderer.C
+      avtDefaultRenderer.C
       BoundingBoxContourer.C
       TransferFunctionWidget.C
     </Files>
     <LIBS components="ESer">
-      ${TUVOK_LIB}
-      ${SLIVR_LIB}
-      ${GLEW_LIB}
-      ${OPENGL_gl_LIBRARY}
       avtexpressions_ser
+      vtkRenderingVolumeOpenGL2
     </LIBS>
     <LIBS components="EPar">
-      ${TUVOK_LIB}
-      ${SLIVR_LIB}
-      ${GLEW_LIB}
-      ${OPENGL_gl_LIBRARY}
       avtexpressions_par
+      vtkRenderingVolumeOpenGL2
     </LIBS>
-    <Files components="W">
-      ${SLIVR_GUI_HDR}
-    </Files>
     <Files components="J">
       TransferFunctionWidget.java
     </Files>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">
-        Splatting
-        Texture3D
+        Default
         RayCasting
         RayCastingIntegration
-        SLIVR
-    RayCastingSLIVR
-        Tuvok
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -185,13 +150,10 @@
         500
       </Field>
       <Field name="rendererType" label="Renderer Type" type="enum" subtype="Renderer">
-        Splatting
+        Default
       </Field>
       <Field name="gradientType" label="Gradient Type" type="enum" subtype="GradientType">
         SobelOperator
-      </Field>
-      <Field name="num3DSlices" label="num3DSlices" type="int">
-        200
       </Field>
       <Field name="scaling" label="scaling" type="enum" subtype="Scaling">
         Linear
@@ -205,13 +167,8 @@
       <Field name="sampling" label="Sampling Type" type="enum" subtype="SamplingType" enabler="rendererType:RayCasting">
         Rasterization
       </Field>
-      <Field name="rendererSamples" label="Render samples" type="float" enabler="rendererType:SLIVR">
+      <Field name="rendererSamples" label="Render samples" type="float" enabler="sampling:Trilinear">
         3.000000
-      </Field>
-      <Field name="transferFunction2DWidgets" label="Transfer function widget list" type="attVector" subtype="TransferFunctionWidget">
-      </Field>
-      <Field name="transferFunctionDim" label="Dimension of the transfer function" type="int">
-        1
       </Field>
       <Field name="lowGradientLightingReduction" label="lowGradientLightingReduction" type="enum" subtype="LowGradientLightingReduction">
         Lower
@@ -222,11 +179,11 @@
       <Field name="lowGradientLightingClampValue" label="lowGradientLightingClampFlag" type="double">
         1.000000
       </Field>
-    <Field name="materialProperties" label="materialProperties" type="doubleArray" length="4">
-        0.4
-        0.75
-        0.0
-        15
+      <Field name="materialProperties" label="materialProperties" type="doubleArray" length="4">
+        0.400000
+        0.750000
+        0.000000
+        15.000000
       </Field>
       <Function name="ChangesRequireRecalculation" user="true" member="true">
       </Function>
@@ -251,8 +208,6 @@
       <Function name="VolumeAttributes_SetFreeformOpacity" user="false" member="true">
       </Function>
       <Function name="SetRendererType" user="false" member="true">
-      </Function>
-      <Function name="SetTransferFunctionDim" user="false" member="true">
       </Function>
       <Function name="VolumeViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
       </Function>

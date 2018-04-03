@@ -70,12 +70,12 @@ vtkVisItCutter::~vtkVisItCutter()
 
 // Overload standard modified time function. If cut functions is modified,
 // or contour values modified, then this object is modified as well.
-unsigned long
+vtkMTimeType
 vtkVisItCutter::GetMTime()
 {
-  unsigned long mTime=this->vtkPolyDataAlgorithm::GetMTime();
-  unsigned long contourValuesMTime=this->ContourValues->GetMTime();
-  unsigned long time;
+  vtkMTimeType mTime = this->vtkPolyDataAlgorithm::GetMTime();
+  vtkMTimeType contourValuesMTime = this->ContourValues->GetMTime();
+  vtkMTimeType time;
  
   mTime = ( contourValuesMTime > mTime ? contourValuesMTime : mTime );
 

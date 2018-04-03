@@ -907,7 +907,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
                         BuildTet(ci, cellArray, cellTypes);
 #ifdef ENABLE_SUBDIVISION
                         if(subdividingSingleMesh)
-                            origCells->InsertNextTupleValue(oc);
+                            origCells->InsertNextTypedTuple(oc);
 #endif
                         break;
                     case 5 :
@@ -922,7 +922,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
                             BuildPyramid(ci, cellArray, cellTypes);
 #ifdef ENABLE_SUBDIVISION
                             if(subdividingSingleMesh)
-                                origCells->InsertNextTupleValue(oc);
+                                origCells->InsertNextTypedTuple(oc);
 #endif
                         }
                         else if (nNodes == 18) // Wedge
@@ -930,7 +930,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
                             BuildWedge(ci, cellArray, cellTypes);
 #ifdef ENABLE_SUBDIVISION
                             if(subdividingSingleMesh)
-                                origCells->InsertNextTupleValue(oc);
+                                origCells->InsertNextTypedTuple(oc);
 #endif
                         }
                         //else
@@ -941,7 +941,7 @@ avtCCMFileFormat::GetMesh(int domain, const char *meshname)
                         BuildHex(ci, cellArray, cellTypes);
 #ifdef ENABLE_SUBDIVISION
                         if(subdividingSingleMesh)
-                            origCells->InsertNextTupleValue(oc);
+                            origCells->InsertNextTypedTuple(oc);
 #endif
                         break;
                     default :
@@ -1988,7 +1988,7 @@ avtCCMFileFormat::TesselateCell(const int domain, const CellInfoVector &civ,
                     verts[2] = c;
                     ugrid->InsertNextCell(VTK_TETRA, 4, verts);
                     ((vtkUnsignedIntArray*)originalCells[dom])->
-                        InsertNextTupleValue(oc);
+                        InsertNextTypedTuple(oc);
                 }
                 tetCount += ntris;
             }
@@ -2168,7 +2168,7 @@ avtCCMFileFormat::TesselateCells2D(const int domain, const CellInfoVector &civ,
                 ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
 
                 ((vtkUnsignedIntArray*)originalCells[dom])->
-                    InsertNextTupleValue(oc);
+                    InsertNextTypedTuple(oc);
             }
         }
 

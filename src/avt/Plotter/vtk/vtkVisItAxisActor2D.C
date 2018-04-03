@@ -1369,13 +1369,11 @@ vtkVisItAxisActor2D::SetNumberOfLabelsBuilt(const int numLabels)
 //------------------------------------------------------------------------------
 // Take into account the MTimes of Point1Coordinate and Point2Coordinate.
 // -----------------------------------------------------------------------------
-unsigned long 
+vtkMTimeType
 vtkVisItAxisActor2D::GetMTime()
 {
-  unsigned long mTime = this->Superclass::GetMTime();
-
-  unsigned long time;
-  time = this->Point1Coordinate->GetMTime();
+  vtkMTimeType mTime = this->Superclass::GetMTime();
+  vtkMTimeType time  = this->Point1Coordinate->GetMTime();
   mTime = (time > mTime ? time : mTime);
   time = this->Point2Coordinate->GetMTime();
   mTime = (time > mTime ? time : mTime);

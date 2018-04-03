@@ -76,6 +76,7 @@ QvisFontAttributesWidget::QvisFontAttributesWidget(QWidget *parent) :
     QFrame(parent), atts()
 {
     opacityEnabled = true;
+    opacityHidden = false;
 
     QGridLayout *gLayout = new QGridLayout(this);
     gLayout->setMargin(0);
@@ -164,6 +165,27 @@ QvisFontAttributesWidget::disableOpacity()
 {
     opacityEnabled = false;
 }
+
+// ****************************************************************************
+// Method: QvisFontAttributesWidget::hideOpacity
+//
+// Purpose:
+//   Hides the opacity slider.
+//
+// Programmer: Kathleen Biagas
+// Creation:   April 10, 2017
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisFontAttributesWidget::hideOpacity()
+{
+    opacityHidden = true;
+    textColorOpacity->hide();
+}
+
 
 // ****************************************************************************
 // Method: QvisFontAttributesWidget::getFontAttributes

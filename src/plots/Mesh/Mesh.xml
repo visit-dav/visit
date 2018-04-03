@@ -1,5 +1,15 @@
 <?xml version="1.0"?>
   <Plugin name="Mesh" type="plot" label="Mesh" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" vartype="mesh" iconFile="Mesh.xpm">
+    <Files components="V">
+      avtMeshFilter.C
+      avtMeshPlotMapper.C
+      vtkMeshPlotMapper.C
+    </Files>
+    <Files components="E">
+      avtMeshFilter.C
+      avtMeshPlotMapper.C
+      vtkMeshPlotMapper.C
+    </Files>
     <Attribute name="MeshAttributes" purpose="Attributes for the mesh plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MeshAttributes.code">
       <Enum name="SmoothingLevel">
         None

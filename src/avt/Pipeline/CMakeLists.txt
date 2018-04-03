@@ -60,6 +60,10 @@
 #   Eric Brugger, Thu Jan 14 10:44:28 PST 2016
 #   Add linking of vtkm library.
 #
+#   Kathleen Biagas, Tue Feb 6 14:12:32 PST 2018
+#   Removed vtkRendering* from link libs, moved avtLookupTable to avt/Plotter
+#   due to its dependence on vtkRendering.  Removed VTK_DEFINITIONS.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -99,7 +103,6 @@ Data/avtIntervalTree.C
 Data/avtIsolevelsSelection.C
 Data/avtLightingModel.C
 Data/avtLogicalSelection.C
-Data/avtLookupTable.C
 Data/avtMIPRangeRF.C
 Data/avtMaterial.C
 Data/avtMaximumIntensityProjectionRF.C
@@ -253,49 +256,31 @@ ${ZLIB_INCLUDE_DIR}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
 
 # Unless we're doing a VISIT_DBIO_ONLY build then we need avtmath
 IF(NOT VISIT_DBIO_ONLY)
     SET(AVTMATH avtmath)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
-IF(VTKM_FOUND)
-    SET(VISIT_VTKM_LIB visit_vtkm)
-ENDIF()
-
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
-    TARGET_LINK_LIBRARIES(avtpipeline_ser visitcommon ${AVTMATH} avtdbatts 
-                                           visit_vtk lightweight_visit_vtk vtkCommonCore 
-                                           vtkCommonDataModel vtkFiltersGeometry 
-                                           vtkRenderingOpenGL vtkRenderingFreeType 
-                                           vtkRenderingFreeTypeOpenGL vtkInteractionStyle 
-                                           ${ZLIB_LIB} ${EAVL_LIB} ${VISIT_VTKM_LIB})
+TARGET_LINK_LIBRARIES(avtpipeline_ser
+                      visitcommon ${AVTMATH} avtdbatts
+                      visit_vtk lightweight_visit_vtk vtkCommonCore
+                      vtkCommonDataModel vtkFiltersGeometry
+                      ${ZLIB_LIB} ${EAVL_LIB} ${VTKM_LIB})
 
-IF(HAVE_LIB_R)
-     TARGET_LINK_LIBRARIES(avtpipeline_ser vtkFiltersStatisticsGnuR)
-ENDIF(HAVE_LIB_R)
-
-# Add vtk defines
-ADD_TARGET_DEFINITIONS(avtpipeline_ser "${VTK_DEFINITIONS}")
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtpipeline_par ${ALL_SOURCES})
 
-        TARGET_LINK_LIBRARIES(avtpipeline_par visitcommon ${AVTMATH} avtdbatts 
-                                              visit_vtk lightweight_visit_vtk vtkCommonCore 
-                                              vtkCommonDataModel vtkFiltersGeometry 
-                                              vtkRenderingOpenGL vtkRenderingFreeType 
-                                              vtkRenderingFreeTypeOpenGL 
-                                              vtkInteractionStyle ${ZLIB_LIB} 
-                                              ${EAVL_LIB} ${VISIT_VTKM_LIB})
-    IF(HAVE_LIB_R)
-        TARGET_LINK_LIBRARIES(avtpipeline_par vtkFiltersStatisticsGnuR)
-    ENDIF(HAVE_LIB_R)
-    # Add vtk defines
-    ADD_TARGET_DEFINITIONS(avtpipeline_par "${VTK_DEFINITIONS}")
+    TARGET_LINK_LIBRARIES(avtpipeline_par
+                          visitcommon ${AVTMATH} avtdbatts
+                          visit_vtk lightweight_visit_vtk vtkCommonCore
+                          vtkCommonDataModel vtkFiltersGeometry
+                          ${ZLIB_LIB} ${EAVL_LIB} ${VTKM_LIB})
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 ENDIF(VISIT_PARALLEL)

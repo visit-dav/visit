@@ -46,14 +46,13 @@
 
 #include <avtLegend.h>
 #include <avtPlot.h>
-#include <avtCurveRenderer.h>
 
 #include <CurveAttributes.h>
 
 class     avtCurveFilter;
+class     avtCurveMapper;
 class     avtCurveLegend;
 class     avtLabeledCurveMapper;
-class     avtUserDefinedMapper;
 class     avtWarpFilter;
 class     avtPolarToCartesianFilter;
 class     vtkProperty;
@@ -114,16 +113,14 @@ class avtCurvePlot : public avtLineDataPlot
     avtCurveLegend                *curveLegend;
     avtLegend_p                    curveLegendRefPtr;
 
-    avtCurveRenderer_p              renderer;
-    avtUserDefinedMapper           *mapper;
-    avtLabeledCurveMapper          *decoMapper;
-    vtkProperty                    *property;
+    avtCurveMapper                *mapper;
+    avtLabeledCurveMapper         *decoMapper;
 
-    avtCurveFilter                 *CurveFilter;
-    avtWarpFilter                  *WarpFilter;
-    avtPolarToCartesianFilter      *PolarFilter;
+    avtCurveFilter                *CurveFilter;
+    avtWarpFilter                 *WarpFilter;
+    avtPolarToCartesianFilter     *PolarFilter;
 
-    virtual avtMapper          *GetMapper(void);
+    virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior(void);

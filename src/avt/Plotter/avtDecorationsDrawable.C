@@ -42,7 +42,6 @@
 
 #include <avtDecorationsDrawable.h>
 
-#include <vtkDataObjectCollection.h>
 #include <vtkRenderer.h>
 
 #include <avtDecorationsMapper.h>

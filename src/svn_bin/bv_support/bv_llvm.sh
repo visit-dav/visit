@@ -16,6 +16,9 @@ function bv_llvm_disable
 function bv_llvm_depends_on
 {
     depends_on="cmake"
+    if [[ $DO_PYTHON == "yes" ]] ; then
+        depends_on="$depends_on python"
+    fi
 
     echo ${depends_on}
 }
@@ -128,6 +131,10 @@ function build_llvm
     rm -f CMakeCache.txt */CMakeCache.txt
 
     info "Configuring LLVM . . ."
+    if [[ $DO_PYTHON == "yes" ]] ; then
+        LLVM_CMAKE_PYTHON="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
+    fi
+
     ${CMAKE_COMMAND} \
         -DCMAKE_INSTALL_PREFIX:PATH="${VISITDIR}/llvm/${BV_LLVM_VERSION}/${VISITARCH}" \
         -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
@@ -140,6 +147,7 @@ function build_llvm
         -DLLVM_TARGETS_TO_BUILD=X86 \
         -DLLVM_ENABLE_RTTI:BOOL=ON \
         -DLLVM_BUILD_LLVM_DYLIB:BOOL=ON \
+        $LLVM_CMAKE_PYTHON \
         ../${BV_LLVM_SRC_DIR}
     if [[ $? != 0 ]] ; then
         warn "LLVM cmake failed.  Giving up"

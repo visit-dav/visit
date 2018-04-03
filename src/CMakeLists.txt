@@ -418,6 +418,9 @@
 #    Eric Brugger, Wed May 17 16:53:48 PDT 2017
 #    I added support for the LLVM and OpenSWR packages.
 #
+#    Kathleen Biagas, Fri Mar  2 14:52:00 MST 2018
+#    Removed TUVOK.
+#
 #    Eric Brugger, Tue Mar 13 13:24:56 PDT 2018
 #    I modified the header install command to exclude any directories named
 #    icons. Previously, this resulted in a couple of invalid symbolic links
@@ -425,14 +428,15 @@
 #
 #****************************************************************************/
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
 
 IF (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     if(CMAKE_MAJOR_VERSION GREATER 2)
         cmake_policy(SET CMP0033 OLD)
     endif()
-    IF(WIN32 AND VISIT_QT5)
+    IF(WIN32)
+        # don't automatically link with qtmain
         cmake_policy(SET CMP0020 OLD)
     ENDIF()
 ENDIF (COMMAND cmake_policy)
@@ -525,7 +529,7 @@ FUNCTION(VISIT_OPTION_DEFAULT var)
   ENDIF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
 ENDFUNCTION(VISIT_OPTION_DEFAULT var)
 
-SET(VTK_MINIMUM_VERSION "6.0.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
+SET(VTK_MINIMUM_VERSION "8.1.0" CACHE INTERNAL "minimum version of vtk that VisIt can use")
 
 SET(NEKTAR++_MINIMUM_VERSION "4.0.0" CACHE INTERNAL "minimum version of Nektar++ that VisIt can use")
 
@@ -566,7 +570,7 @@ ENDIF (NOT WIN32)
 
 #-----------------------------------------------------------------------------
 # If the config-site file above has not set a VTK version set a
-# default VTK version of 6.1.0.  
+# default VTK version of 8.1.0.  
 #-----------------------------------------------------------------------------
 IF(NOT VTK_VERSION)
   IF(VISIT_VTK_VERSION)
@@ -575,8 +579,8 @@ IF(NOT VTK_VERSION)
       ENDIF()
       SETUP_APP_VERSION(VTK ${VISIT_VTK_VERSION})
   ELSE()
-      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming 6.1.0")
-      SETUP_APP_VERSION(VTK 6.1.0)
+      MESSAGE(STATUS "VISIT_VTK_VERSION NOT FOUND assuming 8.1.0")
+      SETUP_APP_VERSION(VTK 8.1.0)
   ENDIF()
 ENDIF()
 
@@ -622,6 +626,9 @@ SET(CMAKE_Fortran_COMPILER ${VISIT_FORTRAN_COMPILER})
 #-----------------------------------------------------------------------------
 
 PROJECT(VISIT)
+
+include(${VISIT_SOURCE_DIR}/CMake/CheckMinimumCompilerVersion.cmake)
+
 
 #-----------------------------------------------------------------------------
 # Set extended platlform defs.
@@ -688,11 +695,9 @@ SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 OPTION(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
 
-OPTION(VISIT_TUVOK    "Build VisIt with support for the Tuvok volume rendering library." OFF)
-OPTION(VISIT_SLIVR    "Build VisIt with support for the SLIVR volume rendering library." ON)
 OPTION(VISIT_STATIC   "Build VisIt statically." OFF)
 IF(VISIT_STATIC)
-    ADD_DEFINITIONS(-DVISIT_STATIC -DGLEW_STATIC)
+    ADD_DEFINITIONS(-DVISIT_STATIC)
 ENDIF(VISIT_STATIC)
 OPTION(VISIT_OSX_USE_RPATH      "Use rpath instead of executable_path while installing" OFF)
 OPTION(VISIT_PYTHON_SCRIPTING      "Build VisIt with Python scripting support." ON)
@@ -734,9 +739,6 @@ IF(WIN32)
       SET(VISIT_APPLICATION_STYLE "WIN32")
   ENDIF(VISIT_WINDOWS_APPLICATION)
 ENDIF(WIN32)
-IF(VISIT_MESA_DIR)
-  OPTION(VISIT_USE_MANGLED_MESA "Enable use of mangled Mesa classes in VisIt" OFF)
-ENDIF(VISIT_MESA_DIR)
 
 OPTION(VISIT_INSTALL_AS_BETA "Install as beta (symlink beta instead of current to installed version)." OFF)
 OPTION(VISIT_MPICH_INSTALL "Install MPICH into VisIt binary distribution" OFF)
@@ -745,7 +747,6 @@ IF(APPLE OR WIN32)
 ELSE(APPLE OR WIN32)
     OPTION(VISIT_USE_X "Use X11" ON)
 ENDIF(APPLE OR WIN32)
-OPTION(VISIT_USE_GLEW "Use GLEW to call GL functions." ON)
 
 OPTION(VISIT_THREAD "Build VisIt with thread support." OFF)
 OPTION(VISIT_BUILD_AVTEXAMPLES  "Enable building of avtexamples" ON)
@@ -788,11 +789,12 @@ ENDMACRO(VISIT_3RDPARTY_DEP libvar comment)
 # Define options that let us pick our standard libraries: VTK,Mesa,Qt,Python
 # and so on.
 VISIT_3RDPARTY_VAR(VTK_DIR    "Path containing the VTK library's bin and lib")
-VISIT_3RDPARTY_VAR(QT_BIN     "Path to the Qt library's bin (path containing qmake)")
+VISIT_3RDPARTY_VAR(QT_DIR     "Path containing the Qt library's bin and lib")
 VISIT_3RDPARTY_VAR(QWT_DIR    "Path containing the Qwt library's include and lib")
 VISIT_3RDPARTY_VAR(PYTHON_DIR "Path containing the Python library's include and lib")
 IF (NOT WIN32)
-  VISIT_3RDPARTY_VAR(MESA_DIR   "Path containing the Mesa library's include and lib")
+  VISIT_3RDPARTY_VAR(MESAGL_DIR   "Path containing the Mesa GL library's include and lib")
+  VISIT_3RDPARTY_VAR(OSMESA_DIR   "Path containing the OSMesa library's include and lib")
 ENDIF (NOT WIN32)
 VISIT_3RDPARTY_VAR(ICET_DIR   "Path containing the Ice-T library's include and lib")
 VISIT_3RDPARTY_VAR(TCMALLOC_DIR   "Path containing the tcmalloc library's include and lib")
@@ -846,10 +848,11 @@ VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
 VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
 VISIT_3RDPARTY_VAR(OPENGL_DIR    "Path containing the OpenGL library's include and lib")
+VISIT_3RDPARTY_VAR(OPENGL_LIBRARY "Path to OpenGL lib")
+VISIT_3RDPARTY_VAR(GLU_LIBRARY "Path to GLU lib")
 VISIT_3RDPARTY_VAR(OPENEXR_DIR   "Path containing the OpenEXR library's include and lib")
 VISIT_3RDPARTY_VAR(NETCDF_DIR    "Path containing the NETCDF library's include and lib")
 VISIT_3RDPARTY_DEP(NETCDF_LIBDEP "NETCDF library dependencies")
-VISIT_3RDPARTY_VAR(OPENSWR_DIR   "Path containing the OpenSWR library's include and lib")
 VISIT_3RDPARTY_VAR(PYSIDE_DIR    "Path containing the PySide installation")
 VISIT_3RDPARTY_VAR(R_DIR         "Path containing the R library's include and lib")
 VISIT_3RDPARTY_VAR(SILO_DIR      "Path containing the Silo library's include and lib")
@@ -863,7 +866,6 @@ VISIT_3RDPARTY_DEP(XDMF_LIBDEP   "Xdmf library dependencies")
 VISIT_3RDPARTY_VAR(XERCESC_DIR   "Path containing the Xerces-C library's include and lib")
 VISIT_3RDPARTY_VAR(XSD_DIR       "Path containing the XSD library's include and lib")
 VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include and lib")
-VISIT_3RDPARTY_VAR(MANTA_DIR     "Path containing the Manta library's include and lib")
 VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
 VISIT_3RDPARTY_VAR(MOAB_DIR      "Path containing the MOAB library's include and lib")
 VISIT_3RDPARTY_VAR(MOAB_MPI_DIR  "Path containing the parallel MOAB library's include and lib")
@@ -873,7 +875,7 @@ VISIT_3RDPARTY_VAR(MOAB_MPI_DIR  "Path containing the parallel MOAB library's in
 #-----------------------------------------------------------------------------
 FILE(STRINGS VERSION VERSION)
 IF(NOT VERSION)
-    SET(VERSION "2.0.0")
+    SET(VERSION "3.0.0")
 ENDIF(NOT VERSION)
 SET(VISIT_VERSION ${VERSION})
 
@@ -1044,6 +1046,11 @@ MACRO(VISIT_INSTALL_TARGETS)
     VISIT_INSTALL_TARGETS_RELATIVE("" ${ARGN})
 ENDMACRO(VISIT_INSTALL_TARGETS)
 
+# Configure OpenGL support.
+if(NOT VISIT_DBIO_ONLY)
+  include(${VISIT_SOURCE_DIR}/CMake/VisItOpenGL.cmake)
+endif()
+
 # Install the headers for directories that we need in order to build plugins
 IF(VISIT_HEADERS_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping VisIt headers installation")
@@ -1128,58 +1135,6 @@ CHECK_INCLUDE_FILES (sys/stat.h  HAVE_SYS_STAT_H)
 CHECK_INCLUDE_FILES (unistd.h    HAVE_UNISTD_H)
 CHECK_INCLUDE_FILES (zlib.h      HAVE_ZLIB_H)
 CHECK_INCLUDE_FILES (stdbool.h   HAVE_STDBOOL_H)
-
-# Configure Mesa support.
-IF(NOT WIN32 AND (VISIT_MESA_DIR OR VISIT_OPENSWR_DIR) AND NOT VISIT_DBIO_ONLY)
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItMesa.cmake)
-ENDIF(NOT WIN32 AND (VISIT_MESA_DIR OR VISIT_OPENSWR_DIR) AND NOT VISIT_DBIO_ONLY)
-
-# Configure OpenGL support.
-IF(NOT VISIT_DBIO_ONLY)
-    IF(VISIT_OPENGL_DIR)
-        SET(OPENGL_FOUND ON)
-        SET(OPENGL_GLU_FOUND ON)
-        SET(OPENGL_INCLUDE_DIR ${VISIT_OPENGL_DIR}/include)
-
-        IF(VISIT_OPENGL_LIBRARY)
-            SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_LIBRARY})
-        ELSE(VISIT_OPENGL_LIBRARY)
-            # Hack for BG/Q.
-            IF(BLUEGENEQ)
-                SET(LIBGL OSMesa)
-            ELSE(BLUEGENEQ)
-                SET(LIBGL GL)
-            ENDIF(BLUEGENEQ)
-            IF(VISIT_STATIC)
-                SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/lib${LIBGL}.a)
-            ELSE(VISIT_STATIC)
-                SET(OPENGL_gl_LIBRARY ${VISIT_OPENGL_DIR}/lib/lib${LIBGL}.so)
-            ENDIF(VISIT_STATIC)
-        ENDIF(VISIT_OPENGL_LIBRARY)
-
-        IF(VISIT_GLU_LIBRARY)
-            SET(OPENGL_glu_LIBRARY ${VISIT_GLU_LIBRARY})
-        ELSE(VISIT_GLU_LIBRARY)
-            IF(VISIT_STATIC)
-                SET(OPENGL_glu_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGLU.a)
-            ELSE(VISIT_STATIC)
-                SET(OPENGL_glu_LIBRARY ${VISIT_OPENGL_DIR}/lib/libGLU.so)
-            ENDIF(VISIT_STATIC)
-        ENDIF(VISIT_GLU_LIBRARY)
-
-        SET(OPENGL_LIBRARIES ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY})
-
-        MESSAGE(STATUS "Found OpenGL ${OPENGL_gl_LIBRARY}")
-        MESSAGE(STATUS "Found GLU ${OPENGL_glu_LIBRARY}")
-    ELSE(VISIT_OPENGL_DIR)
-        INCLUDE(${CMAKE_ROOT}/Modules/FindOpenGL.cmake)
-    ENDIF(VISIT_OPENGL_DIR)
-ENDIF(NOT VISIT_DBIO_ONLY)
-
-IF(VISIT_R_DIR)
-    # Configure R support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindR.cmake)
-ENDIF(VISIT_R_DIR)
 
 # Configure VTK support.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisItVTK.cmake)
@@ -1267,38 +1222,6 @@ if(VISIT_PYTHON_SCRIPTING AND PYTHONLIBS_FOUND
                           AND NOT VISIT_SERVER_COMPONENTS_ONLY)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPySide.cmake)
 endif()
-
-# Treat GLEW as a 3rd party builtin.
-IF(VISIT_USE_GLEW)
-    SET(GLEW_FOUND 1)
-    ADD_DEFINITIONS(-DHAVE_LIBGLEW)
-    SET(GLEW_INCLUDE_DIR ${VISIT_SOURCE_DIR}/third_party_builtin/glew/glew/include)
-    SET(GLEW_LIBRARY_DIR ${VISIT_SOURCE_DIR}/lib)
-    SET(GLEW_LIB visitGLEW)
-ELSE(VISIT_USE_GLEW)
-    # We're not using GLEW but we need to substitute GL
-    SET(GLEW_INCLUDE_DIR ${OPENGL_INCLUDE_DIR})
-    VISIT_OPTION_DEFAULT(VISIT_SLIVR false TYPE BOOL)
-ENDIF(VISIT_USE_GLEW)
-
-# Set up the tuvok library if it was enabled.
-IF(VISIT_TUVOK)
-    SET(TUVOK_LIB tuvok ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_QTOPENGL_LIBRARY} GLEW)
-ENDIF(VISIT_TUVOK)
-
-# Set up the SLIVR library if it was enabled.
-IF(VISIT_SLIVR)
-    SET(SLIVR_INCLUDE_DIR
-        ${VISIT_SOURCE_DIR}/third_party_builtin/slivr/teem-1.9.0-src/src
-        ${VISIT_SOURCE_DIR}/third_party_builtin/slivr/teem-1.9.0-src/src/teem
-        ${VISIT_SOURCE_DIR}/third_party_builtin/slivr
-        ${VISIT_SOURCE_DIR}/third_party_builtin/slivr/slivr
-    )
-    SET(SLIVR_GUI_IMPL QvisCMap2Display.C QvisCMap2Widget.C)
-    SET(SLIVR_GUI_HDR QvisCMap2Display.h QvisCMap2Widget.h)
-    SET(SLIVR_LIB slivrG slivrV)
-    ADD_DEFINITIONS(-DHAVE_LIBSLIVR)
-ENDIF(VISIT_SLIVR)
 
 # Include Ice-T support if we can.
 IF(VISIT_PARALLEL)
@@ -1412,10 +1335,6 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     # Configure GFortran support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
 ENDIF()
-
-# Configure Manta support.
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindManta.cmake)
-
 
 IF (WIN32 AND VISIT_MAKE_NSIS_INSTALLER)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNSIS.cmake)
@@ -1845,21 +1764,6 @@ ELSE(VISIT_STATIC)
         ENDIF(APPLE)
     ENDIF(WIN32)
 ENDIF(VISIT_STATIC)
-
-# Override the OPENGL_glu_LIBRARY returned by CMake on the Mac because the
-# AGL framework does NOT contain gluTess functions. We want to instead use
-# Mesa's GLU functions.
-IF(VISIT_MESA_DIR)
-    IF(APPLE AND NOT VISIT_DBIO_ONLY)
-        SET(OPENGL_glu_LIBRARY ${MESA_LIBRARY_DIR}/libMesaGLU${VISIT_PLUGIN_EXTENSION} CACHE INTERNAL "AGL lib for OSX")
-    ENDIF(APPLE AND NOT VISIT_DBIO_ONLY)
-ENDIF(VISIT_MESA_DIR)
-# We use libGLU for its tessellation abilities but it requires libGL sometimes.
-IF(UNIX AND NOT APPLE)
-    SET(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY})
-ELSE(UNIX AND NOT APPLE)
-    SET(TESSELLATION_LIBRARY ${OPENGL_glu_LIBRARY})
-ENDIF(UNIX AND NOT APPLE)
 
 # Check for type sizes, endian
 CHECK_TYPE_SIZE(bool                 SIZEOF_BOOLEAN)            # ${CMAKE_SIZEOF_BOOLEAN})
@@ -2444,7 +2348,7 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
         IF(\"\${line}\" MATCHES \".*Database[_ser|_par]*_LIB_DEPENDS.*\")
             SET(outputLine FALSE)
         ENDIF(\"\${line}\" MATCHES \".*Database[_ser|_par]*_LIB_DEPENDS.*\")
-        FOREACH(suppress visit_writer visitfrontend visitmodule proxyexample bow slivrG slivrV air alan bane biff coil dye echo ell gage hest hoover limn mite moss nrrd push ten unrrdu)
+        FOREACH(suppress visit_writer visitfrontend visitmodule proxyexample bow )
             IF(\"\${line}\" MATCHES \".*\${suppress}_LIB_DEPENDS.*\")
                 SET(outputLine FALSE)
             ENDIF(\"\${line}\" MATCHES \".*\${suppress}_LIB_DEPENDS.*\")
@@ -2626,7 +2530,6 @@ ELSE (NOT WIN32)
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
-                    /DQT5=${VISIT_QT5}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
             COMMAND ${MAKENSIS}
                     /DVisItVersion=${VISIT_VERSION}
@@ -2634,7 +2537,6 @@ ELSE (NOT WIN32)
                     /DVISIT_SOURCE_DIR=${VSD_NATIVE}
                     /DINSTALL_PREFIX=${CIP_NATIVE}
                     /DBIN_DIR=${CBD_NATIVE}
-                    /DQT5=${VISIT_QT5}
                     /DMPI_VERSION=${VISIT_MSMPI_VERSION}
                     ${VISIT_WINDOWS_DIR}/distribution/installation/binaryinstallation.nsi
             DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/CreateDBSections.nsi
@@ -2698,3 +2600,4 @@ INSTALL(FILES ${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake
                     GROUP_READ GROUP_WRITE
                     WORLD_READ
         )
+

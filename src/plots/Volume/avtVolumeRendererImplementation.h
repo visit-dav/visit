@@ -41,6 +41,7 @@
 #include <avtViewInfo.h>
 #include <VolumeAttributes.h>
 #include <vtkPointData.h>
+#include <vtkRenderer.h>
 
 class vtkDataSet;
 class vtkDataArray;
@@ -71,6 +72,15 @@ class vtkDataArray;
 //    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
 //    Added data items to support volume rendering without resampling
 //
+//    Alister Maguire, Wed Mar  8 10:40:09 PST 2017
+//    I added a vtkRenderer class member so that the volume renderers
+//    (avtDefaultRenderer, in particular) have access to 
+//    VisIt's render window. I added a getter and setter along 
+//    with this member. 
+//
+//    Alister Maguire, Thu Sep 14 13:36:16 PDT 2017
+//    Added dataIs2D. 
+//
 // ****************************************************************************
 
 class avtVolumeRendererImplementation
@@ -82,14 +92,13 @@ class avtVolumeRendererImplementation
         {
             backgroundColor[0] = backgroundColor[1] = backgroundColor[2] = 0.;
             windowSize[0] = windowSize[1] = 0;
-            reducedDetail = false;
         }
 
         avtViewInfo      view;
         VolumeAttributes atts;
         float            backgroundColor[3];
         int              windowSize[2];
-        bool             reducedDetail;
+        bool             dataIs2D; // mostly needed so renderers can do early return
     };
 
     struct VariableData
@@ -128,9 +137,16 @@ class avtVolumeRendererImplementation
         float               hs_min;
     };
 
-                   avtVolumeRendererImplementation() { }
-    virtual       ~avtVolumeRendererImplementation() { }
-    virtual void   Render(const RenderProperties &props, const VolumeData &volume) = 0;
+                         avtVolumeRendererImplementation() { }
+    virtual             ~avtVolumeRendererImplementation() { }
+    virtual void         Render(const RenderProperties &props, const VolumeData &volume) = 0;
+    virtual vtkRenderer *GetVTKRenderer() { return VTKRen; }
+    virtual void         SetVTKRenderer(vtkRenderer *ren) { VTKRen = ren; }
+
+  protected:
+
+    vtkRenderer        *VTKRen;
+
 };
 
 #endif

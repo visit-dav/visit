@@ -46,8 +46,8 @@ function bv_vtk_depends_on
         depends_on="${depends_on} python"
     fi
 
-    if [[ "$DO_R" == "yes" ]]; then
-        depends_on="${depends_on} R"
+    if [[ "$DO_MESAGL" == "yes" ]]; then
+        depends_on="${depends_on} mesagl glu"
     fi
 
     # Only depend on Qt if we're not doing server-only builds.
@@ -72,13 +72,13 @@ function bv_vtk_force
 
 function bv_vtk_info
 {
-    export VTK_FILE=${VTK_FILE:-"VTK-6.1.0.tar.gz"}
-    export VTK_VERSION=${VTK_VERSION:-"6.1.0"}
-    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"6.1"}
+    export VTK_FILE=${VTK_FILE:-"VTK-8.1.0.tar.gz"}
+    export VTK_VERSION=${VTK_VERSION:-"8.1.0"}
+    export VTK_SHORT_VERSION=${VTK_SHORT_VERSION:-"8.1"}
     export VTK_COMPATIBILITY_VERSION=${VTK_SHORT_VERSION}
-    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-6.1.0"}
+    export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/${VTK_SHORT_VERSION}"}
+    export VTK_BUILD_DIR=${VTK_BUILD_DIR:-"VTK-8.1.0"}
     export VTK_INSTALL_DIR=${VTK_INSTALL_DIR:-"vtk"}
-    export VTK_URL=${VTK_URL:-"http://www.vtk.org/files/release/6.1"}
     export VTK_MD5_CHECKSUM=""
     export VTK_SHA256_CHECKSUM=""
 }
@@ -115,9 +115,6 @@ function bv_vtk_host_profile
 function bv_vtk_initialize_vars
 {
     info "initalizing vtk vars"
-    if [[ $DO_R == "yes" ]]; then
-        VTK_INSTALL_DIR="vtk-r"
-    fi
 }
 
 function bv_vtk_ensure
@@ -140,377 +137,173 @@ function bv_vtk_dry_run
 # *************************************************************************** #
 #                            Function 6, build_vtk                            #
 # *************************************************************************** #
-
-function apply_vtk_600_patch
+function apply_vtkxopenglrenderwindow_patch
 {
-    # fix for 10.9 -- this fix is already in newer versions of VTK
-    info "Patching vtk-6"
-    patch -p0 << \EOF
-diff -c CMakeLists.txt.orig CMakeLists.txt
-*** CMakeLists.txt.orig 2014-05-30 15:54:16.000000000 -0700
---- CMakeLists.txt      2014-05-30 15:54:25.000000000 -0700
+  # patch vtk's vtkXOpenRenderWindow to fix segv when deleting windows in
+  # offscreen mode.
+
+   patch -p0 << \EOF
+*** Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx.orig 2018-03-30 14:38:07.000000000 
+--- Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx 2018-03-30 14:38:40.000000000 
 ***************
-*** 4,13 ****
+*** 1148,1160 ****
   
-  # Objective-C++ compile flags, future CMake versions might make this obsolete
-  IF(APPLE)
-!   # Being a library, VTK may be linked in either GC (garbage collected)
-!   # processes or non-GC processes.  Default to "GC supported" so that both
-!   # GC and MRR (manual reference counting) are supported.
-!   SET(VTK_OBJCXX_FLAGS_DEFAULT "-fobjc-gc")
-    SET(VTK_REQUIRED_OBJCXX_FLAGS ${VTK_OBJCXX_FLAGS_DEFAULT} CACHE STRING "Extra flags for Objective-C++ compilation")
-    MARK_AS_ADVANCED(VTK_REQUIRED_OBJCXX_FLAGS)
-  ENDIF(APPLE)
---- 4,10 ----
+  void vtkXOpenGLRenderWindow::PopContext()
+  {
+    GLXContext current = glXGetCurrentContext();
+    GLXContext target = static_cast<GLXContext>(this->ContextStack.top());
+    this->ContextStack.pop();
+!   if (target != current)
+    {
+      glXMakeCurrent(this->DisplayStack.top(),
+        this->DrawableStack.top(),
+        target);
+    }
+    this->DisplayStack.pop();
+--- 1148,1160 ----
   
-  # Objective-C++ compile flags, future CMake versions might make this obsolete
-  IF(APPLE)
-!   SET(VTK_OBJCXX_FLAGS_DEFAULT "")
-    SET(VTK_REQUIRED_OBJCXX_FLAGS ${VTK_OBJCXX_FLAGS_DEFAULT} CACHE STRING "Extra flags for Objective-C++ compilation")
-    MARK_AS_ADVANCED(VTK_REQUIRED_OBJCXX_FLAGS)
-  ENDIF(APPLE)
+  void vtkXOpenGLRenderWindow::PopContext()
+  {
+    GLXContext current = glXGetCurrentContext();
+    GLXContext target = static_cast<GLXContext>(this->ContextStack.top());
+    this->ContextStack.pop();
+!   if (target && target != current)
+    {
+      glXMakeCurrent(this->DisplayStack.top(),
+        this->DrawableStack.top(),
+        target);
+    }
+    this->DisplayStack.pop();
 
 EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk6 patch failed."
-        return 1
-    fi
 
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkXOpenGLRenderWindow failed."
+      return 1
+    fi
+    return 0;
+
+}
+
+function apply_vtkopenglspheremapper_patch
+{
+  # patch vtk's vtkOpenGLSphereMapper to fix bug that ignores opacity when
+  # specifying single color for the sphere imposters 
+
+   patch -p0 << \EOF
+*** Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx.original 2018-01-19 14:03:28.000000000 
+--- Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx 2018-01-19 14:04:15.000000000 
+***************
+*** 330,347 ****
+      nc = numPts;
+      cc = this->Colors->GetNumberOfComponents();
+    }
+    else
+    {
+      double *ac = act->GetProperty()->GetColor();
+!     c = new unsigned char[3];
+      c[0] = (unsigned char) (ac[0] *255.0);
+      c[1] = (unsigned char) (ac[1] *255.0);
+      c[2] = (unsigned char) (ac[2] *255.0);
+      nc = 1;
+!     cc = 3;
+    }
+  
+    float *scales;
+    vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
+    if (this->ScaleArray != NULL &&
+        poly->GetPointData()->HasArray(this->ScaleArray))
+--- 330,349 ----
+      nc = numPts;
+      cc = this->Colors->GetNumberOfComponents();
+    }
+    else
+    {
+      double *ac = act->GetProperty()->GetColor();
+!     double opac = act->GetProperty()->GetOpacity();
+!     c = new unsigned char[4];
+      c[0] = (unsigned char) (ac[0] *255.0);
+      c[1] = (unsigned char) (ac[1] *255.0);
+      c[2] = (unsigned char) (ac[2] *255.0);
++     c[3] = (unsigned char) (opac  *255.0);
+      nc = 1;
+!     cc = 4;
+    }
+  
+    float *scales;
+    vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
+    if (this->ScaleArray != NULL &&
+        poly->GetPointData()->HasArray(this->ScaleArray))
+
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOpenGLSphereMapper failed."
+      return 1
+    fi
     return 0;
 }
 
-function apply_vtk_610_patch
+function apply_vtkdatawriter_patch
 {
-    patch -p0 << \EOF
-diff -c Rendering/OpenGL/vtkXOpenGLRenderWindow.cxx.orig Rendering/OpenGL/vtkXOpenGLRenderWindow.cxx
-*** Rendering/OpenGL/vtkXOpenGLRenderWindow.cxx.orig    2015-01-29 15:59:05.000000000 -0800
---- Rendering/OpenGL/vtkXOpenGLRenderWindow.cxx 2015-01-29 16:00:02.000000000 -0800
-***************
-*** 27,33 ****
-  
-  // define GLX_GLXEXT_LEGACY to prevent glx.h to include glxext.h provided by
-  // the system
-! //#define GLX_GLXEXT_LEGACY
-  #include "GL/glx.h"
-  
-  #include "vtkgl.h"
---- 27,33 ----
-  
-  // define GLX_GLXEXT_LEGACY to prevent glx.h to include glxext.h provided by
-  // the system
-! #define GLX_GLXEXT_LEGACY
-  #include "GL/glx.h"
-  
-  #include "vtkgl.h"
+  # patch vtk's vtkDataWriter to fix bug when writing binary vtkBitArray.
 
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk6 patch failed."
-        return 1
-    fi
-
-    return 0;
-}
-
-function apply_vtk_610_patch_2
-{
-    patch -p0 << \EOF
-diff -c Rendering/Core/vtkMapper.cxx.orig Rendering/Core/vtkMapper.cxx
-*** Rendering/Core/vtkMapper.cxx.orig   2015-03-19 18:46:17.000000000 -0700
---- Rendering/Core/vtkMapper.cxx        2015-03-19 18:44:43.000000000 -0700
+   patch -p0 << \EOF
+*** IO/Legacy/vtkDataWriter.cxx.original 2018-01-19 13:52:19.000000000 
+--- IO/Legacy/vtkDataWriter.cxx 2018-01-19 13:52:49.000000000 
 ***************
-*** 18,23 ****
---- 18,24 ----
-  #include "vtkExecutive.h"
-  #include "vtkLookupTable.h"
-  #include "vtkFloatArray.h"
-+ #include "vtkDoubleArray.h"
-  #include "vtkImageData.h"
-  #include "vtkPointData.h"
-  #include "vtkMath.h"
-***************
-*** 517,523 ****
-  template<class T>
-  void vtkMapperCreateColorTextureCoordinates(T* input, float* output,
-                                              vtkIdType num, int numComps,
-!                                             int component, double* range)
-  {
-    double tmp, sum;
-    double k = 1.0 / (range[1]-range[0]);
---- 518,524 ----
-  template<class T>
-  void vtkMapperCreateColorTextureCoordinates(T* input, float* output,
-                                              vtkIdType num, int numComps,
-!                                             int component, double* range, bool isLogScale)
-  {
-    double tmp, sum;
-    double k = 1.0 / (range[1]-range[0]);
-***************
-*** 529,540 ****
-      for (i = 0; i < num; ++i)
-        {
-        sum = 0;
-!       for (j = 0; j < numComps; ++j)
-!         {
-!         tmp = static_cast<double>(*input);
-!         sum += (tmp * tmp);
-!         ++input;
-!         }
-        output[i] = k * (sqrt(sum) - range[0]);
-        if (output[i] > 1.0)
-          {
---- 530,545 ----
-      for (i = 0; i < num; ++i)
-        {
-        sum = 0;
-!       for (j = 0; j < numComps; ++j) {
-!           if(!isLogScale) {
-!               tmp = static_cast<double>(*input);
-!           } else {
-!               tmp = static_cast<double>(log10(*input));
-!           }
-!           
-!           sum += (tmp * tmp);
-!           ++input;
-!       }
-        output[i] = k * (sqrt(sum) - range[0]);
-        if (output[i] > 1.0)
-          {
-***************
-*** 551,557 ****
-      input += component;
-      for (i = 0; i < num; ++i)
-        {
-!       output[i] = k * (static_cast<double>(*input) - range[0]);
-        if (output[i] > 1.0)
-          {
-          output[i] = 1.0;
---- 556,570 ----
-      input += component;
-      for (i = 0; i < num; ++i)
-        {
-!           if(!isLogScale) {
-!               output[i] = k * (static_cast<double>(*input) - range[0]);
-!           } else {
-!               if(*input > 0) {
-!                   output[i] = k * (static_cast<double>(log10(*input)) - range[0]);
-!               } else {
-!                   output[i] = 0;
-!               }
-!           }
-        if (output[i] > 1.0)
-          {
-          output[i] = 1.0;
-***************
-*** 565,571 ****
+*** 1070,1082 ****
+            }
           }
         }
+        else
+        {
+          unsigned char *cptr=
+!           static_cast<vtkUnsignedCharArray *>(data)->GetPointer(0);
+          fp->write(reinterpret_cast<char *>(cptr),
+                    (sizeof(unsigned char))*((num-1)/8+1));
   
-- 
-  #define ColorTextureMapSize 256
-  // a side effect of this is that this->ColorCoordinates and
-  // this->ColorTexture are set.
---- 578,583 ----
-***************
-*** 583,588 ****
---- 595,604 ----
-      this->Colors = 0;
+        }
+        *fp << "\n";
+      }
+--- 1070,1082 ----
+            }
           }
+        }
+        else
+        {
+          unsigned char *cptr=
+!           static_cast<vtkBitArray *>(data)->GetPointer(0);
+          fp->write(reinterpret_cast<char *>(cptr),
+                    (sizeof(unsigned char))*((num-1)/8+1));
   
-+     double minRange = range[0];
-+     double maxRange = range[1];
-+     bool isLogScale = this->LookupTable->UsingLogScale() == 1;
-+     
-    // If the lookup table has changed, the recreate the color texture map.
-    // Set a new lookup table changes this->MTime.
-    if (this->ColorTextureMap == 0 ||
-***************
-*** 599,618 ****
-      // Get the texture map from the lookup table.
-      // Create a dummy ramp of scalars.
-      // In the future, we could extend vtkScalarsToColors.
-!     double k = (range[1]-range[0]) / (ColorTextureMapSize-1);
-!     vtkFloatArray* tmp = vtkFloatArray::New();
-      tmp->SetNumberOfTuples(ColorTextureMapSize);
-!     float* ptr = tmp->GetPointer(0);
-      for (int i = 0; i < ColorTextureMapSize; ++i)
-!       {
-!       *ptr = range[0] + i * k;
-!       ++ptr;
-!       }
-      this->ColorTextureMap = vtkImageData::New();
-      this->ColorTextureMap->SetExtent(0,ColorTextureMapSize-1,
-                                       0,0, 0,0);
-!     this->ColorTextureMap->GetPointData()->SetScalars(
-!          this->LookupTable->MapScalars(tmp, this->ColorMode, 0));
-      this->LookupTable->SetAlpha(orig_alpha);
-      // Do we need to delete the scalars?
-      this->ColorTextureMap->GetPointData()->GetScalars()->Delete();
---- 615,643 ----
-      // Get the texture map from the lookup table.
-      // Create a dummy ramp of scalars.
-      // In the future, we could extend vtkScalarsToColors.
-!     if(isLogScale) {
-!         double logRange[2];
-!         vtkLookupTable::GetLogRange(range, logRange);
-!         minRange = logRange[0];
-!         maxRange = logRange[1];
-!     }
-! 
-!     double k = (maxRange - minRange) / (double)(ColorTextureMapSize-1);
-!     vtkDoubleArray* tmp = vtkDoubleArray::New();
-      tmp->SetNumberOfTuples(ColorTextureMapSize);
-!     double* ptr = tmp->GetPointer(0);
-!     
-      for (int i = 0; i < ColorTextureMapSize; ++i)
-!     {
-!         double tmpVal = minRange + i * k;
-!         *ptr = !isLogScale ? tmpVal : (double)pow(10., tmpVal);
-!         ++ptr;
-!     }
-!         
-      this->ColorTextureMap = vtkImageData::New();
-      this->ColorTextureMap->SetExtent(0,ColorTextureMapSize-1,
-                                       0,0, 0,0);
-!     this->ColorTextureMap->GetPointData()->SetScalars(this->LookupTable->MapScalars(tmp, this->ColorMode, 0));
-      this->LookupTable->SetAlpha(orig_alpha);
-      // Do we need to delete the scalars?
-      this->ColorTextureMap->GetPointData()->GetScalars()->Delete();
-***************
-*** 635,641 ****
-        this->ColorCoordinates->UnRegister(this);
-        this->ColorCoordinates = 0;
         }
-! 
-      // Now create the color texture coordinates.
-      int numComps = scalars->GetNumberOfComponents();
-      void* input = scalars->GetVoidPointer(0);
---- 660,671 ----
-        this->ColorCoordinates->UnRegister(this);
-        this->ColorCoordinates = 0;
-        }
-!         
-!     if(isLogScale) {
-!         range[0] = minRange;
-!         range[1] = maxRange;
-!     }
-!         
-      // Now create the color texture coordinates.
-      int numComps = scalars->GetNumberOfComponents();
-      void* input = scalars->GetVoidPointer(0);
-***************
-*** 660,666 ****
-        vtkTemplateMacro(
-          vtkMapperCreateColorTextureCoordinates(static_cast<VTK_TT*>(input),
-                                                 output, num, numComps,
-!                                                scalarComponent, range)
-          );
-        case VTK_BIT:
-          vtkErrorMacro("Cannot color by bit array.");
---- 690,696 ----
-        vtkTemplateMacro(
-          vtkMapperCreateColorTextureCoordinates(static_cast<VTK_TT*>(input),
-                                                 output, num, numComps,
-!                                                scalarComponent, range, isLogScale)
-          );
-        case VTK_BIT:
-          vtkErrorMacro("Cannot color by bit array.");
-
+        *fp << "\n";
+      }
 EOF
+
     if [[ $? != 0 ]] ; then
-        warn "vtk610_2 patch failed."
-        return 1
+      warn "vtk patch for vtkDataWriter failed."
+      return 1
     fi
-
-    return 0;
-}
-
-function apply_vtk_610_patch_3
-{
-    patch -p0 << \EOF
-diff -c CMake/vtkCompilerExtras.cmake.orig CMake/vtkCompilerExtras.cmake
-*** CMake/vtkCompilerExtras.cmake.orig        2014-01-22 07:55:41.000000000 -0800
---- CMake/vtkCompilerExtras.cmake     2016-11-10 12:58:15.000000000 -0800
-***************
-*** 27,33 ****
-      OUTPUT_VARIABLE _gcc_version_info
-      ERROR_VARIABLE _gcc_version_info)
-
-!   string (REGEX MATCH "[345]\\.[0-9]\\.[0-9]"
-      _gcc_version "${_gcc_version_info}")
-    if(NOT _gcc_version)
-      string (REGEX REPLACE ".*\\(GCC\\).* ([34]\\.[0-9]) .*" "\\1.0"
---- 27,33 ----
-      OUTPUT_VARIABLE _gcc_version_info
-      ERROR_VARIABLE _gcc_version_info)
-
-!   string (REGEX MATCH "[34567]\\.[0-9]\\.[0-9]"
-      _gcc_version "${_gcc_version_info}")
-    if(NOT _gcc_version)
-      string (REGEX REPLACE ".*\\(GCC\\).* ([34]\\.[0-9]) .*" "\\1.0"
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk610_3 patch failed."
-        return 1
-    fi
-
-    return 0;
-}
-
-function apply_vtk_610_patch_4
-{
-    patch -p0 << \EOF
-diff -c CMake/GenerateExportHeader.cmake.orig CMake/GenerateExportHeader.cmake
-*** CMake/GenerateExportHeader.cmake.orig     2014-01-22 07:55:41.000000000 -0800
---- CMake/GenerateExportHeader.cmake  2016-11-10 13:06:42.000000000 -0800
-***************
-*** 166,172 ****
-      execute_process(COMMAND ${CMAKE_C_COMPILER} --version
-        OUTPUT_VARIABLE _gcc_version_info
-        ERROR_VARIABLE _gcc_version_info)
-!     string(REGEX MATCH "[345]\\.[0-9]\\.[0-9]"
-        _gcc_version "${_gcc_version_info}")
-      # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
-      # patch level, handle this here:
---- 166,172 ----
-      execute_process(COMMAND ${CMAKE_C_COMPILER} --version
-        OUTPUT_VARIABLE _gcc_version_info
-        ERROR_VARIABLE _gcc_version_info)
-!     string(REGEX MATCH "[34567]\\.[0-9]\\.[0-9]"
-        _gcc_version "${_gcc_version_info}")
-      # gcc on mac just reports: "gcc (GCC) 3.3 20030304 ..." without the
-      # patch level, handle this here:
-EOF
-    if [[ $? != 0 ]] ; then
-        warn "vtk610_4 patch failed."
-        return 1
-    fi
-
     return 0;
 }
 
 function apply_vtk_patch
 {  
-    # also apply objc flag patch to 6.1.0
-    
-    if [[ ${VTK_VERSION} == 6.1.0 ]] ; then
-        apply_vtk_600_patch
-        apply_vtk_610_patch_2
-        apply_vtk_610_patch_3
-        apply_vtk_610_patch_4
-        if [[ "$OPSYS" == "Linux" ]] ; then
-            apply_vtk_610_patch
-        fi
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    apply_vtkdatawriter_patch
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
-    if [[ ${VTK_VERSION} == 6.2.0 ]] ; then
-        apply_vtk_600_patch
-        if [[ $? != 0 ]] ; then
-            return 1
-        fi
+    apply_vtkopenglspheremapper_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkxopenglrenderwindow_patch
+    if [[ $? != 0 ]] ; then
+        return 1
     fi
 
     return 0
@@ -518,59 +311,6 @@ function apply_vtk_patch
 
 function build_vtk
 {
-    #
-    # CMake is the build system for VTK.  Call another script that will build
-    # that program.
-    #
-    CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
-    if [[ -e ${CMAKE_INSTALL}/cmake ]] ; then
-        info "VTK: CMake found"
-    else
-        build_cmake
-        if [[ $? != 0 ]] ; then
-            warn "Unable to build cmake.  Giving up"
-            return 1
-        fi
-    fi
-
-    #
-    # We need python to build the vtk python bindings.
-    #
-    PYTHON_INSTALL="${VISIT_PYTHON_DIR}/bin"
-    if [[ "$DO_PYTHON" == "yes" ]] ; then
-        if [[ -e ${PYTHON_INSTALL}/python ]] ; then
-            info "VTK: Python found"
-        else
-            if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-                build_python
-                if [[ $? != 0 ]] ; then
-                    warn "Unable to build python. Giving up"
-                    return 1
-                fi
-            fi
-        fi
-    fi
-
-    #
-    # We need Qt to build the vtk Qt support. Only do Qt if we're not doing
-    # a server-only build.
-    #
-    if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
-        if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
-            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
-                if [[ -e ${QT_BIN_DIR}/qmake ]] ; then
-                    info "VTK: Qt found"
-                else
-                    build_qt
-                    if [[ $? != 0 ]] ; then
-                        warn "Unable to build Qt. Giving up"
-                        return 1
-                    fi
-                fi
-            fi
-        fi
-    fi
-
     # Extract the sources
     if [[ -d $VTK_BUILD_DIR ]] ; then
         if [[ ! -f $VTK_FILE ]] ; then
@@ -677,6 +417,7 @@ function build_vtk
         vopts="${vopts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
     vopts="${vopts} -DVTK_DEBUG_LEAKS:BOOL=${vtk_debug_leaks}"
+    vopts="${vopts} -DVTK_LEGACY_REMOVE:BOOL=true"
     vopts="${vopts} -DBUILD_TESTING:BOOL=false"
     vopts="${vopts} -DBUILD_DOCUMENTATION:BOOL=false"
     vopts="${vopts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
@@ -686,7 +427,7 @@ function build_vtk
     vopts="${vopts} -DCMAKE_EXE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_MODULE_LINKER_FLAGS:STRING=${lf}"
     vopts="${vopts} -DCMAKE_SHARED_LINKER_FLAGS:STRING=${lf}"
-    vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=false"
+    vopts="${vopts} -DVTK_REPORT_OPENGL_ERRORS:BOOL=true"
     if test "${OPSYS}" = "Darwin" ; then
         vopts="${vopts} -DVTK_USE_COCOA:BOOL=ON"
         vopts="${vopts} -DCMAKE_INSTALL_NAME_DIR:PATH=${vtk_inst_path}/lib"
@@ -714,6 +455,10 @@ function build_vtk
     # allow VisIt to override any of vtk's classes
     vopts="${vopts} -DVTK_ALL_NEW_OBJECT_FACTORY:BOOL=true"
 
+    # OpenGL2 backend VTK-8.1, OpenGL2 is the default.
+    #vopts="${vopts} -DVTK_RENDERING_BACKEND:STRING=OpenGL2"
+
+
     # Turn off module groups
     vopts="${vopts} -DVTK_Group_Imaging:BOOL=false"
     vopts="${vopts} -DVTK_Group_MPI:BOOL=false"
@@ -722,6 +467,7 @@ function build_vtk
     vopts="${vopts} -DVTK_Group_StandAlone:BOOL=false"
     vopts="${vopts} -DVTK_Group_Tk:BOOL=false"
     vopts="${vopts} -DVTK_Group_Views:BOOL=false"
+    vopts="${vopts} -DVTK_Group_Web:BOOL=false"
 
     # Turn on individual modules. dependent modules are turned on automatically
     vopts="${vopts} -DModule_vtkCommonCore:BOOL=true"
@@ -737,8 +483,7 @@ function build_vtk
     vopts="${vopts} -DModule_vtkInteractionStyle:BOOL=true"
     vopts="${vopts} -DModule_vtkRenderingAnnotation:BOOL=true"
     vopts="${vopts} -DModule_vtkRenderingFreeType:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingFreeTypeOpenGL:BOOL=true"
-    vopts="${vopts} -DModule_vtkRenderingOpenGL:BOOL=true"
+    vopts="${vopts} -DModule_vtkRenderingOpenGL2:BOOL=true"
     vopts="${vopts} -DModule_vtklibxml2:BOOL=true"
 
     # Tell VTK where to locate qmake if we're building graphical support. We
@@ -748,10 +493,8 @@ function build_vtk
             if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
                 vopts="${vopts} -DModule_vtkGUISupportQtOpenGL:BOOL=true"
                 vopts="${vopts} -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_BIN_DIR}/qmake"
-                if [[ ${IS_QT4} == "no" ]]; then
-                    vopts="${vopts} -DVTK_QT_VERSION=5"
-                    vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
-                fi
+                vopts="${vopts} -DVTK_QT_VERSION=5"
+                vopts="${vopts} -DCMAKE_PREFIX_PATH=${QT_INSTALL_DIR}/lib/cmake"
             fi
         fi
     fi
@@ -775,36 +518,18 @@ function build_vtk
         fi
     fi
 
-    # Add R support
-    if test "$DO_R" = "yes" ; then
-        vopts="${vopts} -DModule_vtkFiltersStatisticsGnuR:BOOL=true"
-        vopts="${vopts} -DR_COMMAND:PATH=${R_INSTALL_DIR}/bin/R"
-        vopts="${vopts} -DVTK_R_HOME:PATH=${R_INSTALL_DIR}/lib/R"
-        vopts="${vopts} -DR_INCLUDE_DIR:PATH=${R_INSTALL_DIR}/lib/R/include"
-        vopts="${vopts} -DR_LIBRARY_BASE:PATH=${R_INSTALL_DIR}/lib/R/lib/libR.${SO_EXT}"
-        vopts="${vopts} -DR_LIBRARY_LAPACK:PATH=${R_INSTALL_DIR}/lib/R/lib/libRlapack.${SO_EXT}"
-        vopts="${vopts} -DR_LIBRARY_BLAS:PATH=${R_INSTALL_DIR}/lib/R/lib/libRblas.${SO_EXT}"
-    fi
+    # Use Mesa as GL? 
+    if [[ "$DO_MESAGL" == "yes" ]] ; then
+        vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
+        vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
+        vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${MESAGL_OPENGL_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${MESAGL_GLU_LIB}"
+        vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${MESAGL_OSMESA_LIB};${LLVM_LIB}\""
+        vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
 
-    # Use our Mesa or OpenSWR as GL? We want to do this if we're doing a server or engine only
-    # build and we're building statiically and we requested mesa or openswr.
-    if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
-        if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
-            if [[ "$DO_MESA" == "yes" ]] ; then
-                vopts="${vopts} -DVTK_USE_X:BOOL=OFF -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-                vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESA_INCLUDE_DIR}"
-                vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${MESA_LIB};${LLVM_LIB}\""
-                vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${GLU_LIB}"
-                vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${MESA_LIB};${LLVM_LIB}\""
-                vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${MESA_INCLUDE_DIR}"
-            fi
-            if [[ "$DO_OPENSWR" == "yes" ]] ; then
-                vopts="${vopts} -DVTK_USE_X:BOOL=OFF -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
-                vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${OPENSWR_INCLUDE_DIR}"
-                vopts="${vopts} -DOPENGL_gl_LIBRARY:PATH=\"${OPENSWR_LIB};${LLVM_LIB}\""
-                vopts="${vopts} -DOPENGL_glu_LIBRARY:PATH=${GLU_LIB}"
-                vopts="${vopts} -DOSMESA_LIBRARY:FILEPATH=\"${OPENSWR_LIB};${LLVM_LIB}\""
-                vopts="${vopts} -DOSMESA_INCLUDE_DIR:PATH=${OPENSWR_INCLUDE_DIR}"
+        if [[ "$DO_STATIC_BUILD" == "yes" ]] ; then
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" == "yes" || "$DO_ENGINE_ONLY" == "yes" ]] ; then
+                vopts="${vopts} -DVTK_USE_X:BOOL=OFF"
             fi
         fi
     fi

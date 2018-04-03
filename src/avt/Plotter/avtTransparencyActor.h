@@ -135,6 +135,9 @@ class     ColorAttribute;
 //    Burlen Loring, Wed Aug 19 13:45:22 PDT 2015
 //    Added method for controling use of display lists.
 //
+//    Kathleen Biagas, Tue Jul 12 13:41:21 PDT 2016
+//    Add ability to store and replace visibility state of actors.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtTransparencyActor
@@ -150,6 +153,8 @@ class PLOTTER_API avtTransparencyActor
                                               std::vector<vtkDataSet *> &,
                                               std::vector<vtkDataSetMapper *>&,
                                               std::vector<vtkActor *> &);
+    void                             ReplaceActorVisibility(int,
+                                              std::vector<int> &);
 
     void                             TurnOffInput(int);
     void                             TurnOnInput(int);
@@ -188,8 +193,6 @@ class PLOTTER_API avtTransparencyActor
 
     virtual bool                     ComputeCompositingOrder(vtkCamera *cam, std::vector<int> &order);
 
-    void                             SetImmediateMode(bool m);
-
     void                             SetUpActor();
 
   protected:
@@ -202,6 +205,7 @@ class PLOTTER_API avtTransparencyActor
     std::vector<std::vector <vtkDataSet *> >         datasets;
     std::vector<std::vector <vtkDataSetMapper *> >   mappers;
     std::vector<std::vector <vtkActor *> >           actors;
+    std::vector<std::vector <int> >                  actorVis;
 
     std::map<int,double>                             inputsOpacities;
 

@@ -49,14 +49,13 @@
 
 #include <avtLegend.h>
 #include <avtPlot.h>
-#include <avtSurfaceAndWireframeRenderer.h>
 
 class     vtkProperty;
 
 class     avtLookupTable;
 class     avtSurfaceFilter;
+class     avtSurfaceMapper;
 class     avtWireframeFilter;
-class     avtUserDefinedMapper;
 class     avtVariableLegend;
 
 
@@ -108,6 +107,10 @@ class     avtVariableLegend;
 //    Brad Whitlock, Wed Dec 15 10:48:35 PDT 2004
 //    Removed SetVarName.
 //
+//    Kathleen Biagas, Mon Jul 18 17:07:22 MST 2016 
+//    Remove avtWireframeFilter. Add surface-plot specific mapper, removed
+//    use of avtSurfaceAndWireframeRenderer. (All for VTK-8).
+//
 // ****************************************************************************
 
 class avtSurfacePlot : public avtSurfaceDataPlot
@@ -125,28 +128,21 @@ class avtSurfacePlot : public avtSurfaceDataPlot
     virtual const char         *GetName(void)  { return "SurfacePlot"; };
 
     void                        SetLegend(bool);
-    void                        SetLighting(bool);
-    void                        SetLineWidth(_LineWidth);
-    void                        SetLineStyle(_LineStyle);
     void                        SetScaling(const int, const double);
-    void                        SetRepresentation(bool);
     void                        SetSurfaceAttributes(bool);
     void                        SetWireframeAttributes(bool);
     void                        SetLimitsMode(int);
 
   protected:
-    avtSurfaceAndWireframeRenderer_p  renderer;
-    avtUserDefinedMapper           *mapper;
+    avtSurfaceMapper               *mapper;
     avtVariableLegend              *varLegend;
     avtLegend_p                     varLegendRefPtr;
     avtLookupTable                 *avtLUT;
     avtSurfaceFilter               *surfaceFilter;
-    avtWireframeFilter             *wireFilter;
-    vtkProperty                    *property;
     SurfaceAttributes               atts;
     bool                            colorsInitialized;
 
-    virtual avtMapper          *GetMapper(void);
+    virtual avtMapperBase      *GetMapper(void);
     virtual avtDataObject_p     ApplyOperators(avtDataObject_p);
     virtual avtDataObject_p     ApplyRenderingTransformation(avtDataObject_p);
     virtual void                CustomizeBehavior();

@@ -43,7 +43,7 @@
 #include <vtkPNGWriter.h>
 #include <vtkBMPWriter.h>
 #include <vtkJPEGWriter.h>
-#include <vtkVisItTIFFWriter.h>
+#include <vtkTIFFWriter.h>
 #include <vtkPPMWriter.h>
 #include <vtkRGBWriter.h>
 #include <vtkPNGWriter.h>
@@ -152,7 +152,7 @@ ImageObject::Write(const char *filename, const char *format)
         vtkImageWriter *writer = NULL;
         if(strcmp(format, "tiff") != 0)
         {
-            writer = vtkVisItTIFFWriter::New();
+            writer = vtkTIFFWriter::New();
         }
         else if(strcmp(format, "jpeg") != 0)
         {

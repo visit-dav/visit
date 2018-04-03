@@ -27,7 +27,7 @@
 #include "vtkInformation.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 
-#include <vtksys/ios/sstream>
+#include <sstream>
 
 vtkStandardNewMacro(vtkVisItXMLPDataReader);
 
@@ -286,18 +286,21 @@ int vtkVisItXMLPDataReader::ReadPiece(vtkXMLDataElement* ePiece, int index)
 //----------------------------------------------------------------------------
 char* vtkVisItXMLPDataReader::CreatePieceFileName(const char* fileName)
 {
-  vtksys_ios::ostringstream fn_with_warning_C4701;
-  if(this->PathName)
+  std::ostringstream fn_with_warning_C4701;
+
+  // only prepend the path if the given file name is not
+  // absolute (i.e. doesn't start with '/')
+  if(this->PathName && fileName && fileName[0] != '/')
     {
     fn_with_warning_C4701 << this->PathName;
     }
   fn_with_warning_C4701 << fileName;
-  
+
   size_t len = fn_with_warning_C4701.str().length();
   char *buffer = new char[len + 1];
   strncpy(buffer, fn_with_warning_C4701.str().c_str(), len);
   buffer[len] = '\0';
-  
+
   return buffer;
 }
 

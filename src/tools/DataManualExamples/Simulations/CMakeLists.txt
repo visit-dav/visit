@@ -139,7 +139,7 @@ IF(VISIT_STATIC AND VISIT_ENABLE_XDB)
 ENDIF(VISIT_STATIC AND VISIT_ENABLE_XDB)
 
 SET(VTK_LIBS vtkCommonCore vtkImagingCore vtkRenderingCore vtkIOLegacy vtkIOPLY
-             vtkInteractionStyle vtkRenderingOpenGL vtkRenderingFreeTypeOpenGL
+             vtkInteractionStyle vtkRenderingOpenGL2 
              vtkFiltersHybrid vtkFiltersModeling vtkGeovisCore)
 IF(ICET_FOUND)
     LINK_DIRECTORIES(${ICET_LIBRARY_DIR})

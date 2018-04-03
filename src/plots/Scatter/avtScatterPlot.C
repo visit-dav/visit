@@ -36,7 +36,7 @@
 *
 *****************************************************************************/
 
-// ************************************************************************* // 
+// ************************************************************************* //
 //                              avtScatterPlot.C                             //
 // ************************************************************************* // 
 
@@ -166,16 +166,16 @@ avtScatterPlot::SetScaling(int mode, double skew)
 
     if (mode == 1)
     {
-       glyphMapper->SetLookupTable(avtLUT->GetLogLookupTable());
+       glyphMapper->SetLUT(avtLUT->GetLogLookupTable());
     }
     else if (mode == 2)
     {
        avtLUT->SetSkewFactor(skew);
-       glyphMapper->SetLookupTable(avtLUT->GetSkewLookupTable());
+       glyphMapper->SetLUT(avtLUT->GetSkewLookupTable());
     }
     else 
     {
-       glyphMapper->SetLookupTable(avtLUT->GetLookupTable());
+       glyphMapper->SetLUT(avtLUT->GetLookupTable());
     }
 }
 
@@ -614,7 +614,7 @@ avtScatterPlot::SetColorTable(const char *ctName)
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtScatterPlot::GetMapper(void)
 {
     return glyphMapper;
@@ -794,7 +794,7 @@ void
 avtScatterPlot::SetPointGlyphSize()
 {
     // Size used for points when using a point glyph.
-    if(atts.GetPointType() == Point || atts.GetPointType() == Sphere)
+    if(atts.GetPointType() == Point)
         glyphMapper->SetPointSize(atts.GetPointSizePixels());
 }
 

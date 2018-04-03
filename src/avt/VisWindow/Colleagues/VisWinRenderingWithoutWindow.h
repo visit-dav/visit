@@ -100,7 +100,6 @@ class VISWINDOW_API VisWinRenderingWithoutWindow : public VisWinRendering
     virtual void SetResizeEvent(void(*)(void *), void *) {;};
     virtual void SetCloseCallback(void(*)(void *), void *) {;};
 
-    virtual void SetImmediateModeRendering(bool immediateMode);
   protected:
     vtkRenderWindow                   *renWin;
     int                                displayStatus;

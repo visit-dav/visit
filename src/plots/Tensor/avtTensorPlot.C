@@ -158,7 +158,7 @@ avtTensorPlot::Create()
 //
 // ****************************************************************************
 
-avtMapper *
+avtMapperBase *
 avtTensorPlot::GetMapper(void)
 {
     return tensorMapper;

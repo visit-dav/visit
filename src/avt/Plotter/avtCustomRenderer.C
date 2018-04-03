@@ -71,7 +71,6 @@ avtCustomRenderer::avtCustomRenderer()
     overrideRenderCallbackArgs = NULL;
     VTKRen = NULL;
     VTKActor = NULL;
-    immediateModeRendering = false;
 }
 
 
@@ -285,84 +284,6 @@ void
 avtCustomRenderer::GlobalSetAmbientCoefficient(const double)
 {
     ;
-}
-
-
-// ****************************************************************************
-// Method: avtCustomRenderer::ImmediateModeRenderingOn
-//
-// Purpose:
-//   Turns on immediate rendering mode. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   August 4, 2003 
-//
-// ****************************************************************************
-
-void
-avtCustomRenderer::ImmediateModeRenderingOn()
-{
-    immediateModeRendering = true;    
-}
-
-
-// ****************************************************************************
-// Method: avtCustomRenderer::SetImmediateModeRendering
-//
-// Purpose:
-//   Turns on/off immediate rendering mode based on the passed value.
-//
-// Arguments:
-//   mode      The new value for immediate mode rendering. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   August 4, 2003 
-//
-// ****************************************************************************
-
-void
-avtCustomRenderer::SetImmediateModeRendering(bool mode)
-{
-    immediateModeRendering = mode;
-}
-
-
-// ****************************************************************************
-// Method: avtCustomRenderer::GetImmediateModeRendering
-//
-// Purpose:
-//   Returns the value of immediateModeRendering. 
-//
-// Returns:
-//   True if immediateModeRendering is on, false otherwise. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   August 4, 2003 
-//
-// ****************************************************************************
-
-bool
-avtCustomRenderer::GetImmediateModeRendering()
-{
-    return immediateModeRendering;
-}
-
-
-// ****************************************************************************
-// Method: avtCustomRenderer::ImmediateModeRenderingOff
-//
-// Purpose:
-//   Turns off immediate rendering mode. 
-//
-// Programmer: Kathleen Bonnell 
-// Creation:   August 4, 2003
-//
-// ****************************************************************************
-
-void
-avtCustomRenderer::ImmediateModeRenderingOff()
-{
-    immediateModeRendering = false;    
 }
 
 

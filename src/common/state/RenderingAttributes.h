@@ -129,7 +129,6 @@ public:
     void SetMultiresolutionMode(bool multiresolutionMode_);
     void SetMultiresolutionCellSize(float multiresolutionCellSize_);
     void SetGeometryRepresentation(GeometryRepresentation geometryRepresentation_);
-    void SetDisplayListMode(TriStateMode displayListMode_);
     void SetStereoRendering(bool stereoRendering_);
     void SetStereoType(StereoTypes stereoType_);
     void SetNotifyForEachRender(bool notifyForEachRender_);
@@ -163,7 +162,6 @@ public:
     bool                 GetMultiresolutionMode() const;
     float                GetMultiresolutionCellSize() const;
     GeometryRepresentation GetGeometryRepresentation() const;
-    TriStateMode         GetDisplayListMode() const;
     bool                 GetStereoRendering() const;
     StereoTypes          GetStereoType() const;
     bool                 GetNotifyForEachRender() const;
@@ -232,7 +230,6 @@ public:
         ID_multiresolutionMode,
         ID_multiresolutionCellSize,
         ID_geometryRepresentation,
-        ID_displayListMode,
         ID_stereoRendering,
         ID_stereoType,
         ID_notifyForEachRender,
@@ -268,7 +265,6 @@ private:
     bool           multiresolutionMode;
     float          multiresolutionCellSize;
     int            geometryRepresentation;
-    int            displayListMode;
     bool           stereoRendering;
     int            stereoType;
     bool           notifyForEachRender;
@@ -293,6 +289,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfiibibiibffabdbbDDibii"
+#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfibibiibffabdbbDDibii"
 
 #endif

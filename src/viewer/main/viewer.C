@@ -55,6 +55,8 @@
 #include <ViewerState.h>
 #include <VisItException.h>
 
+#include <QVTKOpenGLWidget.h>
+
 // ****************************************************************************
 // Method: Viewer_LogQtMessages
 //
@@ -71,28 +73,7 @@
 // Modifications:
 //   
 // ****************************************************************************
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-static void
-Viewer_LogQtMessages(QtMsgType type, const char *msg)
-{
-    switch(type)
-    {
-    case QtDebugMsg:
-        debug1 << "Qt: Debug: " << msg << endl;
-        break;
-    case QtWarningMsg:
-        debug1 << "Qt: Warning: " << msg << endl;
-        break;
-    case QtCriticalMsg:
-        debug1 << "Qt: Critical: " << msg << endl;
-        break;
-    case QtFatalMsg:
-        debug1 << "Qt: Fatal: " << msg << endl;
-        abort(); // HOOKS_IGNORE
-        break;
-    }
-}
-#else
+
 static void
 Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QString& msg)
 {
@@ -115,9 +96,8 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
         abort(); // HOOKS_IGNORE
         break;
     }
-
 }
-#endif
+
 
 // ****************************************************************************
 //  Method: ViewerMain
@@ -163,6 +143,10 @@ Viewer_LogQtMessages(QtMsgType type, const QMessageLogContext &context, const QS
 //    If running on linux in nowin mode, with qt 5, add -platform minimal
 //    to the QApplication arguments.
 //
+//    Kathleen Biagas, Wed Feb  7 10:40:52 PST 2018
+//    Set default QSurfaceFormat, required to be set before instantiating
+//    QApplication, due to our use of QVTKOpenGLWidget.
+//
 //    Kevin Griffin, Thu Mar 15 19:56:39 PDT 2018
 //    Made the viewer no longer responsible for removing the crash session
 //    files. The GUI has the sole responsiblity for removing the crash
@@ -183,12 +167,6 @@ ViewerMain(int argc, char *argv[])
 
     TRY
     {
-        // clear any static lib paths to avoid conflicts with
-        // loading qt after a make install or make package
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        QStringList empty;
-        QCoreApplication::setLibraryPaths(empty);
-#endif
         //
         // Create the viewer.
         //
@@ -217,7 +195,6 @@ ViewerMain(int argc, char *argv[])
         bool add_platform_arg = false;
 
         int nExtraArgs = 5;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 // Instead of being exclusionary, should the check insted be
 // #if defined(Q_OS_LINUX) ??
 #if !defined(_WIN32) && !defined(Q_OS_MAC)
@@ -227,7 +204,6 @@ ViewerMain(int argc, char *argv[])
             add_platform_arg = true;
             nExtraArgs += 2;
         }
-#endif
 #endif
         
         char **argv2 = new char *[argc + nExtraArgs];
@@ -252,12 +228,15 @@ ViewerMain(int argc, char *argv[])
         argv2[real_argc+nExtraArgs-1] = NULL;
 
         debug1 << "Viewer using font: " << argv2[real_argc+1] << endl;
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-        qInstallMsgHandler(Viewer_LogQtMessages);
-#else
         qInstallMessageHandler(Viewer_LogQtMessages);
-#endif
         int argc2 = real_argc + nExtraArgs;
+
+        // Setting default QSurfaceFormat required with QVTKOpenGLwidget
+        auto surfaceFormat = QVTKOpenGLWidget::defaultFormat();
+        surfaceFormat.setSamples(0);
+        surfaceFormat.setAlphaBufferSize(0);
+        QSurfaceFormat::setDefaultFormat(surfaceFormat);
+
         QApplication *mainApp = new QApplication(argc2, argv2, !viewer.GetNowinMode());
 
         //

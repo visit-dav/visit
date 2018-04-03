@@ -1,5 +1,5 @@
 // This junk is needed to make VTK work on startup.
-#define vtkRenderingCore_AUTOINIT 4(vtkInteractionStyle,vtkRenderingFreeType,vtkRenderingFreeTypeOpenGL,vtkRenderingOpenGL)
+#define vtkRenderingCore_AUTOINIT 3(vtkInteractionStyle,vtkRenderingFreeType,vtkRenderingOpenGL2)
 
 #include <vtkActor.h>
 #include <vtkActor2D.h>

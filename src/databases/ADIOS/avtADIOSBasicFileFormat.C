@@ -44,13 +44,17 @@
 #include <avtParallel.h>
 #include <ADIOSFileObject.h>
 #include <avtADIOSBasicFileFormat.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkFloatArray.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkPointData.h>
-#include <vtkIdList.h>
+
+
 #include <vtkCellData.h>
+#include <vtkIdList.h>
+#include <vtkInformation.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
+#include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkUnsignedCharArray.h>
+
 #include <avtDatabaseMetaData.h>
 #include <DBOptionsAttributes.h>
 #include <InvalidDBTypeException.h>
@@ -664,6 +668,8 @@ avtADIOSBasicFileFormat::GetDomBounds(int nBlocks, int dim, uint64_t *dims,
 // Creation:    April  9, 2014
 //
 // Modifications:
+//    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
+//    VTK-8, API for updating GhostLevel changed.
 //
 //****************************************************************************
 
@@ -705,6 +711,7 @@ avtADIOSBasicFileFormat::AddGhostZones(vtkRectilinearGrid *grid, bool *g)
             }
     
     grid->GetCellData()->AddArray(ghostCells);
-    vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(grid->GetInformation(), 0);
+    grid->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
     ghostCells->Delete();
 }

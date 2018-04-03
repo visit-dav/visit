@@ -84,6 +84,9 @@
 #   Kathleen Biagas, Fri May  3 17:00:03 MST 2013
 #   Ensure that the vtk install has all the libraries we require.
 # 
+#   Alister Maguire, Thu Sep 14 14:26:07 PDT 2017
+#   Added vtkRenderingVolumeOpenGL2
+#
 #****************************************************************************/
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
@@ -109,12 +112,9 @@ SET(REQ_VTK_MODS
         vtkIOXML
         vtkInteractionStyle
         vtkRenderingAnnotation
-        vtkRenderingFreeTypeOpenGL 
-        vtkRenderingOpenGL)
-
-IF(R_FOUND)
-    SET(REQ_VTK_MODS ${REQ_VTK_MODS} vtkFiltersStatisticsGnuR)
-ENDIF(R_FOUND)
+        vtkRenderingOpenGL2
+        vtkRenderingVolumeOpenGL2
+        vtkglew)
 
 IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     LIST(APPEND REQ_VTK_MODS vtkGUISupportQtOpenGL)
@@ -133,6 +133,7 @@ ENDIF()
 # if it issued a warning instead. Perhaps one day it will be fixed, and we can 
 # use this: find_package(VTK 6.0 REQUIRED ${REQ_VTK_MODS} OPTIONAL_COMPONENTS ${OPT_VTK_MODS} NO_MODULE PATHS ${VTK_DIR})
 
+set(Qt5_DIR ${VISIT_QT_DIR}/lib/cmake/Qt5)
 find_package(VTK ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} REQUIRED NO_MODULE PATHS ${VTK_DIR})
 
 # Ensure we have all the required modules:
@@ -233,15 +234,11 @@ ELSE(VISIT_VTK_SKIP_INSTALL)
 ENDIF(VISIT_VTK_SKIP_INSTALL)
 
 # check for python wrappers
-IF (NOT WIN32)
-    FILE(GLOB VTK_PY_WRAPPERS_DIR ${VTK_LIBRARY_DIRS}/python*/)
-ELSE (NOT WIN32)
-    IF(${VTK_VERSION} VERSION_LESS "6.1.0")
-        FILE(GLOB VTK_PY_WRAPPERS_DIR ${VISIT_VTK_DIR}/lib)
-    ELSE()
-        FILE(GLOB VTK_PY_WRAPPERS_DIR ${VISIT_VTK_DIR}/lib/python*)
-    ENDIF()
-ENDIF (NOT WIN32)
+if(NOT WIN32)
+    file(GLOB VTK_PY_WRAPPERS_DIR ${VTK_LIBRARY_DIRS}/python*/)
+else ()
+    file(GLOB VTK_PY_WRAPPERS_DIR ${VISIT_VTK_DIR}/lib/python*)
+endif()
 MESSAGE(STATUS "  VTK_PY_WRAPPERS_DIR=${VTK_PY_WRAPPERS_DIR}")
 
 IF(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
@@ -271,18 +268,6 @@ ELSE(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
 ENDIF(EXISTS ${VTK_PY_WRAPPERS_DIR}/site-packages/vtk)
 
 MARK_AS_ADVANCED(VTK_PYTHON_WRAPPERS_FOUND)
-
-#INSTALL(DIRECTORY vtk
-#            DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/vtk/include
-#            #FILE_PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ
-#            DIRE
-
-# If vtk was build with R, we need to add the R link dirs to VTK_LIBRARY_DIRS
-# This is necessary b/c VTK doesn't do a good job exposing R support in VTKConfig.cmake.
-# VTK-6 FIX ME -- verify if this is still the case
-IF(R_FOUND)
-    SET(VTK_LIBRARY_DIRS ${VTK_LIBRARY_DIRS} ${R_LIBRARY_DIR})
-ENDIF(R_FOUND)
 
 IF(NOT ${VTK_FOUND})
     MESSAGE(FATAL_ERROR "VTK is required to build VisIt.")

@@ -48,6 +48,7 @@
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
@@ -2578,6 +2579,10 @@ avtVisItXdmfFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //  Programmer: Eric Brugger
 //  Creation:   Mon Mar 17 13:22:09 PDT 2008
 //
+//  Modifications:
+//    Kathleen Biagas, Mon Aug 15 14:09:55 PDT 2016
+//    VTK-8, API for updating GhostLevel changed.
+//
 // ****************************************************************************
 
 void
@@ -2638,7 +2643,8 @@ avtVisItXdmfFileFormat::GetStructuredGhostZones(MeshInfo *meshInfo, vtkDataSet *
     ds->GetFieldData()->CopyFieldOn("avtRealDims");
     realDims->Delete();
 
-    vtkStreamingDemandDrivenPipeline::SetUpdateGhostLevel(ds->GetInformation(), 0);
+    ds->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 }
 
 

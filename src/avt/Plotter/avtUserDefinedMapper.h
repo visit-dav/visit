@@ -145,11 +145,6 @@ class PLOTTER_API vtkUserDefinedMapperBridge : public vtkDataSetMapper
   
     virtual void             Render(vtkRenderer *ren, vtkActor *a);
 
-    virtual void             ImmediateModeRenderingOn(void);
-    virtual void             ImmediateModeRenderingOff(void);
-    virtual void             SetImmediateModeRendering(int );
-    virtual int              GetImmediateModeRendering(void);
-
   protected:
                              vtkUserDefinedMapperBridge();
     virtual                 ~vtkUserDefinedMapperBridge();

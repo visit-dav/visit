@@ -80,40 +80,6 @@ Colleagues/avtText3DColleague.C
 Colleagues/avtTimeSliderColleague.C
 )
 
-IF (NOT WIN32)
-    IF(MESA_FOUND)
-        SET_SOURCE_FILES_PROPERTIES(
-            Colleagues/VisWinRendering.C
-            Colleagues/VisWinRenderingWithoutWindow.C
-            PROPERTIES
-            COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${OPENGL_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
-        )
-    ELSE(MESA_FOUND)
-        SET_SOURCE_FILES_PROPERTIES(
-            Colleagues/VisWinRendering.C
-            Colleagues/VisWinRenderingWithoutWindow.C
-            PROPERTIES
-            COMPILE_FLAGS "-I${OPENGL_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
-        )
-    ENDIF(MESA_FOUND)
-ELSE (NOT WIN32)
-    IF(MESA_FOUND)
-        SET_SOURCE_FILES_PROPERTIES(
-            Colleagues/VisWinRendering.C
-            Colleagues/VisWinRenderingWithoutWindow.C
-            PROPERTIES
-            COMPILE_FLAGS "-I${MESA_INCLUDE_DIR} -I${GLEW_INCLUDE_DIR}"
-        )
-    ELSE()
-        SET_SOURCE_FILES_PROPERTIES(
-            Colleagues/VisWinRendering.C
-            Colleagues/VisWinRenderingWithoutWindow.C
-            PROPERTIES
-            COMPILE_FLAGS "-I${GLEW_INCLUDE_DIR}"
-        )
-    ENDIF()
-ENDIF (NOT WIN32)
-
 SET(EXCEPTIONS_SOURCES
 Exceptions/BadColleagueException.C
 Exceptions/BadInteractorException.C
@@ -199,21 +165,20 @@ ${VISIT_SOURCE_DIR}/avt/Plotter/vtk
 ${VISIT_SOURCE_DIR}/avt/View
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${OPENGL_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
-LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} ${VTK_LIBRARY_DIRS} ${MESA_LIBRARY_DIR} ${GLEW_LIBRARY_DIR})
+LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtviswindow_ser ${AVTVISWINDOW_SOURCES})
-TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkInteractionStyle ${OBJC_LIBS})
+TARGET_LINK_LIBRARIES(avtviswindow_ser visitcommon avtview avtmath avtplotter_ser visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkImagingCore vtkInteractionStyle ${OBJC_LIBS})
 VISIT_INSTALL_TARGETS(avtviswindow_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtviswindow_par ${AVTVISWINDOW_SOURCES})
-    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkInteractionStyle ${OBJC_LIBS})
+    TARGET_LINK_LIBRARIES(avtviswindow_par visitcommon avtview avtmath avtplotter_par visit_vtk lightweight_visit_vtk vtkFiltersModeling vtkImagingCore vtkInteractionStyle ${OBJC_LIBS})
     VISIT_INSTALL_TARGETS(avtviswindow_par)
 ENDIF(VISIT_PARALLEL)

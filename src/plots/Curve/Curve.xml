@@ -5,15 +5,15 @@
     </CXXFLAGS>
     <Files components="V">
       avtCurveFilter.C
-      avtCurveRenderer.C
-      avtOpenGLCurveRenderer.C
+      avtCurveMapper.C
       avtPolarToCartesianFilter.C
+      vtkCurveMapper.C
     </Files>
     <Files components="E">
       avtCurveFilter.C
-      avtCurveRenderer.C
-      avtOpenGLCurveRenderer.C
+      avtCurveMapper.C
       avtPolarToCartesianFilter.C
+      vtkCurveMapper.C
     </Files>
     <Attribute name="CurveAttributes" purpose="Attributes for the xy plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="CurveAttributes.code">
       <Enum name="CurveColor">

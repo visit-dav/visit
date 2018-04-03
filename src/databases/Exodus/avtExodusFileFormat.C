@@ -52,7 +52,6 @@
 #include <vtkDataObject.h>
 #include <vtkDoubleArray.h>
 #include <vtkDataArray.h>
-#include <vtkDataArrayTemplate.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
 #include <vtkLongLongArray.h>
@@ -1011,7 +1010,7 @@ MakeVTKDataArrayByTakingOwnershipOfNCVarData(nc_type type,
     int num_comps, int num_vals, void *buf)
 {
     const int SAVE_ARRAY = 0;
-    const int VTK_DA_FREE = vtkDataArrayTemplate<int>::VTK_DATA_ARRAY_FREE;
+    const int VTK_DA_FREE = vtkAbstractArray::VTK_DATA_ARRAY_FREE;
 
     switch (type)
     {
@@ -1709,11 +1708,11 @@ static T* ExtendCoordsTemplate(T *rhs)
     for (int t = 0; t < retval->GetNumberOfTuples(); t++)
     {
         N cval[5], rval[3] = {0,0,0};
-        rhs->GetTupleValue(t, rval);
+        rhs->GetTypedTuple(t, rval);
         cval[0] = rval[0];
         cval[1] = rval[1];
         cval[2] = 0.0;
-        retval->SetTupleValue(t, cval);
+        retval->SetTypedTuple(t, cval);
     }
     return retval;
 }
@@ -1763,15 +1762,15 @@ static T* ComposeUpTo3ArraysTemplate(int narrs, T *rhsx, T *rhsy, T* rhsz)
     for (int t = 0; t < retval->GetNumberOfTuples(); t++)
     {
         N cval[5], xval[5], yval[5] = {0,0,0,0,0}, zval[5] = {0,0,0,0,0};
-        rhsx->GetTupleValue(t, xval);
+        rhsx->GetTypedTuple(t, xval);
         if (rhsy)
-            rhsy->GetTupleValue(t, yval);
+            rhsy->GetTypedTuple(t, yval);
         if (rhsz)
-            rhsz->GetTupleValue(t, zval);
+            rhsz->GetTypedTuple(t, zval);
         cval[0] = xval[0];
         cval[1] = yval[0];
         cval[2] = zval[0];
-        retval->SetTupleValue(t, cval);
+        retval->SetTypedTuple(t, cval);
     }
     return retval;
 }

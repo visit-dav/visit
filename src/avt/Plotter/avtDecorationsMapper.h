@@ -50,7 +50,6 @@
 #include <avtLabelActor.h>
 
 
-class   vtkDataObjectCollection;
 
 // ****************************************************************************
 //  Class:  avtDecorationsMapper
