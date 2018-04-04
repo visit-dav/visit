@@ -20,7 +20,7 @@ function bv_fastbit_depends_on
 
 function bv_fastbit_info
 {
-    export FASTBIT_VERSION=${FASTBIT_VERSION:-"2.0.3.4"}
+    export FASTBIT_VERSION=${FASTBIT_VERSION:-"2.0.3"}
     export FASTBIT_FILE=${FASTBIT_FILE:-"fastbit-${FASTBIT_VERSION}.tar.gz"}
     # Note: last 3-digit field in URL changes with version.
     export FASTBIT_URL=${FASTBIT_URL:-"https://code.lbl.gov/frs/download.php/file/426"}

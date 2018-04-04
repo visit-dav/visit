@@ -263,13 +263,17 @@ IF(NOT VISIT_DBIO_ONLY)
     SET(AVTMATH avtmath)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
+IF(VTKM_FOUND)
+    SET(VISIT_VTKM_LIB visit_vtkm)
+ENDIF()
+
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
 TARGET_LINK_LIBRARIES(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
                       visit_vtk lightweight_visit_vtk vtkCommonCore
                       vtkCommonDataModel vtkFiltersGeometry
-                      ${ZLIB_LIB} ${EAVL_LIB} ${VTKM_LIB})
+                      ${ZLIB_LIB} ${EAVL_LIB} ${VISIT_VTKM_LIB} ${VTKM_LIB})
 
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
 
@@ -281,6 +285,6 @@ IF(VISIT_PARALLEL)
                           visitcommon ${AVTMATH} avtdbatts
                           visit_vtk lightweight_visit_vtk vtkCommonCore
                           vtkCommonDataModel vtkFiltersGeometry
-                          ${ZLIB_LIB} ${EAVL_LIB} ${VTKM_LIB})
+                          ${ZLIB_LIB} ${EAVL_LIB} ${VISIT_VTKM_LIB} ${VTKM_LIB})
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 ENDIF(VISIT_PARALLEL)
