@@ -21,6 +21,10 @@ function bv_conduit_depends_on
         depends_on="hdf5"
     fi
     
+    if [[ "$DO_MPICH" == "yes" ]] ; then
+        depends_on="$depends_on mpich"
+    fi
+    
     echo $depends_on
 }
 
