@@ -663,7 +663,10 @@ class VisItCinema(object):
     #
     ###########################################################################
     def RenameFile(self, old, new):
-        os.rename(old, new)
+        try:
+            os.rename(old, new)
+        except:
+            pass
         self.Debug(5, "Renaming %s -> %s" % (old, new))
 
     ###########################################################################

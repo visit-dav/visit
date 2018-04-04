@@ -2272,7 +2272,7 @@ ViewerWindowManager::CreateSingleImage(int pixelData, int windowIndex,
              ValueImage, doZBuffer,
              windowIndex, width, height, doScreenCapture, leftEye);
 
-        if(append)
+        if(append && *value != NULL)
         {
             // Get the scalars for the return image.
             vtkDataArray *scalars = retval->GetImage().GetImageVTK()->GetPointData()->GetScalars();
