@@ -3,6 +3,9 @@
     <LIBS>
       vtkIOPLY
     </LIBS>
+    <LIBS components="ESer,EPar">
+      vtkRenderingCore
+    </LIBS>
     <FilePatterns>
       *.ply
     </FilePatterns>
