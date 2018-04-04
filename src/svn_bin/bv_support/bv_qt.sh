@@ -349,22 +349,8 @@ function build_qt
     # Platform specific configuration
     #
     if [[ "$OPSYS" == "Darwin" ]] ; then
-        # Determine if we build with Cocoa
-        VER=$(uname -r)
-        if [[ ${VER%%.*} -ge 10 ]] ; then
-            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -cocoa"
-        fi
-
-        QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
-        
-        # Figure out whether we need to build 64-bit version of Qt
-        echo "int main() {}" >> arch_test.c
-        ${C_COMPILER} arch_test.c -o arch_test
-        GCC_BUILD_ARCH=$(lipo -info arch_test | sed -e 's/[^x]*//')
-        rm arch_test.c arch_test
-        if [[ "$GCC_BUILD_ARCH" == "x86_64" ]] ; then
-            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -arch x86_64"
-        fi
+       
+        QT_PLATFORM="macx-clang"
 
     elif [[ "$OPSYS" == "Linux" ]] ; then
         
