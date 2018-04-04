@@ -233,7 +233,10 @@ MoleculeMapperHelper::CreateCylinderBetweenTwoPoints(double *p0, double *p1,
   this->CalculateCylPts();
 
   int ncells = 0;
-  float vc[3] = {p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]};
+  float vc[3] = {static_cast<float>(p1[0]-p0[0]), 
+                 static_cast<float>(p1[1]-p0[1]),
+                 static_cast<float>(p1[2]-p0[2])
+                };
   float va[3];
   float vb[3];
 
@@ -307,7 +310,10 @@ MoleculeMapperHelper::CreateCylinderCap(double *p0, double *p1, int half,
   CalculateCylPts();
 
   int ncells = 0;
-  float vc[3] = {p1[0]-p0[0], p1[1]-p0[1], p1[2]-p0[2]};
+  float vc[3] = {static_cast<float>(p1[0]-p0[0]),
+                 static_cast<float>(p1[1]-p0[1]),
+                 static_cast<float>(p1[2]-p0[2])
+                };
   float va[3];
   float vb[3];
 
