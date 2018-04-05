@@ -77,6 +77,11 @@ FilledBoundaryAttributes::ProcessOldVersions(DataNode *parentNode,
         if (searchNode->GetNode("filledFlag") != 0)
             searchNode->RemoveNode("filledFlag");
     }
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+        if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
+    }
 }
 
 Target: xml2python
@@ -85,8 +90,9 @@ Prefix:
 Postfix:
     // Try and handle legacy fields
 
-    // boundaryType and it's possible enumerations
     bool boundaryTypeFound = false;
+    bool lineStyleFound = false;
+    // boundaryType and it's possible enumerations
     if (strcmp(name, "boundaryType") == 0)
     {
         boundaryTypeFound = true;
@@ -107,21 +113,49 @@ Postfix:
     {
         boundaryTypeFound = true;
     }
-    if (boundaryTypeFound)
-    {
-        boundaryTypeFound = true;
-        fprintf(stdout, "boundaryType is no longer a valid FilledBoundary "
-                       "attribute.\nIt's value is being ignored, please remove "
-                       "it from your script.\n");
-        return PyInt_FromLong(0L);
-    }
-    else if (strcmp(name, "filledFlag") == 0)
+    if (strcmp(name, "filledFlag") == 0)
     {
         fprintf(stdout, "filledFlag is no longer a valid FilledBoundary "
                        "attribute.\nIt's value is being ignored, please remove "
                        "it from your script.\n");
         return PyInt_FromLong(0L);
     }
+    // lineStyle and it's possible enumerations
+    else if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (boundaryTypeFound)
+    {
+        fprintf(stdout, "boundaryType is no longer a valid FilledBoundary "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid FilledBoundary "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+
 
 Code: PyFilledBoundaryAttributes_setattr
 Prefix:
@@ -135,6 +169,11 @@ Postfix:
             obj = Py_None;
         }
         else if(strcmp(name, "boundaryType") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "lineStyle") == 0)
         {
             Py_INCREF(Py_None);
             obj = Py_None;

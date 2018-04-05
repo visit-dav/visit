@@ -62,7 +62,6 @@ void Line::Init()
     point2[0] = 1;
     point2[1] = 1;
     point2[2] = 1;
-    lineStyle = 0;
     lineWidth = 0;
     interactive = false;
     reflineLabels = false;
@@ -100,7 +99,6 @@ void Line::Copy(const Line &obj)
 
     designator = obj.designator;
     color = obj.color;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     interactive = obj.interactive;
     reflineLabels = obj.reflineLabels;
@@ -280,7 +278,6 @@ Line::operator == (const Line &obj) const
             point2_equal &&
             (designator == obj.designator) &&
             (color == obj.color) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (interactive == obj.interactive) &&
             (reflineLabels == obj.reflineLabels) &&
@@ -434,7 +431,6 @@ Line::SelectAll()
     Select(ID_point2,        (void *)point2, 3);
     Select(ID_designator,    (void *)&designator);
     Select(ID_color,         (void *)&color);
-    Select(ID_lineStyle,     (void *)&lineStyle);
     Select(ID_lineWidth,     (void *)&lineWidth);
     Select(ID_interactive,   (void *)&interactive);
     Select(ID_reflineLabels, (void *)&reflineLabels);
@@ -499,12 +495,6 @@ Line::CreateNode(DataNode *parentNode, bool completeSave, bool forceAdd)
         }
         else
             delete colorNode;
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
-    }
-
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
     {
         addToParent = true;
@@ -585,8 +575,6 @@ Line::SetFromNode(DataNode *parentNode)
         SetDesignator(node->AsString());
     if((node = searchNode->GetNode("color")) != 0)
         color.SetFromNode(node);
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("interactive")) != 0)
@@ -635,13 +623,6 @@ Line::SetColor(const ColorAttribute &color_)
 {
     color = color_;
     Select(ID_color, (void *)&color);
-}
-
-void
-Line::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -736,12 +717,6 @@ ColorAttribute &
 Line::GetColor()
 {
     return color;
-}
-
-int
-Line::GetLineStyle() const
-{
-    return lineStyle;
 }
 
 int
@@ -848,7 +823,6 @@ Line::GetFieldName(int index) const
     case ID_point2:        return "point2";
     case ID_designator:    return "designator";
     case ID_color:         return "color";
-    case ID_lineStyle:     return "lineStyle";
     case ID_lineWidth:     return "lineWidth";
     case ID_interactive:   return "interactive";
     case ID_reflineLabels: return "reflineLabels";
@@ -883,7 +857,6 @@ Line::GetFieldType(int index) const
     case ID_point2:        return FieldType_doubleArray;
     case ID_designator:    return FieldType_string;
     case ID_color:         return FieldType_color;
-    case ID_lineStyle:     return FieldType_linestyle;
     case ID_lineWidth:     return FieldType_linewidth;
     case ID_interactive:   return FieldType_bool;
     case ID_reflineLabels: return FieldType_bool;
@@ -918,7 +891,6 @@ Line::GetFieldTypeName(int index) const
     case ID_point2:        return "doubleArray";
     case ID_designator:    return "string";
     case ID_color:         return "color";
-    case ID_lineStyle:     return "linestyle";
     case ID_lineWidth:     return "linewidth";
     case ID_interactive:   return "bool";
     case ID_reflineLabels: return "bool";
@@ -979,11 +951,6 @@ Line::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_color:
         {  // new scope
         retval = (color == obj.color);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_lineWidth:

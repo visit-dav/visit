@@ -110,9 +110,6 @@ PySubsetAttributes_ToString(const SubsetAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
@@ -323,39 +320,6 @@ SubsetAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
     SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-SubsetAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-SubsetAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    SubsetAttributesObject *obj = (SubsetAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
     return retval;
 }
 
@@ -960,8 +924,6 @@ PyMethodDef PySubsetAttributes_methods[SUBSETATTRIBUTES_NMETH] = {
     {"GetInvertColorTable", SubsetAttributes_GetInvertColorTable, METH_VARARGS},
     {"SetLegendFlag", SubsetAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", SubsetAttributes_GetLegendFlag, METH_VARARGS},
-    {"SetLineStyle", SubsetAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", SubsetAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", SubsetAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", SubsetAttributes_GetLineWidth, METH_VARARGS},
     {"SetSingleColor", SubsetAttributes_SetSingleColor, METH_VARARGS},
@@ -1031,17 +993,6 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
         return SubsetAttributes_GetInvertColorTable(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return SubsetAttributes_GetLegendFlag(self, NULL);
-    if(strcmp(name, "lineStyle") == 0)
-        return SubsetAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "lineWidth") == 0)
         return SubsetAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "singleColor") == 0)
@@ -1115,6 +1066,27 @@ PySubsetAttributes_getattr(PyObject *self, char *name)
     {
         return PyInt_FromLong(0L);
     }
+    // lineStyle and it's possible enumerations
+    else if (strcmp(name, "lineStyle") == 0)
+    {
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        return PyInt_FromLong(0L);
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PySubsetAttributes_methods, self, name);
 }
 
@@ -1136,8 +1108,6 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SubsetAttributes_SetInvertColorTable(self, tuple);
     else if(strcmp(name, "legendFlag") == 0)
         obj = SubsetAttributes_SetLegendFlag(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = SubsetAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = SubsetAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "singleColor") == 0)
@@ -1175,6 +1145,11 @@ PySubsetAttributes_setattr(PyObject *self, char *name, PyObject *args)
         }
         // internal only, shouldn't be set by scripts
         else if(strcmp(name, "subsetType") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "lineStyle") == 0)
         {
             Py_INCREF(Py_None);
             obj = Py_None;

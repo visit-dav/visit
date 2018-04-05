@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define TOPOLOGYATTRIBUTES_NMETH 20
+#define TOPOLOGYATTRIBUTES_NMETH 18
 void           PyTopologyAttributes_StartUp(TopologyAttributes *subj, void *data);
 void           PyTopologyAttributes_CloseDown();
 PyMethodDef *  PyTopologyAttributes_GetMethodTable(int *nMethods);

@@ -131,9 +131,6 @@ PyContourAttributes_ToString(const ContourAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
@@ -463,39 +460,6 @@ ContourAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
     ContourAttributesObject *obj = (ContourAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-ContourAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-ContourAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    ContourAttributesObject *obj = (ContourAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
     return retval;
 }
 
@@ -1164,8 +1128,6 @@ PyMethodDef PyContourAttributes_methods[CONTOURATTRIBUTES_NMETH] = {
     {"GetInvertColorTable", ContourAttributes_GetInvertColorTable, METH_VARARGS},
     {"SetLegendFlag", ContourAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", ContourAttributes_GetLegendFlag, METH_VARARGS},
-    {"SetLineStyle", ContourAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", ContourAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", ContourAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", ContourAttributes_GetLineWidth, METH_VARARGS},
     {"SetSingleColor", ContourAttributes_SetSingleColor, METH_VARARGS},
@@ -1239,17 +1201,6 @@ PyContourAttributes_getattr(PyObject *self, char *name)
         return ContourAttributes_GetInvertColorTable(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return ContourAttributes_GetLegendFlag(self, NULL);
-    if(strcmp(name, "lineStyle") == 0)
-        return ContourAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "lineWidth") == 0)
         return ContourAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "singleColor") == 0)
@@ -1289,6 +1240,37 @@ PyContourAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wireframe") == 0)
         return ContourAttributes_GetWireframe(self, NULL);
 
+    // Try and handle legacy fields
+
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Contour "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyContourAttributes_methods, self, name);
 }
 
@@ -1314,8 +1296,6 @@ PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ContourAttributes_SetInvertColorTable(self, tuple);
     else if(strcmp(name, "legendFlag") == 0)
         obj = ContourAttributes_SetLegendFlag(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = ContourAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = ContourAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "singleColor") == 0)
@@ -1343,6 +1323,15 @@ PyContourAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "wireframe") == 0)
         obj = ContourAttributes_SetWireframe(self, tuple);
 
+    // Try and handle legacy fields
+    if(obj == NULL)
+    {
+        if(strcmp(name, "lineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 

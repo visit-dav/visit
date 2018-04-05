@@ -47,7 +47,6 @@
 
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 
@@ -221,14 +220,6 @@ QvisAppearanceWidget::CreateWindow()
     QGridLayout *mainLayout = new QGridLayout(0);
     aLayout->addLayout(mainLayout);
 
-    // Add the line style widget.
-    lineStyleLabel = new QLabel(tr("Line Style"), this);
-    mainLayout->addWidget(lineStyleLabel,0,0);
-    lineStyle = new QvisLineStyleWidget(0, this);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    mainLayout->addWidget(lineStyle, 0,1);
-
     // Add the line width widget.
     lineWidthLabel = new QLabel(tr("Line Width"), this);
     mainLayout->addWidget(lineWidthLabel,1,0);
@@ -393,12 +384,6 @@ QvisAppearanceWidget::UpdateMultiCurveWidgets()
     }
 
     multipleColors->blockSignals(false);
-
-    // Update the line style.
-    DataNode *lineStyleNode = multiCurveNode->GetNode("lineStyle");
-    lineStyle->blockSignals(true);
-    lineStyle->SetLineStyle(lineStyleNode->AsInt());
-    lineStyle->blockSignals(false);
 
     // Update the line width.
     DataNode *lineWidthNode = multiCurveNode->GetNode("lineWidth");
@@ -580,19 +565,6 @@ QvisAppearanceWidget::opacityChanged(int opacity, int index)
         colorNode->SetUnsignedCharArray(newColor, 4);
 
         atts->SetFromNode(&root);
-        atts->Notify();
-        emit multiCurveChanged(atts);
-    }
-}
-
-void
-QvisAppearanceWidget::lineStyleChanged(int style)
-{
-    int MultiCurve = viewer->GetPlotIndex("MultiCurve");
-    AttributeSubject *atts = viewer->DelayedState()->GetPlotAttributes(MultiCurve);
-    if(atts != 0)
-    {
-        atts->SetValue("lineStyle", style);
         atts->Notify();
         emit multiCurveChanged(atts);
     }

@@ -959,29 +959,6 @@ class AttsGeneratorColor : public virtual Color , public virtual AttsGeneratorFi
 
 
 //
-// --------------------------------- LineStyle --------------------------------
-//
-class AttsGeneratorLineStyle : public virtual LineStyle , public virtual AttsGeneratorField
-{
-  public:
-    AttsGeneratorLineStyle(const QString &n, const QString &l)
-        : Field("linestyle",n,l), LineStyle(n,l), AttsGeneratorField("linestyle",n,l) { }
-    virtual QString GetAttributeGroupID()
-    {
-        return "i";
-    }
-    virtual QString DataNodeConversion()
-    {
-        return "AsInt";
-    }
-    virtual void WriteSourceSetDefault(QTextStream &c)
-    {
-        c << "    " << name << " = " << val << ";" << Endl;
-    }
-};
-
-
-//
 // --------------------------------- LineWidth --------------------------------
 //
 class AttsGeneratorLineWidth : public virtual LineWidth , public virtual AttsGeneratorField
@@ -1676,7 +1653,6 @@ class AttsFieldFactory
         else if (type == "colortable")   f = new AttsGeneratorColorTable(name,label);
         else if (type == "color")        f = new AttsGeneratorColor(name,label);
         else if (type == "opacity")      f = new AttsGeneratorOpacity(name,label);
-        else if (type == "linestyle")    f = new AttsGeneratorLineStyle(name,label);
         else if (type == "linewidth")    f = new AttsGeneratorLineWidth(name,label);
         else if (type == "variablename") f = new AttsGeneratorVariableName(name,label);
         else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);

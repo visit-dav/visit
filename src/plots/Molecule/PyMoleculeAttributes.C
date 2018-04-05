@@ -212,9 +212,6 @@ PyMoleculeAttributes_ToString(const MoleculeAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sbondLineWidth = %d\n", prefix, atts->GetBondLineWidth());
     str += tmpStr;
-    const char *bondLineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%sbondLineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, bondLineStyle_values[atts->GetBondLineStyle()]);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%selementColorTable = \"%s\"\n", prefix, atts->GetElementColorTable().c_str());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sresidueTypeColorTable = \"%s\"\n", prefix, atts->GetResidueTypeColorTable().c_str());
@@ -650,39 +647,6 @@ MoleculeAttributes_GetBondLineWidth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-MoleculeAttributes_SetBondLineStyle(PyObject *self, PyObject *args)
-{
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the bondLineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetBondLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MoleculeAttributes_GetBondLineStyle(PyObject *self, PyObject *args)
-{
-    MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetBondLineStyle()));
-    return retval;
-}
-
-/*static*/ PyObject *
 MoleculeAttributes_SetElementColorTable(PyObject *self, PyObject *args)
 {
     MoleculeAttributesObject *obj = (MoleculeAttributesObject *)self;
@@ -926,8 +890,6 @@ PyMethodDef PyMoleculeAttributes_methods[MOLECULEATTRIBUTES_NMETH] = {
     {"GetBondRadius", MoleculeAttributes_GetBondRadius, METH_VARARGS},
     {"SetBondLineWidth", MoleculeAttributes_SetBondLineWidth, METH_VARARGS},
     {"GetBondLineWidth", MoleculeAttributes_GetBondLineWidth, METH_VARARGS},
-    {"SetBondLineStyle", MoleculeAttributes_SetBondLineStyle, METH_VARARGS},
-    {"GetBondLineStyle", MoleculeAttributes_GetBondLineStyle, METH_VARARGS},
     {"SetElementColorTable", MoleculeAttributes_SetElementColorTable, METH_VARARGS},
     {"GetElementColorTable", MoleculeAttributes_GetElementColorTable, METH_VARARGS},
     {"SetResidueTypeColorTable", MoleculeAttributes_SetResidueTypeColorTable, METH_VARARGS},
@@ -1044,17 +1006,6 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
         return MoleculeAttributes_GetBondRadius(self, NULL);
     if(strcmp(name, "bondLineWidth") == 0)
         return MoleculeAttributes_GetBondLineWidth(self, NULL);
-    if(strcmp(name, "bondLineStyle") == 0)
-        return MoleculeAttributes_GetBondLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "elementColorTable") == 0)
         return MoleculeAttributes_GetElementColorTable(self, NULL);
     if(strcmp(name, "residueTypeColorTable") == 0)
@@ -1074,6 +1025,37 @@ PyMoleculeAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "scalarMax") == 0)
         return MoleculeAttributes_GetScalarMax(self, NULL);
 
+    // Try and handle legacy fields
+
+    // bondLineStyle and it's possible enumerations
+    bool bondLineStyleFound = false;
+    if (strcmp(name, "bondLineStyle") == 0)
+    {
+        bondLineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        bondLineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        bondLineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        bondLineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        bondLineStyleFound = true;
+    }
+    if (bondLineStyleFound)
+    {
+        fprintf(stdout, "bondLineStyle is no longer a valid Molecule "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyMoleculeAttributes_methods, self, name);
 }
 
@@ -1111,8 +1093,6 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MoleculeAttributes_SetBondRadius(self, tuple);
     else if(strcmp(name, "bondLineWidth") == 0)
         obj = MoleculeAttributes_SetBondLineWidth(self, tuple);
-    else if(strcmp(name, "bondLineStyle") == 0)
-        obj = MoleculeAttributes_SetBondLineStyle(self, tuple);
     else if(strcmp(name, "elementColorTable") == 0)
         obj = MoleculeAttributes_SetElementColorTable(self, tuple);
     else if(strcmp(name, "residueTypeColorTable") == 0)
@@ -1132,6 +1112,15 @@ PyMoleculeAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "scalarMax") == 0)
         obj = MoleculeAttributes_SetScalarMax(self, tuple);
 
+    // Try and handle legacy fields
+    if(obj == NULL)
+    {
+        if(strcmp(name, "bondLineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 

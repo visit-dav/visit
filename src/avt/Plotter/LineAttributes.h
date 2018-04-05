@@ -41,14 +41,6 @@
 
 typedef enum
 {
-    SOLID = 0,
-    DASH,
-    DOT,
-    DOTDASH
-} _LineStyle;
-
-typedef enum
-{
     LW_0 = 0,
     LW_1,
     LW_2,
@@ -98,51 +90,4 @@ inline _LineWidth Int2LineWidth(int lw)
     }
 }
 
-inline int LineStyle2Int(_LineStyle ls)
-{
-    switch (ls)
-    {
-        case SOLID    : return 0; 
-        case DASH     : return 1; 
-        case DOT      : return 2; 
-        case DOTDASH  : return 3; 
-        default       : return 4; 
-    }
-}
-
-inline int LineStyle2StipplePattern(_LineStyle ls)
-{
-    switch (ls)
-    {
-        case SOLID    : return 0xFFFF; 
-        case DASH     : return 0x00FF; 
-        case DOT      : return 0x3333; 
-        case DOTDASH  : return 0x31FE; 
-        default       : return 0xFFFF; 
-    }
-}
-
-inline _LineStyle StipplePattern2LineStyle(int ls)
-{
-    switch (ls)
-    {
-        case 0xFFFF : return SOLID; 
-        case 0x00FF : return DASH; 
-        case 0x3333 : return DOT; 
-        case 0x31FE : return DOTDASH; 
-        default     : return SOLID; 
-    }
-}
-
-inline _LineStyle Int2LineStyle(int ls)
-{
-    switch (ls)
-    {
-        case 0  : return SOLID; 
-        case 1  : return DASH; 
-        case 2  : return DOT; 
-        case 3  : return DOTDASH; 
-        default : return SOLID; 
-    }
-}
 #endif

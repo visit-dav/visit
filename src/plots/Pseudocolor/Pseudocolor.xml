@@ -111,9 +111,6 @@
       <Field name="pointSizePixels" label="Point size pixels" type="int">
         2
       </Field>
-      <Field name="lineStyle" label="lineStyle" type="linestyle">
-        0
-      </Field>
       <Field name="lineType" label="Line Type" type="enum" subtype="LineType">
         Line
       </Field>

@@ -45,17 +45,7 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QLayout>
-#include <QLineEdit>
 #include <QNarrowLineEdit.h>
-#include <QSpinBox>
-#include <QWidget>
-#include <QButtonGroup>
-#include <QRadioButton>
-#include <QvisColorTableButton.h>
-#include <QvisOpacitySlider.h>
-#include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
-#include <QvisLineWidthWidget.h>
 #include <stdio.h>
 #include <string>
 

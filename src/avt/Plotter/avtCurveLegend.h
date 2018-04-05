@@ -83,7 +83,6 @@ class PLOTTER_API avtCurveLegend : public avtLegend
     virtual void               SetFont(int family, bool bold, bool italic, bool shadow);
 
     void                       SetLineWidth(_LineWidth lw);
-    void                       SetLineStyle(_LineStyle ls);
     void                       SetColor(const double[3]);
     void                       SetColor(double, double, double);
 

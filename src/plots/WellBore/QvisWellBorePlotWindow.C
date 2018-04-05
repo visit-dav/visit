@@ -58,7 +58,6 @@
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
 #include <QvisColorTableWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 
@@ -297,13 +296,6 @@ QvisWellBorePlotWindow::CreateWindowContents()
             this, SLOT(wellLineWidthChanged(int)));
     mainLayout->addWidget(wellLineWidth, 3,1);
 
-    wellLineStyleLabel = new QLabel(tr("Well line style"), central);
-    mainLayout->addWidget(wellLineStyleLabel,4,0);
-    wellLineStyle = new QvisLineStyleWidget(0, central);
-    connect(wellLineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(wellLineStyleChanged(int)));
-    mainLayout->addWidget(wellLineStyle, 4,1);
-
     // Create the well annotation widget.
     wellAnnotationLabel = new QLabel(tr("Well annotation"), central);
     mainLayout->addWidget(wellAnnotationLabel,5,0);
@@ -464,18 +456,6 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
                 if(wellLineWidthLabel)
                     wellLineWidthLabel->setEnabled(false);
             }
-            if (atts->GetDrawWellsAs() == WellBoreAttributes::Lines)
-            {
-                wellLineStyle->setEnabled(true);
-                if(wellLineStyleLabel)
-                    wellLineStyleLabel->setEnabled(true);
-            }
-            else
-            {
-                wellLineStyle->setEnabled(false);
-                if(wellLineStyleLabel)
-                    wellLineStyleLabel->setEnabled(false);
-            }
             drawWellsAs->blockSignals(true);
             drawWellsAs->setCurrentIndex(atts->GetDrawWellsAs());
             drawWellsAs->blockSignals(false);
@@ -494,11 +474,6 @@ QvisWellBorePlotWindow::UpdateWindow(bool doAll)
             wellLineWidth->blockSignals(true);
             wellLineWidth->SetLineWidth(atts->GetWellLineWidth());
             wellLineWidth->blockSignals(false);
-            break;
-          case WellBoreAttributes::ID_wellLineStyle:
-            wellLineStyle->blockSignals(true);
-            wellLineStyle->SetLineStyle(atts->GetWellLineStyle());
-            wellLineStyle->blockSignals(false);
             break;
           case WellBoreAttributes::ID_wellAnnotation:
             if (atts->GetWellAnnotation() == WellBoreAttributes::StemOnly ||
@@ -1747,15 +1722,6 @@ void
 QvisWellBorePlotWindow::wellLineWidthChanged(int style)
 {
     atts->SetWellLineWidth(style);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisWellBorePlotWindow::wellLineStyleChanged(int style)
-{
-    atts->SetWellLineStyle(style);
     SetUpdate(false);
     Apply();
 }

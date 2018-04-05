@@ -78,7 +78,6 @@ class avtSurfaceMapper : public avtMapper
     void                       SetEdgeVisibility(bool);
     void                       SetEdgeColor(double rgb[3]);
     void                       SetLineWidth(int lw);
-    void                       SetLineStyle(int ls);
     void                       SetSurfaceColor(double rgb[3]);
 
 
@@ -101,7 +100,6 @@ class avtSurfaceMapper : public avtMapper
     bool            edgeVis;
     bool            scalarVis;
     int             lineWidth;
-    int             lineStyle;
     double          edgeColor[3];
     double          surfaceColor[3];
     bool            canApplyGlobalRep;

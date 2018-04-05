@@ -132,7 +132,6 @@ public:
     void SetZone(int zone_);
     void SetUseBinWidths(bool useBinWidths_);
     void SetOutputType(OutputType outputType_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetColor(const ColorAttribute &color_);
     void SetDataScale(DataScale dataScale_);
@@ -155,7 +154,6 @@ public:
     int                  GetZone() const;
     bool                 GetUseBinWidths() const;
     OutputType           GetOutputType() const;
-    int                  GetLineStyle() const;
     int                  GetLineWidth() const;
     const ColorAttribute &GetColor() const;
           ColorAttribute &GetColor();
@@ -220,7 +218,6 @@ public:
         ID_zone,
         ID_useBinWidths,
         ID_outputType,
-        ID_lineStyle,
         ID_lineWidth,
         ID_color,
         ID_dataScale,
@@ -244,7 +241,6 @@ private:
     int            zone;
     bool           useBinWidths;
     int            outputType;
-    int            lineStyle;
     int            lineWidth;
     ColorAttribute color;
     int            dataScale;
@@ -256,6 +252,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define HISTOGRAMATTRIBUTES_TMFS "iisibbddiiibiiiaiibb"
+#define HISTOGRAMATTRIBUTES_TMFS "iisibbddiiibiiaiibb"
 
 #endif

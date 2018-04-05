@@ -74,7 +74,6 @@ class avtMeshPlotMapper : public avtMapper
 
     void                       SetOpacity(double val);
     void                       SetLineWidth(int lw);
-    void                       SetLineStyle(int ls);
     void                       SetSurfaceVisibility(bool);
 
 
@@ -88,7 +87,6 @@ class avtMeshPlotMapper : public avtMapper
 
     bool surfaceVis;
     int lineWidth;
-    int lineStyle;
     double opacity;
     double linesColor[3];
     double polysColor[3];

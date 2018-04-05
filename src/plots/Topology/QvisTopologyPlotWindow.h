@@ -46,7 +46,6 @@ class TopologyAttributes;
 class QLabel;
 class QLineEdit;
 class QvisOpacitySlider;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 
 // ****************************************************************************
@@ -85,7 +84,6 @@ class QvisTopologyPlotWindow : public QvisPostableWindowObserver
     void Apply(bool ignore = false);
   private slots:
     void lineWidthChanged(int style);
-    void lineStyleChanged(int style);
     //writeHeaderCallback unknown for att (variable multiColor)
     void minOpacityChanged(int opacity, const void*);
     void minPlateauOpacityChanged(int opacity, const void*);
@@ -96,7 +94,6 @@ class QvisTopologyPlotWindow : public QvisPostableWindowObserver
   private:
     int plotType;
     QvisLineWidthWidget *lineWidth;
-    QvisLineStyleWidget *lineStyle;
     //writeHeaderData unknown for att (variable multiColor)
     QvisOpacitySlider *minOpacity;
     QvisOpacitySlider *minPlateauOpacity;
@@ -105,7 +102,6 @@ class QvisTopologyPlotWindow : public QvisPostableWindowObserver
     QLineEdit *tolerance;
     QLineEdit *hitpercent;
     QLabel *lineWidthLabel;
-    QLabel *lineStyleLabel;
     QLabel *multiColorLabel;
     QLabel *minOpacityLabel;
     QLabel *minPlateauOpacityLabel;

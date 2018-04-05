@@ -235,7 +235,6 @@ avtBoundaryPlot::SetAtts(const AttributeGroup *a)
 
     SetColors();
     SetLegend(atts.GetLegendFlag());
-    SetLineStyle(atts.GetLineStyle());
     SetLineWidth(atts.GetLineWidth());
     sub->SetPlotAtts(&atts);
     if (!atts.GetWireframe())
@@ -319,26 +318,6 @@ avtBoundaryPlot::SetLegend(bool legendOn)
     {
         levelsLegend->LegendOff();
     }
-}
-
-
-// ****************************************************************************
-//  Method: avtBoundaryPlot::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style.
-//
-//  Programmer: Jeremy Meredith
-//  Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// ****************************************************************************
-
-void
-avtBoundaryPlot::SetLineStyle(int ls)
-{
-    levelsMapper->SetLineStyle(Int2LineStyle(ls));
 }
 
 

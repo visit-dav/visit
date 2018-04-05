@@ -98,7 +98,6 @@ VisualCueInfo::SetFromL(const Line *line)
     SetLabel(line->GetDesignator());
     SetShowLabel(line->GetReflineLabels());
     SetLineWidth(line->GetLineWidth());
-    SetLineStyle(line->GetLineStyle());
     SetColor(line->GetColor());
 }
 

@@ -51,7 +51,6 @@ class QButtonGroup;
 class QRadioButton;
 class QSpinBox;
 class QvisColorButton;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
 
@@ -120,7 +119,6 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
  
   private slots:
     void showLinesChanged(bool val);
-    void lineStyleChanged(int style);
     void lineWidthChanged(int style);
     void labelsToggled(bool val);
     void legendToggled(bool val);
@@ -159,8 +157,6 @@ class QvisCurvePlotWindow : public QvisPostableWindowObserver
   private:
     int plotType;
     QCheckBox           *showLines;
-    QvisLineStyleWidget *lineStyle;
-    QLabel              *lineStyleLabel;
     QvisLineWidthWidget *lineWidth;
     QLabel              *lineWidthLabel;
 

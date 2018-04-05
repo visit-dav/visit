@@ -147,9 +147,6 @@ PySurfaceAttributes_ToString(const SurfaceAttributes *atts, const char *prefix)
           break;
     }
 
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *surfaceColor = atts->GetSurfaceColor().GetColor();
@@ -414,39 +411,6 @@ SurfaceAttributes_GetScaling(PyObject *self, PyObject *args)
 {
     SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetScaling()));
-    return retval;
-}
-
-/*static*/ PyObject *
-SurfaceAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-SurfaceAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    SurfaceAttributesObject *obj = (SurfaceAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
     return retval;
 }
 
@@ -770,8 +734,6 @@ PyMethodDef PySurfaceAttributes_methods[SURFACEATTRIBUTES_NMETH] = {
     {"GetColorByZFlag", SurfaceAttributes_GetColorByZFlag, METH_VARARGS},
     {"SetScaling", SurfaceAttributes_SetScaling, METH_VARARGS},
     {"GetScaling", SurfaceAttributes_GetScaling, METH_VARARGS},
-    {"SetLineStyle", SurfaceAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", SurfaceAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", SurfaceAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", SurfaceAttributes_GetLineWidth, METH_VARARGS},
     {"SetSurfaceColor", SurfaceAttributes_SetSurfaceColor, METH_VARARGS},
@@ -846,17 +808,6 @@ PySurfaceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "Skew") == 0)
         return PyInt_FromLong(long(SurfaceAttributes::Skew));
 
-    if(strcmp(name, "lineStyle") == 0)
-        return SurfaceAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "lineWidth") == 0)
         return SurfaceAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "surfaceColor") == 0)
@@ -874,6 +825,37 @@ PySurfaceAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "invertColorTable") == 0)
         return SurfaceAttributes_GetInvertColorTable(self, NULL);
 
+    // Try and handle legacy fields
+
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Surface "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PySurfaceAttributes_methods, self, name);
 }
 
@@ -905,8 +887,6 @@ PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SurfaceAttributes_SetColorByZFlag(self, tuple);
     else if(strcmp(name, "scaling") == 0)
         obj = SurfaceAttributes_SetScaling(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = SurfaceAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = SurfaceAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "surfaceColor") == 0)
@@ -924,6 +904,15 @@ PySurfaceAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "invertColorTable") == 0)
         obj = SurfaceAttributes_SetInvertColorTable(self, tuple);
 
+    // Try and handle legacy fields
+    if(obj == NULL)
+    {
+        if(strcmp(name, "lineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 

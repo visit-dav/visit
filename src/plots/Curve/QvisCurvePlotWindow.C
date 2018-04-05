@@ -54,7 +54,6 @@
 #include <QRadioButton>
 #include <QSpinBox>
 #include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 #include <QNarrowLineEdit.h>
@@ -366,24 +365,12 @@ QvisCurvePlotWindow::CreateGeometryTab(QWidget *pageGeometry)
 
     ++ROW;
 
-    lineLayout->addWidget(new QLabel("     ", central), ROW, 0, 1, 1);
-
-    lineStyle = new QvisLineStyleWidget(0, central);
-    lineStyleLabel = new QLabel(tr("Line style"), central);
-    lineStyleLabel->setBuddy(lineStyle);
-
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-
-    lineLayout->addWidget(lineStyleLabel, ROW, 1, 1, 1);
-    lineLayout->addWidget(lineStyle, ROW, 2, 1, 1);
-
     lineWidth = new QvisLineWidthWidget(0, central);
     lineWidthLabel = new QLabel(tr("Line width"), central);
     lineWidthLabel->setBuddy(lineWidth);
 
-    lineLayout->addWidget(lineWidthLabel, ROW, 3, 1, 1);
-    lineLayout->addWidget(lineWidth, ROW, 4, 1, 1);
+    lineLayout->addWidget(lineWidthLabel, ROW, 0, 1, 1);
+    lineLayout->addWidget(lineWidth, ROW, 1, 1, 1);
 
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
@@ -730,16 +717,9 @@ QvisCurvePlotWindow::UpdateWindow(bool doAll)
           case CurveAttributes::ID_showLines:
             showLines->blockSignals(true);
             showLines->setChecked(atts->GetShowLines());
-            lineStyle->setEnabled(atts->GetShowLines());
-            lineStyleLabel->setEnabled(atts->GetShowLines());
             lineWidth->setEnabled(atts->GetShowLines());
             lineWidthLabel->setEnabled(atts->GetShowLines());
             showLines->blockSignals(false);
-            break;
-          case CurveAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(atts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
           case CurveAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
@@ -1178,14 +1158,6 @@ void
 QvisCurvePlotWindow::reset()
 {
     GetViewerMethods()->ResetPlotOptions(plotType);
-}
-
-
-void
-QvisCurvePlotWindow::lineStyleChanged(int style)
-{
-    atts->SetLineStyle(style);
-    Apply();
 }
 
 

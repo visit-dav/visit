@@ -98,7 +98,6 @@ public:
     void SetPoint2(const double *point2_);
     void SetDesignator(const std::string &designator_);
     void SetColor(const ColorAttribute &color_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetInteractive(bool interactive_);
     void SetReflineLabels(bool reflineLabels_);
@@ -115,7 +114,6 @@ public:
           std::string    &GetDesignator();
     const ColorAttribute &GetColor() const;
           ColorAttribute &GetColor();
-    int                  GetLineStyle() const;
     int                  GetLineWidth() const;
     bool                 GetInteractive() const;
     bool                 GetReflineLabels() const;
@@ -145,7 +143,6 @@ public:
         ID_point2,
         ID_designator,
         ID_color,
-        ID_lineStyle,
         ID_lineWidth,
         ID_interactive,
         ID_reflineLabels,
@@ -160,7 +157,6 @@ private:
     double         point2[3];
     std::string    designator;
     ColorAttribute color;
-    int            lineStyle;
     int            lineWidth;
     bool           interactive;
     bool           reflineLabels;
@@ -172,6 +168,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define LINE_TMFS "DDsaiibbsbi"
+#define LINE_TMFS "DDsaibbsbi"
 
 #endif

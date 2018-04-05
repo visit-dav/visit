@@ -65,7 +65,6 @@ VTK_MODULE_INIT(MeshPlot);
 avtMeshPlotMapper::avtMeshPlotMapper()
 {
     lineWidth = 1;
-    lineStyle = 0;
     linesColor[0] = linesColor[1] = linesColor[2] = 0.;
     polysColor[0] = polysColor[1] = polysColor[2] = 1.;
     opacity = 1.;
@@ -125,7 +124,6 @@ avtMeshPlotMapper::CustomizeMappers()
             }
             vtkProperty *prop = actors[i]->GetProperty();
             prop->SetLineWidth(lineWidth);
-            prop->SetLineStipplePattern(lineStyle);
             prop->SetAmbient(1.);
             prop->SetDiffuse(0.);
         }
@@ -225,19 +223,4 @@ avtMeshPlotMapper::SetLineWidth(int lw)
         }
     }
 }
-
-void
-avtMeshPlotMapper::SetLineStyle(int ls)
-{
-    lineStyle = ls;
-    for (int i = 0; i < nMappers; ++i)
-    {
-        if (actors[i] != NULL)
-        {
-            actors[i]->GetProperty()->SetLineStipplePattern(ls);
-        }
-    }
-}
-
-
 

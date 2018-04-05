@@ -496,8 +496,6 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     lineData->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
 
     actor->GetProperty()->SetLineWidth(annot.GetIntAttribute1()+1);
-    actor->GetProperty()->SetLineStipplePattern(LineStyle2StipplePattern(Int2LineStyle(annot.GetIntAttribute2())));
-
 
     //
     // The line color has changed or the useForegroundForTextColor flag
@@ -621,7 +619,6 @@ avtLine2DColleague::GetOptions(AnnotationObject &annot)
     annot.SetColor1(lineColor);
     annot.SetUseForegroundForTextColor(useForegroundForLineColor);
     annot.SetIntAttribute1(actor->GetProperty()->GetLineWidth()-1);
-    annot.SetIntAttribute2(LineStyle2Int(StipplePattern2LineStyle(actor->GetProperty()->GetLineStipplePattern())));
     ColorAttribute ca;
     ca.SetRgb(0,
               beginArrowStyle,

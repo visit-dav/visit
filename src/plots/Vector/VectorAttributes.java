@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class VectorAttributes extends AttributeSubject implements Plugin
 {
-    private static int VectorAttributes_numAdditionalAtts = 28;
+    private static int VectorAttributes_numAdditionalAtts = 27;
 
     // Enum values
     public final static int QUALITY_FAST = 0;
@@ -91,7 +91,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         useStride = false;
         stride = 1;
         nVectors = 400;
-        lineStyle = 0;
         lineWidth = 0;
         scale = 0.25;
         scaleByMagnitude = true;
@@ -125,7 +124,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         useStride = false;
         stride = 1;
         nVectors = 400;
-        lineStyle = 0;
         lineWidth = 0;
         scale = 0.25;
         scaleByMagnitude = true;
@@ -159,7 +157,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         useStride = obj.useStride;
         stride = obj.stride;
         nVectors = obj.nVectors;
-        lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         scale = obj.scale;
         scaleByMagnitude = obj.scaleByMagnitude;
@@ -204,7 +201,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
                 (useStride == obj.useStride) &&
                 (stride == obj.stride) &&
                 (nVectors == obj.nVectors) &&
-                (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
                 (scale == obj.scale) &&
                 (scaleByMagnitude == obj.scaleByMagnitude) &&
@@ -258,148 +254,142 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(4);
-    }
-
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(5);
+        Select(4);
     }
 
     public void SetScale(double scale_)
     {
         scale = scale_;
-        Select(6);
+        Select(5);
     }
 
     public void SetScaleByMagnitude(boolean scaleByMagnitude_)
     {
         scaleByMagnitude = scaleByMagnitude_;
-        Select(7);
+        Select(6);
     }
 
     public void SetAutoScale(boolean autoScale_)
     {
         autoScale = autoScale_;
-        Select(8);
+        Select(7);
     }
 
     public void SetHeadSize(double headSize_)
     {
         headSize = headSize_;
-        Select(9);
+        Select(8);
     }
 
     public void SetHeadOn(boolean headOn_)
     {
         headOn = headOn_;
-        Select(10);
+        Select(9);
     }
 
     public void SetColorByMag(boolean colorByMag_)
     {
         colorByMag = colorByMag_;
-        Select(11);
+        Select(10);
     }
 
     public void SetUseLegend(boolean useLegend_)
     {
         useLegend = useLegend_;
-        Select(12);
+        Select(11);
     }
 
     public void SetVectorColor(ColorAttribute vectorColor_)
     {
         vectorColor = vectorColor_;
-        Select(13);
+        Select(12);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(14);
+        Select(13);
     }
 
     public void SetInvertColorTable(boolean invertColorTable_)
     {
         invertColorTable = invertColorTable_;
-        Select(15);
+        Select(14);
     }
 
     public void SetVectorOrigin(int vectorOrigin_)
     {
         vectorOrigin = vectorOrigin_;
-        Select(16);
+        Select(15);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(17);
+        Select(16);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(18);
+        Select(17);
     }
 
     public void SetLimitsMode(int limitsMode_)
     {
         limitsMode = limitsMode_;
-        Select(19);
+        Select(18);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(20);
+        Select(19);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(21);
+        Select(20);
     }
 
     public void SetLineStem(int lineStem_)
     {
         lineStem = lineStem_;
-        Select(22);
+        Select(21);
     }
 
     public void SetGeometryQuality(int geometryQuality_)
     {
         geometryQuality = geometryQuality_;
-        Select(23);
+        Select(22);
     }
 
     public void SetStemWidth(double stemWidth_)
     {
         stemWidth = stemWidth_;
-        Select(24);
+        Select(23);
     }
 
     public void SetOrigOnly(boolean origOnly_)
     {
         origOnly = origOnly_;
-        Select(25);
+        Select(24);
     }
 
     public void SetGlyphType(int glyphType_)
     {
         glyphType = glyphType_;
-        Select(26);
+        Select(25);
     }
 
     public void SetAnimationStep(int animationStep_)
     {
         animationStep = animationStep_;
-        Select(27);
+        Select(26);
     }
 
     // Property getting methods
@@ -407,7 +397,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     public boolean        GetUseStride() { return useStride; }
     public int            GetStride() { return stride; }
     public int            GetNVectors() { return nVectors; }
-    public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
     public double         GetScale() { return scale; }
     public boolean        GetScaleByMagnitude() { return scaleByMagnitude; }
@@ -444,52 +433,50 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(3, buf))
             buf.WriteInt(nVectors);
         if(WriteSelect(4, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(5, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(5, buf))
             buf.WriteDouble(scale);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             buf.WriteBool(scaleByMagnitude);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteBool(autoScale);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteDouble(headSize);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             buf.WriteBool(headOn);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(10, buf))
             buf.WriteBool(colorByMag);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(11, buf))
             buf.WriteBool(useLegend);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(12, buf))
             vectorColor.Write(buf);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteString(colorTableName);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             buf.WriteBool(invertColorTable);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteInt(vectorOrigin);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(16, buf))
             buf.WriteBool(minFlag);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(17, buf))
             buf.WriteBool(maxFlag);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(18, buf))
             buf.WriteInt(limitsMode);
-        if(WriteSelect(20, buf))
+        if(WriteSelect(19, buf))
             buf.WriteDouble(min);
-        if(WriteSelect(21, buf))
+        if(WriteSelect(20, buf))
             buf.WriteDouble(max);
-        if(WriteSelect(22, buf))
+        if(WriteSelect(21, buf))
             buf.WriteInt(lineStem);
-        if(WriteSelect(23, buf))
+        if(WriteSelect(22, buf))
             buf.WriteInt(geometryQuality);
-        if(WriteSelect(24, buf))
+        if(WriteSelect(23, buf))
             buf.WriteDouble(stemWidth);
-        if(WriteSelect(25, buf))
+        if(WriteSelect(24, buf))
             buf.WriteBool(origOnly);
-        if(WriteSelect(26, buf))
+        if(WriteSelect(25, buf))
             buf.WriteInt(glyphType);
-        if(WriteSelect(27, buf))
+        if(WriteSelect(26, buf))
             buf.WriteInt(animationStep);
     }
 
@@ -510,76 +497,73 @@ public class VectorAttributes extends AttributeSubject implements Plugin
             SetNVectors(buf.ReadInt());
             break;
         case 4:
-            SetLineStyle(buf.ReadInt());
-            break;
-        case 5:
             SetLineWidth(buf.ReadInt());
             break;
-        case 6:
+        case 5:
             SetScale(buf.ReadDouble());
             break;
-        case 7:
+        case 6:
             SetScaleByMagnitude(buf.ReadBool());
             break;
-        case 8:
+        case 7:
             SetAutoScale(buf.ReadBool());
             break;
-        case 9:
+        case 8:
             SetHeadSize(buf.ReadDouble());
             break;
-        case 10:
+        case 9:
             SetHeadOn(buf.ReadBool());
             break;
-        case 11:
+        case 10:
             SetColorByMag(buf.ReadBool());
             break;
-        case 12:
+        case 11:
             SetUseLegend(buf.ReadBool());
             break;
-        case 13:
+        case 12:
             vectorColor.Read(buf);
-            Select(13);
+            Select(12);
             break;
-        case 14:
+        case 13:
             SetColorTableName(buf.ReadString());
             break;
-        case 15:
+        case 14:
             SetInvertColorTable(buf.ReadBool());
             break;
-        case 16:
+        case 15:
             SetVectorOrigin(buf.ReadInt());
             break;
-        case 17:
+        case 16:
             SetMinFlag(buf.ReadBool());
             break;
-        case 18:
+        case 17:
             SetMaxFlag(buf.ReadBool());
             break;
-        case 19:
+        case 18:
             SetLimitsMode(buf.ReadInt());
             break;
-        case 20:
+        case 19:
             SetMin(buf.ReadDouble());
             break;
-        case 21:
+        case 20:
             SetMax(buf.ReadDouble());
             break;
-        case 22:
+        case 21:
             SetLineStem(buf.ReadInt());
             break;
-        case 23:
+        case 22:
             SetGeometryQuality(buf.ReadInt());
             break;
-        case 24:
+        case 23:
             SetStemWidth(buf.ReadDouble());
             break;
-        case 25:
+        case 24:
             SetOrigOnly(buf.ReadBool());
             break;
-        case 26:
+        case 25:
             SetGlyphType(buf.ReadInt());
             break;
-        case 27:
+        case 26:
             SetAnimationStep(buf.ReadInt());
             break;
         }
@@ -597,7 +581,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("useStride", useStride, indent) + "\n";
         str = str + intToString("stride", stride, indent) + "\n";
         str = str + intToString("nVectors", nVectors, indent) + "\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + doubleToString("scale", scale, indent) + "\n";
         str = str + boolToString("scaleByMagnitude", scaleByMagnitude, indent) + "\n";
@@ -657,7 +640,6 @@ public class VectorAttributes extends AttributeSubject implements Plugin
     private boolean        useStride;
     private int            stride;
     private int            nVectors;
-    private int            lineStyle;
     private int            lineWidth;
     private double         scale;
     private boolean        scaleByMagnitude;

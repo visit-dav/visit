@@ -48,7 +48,6 @@
 
 #include <QvisColorButton.h>
 #include <QvisLineWidthWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisOpacitySlider.h>
 #include <QvisScreenPositionEdit.h>
 
@@ -119,14 +118,6 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
             this, SLOT(widthChanged(int)));
     cLayout->addWidget(widthWidget, row, 1);
     cLayout->addWidget(new QLabel(tr("Width"), this), row, 0);
-    ++row;
-
-    // Add controls for style.
-    styleWidget = new QvisLineStyleWidget(0, this);
-    connect(styleWidget, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(styleChanged(int)));
-    cLayout->addWidget(styleWidget, row, 1);
-    cLayout->addWidget(new QLabel(tr("Style"), this), row, 0);
     ++row;
 
     // Added a use foreground toggle
@@ -263,10 +254,6 @@ QvisLine2DInterface::UpdateControls()
     widthWidget->blockSignals(true);
     widthWidget->SetLineWidth(annot->GetIntAttribute1());
     widthWidget->blockSignals(false);
-
-    styleWidget->blockSignals(true);
-    styleWidget->SetLineStyle(annot->GetIntAttribute2());
-    styleWidget->blockSignals(false);
 
     // Set the begin and end arrow styles.
     beginArrowComboBox->blockSignals(true);
@@ -480,29 +467,6 @@ void
 QvisLine2DInterface::widthChanged(int w)
 {
     annot->SetIntAttribute1(w);
-    Apply();
-}
-
-// ****************************************************************************
-// Method: QvisLine2DInterface::styleChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the value of the style
-//   widget changes.
-//
-// Arguments:
-//   s : The new style.
-//
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
-//
-// Modifications:
-//   
-// ****************************************************************************
-void
-QvisLine2DInterface::styleChanged(int s)
-{
-    annot->SetIntAttribute2(s);
     Apply();
 }
 

@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class Line extends AttributeSubject
 {
-    private static int Line_numAdditionalAtts = 11;
+    private static int Line_numAdditionalAtts = 10;
 
     public Line()
     {
@@ -72,7 +72,6 @@ public class Line extends AttributeSubject
         point2[2] = 1;
         designator = new String("");
         color = new ColorAttribute(0, 0, 0);
-        lineStyle = 0;
         lineWidth = 0;
         interactive = false;
         reflineLabels = false;
@@ -95,7 +94,6 @@ public class Line extends AttributeSubject
         point2[2] = 1;
         designator = new String("");
         color = new ColorAttribute(0, 0, 0);
-        lineStyle = 0;
         lineWidth = 0;
         interactive = false;
         reflineLabels = false;
@@ -122,7 +120,6 @@ public class Line extends AttributeSubject
 
         designator = new String(obj.designator);
         color = new ColorAttribute(obj.color);
-        lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         interactive = obj.interactive;
         reflineLabels = obj.reflineLabels;
@@ -162,7 +159,6 @@ public class Line extends AttributeSubject
                 point2_equal &&
                 (designator.equals(obj.designator)) &&
                 (color == obj.color) &&
-                (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
                 (interactive == obj.interactive) &&
                 (reflineLabels == obj.reflineLabels) &&
@@ -216,46 +212,40 @@ public class Line extends AttributeSubject
         Select(3);
     }
 
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(4);
-    }
-
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(5);
+        Select(4);
     }
 
     public void SetInteractive(boolean interactive_)
     {
         interactive = interactive_;
-        Select(6);
+        Select(5);
     }
 
     public void SetReflineLabels(boolean reflineLabels_)
     {
         reflineLabels = reflineLabels_;
-        Select(7);
+        Select(6);
     }
 
     public void SetVarName(String varName_)
     {
         varName = varName_;
-        Select(8);
+        Select(7);
     }
 
     public void SetSamplingOn(boolean samplingOn_)
     {
         samplingOn = samplingOn_;
-        Select(9);
+        Select(8);
     }
 
     public void SetNumSamples(int numSamples_)
     {
         numSamples = numSamples_;
-        Select(10);
+        Select(9);
     }
 
     // Property getting methods
@@ -263,7 +253,6 @@ public class Line extends AttributeSubject
     public double[]       GetPoint2() { return point2; }
     public String         GetDesignator() { return designator; }
     public ColorAttribute GetColor() { return color; }
-    public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
     public boolean        GetInteractive() { return interactive; }
     public boolean        GetReflineLabels() { return reflineLabels; }
@@ -283,18 +272,16 @@ public class Line extends AttributeSubject
         if(WriteSelect(3, buf))
             color.Write(buf);
         if(WriteSelect(4, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(5, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(5, buf))
             buf.WriteBool(interactive);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             buf.WriteBool(reflineLabels);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteString(varName);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteBool(samplingOn);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             buf.WriteInt(numSamples);
     }
 
@@ -316,24 +303,21 @@ public class Line extends AttributeSubject
             Select(3);
             break;
         case 4:
-            SetLineStyle(buf.ReadInt());
-            break;
-        case 5:
             SetLineWidth(buf.ReadInt());
             break;
-        case 6:
+        case 5:
             SetInteractive(buf.ReadBool());
             break;
-        case 7:
+        case 6:
             SetReflineLabels(buf.ReadBool());
             break;
-        case 8:
+        case 7:
             SetVarName(buf.ReadString());
             break;
-        case 9:
+        case 8:
             SetSamplingOn(buf.ReadBool());
             break;
-        case 10:
+        case 9:
             SetNumSamples(buf.ReadInt());
             break;
         }
@@ -346,7 +330,6 @@ public class Line extends AttributeSubject
         str = str + doubleArrayToString("point2", point2, indent) + "\n";
         str = str + stringToString("designator", designator, indent) + "\n";
         str = str + indent + "color = {" + color.Red() + ", " + color.Green() + ", " + color.Blue() + ", " + color.Alpha() + "}\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + boolToString("interactive", interactive, indent) + "\n";
         str = str + boolToString("reflineLabels", reflineLabels, indent) + "\n";
@@ -362,7 +345,6 @@ public class Line extends AttributeSubject
     private double[]       point2;
     private String         designator;
     private ColorAttribute color;
-    private int            lineStyle;
     private int            lineWidth;
     private boolean        interactive;
     private boolean        reflineLabels;

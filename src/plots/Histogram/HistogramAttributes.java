@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class HistogramAttributes extends AttributeSubject implements Plugin
 {
-    private static int HistogramAttributes_numAdditionalAtts = 20;
+    private static int HistogramAttributes_numAdditionalAtts = 19;
 
     // Enum values
     public final static int OUTPUTTYPE_CURVE = 0;
@@ -98,7 +98,6 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         zone = 0;
         useBinWidths = true;
         outputType = OUTPUTTYPE_BLOCK;
-        lineStyle = 0;
         lineWidth = 0;
         color = new ColorAttribute(200, 80, 40);
         dataScale = DATASCALE_LINEAR;
@@ -124,7 +123,6 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         zone = 0;
         useBinWidths = true;
         outputType = OUTPUTTYPE_BLOCK;
-        lineStyle = 0;
         lineWidth = 0;
         color = new ColorAttribute(200, 80, 40);
         dataScale = DATASCALE_LINEAR;
@@ -150,7 +148,6 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         zone = obj.zone;
         useBinWidths = obj.useBinWidths;
         outputType = obj.outputType;
-        lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         color = new ColorAttribute(obj.color);
         dataScale = obj.dataScale;
@@ -187,7 +184,6 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
                 (zone == obj.zone) &&
                 (useBinWidths == obj.useBinWidths) &&
                 (outputType == obj.outputType) &&
-                (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
                 (color == obj.color) &&
                 (dataScale == obj.dataScale) &&
@@ -278,46 +274,40 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         Select(12);
     }
 
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(13);
-    }
-
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(14);
+        Select(13);
     }
 
     public void SetColor(ColorAttribute color_)
     {
         color = color_;
-        Select(15);
+        Select(14);
     }
 
     public void SetDataScale(int dataScale_)
     {
         dataScale = dataScale_;
-        Select(16);
+        Select(15);
     }
 
     public void SetBinScale(int binScale_)
     {
         binScale = binScale_;
-        Select(17);
+        Select(16);
     }
 
     public void SetNormalizeHistogram(boolean normalizeHistogram_)
     {
         normalizeHistogram = normalizeHistogram_;
-        Select(18);
+        Select(17);
     }
 
     public void SetComputeAsCDF(boolean computeAsCDF_)
     {
         computeAsCDF = computeAsCDF_;
-        Select(19);
+        Select(18);
     }
 
     // Property getting methods
@@ -334,7 +324,6 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
     public int            GetZone() { return zone; }
     public boolean        GetUseBinWidths() { return useBinWidths; }
     public int            GetOutputType() { return outputType; }
-    public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
     public ColorAttribute GetColor() { return color; }
     public int            GetDataScale() { return dataScale; }
@@ -372,18 +361,16 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(12, buf))
             buf.WriteInt(outputType);
         if(WriteSelect(13, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(14, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             color.Write(buf);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteInt(dataScale);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(16, buf))
             buf.WriteInt(binScale);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(17, buf))
             buf.WriteBool(normalizeHistogram);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(18, buf))
             buf.WriteBool(computeAsCDF);
     }
 
@@ -431,25 +418,22 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
             SetOutputType(buf.ReadInt());
             break;
         case 13:
-            SetLineStyle(buf.ReadInt());
-            break;
-        case 14:
             SetLineWidth(buf.ReadInt());
             break;
-        case 15:
+        case 14:
             color.Read(buf);
-            Select(15);
+            Select(14);
             break;
-        case 16:
+        case 15:
             SetDataScale(buf.ReadInt());
             break;
-        case 17:
+        case 16:
             SetBinScale(buf.ReadInt());
             break;
-        case 18:
+        case 17:
             SetNormalizeHistogram(buf.ReadBool());
             break;
-        case 19:
+        case 18:
             SetComputeAsCDF(buf.ReadBool());
             break;
         }
@@ -493,7 +477,6 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
         if(outputType == OUTPUTTYPE_BLOCK)
             str = str + "OUTPUTTYPE_BLOCK";
         str = str + "\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + indent + "color = {" + color.Red() + ", " + color.Green() + ", " + color.Blue() + ", " + color.Alpha() + "}\n";
         str = str + indent + "dataScale = ";
@@ -532,7 +515,6 @@ public class HistogramAttributes extends AttributeSubject implements Plugin
     private int            zone;
     private boolean        useBinWidths;
     private int            outputType;
-    private int            lineStyle;
     private int            lineWidth;
     private ColorAttribute color;
     private int            dataScale;

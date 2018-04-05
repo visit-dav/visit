@@ -70,7 +70,6 @@ class avtCurveMapper : virtual public avtMapper
     void                      SetColor(double, double, double); 
 
     void                      SetLineWidth(_LineWidth lw);
-    void                      SetLineStyle(_LineStyle ls);
 
     void                      SetDrawCurve(bool);
     void                      SetDrawPoints(bool);
@@ -89,7 +88,6 @@ class avtCurveMapper : virtual public avtMapper
   private:
     double                    curveColor[3]; 
     _LineWidth                lineWidth;
-    _LineStyle                lineStyle;
     bool                      drawCurve;
     bool                      drawPoints;
     double                    pointSize;

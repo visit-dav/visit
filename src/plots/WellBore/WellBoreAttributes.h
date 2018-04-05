@@ -134,7 +134,6 @@ public:
     void SetWellCylinderQuality(DetailLevel wellCylinderQuality_);
     void SetWellRadius(float wellRadius_);
     void SetWellLineWidth(int wellLineWidth_);
-    void SetWellLineStyle(int wellLineStyle_);
     void SetWellAnnotation(WellAnnotation wellAnnotation_);
     void SetWellStemHeight(float wellStemHeight_);
     void SetWellNameScale(float wellNameScale_);
@@ -160,7 +159,6 @@ public:
     DetailLevel                 GetWellCylinderQuality() const;
     float                       GetWellRadius() const;
     int                         GetWellLineWidth() const;
-    int                         GetWellLineStyle() const;
     WellAnnotation              GetWellAnnotation() const;
     float                       GetWellStemHeight() const;
     float                       GetWellNameScale() const;
@@ -222,7 +220,6 @@ public:
         ID_wellCylinderQuality,
         ID_wellRadius,
         ID_wellLineWidth,
-        ID_wellLineStyle,
         ID_wellAnnotation,
         ID_wellStemHeight,
         ID_wellNameScale,
@@ -245,7 +242,6 @@ private:
     int                   wellCylinderQuality;
     float                 wellRadius;
     int                   wellLineWidth;
-    int                   wellLineStyle;
     int                   wellAnnotation;
     float                 wellStemHeight;
     float                 wellNameScale;
@@ -258,6 +254,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define WELLBOREATTRIBUTES_TMFS "au*isbaaiifiiiffbii*s*"
+#define WELLBOREATTRIBUTES_TMFS "au*isbaaiifiiffbii*s*"
 
 #endif

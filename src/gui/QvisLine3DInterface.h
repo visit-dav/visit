@@ -50,7 +50,6 @@ class QSpinBox;
 class QvisColorButton;
 class QvisOpacitySlider;
 class QvisLineWidthWidget;
-class QvisLineStyleWidget;
 
 // ****************************************************************************
 // Class: QvisLine3DInterface
@@ -89,7 +88,6 @@ private slots:
     void point1Changed();
     void point2Changed();
     void widthChanged(int);
-    void styleChanged(int);
     void colorChanged(const QColor &);
     void opacityChanged(int);
     void visibilityToggled(bool);
@@ -111,8 +109,6 @@ private:
     QComboBox              *lineType;
     QvisLineWidthWidget    *widthWidget;
     QLabel                 *widthLabel;
-    QvisLineStyleWidget    *styleWidget;
-    QLabel                 *styleLabel;
     QComboBox              *tubeQuality;
     QLabel                 *tubeQualLabel;
     QLineEdit              *tubeRadius;

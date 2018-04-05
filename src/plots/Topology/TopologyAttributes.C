@@ -57,7 +57,6 @@
 void TopologyAttributes::Init()
 {
     lineWidth = 2;
-    lineStyle = 0;
     multiColor.AddColors(ColorAttribute(255,0,0));
     multiColor.AddColors(ColorAttribute(0,255,0));
     multiColor.AddColors(ColorAttribute(0,0,255));
@@ -90,7 +89,6 @@ void TopologyAttributes::Init()
 void TopologyAttributes::Copy(const TopologyAttributes &obj)
 {
     lineWidth = obj.lineWidth;
-    lineStyle = obj.lineStyle;
     multiColor = obj.multiColor;
     minOpacity = obj.minOpacity;
     minPlateauOpacity = obj.minPlateauOpacity;
@@ -256,7 +254,6 @@ TopologyAttributes::operator == (const TopologyAttributes &obj) const
 {
     // Create the return value
     return ((lineWidth == obj.lineWidth) &&
-            (lineStyle == obj.lineStyle) &&
             (multiColor == obj.multiColor) &&
             (minOpacity == obj.minOpacity) &&
             (minPlateauOpacity == obj.minPlateauOpacity) &&
@@ -408,7 +405,6 @@ void
 TopologyAttributes::SelectAll()
 {
     Select(ID_lineWidth,         (void *)&lineWidth);
-    Select(ID_lineStyle,         (void *)&lineStyle);
     Select(ID_multiColor,        (void *)&multiColor);
     Select(ID_minOpacity,        (void *)&minOpacity);
     Select(ID_minPlateauOpacity, (void *)&minPlateauOpacity);
@@ -452,12 +448,6 @@ TopologyAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("lineWidth", lineWidth));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_multiColor, &defaultObject))
@@ -546,8 +536,6 @@ TopologyAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("multiColor")) != 0)
         multiColor.SetFromNode(node);
     if((node = searchNode->GetNode("minOpacity")) != 0)
@@ -573,13 +561,6 @@ TopologyAttributes::SetLineWidth(int lineWidth_)
 {
     lineWidth = lineWidth_;
     Select(ID_lineWidth, (void *)&lineWidth);
-}
-
-void
-TopologyAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -639,12 +620,6 @@ int
 TopologyAttributes::GetLineWidth() const
 {
     return lineWidth;
-}
-
-int
-TopologyAttributes::GetLineStyle() const
-{
-    return lineStyle;
 }
 
 const ColorAttributeList &
@@ -730,7 +705,6 @@ TopologyAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_lineWidth:         return "lineWidth";
-    case ID_lineStyle:         return "lineStyle";
     case ID_multiColor:        return "multiColor";
     case ID_minOpacity:        return "minOpacity";
     case ID_minPlateauOpacity: return "minPlateauOpacity";
@@ -763,7 +737,6 @@ TopologyAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_lineWidth:         return FieldType_linewidth;
-    case ID_lineStyle:         return FieldType_linestyle;
     case ID_multiColor:        return FieldType_att;
     case ID_minOpacity:        return FieldType_opacity;
     case ID_minPlateauOpacity: return FieldType_opacity;
@@ -796,7 +769,6 @@ TopologyAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_lineWidth:         return "linewidth";
-    case ID_lineStyle:         return "linestyle";
     case ID_multiColor:        return "att";
     case ID_minOpacity:        return "opacity";
     case ID_minPlateauOpacity: return "opacity";
@@ -833,11 +805,6 @@ TopologyAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_lineWidth:
         {  // new scope
         retval = (lineWidth == obj.lineWidth);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_multiColor:

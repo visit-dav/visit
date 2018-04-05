@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PseudocolorAttributes extends AttributeSubject implements Plugin
 {
-    private static int PseudocolorAttributes_numAdditionalAtts = 50;
+    private static int PseudocolorAttributes_numAdditionalAtts = 49;
 
     // Enum values
     public final static int SCALING_LINEAR = 0;
@@ -118,7 +118,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
         pointSizePixels = 2;
-        lineStyle = 0;
         lineType = LINETYPE_LINE;
         lineWidth = 0;
         tubeResolution = 10;
@@ -174,7 +173,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizeVarEnabled = false;
         pointSizeVar = new String("default");
         pointSizePixels = 2;
-        lineStyle = 0;
         lineType = LINETYPE_LINE;
         lineWidth = 0;
         tubeResolution = 10;
@@ -230,7 +228,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         pointSizeVarEnabled = obj.pointSizeVarEnabled;
         pointSizeVar = new String(obj.pointSizeVar);
         pointSizePixels = obj.pointSizePixels;
-        lineStyle = obj.lineStyle;
         lineType = obj.lineType;
         lineWidth = obj.lineWidth;
         tubeResolution = obj.tubeResolution;
@@ -297,7 +294,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
                 (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
                 (pointSizeVar.equals(obj.pointSizeVar)) &&
                 (pointSizePixels == obj.pointSizePixels) &&
-                (lineStyle == obj.lineStyle) &&
                 (lineType == obj.lineType) &&
                 (lineWidth == obj.lineWidth) &&
                 (tubeResolution == obj.tubeResolution) &&
@@ -463,172 +459,166 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         Select(21);
     }
 
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(22);
-    }
-
     public void SetLineType(int lineType_)
     {
         lineType = lineType_;
-        Select(23);
+        Select(22);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(24);
+        Select(23);
     }
 
     public void SetTubeResolution(int tubeResolution_)
     {
         tubeResolution = tubeResolution_;
-        Select(25);
+        Select(24);
     }
 
     public void SetTubeRadiusSizeType(int tubeRadiusSizeType_)
     {
         tubeRadiusSizeType = tubeRadiusSizeType_;
-        Select(26);
+        Select(25);
     }
 
     public void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_)
     {
         tubeRadiusAbsolute = tubeRadiusAbsolute_;
-        Select(27);
+        Select(26);
     }
 
     public void SetTubeRadiusBBox(double tubeRadiusBBox_)
     {
         tubeRadiusBBox = tubeRadiusBBox_;
-        Select(28);
+        Select(27);
     }
 
     public void SetTubeRadiusVarEnabled(boolean tubeRadiusVarEnabled_)
     {
         tubeRadiusVarEnabled = tubeRadiusVarEnabled_;
-        Select(29);
+        Select(28);
     }
 
     public void SetTubeRadiusVar(String tubeRadiusVar_)
     {
         tubeRadiusVar = tubeRadiusVar_;
-        Select(30);
+        Select(29);
     }
 
     public void SetTubeRadiusVarRatio(double tubeRadiusVarRatio_)
     {
         tubeRadiusVarRatio = tubeRadiusVarRatio_;
-        Select(31);
+        Select(30);
     }
 
     public void SetTailStyle(int tailStyle_)
     {
         tailStyle = tailStyle_;
-        Select(32);
+        Select(31);
     }
 
     public void SetHeadStyle(int headStyle_)
     {
         headStyle = headStyle_;
-        Select(33);
+        Select(32);
     }
 
     public void SetEndPointRadiusSizeType(int endPointRadiusSizeType_)
     {
         endPointRadiusSizeType = endPointRadiusSizeType_;
-        Select(34);
+        Select(33);
     }
 
     public void SetEndPointRadiusAbsolute(double endPointRadiusAbsolute_)
     {
         endPointRadiusAbsolute = endPointRadiusAbsolute_;
-        Select(35);
+        Select(34);
     }
 
     public void SetEndPointRadiusBBox(double endPointRadiusBBox_)
     {
         endPointRadiusBBox = endPointRadiusBBox_;
-        Select(36);
+        Select(35);
     }
 
     public void SetEndPointResolution(int endPointResolution_)
     {
         endPointResolution = endPointResolution_;
-        Select(37);
+        Select(36);
     }
 
     public void SetEndPointRatio(double endPointRatio_)
     {
         endPointRatio = endPointRatio_;
-        Select(38);
+        Select(37);
     }
 
     public void SetEndPointRadiusVarEnabled(boolean endPointRadiusVarEnabled_)
     {
         endPointRadiusVarEnabled = endPointRadiusVarEnabled_;
-        Select(39);
+        Select(38);
     }
 
     public void SetEndPointRadiusVar(String endPointRadiusVar_)
     {
         endPointRadiusVar = endPointRadiusVar_;
-        Select(40);
+        Select(39);
     }
 
     public void SetEndPointRadiusVarRatio(double endPointRadiusVarRatio_)
     {
         endPointRadiusVarRatio = endPointRadiusVarRatio_;
-        Select(41);
+        Select(40);
     }
 
     public void SetRenderSurfaces(int renderSurfaces_)
     {
         renderSurfaces = renderSurfaces_;
-        Select(42);
+        Select(41);
     }
 
     public void SetRenderWireframe(int renderWireframe_)
     {
         renderWireframe = renderWireframe_;
-        Select(43);
+        Select(42);
     }
 
     public void SetRenderPoints(int renderPoints_)
     {
         renderPoints = renderPoints_;
-        Select(44);
+        Select(43);
     }
 
     public void SetSmoothingLevel(int smoothingLevel_)
     {
         smoothingLevel = smoothingLevel_;
-        Select(45);
+        Select(44);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(46);
+        Select(45);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(47);
+        Select(46);
     }
 
     public void SetWireframeColor(ColorAttribute wireframeColor_)
     {
         wireframeColor = wireframeColor_;
-        Select(48);
+        Select(47);
     }
 
     public void SetPointColor(ColorAttribute pointColor_)
     {
         pointColor = pointColor_;
-        Select(49);
+        Select(48);
     }
 
     // Property getting methods
@@ -654,7 +644,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public boolean        GetPointSizeVarEnabled() { return pointSizeVarEnabled; }
     public String         GetPointSizeVar() { return pointSizeVar; }
     public int            GetPointSizePixels() { return pointSizePixels; }
-    public int            GetLineStyle() { return lineStyle; }
     public int            GetLineType() { return lineType; }
     public int            GetLineWidth() { return lineWidth; }
     public int            GetTubeResolution() { return tubeResolution; }
@@ -731,60 +720,58 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(21, buf))
             buf.WriteInt(pointSizePixels);
         if(WriteSelect(22, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(23, buf))
             buf.WriteInt(lineType);
-        if(WriteSelect(24, buf))
+        if(WriteSelect(23, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(25, buf))
+        if(WriteSelect(24, buf))
             buf.WriteInt(tubeResolution);
-        if(WriteSelect(26, buf))
+        if(WriteSelect(25, buf))
             buf.WriteInt(tubeRadiusSizeType);
-        if(WriteSelect(27, buf))
+        if(WriteSelect(26, buf))
             buf.WriteDouble(tubeRadiusAbsolute);
-        if(WriteSelect(28, buf))
+        if(WriteSelect(27, buf))
             buf.WriteDouble(tubeRadiusBBox);
-        if(WriteSelect(29, buf))
+        if(WriteSelect(28, buf))
             buf.WriteBool(tubeRadiusVarEnabled);
-        if(WriteSelect(30, buf))
+        if(WriteSelect(29, buf))
             buf.WriteString(tubeRadiusVar);
-        if(WriteSelect(31, buf))
+        if(WriteSelect(30, buf))
             buf.WriteDouble(tubeRadiusVarRatio);
-        if(WriteSelect(32, buf))
+        if(WriteSelect(31, buf))
             buf.WriteInt(tailStyle);
-        if(WriteSelect(33, buf))
+        if(WriteSelect(32, buf))
             buf.WriteInt(headStyle);
-        if(WriteSelect(34, buf))
+        if(WriteSelect(33, buf))
             buf.WriteInt(endPointRadiusSizeType);
-        if(WriteSelect(35, buf))
+        if(WriteSelect(34, buf))
             buf.WriteDouble(endPointRadiusAbsolute);
-        if(WriteSelect(36, buf))
+        if(WriteSelect(35, buf))
             buf.WriteDouble(endPointRadiusBBox);
-        if(WriteSelect(37, buf))
+        if(WriteSelect(36, buf))
             buf.WriteInt(endPointResolution);
-        if(WriteSelect(38, buf))
+        if(WriteSelect(37, buf))
             buf.WriteDouble(endPointRatio);
-        if(WriteSelect(39, buf))
+        if(WriteSelect(38, buf))
             buf.WriteBool(endPointRadiusVarEnabled);
-        if(WriteSelect(40, buf))
+        if(WriteSelect(39, buf))
             buf.WriteString(endPointRadiusVar);
-        if(WriteSelect(41, buf))
+        if(WriteSelect(40, buf))
             buf.WriteDouble(endPointRadiusVarRatio);
-        if(WriteSelect(42, buf))
+        if(WriteSelect(41, buf))
             buf.WriteInt(renderSurfaces);
-        if(WriteSelect(43, buf))
+        if(WriteSelect(42, buf))
             buf.WriteInt(renderWireframe);
-        if(WriteSelect(44, buf))
+        if(WriteSelect(43, buf))
             buf.WriteInt(renderPoints);
-        if(WriteSelect(45, buf))
+        if(WriteSelect(44, buf))
             buf.WriteInt(smoothingLevel);
-        if(WriteSelect(46, buf))
+        if(WriteSelect(45, buf))
             buf.WriteBool(legendFlag);
-        if(WriteSelect(47, buf))
+        if(WriteSelect(46, buf))
             buf.WriteBool(lightingFlag);
-        if(WriteSelect(48, buf))
+        if(WriteSelect(47, buf))
             wireframeColor.Write(buf);
-        if(WriteSelect(49, buf))
+        if(WriteSelect(48, buf))
             pointColor.Write(buf);
     }
 
@@ -859,90 +846,87 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             SetPointSizePixels(buf.ReadInt());
             break;
         case 22:
-            SetLineStyle(buf.ReadInt());
-            break;
-        case 23:
             SetLineType(buf.ReadInt());
             break;
-        case 24:
+        case 23:
             SetLineWidth(buf.ReadInt());
             break;
-        case 25:
+        case 24:
             SetTubeResolution(buf.ReadInt());
             break;
-        case 26:
+        case 25:
             SetTubeRadiusSizeType(buf.ReadInt());
             break;
-        case 27:
+        case 26:
             SetTubeRadiusAbsolute(buf.ReadDouble());
             break;
-        case 28:
+        case 27:
             SetTubeRadiusBBox(buf.ReadDouble());
             break;
-        case 29:
+        case 28:
             SetTubeRadiusVarEnabled(buf.ReadBool());
             break;
-        case 30:
+        case 29:
             SetTubeRadiusVar(buf.ReadString());
             break;
-        case 31:
+        case 30:
             SetTubeRadiusVarRatio(buf.ReadDouble());
             break;
-        case 32:
+        case 31:
             SetTailStyle(buf.ReadInt());
             break;
-        case 33:
+        case 32:
             SetHeadStyle(buf.ReadInt());
             break;
-        case 34:
+        case 33:
             SetEndPointRadiusSizeType(buf.ReadInt());
             break;
-        case 35:
+        case 34:
             SetEndPointRadiusAbsolute(buf.ReadDouble());
             break;
-        case 36:
+        case 35:
             SetEndPointRadiusBBox(buf.ReadDouble());
             break;
-        case 37:
+        case 36:
             SetEndPointResolution(buf.ReadInt());
             break;
-        case 38:
+        case 37:
             SetEndPointRatio(buf.ReadDouble());
             break;
-        case 39:
+        case 38:
             SetEndPointRadiusVarEnabled(buf.ReadBool());
             break;
-        case 40:
+        case 39:
             SetEndPointRadiusVar(buf.ReadString());
             break;
-        case 41:
+        case 40:
             SetEndPointRadiusVarRatio(buf.ReadDouble());
             break;
-        case 42:
+        case 41:
             SetRenderSurfaces(buf.ReadInt());
             break;
-        case 43:
+        case 42:
             SetRenderWireframe(buf.ReadInt());
             break;
-        case 44:
+        case 43:
             SetRenderPoints(buf.ReadInt());
             break;
-        case 45:
+        case 44:
             SetSmoothingLevel(buf.ReadInt());
             break;
-        case 46:
+        case 45:
             SetLegendFlag(buf.ReadBool());
             break;
-        case 47:
+        case 46:
             SetLightingFlag(buf.ReadBool());
             break;
-        case 48:
+        case 47:
             wireframeColor.Read(buf);
-            Select(48);
+            Select(47);
             break;
-        case 49:
+        case 48:
             pointColor.Read(buf);
-            Select(49);
+            Select(48);
             break;
         }
     }
@@ -1002,7 +986,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("pointSizeVarEnabled", pointSizeVarEnabled, indent) + "\n";
         str = str + stringToString("pointSizeVar", pointSizeVar, indent) + "\n";
         str = str + intToString("pointSizePixels", pointSizePixels, indent) + "\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + indent + "lineType = ";
         if(lineType == LINETYPE_LINE)
             str = str + "LINETYPE_LINE";
@@ -1088,7 +1071,6 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     private boolean        pointSizeVarEnabled;
     private String         pointSizeVar;
     private int            pointSizePixels;
-    private int            lineStyle;
     private int            lineType;
     private int            lineWidth;
     private int            tubeResolution;

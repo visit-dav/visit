@@ -1094,53 +1094,6 @@ class WindowGeneratorOpacity : public virtual Opacity , public virtual WindowGen
 };
 
 
-//
-// -------------------------------- LineStyle --------------------------------
-//
-class WindowGeneratorLineStyle : public virtual LineStyle , public virtual WindowGeneratorField
-{
-  public:
-    WindowGeneratorLineStyle(const QString &n, const QString &l)
-        : Field("linestyle",n,l), LineStyle(n,l), WindowGeneratorField("linestyle",n,l) { }
-    virtual void            writeHeaderCallback(QTextStream &h)
-    {
-        h << "    void "<<name<<"Changed(int style);" << endl;
-    }
-    virtual void            writeHeaderData(QTextStream &h)
-    {
-        h << "    QvisLineStyleWidget *"<<name<<";" << endl;
-    }
-    virtual void            writeSourceCreate(QTextStream &c)
-    {
-        writeSourceCreateLabel(c);
-        c << "    "<<name<<" = new QvisLineStyleWidget(0, central);" << endl;
-        c << "    connect("<<name<<", SIGNAL(lineStyleChanged(int))," << endl
-          << "            this, SLOT("<<name<<"Changed(int)));" << endl;
-        c << "    mainLayout->addWidget("<<name<<", "<<index<<",1);" << endl;
-    }
-    virtual void            writeSourceGetCurrent(QTextStream &c)
-    {
-        c << "        // Nothing for " << name << endl;
-    }
-    virtual void            writeSourceUpdateWindow(QTextStream &c)
-    {
-        c << "            "<<name<<"->blockSignals(true);" << endl;
-        c << "            "<<name<<"->SetLineStyle(atts->Get"<<Name<<"());" << endl;
-        c << "            "<<name<<"->blockSignals(false);" << endl;
-    }
-    virtual void            writeSourceCallback(QString &, QString &windowname, QTextStream &c, bool isEnabler)
-    {
-        c << "void" << endl;
-        c << windowname<<"::"<<name<<"Changed(int style)" << endl;
-        c << "{" << endl;
-        c << "    atts->Set"<<Name<<"(style);" << endl;
-        if(!isEnabler)
-            c << "    SetUpdate(false);" << endl;
-        c << "    Apply();" << endl;
-        c << "}" << endl;
-    }
-};
-
 
 //
 // -------------------------------- LineWidth --------------------------------
@@ -1470,7 +1423,6 @@ class WindowFieldFactory
         else if (type == "colortable")   f = new WindowGeneratorColorTable(name,label);
         else if (type == "color")        f = new WindowGeneratorColor(name,label);
         else if (type == "opacity")      f = new WindowGeneratorOpacity(name,label);
-        else if (type == "linestyle")    f = new WindowGeneratorLineStyle(name,label);
         else if (type == "linewidth")    f = new WindowGeneratorLineWidth(name,label);
         else if (type == "variablename") f = new WindowGeneratorVariableName(name,label);
         else if (type == "att")          f = new WindowGeneratorAtt(subtype,name,label);
@@ -1599,7 +1551,6 @@ class WindowGeneratorAttribute : public GeneratorBase
             h << "class QvisColorTableButton;" << endl;
             h << "class QvisOpacitySlider;" << endl;
             h << "class QvisColorButton;" << endl;
-            h << "class QvisLineStyleWidget;" << endl;
             h << "class QvisLineWidthWidget;" << endl;
         }
         h << "class QvisVariableButton;" << endl;
@@ -1729,7 +1680,6 @@ class WindowGeneratorAttribute : public GeneratorBase
             c << "#include <QvisColorTableButton.h>" << endl;
             c << "#include <QvisOpacitySlider.h>" << endl;
             c << "#include <QvisColorButton.h>" << endl;
-            c << "#include <QvisLineStyleWidget.h>" << endl;
             c << "#include <QvisLineWidthWidget.h>" << endl;
         }
         c << "#include <QvisVariableButton.h>" << endl;

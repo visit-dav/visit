@@ -255,7 +255,6 @@ void HistogramAttributes::Init()
     zone = 0;
     useBinWidths = true;
     outputType = Block;
-    lineStyle = 0;
     lineWidth = 0;
     dataScale = Linear;
     binScale = Linear;
@@ -295,7 +294,6 @@ void HistogramAttributes::Copy(const HistogramAttributes &obj)
     zone = obj.zone;
     useBinWidths = obj.useBinWidths;
     outputType = obj.outputType;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     color = obj.color;
     dataScale = obj.dataScale;
@@ -474,7 +472,6 @@ HistogramAttributes::operator == (const HistogramAttributes &obj) const
             (zone == obj.zone) &&
             (useBinWidths == obj.useBinWidths) &&
             (outputType == obj.outputType) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (color == obj.color) &&
             (dataScale == obj.dataScale) &&
@@ -634,7 +631,6 @@ HistogramAttributes::SelectAll()
     Select(ID_zone,               (void *)&zone);
     Select(ID_useBinWidths,       (void *)&useBinWidths);
     Select(ID_outputType,         (void *)&outputType);
-    Select(ID_lineStyle,          (void *)&lineStyle);
     Select(ID_lineWidth,          (void *)&lineWidth);
     Select(ID_color,              (void *)&color);
     Select(ID_dataScale,          (void *)&dataScale);
@@ -749,12 +745,6 @@ HistogramAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
     {
         addToParent = true;
         node->AddNode(new DataNode("outputType", OutputType_ToString(outputType)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -913,8 +903,6 @@ HistogramAttributes::SetFromNode(DataNode *parentNode)
                 SetOutputType(value);
         }
     }
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("color")) != 0)
@@ -1053,13 +1041,6 @@ HistogramAttributes::SetOutputType(HistogramAttributes::OutputType outputType_)
 }
 
 void
-HistogramAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
-}
-
-void
 HistogramAttributes::SetLineWidth(int lineWidth_)
 {
     lineWidth = lineWidth_;
@@ -1190,12 +1171,6 @@ HistogramAttributes::GetOutputType() const
 }
 
 int
-HistogramAttributes::GetLineStyle() const
-{
-    return lineStyle;
-}
-
-int
 HistogramAttributes::GetLineWidth() const
 {
     return lineWidth;
@@ -1290,7 +1265,6 @@ HistogramAttributes::GetFieldName(int index) const
     case ID_zone:               return "zone";
     case ID_useBinWidths:       return "useBinWidths";
     case ID_outputType:         return "outputType";
-    case ID_lineStyle:          return "lineStyle";
     case ID_lineWidth:          return "lineWidth";
     case ID_color:              return "color";
     case ID_dataScale:          return "dataScale";
@@ -1334,7 +1308,6 @@ HistogramAttributes::GetFieldType(int index) const
     case ID_zone:               return FieldType_int;
     case ID_useBinWidths:       return FieldType_bool;
     case ID_outputType:         return FieldType_enum;
-    case ID_lineStyle:          return FieldType_linestyle;
     case ID_lineWidth:          return FieldType_linewidth;
     case ID_color:              return FieldType_color;
     case ID_dataScale:          return FieldType_enum;
@@ -1378,7 +1351,6 @@ HistogramAttributes::GetFieldTypeName(int index) const
     case ID_zone:               return "int";
     case ID_useBinWidths:       return "bool";
     case ID_outputType:         return "enum";
-    case ID_lineStyle:          return "linestyle";
     case ID_lineWidth:          return "linewidth";
     case ID_color:              return "color";
     case ID_dataScale:          return "enum";
@@ -1476,11 +1448,6 @@ HistogramAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (outputType == obj.outputType);
         }
         break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
-        }
-        break;
     case ID_lineWidth:
         {  // new scope
         retval = (lineWidth == obj.lineWidth);
@@ -1541,7 +1508,7 @@ HistogramAttributes::ChangesRequireRecalculation(const HistogramAttributes &obj)
     if (domain != obj.GetDomain())
         return true;
     if (histogramType != obj.GetHistogramType())
-        return true; 
+        return true;
     if ( dataScale != obj.GetDataScale() )
         return true;
     if ( binScale != obj.GetBinScale() )

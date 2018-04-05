@@ -101,9 +101,6 @@ PyVectorAttributes_ToString(const VectorAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%snVectors = %d\n", prefix, atts->GetNVectors());
     str += tmpStr;
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sscale = %g\n", prefix, atts->GetScale());
@@ -361,39 +358,6 @@ VectorAttributes_GetNVectors(PyObject *self, PyObject *args)
 {
     VectorAttributesObject *obj = (VectorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetNVectors()));
-    return retval;
-}
-
-/*static*/ PyObject *
-VectorAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-VectorAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    VectorAttributesObject *obj = (VectorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
     return retval;
 }
 
@@ -1059,8 +1023,6 @@ PyMethodDef PyVectorAttributes_methods[VECTORATTRIBUTES_NMETH] = {
     {"GetStride", VectorAttributes_GetStride, METH_VARARGS},
     {"SetNVectors", VectorAttributes_SetNVectors, METH_VARARGS},
     {"GetNVectors", VectorAttributes_GetNVectors, METH_VARARGS},
-    {"SetLineStyle", VectorAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", VectorAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", VectorAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", VectorAttributes_GetLineWidth, METH_VARARGS},
     {"SetScale", VectorAttributes_SetScale, METH_VARARGS},
@@ -1148,17 +1110,6 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
         return VectorAttributes_GetStride(self, NULL);
     if(strcmp(name, "nVectors") == 0)
         return VectorAttributes_GetNVectors(self, NULL);
-    if(strcmp(name, "lineStyle") == 0)
-        return VectorAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "lineWidth") == 0)
         return VectorAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "scale") == 0)
@@ -1240,6 +1191,36 @@ PyVectorAttributes_getattr(PyObject *self, char *name)
         bool highQuality = vectorObj->data->GetGeometryQuality() == VectorAttributes::High;
         return PyInt_FromLong(highQuality?1L:0L);
     }
+
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Vector "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyVectorAttributes_methods, self, name);
 }
 
@@ -1261,8 +1242,6 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = VectorAttributes_SetStride(self, tuple);
     else if(strcmp(name, "nVectors") == 0)
         obj = VectorAttributes_SetNVectors(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = VectorAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = VectorAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "scale") == 0)
@@ -1326,7 +1305,12 @@ PyVectorAttributes_setattr(PyObject *self, char *name, PyObject *args)
                 VectorObj->data->SetGeometryQuality(VectorAttributes::Fast);
             else
                 VectorObj->data->SetGeometryQuality(VectorAttributes::High);
-    
+
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "lineStyle") == 0)
+        {
             Py_INCREF(Py_None);
             obj = Py_None;
         }

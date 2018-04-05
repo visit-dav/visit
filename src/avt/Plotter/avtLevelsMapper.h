@@ -119,7 +119,6 @@ class PLOTTER_API avtLevelsMapper : virtual public avtMapper
     virtual                  ~avtLevelsMapper();
 
     void                      SetLineWidth(_LineWidth lw);
-    void                      SetLineStyle(_LineStyle ls);
     void                      GetOriginalDataRange(double &, double &);
 
     void                      SetColors(const ColorAttributeList &c, bool);
@@ -130,7 +129,6 @@ class PLOTTER_API avtLevelsMapper : virtual public avtMapper
 
   protected:
     _LineWidth                lineWidth;
-    _LineStyle                lineStyle;
     std::vector<std::string>  labelsForColorMapping;
     std::vector<std::string>  levelNames;
     ColorAttributeList        cal;

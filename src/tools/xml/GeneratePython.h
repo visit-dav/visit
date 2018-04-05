@@ -1688,80 +1688,6 @@ class AttsGeneratorColor : public virtual Color , public virtual PythonGenerator
 };
 
 
-//
-// --------------------------------- LineStyle --------------------------------
-//
-class AttsGeneratorLineStyle : public virtual LineStyle , public virtual PythonGeneratorField
-{
-  public:
-    AttsGeneratorLineStyle(const QString &n, const QString &l)
-        : Field("linestyle",n,l), LineStyle(n,l), PythonGeneratorField("linestyle",n,l) { }
-    virtual void WriteSetMethodBody(QTextStream &c, const QString &className)
-    {
-        c << "    int ival;" << Endl;
-        c << "    if(!PyArg_ParseTuple(args, \"i\", &ival))" << Endl;
-        c << "        return NULL;" << Endl;
-        c << Endl;
-        c << "    // Set the " << name << " in the object." << Endl;
-        c << "    if(ival >= 0 && ival <= 3)" << Endl;
-        c << "        obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name << " = ival;" << Endl;
-        else
-            c << MethodNameSet() << "(ival);" << Endl;
-        c << "    else" << Endl;
-        c << "    {" << Endl;
-        c << "        fprintf(stderr, \"An invalid  value was given. \"" << Endl;
-        c << "                        \"Valid values are in the range of [0,3]. \"" << Endl;
-        c << "                        \"You can also use the following names: \"" << Endl;
-        c << "                        \"\\\"SOLID\\\", \\\"DASH\\\", \\\"DOT\\\", \\\"DOTDASH\\\"\\n\");" << Endl;
-        c << "        return NULL;" << Endl;
-        c << "    }" << Endl;
-    }
-
-    virtual void WriteGetMethodBody(QTextStream &c, const QString &className)
-    {
-        c << "    PyObject *retval = PyInt_FromLong(long(obj->data->";
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c <<MethodNameGet()<<"()";
-        c <<"));" << Endl;
-    }
-
-    virtual void StringRepresentation(QTextStream &c, const QString &classname)
-    {
-        c << "    const char *" << name << "_values[] = {\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"};" << Endl;
-        c << "    SNPRINTF(tmpStr, 1000, \"%s" << name << " = ";
-        c << "%s%s  # SOLID, DASH, DOT, DOTDASH\\n\", prefix, prefix, " << name << "_values[atts->";
-
-        if(accessType == Field::AccessPublic)
-            c << name;
-        else
-            c << MethodNameGet() << "()";
-        c << "]);" << Endl;
-        c << "    str += tmpStr;" << Endl;
-    }
-
-    virtual void WriteGetAttr(QTextStream &c, const QString &classname)
-    {
-        if (internal)
-            return;
-
-        c << "    if(strcmp(name, \"" << name << "\") == 0)" << Endl;
-        c << "        return " << classname << "_" << MethodNameGet() << "(self, NULL);" << Endl;
-        c << "    if(strcmp(name, \"SOLID\") == 0)" << Endl;
-        c << "        return PyInt_FromLong(long(0));" << Endl;
-        c << "    else if(strcmp(name, \"DASH\") == 0)" << Endl;
-        c << "        return PyInt_FromLong(long(1));" << Endl;
-        c << "    else if(strcmp(name, \"DOT\") == 0)" << Endl;
-        c << "        return PyInt_FromLong(long(2));" << Endl;
-        c << "    else if(strcmp(name, \"DOTDASH\") == 0)" << Endl;
-        c << "        return PyInt_FromLong(long(3));" << Endl;
-        c << Endl;
-    }
-};
-
 
 //
 // --------------------------------- LineWidth --------------------------------
@@ -2974,7 +2900,6 @@ class PythonFieldFactory
         else if (type == "colortable")   f = new AttsGeneratorColorTable(name,label);
         else if (type == "color")        f = new AttsGeneratorColor(name,label);
         else if (type == "opacity")      f = new AttsGeneratorOpacity(name,label);
-        else if (type == "linestyle")    f = new AttsGeneratorLineStyle(name,label);
         else if (type == "linewidth")    f = new AttsGeneratorLineWidth(name,label);
         else if (type == "variablename") f = new AttsGeneratorVariableName(name,label);
         else if (type == "att")          f = new AttsGeneratorAtt(subtype,name,label);

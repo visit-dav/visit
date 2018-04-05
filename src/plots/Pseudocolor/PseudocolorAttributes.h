@@ -162,7 +162,6 @@ public:
     void SetPointSizeVarEnabled(bool pointSizeVarEnabled_);
     void SetPointSizeVar(const std::string &pointSizeVar_);
     void SetPointSizePixels(int pointSizePixels_);
-    void SetLineStyle(int lineStyle_);
     void SetLineType(LineType lineType_);
     void SetLineWidth(int lineWidth_);
     void SetTubeResolution(int tubeResolution_);
@@ -217,7 +216,6 @@ public:
     const std::string    &GetPointSizeVar() const;
           std::string    &GetPointSizeVar();
     int                  GetPointSizePixels() const;
-    int                  GetLineStyle() const;
     LineType             GetLineType() const;
     int                  GetLineWidth() const;
     int                  GetTubeResolution() const;
@@ -326,7 +324,6 @@ public:
         ID_pointSizeVarEnabled,
         ID_pointSizeVar,
         ID_pointSizePixels,
-        ID_lineStyle,
         ID_lineType,
         ID_lineWidth,
         ID_tubeResolution,
@@ -380,7 +377,6 @@ private:
     bool           pointSizeVarEnabled;
     std::string    pointSizeVar;
     int            pointSizePixels;
-    int            lineStyle;
     int            lineType;
     int            lineWidth;
     int            tubeResolution;
@@ -413,6 +409,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbdisbisdddbbdibsiiiiiiddbsdiiiddidbsdiiiibbaa"
+#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbdisbisdddbbdibsiiiiiddbsdiiiddidbsdiiiibbaa"
 
 #endif

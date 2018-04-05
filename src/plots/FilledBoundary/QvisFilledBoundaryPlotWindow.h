@@ -48,7 +48,6 @@ class QLabel;
 class QvisColorButton;
 class QvisColorSwatchListWidget;
 class QvisColorTableWidget;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
 class QvisPointControl;
@@ -98,7 +97,6 @@ protected:
     bool CompareItem(int i, const QString &name, const QColor &c) const;
     void GetCurrentValues(int which_widget);
 private slots:
-    void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
     void legendToggled(bool val);
     void wireframeToggled(bool val);
@@ -126,8 +124,6 @@ private:
     int                       plotType;
     FilledBoundaryAttributes *boundaryAtts;
 
-    QLabel                 *lineStyleLabel;
-    QvisLineStyleWidget    *lineStyle;
     QLabel                 *lineWidthLabel;
     QvisLineWidthWidget    *lineWidth;
     QButtonGroup           *colorModeButtons;

@@ -60,14 +60,13 @@ import llnl.visit.ColorAttributeList;
 
 public class TopologyAttributes extends AttributeSubject implements Plugin
 {
-    private static int TopologyAttributes_numAdditionalAtts = 9;
+    private static int TopologyAttributes_numAdditionalAtts = 8;
 
     public TopologyAttributes()
     {
         super(TopologyAttributes_numAdditionalAtts);
 
         lineWidth = 2;
-        lineStyle = 0;
         multiColor = new ColorAttributeList();
         minOpacity = 1;
         minPlateauOpacity = 1;
@@ -82,7 +81,6 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
         super(TopologyAttributes_numAdditionalAtts + nMoreFields);
 
         lineWidth = 2;
-        lineStyle = 0;
         multiColor = new ColorAttributeList();
         minOpacity = 1;
         minPlateauOpacity = 1;
@@ -97,7 +95,6 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
         super(obj);
 
         lineWidth = obj.lineWidth;
-        lineStyle = obj.lineStyle;
         multiColor = new ColorAttributeList(obj.multiColor);
         minOpacity = obj.minOpacity;
         minPlateauOpacity = obj.minPlateauOpacity;
@@ -123,7 +120,6 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
     {
         // Create the return value
         return ((lineWidth == obj.lineWidth) &&
-                (lineStyle == obj.lineStyle) &&
                 (multiColor.equals(obj.multiColor)) &&
                 (minOpacity == obj.minOpacity) &&
                 (minPlateauOpacity == obj.minPlateauOpacity) &&
@@ -143,57 +139,50 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(1);
-    }
-
     public void SetMultiColor(ColorAttributeList multiColor_)
     {
         multiColor = multiColor_;
-        Select(2);
+        Select(1);
     }
 
     public void SetMinOpacity(double minOpacity_)
     {
         minOpacity = minOpacity_;
-        Select(3);
+        Select(2);
     }
 
     public void SetMinPlateauOpacity(double minPlateauOpacity_)
     {
         minPlateauOpacity = minPlateauOpacity_;
-        Select(4);
+        Select(3);
     }
 
     public void SetMaxPlateauOpacity(double maxPlateauOpacity_)
     {
         maxPlateauOpacity = maxPlateauOpacity_;
-        Select(5);
+        Select(4);
     }
 
     public void SetMaxOpacity(double maxOpacity_)
     {
         maxOpacity = maxOpacity_;
-        Select(6);
+        Select(5);
     }
 
     public void SetTolerance(double tolerance_)
     {
         tolerance = tolerance_;
-        Select(7);
+        Select(6);
     }
 
     public void SetHitpercent(double hitpercent_)
     {
         hitpercent = hitpercent_;
-        Select(8);
+        Select(7);
     }
 
     // Property getting methods
     public int                GetLineWidth() { return lineWidth; }
-    public int                GetLineStyle() { return lineStyle; }
     public ColorAttributeList GetMultiColor() { return multiColor; }
     public double             GetMinOpacity() { return minOpacity; }
     public double             GetMinPlateauOpacity() { return minPlateauOpacity; }
@@ -208,20 +197,18 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteInt(lineWidth);
         if(WriteSelect(1, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(2, buf))
             multiColor.Write(buf);
-        if(WriteSelect(3, buf))
+        if(WriteSelect(2, buf))
             buf.WriteDouble(minOpacity);
-        if(WriteSelect(4, buf))
+        if(WriteSelect(3, buf))
             buf.WriteDouble(minPlateauOpacity);
-        if(WriteSelect(5, buf))
+        if(WriteSelect(4, buf))
             buf.WriteDouble(maxPlateauOpacity);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(5, buf))
             buf.WriteDouble(maxOpacity);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             buf.WriteDouble(tolerance);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteDouble(hitpercent);
     }
 
@@ -233,28 +220,25 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
             SetLineWidth(buf.ReadInt());
             break;
         case 1:
-            SetLineStyle(buf.ReadInt());
+            multiColor.Read(buf);
+            Select(1);
             break;
         case 2:
-            multiColor.Read(buf);
-            Select(2);
-            break;
-        case 3:
             SetMinOpacity(buf.ReadDouble());
             break;
-        case 4:
+        case 3:
             SetMinPlateauOpacity(buf.ReadDouble());
             break;
-        case 5:
+        case 4:
             SetMaxPlateauOpacity(buf.ReadDouble());
             break;
-        case 6:
+        case 5:
             SetMaxOpacity(buf.ReadDouble());
             break;
-        case 7:
+        case 6:
             SetTolerance(buf.ReadDouble());
             break;
-        case 8:
+        case 7:
             SetHitpercent(buf.ReadDouble());
             break;
         }
@@ -264,7 +248,6 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + indent + "multiColor = {\n" + multiColor.toString(indent + "    ") + indent + "}\n";
         str = str + doubleToString("minOpacity", minOpacity, indent) + "\n";
         str = str + doubleToString("minPlateauOpacity", minPlateauOpacity, indent) + "\n";
@@ -278,7 +261,6 @@ public class TopologyAttributes extends AttributeSubject implements Plugin
 
     // Attributes
     private int                lineWidth;
-    private int                lineStyle;
     private ColorAttributeList multiColor;
     private double             minOpacity;
     private double             minPlateauOpacity;

@@ -50,7 +50,6 @@ class QLineEdit;
 class QButtonGroup;
 class QvisColorTableButton;
 class QvisColorButton;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisVariableButton;
 
@@ -106,7 +105,6 @@ class QvisMoleculePlotWindow : public QvisPostableWindowObserver
     void bondCylinderQualityChanged(int val);
     void bondRadiusProcessText();
     void bondLineWidthChanged(int style);
-    void bondLineStyleChanged(int style);
     void elementColorTableChanged(bool useDefault, const QString &ctName);
     void residueTypeColorTableChanged(bool useDefault, const QString &ctName);
     void residueSequenceColorTableChanged(bool useDefault, const QString &ctName);
@@ -131,7 +129,6 @@ class QvisMoleculePlotWindow : public QvisPostableWindowObserver
     QComboBox            *bondCylinderQuality;
     QLineEdit            *bondRadius;
     QvisLineWidthWidget  *bondLineWidth;
-    QvisLineStyleWidget  *bondLineStyle;
     QvisColorTableButton *elementColorTable;
     QvisColorTableButton *residueTypeColorTable;
     QvisColorTableButton *residueSequenceColorTable;
@@ -152,7 +149,6 @@ class QvisMoleculePlotWindow : public QvisPostableWindowObserver
     QLabel               *bondCylinderQualityLabel;
     QLabel               *bondRadiusLabel;
     QLabel               *bondLineWidthLabel;
-    QLabel               *bondLineStyleLabel;
     QLabel               *elementColorTableLabel;
     QLabel               *residueTypeColorTableLabel;
     QLabel               *residueSequenceColorTableLabel;

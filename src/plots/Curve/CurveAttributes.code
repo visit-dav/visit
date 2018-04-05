@@ -22,6 +22,36 @@ Postfix:
     {
         return PyInt_FromLong(1L);
     }
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true; 
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Curve "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+
 
 Code: PyCurveAttributes_setattr
 Prefix:
@@ -72,6 +102,11 @@ Postfix:
             Py_INCREF(Py_None);
             obj = Py_None;
         }
+        if(strcmp(name, "lineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
     }
 
 Target: xml2atts
@@ -118,7 +153,6 @@ CurveAttributes::CreateCompatible(const std::string &tname) const
         Line *line = new Line;
         line->SetDesignator(GetDesignator());
         line->SetColor(GetCurveColor());
-        line->SetLineStyle(GetLineStyle());
         line->SetLineWidth(GetLineWidth());
         retval = line;
     }
@@ -193,6 +227,11 @@ CurveAttributes::ProcessOldVersions(DataNode *parentNode,
                 searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Dynamic)));
             }
         }
+    }
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+       if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
     }
 }
 

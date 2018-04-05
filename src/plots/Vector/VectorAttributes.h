@@ -126,7 +126,6 @@ public:
     void SetUseStride(bool useStride_);
     void SetStride(int stride_);
     void SetNVectors(int nVectors_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetScale(double scale_);
     void SetScaleByMagnitude(bool scaleByMagnitude_);
@@ -156,7 +155,6 @@ public:
     bool                 GetUseStride() const;
     int                  GetStride() const;
     int                  GetNVectors() const;
-    int                  GetLineStyle() const;
     int                  GetLineWidth() const;
     double               GetScale() const;
     bool                 GetScaleByMagnitude() const;
@@ -235,7 +233,6 @@ public:
         ID_useStride,
         ID_stride,
         ID_nVectors,
-        ID_lineStyle,
         ID_lineWidth,
         ID_scale,
         ID_scaleByMagnitude,
@@ -267,7 +264,6 @@ private:
     bool           useStride;
     int            stride;
     int            nVectors;
-    int            lineStyle;
     int            lineWidth;
     double         scale;
     bool           scaleByMagnitude;
@@ -296,6 +292,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VECTORATTRIBUTES_TMFS "ibiiiidbbdbbbasbibbiddiidbii"
+#define VECTORATTRIBUTES_TMFS "ibiiidbbdbbbasbibbiddiidbii"
 
 #endif

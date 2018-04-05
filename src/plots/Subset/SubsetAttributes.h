@@ -114,7 +114,6 @@ public:
     void SetColorTableName(const std::string &colorTableName_);
     void SetInvertColorTable(bool invertColorTable_);
     void SetLegendFlag(bool legendFlag_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetMultiColor(const ColorAttributeList &multiColor_);
@@ -136,7 +135,6 @@ public:
           std::string        &GetColorTableName();
     bool                     GetInvertColorTable() const;
     bool                     GetLegendFlag() const;
-    int                      GetLineStyle() const;
     int                      GetLineWidth() const;
     const ColorAttribute     &GetSingleColor() const;
           ColorAttribute     &GetSingleColor();
@@ -189,7 +187,6 @@ public:
         ID_colorTableName,
         ID_invertColorTable,
         ID_legendFlag,
-        ID_lineStyle,
         ID_lineWidth,
         ID_singleColor,
         ID_multiColor,
@@ -212,7 +209,6 @@ private:
     std::string        colorTableName;
     bool               invertColorTable;
     bool               legendFlag;
-    int                lineStyle;
     int                lineWidth;
     ColorAttribute     singleColor;
     ColorAttributeList multiColor;
@@ -232,6 +228,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SUBSETATTRIBUTES_TMFS "isbbiiaas*idbbidibsi"
+#define SUBSETATTRIBUTES_TMFS "isbbiaas*idbbidibsi"
 
 #endif

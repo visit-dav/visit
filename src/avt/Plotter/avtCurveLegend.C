@@ -389,29 +389,6 @@ avtCurveLegend::SetLineWidth(_LineWidth lw)
 
 
 // ****************************************************************************
-//  Method: avtCurveLegend::SetLineStyle
-//
-//  Purpose:
-//    Sets the line style for the legend.
-//
-//  Arguments:
-//    ls         The new line style
-//
-//  Programmer:  Kathleen Bonnell
-//  Creation:    October 25, 2005 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtCurveLegend::SetLineStyle(_LineStyle ls)
-{
-    lineLegend->GetLineProperty()->SetLineStipplePattern(LineStyle2StipplePattern(ls));
-}
-
-
-// ****************************************************************************
 //  Method: avtCurveLegend::SetColor
 //
 //  Purpose:

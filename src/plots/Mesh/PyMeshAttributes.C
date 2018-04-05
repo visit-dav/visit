@@ -84,9 +84,6 @@ PyMeshAttributes_ToString(const MeshAttributes *atts, const char *prefix)
     else
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *meshColor = atts->GetMeshColor().GetColor();
@@ -254,39 +251,6 @@ MeshAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
     MeshAttributesObject *obj = (MeshAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-MeshAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MeshAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    MeshAttributesObject *obj = (MeshAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
     return retval;
 }
 
@@ -785,8 +749,6 @@ PyMethodDef PyMeshAttributes_methods[MESHATTRIBUTES_NMETH] = {
     {"Notify", MeshAttributes_Notify, METH_VARARGS},
     {"SetLegendFlag", MeshAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", MeshAttributes_GetLegendFlag, METH_VARARGS},
-    {"SetLineStyle", MeshAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", MeshAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", MeshAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", MeshAttributes_GetLineWidth, METH_VARARGS},
     {"SetMeshColor", MeshAttributes_SetMeshColor, METH_VARARGS},
@@ -845,17 +807,6 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "legendFlag") == 0)
         return MeshAttributes_GetLegendFlag(self, NULL);
-    if(strcmp(name, "lineStyle") == 0)
-        return MeshAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "lineWidth") == 0)
         return MeshAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "meshColor") == 0)
@@ -939,6 +890,36 @@ PyMeshAttributes_getattr(PyObject *self, char *name)
         bool foregroundFlag = meshObj->data->GetMeshColorSource() == MeshAttributes::Foreground;
         return PyInt_FromLong(foregroundFlag?1L:0L);
     }
+
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Mesh "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyMeshAttributes_methods, self, name);
 }
 
@@ -954,8 +935,6 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "legendFlag") == 0)
         obj = MeshAttributes_SetLegendFlag(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = MeshAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = MeshAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "meshColor") == 0)
@@ -1001,7 +980,7 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
                 meshObj->data->SetOpaqueColorSource(MeshAttributes::OpaqueCustom);
             else
                 meshObj->data->SetOpaqueColorSource(MeshAttributes::Background);
-    
+
             Py_INCREF(Py_None);
             obj = Py_None;
         }
@@ -1017,7 +996,12 @@ PyMeshAttributes_setattr(PyObject *self, char *name, PyObject *args)
                 meshObj->data->SetMeshColorSource(MeshAttributes::MeshCustom);
             else
                 meshObj->data->SetMeshColorSource(MeshAttributes::Foreground);
-    
+
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "lineStyle") == 0)
+        {
             Py_INCREF(Py_None);
             obj = Py_None;
         }

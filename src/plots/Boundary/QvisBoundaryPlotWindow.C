@@ -51,7 +51,6 @@
 #include <QvisColorButton.h>
 #include <QvisColorSwatchListWidget.h>
 #include <QvisColorTableWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 #include <BoundaryAttributes.h>
@@ -267,25 +266,14 @@ QvisBoundaryPlotWindow::CreateWindowContents()
     //
 
     QGroupBox * styleGroup = new QGroupBox(central);
-    styleGroup->setTitle(tr("Line Style"));
+    styleGroup->setTitle(tr("Lines"));
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
     styleLayout->setMargin(5);
     styleLayout->setSpacing(10);
  
-    //
-    // Create the line style/width buttons
-    //
-    // Create the lineSyle widget.
-    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
-
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    styleLayout->addWidget(lineStyle, 1, 1);
-
-    // Create the lineSyle widget.
+    // Create the lineWidth widget.
     styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
 
     lineWidth = new QvisLineWidthWidget(0, central);
@@ -419,11 +407,6 @@ QvisBoundaryPlotWindow::UpdateWindow(bool doAll)
             legendToggle->blockSignals(true);
             legendToggle->setChecked(boundaryAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
-            break;
-        case BoundaryAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(boundaryAtts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
         case BoundaryAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
@@ -842,31 +825,6 @@ QvisBoundaryPlotWindow::reset()
     GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
-// ****************************************************************************
-// Method: QvisBoundaryPlotWindow::lineStyleChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the window's
-//   line style is changed.
-//
-// Arguments:
-//   newStyle : The new line style.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisBoundaryPlotWindow::lineStyleChanged(int newStyle)
-{
-    boundaryAtts->SetLineStyle(newStyle);
-    Apply();
-}
 
 // ****************************************************************************
 // Method: QvisBoundaryPlotWindow::lineWidthChanged

@@ -51,7 +51,6 @@ class QLineEdit;
 class QSpinBox;
 class QButtonGroup;
 class QvisColorButton;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisVariableButton;
 
@@ -115,7 +114,6 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     void zoneProcessText();
     void useBinWidthsChanged(bool val);
     void outputTypeChanged(int val);
-    void lineStyleChanged(int style);
     void lineWidthChanged(int style);
     void colorChanged(const QColor &color);
     void normalizeChanged(bool val);
@@ -140,7 +138,6 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     QLineEdit           *zone;
     QCheckBox           *useBinWidths;
     QButtonGroup        *outputTypeGroup;
-    QvisLineStyleWidget *lineStyle;
     QvisLineWidthWidget *lineWidth;
     QvisColorButton     *color;
     QCheckBox           *normalizeHistogram;
@@ -156,7 +153,6 @@ class QvisHistogramPlotWindow : public QvisPostableWindowObserver
     QLabel              *domainLabel;
     QLabel              *zoneLabel;
     QLabel              *outputTypeLabel;
-    QLabel              *lineStyleLabel;
     QLabel              *lineWidthLabel;
     QLabel              *colorLabel;
 

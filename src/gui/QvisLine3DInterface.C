@@ -49,7 +49,6 @@
 
 #include <QvisColorButton.h>
 #include <QvisLineWidthWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisOpacitySlider.h>
 
 // ****************************************************************************
@@ -118,15 +117,6 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     widthLabel = new QLabel(tr("Line Width"), this);
     cLayout->addWidget(widthLabel, row, 0);
     //++row;
-
-    // Add controls for line style.
-    styleWidget = new QvisLineStyleWidget(0, this);
-    connect(styleWidget, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(styleChanged(int)));
-    cLayout->addWidget(styleWidget, row, 3);
-    styleLabel = new QLabel(tr("Line Style"), this);
-    cLayout->addWidget(styleLabel, row, 2);
-    ++row;
 
     // Add controls for tube quality.
     tubeQuality = new QComboBox(this);
@@ -321,12 +311,6 @@ QvisLine3DInterface::UpdateControls()
     widthWidget->setEnabled(lineType->currentIndex() == 0);
     widthLabel->setEnabled(lineType->currentIndex() == 0);
     widthWidget->blockSignals(false);
-
-    styleWidget->blockSignals(true);
-    styleWidget->SetLineStyle(annot->GetIntAttribute2());
-    styleWidget->setEnabled(lineType->currentIndex() == 0);
-    styleLabel->setEnabled(lineType->currentIndex() == 0);
-    styleWidget->blockSignals(false);
 
     doubleVector dv = annot->GetDoubleVector1();
     tubeQuality->blockSignals(true);
@@ -594,31 +578,6 @@ void
 QvisLine3DInterface::widthChanged(int w)
 {
     annot->SetIntAttribute1(w);
-    Apply();
-}
-
-
-// ****************************************************************************
-// Method: QvisLine3DInterface::styleChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the value of the style
-//   widget changes.
-//
-// Arguments:
-//   s : The new style.
-//
-// Programmer: Kathleen Biagas
-// Creation:   July 13, 2015
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisLine3DInterface::styleChanged(int s)
-{
-    annot->SetIntAttribute2(s);
     Apply();
 }
 

@@ -4,9 +4,6 @@
       <Field name="lineWidth" label="Line width" type="linewidth">
         2
       </Field>
-      <Field name="lineStyle" label="Line style" type="linestyle">
-        0
-      </Field>
       <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList" init="true">
       </Field>
       <Field name="minOpacity" label="Opacity" type="opacity">

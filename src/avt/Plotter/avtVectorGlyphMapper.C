@@ -109,7 +109,6 @@ avtVectorGlyphMapper::avtVectorGlyphMapper(vtkAlgorithmOutput *g)
     glyph = g;
 
     lineWidth         = LW_0;
-    lineStyle         = SOLID; 
     colorByMag        = true;
     colorByScalar     = false;
     scale             = 0.2;
@@ -273,7 +272,6 @@ avtVectorGlyphMapper::CustomizeMappers(void)
         {
             mappers[i]->SetLookupTable(lut);
             vtkProperty *prop = actors[i]->GetProperty();
-            prop->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
             prop->SetLineWidth(LineWidth2Int(lineWidth));
         }
     }
@@ -450,40 +448,6 @@ avtVectorGlyphMapper::SetLineWidth(_LineWidth lw)
         if (actors[i] != NULL)
         {
             actors[i]->GetProperty()->SetLineWidth(LineWidth2Int(lineWidth));
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtVectorGlyphMapper::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style of for all the actors of plot.
-//
-//  Arguments:
-//      ls       The new line style.
-//
-//  Programmer:  Kathleen Bonnell 
-//  Creation:    June 25, 2001 
-//
-// ****************************************************************************
-
-void
-avtVectorGlyphMapper::SetLineStyle(_LineStyle ls)
-{
-    lineStyle = ls;
-    if ( actors == NULL )
-    {
-        // this occurs when this method called before input is set.
-        return;
-    }
-
-    for (int i = 0 ; i < nMappers ; i++)
-    {
-        if (actors[i] != NULL)
-        {
-            actors[i]->GetProperty()->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
         }
     }
 }

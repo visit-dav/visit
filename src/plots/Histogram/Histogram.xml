@@ -80,9 +80,6 @@
       <Field name="outputType" label="Type of Output" type="enum" subtype="OutputType">
         Block
       </Field>
-      <Field name="lineStyle" label="Line Style" type="linestyle">
-        0
-      </Field>
       <Field name="lineWidth" label="Line Width" type="linewidth">
         0
       </Field>

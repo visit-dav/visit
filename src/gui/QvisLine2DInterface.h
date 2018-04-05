@@ -47,7 +47,6 @@ class QLabel;
 class QvisColorButton;
 class QvisOpacitySlider;
 class QvisLineWidthWidget;
-class QvisLineStyleWidget;
 class QvisScreenPositionEdit;
 
 // ****************************************************************************
@@ -89,7 +88,6 @@ private slots:
     void beginArrowChanged(int);
     void endArrowChanged(int);
     void widthChanged(int);
-    void styleChanged(int);
     void colorChanged(const QColor &);
     void opacityChanged(int);
     void visibilityToggled(bool);
@@ -101,7 +99,6 @@ private:
     QComboBox              *beginArrowComboBox;
     QComboBox              *endArrowComboBox;
     QvisLineWidthWidget    *widthWidget;
-    QvisLineStyleWidget    *styleWidget;
     QLabel                 *colorLabel;
     QvisColorButton        *colorButton;
     QvisOpacitySlider      *opacitySlider;

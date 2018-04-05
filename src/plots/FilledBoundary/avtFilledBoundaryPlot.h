@@ -108,7 +108,6 @@ avtFilledBoundaryPlot : public avtVolumeDataPlot
 
     void                      SetLegend(bool);
     void                      SetLineWidth(int);
-    void                      SetLineStyle(int);
 
   protected:
     avtFeatureEdgesFilter           *wf;

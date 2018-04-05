@@ -190,24 +190,6 @@ avtTopologyPlot::SetLegend(bool legendOn)
 
 
 // ****************************************************************************
-//  Method: avtTopologyPlot::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style.
-//
-//  Programmer: Akira Haddox
-//  Creation:   June 26, 2003
-//
-// ****************************************************************************
-
-void
-avtTopologyPlot::SetLineStyle(int ls)
-{
-    levelsMapper->SetLineStyle(Int2LineStyle(ls));
-}
-
-
-// ****************************************************************************
 //  Method: avtTopologyPlot::SetLineWidth
 //
 //  Purpose:
@@ -402,7 +384,6 @@ avtTopologyPlot::SetColors()
     delete [] colors;
 
     SetLineWidth(atts.GetLineWidth());
-    SetLineStyle(atts.GetLineStyle());
 }
 
 

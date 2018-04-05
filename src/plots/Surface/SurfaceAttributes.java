@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class SurfaceAttributes extends AttributeSubject implements Plugin
 {
-    private static int SurfaceAttributes_numAdditionalAtts = 18;
+    private static int SurfaceAttributes_numAdditionalAtts = 17;
 
     // Enum values
     public final static int COLORBYTYPE_CONSTANT = 0;
@@ -87,7 +87,6 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         maxFlag = false;
         colorByZFlag = true;
         scaling = SCALING_LINEAR;
-        lineStyle = 0;
         lineWidth = 0;
         surfaceColor = new ColorAttribute(0, 0, 0);
         wireframeColor = new ColorAttribute(0, 0, 0);
@@ -111,7 +110,6 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         maxFlag = false;
         colorByZFlag = true;
         scaling = SCALING_LINEAR;
-        lineStyle = 0;
         lineWidth = 0;
         surfaceColor = new ColorAttribute(0, 0, 0);
         wireframeColor = new ColorAttribute(0, 0, 0);
@@ -135,7 +133,6 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         maxFlag = obj.maxFlag;
         colorByZFlag = obj.colorByZFlag;
         scaling = obj.scaling;
-        lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         surfaceColor = new ColorAttribute(obj.surfaceColor);
         wireframeColor = new ColorAttribute(obj.wireframeColor);
@@ -170,7 +167,6 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
                 (maxFlag == obj.maxFlag) &&
                 (colorByZFlag == obj.colorByZFlag) &&
                 (scaling == obj.scaling) &&
-                (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
                 (surfaceColor == obj.surfaceColor) &&
                 (wireframeColor == obj.wireframeColor) &&
@@ -239,58 +235,52 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         Select(8);
     }
 
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(9);
-    }
-
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(10);
+        Select(9);
     }
 
     public void SetSurfaceColor(ColorAttribute surfaceColor_)
     {
         surfaceColor = surfaceColor_;
-        Select(11);
+        Select(10);
     }
 
     public void SetWireframeColor(ColorAttribute wireframeColor_)
     {
         wireframeColor = wireframeColor_;
-        Select(12);
+        Select(11);
     }
 
     public void SetSkewFactor(double skewFactor_)
     {
         skewFactor = skewFactor_;
-        Select(13);
+        Select(12);
     }
 
     public void SetMin(double min_)
     {
         min = min_;
-        Select(14);
+        Select(13);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(15);
+        Select(14);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(16);
+        Select(15);
     }
 
     public void SetInvertColorTable(boolean invertColorTable_)
     {
         invertColorTable = invertColorTable_;
-        Select(17);
+        Select(16);
     }
 
     // Property getting methods
@@ -303,7 +293,6 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
     public boolean        GetMaxFlag() { return maxFlag; }
     public boolean        GetColorByZFlag() { return colorByZFlag; }
     public int            GetScaling() { return scaling; }
-    public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
     public ColorAttribute GetSurfaceColor() { return surfaceColor; }
     public ColorAttribute GetWireframeColor() { return wireframeColor; }
@@ -335,22 +324,20 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(8, buf))
             buf.WriteInt(scaling);
         if(WriteSelect(9, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(10, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(10, buf))
             surfaceColor.Write(buf);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(11, buf))
             wireframeColor.Write(buf);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(12, buf))
             buf.WriteDouble(skewFactor);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteDouble(min);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             buf.WriteDouble(max);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteString(colorTableName);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(16, buf))
             buf.WriteBool(invertColorTable);
     }
 
@@ -386,32 +373,29 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
             SetScaling(buf.ReadInt());
             break;
         case 9:
-            SetLineStyle(buf.ReadInt());
-            break;
-        case 10:
             SetLineWidth(buf.ReadInt());
             break;
-        case 11:
+        case 10:
             surfaceColor.Read(buf);
+            Select(10);
+            break;
+        case 11:
+            wireframeColor.Read(buf);
             Select(11);
             break;
         case 12:
-            wireframeColor.Read(buf);
-            Select(12);
-            break;
-        case 13:
             SetSkewFactor(buf.ReadDouble());
             break;
-        case 14:
+        case 13:
             SetMin(buf.ReadDouble());
             break;
-        case 15:
+        case 14:
             SetMax(buf.ReadDouble());
             break;
-        case 16:
+        case 15:
             SetColorTableName(buf.ReadString());
             break;
-        case 17:
+        case 16:
             SetInvertColorTable(buf.ReadBool());
             break;
         }
@@ -441,7 +425,6 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
         if(scaling == SCALING_SKEW)
             str = str + "SCALING_SKEW";
         str = str + "\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + indent + "surfaceColor = {" + surfaceColor.Red() + ", " + surfaceColor.Green() + ", " + surfaceColor.Blue() + ", " + surfaceColor.Alpha() + "}\n";
         str = str + indent + "wireframeColor = {" + wireframeColor.Red() + ", " + wireframeColor.Green() + ", " + wireframeColor.Blue() + ", " + wireframeColor.Alpha() + "}\n";
@@ -464,7 +447,6 @@ public class SurfaceAttributes extends AttributeSubject implements Plugin
     private boolean        maxFlag;
     private boolean        colorByZFlag;
     private int            scaling;
-    private int            lineStyle;
     private int            lineWidth;
     private ColorAttribute surfaceColor;
     private ColorAttribute wireframeColor;

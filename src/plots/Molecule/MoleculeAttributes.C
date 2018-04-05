@@ -255,7 +255,6 @@ void MoleculeAttributes::Init()
     bondCylinderQuality = Medium;
     bondRadius = 0.12;
     bondLineWidth = 0;
-    bondLineStyle = 0;
     legendFlag = true;
     minFlag = false;
     scalarMin = 0;
@@ -294,7 +293,6 @@ void MoleculeAttributes::Copy(const MoleculeAttributes &obj)
     bondCylinderQuality = obj.bondCylinderQuality;
     bondRadius = obj.bondRadius;
     bondLineWidth = obj.bondLineWidth;
-    bondLineStyle = obj.bondLineStyle;
     elementColorTable = obj.elementColorTable;
     residueTypeColorTable = obj.residueTypeColorTable;
     residueSequenceColorTable = obj.residueSequenceColorTable;
@@ -479,7 +477,6 @@ MoleculeAttributes::operator == (const MoleculeAttributes &obj) const
             (bondCylinderQuality == obj.bondCylinderQuality) &&
             (bondRadius == obj.bondRadius) &&
             (bondLineWidth == obj.bondLineWidth) &&
-            (bondLineStyle == obj.bondLineStyle) &&
             (elementColorTable == obj.elementColorTable) &&
             (residueTypeColorTable == obj.residueTypeColorTable) &&
             (residueSequenceColorTable == obj.residueSequenceColorTable) &&
@@ -644,7 +641,6 @@ MoleculeAttributes::SelectAll()
     Select(ID_bondCylinderQuality,       (void *)&bondCylinderQuality);
     Select(ID_bondRadius,                (void *)&bondRadius);
     Select(ID_bondLineWidth,             (void *)&bondLineWidth);
-    Select(ID_bondLineStyle,             (void *)&bondLineStyle);
     Select(ID_elementColorTable,         (void *)&elementColorTable);
     Select(ID_residueTypeColorTable,     (void *)&residueTypeColorTable);
     Select(ID_residueSequenceColorTable, (void *)&residueSequenceColorTable);
@@ -758,12 +754,6 @@ MoleculeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("bondLineWidth", bondLineWidth));
-    }
-
-    if(completeSave || !FieldsEqual(ID_bondLineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("bondLineStyle", bondLineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_elementColorTable, &defaultObject))
@@ -964,8 +954,6 @@ MoleculeAttributes::SetFromNode(DataNode *parentNode)
         SetBondRadius(node->AsFloat());
     if((node = searchNode->GetNode("bondLineWidth")) != 0)
         SetBondLineWidth(node->AsInt());
-    if((node = searchNode->GetNode("bondLineStyle")) != 0)
-        SetBondLineStyle(node->AsInt());
     if((node = searchNode->GetNode("elementColorTable")) != 0)
         SetElementColorTable(node->AsString());
     if((node = searchNode->GetNode("residueTypeColorTable")) != 0)
@@ -1072,13 +1060,6 @@ MoleculeAttributes::SetBondLineWidth(int bondLineWidth_)
 {
     bondLineWidth = bondLineWidth_;
     Select(ID_bondLineWidth, (void *)&bondLineWidth);
-}
-
-void
-MoleculeAttributes::SetBondLineStyle(int bondLineStyle_)
-{
-    bondLineStyle = bondLineStyle_;
-    Select(ID_bondLineStyle, (void *)&bondLineStyle);
 }
 
 void
@@ -1230,12 +1211,6 @@ int
 MoleculeAttributes::GetBondLineWidth() const
 {
     return bondLineWidth;
-}
-
-int
-MoleculeAttributes::GetBondLineStyle() const
-{
-    return bondLineStyle;
 }
 
 const std::string &
@@ -1392,7 +1367,6 @@ MoleculeAttributes::GetFieldName(int index) const
     case ID_bondCylinderQuality:       return "bondCylinderQuality";
     case ID_bondRadius:                return "bondRadius";
     case ID_bondLineWidth:             return "bondLineWidth";
-    case ID_bondLineStyle:             return "bondLineStyle";
     case ID_elementColorTable:         return "elementColorTable";
     case ID_residueTypeColorTable:     return "residueTypeColorTable";
     case ID_residueSequenceColorTable: return "residueSequenceColorTable";
@@ -1438,7 +1412,6 @@ MoleculeAttributes::GetFieldType(int index) const
     case ID_bondCylinderQuality:       return FieldType_enum;
     case ID_bondRadius:                return FieldType_float;
     case ID_bondLineWidth:             return FieldType_linewidth;
-    case ID_bondLineStyle:             return FieldType_linestyle;
     case ID_elementColorTable:         return FieldType_colortable;
     case ID_residueTypeColorTable:     return FieldType_colortable;
     case ID_residueSequenceColorTable: return FieldType_colortable;
@@ -1484,7 +1457,6 @@ MoleculeAttributes::GetFieldTypeName(int index) const
     case ID_bondCylinderQuality:       return "enum";
     case ID_bondRadius:                return "float";
     case ID_bondLineWidth:             return "linewidth";
-    case ID_bondLineStyle:             return "linestyle";
     case ID_elementColorTable:         return "colortable";
     case ID_residueTypeColorTable:     return "colortable";
     case ID_residueSequenceColorTable: return "colortable";
@@ -1578,11 +1550,6 @@ MoleculeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_bondLineWidth:
         {  // new scope
         retval = (bondLineWidth == obj.bondLineWidth);
-        }
-        break;
-    case ID_bondLineStyle:
-        {  // new scope
-        retval = (bondLineStyle == obj.bondLineStyle);
         }
         break;
     case ID_elementColorTable:

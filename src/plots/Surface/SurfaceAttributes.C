@@ -177,7 +177,6 @@ void SurfaceAttributes::Init()
     maxFlag = false;
     colorByZFlag = true;
     scaling = Linear;
-    lineStyle = 0;
     lineWidth = 0;
     skewFactor = 1;
     min = 0;
@@ -213,7 +212,6 @@ void SurfaceAttributes::Copy(const SurfaceAttributes &obj)
     maxFlag = obj.maxFlag;
     colorByZFlag = obj.colorByZFlag;
     scaling = obj.scaling;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     surfaceColor = obj.surfaceColor;
     wireframeColor = obj.wireframeColor;
@@ -392,7 +390,6 @@ SurfaceAttributes::operator == (const SurfaceAttributes &obj) const
             (maxFlag == obj.maxFlag) &&
             (colorByZFlag == obj.colorByZFlag) &&
             (scaling == obj.scaling) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (surfaceColor == obj.surfaceColor) &&
             (wireframeColor == obj.wireframeColor) &&
@@ -553,7 +550,6 @@ SurfaceAttributes::SelectAll()
     Select(ID_maxFlag,          (void *)&maxFlag);
     Select(ID_colorByZFlag,     (void *)&colorByZFlag);
     Select(ID_scaling,          (void *)&scaling);
-    Select(ID_lineStyle,        (void *)&lineStyle);
     Select(ID_lineWidth,        (void *)&lineWidth);
     Select(ID_surfaceColor,     (void *)&surfaceColor);
     Select(ID_wireframeColor,   (void *)&wireframeColor);
@@ -646,12 +642,6 @@ SurfaceAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     {
         addToParent = true;
         node->AddNode(new DataNode("scaling", Scaling_ToString(scaling)));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -788,8 +778,6 @@ SurfaceAttributes::SetFromNode(DataNode *parentNode)
                 SetScaling(value);
         }
     }
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("surfaceColor")) != 0)
@@ -873,13 +861,6 @@ SurfaceAttributes::SetScaling(SurfaceAttributes::Scaling scaling_)
 {
     scaling = scaling_;
     Select(ID_scaling, (void *)&scaling);
-}
-
-void
-SurfaceAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -994,12 +975,6 @@ SurfaceAttributes::Scaling
 SurfaceAttributes::GetScaling() const
 {
     return Scaling(scaling);
-}
-
-int
-SurfaceAttributes::GetLineStyle() const
-{
-    return lineStyle;
 }
 
 int
@@ -1123,7 +1098,6 @@ SurfaceAttributes::GetFieldName(int index) const
     case ID_maxFlag:          return "maxFlag";
     case ID_colorByZFlag:     return "colorByZFlag";
     case ID_scaling:          return "scaling";
-    case ID_lineStyle:        return "lineStyle";
     case ID_lineWidth:        return "lineWidth";
     case ID_surfaceColor:     return "surfaceColor";
     case ID_wireframeColor:   return "wireframeColor";
@@ -1165,7 +1139,6 @@ SurfaceAttributes::GetFieldType(int index) const
     case ID_maxFlag:          return FieldType_bool;
     case ID_colorByZFlag:     return FieldType_bool;
     case ID_scaling:          return FieldType_enum;
-    case ID_lineStyle:        return FieldType_linestyle;
     case ID_lineWidth:        return FieldType_linewidth;
     case ID_surfaceColor:     return FieldType_color;
     case ID_wireframeColor:   return FieldType_color;
@@ -1207,7 +1180,6 @@ SurfaceAttributes::GetFieldTypeName(int index) const
     case ID_maxFlag:          return "bool";
     case ID_colorByZFlag:     return "bool";
     case ID_scaling:          return "enum";
-    case ID_lineStyle:        return "linestyle";
     case ID_lineWidth:        return "linewidth";
     case ID_surfaceColor:     return "color";
     case ID_wireframeColor:   return "color";
@@ -1285,11 +1257,6 @@ SurfaceAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_scaling:
         {  // new scope
         retval = (scaling == obj.scaling);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_lineWidth:

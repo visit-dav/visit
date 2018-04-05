@@ -78,7 +78,6 @@ class avtTopologyPlot : public avtSurfaceDataPlot
 
     void                        SetLegend(bool);
     void                        SetLineWidth(int);
-    void                        SetLineStyle(int);
     
   protected:
     TopologyAttributes              atts;

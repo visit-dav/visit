@@ -66,7 +66,6 @@ avtHistogramMapper::avtHistogramMapper()
     surfaceColor[0] = surfaceColor[1] = surfaceColor[2] = 1.; // white
     opacity = 1.0;
     lineWidth = 1.0;
-    lineStyle = 0xFFFF;
 }
 
 
@@ -136,8 +135,6 @@ avtHistogramMapper::CustomizeMappers()
         prop->SetAmbient(1.);
         prop->SetDiffuse(0.);
         prop->SetLineWidth(lineWidth);
-        // This currently isn't supported with vtk's opengl2 backend
-        prop->SetLineStipplePattern(lineStyle);
 
         if (edgeVis)
         {
@@ -277,31 +274,6 @@ avtHistogramMapper::SetLineWidth(int lw)
     if (lineWidth != lw)
     {
         lineWidth = lw;
-        CustomizeMappers();
-        NotifyTransparencyActor();
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtHistogramMapper::SetLineStyle
-//
-//  Purpose:
-//      Sets the lineStyle.
-//
-//  Programmer: Kathleen Biagas
-//  Creation:   May 11, 2016 
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtHistogramMapper::SetLineStyle(int ls)
-{
-    if (lineStyle != ls)
-    {
-        lineStyle = ls;
         CustomizeMappers();
         NotifyTransparencyActor();
     }

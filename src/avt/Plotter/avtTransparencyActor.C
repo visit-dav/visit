@@ -1522,7 +1522,7 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
         return -1;
 
     // serialize the props into a buffer
-    double buf[22] = {0.0};
+    double buf[20] = {0.0};
     if ((rank == root) || (n_have == size))
     {
         buf[0] = source->GetInterpolation();
@@ -1545,11 +1545,9 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
         buf[14] = c[2];
         buf[15] = source->GetEdgeVisibility();
         buf[16] = source->GetLineWidth();
-        buf[17] = source->GetLineStipplePattern();
-        buf[18] = source->GetLineStippleRepeatFactor();
-        buf[19] = source->GetPointSize();
-        buf[20] = source->GetBackfaceCulling();
-        buf[21] = source->GetFrontfaceCulling();
+        buf[17] = source->GetPointSize();
+        buf[18] = source->GetBackfaceCulling();
+        buf[19] = source->GetFrontfaceCulling();
     }
 
 #ifdef PARALLEL
@@ -1572,11 +1570,9 @@ int avtTransparencyActor::SyncProps(vtkProperty *dest, vtkProperty *source)
     dest->SetSpecularColor(&buf[12]);
     dest->SetEdgeVisibility(buf[15]);
     dest->SetLineWidth(buf[16]);
-    dest->SetLineStipplePattern(buf[17]);
-    dest->SetLineStippleRepeatFactor(buf[18]);
-    dest->SetPointSize(buf[19]);
-    dest->SetBackfaceCulling(buf[20]);
-    dest->SetFrontfaceCulling(buf[21]);
+    dest->SetPointSize(buf[17]);
+    dest->SetBackfaceCulling(buf[18]);
+    dest->SetFrontfaceCulling(buf[19]);
 
     return 0;
 }

@@ -53,7 +53,6 @@
 #include <QGroupBox>
 #include <QvisColorTableButton.h>
 #include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
@@ -246,14 +245,6 @@ QvisMoleculePlotWindow::CreateWindowContents()
     connect(bondLineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(bondLineWidthChanged(int)));
     bondsLayout->addWidget(bondLineWidth, row,2);
-    row++;
-
-    bondLineStyleLabel = new QLabel(tr("Bond line style"), bondsGroup);
-    bondsLayout->addWidget(bondLineStyleLabel, row,1);
-    bondLineStyle = new QvisLineStyleWidget(0, bondsGroup);
-    connect(bondLineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(bondLineStyleChanged(int)));
-    bondsLayout->addWidget(bondLineStyle, row,2);
     row++;
 
     colorBondsLabel = new QLabel(tr("Color bonds by"), bondsGroup);
@@ -531,16 +522,6 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
                 bondLineWidth->setEnabled(false);
                 bondLineWidthLabel->setEnabled(false);
             }
-            if (atts->GetDrawBondsAs() == MoleculeAttributes::LineBonds)
-            {
-                bondLineStyle->setEnabled(true);
-                bondLineStyleLabel->setEnabled(true);
-            }
-            else
-            {
-                bondLineStyle->setEnabled(false);
-                bondLineStyleLabel->setEnabled(false);
-            }
             if (atts->GetColorBonds() == MoleculeAttributes::SingleColor &&
                 atts->GetDrawBondsAs() != MoleculeAttributes::NoBonds)
             {
@@ -598,11 +579,6 @@ QvisMoleculePlotWindow::UpdateWindow(bool doAll)
             bondLineWidth->blockSignals(true);
             bondLineWidth->SetLineWidth(atts->GetBondLineWidth());
             bondLineWidth->blockSignals(false);
-            break;
-          case MoleculeAttributes::ID_bondLineStyle:
-            bondLineStyle->blockSignals(true);
-            bondLineStyle->SetLineStyle(atts->GetBondLineStyle());
-            bondLineStyle->blockSignals(false);
             break;
           case MoleculeAttributes::ID_elementColorTable:
             elementColorTable->setColorTable(atts->GetElementColorTable().c_str());
@@ -961,14 +937,6 @@ void
 QvisMoleculePlotWindow::bondLineWidthChanged(int style)
 {
     atts->SetBondLineWidth(style);
-    Apply();
-}
-
-
-void
-QvisMoleculePlotWindow::bondLineStyleChanged(int style)
-{
-    atts->SetBondLineStyle(style);
     Apply();
 }
 

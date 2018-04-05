@@ -53,7 +53,6 @@
 #include <QvisOpacitySlider.h>
 #include <QvisColorTableWidget.h>
 #include <QvisPointControl.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 #include <QvisColorButton.h>
@@ -580,23 +579,15 @@ QvisPseudocolorPlotWindow::CreateGeometryTab(QWidget *pageGeometry)
     // lineTypeLabel->hide();
     // lineType->hide();
 
-    // Line style / width
-    lineStyleLabel = new QLabel(tr("Line style"), central);
-    lineLayout->addWidget(lineStyleLabel, 1, 0, Qt::AlignRight);
-
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    lineLayout->addWidget(lineStyle, 1, 1);
 
     // Create the lineSyle widget.
     lineWidthLabel = new QLabel(tr("Line width"), central);
-    lineLayout->addWidget(lineWidthLabel, 1, 2, Qt::AlignRight);
+    lineLayout->addWidget(lineWidthLabel, 1, 0, Qt::AlignRight);
 
     lineWidth = new QvisLineWidthWidget(0, central);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    lineLayout->addWidget(lineWidth, 1, 3);
+    lineLayout->addWidget(lineWidth, 1, 1);
 
 
     // Tube/ribbon
@@ -1139,15 +1130,11 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
 
             if( pcAtts->GetLineType() == PseudocolorAttributes::Line )
             {
-              lineStyleLabel->show();
-              lineStyle->show();
               lineWidthLabel->show();
               lineWidth->show();
             }
             else
             {
-              lineStyleLabel->hide();
-              lineStyle->hide();
               lineWidthLabel->hide();
               lineWidth->hide();
             }
@@ -1189,12 +1176,6 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
               tubeRadiusVarRatio->hide();
             }
 
-            break;
-
-        case PseudocolorAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(pcAtts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
 
         case PseudocolorAttributes::ID_lineWidth:
@@ -2117,29 +2098,6 @@ QvisPseudocolorPlotWindow::lineTypeChanged(int newType)
     Apply();
 }
 
-// ****************************************************************************
-// Method: QvisContourPlotWindow::lineStyleChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the window's
-//   line style is changed.
-//
-// Arguments:
-//   newStyle : The new line style.
-//
-// Programmer: Jeremy Meredith
-// Creation:   November 26, 2008
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisPseudocolorPlotWindow::lineStyleChanged(int newStyle)
-{
-    pcAtts->SetLineStyle(newStyle);
-    Apply();
-}
 
 // ****************************************************************************
 // Method: QvisContourPlotWindow::lineWidthChanged

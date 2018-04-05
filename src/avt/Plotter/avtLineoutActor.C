@@ -501,35 +501,12 @@ void avtLineoutActor::UpdateView()
 
 
 // ****************************************************************************
-//  Method:  avtLineoutActor::SetLineStyle
-//
-//  Purpose: Set the actors' line style.
-//
-//  Arguments:
-//    ls     The line style to use (in VisIts's gui's format).
-//
-//  Programmer:  Kathleen Bonnell
-//  Creation:    June 18, 2002 
-//
-// ****************************************************************************
- 
-void avtLineoutActor::SetLineStyle(int ls)
-{
-    //
-    //  Need to convert from gui int to LineStyle to gl line stipple pattern.
-    //
-    lineActor->GetProperty()->SetLineStipplePattern(
-        LineStyle2StipplePattern(Int2LineStyle(ls)));
-}
- 
- 
-// ****************************************************************************
 //  Method:  avtLineoutActor::SetLineWidth
 //
 //  Purpose: Set the actors' line width.
 //
 //  Arguments:
-//    lw     The line style to use (in VisIts's gui's format).
+//    lw     The line width to use (in VisIts's gui's format).
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    June 18, 2002 

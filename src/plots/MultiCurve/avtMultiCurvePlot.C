@@ -406,7 +406,6 @@ avtMultiCurvePlot::SetAtts(const AttributeGroup *a)
     }
 
     SetLineWidth(atts.GetLineWidth());
-    SetLineStyle(atts.GetLineStyle());
     SetLegend(atts.GetLegendFlag());
 
     //
@@ -438,27 +437,6 @@ void
 avtMultiCurvePlot::SetLineWidth(int lw)
 {
     levelsMapper->SetLineWidth(Int2LineWidth(lw));
-}
-
-
-// ****************************************************************************
-//  Method: avtMultiCurvePlot::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style for the MultiCurve plot.
-//
-//  Arguments:
-//      ls      The line style for this MultiCurve plot.
-//
-//  Programmer: Eric Brugger
-//  Creation:   December 12, 2008
-//
-// ****************************************************************************
-
-void
-avtMultiCurvePlot::SetLineStyle(int ls)
-{
-    levelsMapper->SetLineStyle(Int2LineStyle(ls));
 }
 
 

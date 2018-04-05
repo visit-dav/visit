@@ -52,7 +52,6 @@
 #include <QvisColorButton.h>
 #include <QvisColorManagerWidget.h>
 #include <QvisColorTableWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 #include <ContourAttributes.h>
@@ -306,25 +305,14 @@ QvisContourPlotWindow::CreateWindowContents()
     //
 
     QGroupBox * styleGroup = new QGroupBox(central);
-    styleGroup->setTitle(tr("Line Style"));
+    styleGroup->setTitle(tr("Lines"));
     topLayout->addWidget(styleGroup);
 
     QGridLayout *styleLayout = new QGridLayout(styleGroup);
     styleLayout->setMargin(5);
     styleLayout->setSpacing(10);
  
-    //
-    // Create the line style/width buttons
-    //
-    // Create the lineSyle widget.
-    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
-
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    styleLayout->addWidget(lineStyle, 1, 1);
-
-    // Create the lineSyle widget.
+    // Create the lineWidth widget.
     styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
 
     lineWidth = new QvisLineWidthWidget(0, central);
@@ -468,11 +456,6 @@ QvisContourPlotWindow::UpdateWindow(bool doAll)
             legendToggle->blockSignals(true);
             legendToggle->setChecked(contourAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
-            break;
-        case ContourAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(contourAtts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
         case ContourAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
@@ -1113,29 +1096,6 @@ QvisContourPlotWindow::reset()
     GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
-// ****************************************************************************
-// Method: QvisContourPlotWindow::lineStyleChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the window's
-//   line style is changed.
-//
-// Arguments:
-//   newStyle : The new line style.
-//
-// Programmer: Brad Whitlock
-// Creation:   Sat Feb 17 13:42:22 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisContourPlotWindow::lineStyleChanged(int newStyle)
-{
-    contourAtts->SetLineStyle(newStyle);
-    Apply();
-}
 
 // ****************************************************************************
 // Method: QvisContourPlotWindow::lineWidthChanged

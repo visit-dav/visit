@@ -95,7 +95,6 @@ MultiCurveAttributes::ColoringMethod_FromString(const std::string &s, MultiCurve
 void MultiCurveAttributes::Init()
 {
     colorType = ColorByMultipleColors;
-    lineStyle = 0;
     lineWidth = 0;
     yAxisTitleFormat = "%g";
     useYAxisTickSpacing = false;
@@ -133,7 +132,6 @@ void MultiCurveAttributes::Copy(const MultiCurveAttributes &obj)
     colorType = obj.colorType;
     singleColor = obj.singleColor;
     multiColor = obj.multiColor;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     yAxisTitleFormat = obj.yAxisTitleFormat;
     useYAxisTickSpacing = obj.useYAxisTickSpacing;
@@ -309,7 +307,6 @@ MultiCurveAttributes::operator == (const MultiCurveAttributes &obj) const
             (colorType == obj.colorType) &&
             (singleColor == obj.singleColor) &&
             (multiColor == obj.multiColor) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (yAxisTitleFormat == obj.yAxisTitleFormat) &&
             (useYAxisTickSpacing == obj.useYAxisTickSpacing) &&
@@ -469,7 +466,6 @@ MultiCurveAttributes::SelectAll()
     Select(ID_colorType,           (void *)&colorType);
     Select(ID_singleColor,         (void *)&singleColor);
     Select(ID_multiColor,          (void *)&multiColor);
-    Select(ID_lineStyle,           (void *)&lineStyle);
     Select(ID_lineWidth,           (void *)&lineWidth);
     Select(ID_yAxisTitleFormat,    (void *)&yAxisTitleFormat);
     Select(ID_useYAxisTickSpacing, (void *)&useYAxisTickSpacing);
@@ -555,12 +551,6 @@ MultiCurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
         }
         else
             delete multiColorNode;
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -689,8 +679,6 @@ MultiCurveAttributes::SetFromNode(DataNode *parentNode)
         singleColor.SetFromNode(node);
     if((node = searchNode->GetNode("multiColor")) != 0)
         multiColor.SetFromNode(node);
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("yAxisTitleFormat")) != 0)
@@ -752,13 +740,6 @@ MultiCurveAttributes::SetMultiColor(const ColorAttributeList &multiColor_)
 {
     multiColor = multiColor_;
     Select(ID_multiColor, (void *)&multiColor);
-}
-
-void
-MultiCurveAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -894,12 +875,6 @@ ColorAttributeList &
 MultiCurveAttributes::GetMultiColor()
 {
     return multiColor;
-}
-
-int
-MultiCurveAttributes::GetLineStyle() const
-{
-    return lineStyle;
 }
 
 int
@@ -1061,7 +1036,6 @@ MultiCurveAttributes::GetFieldName(int index) const
     case ID_colorType:           return "colorType";
     case ID_singleColor:         return "singleColor";
     case ID_multiColor:          return "multiColor";
-    case ID_lineStyle:           return "lineStyle";
     case ID_lineWidth:           return "lineWidth";
     case ID_yAxisTitleFormat:    return "yAxisTitleFormat";
     case ID_useYAxisTickSpacing: return "useYAxisTickSpacing";
@@ -1102,7 +1076,6 @@ MultiCurveAttributes::GetFieldType(int index) const
     case ID_colorType:           return FieldType_enum;
     case ID_singleColor:         return FieldType_color;
     case ID_multiColor:          return FieldType_att;
-    case ID_lineStyle:           return FieldType_linestyle;
     case ID_lineWidth:           return FieldType_linewidth;
     case ID_yAxisTitleFormat:    return FieldType_string;
     case ID_useYAxisTickSpacing: return FieldType_bool;
@@ -1143,7 +1116,6 @@ MultiCurveAttributes::GetFieldTypeName(int index) const
     case ID_colorType:           return "enum";
     case ID_singleColor:         return "color";
     case ID_multiColor:          return "att";
-    case ID_lineStyle:           return "linestyle";
     case ID_lineWidth:           return "linewidth";
     case ID_yAxisTitleFormat:    return "string";
     case ID_useYAxisTickSpacing: return "bool";
@@ -1204,11 +1176,6 @@ MultiCurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_multiColor:
         {  // new scope
         retval = (multiColor == obj.multiColor);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_lineWidth:
@@ -1419,7 +1386,7 @@ MultiCurveAttributes::MarkColorAsChanged(int index)
 //
 // Modifications:
 //   Eric Brugger, Wed Jan 21 08:07:40 PST 2009
-//   I added yAxisTitleFormat, useYAxisRange, and yAxisRange. 
+//   I added yAxisTitleFormat, useYAxisRange, and yAxisRange.
 //
 //   Eric Brugger, Tue Feb 17 18:03:08 PST 2009
 //   I added idVariable.
@@ -1434,8 +1401,8 @@ MultiCurveAttributes::ChangesRequireRecalculation(const MultiCurveAttributes &ob
 {
     if (yAxisTitleFormat != obj.yAxisTitleFormat ||
         useYAxisTickSpacing != obj.useYAxisTickSpacing ||
-        yAxisTickSpacing != obj.yAxisTickSpacing || 
-        markerVariable != obj.markerVariable || 
+        yAxisTickSpacing != obj.yAxisTickSpacing ||
+        markerVariable != obj.markerVariable ||
         idVariable != obj.idVariable)
         return true;
 

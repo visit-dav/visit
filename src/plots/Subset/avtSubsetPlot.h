@@ -142,7 +142,6 @@ avtSubsetPlot : public avtVolumeDataPlot
 
     void                      SetLegend(bool);
     void                      SetLineWidth(int);
-    void                      SetLineStyle(int);
     virtual bool              NeedZBufferToCompositeEvenIn2D(void);
 
   protected:

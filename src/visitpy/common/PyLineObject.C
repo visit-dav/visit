@@ -269,37 +269,6 @@ LineObject_GetWidth(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-LineObject_SetStyle(PyObject *self, PyObject *args)
-{
-    LineObjectObject *obj = (LineObjectObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the style in the object.
-    if (ival >= 0 && ival <= 3)
-        obj->data->SetIntAttribute2(ival);
-    else
-        fprintf(stderr, "An invalid  value was given. "
-                "Valid values are in the range of [0,3]. "
-                "You can also use the following names: "
-                "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-    UpdateAnnotationHelper(obj->data);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyObject *
-LineObject_GetStyle(PyObject *self, PyObject *args)
-{
-    LineObjectObject *obj = (LineObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntAttribute2()));
-    return retval;
-}
-
-static PyObject *
 LineObject_SetColor(PyObject *self, PyObject *args)
 {
     LineObjectObject *obj = (LineObjectObject *)self;
@@ -568,17 +537,6 @@ LineObject_getattr(PyObject *self, char *name)
         return LineObject_GetPosition2(self, NULL);
     if(strcmp(name, "width") == 0)
         return LineObject_GetWidth(self, NULL);
-    if(strcmp(name, "style") == 0)
-        return LineObject_GetStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "useForegroundForLineColor") == 0)
         return LineObject_GetUseForegroundForLineColor(self, NULL);
     if(strcmp(name, "color") == 0)
@@ -613,8 +571,6 @@ LineObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (LineObject_SetPosition2(self, tuple) != NULL);
     else if(strcmp(name, "width") == 0)
         retval = (LineObject_SetWidth(self, tuple) != NULL);
-    else if(strcmp(name, "style") == 0)
-        retval = (LineObject_SetStyle(self, tuple) != NULL);
     else if(strcmp(name, "useForegroundForLineColor") == 0)
         retval = (LineObject_SetUseForegroundForLineColor(self, tuple) != NULL);
     else if(strcmp(name, "color") == 0)
@@ -652,8 +608,6 @@ LineObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "position2 = (%g, %g)\n", position2[0], position2[1]);
     }
     fprintf(fp, "width = %d\n", obj->data->GetIntAttribute1());
-    const char *style_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    fprintf(fp, "style = %s  # SOLID, DASH, DOT, DOTDASH\n", style_values[obj->data->GetIntAttribute2()]);
     if (obj->data->GetUseForegroundForTextColor())
         fprintf(fp, "useForegroundForLineColor = 1\n");
     else 
@@ -691,9 +645,6 @@ PyLineObject_StringRepresentation(const AnnotationObject *atts)
     SNPRINTF(tmpStr, 1000, "position2 = (%g, %g)\n", position2[0], position2[1]);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "width = %d\n", atts->GetIntAttribute1());
-    str += tmpStr;
-    const char *style_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "style = %s  # SOLID, DASH, DOT, DOTDASH\n", style_values[atts->GetIntAttribute2()]);
     str += tmpStr;
     if(atts->GetUseForegroundForTextColor())
         SNPRINTF(tmpStr, 1000, "useForegroundForLineColor = 1\n");

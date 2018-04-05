@@ -603,7 +603,6 @@ XMLEditFields::UpdateTypeList()
     type->addItem("colortable");
     type->addItem("color");
     type->addItem("opacity");
-    type->addItem("linestyle");
     type->addItem("linewidth");
     type->addItem("scalemode");
     type->addItem("variablename");

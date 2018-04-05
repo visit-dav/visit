@@ -79,9 +79,6 @@ PyTopologyAttributes_ToString(const TopologyAttributes *atts, const char *prefix
 
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     { const ColorAttributeList &cL = atts->GetMultiColor();
         const char *comment = (prefix==0 || strcmp(prefix,"")==0) ? "# " : "";
         for(int i = 0; i < cL.GetNumColors(); ++i)
@@ -137,39 +134,6 @@ TopologyAttributes_GetLineWidth(PyObject *self, PyObject *args)
 {
     TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetLineWidth()));
-    return retval;
-}
-
-/*static*/ PyObject *
-TopologyAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-TopologyAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    TopologyAttributesObject *obj = (TopologyAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
     return retval;
 }
 
@@ -535,8 +499,6 @@ PyMethodDef PyTopologyAttributes_methods[TOPOLOGYATTRIBUTES_NMETH] = {
     {"Notify", TopologyAttributes_Notify, METH_VARARGS},
     {"SetLineWidth", TopologyAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", TopologyAttributes_GetLineWidth, METH_VARARGS},
-    {"SetLineStyle", TopologyAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", TopologyAttributes_GetLineStyle, METH_VARARGS},
     {"SetMultiColor", TopologyAttributes_SetMultiColor, METH_VARARGS},
     {"GetMultiColor", TopologyAttributes_GetMultiColor, METH_VARARGS},
     {"SetMinOpacity", TopologyAttributes_SetMinOpacity, METH_VARARGS},
@@ -581,17 +543,6 @@ PyTopologyAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "lineWidth") == 0)
         return TopologyAttributes_GetLineWidth(self, NULL);
-    if(strcmp(name, "lineStyle") == 0)
-        return TopologyAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "multiColor") == 0)
         return TopologyAttributes_GetMultiColor(self, NULL);
     if(strcmp(name, "minOpacity") == 0)
@@ -607,6 +558,37 @@ PyTopologyAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "hitpercent") == 0)
         return TopologyAttributes_GetHitpercent(self, NULL);
 
+    // Try and handle legacy fields
+
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Topology "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyTopologyAttributes_methods, self, name);
 }
 
@@ -622,8 +604,6 @@ PyTopologyAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "lineWidth") == 0)
         obj = TopologyAttributes_SetLineWidth(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = TopologyAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "multiColor") == 0)
         obj = TopologyAttributes_SetMultiColor(self, tuple);
     else if(strcmp(name, "minOpacity") == 0)
@@ -639,6 +619,15 @@ PyTopologyAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "hitpercent") == 0)
         obj = TopologyAttributes_SetHitpercent(self, tuple);
 
+    // Try and handle legacy fields
+    if(obj == NULL)
+    {
+        if(strcmp(name, "lineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 

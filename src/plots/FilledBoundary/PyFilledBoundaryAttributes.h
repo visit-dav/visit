@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define FILLEDBOUNDARYATTRIBUTES_NMETH 42
+#define FILLEDBOUNDARYATTRIBUTES_NMETH 40
 void           PyFilledBoundaryAttributes_StartUp(FilledBoundaryAttributes *subj, void *data);
 void           PyFilledBoundaryAttributes_CloseDown();
 PyMethodDef *  PyFilledBoundaryAttributes_GetMethodTable(int *nMethods);

@@ -50,7 +50,6 @@ class QSpinBox;
 class QvisOpacitySlider;
 class QvisColorTableWidget;
 class QvisPointControl;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisVariableButton;
 class QvisColorButton;
@@ -179,7 +178,6 @@ private slots:
     void pointSizeVarChanged(const QString &);
 
     void lineTypeChanged(int newType);
-    void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
 
     void tubeRadiusSizeTypeChanged(int v);
@@ -248,8 +246,6 @@ private:
     QLabel                *lineTypeLabel;
     QComboBox             *lineType;
 
-    QLabel                *lineStyleLabel;
-    QvisLineStyleWidget   *lineStyle;
     QLabel                *lineWidthLabel;
     QvisLineWidthWidget   *lineWidth;
 

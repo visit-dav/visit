@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class MoleculeAttributes extends AttributeSubject implements Plugin
 {
-    private static int MoleculeAttributes_numAdditionalAtts = 22;
+    private static int MoleculeAttributes_numAdditionalAtts = 21;
 
     // Enum values
     public final static int ATOMRENDERINGMODE_NOATOMS = 0;
@@ -101,7 +101,6 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
         bondCylinderQuality = DETAILLEVEL_MEDIUM;
         bondRadius = 0.12f;
         bondLineWidth = 0;
-        bondLineStyle = 0;
         elementColorTable = new String("cpk_jmol");
         residueTypeColorTable = new String("amino_shapely");
         residueSequenceColorTable = new String("Default");
@@ -129,7 +128,6 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
         bondCylinderQuality = DETAILLEVEL_MEDIUM;
         bondRadius = 0.12f;
         bondLineWidth = 0;
-        bondLineStyle = 0;
         elementColorTable = new String("cpk_jmol");
         residueTypeColorTable = new String("amino_shapely");
         residueSequenceColorTable = new String("Default");
@@ -157,7 +155,6 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
         bondCylinderQuality = obj.bondCylinderQuality;
         bondRadius = obj.bondRadius;
         bondLineWidth = obj.bondLineWidth;
-        bondLineStyle = obj.bondLineStyle;
         elementColorTable = new String(obj.elementColorTable);
         residueTypeColorTable = new String(obj.residueTypeColorTable);
         residueSequenceColorTable = new String(obj.residueSequenceColorTable);
@@ -196,7 +193,6 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
                 (bondCylinderQuality == obj.bondCylinderQuality) &&
                 (bondRadius == obj.bondRadius) &&
                 (bondLineWidth == obj.bondLineWidth) &&
-                (bondLineStyle == obj.bondLineStyle) &&
                 (elementColorTable.equals(obj.elementColorTable)) &&
                 (residueTypeColorTable.equals(obj.residueTypeColorTable)) &&
                 (residueSequenceColorTable.equals(obj.residueSequenceColorTable)) &&
@@ -284,64 +280,58 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
         Select(11);
     }
 
-    public void SetBondLineStyle(int bondLineStyle_)
-    {
-        bondLineStyle = bondLineStyle_;
-        Select(12);
-    }
-
     public void SetElementColorTable(String elementColorTable_)
     {
         elementColorTable = elementColorTable_;
-        Select(13);
+        Select(12);
     }
 
     public void SetResidueTypeColorTable(String residueTypeColorTable_)
     {
         residueTypeColorTable = residueTypeColorTable_;
-        Select(14);
+        Select(13);
     }
 
     public void SetResidueSequenceColorTable(String residueSequenceColorTable_)
     {
         residueSequenceColorTable = residueSequenceColorTable_;
-        Select(15);
+        Select(14);
     }
 
     public void SetContinuousColorTable(String continuousColorTable_)
     {
         continuousColorTable = continuousColorTable_;
-        Select(16);
+        Select(15);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(17);
+        Select(16);
     }
 
     public void SetMinFlag(boolean minFlag_)
     {
         minFlag = minFlag_;
-        Select(18);
+        Select(17);
     }
 
     public void SetScalarMin(float scalarMin_)
     {
         scalarMin = scalarMin_;
-        Select(19);
+        Select(18);
     }
 
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(20);
+        Select(19);
     }
 
     public void SetScalarMax(float scalarMax_)
     {
         scalarMax = scalarMax_;
-        Select(21);
+        Select(20);
     }
 
     // Property getting methods
@@ -357,7 +347,6 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
     public int            GetBondCylinderQuality() { return bondCylinderQuality; }
     public float          GetBondRadius() { return bondRadius; }
     public int            GetBondLineWidth() { return bondLineWidth; }
-    public int            GetBondLineStyle() { return bondLineStyle; }
     public String         GetElementColorTable() { return elementColorTable; }
     public String         GetResidueTypeColorTable() { return residueTypeColorTable; }
     public String         GetResidueSequenceColorTable() { return residueSequenceColorTable; }
@@ -396,24 +385,22 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(11, buf))
             buf.WriteInt(bondLineWidth);
         if(WriteSelect(12, buf))
-            buf.WriteInt(bondLineStyle);
-        if(WriteSelect(13, buf))
             buf.WriteString(elementColorTable);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteString(residueTypeColorTable);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             buf.WriteString(residueSequenceColorTable);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteString(continuousColorTable);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(16, buf))
             buf.WriteBool(legendFlag);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(17, buf))
             buf.WriteBool(minFlag);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(18, buf))
             buf.WriteFloat(scalarMin);
-        if(WriteSelect(20, buf))
+        if(WriteSelect(19, buf))
             buf.WriteBool(maxFlag);
-        if(WriteSelect(21, buf))
+        if(WriteSelect(20, buf))
             buf.WriteFloat(scalarMax);
     }
 
@@ -459,33 +446,30 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
             SetBondLineWidth(buf.ReadInt());
             break;
         case 12:
-            SetBondLineStyle(buf.ReadInt());
-            break;
-        case 13:
             SetElementColorTable(buf.ReadString());
             break;
-        case 14:
+        case 13:
             SetResidueTypeColorTable(buf.ReadString());
             break;
-        case 15:
+        case 14:
             SetResidueSequenceColorTable(buf.ReadString());
             break;
-        case 16:
+        case 15:
             SetContinuousColorTable(buf.ReadString());
             break;
-        case 17:
+        case 16:
             SetLegendFlag(buf.ReadBool());
             break;
-        case 18:
+        case 17:
             SetMinFlag(buf.ReadBool());
             break;
-        case 19:
+        case 18:
             SetScalarMin(buf.ReadFloat());
             break;
-        case 20:
+        case 19:
             SetMaxFlag(buf.ReadBool());
             break;
-        case 21:
+        case 20:
             SetScalarMax(buf.ReadFloat());
             break;
         }
@@ -552,7 +536,6 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + floatToString("bondRadius", bondRadius, indent) + "\n";
         str = str + intToString("bondLineWidth", bondLineWidth, indent) + "\n";
-        str = str + intToString("bondLineStyle", bondLineStyle, indent) + "\n";
         str = str + stringToString("elementColorTable", elementColorTable, indent) + "\n";
         str = str + stringToString("residueTypeColorTable", residueTypeColorTable, indent) + "\n";
         str = str + stringToString("residueSequenceColorTable", residueSequenceColorTable, indent) + "\n";
@@ -579,7 +562,6 @@ public class MoleculeAttributes extends AttributeSubject implements Plugin
     private int            bondCylinderQuality;
     private float          bondRadius;
     private int            bondLineWidth;
-    private int            bondLineStyle;
     private String         elementColorTable;
     private String         residueTypeColorTable;
     private String         residueSequenceColorTable;

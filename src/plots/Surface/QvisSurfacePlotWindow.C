@@ -51,7 +51,6 @@
 
 #include <QvisColorButton.h>
 #include <QvisColorTableWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <SurfaceAttributes.h>
 #include <ViewerProxy.h>
@@ -293,34 +292,25 @@ QvisSurfacePlotWindow::CreateWindowContents()
     wireframeLayout->setMargin(5);
     wireframeLayout->setSpacing(10);
 
-    // Create the lineStyle widget.
-    lineStyle = new QvisLineStyleWidget(0, wireframeGroup);
-    wireframeLayout->addWidget(lineStyle, 0, 1, 1, 2);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    QLabel *lineStyleLabel = new QLabel(tr("Line style"), wireframeGroup);
-    lineStyleLabel->setBuddy(lineStyle);
-    wireframeLayout->addWidget(lineStyleLabel, 0, 0);
-
     // Create the lineWidth widget.
     lineWidth = new QvisLineWidthWidget(0, wireframeGroup);
-    wireframeLayout->addWidget(lineWidth, 0, 4);
+    wireframeLayout->addWidget(lineWidth, 0, 1);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
     QLabel *lineWidthLabel = new QLabel(tr("Line width"), wireframeGroup);
     lineWidthLabel->setBuddy(lineWidth);
-    wireframeLayout->addWidget(lineWidthLabel, 0, 3);
+    wireframeLayout->addWidget(lineWidthLabel, 0, 0, Qt::AlignRight);
 
     // Create the wire frame color widget.
     wireframeColor = new QvisColorButton(wireframeGroup);
     wireframeColor->setButtonColor(QColor(0, 0, 0));
     connect(wireframeColor, SIGNAL(selectedColor(const QColor &)),
             this, SLOT(wireframeColorChanged(const QColor &)));
-    wireframeLayout->addWidget(wireframeColor, 1, 1);
+    wireframeLayout->addWidget(wireframeColor, 0, 4);
 
     QLabel *wireframeLabel = new QLabel(tr("Wire color"), wireframeGroup);
     wireframeLabel->setBuddy(wireframeColor);
-    wireframeLayout->addWidget(wireframeLabel, 1, 0);
+    wireframeLayout->addWidget(wireframeLabel, 0, 3, Qt::AlignRight);
 
     //
     // Create the misc stuff
@@ -480,12 +470,6 @@ QvisSurfacePlotWindow::UpdateWindow(bool doAll)
             scalingButtons->button(surfaceAtts->GetScaling())->setChecked(true);
             skewLineEdit->setEnabled(surfaceAtts->GetScaling() ==
                 SurfaceAttributes::Skew);
-            break;
-
-        case SurfaceAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(surfaceAtts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
 
         case SurfaceAttributes::ID_lineWidth:
@@ -740,31 +724,6 @@ QvisSurfacePlotWindow::reset()
     // Tell the viewer to reset the surface plot attributes to the last
     // applied values.
     GetViewerMethods()->ResetPlotOptions(plotType);
-}
-
-
-// ****************************************************************************
-// Method: QvisSurfacePlotWindow::lineStyleChanged
-//
-// Purpose:
-//   This is a Qt slot function that is called when the window's
-//   line style is changed.
-//
-// Arguments:
-//   newStyle : The new line style.
-//
-// Programmer: Kathleen Bonnell
-// Creation:   March 06, 2001
-//
-// Modifications:
-//
-// ****************************************************************************
-
-void
-QvisSurfacePlotWindow::lineStyleChanged(int newStyle)
-{
-    surfaceAtts->SetLineStyle(newStyle);
-    Apply();
 }
 
 

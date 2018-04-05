@@ -45,7 +45,6 @@
 #include <QLayout>
 #include <QLineEdit>
 #include <QvisOpacitySlider.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 
 
@@ -123,13 +122,6 @@ QvisTopologyPlotWindow::CreateWindowContents()
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
     mainLayout->addWidget(lineWidth, 0,1);
-
-    lineStyleLabel = new QLabel(tr("Line style"), central);
-    mainLayout->addWidget(lineStyleLabel,1,0);
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    mainLayout->addWidget(lineStyle, 1,1);
 
     //writeSourceCreate unknown for att (variable multiColor)
 
@@ -221,11 +213,6 @@ QvisTopologyPlotWindow::UpdateWindow(bool doAll)
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(atts->GetLineWidth());
             lineWidth->blockSignals(false);
-            break;
-          case TopologyAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(atts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
           case TopologyAttributes::ID_multiColor:
         //writeSourceUpdate unknown for att (variable multiColor)
@@ -419,15 +406,6 @@ void
 QvisTopologyPlotWindow::lineWidthChanged(int style)
 {
     atts->SetLineWidth(style);
-    SetUpdate(false);
-    Apply();
-}
-
-
-void
-QvisTopologyPlotWindow::lineStyleChanged(int style)
-{
-    atts->SetLineStyle(style);
     SetUpdate(false);
     Apply();
 }

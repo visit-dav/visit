@@ -108,7 +108,6 @@ public:
     void SetColorType(ColoringMethod colorType_);
     void SetSingleColor(const ColorAttribute &singleColor_);
     void SetMultiColor(const ColorAttributeList &multiColor_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetYAxisTitleFormat(const std::string &yAxisTitleFormat_);
     void SetUseYAxisTickSpacing(bool useYAxisTickSpacing_);
@@ -131,7 +130,6 @@ public:
           ColorAttribute        &GetSingleColor();
     const ColorAttributeList    &GetMultiColor() const;
           ColorAttributeList    &GetMultiColor();
-    int                         GetLineStyle() const;
     int                         GetLineWidth() const;
     const std::string           &GetYAxisTitleFormat() const;
           std::string           &GetYAxisTitleFormat();
@@ -177,7 +175,6 @@ public:
         ID_colorType,
         ID_singleColor,
         ID_multiColor,
-        ID_lineStyle,
         ID_lineWidth,
         ID_yAxisTitleFormat,
         ID_useYAxisTickSpacing,
@@ -198,7 +195,6 @@ private:
     int                   colorType;
     ColorAttribute        singleColor;
     ColorAttributeList    multiColor;
-    int                   lineStyle;
     int                   lineWidth;
     std::string           yAxisTitleFormat;
     bool                  useYAxisTickSpacing;
@@ -215,6 +211,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MULTICURVEATTRIBUTES_TMFS "au*iaaiisbdbdisbsb"
+#define MULTICURVEATTRIBUTES_TMFS "au*iaaisbdbdisbsb"
 
 #endif

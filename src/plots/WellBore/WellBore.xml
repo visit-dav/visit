@@ -67,9 +67,6 @@
       <Field name="wellLineWidth" label="Well line width" type="linewidth" enabler="drawWellsAs:Lines">
         0
       </Field>
-      <Field name="wellLineStyle" label="Well line style" type="linestyle" enabler="drawWellsAs:Lines">
-        0
-      </Field>
       <Field name="wellAnnotation" label="Well annotation" type="enum" subtype="WellAnnotation">
         StemAndName
       </Field>

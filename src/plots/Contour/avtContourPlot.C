@@ -259,7 +259,6 @@ avtContourPlot::SetAtts(const AttributeGroup *a)
 
     SetColors();
     SetLineWidth(atts.GetLineWidth());
-    SetLineStyle(atts.GetLineStyle());
     SetLegend(atts.GetLegendFlag());
     if (atts.GetWireframe())
     {
@@ -548,29 +547,6 @@ void
 avtContourPlot::SetLineWidth(int lw)
 {
     levelsMapper->SetLineWidth(Int2LineWidth(lw));
-}
-
-
-// ****************************************************************************
-//  Method: avtContourPlot::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   February 15, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Sat Aug 18 18:09:04 PDT 2001
-//    Use LineAttributes to ensure proper format gets sent to vtk.
-//
-// ****************************************************************************
-
-void
-avtContourPlot::SetLineStyle(int ls)
-{
-    levelsMapper->SetLineStyle(Int2LineStyle(ls));
 }
 
 

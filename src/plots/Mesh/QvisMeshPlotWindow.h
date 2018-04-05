@@ -44,7 +44,6 @@ class MeshAttributes;
 class QCheckBox;
 class QButtonGroup;
 class QLabel;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisColorButton;
 class QvisPointControl;
@@ -125,7 +124,6 @@ protected:
     void GetCurrentValues(int which_widget);
     void Apply(bool ignore = false);
 private slots:
-    void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
     void legendToggled(bool val);
     void showInternalToggled(bool val);
@@ -147,7 +145,6 @@ private slots:
 private:
     int                     plotType;
     MeshAttributes         *meshAtts;
-    QvisLineStyleWidget    *lineStyle;
     QvisLineWidthWidget    *lineWidth;
     QButtonGroup           *opaqueModeGroup;
     QCheckBox              *legendToggle;

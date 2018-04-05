@@ -50,7 +50,6 @@ class QLabel;
 class QLineEdit;
 class QvisColorButton;
 class QvisColorManagerWidget;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
 
@@ -112,7 +111,6 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     void singleColorOpacityChanged(int opacity);
     void multipleColorChanged(const QColor &color, int index);
     void opacityChanged(int opacity, int index);
-    void lineStyleChanged(int style);
     void lineWidthChanged(int style);
     void yAxisTitleFormatProcessText();
     void useYAxisTickSpacingChanged(bool val);
@@ -131,7 +129,6 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     QvisColorButton        *singleColor;
     QvisOpacitySlider      *singleColorOpacity;
     QvisColorManagerWidget *multipleColors;
-    QvisLineStyleWidget    *lineStyle;
     QvisLineWidthWidget    *lineWidth;
     QLineEdit              *yAxisTitleFormat;
     QCheckBox              *useYAxisTickSpacing;
@@ -143,7 +140,6 @@ class QvisMultiCurvePlotWindow : public QvisPostableWindowObserver
     QCheckBox              *displayIds;
     QLineEdit              *idVariable;
     QCheckBox              *displayLegend;
-    QLabel                 *lineStyleLabel;
     QLabel                 *lineWidthLabel;
     QLabel                 *yAxisTitleFormatLabel;
     QLabel                 *markerScaleLabel;

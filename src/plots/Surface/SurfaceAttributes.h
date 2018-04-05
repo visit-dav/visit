@@ -117,7 +117,6 @@ public:
     void SetMaxFlag(bool maxFlag_);
     void SetColorByZFlag(bool colorByZFlag_);
     void SetScaling(Scaling scaling_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetSurfaceColor(const ColorAttribute &surfaceColor_);
     void SetWireframeColor(const ColorAttribute &wireframeColor_);
@@ -137,7 +136,6 @@ public:
     bool                 GetMaxFlag() const;
     bool                 GetColorByZFlag() const;
     Scaling              GetScaling() const;
-    int                  GetLineStyle() const;
     int                  GetLineWidth() const;
     const ColorAttribute &GetSurfaceColor() const;
           ColorAttribute &GetSurfaceColor();
@@ -191,7 +189,6 @@ public:
         ID_maxFlag,
         ID_colorByZFlag,
         ID_scaling,
-        ID_lineStyle,
         ID_lineWidth,
         ID_surfaceColor,
         ID_wireframeColor,
@@ -213,7 +210,6 @@ private:
     bool           maxFlag;
     bool           colorByZFlag;
     int            scaling;
-    int            lineStyle;
     int            lineWidth;
     ColorAttribute surfaceColor;
     ColorAttribute wireframeColor;
@@ -227,6 +223,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SURFACEATTRIBUTES_TMFS "bbbbibbbiiiaadddsb"
+#define SURFACEATTRIBUTES_TMFS "bbbbibbbiiaadddsb"
 
 #endif

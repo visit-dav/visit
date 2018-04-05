@@ -88,9 +88,6 @@
       <Field name="bondLineWidth" label="Bond line width" type="linewidth" enabler="drawBondsAs:LineBonds">
         0
       </Field>
-      <Field name="bondLineStyle" label="Bond line style" type="linestyle" enabler="drawBondsAs:LineBonds">
-        0
-      </Field>
       <Field name="elementColorTable" label="Color table for elements" type="colortable">
         cpk_jmol
       </Field>

@@ -331,7 +331,6 @@ avtWellBorePlot::SetAtts(const AttributeGroup *a)
 
     SetLegend(atts.GetLegendFlag());
     SetLineWidth(atts.GetWellLineWidth());
-    SetLineStyle(atts.GetWellLineStyle());
 
     decoMapper->SetScale(atts.GetWellNameScale());
     decoMapper->SetLabelVisibility(true);
@@ -507,23 +506,3 @@ avtWellBorePlot::SetLineWidth(int lw)
     levelsMapper->SetLineWidth(Int2LineWidth(lw));
 }
 
-
-// ****************************************************************************
-//  Method: avtWellBorePlot::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style for the WellBore plot.
-//
-//  Arguments:
-//      ls      The line style for this WellBore plot.
-//
-//  Programmer: Eric Brugger
-//  Creation:   October 1, 2008
-//
-// ****************************************************************************
-
-void
-avtWellBorePlot::SetLineStyle(int ls)
-{
-    levelsMapper->SetLineStyle(Int2LineStyle(ls));
-}

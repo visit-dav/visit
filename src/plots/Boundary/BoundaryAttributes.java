@@ -62,7 +62,7 @@ import java.util.Vector;
 
 public class BoundaryAttributes extends AttributeSubject implements Plugin
 {
-    private static int BoundaryAttributes_numAdditionalAtts = 12;
+    private static int BoundaryAttributes_numAdditionalAtts = 11;
 
     // Enum values
     public final static int COLORINGMETHOD_COLORBYSINGLECOLOR = 0;
@@ -78,7 +78,6 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
         colorTableName = new String("Default");
         invertColorTable = false;
         legendFlag = true;
-        lineStyle = 0;
         lineWidth = 0;
         singleColor = new ColorAttribute();
         multiColor = new ColorAttributeList();
@@ -96,7 +95,6 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
         colorTableName = new String("Default");
         invertColorTable = false;
         legendFlag = true;
-        lineStyle = 0;
         lineWidth = 0;
         singleColor = new ColorAttribute();
         multiColor = new ColorAttributeList();
@@ -116,7 +114,6 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
         colorTableName = new String(obj.colorTableName);
         invertColorTable = obj.invertColorTable;
         legendFlag = obj.legendFlag;
-        lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         singleColor = new ColorAttribute(obj.singleColor);
         multiColor = new ColorAttributeList(obj.multiColor);
@@ -159,7 +156,6 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
                 (colorTableName.equals(obj.colorTableName)) &&
                 (invertColorTable == obj.invertColorTable) &&
                 (legendFlag == obj.legendFlag) &&
-                (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
                 (singleColor == obj.singleColor) &&
                 (multiColor.equals(obj.multiColor)) &&
@@ -197,52 +193,46 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
         Select(3);
     }
 
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(4);
-    }
-
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(5);
+        Select(4);
     }
 
     public void SetSingleColor(ColorAttribute singleColor_)
     {
         singleColor = singleColor_;
-        Select(6);
+        Select(5);
     }
 
     public void SetMultiColor(ColorAttributeList multiColor_)
     {
         multiColor = multiColor_;
-        Select(7);
+        Select(6);
     }
 
     public void SetBoundaryNames(Vector boundaryNames_)
     {
         boundaryNames = boundaryNames_;
-        Select(8);
+        Select(7);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(9);
+        Select(8);
     }
 
     public void SetWireframe(boolean wireframe_)
     {
         wireframe = wireframe_;
-        Select(10);
+        Select(9);
     }
 
     public void SetSmoothingLevel(int smoothingLevel_)
     {
         smoothingLevel = smoothingLevel_;
-        Select(11);
+        Select(10);
     }
 
     // Property getting methods
@@ -250,7 +240,6 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
     public String             GetColorTableName() { return colorTableName; }
     public boolean            GetInvertColorTable() { return invertColorTable; }
     public boolean            GetLegendFlag() { return legendFlag; }
-    public int                GetLineStyle() { return lineStyle; }
     public int                GetLineWidth() { return lineWidth; }
     public ColorAttribute     GetSingleColor() { return singleColor; }
     public ColorAttributeList GetMultiColor() { return multiColor; }
@@ -271,20 +260,18 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(3, buf))
             buf.WriteBool(legendFlag);
         if(WriteSelect(4, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(5, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(5, buf))
             singleColor.Write(buf);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             multiColor.Write(buf);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteStringVector(boundaryNames);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteDouble(opacity);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             buf.WriteBool(wireframe);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(10, buf))
             buf.WriteInt(smoothingLevel);
     }
 
@@ -305,29 +292,26 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
             SetLegendFlag(buf.ReadBool());
             break;
         case 4:
-            SetLineStyle(buf.ReadInt());
-            break;
-        case 5:
             SetLineWidth(buf.ReadInt());
             break;
-        case 6:
+        case 5:
             singleColor.Read(buf);
+            Select(5);
+            break;
+        case 6:
+            multiColor.Read(buf);
             Select(6);
             break;
         case 7:
-            multiColor.Read(buf);
-            Select(7);
-            break;
-        case 8:
             SetBoundaryNames(buf.ReadStringVector());
             break;
-        case 9:
+        case 8:
             SetOpacity(buf.ReadDouble());
             break;
-        case 10:
+        case 9:
             SetWireframe(buf.ReadBool());
             break;
-        case 11:
+        case 10:
             SetSmoothingLevel(buf.ReadInt());
             break;
         }
@@ -347,7 +331,6 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
         str = str + stringToString("colorTableName", colorTableName, indent) + "\n";
         str = str + boolToString("invertColorTable", invertColorTable, indent) + "\n";
         str = str + boolToString("legendFlag", legendFlag, indent) + "\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + indent + "singleColor = {" + singleColor.Red() + ", " + singleColor.Green() + ", " + singleColor.Blue() + ", " + singleColor.Alpha() + "}\n";
         str = str + indent + "multiColor = {\n" + multiColor.toString(indent + "    ") + indent + "}\n";
@@ -364,7 +347,6 @@ public class BoundaryAttributes extends AttributeSubject implements Plugin
     private String             colorTableName;
     private boolean            invertColorTable;
     private boolean            legendFlag;
-    private int                lineStyle;
     private int                lineWidth;
     private ColorAttribute     singleColor;
     private ColorAttributeList multiColor;

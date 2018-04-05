@@ -104,7 +104,6 @@ class PLOTTER_API avtLineoutActor
     void               Translate(const double vec[3]);
     void               ResetPosition(void);
 
-    void               SetLineStyle(const int);
     void               SetLineWidth(const int);
     void               SetShowLabels(const bool);
 

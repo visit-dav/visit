@@ -90,7 +90,7 @@
 //    Added avtWireframeFilter.
 //
 //    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
-//    VTK-8 port: Use surface-plot specific mapper instead of user-specified
+//    VTK-7 port: Use surface-plot specific mapper instead of user-specified
 //    with avtSurfaceAndWireframeRenderer.  Remove wireFilter, property.
 //
 // ****************************************************************************
@@ -139,7 +139,7 @@ avtSurfacePlot::avtSurfacePlot()
 //    Added avtWireframeFilter.
 //
 //    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
-//    VTK-8 port: Remove wireFilter, property.
+//    VTK-7 port: Remove wireFilter, property.
 //
 // ****************************************************************************
 
@@ -276,7 +276,7 @@ avtSurfacePlot::ApplyOperators(avtDataObject_p input)
 //    Added avtWireframeFilter.
 //
 //    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
-//    Removed avtWireframeFilter (part of VTK-8 port).
+//    Removed avtWireframeFilter (part of VTK-7 port).
 //
 // ****************************************************************************
 
@@ -332,7 +332,7 @@ avtSurfacePlot::ApplyRenderingTransformation(avtDataObject_p input)
 //    is being drawn without the surface. 
 //
 //    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
-//    VTK-8 port: Remove property.
+//    VTK-7 port: Remove property.
 //
 // ****************************************************************************
 
@@ -413,7 +413,7 @@ avtSurfacePlot::CustomizeBehavior()
 //    Account for InvertColorTable when determining updateColors.
 //
 //    Kathleen Biagas, Mon Jul 18 17:11:51 MST 2016
-//    VTK-8 port: Use surface-plot specific mapper instead of user-specified
+//    VTK-7 port: Use surface-plot specific mapper instead of user-specified
 //    with avtSurfaceAndWireframeRenderer.
 //
 // ****************************************************************************
@@ -440,7 +440,6 @@ avtSurfacePlot::SetAtts(const AttributeGroup *a)
     SetWireframeAttributes(atts.GetWireframeFlag());
     mapper->SetIgnoreLighting(!atts.GetLightingFlag());
     mapper->SetLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineWidth())));
-    mapper->SetLineStyle(LineStyle2StipplePattern(Int2LineStyle(atts.GetLineStyle())));
     mapper->CanApplyGlobalRepresentation(atts.GetSurfaceFlag());
     mapper->SetRepresentation(!atts.GetSurfaceFlag() && atts.GetWireframeFlag());
     SetLegend(atts.GetLegendFlag());

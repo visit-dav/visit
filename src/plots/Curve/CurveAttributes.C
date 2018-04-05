@@ -283,7 +283,6 @@ CurveAttributes::AngleUnits_FromString(const std::string &s, CurveAttributes::An
 void CurveAttributes::Init()
 {
     showLines = true;
-    lineStyle = 0;
     lineWidth = 0;
     showPoints = false;
     symbol = Point;
@@ -326,7 +325,6 @@ void CurveAttributes::Init()
 void CurveAttributes::Copy(const CurveAttributes &obj)
 {
     showLines = obj.showLines;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     showPoints = obj.showPoints;
     symbol = obj.symbol;
@@ -517,7 +515,6 @@ CurveAttributes::operator == (const CurveAttributes &obj) const
 {
     // Create the return value
     return ((showLines == obj.showLines) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (showPoints == obj.showPoints) &&
             (symbol == obj.symbol) &&
@@ -625,7 +622,6 @@ CurveAttributes::CreateCompatible(const std::string &tname) const
         Line *line = new Line;
         line->SetDesignator(GetDesignator());
         line->SetColor(GetCurveColor());
-        line->SetLineStyle(GetLineStyle());
         line->SetLineWidth(GetLineWidth());
         retval = line;
     }
@@ -679,7 +675,6 @@ void
 CurveAttributes::SelectAll()
 {
     Select(ID_showLines,            (void *)&showLines);
-    Select(ID_lineStyle,            (void *)&lineStyle);
     Select(ID_lineWidth,            (void *)&lineWidth);
     Select(ID_showPoints,           (void *)&showPoints);
     Select(ID_symbol,               (void *)&symbol);
@@ -742,12 +737,6 @@ CurveAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
     {
         addToParent = true;
         node->AddNode(new DataNode("showLines", showLines));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -954,8 +943,6 @@ CurveAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("showLines")) != 0)
         SetShowLines(node->AsBool());
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("showPoints")) != 0)
@@ -1103,13 +1090,6 @@ CurveAttributes::SetShowLines(bool showLines_)
 {
     showLines = showLines_;
     Select(ID_showLines, (void *)&showLines);
-}
-
-void
-CurveAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -1302,12 +1282,6 @@ bool
 CurveAttributes::GetShowLines() const
 {
     return showLines;
-}
-
-int
-CurveAttributes::GetLineStyle() const
-{
-    return lineStyle;
 }
 
 int
@@ -1567,7 +1541,6 @@ CurveAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_showLines:            return "showLines";
-    case ID_lineStyle:            return "lineStyle";
     case ID_lineWidth:            return "lineWidth";
     case ID_showPoints:           return "showPoints";
     case ID_symbol:               return "symbol";
@@ -1619,7 +1592,6 @@ CurveAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_showLines:            return FieldType_bool;
-    case ID_lineStyle:            return FieldType_linestyle;
     case ID_lineWidth:            return FieldType_linewidth;
     case ID_showPoints:           return FieldType_bool;
     case ID_symbol:               return FieldType_enum;
@@ -1671,7 +1643,6 @@ CurveAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_showLines:            return "bool";
-    case ID_lineStyle:            return "linestyle";
     case ID_lineWidth:            return "linewidth";
     case ID_showPoints:           return "bool";
     case ID_symbol:               return "enum";
@@ -1727,11 +1698,6 @@ CurveAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_showLines:
         {  // new scope
         retval = (showLines == obj.showLines);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_lineWidth:
@@ -1935,6 +1901,11 @@ CurveAttributes::ProcessOldVersions(DataNode *parentNode,
                 searchNode->AddNode(new DataNode("pointFillMode", FillMode_ToString(CurveAttributes::Dynamic)));
             }
         }
+    }
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+       if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
     }
 }
 

@@ -339,7 +339,6 @@ void PseudocolorAttributes::Init()
     pointType = Point;
     pointSizeVarEnabled = false;
     pointSizePixels = 2;
-    lineStyle = 0;
     lineType = Line;
     lineWidth = 0;
     tubeResolution = 10;
@@ -406,7 +405,6 @@ void PseudocolorAttributes::Copy(const PseudocolorAttributes &obj)
     pointSizeVarEnabled = obj.pointSizeVarEnabled;
     pointSizeVar = obj.pointSizeVar;
     pointSizePixels = obj.pointSizePixels;
-    lineStyle = obj.lineStyle;
     lineType = obj.lineType;
     lineWidth = obj.lineWidth;
     tubeResolution = obj.tubeResolution;
@@ -617,7 +615,6 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (pointSizeVarEnabled == obj.pointSizeVarEnabled) &&
             (pointSizeVar == obj.pointSizeVar) &&
             (pointSizePixels == obj.pointSizePixels) &&
-            (lineStyle == obj.lineStyle) &&
             (lineType == obj.lineType) &&
             (lineWidth == obj.lineWidth) &&
             (tubeResolution == obj.tubeResolution) &&
@@ -810,7 +807,6 @@ PseudocolorAttributes::SelectAll()
     Select(ID_pointSizeVarEnabled,      (void *)&pointSizeVarEnabled);
     Select(ID_pointSizeVar,             (void *)&pointSizeVar);
     Select(ID_pointSizePixels,          (void *)&pointSizePixels);
-    Select(ID_lineStyle,                (void *)&lineStyle);
     Select(ID_lineType,                 (void *)&lineType);
     Select(ID_lineWidth,                (void *)&lineWidth);
     Select(ID_tubeResolution,           (void *)&tubeResolution);
@@ -1000,12 +996,6 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
     {
         addToParent = true;
         node->AddNode(new DataNode("pointSizePixels", pointSizePixels));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_lineType, &defaultObject))
@@ -1324,8 +1314,6 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetPointSizeVar(node->AsString());
     if((node = searchNode->GetNode("pointSizePixels")) != 0)
         SetPointSizePixels(node->AsInt());
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineType")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1608,13 +1596,6 @@ PseudocolorAttributes::SetPointSizePixels(int pointSizePixels_)
 {
     pointSizePixels = pointSizePixels_;
     Select(ID_pointSizePixels, (void *)&pointSizePixels);
-}
-
-void
-PseudocolorAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -1960,12 +1941,6 @@ PseudocolorAttributes::GetPointSizePixels() const
     return pointSizePixels;
 }
 
-int
-PseudocolorAttributes::GetLineStyle() const
-{
-    return lineStyle;
-}
-
 PseudocolorAttributes::LineType
 PseudocolorAttributes::GetLineType() const
 {
@@ -2244,7 +2219,6 @@ PseudocolorAttributes::GetFieldName(int index) const
     case ID_pointSizeVarEnabled:      return "pointSizeVarEnabled";
     case ID_pointSizeVar:             return "pointSizeVar";
     case ID_pointSizePixels:          return "pointSizePixels";
-    case ID_lineStyle:                return "lineStyle";
     case ID_lineType:                 return "lineType";
     case ID_lineWidth:                return "lineWidth";
     case ID_tubeResolution:           return "tubeResolution";
@@ -2318,7 +2292,6 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_pointSizeVarEnabled:      return FieldType_bool;
     case ID_pointSizeVar:             return FieldType_variablename;
     case ID_pointSizePixels:          return FieldType_int;
-    case ID_lineStyle:                return FieldType_linestyle;
     case ID_lineType:                 return FieldType_enum;
     case ID_lineWidth:                return FieldType_linewidth;
     case ID_tubeResolution:           return FieldType_int;
@@ -2392,7 +2365,6 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_pointSizeVarEnabled:      return "bool";
     case ID_pointSizeVar:             return "variablename";
     case ID_pointSizePixels:          return "int";
-    case ID_lineStyle:                return "linestyle";
     case ID_lineType:                 return "enum";
     case ID_lineWidth:                return "linewidth";
     case ID_tubeResolution:           return "int";
@@ -2556,11 +2528,6 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (pointSizePixels == obj.pointSizePixels);
         }
         break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
-        }
-        break;
     case ID_lineType:
         {  // new scope
         retval = (lineType == obj.lineType);
@@ -2709,9 +2676,9 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 // ****************************************************************************
 // Modifications:
 //
-//   Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001 
+//   Kathleen Bonnell, Fri Aug 31 08:50:30 PDT 2001
 //   Only centering changes require the plot to be recalculated.
-//   Removed scaling, pointsize and skewFactor from test. 
+//   Removed scaling, pointsize and skewFactor from test.
 //
 //   Hank Childs, Sun Jun 23 23:54:56 PDT 2002
 //   Also recalculate if the point size changes.
@@ -2725,12 +2692,12 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //   Hank Childs, Thu Aug 21 22:28:25 PDT 2003
 //   Added pointType.
 //
-//   Kathleen Bonnell, Wed Aug 18 18:08:52 PDT 2004 
+//   Kathleen Bonnell, Wed Aug 18 18:08:52 PDT 2004
 //   Removed pointSize, pointType from test.  Added new conditions for
-//   recalculation when pointSizeVar or pointSizeVarEnabled have changed. 
+//   recalculation when pointSizeVar or pointSizeVarEnabled have changed.
 //
-//   Kathleen Bonnell, Fri Nov 12 11:11:41 PST 2004 
-//   Modified determination of when secondary var requires recalc. 
+//   Kathleen Bonnell, Fri Nov 12 11:11:41 PST 2004
+//   Modified determination of when secondary var requires recalc.
 //
 //   Eric Brugger, Wed Oct 26 09:36:37 PDT 2016
 //   I modified the plot to support independently setting the point style
@@ -2744,14 +2711,14 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             obj.pointType != Sphere &&
                             obj.pointSizeVarEnabled &&
                             obj.pointSizeVar != pointSizeVar &&
-                            obj.pointSizeVar != "default" && 
+                            obj.pointSizeVar != "default" &&
                             obj.pointSizeVar != "" &&
                             obj.pointSizeVar != "\0") ||
 
                            (obj.lineType == Tube &&
                             obj.tubeRadiusVarEnabled &&
                             obj.tubeRadiusVar != tubeRadiusVar &&
-                            obj.tubeRadiusVar != "default" && 
+                            obj.tubeRadiusVar != "default" &&
                             obj.tubeRadiusVar != "" &&
                             obj.tubeRadiusVar != "\0") ||
 
@@ -2759,13 +2726,13 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                              obj.headStyle != None) &&
                             obj.endPointRadiusVarEnabled &&
                             obj.endPointRadiusVar != endPointRadiusVar &&
-                            obj.endPointRadiusVar != "default" && 
+                            obj.endPointRadiusVar != "default" &&
                             obj.endPointRadiusVar != "" &&
                             obj.endPointRadiusVar != "\0") ||
 
                            (obj.opacityType == VariableRange &&
                             obj.opacityVariable != opacityVariable &&
-                            obj.opacityVariable != "default" && 
+                            obj.opacityVariable != "default" &&
                             obj.opacityVariable != "" &&
                             obj.opacityVariable != "\0");
 
@@ -2791,7 +2758,7 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
                             endPointResolution       != obj.endPointResolution ||
                             0 );
 
-                           
+
     return (centering != obj.centering ||
             needSecondaryVar ||
             geometryChange ||
@@ -2809,7 +2776,7 @@ PseudocolorAttributes::ChangesRequireRecalculation(const PseudocolorAttributes &
 // Method: PseudocolorAttributes::Print
 //
 // Purpose: Print the contents
-//   
+//
 // Programmer: Jeremy Meredith
 // Creation:   September 22, 2000
 //
@@ -2857,7 +2824,7 @@ PseudocolorAttributes::Print(ostream &out, bool selected_only) const
 // ****************************************************************************
 // Method: PseudocolorAttributes::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   This method handles some old fields by converting them to new fields.
 //
 // Programmer: Brad Whitlock
@@ -2889,8 +2856,8 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
         DataNode *k = 0;
         if((k = searchNode->GetNode("useColorTableOpacity")) != 0)
         {
-          // Previously a bool for "Explicit" or "ColorTable" 
-          // Now ColorTable, FullyOpaque, or Constant 
+          // Previously a bool for "Explicit" or "ColorTable"
+          // Now ColorTable, FullyOpaque, or Constant
           // Explicit has been split into FullyOpaque or Constant and
           // does not rely on the opacity value.
 
@@ -2909,7 +2876,7 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
                   val = Constant;
               }
             }
-            
+
             // Update the opacityType to the new value.
             searchNode->RemoveNode(k, true);
             searchNode->AddNode(new DataNode("opacityType",
@@ -2922,8 +2889,8 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
       DataNode *k = 0;
       if((k = searchNode->GetNode("opacityType")) != 0)
       {
-        // Previously "Explicit" or "ColorTable" 
-        // Now ColorTable, FullyOpaque, or Constant 
+        // Previously "Explicit" or "ColorTable"
+        // Now ColorTable, FullyOpaque, or Constant
         // Explicit has been split into FullyOpaque or Constant and
         // does not rely on the opacity value.
 
@@ -2972,17 +2939,23 @@ PseudocolorAttributes::ProcessOldVersions(DataNode *parentNode,
       else if((k = searchNode->GetNode("opacity")) != 0)
       {
         double opacity = k->AsDouble();
-        
+
         // If the opacity value is set and valid set the opacityType
         // to constant and a new node for it.
         if( 0.0 <= opacity && opacity < 1.0 )
         {
           PseudocolorAttributes::OpacityType val = Constant;
-          
+
           searchNode->AddNode(new DataNode("opacityType",
                                            OpacityType_ToString(val)));
         }
       }
+    }
+
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+        if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
     }
 }
 

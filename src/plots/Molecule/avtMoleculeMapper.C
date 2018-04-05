@@ -189,8 +189,6 @@ avtMoleculeMapper::CustomizeMappers()
         vtkProperty *prop = actors[i]->GetProperty();
         prop->SetLineWidth(
             LineWidth2Int(Int2LineWidth(atts.GetBondLineWidth())));
-        prop->SetLineStipplePattern(
-            LineStyle2StipplePattern(Int2LineStyle(atts.GetBondLineStyle())));
 
         // Color table stuff
         bool invalid = 

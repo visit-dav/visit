@@ -62,7 +62,6 @@ avtCurveMapper::avtCurveMapper()
 {
     curveColor[0] = curveColor[1] = curveColor[2] = 1.0;
     lineWidth = LW_0;
-    lineStyle = SOLID; 
     drawCurve = true;
     drawPoints = false;
     staticPoints = true;
@@ -141,7 +140,6 @@ avtCurveMapper::CustomizeMappers(void)
             vtkProperty* prop = actors[i]->GetProperty();
             prop->SetColor(curveColor);
             prop->SetLineWidth(LineWidth2Int(lineWidth));
-            prop->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
             prop->SetPointSize(pointSize);
         }
     }
@@ -235,38 +233,6 @@ avtCurveMapper::SetLineWidth(_LineWidth lw)
         {
             actors[i]->GetProperty()->
                 SetLineWidth(LineWidth2Int(lineWidth));
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtCurveMapper::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style for all the actors of plot.
-//
-//  Arguments:
-//      s        The new line style
-//
-//  Programmer:  Kathleen Biagas
-//  Creation:    April 13, 2017
-//
-//  Modifications:
-//
-// ****************************************************************************
-
-void
-avtCurveMapper::SetLineStyle(_LineStyle ls)
-{
-    lineStyle = ls; 
-
-    for (int i = 0 ; i < nMappers ; i++)
-    {
-        if (actors[i] != NULL)
-        {
-            actors[i]->GetProperty()->
-                SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
         }
     }
 }

@@ -411,7 +411,6 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     }
 
     SetLineWidth(atts.GetLineWidth());
-    SetLineStyle(atts.GetLineStyle());
 
     decoMapper->SetLabelColor(rgb);
     decoMapper->SetLabelVisibility(atts.GetShowLabels());
@@ -445,32 +444,6 @@ avtCurvePlot::SetLineWidth(int lw)
 }
  
  
-// ****************************************************************************
-//  Method: avtCurvePlot::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   April 24, 2002 
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Oct 27 15:12:13 PDT 2005 
-//    Set the legend's line style.
-//    
-//    Brad Whitlock, Mon Nov 20 10:13:58 PDT 2006
-//    Removed property.
-//
-// ****************************************************************************
- 
-void
-avtCurvePlot::SetLineStyle(int ls)
-{
-    curveLegend->SetLineStyle(Int2LineStyle(ls));
-    mapper->SetLineStyle(Int2LineStyle(ls));
-}
-
-
 // ****************************************************************************
 //  Method: avtCurvePlot::ReleaseData
 //

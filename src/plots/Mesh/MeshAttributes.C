@@ -207,7 +207,6 @@ MeshAttributes::OpaqueMode_FromString(const std::string &s, MeshAttributes::Opaq
 void MeshAttributes::Init()
 {
     legendFlag = true;
-    lineStyle = 0;
     lineWidth = 0;
     meshColorSource = Foreground;
     opaqueColorSource = Background;
@@ -242,7 +241,6 @@ void MeshAttributes::Init()
 void MeshAttributes::Copy(const MeshAttributes &obj)
 {
     legendFlag = obj.legendFlag;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     meshColor = obj.meshColor;
     meshColorSource = obj.meshColorSource;
@@ -420,7 +418,6 @@ MeshAttributes::operator == (const MeshAttributes &obj) const
 {
     // Create the return value
     return ((legendFlag == obj.legendFlag) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (meshColor == obj.meshColor) &&
             (meshColorSource == obj.meshColorSource) &&
@@ -580,7 +577,6 @@ void
 MeshAttributes::SelectAll()
 {
     Select(ID_legendFlag,              (void *)&legendFlag);
-    Select(ID_lineStyle,               (void *)&lineStyle);
     Select(ID_lineWidth,               (void *)&lineWidth);
     Select(ID_meshColor,               (void *)&meshColor);
     Select(ID_meshColorSource,         (void *)&meshColorSource);
@@ -632,12 +628,6 @@ MeshAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
     {
         addToParent = true;
         node->AddNode(new DataNode("legendFlag", legendFlag));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -772,8 +762,6 @@ MeshAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("meshColor")) != 0)
@@ -885,13 +873,6 @@ MeshAttributes::SetLegendFlag(bool legendFlag_)
 {
     legendFlag = legendFlag_;
     Select(ID_legendFlag, (void *)&legendFlag);
-}
-
-void
-MeshAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -1007,12 +988,6 @@ bool
 MeshAttributes::GetLegendFlag() const
 {
     return legendFlag;
-}
-
-int
-MeshAttributes::GetLineStyle() const
-{
-    return lineStyle;
 }
 
 int
@@ -1170,7 +1145,6 @@ MeshAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_legendFlag:              return "legendFlag";
-    case ID_lineStyle:               return "lineStyle";
     case ID_lineWidth:               return "lineWidth";
     case ID_meshColor:               return "meshColor";
     case ID_meshColorSource:         return "meshColorSource";
@@ -1211,7 +1185,6 @@ MeshAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_legendFlag:              return FieldType_bool;
-    case ID_lineStyle:               return FieldType_linestyle;
     case ID_lineWidth:               return FieldType_linewidth;
     case ID_meshColor:               return FieldType_color;
     case ID_meshColorSource:         return FieldType_enum;
@@ -1252,7 +1225,6 @@ MeshAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_legendFlag:              return "bool";
-    case ID_lineStyle:               return "linestyle";
     case ID_lineWidth:               return "linewidth";
     case ID_meshColor:               return "color";
     case ID_meshColorSource:         return "enum";
@@ -1297,11 +1269,6 @@ MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_legendFlag:
         {  // new scope
         retval = (legendFlag == obj.legendFlag);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_lineWidth:
@@ -1390,7 +1357,7 @@ MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 
 // ****************************************************************************
-//  Modifications: 
+//  Modifications:
 //
 //    Kathleen Bonnell, Wed Aug 22 16:00:32 PDT 2001
 //    Changing opaque mode no longer requires recalculation.
@@ -1404,12 +1371,12 @@ MeshAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Hank Childs, Thu Aug 21 23:05:45 PDT 2003
 //    Added point type.
 //
-//    Kathleen Bonnell, Thu Feb  5 13:07:06 PST 2004 
-//    Added spatDim argument, added showInternal. 
+//    Kathleen Bonnell, Thu Feb  5 13:07:06 PST 2004
+//    Added spatDim argument, added showInternal.
 //
-//    Kathleen Bonnell, Tue Nov  2 10:32:21 PST 2004 
+//    Kathleen Bonnell, Tue Nov  2 10:32:21 PST 2004
 //    Removed point type and point size from test, changed pointSizeVar test
-//    so that only true if changes require adding new secondary varaible. 
+//    so that only true if changes require adding new secondary varaible.
 //
 //    Kathleen Biagas, Thu Apr 23 13:14:51 PDT 2015
 //    Removed never-used oulineOnly and errorTolerance atts.
@@ -1420,11 +1387,11 @@ bool
 MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
                                             const int spatDim)
 {
-    bool needSecondaryVar = (obj.pointSizeVarEnabled && 
+    bool needSecondaryVar = (obj.pointSizeVarEnabled &&
                             ((pointSizeVar != obj.pointSizeVar) &&
                              (obj.pointSizeVar != "default") &&
                              (obj.pointSizeVar != "") &&
-                             (obj.pointSizeVar != "\0"))); 
+                             (obj.pointSizeVar != "\0")));
 
     return ((needSecondaryVar) ||
             (smoothingLevel != obj.smoothingLevel) ||
@@ -1434,7 +1401,7 @@ MeshAttributes::ChangesRequireRecalculation(const MeshAttributes &obj,
 // ****************************************************************************
 // Method: MeshAttributes::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   This method handles some old fields by converting them to new fields.
 //
 // Programmer: Brad Whitlock
@@ -1470,6 +1437,11 @@ MeshAttributes::ProcessOldVersions(DataNode *parentNode,
             searchNode->RemoveNode(k, true);
             searchNode->AddNode(new DataNode("opaqueColorSource", OpaqueColor_ToString(val)));
         }
+    }
+    if(VersionLessThan(configVersion, "3.0.0"))
+    {
+        if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
     }
 }
 

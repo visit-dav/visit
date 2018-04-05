@@ -51,7 +51,6 @@ class QLineEdit;
 class QvisColorButton;
 class QvisColorManagerWidget;
 class QvisColorTableWidget;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
 
@@ -117,7 +116,6 @@ protected:
     QString LevelString(int i);
     void ProcessSelectByText();
 private slots:
-    void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
     void singleColorChanged(const QColor &color);
     void singleColorOpacityChanged(int opacity);
@@ -142,8 +140,6 @@ private:
 
     QButtonGroup           *scalingButtons;
 
-    QLabel                 *lineStyleLabel;
-    QvisLineStyleWidget    *lineStyle;
     QLabel                 *lineWidthLabel;
     QvisLineWidthWidget    *lineWidth;
     QButtonGroup           *colorModeButtons;

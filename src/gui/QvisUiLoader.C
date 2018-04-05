@@ -40,7 +40,6 @@
 #include <QvisColorTableButton.h>
 #include <QvisElementButton.h>
 #include <QvisDialogLineEdit.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 #include <QvisPeriodicTableWidget.h>
@@ -124,8 +123,6 @@ QvisUiLoader::createWidget(const QString &className, QWidget *parent,
         w = new QvisElementButton(parent);
     else if(className == "QvisDialogLineEdit")
         w = new QvisDialogLineEdit(parent);
-    else if(className == "QvisLineStyleWidget")
-        w = new QvisLineStyleWidget(0, parent);
     else if(className == "QvisLineWidthWidget")
         w = new QvisLineWidthWidget(0, parent);
     else if(className == "QvisOpacitySlider")

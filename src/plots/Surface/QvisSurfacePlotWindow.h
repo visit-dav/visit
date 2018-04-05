@@ -51,7 +51,6 @@ class QGroupBox;
 class QLineEdit;
 class QvisColorButton;
 class QvisColorTableWidget;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 
 // ****************************************************************************
@@ -110,7 +109,6 @@ protected:
     void Apply(bool ignore = false);
 
 private slots:
-    void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
     void legendToggled(bool val);
     void lightingToggled(bool val);
@@ -140,7 +138,6 @@ private:
 
     // Wireframe controls
     QGroupBox              *wireframeGroup;
-    QvisLineStyleWidget    *lineStyle;
     QvisLineWidthWidget    *lineWidth;
     QvisColorButton        *wireframeColor;
 

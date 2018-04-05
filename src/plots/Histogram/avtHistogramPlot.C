@@ -325,7 +325,6 @@ avtHistogramPlot::SetAtts(const AttributeGroup *a)
         mapper->SetEdgeVisibility(false);
     }
     mapper->SetLineWidth(LineWidth2Int(Int2LineWidth(atts.GetLineWidth())));
-    mapper->SetLineStyle(LineStyle2StipplePattern(Int2LineStyle(atts.GetLineStyle())));
 
     behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);
 }

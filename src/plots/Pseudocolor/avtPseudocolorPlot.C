@@ -768,7 +768,6 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     SetLimitsMode(atts.GetLimitsMode());
 
     mapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    mapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
 
     glyphMapper->SetScale(atts.GetPointSize());
 

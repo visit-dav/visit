@@ -86,7 +86,6 @@ class avtMultiCurvePlot : public avtSurfaceDataPlot
 
     virtual void                SetAtts(const AttributeGroup*);
     void                        SetLineWidth(int);
-    void                        SetLineStyle(int);
     void                        SetMarkerScale(double);
     void                        SetMarkerLineWidth(int);
     void                        SetLegend(bool);

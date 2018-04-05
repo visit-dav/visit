@@ -564,7 +564,6 @@ avtVectorPlot::SetAtts(const AttributeGroup *a)
     SetMapperColors();
 
     glyphMapper->SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    glyphMapper->SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
 
     // Update the plot's colors if needed.
     if (atts.GetColorByMag() &&

@@ -51,7 +51,6 @@
 #include <QvisColorButton.h>
 #include <QvisColorSwatchListWidget.h>
 #include <QvisColorTableWidget.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 #include <QvisPointControl.h>
@@ -287,7 +286,6 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
     //
     // Create the style stuff
     //
-
     QGroupBox * styleGroup = new QGroupBox(central);
     styleGroup->setTitle(tr("Point / Line Style"));
     topLayout->addWidget(styleGroup);
@@ -310,24 +308,13 @@ QvisFilledBoundaryPlotWindow::CreateWindowContents()
             this, SLOT(pointTypeChanged(int)));
     styleLayout->addWidget(pointControl, 0, 0, 1, 4);
 
-    //
-    // Create the line style/width buttons
-    //
-    // Create the lineSyle widget.
-    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
-
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    styleLayout->addWidget(lineStyle, 1, 1);
-
-    // Create the lineSyle widget.
-    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
+    // Create the lineWidth widget.
+    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 0);
 
     lineWidth = new QvisLineWidthWidget(0, central);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    styleLayout->addWidget(lineWidth, 1, 3);
+    styleLayout->addWidget(lineWidth, 1, 1);
 
     //
     // Create the geometry group
@@ -455,11 +442,6 @@ QvisFilledBoundaryPlotWindow::UpdateWindow(bool doAll)
             legendToggle->blockSignals(true);
             legendToggle->setChecked(boundaryAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
-            break;
-        case FilledBoundaryAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(boundaryAtts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
         case FilledBoundaryAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
@@ -924,31 +906,6 @@ QvisFilledBoundaryPlotWindow::reset()
     GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
-// ****************************************************************************
-// Method: QvisFilledBoundaryPlotWindow::lineStyleChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the window's
-//   line style is changed.
-//
-// Arguments:
-//   newStyle : The new line style.
-//
-// Programmer: Jeremy Meredith
-// Creation:   May  7, 2003
-//
-//  Note:  taken almost verbatim from the Subset plot
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisFilledBoundaryPlotWindow::lineStyleChanged(int newStyle)
-{
-    boundaryAtts->SetLineStyle(newStyle);
-    Apply();
-}
 
 // ****************************************************************************
 // Method: QvisFilledBoundaryPlotWindow::lineWidthChanged

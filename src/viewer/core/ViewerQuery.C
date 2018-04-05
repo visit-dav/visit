@@ -570,7 +570,6 @@ ViewerQuery::Update(Subject *TheChangedSubject)
                      return;
                  }
                  lineAtts->SetColor(temp->GetColor());
-                 lineAtts->SetLineStyle(temp->GetLineStyle());
                  lineAtts->SetLineWidth(temp->GetLineWidth());
                  originatingWindow->UpdateQuery(lineAtts);
                  delete temp;          

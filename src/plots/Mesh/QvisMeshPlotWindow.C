@@ -48,7 +48,6 @@
 
 #include <QvisColorButton.h>
 #include <QvisPointControl.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisOpacitySlider.h>
 
@@ -312,24 +311,13 @@ QvisMeshPlotWindow::CreateWindowContents()
     styleLayout->addWidget(pointControl, 0, 0, 1, 4);
 
 
-    //
-    // Create the line style/width buttons
-    //
-    // Create the lineSyle widget.
-    styleLayout->addWidget(new QLabel(tr("Line style"), central), 1, 0);
-
-    lineStyle = new QvisLineStyleWidget(0, central);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    styleLayout->addWidget(lineStyle, 1, 1);
-
-    // Create the lineSyle widget.
-    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 2);
+    // Create the lineWidth widget.
+    styleLayout->addWidget(new QLabel(tr("Line width"), central), 1, 0);
 
     lineWidth = new QvisLineWidthWidget(0, central);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    styleLayout->addWidget(lineWidth, 1, 3);
+    styleLayout->addWidget(lineWidth, 1, 1);
 
     //
     // Create the geometry group
@@ -487,11 +475,6 @@ QvisMeshPlotWindow::UpdateWindow(bool doAll)
             legendToggle->blockSignals(true);
             legendToggle->setChecked(meshAtts->GetLegendFlag());
             legendToggle->blockSignals(false);
-            break;
-        case MeshAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(meshAtts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
         case MeshAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
@@ -794,29 +777,6 @@ QvisMeshPlotWindow::reset()
     GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
-// ****************************************************************************
-// Method: QvisMeshPlotWindow::lineStyleChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the line style changes.
-//
-// Arguments:
-//   newStyle : The new line style.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 9 17:30:54 PST 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisMeshPlotWindow::lineStyleChanged(int newStyle)
-{
-    meshAtts->SetLineStyle(newStyle);
-    SetUpdate(false);
-    Apply();
-}
 
 // ****************************************************************************
 // Method: QvisMeshPlotWindow::lineWidthChanged

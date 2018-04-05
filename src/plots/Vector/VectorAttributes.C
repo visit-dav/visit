@@ -283,7 +283,6 @@ void VectorAttributes::Init()
     useStride = false;
     stride = 1;
     nVectors = 400;
-    lineStyle = 0;
     lineWidth = 0;
     scale = 0.25;
     scaleByMagnitude = true;
@@ -330,7 +329,6 @@ void VectorAttributes::Copy(const VectorAttributes &obj)
     useStride = obj.useStride;
     stride = obj.stride;
     nVectors = obj.nVectors;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     scale = obj.scale;
     scaleByMagnitude = obj.scaleByMagnitude;
@@ -517,7 +515,6 @@ VectorAttributes::operator == (const VectorAttributes &obj) const
             (useStride == obj.useStride) &&
             (stride == obj.stride) &&
             (nVectors == obj.nVectors) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (scale == obj.scale) &&
             (scaleByMagnitude == obj.scaleByMagnitude) &&
@@ -688,7 +685,6 @@ VectorAttributes::SelectAll()
     Select(ID_useStride,        (void *)&useStride);
     Select(ID_stride,           (void *)&stride);
     Select(ID_nVectors,         (void *)&nVectors);
-    Select(ID_lineStyle,        (void *)&lineStyle);
     Select(ID_lineWidth,        (void *)&lineWidth);
     Select(ID_scale,            (void *)&scale);
     Select(ID_scaleByMagnitude, (void *)&scaleByMagnitude);
@@ -766,12 +762,6 @@ VectorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("nVectors", nVectors));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -972,8 +962,6 @@ VectorAttributes::SetFromNode(DataNode *parentNode)
         SetStride(node->AsInt());
     if((node = searchNode->GetNode("nVectors")) != 0)
         SetNVectors(node->AsInt());
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("scale")) != 0)
@@ -1122,13 +1110,6 @@ VectorAttributes::SetNVectors(int nVectors_)
 {
     nVectors = nVectors_;
     Select(ID_nVectors, (void *)&nVectors);
-}
-
-void
-VectorAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -1318,12 +1299,6 @@ int
 VectorAttributes::GetNVectors() const
 {
     return nVectors;
-}
-
-int
-VectorAttributes::GetLineStyle() const
-{
-    return lineStyle;
 }
 
 int
@@ -1520,7 +1495,6 @@ VectorAttributes::GetFieldName(int index) const
     case ID_useStride:        return "useStride";
     case ID_stride:           return "stride";
     case ID_nVectors:         return "nVectors";
-    case ID_lineStyle:        return "lineStyle";
     case ID_lineWidth:        return "lineWidth";
     case ID_scale:            return "scale";
     case ID_scaleByMagnitude: return "scaleByMagnitude";
@@ -1572,7 +1546,6 @@ VectorAttributes::GetFieldType(int index) const
     case ID_useStride:        return FieldType_bool;
     case ID_stride:           return FieldType_int;
     case ID_nVectors:         return FieldType_int;
-    case ID_lineStyle:        return FieldType_linestyle;
     case ID_lineWidth:        return FieldType_linewidth;
     case ID_scale:            return FieldType_double;
     case ID_scaleByMagnitude: return FieldType_bool;
@@ -1624,7 +1597,6 @@ VectorAttributes::GetFieldTypeName(int index) const
     case ID_useStride:        return "bool";
     case ID_stride:           return "int";
     case ID_nVectors:         return "int";
-    case ID_lineStyle:        return "linestyle";
     case ID_lineWidth:        return "linewidth";
     case ID_scale:            return "double";
     case ID_scaleByMagnitude: return "bool";
@@ -1692,11 +1664,6 @@ VectorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_nVectors:
         {  // new scope
         retval = (nVectors == obj.nVectors);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_lineWidth:

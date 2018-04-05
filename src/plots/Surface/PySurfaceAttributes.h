@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define SURFACEATTRIBUTES_NMETH 38
+#define SURFACEATTRIBUTES_NMETH 36
 void           PySurfaceAttributes_StartUp(SurfaceAttributes *subj, void *data);
 void           PySurfaceAttributes_CloseDown();
 PyMethodDef *  PySurfaceAttributes_GetMethodTable(int *nMethods);

@@ -90,7 +90,6 @@ public:
 
     // Property setting methods
     void SetLineWidth(int lineWidth_);
-    void SetLineStyle(int lineStyle_);
     void SetMultiColor(const ColorAttributeList &multiColor_);
     void SetMinOpacity(double minOpacity_);
     void SetMinPlateauOpacity(double minPlateauOpacity_);
@@ -101,7 +100,6 @@ public:
 
     // Property getting methods
     int                      GetLineWidth() const;
-    int                      GetLineStyle() const;
     const ColorAttributeList &GetMultiColor() const;
           ColorAttributeList &GetMultiColor();
     double                   GetMinOpacity() const;
@@ -128,7 +126,6 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_lineWidth = 0,
-        ID_lineStyle,
         ID_multiColor,
         ID_minOpacity,
         ID_minPlateauOpacity,
@@ -141,7 +138,6 @@ public:
 
 private:
     int                lineWidth;
-    int                lineStyle;
     ColorAttributeList multiColor;
     double             minOpacity;
     double             minPlateauOpacity;
@@ -154,6 +150,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define TOPOLOGYATTRIBUTES_TMFS "iiadddddd"
+#define TOPOLOGYATTRIBUTES_TMFS "iadddddd"
 
 #endif

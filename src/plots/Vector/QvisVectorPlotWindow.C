@@ -50,7 +50,6 @@
 
 #include <VectorAttributes.h>
 #include <ViewerProxy.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisColorButton.h>
 #include <QvisColorTableWidget.h>
@@ -528,14 +527,6 @@ QvisVectorPlotWindow::CreateGlyphTab(QWidget *pageGlyphs)
     connect(lineStem, SIGNAL(activated(int)), this, SLOT(lineStemChanged(int)));
     styleLayout->addWidget(lineStem, row, 1);
 
-    // Create the line style widget.
-    lineStyleLabel = new QLabel(tr("Style"), styleGroupBox);
-    styleLayout->addWidget(lineStyleLabel, row, 2, Qt::AlignRight);
-    lineStyle = new QvisLineStyleWidget(0, styleGroupBox);
-    styleLayout->addWidget(lineStyle, row, 3);
-    lineStyleLabel->setBuddy(lineStyle);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
     // Create the line width widget.
     lineWidthLabel = new QLabel(tr("Width"), styleGroupBox);
     styleLayout->addWidget(lineWidthLabel, row, 4, Qt::AlignRight);
@@ -550,10 +541,10 @@ QvisVectorPlotWindow::CreateGlyphTab(QWidget *pageGlyphs)
     stemWidthEdit = new QLineEdit(styleGroupBox);
     connect(stemWidthEdit, SIGNAL(returnPressed()),
             this, SLOT(processStemWidthText()));
-    styleLayout->addWidget(stemWidthEdit, row, 3);
+    styleLayout->addWidget(stemWidthEdit, row, 5);
     stemWidthLabel = new QLabel(tr("Width"), styleGroupBox);
     stemWidthLabel->setBuddy(stemWidthEdit);
-    styleLayout->addWidget(stemWidthLabel, row, 2, Qt::AlignRight);
+    styleLayout->addWidget(stemWidthLabel, row, 4, Qt::AlignRight);
 
     row++;
 
@@ -753,11 +744,6 @@ QvisVectorPlotWindow::UpdateWindow(bool doAll)
           case VectorAttributes::ID_nVectors:
             nVectorsLineEdit->setText(IntToQString(vectorAtts->GetNVectors()));
             break;
-          case VectorAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(vectorAtts->GetLineStyle());
-            lineStyle->blockSignals(false);
-            break;
           case VectorAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
             lineWidth->SetLineWidth(vectorAtts->GetLineWidth());
@@ -918,9 +904,7 @@ QvisVectorPlotWindow::UpdateLineStem()
     if( vectorAtts->GetLineStem() == VectorAttributes::Line )
     {
       lineWidth->show();
-      lineStyle->show();
       lineWidthLabel->show();
-      lineStyleLabel->show();
       
       stemWidthEdit->hide();
       stemWidthLabel->hide();
@@ -928,9 +912,7 @@ QvisVectorPlotWindow::UpdateLineStem()
     else //if (vectorAtts->GetLineStem() == VectorAttributes::Cylinder)
     {
       lineWidth->hide();
-      lineStyle->hide();
       lineWidthLabel->hide();
-      lineStyleLabel->hide();
       
       stemWidthEdit->show();
       stemWidthLabel->show();
@@ -946,9 +928,7 @@ QvisVectorPlotWindow::UpdateLineStem()
     headSizeLineEdit->hide();
 
     lineWidth->hide();
-    lineStyle->hide();
     lineWidthLabel->hide();
-    lineStyleLabel->hide();
     
     stemWidthEdit->hide();
     stemWidthLabel->hide();
@@ -1157,29 +1137,6 @@ QvisVectorPlotWindow::reset()
     GetViewerMethods()->ResetPlotOptions(plotType);
 }
 
-// ****************************************************************************
-// Method: QvisVectorPlotWindow::lineStyleChanged
-//
-// Purpose: 
-//   This is a Qt slot function that is called when the user changes the
-//   lineStyle widget.
-//
-// Arguments:
-//   newStyle : The new line style.
-//
-// Programmer: Brad Whitlock
-// Creation:   Fri Mar 23 12:20:44 PDT 2001
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-void
-QvisVectorPlotWindow::lineStyleChanged(int newStyle)
-{
-    vectorAtts->SetLineStyle(newStyle);
-    Apply();
-}
 
 // ****************************************************************************
 // Method: QvisVectorPlotWindow::lineWidthChanged

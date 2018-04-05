@@ -54,7 +54,6 @@ class QTextEdit;
 class QvisColorButton;
 class QvisColorManagerWidget;
 class QvisColorTableWidget;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
 
@@ -124,7 +123,6 @@ class QvisWellBorePlotWindow : public QvisPostableWindowObserver
     void wellCylinderQualityChanged(int val);
     void wellRadiusProcessText();
     void wellLineWidthChanged(int style);
-    void wellLineStyleChanged(int style);
     void wellAnnotationChanged(int val);
     void wellStemHeightProcessText();
     void wellNameScaleProcessText();
@@ -157,8 +155,6 @@ class QvisWellBorePlotWindow : public QvisPostableWindowObserver
     QLineEdit              *wellRadius;
     QLabel                 *wellLineWidthLabel;
     QvisLineWidthWidget    *wellLineWidth;
-    QLabel                 *wellLineStyleLabel;
-    QvisLineStyleWidget    *wellLineStyle;
     QLabel                 *wellAnnotationLabel;
     QComboBox              *wellAnnotation;
     QLabel                 *wellStemHeightLabel;

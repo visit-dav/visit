@@ -138,7 +138,6 @@ public:
     void SetBondCylinderQuality(DetailLevel bondCylinderQuality_);
     void SetBondRadius(float bondRadius_);
     void SetBondLineWidth(int bondLineWidth_);
-    void SetBondLineStyle(int bondLineStyle_);
     void SetElementColorTable(const std::string &elementColorTable_);
     void SetResidueTypeColorTable(const std::string &residueTypeColorTable_);
     void SetResidueSequenceColorTable(const std::string &residueSequenceColorTable_);
@@ -164,7 +163,6 @@ public:
     DetailLevel          GetBondCylinderQuality() const;
     float                GetBondRadius() const;
     int                  GetBondLineWidth() const;
-    int                  GetBondLineStyle() const;
     const std::string    &GetElementColorTable() const;
           std::string    &GetElementColorTable();
     const std::string    &GetResidueTypeColorTable() const;
@@ -233,7 +231,6 @@ public:
         ID_bondCylinderQuality,
         ID_bondRadius,
         ID_bondLineWidth,
-        ID_bondLineStyle,
         ID_elementColorTable,
         ID_residueTypeColorTable,
         ID_residueSequenceColorTable,
@@ -259,7 +256,6 @@ private:
     int            bondCylinderQuality;
     float          bondRadius;
     int            bondLineWidth;
-    int            bondLineStyle;
     std::string    elementColorTable;
     std::string    residueTypeColorTable;
     std::string    residueSequenceColorTable;
@@ -274,6 +270,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MOLECULEATTRIBUTES_TMFS "iiiiasffiifiissssbbfbf"
+#define MOLECULEATTRIBUTES_TMFS "iiiiasffiifissssbbfbf"
 
 #endif

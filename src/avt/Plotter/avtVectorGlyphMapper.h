@@ -116,7 +116,6 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     virtual                   ~avtVectorGlyphMapper();
 
     void                       SetLineWidth(_LineWidth lw);
-    void                       SetLineStyle(_LineStyle ls);
     void                       ColorByMagOn(void);
     void                       ColorByScalarOn(const std::string &);
     void                       ColorByMagOff(const unsigned char [3]);
@@ -140,7 +139,6 @@ class PLOTTER_API  avtVectorGlyphMapper : public avtMapper
     vtkAlgorithmOutput        *glyph;
     vtkLookupTable            *lut;
     _LineWidth                 lineWidth;
-    _LineStyle                 lineStyle;
     bool                       colorByMag;
     bool                       colorByScalar;
     std::string                scalarName;

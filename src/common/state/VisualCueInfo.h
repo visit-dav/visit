@@ -109,7 +109,6 @@ public:
     void SetGlyphType(const std::string &glyphType_);
     void SetLabel(const std::string &label_);
     void SetShowLabel(bool showLabel_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetOpacity(double opacity_);
     void SetHighlightColor(const float *highlightColor_);
@@ -125,7 +124,6 @@ public:
     const std::string    &GetLabel() const;
           std::string    &GetLabel();
     bool                 GetShowLabel() const;
-    int                  GetLineStyle() const;
     int                  GetLineWidth() const;
     double               GetOpacity() const;
     const float          *GetHighlightColor() const;
@@ -160,7 +158,6 @@ public:
         ID_glyphType,
         ID_label,
         ID_showLabel,
-        ID_lineStyle,
         ID_lineWidth,
         ID_opacity,
         ID_highlightColor,
@@ -174,7 +171,6 @@ private:
     std::string    glyphType;
     std::string    label;
     bool           showLabel;
-    int            lineStyle;
     int            lineWidth;
     double         opacity;
     float          highlightColor[3];
@@ -183,6 +179,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VISUALCUEINFO_TMFS "d*iassbiidF"
+#define VISUALCUEINFO_TMFS "d*iassbidF"
 
 #endif

@@ -47,9 +47,6 @@
       <Field name="scaling" label="Scale" type="enum" subtype="Scaling">
         Linear
       </Field>
-      <Field name="lineStyle" label="Line style" type="linestyle">
-        0
-      </Field>
       <Field name="lineWidth" label="Line width" type="linewidth">
         0
       </Field>

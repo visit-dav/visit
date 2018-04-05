@@ -135,7 +135,6 @@ void SubsetAttributes::Init()
     colorType = ColorByMultipleColors;
     invertColorTable = false;
     legendFlag = true;
-    lineStyle = 0;
     lineWidth = 0;
     subsetType = Unknown;
     opacity = 1;
@@ -171,7 +170,6 @@ void SubsetAttributes::Copy(const SubsetAttributes &obj)
     colorTableName = obj.colorTableName;
     invertColorTable = obj.invertColorTable;
     legendFlag = obj.legendFlag;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     singleColor = obj.singleColor;
     multiColor = obj.multiColor;
@@ -351,7 +349,6 @@ SubsetAttributes::operator == (const SubsetAttributes &obj) const
             (colorTableName == obj.colorTableName) &&
             (invertColorTable == obj.invertColorTable) &&
             (legendFlag == obj.legendFlag) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (singleColor == obj.singleColor) &&
             (multiColor == obj.multiColor) &&
@@ -513,7 +510,6 @@ SubsetAttributes::SelectAll()
     Select(ID_colorTableName,      (void *)&colorTableName);
     Select(ID_invertColorTable,    (void *)&invertColorTable);
     Select(ID_legendFlag,          (void *)&legendFlag);
-    Select(ID_lineStyle,           (void *)&lineStyle);
     Select(ID_lineWidth,           (void *)&lineWidth);
     Select(ID_singleColor,         (void *)&singleColor);
     Select(ID_multiColor,          (void *)&multiColor);
@@ -582,12 +578,6 @@ SubsetAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     {
         addToParent = true;
         node->AddNode(new DataNode("legendFlag", legendFlag));
-    }
-
-    if(completeSave || !FieldsEqual(ID_lineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("lineStyle", lineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_lineWidth, &defaultObject))
@@ -740,8 +730,6 @@ SubsetAttributes::SetFromNode(DataNode *parentNode)
         SetInvertColorTable(node->AsBool());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
-    if((node = searchNode->GetNode("lineStyle")) != 0)
-        SetLineStyle(node->AsInt());
     if((node = searchNode->GetNode("lineWidth")) != 0)
         SetLineWidth(node->AsInt());
     if((node = searchNode->GetNode("singleColor")) != 0)
@@ -830,13 +818,6 @@ SubsetAttributes::SetLegendFlag(bool legendFlag_)
 {
     legendFlag = legendFlag_;
     Select(ID_legendFlag, (void *)&legendFlag);
-}
-
-void
-SubsetAttributes::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -969,12 +950,6 @@ bool
 SubsetAttributes::GetLegendFlag() const
 {
     return legendFlag;
-}
-
-int
-SubsetAttributes::GetLineStyle() const
-{
-    return lineStyle;
 }
 
 int
@@ -1147,7 +1122,6 @@ SubsetAttributes::GetFieldName(int index) const
     case ID_colorTableName:      return "colorTableName";
     case ID_invertColorTable:    return "invertColorTable";
     case ID_legendFlag:          return "legendFlag";
-    case ID_lineStyle:           return "lineStyle";
     case ID_lineWidth:           return "lineWidth";
     case ID_singleColor:         return "singleColor";
     case ID_multiColor:          return "multiColor";
@@ -1190,7 +1164,6 @@ SubsetAttributes::GetFieldType(int index) const
     case ID_colorTableName:      return FieldType_colortable;
     case ID_invertColorTable:    return FieldType_bool;
     case ID_legendFlag:          return FieldType_bool;
-    case ID_lineStyle:           return FieldType_linestyle;
     case ID_lineWidth:           return FieldType_linewidth;
     case ID_singleColor:         return FieldType_color;
     case ID_multiColor:          return FieldType_att;
@@ -1233,7 +1206,6 @@ SubsetAttributes::GetFieldTypeName(int index) const
     case ID_colorTableName:      return "colortable";
     case ID_invertColorTable:    return "bool";
     case ID_legendFlag:          return "bool";
-    case ID_lineStyle:           return "linestyle";
     case ID_lineWidth:           return "linewidth";
     case ID_singleColor:         return "color";
     case ID_multiColor:          return "att";
@@ -1292,11 +1264,6 @@ SubsetAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_legendFlag:
         {  // new scope
         retval = (legendFlag == obj.legendFlag);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_lineWidth:
@@ -1384,8 +1351,8 @@ SubsetAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Jeremy Meredith, Mon Dec  9 16:30:54 PST 2002
 //    Added smoothing level.
 //
-//    Kathleen Bonnell, Fri Nov 12 11:42:36 PST 2004 
-//    Added needSecondaryVar. 
+//    Kathleen Bonnell, Fri Nov 12 11:42:36 PST 2004
+//    Added needSecondaryVar.
 //
 //    Kathleen Biagas, Tue Dec 20 14:27:42 PST 2016
 //    Removed filledFlag.
@@ -1396,11 +1363,11 @@ SubsetAttributes::ChangesRequireRecalculation(const SubsetAttributes &obj)
 {
     bool needSecondaryVar = obj.pointSizeVarEnabled &&
                             pointSizeVar != obj.pointSizeVar &&
-                            obj.pointSizeVar != "default" && 
+                            obj.pointSizeVar != "default" &&
                             obj.pointSizeVar != "" &&
-                            obj.pointSizeVar != "\0"; 
+                            obj.pointSizeVar != "\0";
 
-    return ((subsetType != obj.subsetType) || 
+    return ((subsetType != obj.subsetType) ||
             (subsetNames != obj.subsetNames) ||
             (wireframe != obj.wireframe) ||
             (drawInternal != obj.drawInternal) ||
@@ -1410,14 +1377,14 @@ SubsetAttributes::ChangesRequireRecalculation(const SubsetAttributes &obj)
 
 bool
 SubsetAttributes::VarChangeRequiresReset()
-{ 
+{
     return true;
 }
 
 // ****************************************************************************
 // Method: SubsetAttributes::ProcessOldVersions
 //
-// Purpose: 
+// Purpose:
 //   This method allows handling of older config/session files that may
 //   contain fields that are no longer present or have been modified/renamed.
 //
@@ -1443,6 +1410,11 @@ SubsetAttributes::ProcessOldVersions(DataNode *parentNode,
     {
         if (searchNode->GetNode("filledFlag") != 0)
             searchNode->RemoveNode("filledFlag");
+    }
+    if (VersionLessThan(configVersion, "3.0.0"))
+    {
+        if (searchNode->GetNode("lineStyle") != 0)
+            searchNode->RemoveNode("lineStyle");
     }
 }
 

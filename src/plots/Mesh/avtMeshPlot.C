@@ -347,7 +347,6 @@ avtMeshPlot::SetAtts(const AttributeGroup *a)
     atts = *(const MeshAttributes*)a;
 
     SetLineWidth(Int2LineWidth(atts.GetLineWidth()));
-    SetLineStyle(Int2LineStyle(atts.GetLineStyle()));
     if (atts.GetMeshColorSource()==0)
     {
         SetMeshColor(fgColor);
@@ -583,32 +582,6 @@ void
 avtMeshPlot::SetLineWidth(_LineWidth lw)
 {
     mapper->SetLineWidth(LineWidth2Int(lw));
-}
-
-
-// ****************************************************************************
-//  Method: avtMeshPlot::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style.
-//
-//  Programmer: Kathleen Bonnell
-//  Creation:   March 22, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Sat Aug 18 18:09:04 PDT 2001
-//    Use LineAttributes to ensure proper format gets sent to vtk.
-//
-//    Kathleen Bonnell, Mon Jun 25 09:03:29 PDT 2001 
-//    Set property line style instead of mapper line style. 
-//
-// ****************************************************************************
-
-void
-avtMeshPlot::SetLineStyle(_LineStyle ls)
-{
-    mapper->SetLineStyle(LineStyle2StipplePattern(ls));
 }
 
 

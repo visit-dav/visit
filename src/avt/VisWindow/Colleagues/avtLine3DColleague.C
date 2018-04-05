@@ -143,7 +143,6 @@ avtLine3DColleague::avtLine3DColleague(VisWindowColleagueProxy &m):
 
     // Set a default line width.
     lineActor->GetProperty()->SetLineWidth(1);
-    lineActor->GetProperty()->SetLineStipplePattern(0xFFFF);
 }
 
 
@@ -397,15 +396,6 @@ avtLine3DColleague::SetOptions(const AnnotationObject &annot)
         lineActor->GetProperty()->SetLineWidth(annot.GetIntAttribute1()+1);
     }
 
-    //
-    // Set the line style if it is different
-    //
-    if (currentOptions.GetIntAttribute2() != annot.GetIntAttribute2())
-    {
-        lineActor->GetProperty()->SetLineStipplePattern(
-            LineStyle2StipplePattern(Int2LineStyle(annot.GetIntAttribute2())));
-    }
-
     if (currentOptions.GetIntAttribute3() != annot.GetIntAttribute3())
     {
         lineType = annot.GetIntAttribute3();
@@ -532,8 +522,6 @@ avtLine3DColleague::GetOptions(AnnotationObject &annot)
     annot.SetColor1(lineColor);
     annot.SetUseForegroundForTextColor(useForegroundForLineColor);
     annot.SetIntAttribute1(lineActor->GetProperty()->GetLineWidth()-1);
-    annot.SetIntAttribute2(LineStyle2Int(StipplePattern2LineStyle(
-        lineActor->GetProperty()->GetLineStipplePattern())));
     annot.SetIntAttribute3(lineType);
 
     ColorAttribute ca = annot.GetColor2();

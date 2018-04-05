@@ -120,7 +120,6 @@ avtBoundaryPlot : public avtSurfaceDataPlot
 
     void                      SetLegend(bool);
     void                      SetLineWidth(int);
-    void                      SetLineStyle(int);
 
     virtual const MapNode    &GetExtraInfoForPick(void);
 

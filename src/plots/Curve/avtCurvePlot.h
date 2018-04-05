@@ -105,7 +105,6 @@ class avtCurvePlot : public avtLineDataPlot
 
     virtual void                SetAtts(const AttributeGroup*);
     void                        SetLineWidth(int);
-    void                        SetLineStyle(int);
 
   protected:
     CurveAttributes                atts;

@@ -35,9 +35,6 @@
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>
-      <Field name="lineStyle" label="lineStyle" type="linestyle">
-        0
-      </Field>
       <Field name="lineWidth" label="lineWidth" type="linewidth">
         0
       </Field>

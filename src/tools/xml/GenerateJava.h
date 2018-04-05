@@ -1255,37 +1255,6 @@ class JavaGeneratorColor : public virtual Color , public virtual JavaGeneratorFi
 
 
 //
-// --------------------------------- LineStyle --------------------------------
-//
-class JavaGeneratorLineStyle : public virtual LineStyle , public virtual JavaGeneratorField
-{
-  public:
-    JavaGeneratorLineStyle(const QString &n, const QString &l)
-        : Field("linestyle",n,l), LineStyle(n,l), JavaGeneratorField("linestyle",n,l) { }
-
-    virtual void WriteSourceSetDefault(QTextStream &c)
-    {
-        c << "    " << name << " = " << val << ";" << endl;
-    }
-
-    virtual void WriteSourceWriteAtts(QTextStream &c, const QString &indent)
-    {
-        c << indent << "    buf.WriteInt(" << name << ");" << endl;
-    }
-
-    virtual bool WriteSourceReadAtts(QTextStream &c, const QString &indent)
-    {
-        c << indent << "Set" << Name << "(buf.ReadInt());" << endl;
-        return true;
-    }
-    virtual void WriteToString(QTextStream &c, const QString &indent)
-    {
-        c << indent << "str = str + intToString(\"" << name << "\", " << name << ", indent) + \"\\n\";" << endl;       
-    }
-};
-
-
-//
 // --------------------------------- LineWidth --------------------------------
 //
 class JavaGeneratorLineWidth : public virtual LineWidth , public virtual JavaGeneratorField
@@ -1809,7 +1778,6 @@ class JavaFieldFactory
         else if (type == "colortable")   f = new JavaGeneratorColorTable(name,label);
         else if (type == "color")        f = new JavaGeneratorColor(name,label);
         else if (type == "opacity")      f = new JavaGeneratorOpacity(name,label);
-        else if (type == "linestyle")    f = new JavaGeneratorLineStyle(name,label);
         else if (type == "linewidth")    f = new JavaGeneratorLineWidth(name,label);
         else if (type == "variablename") f = new JavaGeneratorVariableName(name,label);
         else if (type == "att")          f = new JavaGeneratorAtt(subtype,name,label);

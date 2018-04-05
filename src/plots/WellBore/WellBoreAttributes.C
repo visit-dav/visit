@@ -214,7 +214,6 @@ void WellBoreAttributes::Init()
     wellCylinderQuality = Medium;
     wellRadius = 0.12;
     wellLineWidth = 0;
-    wellLineStyle = 0;
     wellAnnotation = StemAndName;
     wellStemHeight = 10;
     wellNameScale = 0.2;
@@ -252,7 +251,6 @@ void WellBoreAttributes::Copy(const WellBoreAttributes &obj)
     wellCylinderQuality = obj.wellCylinderQuality;
     wellRadius = obj.wellRadius;
     wellLineWidth = obj.wellLineWidth;
-    wellLineStyle = obj.wellLineStyle;
     wellAnnotation = obj.wellAnnotation;
     wellStemHeight = obj.wellStemHeight;
     wellNameScale = obj.wellNameScale;
@@ -430,7 +428,6 @@ WellBoreAttributes::operator == (const WellBoreAttributes &obj) const
             (wellCylinderQuality == obj.wellCylinderQuality) &&
             (wellRadius == obj.wellRadius) &&
             (wellLineWidth == obj.wellLineWidth) &&
-            (wellLineStyle == obj.wellLineStyle) &&
             (wellAnnotation == obj.wellAnnotation) &&
             (wellStemHeight == obj.wellStemHeight) &&
             (wellNameScale == obj.wellNameScale) &&
@@ -592,7 +589,6 @@ WellBoreAttributes::SelectAll()
     Select(ID_wellCylinderQuality, (void *)&wellCylinderQuality);
     Select(ID_wellRadius,          (void *)&wellRadius);
     Select(ID_wellLineWidth,       (void *)&wellLineWidth);
-    Select(ID_wellLineStyle,       (void *)&wellLineStyle);
     Select(ID_wellAnnotation,      (void *)&wellAnnotation);
     Select(ID_wellStemHeight,      (void *)&wellStemHeight);
     Select(ID_wellNameScale,       (void *)&wellNameScale);
@@ -710,12 +706,6 @@ WellBoreAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool for
     {
         addToParent = true;
         node->AddNode(new DataNode("wellLineWidth", wellLineWidth));
-    }
-
-    if(completeSave || !FieldsEqual(ID_wellLineStyle, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("wellLineStyle", wellLineStyle));
     }
 
     if(completeSave || !FieldsEqual(ID_wellAnnotation, &defaultObject))
@@ -860,8 +850,6 @@ WellBoreAttributes::SetFromNode(DataNode *parentNode)
         SetWellRadius(node->AsFloat());
     if((node = searchNode->GetNode("wellLineWidth")) != 0)
         SetWellLineWidth(node->AsInt());
-    if((node = searchNode->GetNode("wellLineStyle")) != 0)
-        SetWellLineStyle(node->AsInt());
     if((node = searchNode->GetNode("wellAnnotation")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -971,13 +959,6 @@ WellBoreAttributes::SetWellLineWidth(int wellLineWidth_)
 {
     wellLineWidth = wellLineWidth_;
     Select(ID_wellLineWidth, (void *)&wellLineWidth);
-}
-
-void
-WellBoreAttributes::SetWellLineStyle(int wellLineStyle_)
-{
-    wellLineStyle = wellLineStyle_;
-    Select(ID_wellLineStyle, (void *)&wellLineStyle);
 }
 
 void
@@ -1132,12 +1113,6 @@ WellBoreAttributes::GetWellLineWidth() const
     return wellLineWidth;
 }
 
-int
-WellBoreAttributes::GetWellLineStyle() const
-{
-    return wellLineStyle;
-}
-
 WellBoreAttributes::WellAnnotation
 WellBoreAttributes::GetWellAnnotation() const
 {
@@ -1273,7 +1248,6 @@ WellBoreAttributes::GetFieldName(int index) const
     case ID_wellCylinderQuality: return "wellCylinderQuality";
     case ID_wellRadius:          return "wellRadius";
     case ID_wellLineWidth:       return "wellLineWidth";
-    case ID_wellLineStyle:       return "wellLineStyle";
     case ID_wellAnnotation:      return "wellAnnotation";
     case ID_wellStemHeight:      return "wellStemHeight";
     case ID_wellNameScale:       return "wellNameScale";
@@ -1316,7 +1290,6 @@ WellBoreAttributes::GetFieldType(int index) const
     case ID_wellCylinderQuality: return FieldType_enum;
     case ID_wellRadius:          return FieldType_float;
     case ID_wellLineWidth:       return FieldType_linewidth;
-    case ID_wellLineStyle:       return FieldType_linestyle;
     case ID_wellAnnotation:      return FieldType_enum;
     case ID_wellStemHeight:      return FieldType_float;
     case ID_wellNameScale:       return FieldType_float;
@@ -1359,7 +1332,6 @@ WellBoreAttributes::GetFieldTypeName(int index) const
     case ID_wellCylinderQuality: return "enum";
     case ID_wellRadius:          return "float";
     case ID_wellLineWidth:       return "linewidth";
-    case ID_wellLineStyle:       return "linestyle";
     case ID_wellAnnotation:      return "enum";
     case ID_wellStemHeight:      return "float";
     case ID_wellNameScale:       return "float";
@@ -1446,11 +1418,6 @@ WellBoreAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_wellLineWidth:
         {  // new scope
         retval = (wellLineWidth == obj.wellLineWidth);
-        }
-        break;
-    case ID_wellLineStyle:
-        {  // new scope
-        retval = (wellLineStyle == obj.wellLineStyle);
         }
         break;
     case ID_wellAnnotation:

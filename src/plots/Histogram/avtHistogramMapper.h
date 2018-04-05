@@ -86,7 +86,6 @@ class avtHistogramMapper : public avtMapper
 
     void                       SetOpacity(double val);
     void                       SetLineWidth(int lw);
-    void                       SetLineStyle(int ls);
 
   protected:
     bool                       edgeVis;
@@ -94,7 +93,6 @@ class avtHistogramMapper : public avtMapper
     double                     surfaceColor[3];
     double                     opacity;
     int                        lineWidth;
-    int                        lineStyle;
 
     virtual void               CustomizeMappers(void);
     void                       NotifyTransparencyActor();

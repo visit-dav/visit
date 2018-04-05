@@ -291,38 +291,6 @@ Line3DObject_GetWidth(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-Line3DObject_SetStyle(PyObject *self, PyObject *args)
-{
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the style in the object.
-    if (ival >= 0 && ival <= 3)
-        obj->data->SetIntAttribute2(ival);
-    else
-        fprintf(stderr, "An invalid  value was given. "
-                "Valid values are in the range of [0,3]. "
-                "You can also use the following names: "
-                "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-
-    UpdateAnnotationHelper(obj->data);
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyObject *
-Line3DObject_GetStyle(PyObject *self, PyObject *args)
-{
-    Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntAttribute2()));
-    return retval;
-}
-
-static PyObject *
 Line3DObject_SetTubeQuality(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
@@ -764,16 +732,6 @@ Line3DObject_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(1));
     if(strcmp(name, "width") == 0)
         return Line3DObject_GetWidth(self, NULL);
-    if(strcmp(name, "style") == 0)
-        return Line3DObject_GetStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
     if(strcmp(name, "tubeQuality") == 0)
         return Line3DObject_SetTubeQuality(self, NULL);
     if(strcmp(name, "LOW") == 0)
@@ -830,8 +788,6 @@ Line3DObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (Line3DObject_SetLineType(self, tuple) != NULL);
     else if(strcmp(name, "width") == 0)
         retval = (Line3DObject_SetWidth(self, tuple) != NULL);
-    else if(strcmp(name, "style") == 0)
-        retval = (Line3DObject_SetStyle(self, tuple) != NULL);
     else if(strcmp(name, "tubeQuality") == 0)
         retval = (Line3DObject_SetTubeQuality(self, tuple) != NULL);
     else if(strcmp(name, "tubeRadius") == 0)
@@ -883,8 +839,6 @@ Line3DObject_print(PyObject *v, FILE *fp, int flags)
     const char *type_values[] = {"LINE", "TUBE"};
     fprintf(fp, "lineType = %s  # LINE, TUBE\n", type_values[obj->data->GetIntAttribute3()]);
     fprintf(fp, "width = %d\n", obj->data->GetIntAttribute1());
-    const char *style_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    fprintf(fp, "style = %s  # SOLID, DASH, DOT, DOTDASH\n", style_values[obj->data->GetIntAttribute2()]);
 
     doubleVector dv = obj->data->GetDoubleVector1();
 
@@ -939,9 +893,6 @@ PyLine3DObject_StringRepresentation(const AnnotationObject *atts)
     str += tmpStr;
 
     SNPRINTF(tmpStr, 1000, "width = %d\n", atts->GetIntAttribute1());
-    str += tmpStr;
-    const char *style_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "style = %s  # SOLID, DASH, DOT, DOTDASH\n", style_values[atts->GetIntAttribute2()]);
     str += tmpStr;
 
     doubleVector v = atts->GetDoubleVector1();

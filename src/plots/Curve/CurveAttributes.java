@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class CurveAttributes extends AttributeSubject implements Plugin
 {
-    private static int CurveAttributes_numAdditionalAtts = 28;
+    private static int CurveAttributes_numAdditionalAtts = 27;
 
     // Enum values
     public final static int CURVECOLOR_CYCLE = 0;
@@ -94,7 +94,6 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         super(CurveAttributes_numAdditionalAtts);
 
         showLines = true;
-        lineStyle = 0;
         lineWidth = 0;
         showPoints = false;
         symbol = SYMBOLTYPES_POINT;
@@ -128,7 +127,6 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         super(CurveAttributes_numAdditionalAtts + nMoreFields);
 
         showLines = true;
-        lineStyle = 0;
         lineWidth = 0;
         showPoints = false;
         symbol = SYMBOLTYPES_POINT;
@@ -162,7 +160,6 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         super(obj);
 
         showLines = obj.showLines;
-        lineStyle = obj.lineStyle;
         lineWidth = obj.lineWidth;
         showPoints = obj.showPoints;
         symbol = obj.symbol;
@@ -207,7 +204,6 @@ public class CurveAttributes extends AttributeSubject implements Plugin
     {
         // Create the return value
         return ((showLines == obj.showLines) &&
-                (lineStyle == obj.lineStyle) &&
                 (lineWidth == obj.lineWidth) &&
                 (showPoints == obj.showPoints) &&
                 (symbol == obj.symbol) &&
@@ -246,171 +242,164 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
-    public void SetLineStyle(int lineStyle_)
-    {
-        lineStyle = lineStyle_;
-        Select(1);
-    }
-
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(2);
+        Select(1);
     }
 
     public void SetShowPoints(boolean showPoints_)
     {
         showPoints = showPoints_;
-        Select(3);
+        Select(2);
     }
 
     public void SetSymbol(int symbol_)
     {
         symbol = symbol_;
-        Select(4);
+        Select(3);
     }
 
     public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(5);
+        Select(4);
     }
 
     public void SetPointFillMode(int pointFillMode_)
     {
         pointFillMode = pointFillMode_;
-        Select(6);
+        Select(5);
     }
 
     public void SetPointStride(int pointStride_)
     {
         pointStride = pointStride_;
-        Select(7);
+        Select(6);
     }
 
     public void SetSymbolDensity(int symbolDensity_)
     {
         symbolDensity = symbolDensity_;
-        Select(8);
+        Select(7);
     }
 
     public void SetCurveColorSource(int curveColorSource_)
     {
         curveColorSource = curveColorSource_;
-        Select(9);
+        Select(8);
     }
 
     public void SetCurveColor(ColorAttribute curveColor_)
     {
         curveColor = curveColor_;
-        Select(10);
+        Select(9);
     }
 
     public void SetShowLegend(boolean showLegend_)
     {
         showLegend = showLegend_;
-        Select(11);
+        Select(10);
     }
 
     public void SetShowLabels(boolean showLabels_)
     {
         showLabels = showLabels_;
-        Select(12);
+        Select(11);
     }
 
     public void SetDesignator(String designator_)
     {
         designator = designator_;
-        Select(13);
+        Select(12);
     }
 
     public void SetDoBallTimeCue(boolean doBallTimeCue_)
     {
         doBallTimeCue = doBallTimeCue_;
-        Select(14);
+        Select(13);
     }
 
     public void SetBallTimeCueColor(ColorAttribute ballTimeCueColor_)
     {
         ballTimeCueColor = ballTimeCueColor_;
-        Select(15);
+        Select(14);
     }
 
     public void SetTimeCueBallSize(double timeCueBallSize_)
     {
         timeCueBallSize = timeCueBallSize_;
-        Select(16);
+        Select(15);
     }
 
     public void SetDoLineTimeCue(boolean doLineTimeCue_)
     {
         doLineTimeCue = doLineTimeCue_;
-        Select(17);
+        Select(16);
     }
 
     public void SetLineTimeCueColor(ColorAttribute lineTimeCueColor_)
     {
         lineTimeCueColor = lineTimeCueColor_;
-        Select(18);
+        Select(17);
     }
 
     public void SetLineTimeCueWidth(int lineTimeCueWidth_)
     {
         lineTimeCueWidth = lineTimeCueWidth_;
-        Select(19);
+        Select(18);
     }
 
     public void SetDoCropTimeCue(boolean doCropTimeCue_)
     {
         doCropTimeCue = doCropTimeCue_;
-        Select(20);
+        Select(19);
     }
 
     public void SetTimeForTimeCue(double timeForTimeCue_)
     {
         timeForTimeCue = timeForTimeCue_;
-        Select(21);
+        Select(20);
     }
 
     public void SetFillMode(int fillMode_)
     {
         fillMode = fillMode_;
-        Select(22);
+        Select(21);
     }
 
     public void SetFillColor1(ColorAttribute fillColor1_)
     {
         fillColor1 = fillColor1_;
-        Select(23);
+        Select(22);
     }
 
     public void SetFillColor2(ColorAttribute fillColor2_)
     {
         fillColor2 = fillColor2_;
-        Select(24);
+        Select(23);
     }
 
     public void SetPolarToCartesian(boolean polarToCartesian_)
     {
         polarToCartesian = polarToCartesian_;
-        Select(25);
+        Select(24);
     }
 
     public void SetPolarCoordinateOrder(int polarCoordinateOrder_)
     {
         polarCoordinateOrder = polarCoordinateOrder_;
-        Select(26);
+        Select(25);
     }
 
     public void SetAngleUnits(int angleUnits_)
     {
         angleUnits = angleUnits_;
-        Select(27);
+        Select(26);
     }
 
     // Property getting methods
     public boolean        GetShowLines() { return showLines; }
-    public int            GetLineStyle() { return lineStyle; }
     public int            GetLineWidth() { return lineWidth; }
     public boolean        GetShowPoints() { return showPoints; }
     public int            GetSymbol() { return symbol; }
@@ -444,58 +433,56 @@ public class CurveAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteBool(showLines);
         if(WriteSelect(1, buf))
-            buf.WriteInt(lineStyle);
-        if(WriteSelect(2, buf))
             buf.WriteInt(lineWidth);
-        if(WriteSelect(3, buf))
+        if(WriteSelect(2, buf))
             buf.WriteBool(showPoints);
-        if(WriteSelect(4, buf))
+        if(WriteSelect(3, buf))
             buf.WriteInt(symbol);
-        if(WriteSelect(5, buf))
+        if(WriteSelect(4, buf))
             buf.WriteDouble(pointSize);
-        if(WriteSelect(6, buf))
+        if(WriteSelect(5, buf))
             buf.WriteInt(pointFillMode);
-        if(WriteSelect(7, buf))
+        if(WriteSelect(6, buf))
             buf.WriteInt(pointStride);
-        if(WriteSelect(8, buf))
+        if(WriteSelect(7, buf))
             buf.WriteInt(symbolDensity);
-        if(WriteSelect(9, buf))
+        if(WriteSelect(8, buf))
             buf.WriteInt(curveColorSource);
-        if(WriteSelect(10, buf))
+        if(WriteSelect(9, buf))
             curveColor.Write(buf);
-        if(WriteSelect(11, buf))
+        if(WriteSelect(10, buf))
             buf.WriteBool(showLegend);
-        if(WriteSelect(12, buf))
+        if(WriteSelect(11, buf))
             buf.WriteBool(showLabels);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(12, buf))
             buf.WriteString(designator);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteBool(doBallTimeCue);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             ballTimeCueColor.Write(buf);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteDouble(timeCueBallSize);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(16, buf))
             buf.WriteBool(doLineTimeCue);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(17, buf))
             lineTimeCueColor.Write(buf);
-        if(WriteSelect(19, buf))
+        if(WriteSelect(18, buf))
             buf.WriteInt(lineTimeCueWidth);
-        if(WriteSelect(20, buf))
+        if(WriteSelect(19, buf))
             buf.WriteBool(doCropTimeCue);
-        if(WriteSelect(21, buf))
+        if(WriteSelect(20, buf))
             buf.WriteDouble(timeForTimeCue);
-        if(WriteSelect(22, buf))
+        if(WriteSelect(21, buf))
             buf.WriteInt(fillMode);
-        if(WriteSelect(23, buf))
+        if(WriteSelect(22, buf))
             fillColor1.Write(buf);
-        if(WriteSelect(24, buf))
+        if(WriteSelect(23, buf))
             fillColor2.Write(buf);
-        if(WriteSelect(25, buf))
+        if(WriteSelect(24, buf))
             buf.WriteBool(polarToCartesian);
-        if(WriteSelect(26, buf))
+        if(WriteSelect(25, buf))
             buf.WriteInt(polarCoordinateOrder);
-        if(WriteSelect(27, buf))
+        if(WriteSelect(26, buf))
             buf.WriteInt(angleUnits);
     }
 
@@ -507,89 +494,86 @@ public class CurveAttributes extends AttributeSubject implements Plugin
             SetShowLines(buf.ReadBool());
             break;
         case 1:
-            SetLineStyle(buf.ReadInt());
-            break;
-        case 2:
             SetLineWidth(buf.ReadInt());
             break;
-        case 3:
+        case 2:
             SetShowPoints(buf.ReadBool());
             break;
-        case 4:
+        case 3:
             SetSymbol(buf.ReadInt());
             break;
-        case 5:
+        case 4:
             SetPointSize(buf.ReadDouble());
             break;
-        case 6:
+        case 5:
             SetPointFillMode(buf.ReadInt());
             break;
-        case 7:
+        case 6:
             SetPointStride(buf.ReadInt());
             break;
-        case 8:
+        case 7:
             SetSymbolDensity(buf.ReadInt());
             break;
-        case 9:
+        case 8:
             SetCurveColorSource(buf.ReadInt());
             break;
-        case 10:
+        case 9:
             curveColor.Read(buf);
-            Select(10);
+            Select(9);
             break;
-        case 11:
+        case 10:
             SetShowLegend(buf.ReadBool());
             break;
-        case 12:
+        case 11:
             SetShowLabels(buf.ReadBool());
             break;
-        case 13:
+        case 12:
             SetDesignator(buf.ReadString());
             break;
-        case 14:
+        case 13:
             SetDoBallTimeCue(buf.ReadBool());
             break;
-        case 15:
+        case 14:
             ballTimeCueColor.Read(buf);
-            Select(15);
+            Select(14);
             break;
-        case 16:
+        case 15:
             SetTimeCueBallSize(buf.ReadDouble());
             break;
-        case 17:
+        case 16:
             SetDoLineTimeCue(buf.ReadBool());
             break;
-        case 18:
+        case 17:
             lineTimeCueColor.Read(buf);
-            Select(18);
+            Select(17);
             break;
-        case 19:
+        case 18:
             SetLineTimeCueWidth(buf.ReadInt());
             break;
-        case 20:
+        case 19:
             SetDoCropTimeCue(buf.ReadBool());
             break;
-        case 21:
+        case 20:
             SetTimeForTimeCue(buf.ReadDouble());
             break;
-        case 22:
+        case 21:
             SetFillMode(buf.ReadInt());
             break;
-        case 23:
+        case 22:
             fillColor1.Read(buf);
+            Select(22);
+            break;
+        case 23:
+            fillColor2.Read(buf);
             Select(23);
             break;
         case 24:
-            fillColor2.Read(buf);
-            Select(24);
-            break;
-        case 25:
             SetPolarToCartesian(buf.ReadBool());
             break;
-        case 26:
+        case 25:
             SetPolarCoordinateOrder(buf.ReadInt());
             break;
-        case 27:
+        case 26:
             SetAngleUnits(buf.ReadInt());
             break;
         }
@@ -599,7 +583,6 @@ public class CurveAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + boolToString("showLines", showLines, indent) + "\n";
-        str = str + intToString("lineStyle", lineStyle, indent) + "\n";
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + boolToString("showPoints", showPoints, indent) + "\n";
         str = str + indent + "symbol = ";
@@ -676,7 +659,6 @@ public class CurveAttributes extends AttributeSubject implements Plugin
 
     // Attributes
     private boolean        showLines;
-    private int            lineStyle;
     private int            lineWidth;
     private boolean        showPoints;
     private int            symbol;

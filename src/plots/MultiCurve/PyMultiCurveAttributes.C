@@ -128,9 +128,6 @@ PyMultiCurveAttributes_ToString(const MultiCurveAttributes *atts, const char *pr
             str += tmpStr;
         }
     }
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%syAxisTitleFormat = \"%s\"\n", prefix, atts->GetYAxisTitleFormat().c_str());
@@ -613,39 +610,6 @@ MultiCurveAttributes_GetMultiColor(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-MultiCurveAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-MultiCurveAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
-    return retval;
-}
-
-/*static*/ PyObject *
 MultiCurveAttributes_SetLineWidth(PyObject *self, PyObject *args)
 {
     MultiCurveAttributesObject *obj = (MultiCurveAttributesObject *)self;
@@ -923,8 +887,6 @@ PyMethodDef PyMultiCurveAttributes_methods[MULTICURVEATTRIBUTES_NMETH] = {
     {"GetSingleColor", MultiCurveAttributes_GetSingleColor, METH_VARARGS},
     {"SetMultiColor", MultiCurveAttributes_SetMultiColor, METH_VARARGS},
     {"GetMultiColor", MultiCurveAttributes_GetMultiColor, METH_VARARGS},
-    {"SetLineStyle", MultiCurveAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", MultiCurveAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", MultiCurveAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", MultiCurveAttributes_GetLineWidth, METH_VARARGS},
     {"SetYAxisTitleFormat", MultiCurveAttributes_SetYAxisTitleFormat, METH_VARARGS},
@@ -990,17 +952,6 @@ PyMultiCurveAttributes_getattr(PyObject *self, char *name)
         return MultiCurveAttributes_GetSingleColor(self, NULL);
     if(strcmp(name, "multiColor") == 0)
         return MultiCurveAttributes_GetMultiColor(self, NULL);
-    if(strcmp(name, "lineStyle") == 0)
-        return MultiCurveAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "lineWidth") == 0)
         return MultiCurveAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "yAxisTitleFormat") == 0)
@@ -1047,8 +998,6 @@ PyMultiCurveAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = MultiCurveAttributes_SetSingleColor(self, tuple);
     else if(strcmp(name, "multiColor") == 0)
         obj = MultiCurveAttributes_SetMultiColor(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = MultiCurveAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = MultiCurveAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "yAxisTitleFormat") == 0)

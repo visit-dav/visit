@@ -48,7 +48,6 @@ class QLineEdit;
 
 class QvisColorButton;
 class QvisColorManagerWidget;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class QvisOpacitySlider;
 
@@ -94,7 +93,6 @@ private slots:
     void singleColorOpacityChanged(int opacity);
     void multipleColorChanged(const QColor &color, int index);
     void opacityChanged(int opacity, int index);
-    void lineStyleChanged(int style);
     void lineWidthChanged(int style);
     void yAxisTitleFormatProcessText();
     void useYAxisTickSpacingChanged(bool val);
@@ -112,8 +110,6 @@ private:
     QvisColorButton         *singleColor;
     QvisOpacitySlider       *singleColorOpacity;
     QvisColorManagerWidget  *multipleColors;
-    QLabel                  *lineStyleLabel;
-    QvisLineStyleWidget     *lineStyle;
     QLabel                  *lineWidthLabel;
     QvisLineWidthWidget     *lineWidth;
     QLabel                  *yAxisTitleFormatLabel;

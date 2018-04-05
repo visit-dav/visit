@@ -736,7 +736,6 @@ VisWinQuery::Lineout(const VisualCueInfo *vq)
 
     lo->SetShowLabels(vq->GetShowLabel());
     lo->SetLineWidth(vq->GetLineWidth());
-    lo->SetLineStyle(vq->GetLineStyle());
 
     if (mediator.GetFullFrameMode())
     {
@@ -859,7 +858,6 @@ VisWinQuery::UpdateQuery(const std::string &id, const VisualCueInfo *vq)
             it->lineActor->SetPoint2(pt2[0], pt2[1], pt2[2] + z_proj);
 
             it->lineActor->SetLineWidth(vq->GetLineWidth());
-            it->lineActor->SetLineStyle(vq->GetLineStyle());
  
             double c[4];
             vq->GetColor().GetRgba(c);

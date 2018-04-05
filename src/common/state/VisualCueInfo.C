@@ -96,7 +96,6 @@ void VisualCueInfo::Init()
 {
     cueType = Unknown;
     showLabel = false;
-    lineStyle = 0;
     lineWidth = 0;
     opacity = 1;
     highlightColor[0] = 0;
@@ -129,7 +128,6 @@ void VisualCueInfo::Copy(const VisualCueInfo &obj)
     glyphType = obj.glyphType;
     label = obj.label;
     showLabel = obj.showLabel;
-    lineStyle = obj.lineStyle;
     lineWidth = obj.lineWidth;
     opacity = obj.opacity;
     highlightColor[0] = obj.highlightColor[0];
@@ -306,7 +304,6 @@ VisualCueInfo::operator == (const VisualCueInfo &obj) const
             (glyphType == obj.glyphType) &&
             (label == obj.label) &&
             (showLabel == obj.showLabel) &&
-            (lineStyle == obj.lineStyle) &&
             (lineWidth == obj.lineWidth) &&
             (opacity == obj.opacity) &&
             highlightColor_equal);
@@ -459,7 +456,6 @@ VisualCueInfo::SelectAll()
     Select(ID_glyphType,      (void *)&glyphType);
     Select(ID_label,          (void *)&label);
     Select(ID_showLabel,      (void *)&showLabel);
-    Select(ID_lineStyle,      (void *)&lineStyle);
     Select(ID_lineWidth,      (void *)&lineWidth);
     Select(ID_opacity,        (void *)&opacity);
     Select(ID_highlightColor, (void *)highlightColor, 3);
@@ -509,13 +505,6 @@ VisualCueInfo::SetShowLabel(bool showLabel_)
 {
     showLabel = showLabel_;
     Select(ID_showLabel, (void *)&showLabel);
-}
-
-void
-VisualCueInfo::SetLineStyle(int lineStyle_)
-{
-    lineStyle = lineStyle_;
-    Select(ID_lineStyle, (void *)&lineStyle);
 }
 
 void
@@ -606,12 +595,6 @@ VisualCueInfo::GetShowLabel() const
 }
 
 int
-VisualCueInfo::GetLineStyle() const
-{
-    return lineStyle;
-}
-
-int
 VisualCueInfo::GetLineWidth() const
 {
     return lineWidth;
@@ -699,7 +682,6 @@ VisualCueInfo::GetFieldName(int index) const
     case ID_glyphType:      return "glyphType";
     case ID_label:          return "label";
     case ID_showLabel:      return "showLabel";
-    case ID_lineStyle:      return "lineStyle";
     case ID_lineWidth:      return "lineWidth";
     case ID_opacity:        return "opacity";
     case ID_highlightColor: return "highlightColor";
@@ -733,7 +715,6 @@ VisualCueInfo::GetFieldType(int index) const
     case ID_glyphType:      return FieldType_string;
     case ID_label:          return FieldType_string;
     case ID_showLabel:      return FieldType_bool;
-    case ID_lineStyle:      return FieldType_linestyle;
     case ID_lineWidth:      return FieldType_linewidth;
     case ID_opacity:        return FieldType_opacity;
     case ID_highlightColor: return FieldType_floatArray;
@@ -767,7 +748,6 @@ VisualCueInfo::GetFieldTypeName(int index) const
     case ID_glyphType:      return "string";
     case ID_label:          return "string";
     case ID_showLabel:      return "bool";
-    case ID_lineStyle:      return "linestyle";
     case ID_lineWidth:      return "linewidth";
     case ID_opacity:        return "opacity";
     case ID_highlightColor: return "floatArray";
@@ -825,11 +805,6 @@ VisualCueInfo::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_showLabel:
         {  // new scope
         retval = (showLabel == obj.showLabel);
-        }
-        break;
-    case ID_lineStyle:
-        {  // new scope
-        retval = (lineStyle == obj.lineStyle);
         }
         break;
     case ID_lineWidth:
@@ -950,7 +925,6 @@ VisualCueInfo::SetFromL(const Line *line)
     SetLabel(line->GetDesignator());
     SetShowLabel(line->GetReflineLabels());
     SetLineWidth(line->GetLineWidth());
-    SetLineStyle(line->GetLineStyle());
     SetColor(line->GetColor());
 }
 

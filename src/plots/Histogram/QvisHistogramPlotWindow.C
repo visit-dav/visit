@@ -52,7 +52,6 @@
 #include <QButtonGroup>
 #include <QRadioButton>
 #include <QvisColorButton.h>
-#include <QvisLineStyleWidget.h>
 #include <QvisLineWidthWidget.h>
 #include <QvisVariableButton.h>
 
@@ -443,37 +442,28 @@ QvisHistogramPlotWindow::CreateWindowContents()
     connect(outputTypeGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(outputTypeChanged(int)));
 
-    sgLayout->addWidget(outputTypeWidget, 0,1,1,2);
+    sgLayout->addWidget(outputTypeWidget, 0,1);
 
     outputTypeLabel = new QLabel(tr("Type of Output"), styleGroupBox);
-    sgLayout->addWidget(outputTypeLabel,0,0, Qt::AlignRight | Qt::AlignVCenter);
-
-    // Add Line Style
-    lineStyleLabel = new QLabel(tr("Line Style"), styleGroupBox);
-    sgLayout->addWidget(lineStyleLabel,1,0,Qt::AlignRight | Qt::AlignVCenter);
-
-    lineStyle = new QvisLineStyleWidget(0, styleGroupBox);
-    connect(lineStyle, SIGNAL(lineStyleChanged(int)),
-            this, SLOT(lineStyleChanged(int)));
-    sgLayout->addWidget(lineStyle, 1,1,1,2);
+    sgLayout->addWidget(outputTypeLabel,0,0);
 
     // Add Line Width
     lineWidthLabel = new QLabel(tr("Line Width"), styleGroupBox);
-    sgLayout->addWidget(lineWidthLabel,2,0,Qt::AlignRight | Qt::AlignVCenter);
+    sgLayout->addWidget(lineWidthLabel,1,0);
 
     lineWidth = new QvisLineWidthWidget(0, styleGroupBox);
     connect(lineWidth, SIGNAL(lineWidthChanged(int)),
             this, SLOT(lineWidthChanged(int)));
-    sgLayout->addWidget(lineWidth, 2,1,1,2);
+    sgLayout->addWidget(lineWidth, 1,1);
 
     // Add Color Selector
     colorLabel = new QLabel(tr("Color"), styleGroupBox);
-    sgLayout->addWidget(colorLabel,3,0,Qt::AlignRight | Qt::AlignVCenter);
+    sgLayout->addWidget(colorLabel,2,0);
 
     color = new QvisColorButton(styleGroupBox);
     connect(color, SIGNAL(selectedColor(const QColor&)),
             this, SLOT(colorChanged(const QColor&)));
-    sgLayout->addWidget(color, 3,1);
+    sgLayout->addWidget(color, 2,1);
 
 
     // Add normalization option.
@@ -704,11 +694,6 @@ QvisHistogramPlotWindow::UpdateWindow(bool doAll)
             outputTypeGroup->blockSignals(true);
             outputTypeGroup->button(atts->GetOutputType())->setChecked(true);
             outputTypeGroup->blockSignals(false);
-            break;
-          case HistogramAttributes::ID_lineStyle:
-            lineStyle->blockSignals(true);
-            lineStyle->SetLineStyle(atts->GetLineStyle());
-            lineStyle->blockSignals(false);
             break;
           case HistogramAttributes::ID_lineWidth:
             lineWidth->blockSignals(true);
@@ -1105,15 +1090,6 @@ QvisHistogramPlotWindow::outputTypeChanged(int val)
         SetUpdate(false);
         Apply();
     }
-}
-
-
-void
-QvisHistogramPlotWindow::lineStyleChanged(int style)
-{
-    atts->SetLineStyle(style);
-    SetUpdate(false);
-    Apply();
 }
 
 

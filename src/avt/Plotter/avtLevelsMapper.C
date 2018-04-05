@@ -99,7 +99,6 @@ const double INV_255 = 0.0039215686274509803377;
 avtLevelsMapper::avtLevelsMapper()
 {
     lineWidth = LW_0;
-    lineStyle = SOLID; 
     useColorMap = false;
 }
 
@@ -208,7 +207,6 @@ avtLevelsMapper::CustomizeMappers(void)
             mappers[i]->ScalarVisibilityOff();
 
             vtkProperty* prop = actors[i]->GetProperty();
-            prop->SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
             prop->SetLineWidth(LineWidth2Int(lineWidth));
         }
     }
@@ -255,53 +253,6 @@ avtLevelsMapper::SetLineWidth(_LineWidth lw)
         {
             vtkProperty *prop = actors[i]->GetProperty();
             prop->SetLineWidth(LineWidth2Int(lineWidth));
-        }
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtLevelsMapper::SetLineStyle
-//
-//  Purpose:
-//      Sets the line style for all the actors of plot.
-//
-//  Arguments:
-//      s        The new line style
-//
-//  Programmer:  Kathleen Bonnell
-//  Creation:    March 22, 2001
-//
-//  Modifications:
-//
-//    Kathleen Bonnell, Thu Jun 21 16:33:54 PDT 2001
-//    Enable setting of actor's stipple pattern.
-//
-//    Kathleen Bonnell, Mon Jun 25 14:31:51 PDT 2001 
-//    Made stipplePattern a class member.
-//
-//    Kathleen Bonnell, Sat Aug 18 18:09:04 PDT 2001
-//    Use enum types from LineAttributes.h to ensure proper
-//    line width and style are sent down to vtk.
-//
-// ****************************************************************************
-
-void
-avtLevelsMapper::SetLineStyle(_LineStyle ls)
-{
-    lineStyle = ls; 
-    if ( actors == NULL )
-    {
-        // this occurs when this method called before input is set.
-        return;
-    }
-
-    for (int i = 0 ; i < nMappers ; i++)
-    {
-        if (actors[i] != NULL)
-        {
-            actors[i]->GetProperty()->
-                SetLineStipplePattern(LineStyle2StipplePattern(lineStyle));
         }
     }
 }

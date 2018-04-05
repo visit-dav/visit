@@ -50,7 +50,6 @@ class QLineEdit;
 class QRadioButton;
 class QvisColorButton;
 class QvisColorTableWidget;
-class QvisLineStyleWidget;
 class QvisLineWidthWidget;
 class VectorAttributes;
 
@@ -135,7 +134,6 @@ protected:
     void UpdateLineStem();
 
 private slots:
-    void lineStyleChanged(int newStyle);
     void lineWidthChanged(int newWidth);
     void vectorColorChanged(const QColor &color);
     void processScaleText();
@@ -189,13 +187,11 @@ private:
     QCheckBox            *legendToggle;
 
 
-    QvisLineStyleWidget  *lineStyle;
     QvisLineWidthWidget  *lineWidth;
     QLabel               *glyphTypeLabel;
     QComboBox            *glyphType;
     QLabel               *lineStemLabel;
     QComboBox            *lineStem;
-    QLabel               *lineStyleLabel;
     QLabel               *lineWidthLabel;
     QLineEdit            *stemWidthEdit;
     QLabel               *stemWidthLabel;

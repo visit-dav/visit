@@ -44,7 +44,7 @@
 //
 // Functions exposed to the VisIt module.
 //
-#define WELLBOREATTRIBUTES_NMETH 40
+#define WELLBOREATTRIBUTES_NMETH 38
 void           PyWellBoreAttributes_StartUp(WellBoreAttributes *subj, void *data);
 void           PyWellBoreAttributes_CloseDown();
 PyMethodDef *  PyWellBoreAttributes_GetMethodTable(int *nMethods);

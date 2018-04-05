@@ -151,7 +151,7 @@ class     avtVariablePointGlyphMapper;
 //    Add GetExtraInfoForPick.
 //
 //    Kathleen Biagas, Wed May 11 08:48:51 PDT 2016
-//    Remove custom renderer in favor of native renderers in VTK-8.
+//    Remove custom renderer in favor of native renderers in VTK-7.
 //
 // ****************************************************************************
 
@@ -172,7 +172,6 @@ avtMeshPlot : public avtPlot
 
     void            SetLegend(bool);
     void            SetLineWidth(_LineWidth);
-    void            SetLineStyle(_LineStyle);
     void            SetPointSize(float);
     void            SetRenderOpaque(void);
     void            SetMeshColor(const unsigned char *);

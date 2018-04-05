@@ -149,7 +149,6 @@ QvisLightingWindow.C
 QvisLine2DInterface.C
 QvisLine3DInterface.C
 QvisLineoutQueryWidget.C
-QvisLineStyleWidget.C
 QvisLineWidthWidget.C
 QvisMacroWindow.C
 QvisMainWindow.C
@@ -284,7 +283,6 @@ QvisInterpreter.h
 QvisLightingWidget.h
 QvisLightingWindow.h
 QvisLineoutQueryWidget.h
-QvisLineStyleWidget.h
 QvisLineWidthWidget.h
 QvisMacroWindow.h
 QvisMainWindow.h

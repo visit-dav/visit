@@ -38,9 +38,6 @@
       <Field name="nVectors" label="Num vectors" type="int">
         400
       </Field>
-      <Field name="lineStyle" label="Line Style" type="linestyle">
-        0
-      </Field>
       <Field name="lineWidth" label="Line Width" type="linewidth">
         0
       </Field>

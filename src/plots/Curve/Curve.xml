@@ -50,9 +50,6 @@
       <Field name="showLines" label="showLines" type="bool">
         true
       </Field>
-      <Field name="lineStyle" label="Line Style" type="linestyle" enabler="showLines:true">
-        0
-      </Field>
       <Field name="lineWidth" label="Line Width" type="linewidth" enabler="showLines:true">
         0
       </Field>

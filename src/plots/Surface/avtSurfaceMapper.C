@@ -74,7 +74,6 @@ avtSurfaceMapper::avtSurfaceMapper()
     edgeVis = false;
     scalarVis = true;
     lineWidth = 1;
-    lineStyle = 0;
     edgeColor[0] = edgeColor[1] = edgeColor[2] = 0.;
     surfaceColor[0] = surfaceColor[1] = surfaceColor[2] = 1.;
     canApplyGlobalRep = false;
@@ -144,7 +143,6 @@ avtSurfaceMapper::CustomizeMappers()
                 prop->EdgeVisibilityOn();
                 prop->SetEdgeColor(edgeColor);
                 prop->SetLineWidth(lineWidth);
-                prop->SetLineStipplePattern(lineStyle);
             }
             else
             {
@@ -275,35 +273,6 @@ avtSurfaceMapper::SetLineWidth(int lw)
             if (actors[i] != NULL)
             {
                 actors[i]->GetProperty()->SetLineWidth(lw);
-            }
-        }
-        NotifyTransparencyActor();
-    }
-}
-
-
-// ****************************************************************************
-//  Method: avtSurfaceMapper::SetLineStyle
-//
-//  Purpose:
-//     Sets the line style (stipple pattern).
-// 
-//  Programmer: Kathleen Biagas
-//  Creation:   July 18, 2016
-//
-// ****************************************************************************
-
-void
-avtSurfaceMapper::SetLineStyle(int ls)
-{
-    if (lineStyle != ls)
-    {
-        lineStyle = ls;
-        for (int i = 0; i < nMappers; ++i)
-        {
-            if (actors[i] != NULL)
-            {
-                actors[i]->GetProperty()->SetLineStipplePattern(ls);
             }
         }
         NotifyTransparencyActor();

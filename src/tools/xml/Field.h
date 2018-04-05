@@ -1165,42 +1165,6 @@ class Opacity : public virtual Field
 
 
 //
-// --------------------------------- LineStyle --------------------------------
-//
-class LineStyle : public virtual Field
-{
-  public:
-    int  val;
-  public:
-    LineStyle(const QString &n, const QString &l) : Field("linestyle",n,l) { }
-    virtual QString GetCPPName(bool, const QString &) 
-    {
-        return "int";
-    }
-    virtual void SetValue(const QString &s, int = 0)
-    {
-        val = s.toInt();
-        valueSet = true;
-    }
-    virtual void Print(QTextStream &out)
-    {
-        Field::Print(out);
-        if (valueSet)
-        {
-            out << "            value: " << val << endl;
-        }
-    }
-    virtual std::vector<QString> GetValueAsText()
-    {
-        std::vector<QString> retval;
-        if (valueSet)
-            retval.push_back(QString().sprintf("%d", val));
-        return retval;
-    }
-};
-
-
-//
 // --------------------------------- LineWidth --------------------------------
 //
 class LineWidth : public virtual Field
@@ -1948,7 +1912,6 @@ class FieldFactory
         else if (type == "colortable")   f = new ColorTable(name,label);
         else if (type == "color")        f = new Color(name,label);
         else if (type == "opacity")      f = new Opacity(name,label);
-        else if (type == "linestyle")    f = new LineStyle(name,label);
         else if (type == "linewidth")    f = new LineWidth(name,label);
         else if (type == "variablename") f = new VariableName(name,label);
         else if (type == "att")          f = new Att(subtype,name,label);

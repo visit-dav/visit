@@ -181,9 +181,6 @@ PyWellBoreAttributes_ToString(const WellBoreAttributes *atts, const char *prefix
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%swellLineWidth = %d\n", prefix, atts->GetWellLineWidth());
     str += tmpStr;
-    const char *wellLineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%swellLineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, wellLineStyle_values[atts->GetWellLineStyle()]);
-    str += tmpStr;
     const char *wellAnnotation_names = "None, StemOnly, NameOnly, StemAndName";
     switch (atts->GetWellAnnotation())
     {
@@ -860,39 +857,6 @@ WellBoreAttributes_GetWellLineWidth(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
-WellBoreAttributes_SetWellLineStyle(PyObject *self, PyObject *args)
-{
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the wellLineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetWellLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-WellBoreAttributes_GetWellLineStyle(PyObject *self, PyObject *args)
-{
-    WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetWellLineStyle()));
-    return retval;
-}
-
-/*static*/ PyObject *
 WellBoreAttributes_SetWellAnnotation(PyObject *self, PyObject *args)
 {
     WellBoreAttributesObject *obj = (WellBoreAttributesObject *)self;
@@ -1159,8 +1123,6 @@ PyMethodDef PyWellBoreAttributes_methods[WELLBOREATTRIBUTES_NMETH] = {
     {"GetWellRadius", WellBoreAttributes_GetWellRadius, METH_VARARGS},
     {"SetWellLineWidth", WellBoreAttributes_SetWellLineWidth, METH_VARARGS},
     {"GetWellLineWidth", WellBoreAttributes_GetWellLineWidth, METH_VARARGS},
-    {"SetWellLineStyle", WellBoreAttributes_SetWellLineStyle, METH_VARARGS},
-    {"GetWellLineStyle", WellBoreAttributes_GetWellLineStyle, METH_VARARGS},
     {"SetWellAnnotation", WellBoreAttributes_SetWellAnnotation, METH_VARARGS},
     {"GetWellAnnotation", WellBoreAttributes_GetWellAnnotation, METH_VARARGS},
     {"SetWellStemHeight", WellBoreAttributes_SetWellStemHeight, METH_VARARGS},
@@ -1246,17 +1208,6 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
         return WellBoreAttributes_GetWellRadius(self, NULL);
     if(strcmp(name, "wellLineWidth") == 0)
         return WellBoreAttributes_GetWellLineWidth(self, NULL);
-    if(strcmp(name, "wellLineStyle") == 0)
-        return WellBoreAttributes_GetWellLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "wellAnnotation") == 0)
         return WellBoreAttributes_GetWellAnnotation(self, NULL);
     if(strcmp(name, "None") == 0)
@@ -1281,6 +1232,38 @@ PyWellBoreAttributes_getattr(PyObject *self, char *name)
     if(strcmp(name, "wellNames") == 0)
         return WellBoreAttributes_GetWellNames(self, NULL);
 
+    // Try and handle legacy fields
+
+    // wellLineStyle and it's possible enumerations
+    bool wellLineStyleFound = false;
+    if (strcmp(name, "wellLineStyle") == 0)
+    {
+        wellLineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        wellLineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        wellLineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        wellLineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        wellLineStyleFound = true;
+    }
+
+    if (wellLineStyleFound)
+    {
+        fprintf(stdout, "wellLineStyle is no longer a valid WellBore "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyWellBoreAttributes_methods, self, name);
 }
 
@@ -1316,8 +1299,6 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = WellBoreAttributes_SetWellRadius(self, tuple);
     else if(strcmp(name, "wellLineWidth") == 0)
         obj = WellBoreAttributes_SetWellLineWidth(self, tuple);
-    else if(strcmp(name, "wellLineStyle") == 0)
-        obj = WellBoreAttributes_SetWellLineStyle(self, tuple);
     else if(strcmp(name, "wellAnnotation") == 0)
         obj = WellBoreAttributes_SetWellAnnotation(self, tuple);
     else if(strcmp(name, "wellStemHeight") == 0)
@@ -1333,6 +1314,15 @@ PyWellBoreAttributes_setattr(PyObject *self, char *name, PyObject *args)
     else if(strcmp(name, "wellNames") == 0)
         obj = WellBoreAttributes_SetWellNames(self, tuple);
 
+    // Try and handle legacy fields
+    if(obj == NULL)
+    {
+        if(strcmp(name, "wellLineStyle") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+    }
     if(obj != NULL)
         Py_DECREF(obj);
 

@@ -135,7 +135,6 @@ class PLOTTER_API  avtVariableMapper : virtual public avtMapper
     void                       SetOpacity(double);
     void                       SetLookupTable(vtkLookupTable *);
     void                       SetLineWidth(_LineWidth);
-    void                       SetLineStyle(_LineStyle);
 
     virtual void               SetColorTexturingFlag(bool);
     void                       SetColorTexturingFlagAllowed(bool);
@@ -144,7 +143,6 @@ class PLOTTER_API  avtVariableMapper : virtual public avtMapper
     double                     min, max;
     bool                       setMin, setMax;
     _LineWidth                 lineWidth;
-    _LineStyle                 lineStyle;
     bool                       lighting;
     double                     opacity;
     int                        limitsMode;

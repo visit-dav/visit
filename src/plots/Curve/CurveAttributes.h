@@ -134,7 +134,6 @@ public:
 
     // Property setting methods
     void SetShowLines(bool showLines_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetShowPoints(bool showPoints_);
     void SetSymbol(SymbolTypes symbol_);
@@ -164,7 +163,6 @@ public:
 
     // Property getting methods
     bool                 GetShowLines() const;
-    int                  GetLineStyle() const;
     int                  GetLineWidth() const;
     bool                 GetShowPoints() const;
     SymbolTypes          GetSymbol() const;
@@ -247,7 +245,6 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_showLines = 0,
-        ID_lineStyle,
         ID_lineWidth,
         ID_showPoints,
         ID_symbol,
@@ -279,7 +276,6 @@ public:
 
 private:
     bool           showLines;
-    int            lineStyle;
     int            lineWidth;
     bool           showPoints;
     int            symbol;
@@ -311,6 +307,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define CURVEATTRIBUTES_TMFS "biibidiiiiabbsbadbaibdiaabii"
+#define CURVEATTRIBUTES_TMFS "bibidiiiiabbsbadbaibdiaabii"
 
 #endif

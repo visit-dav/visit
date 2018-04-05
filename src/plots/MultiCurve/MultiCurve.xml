@@ -28,9 +28,6 @@
       </Field>
       <Field name="multiColor" label="multiColor" type="att" subtype="ColorAttributeList">
       </Field>
-      <Field name="lineStyle" label="Line Style" type="linestyle">
-        0
-      </Field>
       <Field name="lineWidth" label="Line Width" type="linewidth">
         0
       </Field>

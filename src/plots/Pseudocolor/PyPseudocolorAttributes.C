@@ -251,9 +251,6 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%spointSizePixels = %d\n", prefix, atts->GetPointSizePixels());
     str += tmpStr;
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     const char *lineType_names = "Line, Tube, Ribbon";
     switch (atts->GetLineType())
     {
@@ -984,39 +981,6 @@ PseudocolorAttributes_GetPointSizePixels(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(long(obj->data->GetPointSizePixels()));
-    return retval;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-PseudocolorAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
     return retval;
 }
 
@@ -1867,8 +1831,6 @@ PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH] = {
     {"GetPointSizeVar", PseudocolorAttributes_GetPointSizeVar, METH_VARARGS},
     {"SetPointSizePixels", PseudocolorAttributes_SetPointSizePixels, METH_VARARGS},
     {"GetPointSizePixels", PseudocolorAttributes_GetPointSizePixels, METH_VARARGS},
-    {"SetLineStyle", PseudocolorAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", PseudocolorAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineType", PseudocolorAttributes_SetLineType, METH_VARARGS},
     {"GetLineType", PseudocolorAttributes_GetLineType, METH_VARARGS},
     {"SetLineWidth", PseudocolorAttributes_SetLineWidth, METH_VARARGS},
@@ -2042,17 +2004,6 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetPointSizeVar(self, NULL);
     if(strcmp(name, "pointSizePixels") == 0)
         return PseudocolorAttributes_GetPointSizePixels(self, NULL);
-    if(strcmp(name, "lineStyle") == 0)
-        return PseudocolorAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "lineType") == 0)
         return PseudocolorAttributes_GetLineType(self, NULL);
     if(strcmp(name, "Line") == 0)
@@ -2146,6 +2097,36 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         bool useCT = meshObj->data->GetOpacityType() == PseudocolorAttributes::ColorTable;
         return PyInt_FromLong(useCT?1L:0L);
     }
+
+    // lineStyle and it's possible enumerations
+    bool lineStyleFound = false;
+    if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    if (lineStyleFound)
+    {
+        fprintf(stdout, "lineStyle is no longer a valid Pseudocolor "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
     return Py_FindMethod(PyPseudocolorAttributes_methods, self, name);
 }
 
@@ -2203,8 +2184,6 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PseudocolorAttributes_SetPointSizeVar(self, tuple);
     else if(strcmp(name, "pointSizePixels") == 0)
         obj = PseudocolorAttributes_SetPointSizePixels(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = PseudocolorAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineType") == 0)
         obj = PseudocolorAttributes_SetLineType(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
@@ -2276,7 +2255,12 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
                 PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::Constant);
             else
                 PseudocolorObj->data->SetOpacityType(PseudocolorAttributes::ColorTable);
-    
+
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        if(strcmp(name, "lineStyle") == 0)
+        {
             Py_INCREF(Py_None);
             obj = Py_None;
         }

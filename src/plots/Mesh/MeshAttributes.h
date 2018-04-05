@@ -116,7 +116,6 @@ public:
 
     // Property setting methods
     void SetLegendFlag(bool legendFlag_);
-    void SetLineStyle(int lineStyle_);
     void SetLineWidth(int lineWidth_);
     void SetMeshColor(const ColorAttribute &meshColor_);
     void SetMeshColorSource(MeshColor meshColorSource_);
@@ -135,7 +134,6 @@ public:
 
     // Property getting methods
     bool                 GetLegendFlag() const;
-    int                  GetLineStyle() const;
     int                  GetLineWidth() const;
     const ColorAttribute &GetMeshColor() const;
           ColorAttribute &GetMeshColor();
@@ -194,7 +192,6 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_legendFlag = 0,
-        ID_lineStyle,
         ID_lineWidth,
         ID_meshColor,
         ID_meshColorSource,
@@ -215,7 +212,6 @@ public:
 
 private:
     bool           legendFlag;
-    int            lineStyle;
     int            lineWidth;
     ColorAttribute meshColor;
     int            meshColorSource;
@@ -236,6 +232,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define MESHATTRIBUTES_TMFS "biiaiiidaibsibbid"
+#define MESHATTRIBUTES_TMFS "biaiiidaibsibbid"
 
 #endif

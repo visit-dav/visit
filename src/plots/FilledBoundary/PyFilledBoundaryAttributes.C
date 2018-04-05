@@ -111,9 +111,6 @@ PyFilledBoundaryAttributes_ToString(const FilledBoundaryAttributes *atts, const 
     else
         SNPRINTF(tmpStr, 1000, "%slegendFlag = 0\n", prefix);
     str += tmpStr;
-    const char *lineStyle_values[] = {"SOLID", "DASH", "DOT", "DOTDASH"};
-    SNPRINTF(tmpStr, 1000, "%slineStyle = %s%s  # SOLID, DASH, DOT, DOTDASH\n", prefix, prefix, lineStyle_values[atts->GetLineStyle()]);
-    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slineWidth = %d\n", prefix, atts->GetLineWidth());
     str += tmpStr;
     const unsigned char *singleColor = atts->GetSingleColor().GetColor();
@@ -332,39 +329,6 @@ FilledBoundaryAttributes_GetLegendFlag(PyObject *self, PyObject *args)
 {
     FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
     PyObject *retval = PyInt_FromLong(obj->data->GetLegendFlag()?1L:0L);
-    return retval;
-}
-
-/*static*/ PyObject *
-FilledBoundaryAttributes_SetLineStyle(PyObject *self, PyObject *args)
-{
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
-
-    int ival;
-    if(!PyArg_ParseTuple(args, "i", &ival))
-        return NULL;
-
-    // Set the lineStyle in the object.
-    if(ival >= 0 && ival <= 3)
-        obj->data->SetLineStyle(ival);
-    else
-    {
-        fprintf(stderr, "An invalid  value was given. "
-                        "Valid values are in the range of [0,3]. "
-                        "You can also use the following names: "
-                        "\"SOLID\", \"DASH\", \"DOT\", \"DOTDASH\"\n");
-        return NULL;
-    }
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/*static*/ PyObject *
-FilledBoundaryAttributes_GetLineStyle(PyObject *self, PyObject *args)
-{
-    FilledBoundaryAttributesObject *obj = (FilledBoundaryAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetLineStyle()));
     return retval;
 }
 
@@ -1070,8 +1034,6 @@ PyMethodDef PyFilledBoundaryAttributes_methods[FILLEDBOUNDARYATTRIBUTES_NMETH] =
     {"GetInvertColorTable", FilledBoundaryAttributes_GetInvertColorTable, METH_VARARGS},
     {"SetLegendFlag", FilledBoundaryAttributes_SetLegendFlag, METH_VARARGS},
     {"GetLegendFlag", FilledBoundaryAttributes_GetLegendFlag, METH_VARARGS},
-    {"SetLineStyle", FilledBoundaryAttributes_SetLineStyle, METH_VARARGS},
-    {"GetLineStyle", FilledBoundaryAttributes_GetLineStyle, METH_VARARGS},
     {"SetLineWidth", FilledBoundaryAttributes_SetLineWidth, METH_VARARGS},
     {"GetLineWidth", FilledBoundaryAttributes_GetLineWidth, METH_VARARGS},
     {"SetSingleColor", FilledBoundaryAttributes_SetSingleColor, METH_VARARGS},
@@ -1145,17 +1107,6 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
         return FilledBoundaryAttributes_GetInvertColorTable(self, NULL);
     if(strcmp(name, "legendFlag") == 0)
         return FilledBoundaryAttributes_GetLegendFlag(self, NULL);
-    if(strcmp(name, "lineStyle") == 0)
-        return FilledBoundaryAttributes_GetLineStyle(self, NULL);
-    if(strcmp(name, "SOLID") == 0)
-        return PyInt_FromLong(long(0));
-    else if(strcmp(name, "DASH") == 0)
-        return PyInt_FromLong(long(1));
-    else if(strcmp(name, "DOT") == 0)
-        return PyInt_FromLong(long(2));
-    else if(strcmp(name, "DOTDASH") == 0)
-        return PyInt_FromLong(long(3));
-
     if(strcmp(name, "lineWidth") == 0)
         return FilledBoundaryAttributes_GetLineWidth(self, NULL);
     if(strcmp(name, "singleColor") == 0)
@@ -1206,8 +1157,9 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
 
     // Try and handle legacy fields
 
-    // boundaryType and it's possible enumerations
     bool boundaryTypeFound = false;
+    bool lineStyleFound = false;
+    // boundaryType and it's possible enumerations
     if (strcmp(name, "boundaryType") == 0)
     {
         boundaryTypeFound = true;
@@ -1228,17 +1180,44 @@ PyFilledBoundaryAttributes_getattr(PyObject *self, char *name)
     {
         boundaryTypeFound = true;
     }
+    if (strcmp(name, "filledFlag") == 0)
+    {
+        fprintf(stdout, "filledFlag is no longer a valid FilledBoundary "
+                       "attribute.\nIt's value is being ignored, please remove "
+                       "it from your script.\n");
+        return PyInt_FromLong(0L);
+    }
+    // lineStyle and it's possible enumerations
+    else if (strcmp(name, "lineStyle") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "SOLID") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DASH") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOT") == 0)
+    {
+        lineStyleFound = true;
+    }
+    else if (strcmp(name, "DOTDASH") == 0)
+    {
+        lineStyleFound = true;
+    }
     if (boundaryTypeFound)
     {
-        boundaryTypeFound = true;
         fprintf(stdout, "boundaryType is no longer a valid FilledBoundary "
                        "attribute.\nIt's value is being ignored, please remove "
                        "it from your script.\n");
         return PyInt_FromLong(0L);
     }
-    else if (strcmp(name, "filledFlag") == 0)
+    if (lineStyleFound)
     {
-        fprintf(stdout, "filledFlag is no longer a valid FilledBoundary "
+        fprintf(stdout, "lineStyle is no longer a valid FilledBoundary "
                        "attribute.\nIt's value is being ignored, please remove "
                        "it from your script.\n");
         return PyInt_FromLong(0L);
@@ -1264,8 +1243,6 @@ PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = FilledBoundaryAttributes_SetInvertColorTable(self, tuple);
     else if(strcmp(name, "legendFlag") == 0)
         obj = FilledBoundaryAttributes_SetLegendFlag(self, tuple);
-    else if(strcmp(name, "lineStyle") == 0)
-        obj = FilledBoundaryAttributes_SetLineStyle(self, tuple);
     else if(strcmp(name, "lineWidth") == 0)
         obj = FilledBoundaryAttributes_SetLineWidth(self, tuple);
     else if(strcmp(name, "singleColor") == 0)
@@ -1306,6 +1283,11 @@ PyFilledBoundaryAttributes_setattr(PyObject *self, char *name, PyObject *args)
             obj = Py_None;
         }
         else if(strcmp(name, "boundaryType") == 0)
+        {
+            Py_INCREF(Py_None);
+            obj = Py_None;
+        }
+        else if(strcmp(name, "lineStyle") == 0)
         {
             Py_INCREF(Py_None);
             obj = Py_None;

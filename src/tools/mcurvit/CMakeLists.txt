@@ -52,7 +52,6 @@ QvisColorManagerWidget.C
 QvisColorSelectionWidget.C
 QvisGeneralWidget.C
 QvisGridWidget.C
-QvisLineStyleWidget.C
 QvisLineWidthWidget.C
 QvisMessageDialog.C
 QvisOpacitySlider.C
@@ -75,7 +74,6 @@ QvisColorManagerWidget.h
 QvisColorSelectionWidget.h
 QvisGeneralWidget.h
 QvisGridWidget.h
-QvisLineStyleWidget.h
 QvisLineWidthWidget.h
 QvisMessageDialog.h
 QvisOpacitySlider.h

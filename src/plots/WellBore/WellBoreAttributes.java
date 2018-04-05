@@ -65,7 +65,7 @@ import java.lang.Integer;
 
 public class WellBoreAttributes extends AttributeSubject implements Plugin
 {
-    private static int WellBoreAttributes_numAdditionalAtts = 19;
+    private static int WellBoreAttributes_numAdditionalAtts = 18;
 
     // Enum values
     public final static int WELLRENDERINGMODE_LINES = 0;
@@ -101,7 +101,6 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         wellCylinderQuality = DETAILLEVEL_MEDIUM;
         wellRadius = 0.12f;
         wellLineWidth = 0;
-        wellLineStyle = 0;
         wellAnnotation = WELLANNOTATION_STEMANDNAME;
         wellStemHeight = 10f;
         wellNameScale = 0.2f;
@@ -126,7 +125,6 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         wellCylinderQuality = DETAILLEVEL_MEDIUM;
         wellRadius = 0.12f;
         wellLineWidth = 0;
-        wellLineStyle = 0;
         wellAnnotation = WELLANNOTATION_STEMANDNAME;
         wellStemHeight = 10f;
         wellNameScale = 0.2f;
@@ -159,7 +157,6 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         wellCylinderQuality = obj.wellCylinderQuality;
         wellRadius = obj.wellRadius;
         wellLineWidth = obj.wellLineWidth;
-        wellLineStyle = obj.wellLineStyle;
         wellAnnotation = obj.wellAnnotation;
         wellStemHeight = obj.wellStemHeight;
         wellNameScale = obj.wellNameScale;
@@ -223,7 +220,6 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
                 (wellCylinderQuality == obj.wellCylinderQuality) &&
                 (wellRadius == obj.wellRadius) &&
                 (wellLineWidth == obj.wellLineWidth) &&
-                (wellLineStyle == obj.wellLineStyle) &&
                 (wellAnnotation == obj.wellAnnotation) &&
                 (wellStemHeight == obj.wellStemHeight) &&
                 (wellNameScale == obj.wellNameScale) &&
@@ -303,52 +299,46 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         Select(10);
     }
 
-    public void SetWellLineStyle(int wellLineStyle_)
-    {
-        wellLineStyle = wellLineStyle_;
-        Select(11);
-    }
-
     public void SetWellAnnotation(int wellAnnotation_)
     {
         wellAnnotation = wellAnnotation_;
-        Select(12);
+        Select(11);
     }
 
     public void SetWellStemHeight(float wellStemHeight_)
     {
         wellStemHeight = wellStemHeight_;
-        Select(13);
+        Select(12);
     }
 
     public void SetWellNameScale(float wellNameScale_)
     {
         wellNameScale = wellNameScale_;
-        Select(14);
+        Select(13);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(15);
+        Select(14);
     }
 
     public void SetNWellBores(int nWellBores_)
     {
         nWellBores = nWellBores_;
-        Select(16);
+        Select(15);
     }
 
     public void SetWellBores(Vector wellBores_)
     {
         wellBores = wellBores_;
-        Select(17);
+        Select(16);
     }
 
     public void SetWellNames(Vector wellNames_)
     {
         wellNames = wellNames_;
-        Select(18);
+        Select(17);
     }
 
     // Property getting methods
@@ -363,7 +353,6 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
     public int                   GetWellCylinderQuality() { return wellCylinderQuality; }
     public float                 GetWellRadius() { return wellRadius; }
     public int                   GetWellLineWidth() { return wellLineWidth; }
-    public int                   GetWellLineStyle() { return wellLineStyle; }
     public int                   GetWellAnnotation() { return wellAnnotation; }
     public float                 GetWellStemHeight() { return wellStemHeight; }
     public float                 GetWellNameScale() { return wellNameScale; }
@@ -398,20 +387,18 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(10, buf))
             buf.WriteInt(wellLineWidth);
         if(WriteSelect(11, buf))
-            buf.WriteInt(wellLineStyle);
-        if(WriteSelect(12, buf))
             buf.WriteInt(wellAnnotation);
-        if(WriteSelect(13, buf))
+        if(WriteSelect(12, buf))
             buf.WriteFloat(wellStemHeight);
-        if(WriteSelect(14, buf))
+        if(WriteSelect(13, buf))
             buf.WriteFloat(wellNameScale);
-        if(WriteSelect(15, buf))
+        if(WriteSelect(14, buf))
             buf.WriteBool(legendFlag);
-        if(WriteSelect(16, buf))
+        if(WriteSelect(15, buf))
             buf.WriteInt(nWellBores);
-        if(WriteSelect(17, buf))
+        if(WriteSelect(16, buf))
             buf.WriteIntVector(wellBores);
-        if(WriteSelect(18, buf))
+        if(WriteSelect(17, buf))
             buf.WriteStringVector(wellNames);
     }
 
@@ -456,27 +443,24 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
             SetWellLineWidth(buf.ReadInt());
             break;
         case 11:
-            SetWellLineStyle(buf.ReadInt());
-            break;
-        case 12:
             SetWellAnnotation(buf.ReadInt());
             break;
-        case 13:
+        case 12:
             SetWellStemHeight(buf.ReadFloat());
             break;
-        case 14:
+        case 13:
             SetWellNameScale(buf.ReadFloat());
             break;
-        case 15:
+        case 14:
             SetLegendFlag(buf.ReadBool());
             break;
-        case 16:
+        case 15:
             SetNWellBores(buf.ReadInt());
             break;
-        case 17:
+        case 16:
             SetWellBores(buf.ReadIntVector());
             break;
-        case 18:
+        case 17:
             SetWellNames(buf.ReadStringVector());
             break;
         }
@@ -517,7 +501,6 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + floatToString("wellRadius", wellRadius, indent) + "\n";
         str = str + intToString("wellLineWidth", wellLineWidth, indent) + "\n";
-        str = str + intToString("wellLineStyle", wellLineStyle, indent) + "\n";
         str = str + indent + "wellAnnotation = ";
         if(wellAnnotation == WELLANNOTATION_NONE)
             str = str + "WELLANNOTATION_NONE";
@@ -550,7 +533,6 @@ public class WellBoreAttributes extends AttributeSubject implements Plugin
     private int                   wellCylinderQuality;
     private float                 wellRadius;
     private int                   wellLineWidth;
-    private int                   wellLineStyle;
     private int                   wellAnnotation;
     private float                 wellStemHeight;
     private float                 wellNameScale;

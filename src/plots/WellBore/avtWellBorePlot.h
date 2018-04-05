@@ -83,7 +83,6 @@ class avtWellBorePlot : public avtSurfaceDataPlot
     virtual void                SetAtts(const AttributeGroup*);
     void                        SetLegend(bool);
     void                        SetLineWidth(int);
-    void                        SetLineStyle(int);
 
   protected:
     WellBoreAttributes          atts;

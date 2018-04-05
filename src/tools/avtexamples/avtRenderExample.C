@@ -125,7 +125,6 @@ main(int argc, char *argv[])
     mapper->SetMin(0.);
     mapper->SetMax(1.);
     mapper->SetLineWidth(LW_0);
-    mapper->SetLineStyle(SOLID);
     // The following 2 lines are necessary to get an image rendered on
     // LLNL clusters because of nvidia driver bug that affects texture
     // mapping.
