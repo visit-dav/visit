@@ -112,7 +112,6 @@ PseudocolorAtts.smoothingLevel = 0
 PseudocolorAtts.pointSizeVarEnabled = 0
 PseudocolorAtts.pointSizeVar = "default"
 PseudocolorAtts.pointSizePixels = 2
-PseudocolorAtts.lineStyle = PseudocolorAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
 PseudocolorAtts.lineWidth = 0
 PseudocolorAtts.opacityType = PseudocolorAtts.FullyOpaque
 SetPlotOptions(PseudocolorAtts)
@@ -135,7 +134,6 @@ PseudocolorAtts.smoothingLevel = 0
 PseudocolorAtts.pointSizeVarEnabled = 0
 PseudocolorAtts.pointSizeVar = "default"
 PseudocolorAtts.pointSizePixels = 2
-PseudocolorAtts.lineStyle = PseudocolorAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
 PseudocolorAtts.lineWidth = 0
 PseudocolorAtts.opacityType = PseudocolorAtts.FullyOpaque
 SetPlotOptions(PseudocolorAtts)
@@ -160,7 +158,6 @@ PseudocolorAtts.smoothingLevel = 0
 PseudocolorAtts.pointSizeVarEnabled = 0
 PseudocolorAtts.pointSizeVar = "default"
 PseudocolorAtts.pointSizePixels = 2
-PseudocolorAtts.lineStyle = PseudocolorAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
 PseudocolorAtts.lineWidth = 0
 PseudocolorAtts.opacityType = PseudocolorAtts.FullyOpaque
 SetPlotOptions(PseudocolorAtts)

@@ -84,7 +84,6 @@ def InitAnnotation():
 def SetCurvePlotDefaults():
     # Disable Color Cycling, default to a blue curve.
     catts = CurveAttributes()
-    catts.lineStyle = catts.SOLID  
     catts.lineWidth = 0
     catts.color = (0, 0, 255, 255)
     catts.showLabels = 1

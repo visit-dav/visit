@@ -89,7 +89,6 @@ Test("surface_09")
 
 # change wire color, style, turn off surface
 s.wireframeColor = (0, 0, 255, 255)
-s.lineStyle = 2
 s.surfaceFlag = 0
 SetPlotOptions(s)
 Test("surface_10")

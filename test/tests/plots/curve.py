@@ -61,7 +61,6 @@ def Test1():
     c = CurveAttributes()
     c.cycleColors = 0
     c.color = (0, 255, 255, 255)
-    c.lineStyle = c.DOT  # was 2
     SetPlotOptions(c)
     ResetView()
     Test("curve_1_04")
@@ -76,7 +75,6 @@ def Test1():
     ResetView()
     Test("curve_1_06")
 
-    c.lineStyle = c.DOTDASH # was 3
     c.color = (120, 10, 150, 255)
     SetPlotOptions(c)
 

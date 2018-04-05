@@ -129,7 +129,6 @@ def test2(datapath):
     AddPlot("Mesh", "Mixed")
     m = MeshAttributes()
     m.legendFlag = 1
-    m.lineStyle = m.SOLID  # SOLID, DASH, DOT, DOTDASH
     m.lineWidth = 1
     m.meshColor = (255, 0, 0, 255)
     m.meshColorSource = m.MeshCustom  # Foreground, MeshCustom

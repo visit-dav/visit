@@ -169,7 +169,6 @@ def TestCurveLegend(a):
     AddPlot("Curve", "parabolic")
     curveAtts = CurveAttributes()
     curveAtts.color = (255, 0, 0, 255)
-    curveAtts.lineStyle = curveAtts.SOLID  # was 4 -- invalid but evals to SOLID
     curveAtts.lineWidth = 1
     SetPlotOptions(curveAtts)
     DrawPlots()
@@ -188,7 +187,6 @@ def TestCurveLegend(a):
 
     AddPlot("Curve", "parabolic")
     curveAtts.color = (0, 255, 0, 255)
-    curveAtts.lineStyle = curveAtts.DOT  # was 2
     curveAtts.lineWidth = 5
     SetPlotOptions(curveAtts)
     DrawPlots()
@@ -197,7 +195,6 @@ def TestCurveLegend(a):
 
     AddPlot("Curve", "parabolic")
     curveAtts.color = (0, 0, 255, 255)
-    curveAtts.lineStyle = curveAtts.DOTDASH # was 3
     curveAtts.lineWidth = 2
     SetPlotOptions(curveAtts)
     DrawPlots()

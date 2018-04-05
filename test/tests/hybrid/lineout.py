@@ -551,7 +551,6 @@ def TestTecPlot():
 def TestOperatorCreatedVariables():
     def SetCurveAtts():
         c = CurveAttributes(1)
-        c.lineStyle = c.SOLID
         c.lineWidth = 2
         c.curveColor = (255,0,0,255)
         c.curveColorSource = c.Custom

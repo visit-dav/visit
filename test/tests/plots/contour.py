@@ -69,11 +69,6 @@ def ExerciseAtts():
         Test("contour_lineWidth_%02d"%i)
 
     c.lineWidth = 4
-    for style in xrange(4):
-        c.lineStyle = style
-        SetPlotOptions(c)
-        Test("contour_lineStyle%02d"%style)
-
 
     DeleteAllPlots()
     OpenDatabase(silo_data_path("multi_rect3d.silo"))

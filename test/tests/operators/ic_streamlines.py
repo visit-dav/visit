@@ -55,7 +55,6 @@ PseudocolorAtts.pointType = PseudocolorAtts.Point  # Box, Axis, Icosahedron, Oct
 PseudocolorAtts.pointSizeVarEnabled = 0
 PseudocolorAtts.pointSizeVar = "default"
 PseudocolorAtts.pointSizePixels = 2
-PseudocolorAtts.lineStyle = PseudocolorAtts.SOLID  # SOLID, DASH, DOT, DOTDASH
 PseudocolorAtts.lineType = PseudocolorAtts.Tube  # Line, Tube, Ribbon
 PseudocolorAtts.lineWidth = 0
 PseudocolorAtts.tubeResolution = 100

@@ -26,7 +26,6 @@ def TestHistogram(name, data):
     AddPlot("Curve", "histogram")
     c = CurveAttributes()
     c.showLines = 1
-    c.lineStyle = c.SOLID  # SOLID, DASH, DOT, DOTDASH
     c.lineWidth = 1
     c.showPoints = 1
     c.symbol = c.Point  # Point, TriangleUp, TriangleDown, Square, Circle, Plus, X

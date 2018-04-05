@@ -79,7 +79,6 @@ FilledBoundaryAtts.colorTableName = "Default"
 FilledBoundaryAtts.invertColorTable = 0
 FilledBoundaryAtts.filledFlag = 1
 FilledBoundaryAtts.legendFlag = 1
-FilledBoundaryAtts.lineStyle = FilledBoundaryAtts.SOLID
 FilledBoundaryAtts.lineWidth = 0
 FilledBoundaryAtts.singleColor = (0, 0, 0, 255)
 FilledBoundaryAtts.SetMultiColor(0, (255, 0, 0, 255))
