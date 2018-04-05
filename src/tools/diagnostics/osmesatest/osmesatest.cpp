@@ -187,7 +187,7 @@ main(int argc, char *argv[])
    if (argc < 2)
    {
       fprintf(stderr, "Usage:\n");
-      fprintf(stderr, "  osdemo filename [width height]\n");
+      fprintf(stderr, "  osmesatest filename [width height]\n");
       return 0;
    }
 

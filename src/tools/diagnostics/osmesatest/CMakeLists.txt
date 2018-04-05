@@ -47,8 +47,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_BINARY_DIR}/include
 ${VISIT_SOURCE_DIR}/include
-${MESA_INCLUDE_DIR}
-${VISIT_SOURCE_DIR}/visit_vtk/osmesa
+${OSMESA_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
@@ -76,17 +75,17 @@ IF(NOT WIN32)
 ENDIF(NOT WIN32)
 
 ADD_EXECUTABLE(osmesatest_ser osmesatest.cpp)
-TARGET_LINK_LIBRARIES(osmesatest_ser ${VISIT_EXE_LINKER_FLAGS} ${MESA_LIBRARY_DIR}/${MESA_LIB} ${LIBDL} ${PTHREAD})
+TARGET_LINK_LIBRARIES(osmesatest_ser ${VISIT_EXE_LINKER_FLAGS} ${OSMESA_LIBRARIES} ${LIBDL} ${PTHREAD})
 
 ADD_EXECUTABLE(osmesavtktest_ser osmesavtktest.cpp)
-TARGET_LINK_LIBRARIES(osmesavtktest_ser ${VISIT_EXE_LINKER_FLAGS} visit_vtk_osmesa visitcommon ${REQUIRED_VTK_LIBS} ${LIBDL} ${PTHREAD})
+TARGET_LINK_LIBRARIES(osmesavtktest_ser ${VISIT_EXE_LINKER_FLAGS} visit_vtk_offscreen visitcommon ${REQUIRED_VTK_LIBS} ${LIBDL} ${PTHREAD})
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_EXECUTABLE(osmesatest_par osmesatest.cpp)
-    PARALLEL_EXECUTABLE_LINK_LIBRARIES(osmesatest_par ${MESA_LIBRARY_DIR}/${MESA_LIB} ${LIBDL} ${PTHREAD})
+    PARALLEL_EXECUTABLE_LINK_LIBRARIES(osmesatest_par ${OSMESA_LIBRARIES} ${LIBDL} ${PTHREAD})
 
     ADD_PARALLEL_EXECUTABLE(osmesavtktest_par osmesavtktest.cpp)
-    PARALLEL_EXECUTABLE_LINK_LIBRARIES(osmesavtktest_par visit_vtk_osmesa visitcommon ${REQUIRED_VTK_LIBS} ${LIBDL} ${PTHREAD})
+    PARALLEL_EXECUTABLE_LINK_LIBRARIES(osmesavtktest_par visit_vtk_offscreen visitcommon ${REQUIRED_VTK_LIBS} ${LIBDL} ${PTHREAD})
 
     SET(TARGETS ${TARGETS} osmesatest_par osmesavtktest_par)
 ENDIF(VISIT_PARALLEL)
