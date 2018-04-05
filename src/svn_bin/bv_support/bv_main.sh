@@ -21,11 +21,11 @@ function vercomp ()
             # fill empty fields in ver2 with zeros
             ver2[i]=0
         fi
-        if ((10#${ver1[i]} > 10#${ver2[i]}))
+        if [[ 10#${ver1[i]} > 10#${ver2[i]} ]]
         then
             return 1
         fi
-        if ((10#${ver1[i]} < 10#${ver2[i]}))
+        if [[ 10#${ver1[i]} < 10#${ver2[i]} ]]
         then
             return 2
         fi
@@ -229,7 +229,7 @@ function check_opengl_context()
         echo "failed to compile checkogl.cpp"
         exit 1
     fi
-    a.out
+    ./a.out 
     if [[ $? != 0 ]]; then
         echo "Could not obtain a 3.2 context with system GL."
         echo "You may want to add --mesagl to the command line."
@@ -304,7 +304,7 @@ function initialize_build_visit()
         # use gcc for 10.9 & earlier
 
 
-        if (( ${VER%%.*} < 8 )) ; then
+        if [[ ${VER%%.*} < 8 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.3
         elif [[ ${VER%%.*} == 8 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.4
