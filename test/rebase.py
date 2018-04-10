@@ -92,7 +92,6 @@ def get_baseline_image_filenames(cat, pyfile, cases):
     else:
         retval = glob.glob("baseline/%s/%s/*.png"%(cat,pyfile))
 
-    print retval
     newretval = []
     for f in retval:
         newretval.append(f.split('/')[-1])
