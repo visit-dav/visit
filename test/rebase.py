@@ -106,7 +106,7 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
             if docopy != 'y' and docopy != 'Y':
                 continue
         print "Copying file \"%s\""%f
-        urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s.png"%(datetag,mode,f),
+        urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f),
             filename="baseline/%s/%s/%s"%(cat,pyfile,f))
 
 #
