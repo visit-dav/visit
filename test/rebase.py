@@ -106,8 +106,14 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
             if docopy != 'y' and docopy != 'Y':
                 continue
         print "Copying file \"%s\""%f
-        urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f),
-            filename="baseline/%s/%s/%s"%(cat,pyfile,f))
+        g = urllib.urlopen("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f))
+        if 'Not Found' in g.read():
+            print "*** Current \"%s\" not found. Using base."%f
+            urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/b_%s"%(datetag,mode,f),
+                filename="baseline/%s/%s/%s"%(cat,pyfile,f))
+        else:
+            urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f),
+                filename="baseline/%s/%s/%s"%(cat,pyfile,f))
 
 #
 # Confirm in correct dir
