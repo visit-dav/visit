@@ -292,8 +292,6 @@ private:
     QPushButton              *smoothButton;
     QvisOpacitySlider        *attenuationSlider;
 
-
-    // transfer function widgets
     QWidget                  *tfRendererOptions;
 
     // General widgets
@@ -312,6 +310,9 @@ private:
     QButtonGroup             *samplingButtonGroup;
     QWidget                  *samplingMethodWidget;
     QButtonGroup             *transferFunctionGroup;
+    QWidget                  *tfWidget;
+    QRadioButton             *oneDimButton;
+    QRadioButton             *twoDimButton;
     QLabel                   *samplingMethodLabel;
     QRadioButton             *rasterizationButton;
     QRadioButton             *kernelButton;
@@ -327,6 +328,10 @@ private:
     QWidget                  *rendererSamplesWidget;
     QLabel                   *rendererSamplesLabel;
     QDoubleSpinBox           *rendererSamples;
+#ifdef VISIT_SLIVR
+    QLabel                   *rendererSamplesSLIVRLabel;
+    QDoubleSpinBox           *rendererSamplesSLIVR;
+#endif
     QWidget                  *materialProperties;
     QGroupBox                *lightMaterialPropGroup;
     QDoubleSpinBox           *matKa; // ambient
@@ -356,6 +361,12 @@ private:
     QVBoxLayout             *defaultGroupLayout;
     QGroupBox               *defaultGroup;
     QGroupBox               *raycastingGroup;
+#ifdef VISIT_SLIVR
+    QWidget                 *slivrOptions;
+    QVBoxLayout             *slivrGroupLayout;
+    QGroupBox               *slivrGroup;
+    void                    EnableSLIVRGroup();
+#endif
     void                    CreateSamplingGroups(QWidget *parent, QLayout *pLayout);
     void                    UpdateSamplingGroup();
     void                    EnableSamplingMethods(bool enable);

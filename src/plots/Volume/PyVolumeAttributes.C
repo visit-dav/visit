@@ -181,7 +181,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
     str += tmpStr;
-    const char *rendererType_names = "Default, RayCasting, RayCastingIntegration";
+    const char *rendererType_names = "Default, RayCasting, RayCastingIntegration, RayCastingSLIVR";
     switch (atts->GetRendererType())
     {
       case VolumeAttributes::Default:
@@ -194,6 +194,10 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
       case VolumeAttributes::RayCastingIntegration:
           SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingIntegration  # %s\n", prefix, prefix, rendererType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::RayCastingSLIVR:
+          SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingSLIVR  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       default:
@@ -953,14 +957,14 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the rendererType in the object.
-    if(ival >= 0 && ival < 3)
+    if(ival >= 0 && ival < 4)
         obj->data->SetRendererType(VolumeAttributes::Renderer(ival));
     else
     {
         fprintf(stderr, "An invalid rendererType value was given. "
-                        "Valid values are in the range of [0,2]. "
+                        "Valid values are in the range of [0,3]. "
                         "You can also use the following names: "
-                        "Default, RayCasting, RayCastingIntegration.");
+                        "Default, RayCasting, RayCastingIntegration, RayCastingSLIVR.");
         return NULL;
     }
 
@@ -1446,6 +1450,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(VolumeAttributes::RayCasting));
     if(strcmp(name, "RayCastingIntegration") == 0)
         return PyInt_FromLong(long(VolumeAttributes::RayCastingIntegration));
+    if(strcmp(name, "RayCastingSLIVR") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::RayCastingSLIVR));
 
     if(strcmp(name, "gradientType") == 0)
         return VolumeAttributes_GetGradientType(self, NULL);

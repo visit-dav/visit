@@ -70,6 +70,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         return true;
 
     if (rendererType == VolumeAttributes::RayCasting ||
+        rendererType == VolumeAttributes::RayCastingSLIVR ||
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
@@ -97,6 +98,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // then we need to reexecute. Transferring between any of the hardware
         // modes does not require a reexecute.
         if(obj.rendererType == VolumeAttributes::RayCasting ||
+           obj.rendererType == VolumeAttributes::RayCastingSLIVR ||
            obj.rendererType == VolumeAttributes::RayCastingIntegration)
         {
             return true;
@@ -536,17 +538,6 @@ VolumeAttributes_SetFreeformOpacity(PyObject *self, PyObject *args)
     return Py_None;
 }
 
-Target: xml2atts
-Function: SetRendererType
-Declaration: void SetRendererType(Renderer rendererType_);
-Definition:
-void
-VolumeAttributes::SetRendererType(VolumeAttributes::Renderer rendererType_)
-{
-    rendererType = rendererType_;
-    Select(ID_rendererType, (void *)&rendererType);
-}
-
 Target: xml2info
 Function: VolumeViewerEnginePluginInfo::Permits2DViewScaling
 Declaration: virtual bool Permits2DViewScaling() const;
@@ -603,4 +594,8 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
     Py_INCREF(Py_None);
     return Py_None;
 }
+
+Target: xml2cmake
+Condition: VISIT_SLIVR
+Definitions: -DVISIT_SLIVR
 

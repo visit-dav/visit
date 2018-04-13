@@ -129,6 +129,13 @@ avtWorldSpaceToImageSpaceTransform.C
 avtXRayFilter.C
 )
 
+if (VISIT_SLIVR)
+    list(APPEND AVTFILTERS_SOURCES
+         avtImgCommunicator.C
+         avtSLIVRVoxelExtractor.C)
+    add_definitions(-DVISIT_SLIVR)
+endif()
+
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${VISIT_COMMON_INCLUDES}

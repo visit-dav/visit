@@ -46,21 +46,21 @@
 //
 
 static const char *Renderer_strings[] = {
-"Default", "RayCasting", "RayCastingIntegration"
-};
+"Default", "RayCasting", "RayCastingIntegration", 
+"RayCastingSLIVR"};
 
 std::string
 VolumeAttributes::Renderer_ToString(VolumeAttributes::Renderer t)
 {
     int index = int(t);
-    if(index < 0 || index >= 3) index = 0;
+    if(index < 0 || index >= 4) index = 0;
     return Renderer_strings[index];
 }
 
 std::string
 VolumeAttributes::Renderer_ToString(int t)
 {
-    int index = (t < 0 || t >= 3) ? 0 : t;
+    int index = (t < 0 || t >= 4) ? 0 : t;
     return Renderer_strings[index];
 }
 
@@ -68,7 +68,7 @@ bool
 VolumeAttributes::Renderer_FromString(const std::string &s, VolumeAttributes::Renderer &val)
 {
     val = VolumeAttributes::Default;
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < 4; ++i)
     {
         if(s == Renderer_strings[i])
         {
@@ -1124,7 +1124,7 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 3)
+            if(ival >= 0 && ival < 4)
                 SetRendererType(Renderer(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -2156,6 +2156,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         return true;
 
     if (rendererType == VolumeAttributes::RayCasting ||
+        rendererType == VolumeAttributes::RayCastingSLIVR ||
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
@@ -2183,6 +2184,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // then we need to reexecute. Transferring between any of the hardware
         // modes does not require a reexecute.
         if(obj.rendererType == VolumeAttributes::RayCasting ||
+           obj.rendererType == VolumeAttributes::RayCastingSLIVR ||
            obj.rendererType == VolumeAttributes::RayCastingIntegration)
         {
             return true;

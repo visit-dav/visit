@@ -66,7 +66,8 @@ public:
     {
         Default,
         RayCasting,
-        RayCastingIntegration
+        RayCastingIntegration,
+        RayCastingSLIVR
     };
     enum GradientType
     {

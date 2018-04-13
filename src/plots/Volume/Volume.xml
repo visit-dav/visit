@@ -4,18 +4,6 @@
       ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
       ${VISIT_INCLUDE_DIR}/avt/Expressions/General
     </CXXFLAGS>
-    <Files components="G">
-      TransferFunctionWidget.C
-      VolumeRLEFunctions.C
-    </Files>
-    <LIBS components="G">
-      ${QT_QTOPENGL_LIB}
-      vtkRenderingVolumeOpenGL2
-    </LIBS>
-    <Files components="S">
-      TransferFunctionWidget.C
-      PyTransferFunctionWidget.C
-    </Files>
     <Files components="V">
       VolumeFunctions.C
       VolumeRLEFunctions.C
@@ -23,8 +11,6 @@
       avtVolumeFilter.C
       avtLowerResolutionVolumeFilter.C
       avtDefaultRenderer.C
-      BoundingBoxContourer.C
-      TransferFunctionWidget.C
     </Files>
     <LIBS components="V">
       vtkRenderingVolumeOpenGL2
@@ -36,8 +22,6 @@
       avtVolumeFilter.C
       avtLowerResolutionVolumeFilter.C
       avtDefaultRenderer.C
-      BoundingBoxContourer.C
-      TransferFunctionWidget.C
     </Files>
     <LIBS components="ESer">
       avtexpressions_ser
@@ -47,14 +31,12 @@
       avtexpressions_par
       vtkRenderingVolumeOpenGL2
     </LIBS>
-    <Files components="J">
-      TransferFunctionWidget.java
-    </Files>
     <Attribute name="VolumeAttributes" purpose="This class contains the plot attributes for the volume plot." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="VolumeAttributes.code">
       <Enum name="Renderer">
         Default
         RayCasting
         RayCastingIntegration
+        RayCastingSLIVR
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -206,8 +188,6 @@
       <Function name="AnyNonTransferFunctionMembersAreDifferent" user="true" member="true">
       </Function>
       <Function name="VolumeAttributes_SetFreeformOpacity" user="false" member="true">
-      </Function>
-      <Function name="SetRendererType" user="false" member="true">
       </Function>
       <Function name="VolumeViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
       </Function>

@@ -695,6 +695,7 @@ SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 #-----------------------------------------------------------------------------
 OPTION(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
 
+OPTION(VISIT_SLIVR    "Build VisIt with support for the SLIVR volume rendering library." ON)
 OPTION(VISIT_STATIC   "Build VisIt statically." OFF)
 IF(VISIT_STATIC)
     ADD_DEFINITIONS(-DVISIT_STATIC)

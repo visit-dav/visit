@@ -68,7 +68,6 @@
 #include <QvisScribbleOpacityBar.h>
 #include <QvisVariableButton.h>
 #include <QvisColorTableButton.h>
-#include <TransferFunctionWidget.h>
 
 #include <VolumeAttributes.h>
 #include <VolumeRLEFunctions.h>
@@ -319,7 +318,8 @@ QvisVolumePlotWindow::CreateWindowContents()
     tfTabs->addTab(tfRendererOptions, tr("Renderer Options"));
 
     tfParent1D = Create1DTransferFunctionGroup(maxWidth);
-    tfTabs->addTab(tfParent1D, tr("transfer function"));
+    tfTabs->addTab(tfParent1D, tr("Transfer function"));
+
 
     // Create the color selection widget.
     colorSelect = new QvisColorSelectionWidget(0);
@@ -929,7 +929,7 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 
 void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayout)
 {
-    //resample group 
+    //resample group
     {
         resampleGroup = new QGroupBox(parent);
         resampleGroup->setFlat(true);
@@ -1022,6 +1022,30 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         raycastingLayout->addWidget(rendererSamplesWidget,1,4,1,2);
         pLayout->addWidget(raycastingGroup);
     }
+    
+#ifdef VISIT_SLIVR
+    //slivr group
+    {
+        slivrGroup = new QGroupBox(parent);
+        slivrGroup->setTitle(tr("SLIVR Options"));
+        slivrGroupLayout             = new QVBoxLayout(                  slivrGroup);
+        slivrOptions                 = new QWidget(                      slivrGroup);
+        QHBoxLayout *slivrLayout     = new QHBoxLayout(                  slivrOptions);
+        rendererSamplesSLIVRLabel    = new QLabel(tr("Sampling rate"),   slivrOptions);
+        rendererSamplesSLIVR         = new QDoubleSpinBox(               slivrOptions);
+        rendererSamplesSLIVR->setKeyboardTracking(false);
+        rendererSamplesSLIVR->setMinimum(1);
+        rendererSamplesSLIVR->setMaximum(20);
+        rendererSamplesSLIVR->setSingleStep(.1);
+        rendererSamplesSLIVRLabel->setBuddy(rendererSamplesSLIVR);
+        connect(rendererSamplesSLIVR, SIGNAL(valueChanged(double)), this, SLOT(rendererSamplesChanged(double)));
+        slivrLayout->addWidget(rendererSamplesSLIVRLabel);
+        slivrLayout->addWidget(rendererSamplesSLIVR);
+        slivrLayout->addStretch(QSizePolicy::Maximum);
+        slivrGroupLayout->addWidget(slivrOptions);
+        pLayout->addWidget(slivrGroup);
+    }
+#endif
 }
 
 void QvisVolumePlotWindow::EnableSamplingMethods(bool enable)
@@ -1054,12 +1078,24 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
     defaultOptions->setEnabled(true);
 }
 
+#ifdef VISIT_SLIVR
+void QvisVolumePlotWindow::EnableSLIVRGroup()
+{
+    slivrGroup->setVisible(true);
+    rendererSamplesSLIVRLabel->setEnabled(true);
+    rendererSamplesSLIVR->setEnabled(true);
+}
+#endif
+
 void QvisVolumePlotWindow::UpdateSamplingGroup()
 {
     //hide all groups
     resampleGroup->setVisible(false);
     defaultGroup->setVisible(false);
     raycastingGroup->setVisible(false);
+#ifdef VISIT_SLIVR
+    slivrGroup->setVisible(false);
+#endif
 
     tfTabs->setTabEnabled(1, true);
 
@@ -1067,7 +1103,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     lightMaterialPropGroup->setEnabled(true);
     lightingToggle->setEnabled(true);
 
-    //disable material properties (only enabled with lighting for RayCasting w/ Trilinear Sampling)
+    //disable material properties (only enabled with lighting for SLIVR, RayCasting w/ Trilinear Sampling)
     materialProperties->setEnabled(false);
 
     //enable/disable resampleTarget
@@ -1117,7 +1153,28 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         EnableSamplingMethods(false);
         samplesPerRayWidget->setEnabled(true);
         rendererSamplesWidget->setEnabled(false);
+        rendererSamples->setEnabled(true);
+        rendererSamplesLabel->setEnabled(true);
         break;
+
+#ifdef VISIT_SLIVR
+    case VolumeAttributes::RayCastingSLIVR:
+        EnableSLIVRGroup();
+        resampleGroup->setEnabled(false);
+        raycastingGroup->setVisible(false);
+        UpdateLowGradientGroup(false);
+        materialProperties->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingSLIVR && volumeAtts->GetLightingFlag());
+        EnableSamplingMethods(true);
+        samplesPerRayWidget->setEnabled(volumeAtts->GetRendererType()!=VolumeAttributes::RayCastingSLIVR);
+        rendererSamplesWidget->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingSLIVR);
+        rendererSamplesSLIVRLabel->setEnabled(true);
+        rendererSamplesSLIVR->setEnabled(true);
+        centeredDiffButton->setEnabled(true);
+        centeredDiffButton->setChecked(true);
+        sobelButton->setEnabled(false);
+        break;
+#endif
+
     default:
         EXCEPTION1(ImproperUseException, "No such renderer type.");
     }        
@@ -1154,6 +1211,9 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     rendererTypesComboBox->addItem(tr("Default Rendering"));
     rendererTypesComboBox->addItem(tr("Ray casting: compositing"));
     rendererTypesComboBox->addItem(tr("Ray casting: integration (grey scale)"));
+#ifdef VISIT_SLIVR
+    rendererTypesComboBox->addItem(tr("Ray casting: SLIVR"));
+#endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
 
@@ -1294,12 +1354,9 @@ QvisVolumePlotWindow::UpdateHistogram()
         {
             alphaWidget->setHistogramTexture(&hist[0], hist_size);
             scribbleAlphaWidget->setHistogramTexture(&hist[0], hist_size);
-        }
-
-        if(!hist.empty())
-        {
             invalid = false;
         }
+
     }
 
     if(invalid)
@@ -1664,9 +1721,14 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             {
                 rendererTypesComboBox->setCurrentIndex(2);
             }
+#ifdef VISIT_SLIVR
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingSLIVR)
+            {
+                rendererTypesComboBox->setCurrentIndex(3);
+            }
+#endif
 
             opacityVariable->setEnabled(true);
-
             rendererTypesComboBox->blockSignals(false);
             break;
         case VolumeAttributes::ID_gradientType:
@@ -1703,6 +1765,11 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             rendererSamples->blockSignals(true);
             rendererSamples->setValue(volumeAtts->GetRendererSamples());
             rendererSamples->blockSignals(false);
+#ifdef VISIT_SLIVR
+            rendererSamplesSLIVR->blockSignals(true);
+            rendererSamplesSLIVR->setValue(volumeAtts->GetRendererSamples());
+            rendererSamplesSLIVR->blockSignals(false);
+#endif
             break;
         case VolumeAttributes::ID_materialProperties:
             matKa->blockSignals(true);
@@ -3376,6 +3443,11 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
       case 2:
         volumeAtts->SetRendererType(VolumeAttributes::RayCastingIntegration);
         break;
+#ifdef VISIT_SLIVR
+      case 3:
+        volumeAtts->SetRendererType(VolumeAttributes::RayCastingSLIVR);
+        break;
+#endif
       default:
         EXCEPTION1(ImproperUseException,
                    "The Volume plot received a signal for a renderer "

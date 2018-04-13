@@ -1207,10 +1207,10 @@ VolumeCalculateGradient(const VolumeAttributes &atts,
 void
 VolumeHistograms(const VolumeAttributes &atts, 
     vtkDataArray *data, vtkDataArray *gm, 
-    float *hist, float *hist2, int hist_size)
+    float *hist, int hist_size)
 {
-    const char *mName = "VolumeHistogram2D: ";
-    StackTimer t("VolumeHistogram2D");
+    const char *mName = "VolumeHistograms: ";
+    StackTimer t("VolumeHistograms");
 
     // Get the range for the data var.
     float var_min, var_max;
@@ -1228,14 +1228,12 @@ VolumeHistograms(const VolumeAttributes &atts,
     float grad_diff = grad_max - grad_min;
     debug5 << mName << "GM range: " << grad_min << ", " << grad_max << ", diff=" << grad_diff << endl;
 
-    // Initialize the output arrays.
-    memset(hist2, 0, sizeof(float) * hist_size * hist_size);
+    // Initialize the output array.
     memset(hist, 0, sizeof(float) * hist_size);
 
     // Populate histograms
     int N = data->GetNumberOfTuples();
     float hist_max = 0.;
-    float hist2_max = 0.;
     float s_scale = var_diff  !=0 ? (hist_size - 1) / var_diff  : 0.0;
     float m_scale = grad_diff !=0 ? (hist_size - 1) / grad_diff : 0.0;
     if(data->GetDataType() == VTK_FLOAT &&
@@ -1260,10 +1258,6 @@ VolumeHistograms(const VolumeAttributes &atts,
             hist[scalar_index] += 1.;
             if(hist[scalar_index] > hist_max)
                 hist_max = hist[scalar_index];
-
-            hist2[hindex] += 1.;
-            if(hist2[hindex] > hist2_max)
-                hist2_max = hist2[hindex];
         }
     }
     else
@@ -1282,29 +1276,10 @@ VolumeHistograms(const VolumeAttributes &atts,
             hist[scalar_index] += 1.;
             if(hist[scalar_index] > hist_max)
                 hist_max = hist[scalar_index];
-
-            int mag_index    = (int)(m_scale * (gm->GetTuple1(index)   - grad_min));
-            int hindex = (mag_index * hist_size) + scalar_index;
-            hist2[hindex] += 1.;
-            if(hist2[hindex] > hist2_max)
-                hist2_max = hist2[hindex];
         }
     }
 
-    // Go through the 2D histogram data, apply gamma correction to make things more visible,
-    // and scale it to [.1,1.] so we can use the results as a decent GL texture.
-    if(hist2_max > 0.)
-    {
-        int hist_size2 = hist_size * hist_size;
-        float h_scale = 0.9 / hist2_max;
-        for (int index = 0; index < hist_size2; ++index)
-        {
-            if(hist2[index] > 0.)
-                hist2[index] = pow(hist2[index] * h_scale + 0.1,0.5); // gamma: v=(v*h+0.1)^0.5
-        }
-    }
-
-    // Normalize the 1D histogram data.
+    // Normalize the histogram data.
     if(hist_max > 0.)
     {
         float h_scale = 1. / hist_max;

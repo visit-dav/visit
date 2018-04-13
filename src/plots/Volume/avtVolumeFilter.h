@@ -89,6 +89,9 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
                                   { return "Volume rendering"; };
 
     avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
+#ifdef VISIT_SLIVR
+    avtImage_p               RenderImageRaycastingSLIVR(avtImage_p opaque_image, const WindowAttributes &);
+#endif
     int                      GetNumberOfStages(const WindowAttributes &);
 
   protected:

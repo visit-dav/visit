@@ -67,6 +67,7 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RENDERER_DEFAULT = 0;
     public final static int RENDERER_RAYCASTING = 1;
     public final static int RENDERER_RAYCASTINGINTEGRATION = 2;
+    public final static int RENDERER_RAYCASTINGSLIVR = 3;
 
     public final static int GRADIENTTYPE_CENTEREDDIFFERENCES = 0;
     public final static int GRADIENTTYPE_SOBELOPERATOR = 1;
@@ -746,6 +747,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
             str = str + "RENDERER_RAYCASTING";
         if(rendererType == RENDERER_RAYCASTINGINTEGRATION)
             str = str + "RENDERER_RAYCASTINGINTEGRATION";
+        if(rendererType == RENDERER_RAYCASTINGSLIVR)
+            str = str + "RENDERER_RAYCASTINGSLIVR";
         str = str + "\n";
         str = str + indent + "gradientType = ";
         if(gradientType == GRADIENTTYPE_CENTEREDDIFFERENCES)

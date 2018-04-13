@@ -87,7 +87,7 @@ float VolumeCalculateGradient_SPH(
 
 void VolumeHistograms(const VolumeAttributes &atts, 
                       vtkDataArray *data, vtkDataArray *gm, 
-                      float *hist, float *hist2, int hist_size);
+                      float *hist, int hist_size);
 
 void VolumeLogTransform(const VolumeAttributes &atts, 
                         vtkDataArray *linear, vtkDataArray *log);

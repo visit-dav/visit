@@ -76,7 +76,6 @@ class avtLowerResolutionVolumeFilter : public avtPluginDataTreeIterator
   protected:
     VolumeAttributes         atts;
     float                   *hist;
-    float                   *hist2;
     int                      hist_size;
 
     void                     CalculateHistograms(vtkDataSet *ds);

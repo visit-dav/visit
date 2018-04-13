@@ -17,8 +17,6 @@ SET(LIBG_SOURCES
 VolumeGUIPluginInfo.C
 QvisVolumePlotWindow.C
 ${COMMON_SOURCES}
-TransferFunctionWidget.C
-VolumeRLEFunctions.C
 )
 SET(LIBG_MOC_SOURCES
 QvisVolumePlotWindow.h
@@ -34,8 +32,6 @@ avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
 avtDefaultRenderer.C
-BoundingBoxContourer.C
-TransferFunctionWidget.C
 ${COMMON_SOURCES}
 )
 
@@ -49,8 +45,6 @@ avtVolumeRenderer.C
 avtVolumeFilter.C
 avtLowerResolutionVolumeFilter.C
 avtDefaultRenderer.C
-BoundingBoxContourer.C
-TransferFunctionWidget.C
 ${COMMON_SOURCES}
 )
 
@@ -99,6 +93,10 @@ ${VISIT_INCLUDE_DIR}/avt/Expressions/Abstract
 ${VISIT_INCLUDE_DIR}/avt/Expressions/General
 )
 
+IF(VISIT_SLIVR)
+    ADD_DEFINITIONS(-DVISIT_SLIVR)
+ENDIF(VISIT_SLIVR)
+
 LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} )
 
 ADD_LIBRARY(IVolumePlot ${LIBI_SOURCES})
@@ -119,8 +117,6 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
         SET(LIBS_SOURCES
             VolumeScriptingPluginInfo.C
             PyVolumeAttributes.C
-            TransferFunctionWidget.C
-            PyTransferFunctionWidget.C
             ${COMMON_SOURCES}
         )
         ADD_LIBRARY(SVolumePlot ${LIBS_SOURCES})
@@ -130,7 +126,7 @@ IF(NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO
 
     IF(VISIT_JAVA)
         FILE(COPY VolumeAttributes.java DESTINATION ${JavaClient_BINARY_DIR}/src/plots)
-        ADD_CUSTOM_TARGET(JavaVolume ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} TransferFunctionWidget.java VolumeAttributes.java
+        ADD_CUSTOM_TARGET(JavaVolume ALL ${Java_JAVAC_EXECUTABLE} ${VISIT_Java_FLAGS} -d ${JavaClient_BINARY_DIR} -classpath ${JavaClient_BINARY_DIR} -sourcepath ${JavaClient_BINARY_DIR} VolumeAttributes.java
             DEPENDS JavaClient
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     ENDIF(VISIT_JAVA)
