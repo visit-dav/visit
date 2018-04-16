@@ -16,10 +16,9 @@
 #    Added ability to swtich between Silo's HDF5 and PDB data.
 # ----------------------------------------------------------------------------
 
-# Turn off all annotation but plot legends
+# Turn off all annotation
 a = AnnotationAttributes()
 TurnOffAllAnnotations(a)
-a.legendInfoFlag = 1
 SetAnnotationAttributes(a)
 
 # -----------------------------------------------------------------------------
