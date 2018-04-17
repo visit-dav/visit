@@ -45,8 +45,6 @@
 
 class DBOptionsAttributes;
 
-#include <string>
-
 namespace UintahDBOptions
 {
   // Read options
@@ -71,6 +69,5 @@ namespace UintahDBOptions
 
 DBOptionsAttributes *GetUintahReadOptions(void);
 DBOptionsAttributes *GetUintahWriteOptions(void);
-
 
 #endif

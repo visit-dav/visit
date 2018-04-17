@@ -45,7 +45,9 @@
 
 #include <visit-config.h>
 
-#if (VISIT_APP_VERSION_CHECK(2, 5, 0) <= UINTAH_VERSION_HEX )
+#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+#include <VisIt/interfaces/datatypes.h>
+#elif (VISIT_APP_VERSION_CHECK(2, 5, 0) <= UINTAH_VERSION_HEX )
 #include <VisIt/uda2vis/udaData.h>
 #else
 #include <StandAlone/tools/uda2vis/udaData.h>
@@ -119,8 +121,6 @@ protected:
   int currTimeStep;
   bool forceMeshReload;
 
-  std::string mesh_for_patch_data;
-  
   // VisIt meshes (see https://visitbugs.ornl.gov/issues/52)
   std::map<std::string, void_ref_ptr> mesh_domains;
   std::map<std::string, void_ref_ptr> mesh_boundaries;
