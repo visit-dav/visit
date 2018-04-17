@@ -42,12 +42,12 @@
 
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
 
-# Note UINTAH_UDA2VIS_LIB is called in the reader using dlopen
+# Note UINTAH_INTERFACES_LIB is called in the reader using dlopen
 # so the true library name is need for the compiled operating system.
 # This variable MUST BE the FIRST variable in the library list.
 # Here the base name is set and passed to the third party set up
-SET(UINTAH_UDA2VIS_LIB
-  VisIt_uda2vis
+SET(UINTAH_INTERFACES_LIB
+  VisIt_interfaces
 )
 
 IF (${VISIT_USE_SYSTEM_UINTAH})
@@ -81,16 +81,16 @@ SET(REQ_UINTAH_MODS
   )
 
 SET_UP_THIRD_PARTY(UINTAH lib ${INCLUDE_TMP_DIR}
-  ${UINTAH_UDA2VIS_LIB}
+  ${UINTAH_INTERFACES_LIB}
   ${REQ_UINTAH_MODS}
 )
 
-# Note UINTAH_UDA2VIS_LIB is called in the reader using dlopen
+# Note UINTAH_INTERFACES_LIB is called in the reader using dlopen
 # so the true library is need for the compiled operating system.
 # This variable MUST BE the FIRST variable in the library list.
 # Here the true name is retrieved from the third party set up
-LIST(GET UINTAH_LIB 0 UINTAH_UDA2VIS_LIB)
+LIST(GET UINTAH_LIB 0 UINTAH_INTERFACES_LIB)
 
-#MESSAGE(STATUS "UINTAH_UDA2VIS_LIB = ${UINTAH_UDA2VIS_LIB}")
+MESSAGE(STATUS "UINTAH_INTERFACES_LIB = ${UINTAH_INTERFACES_LIB}")
 
 UNSET(INCLUDE_TMP_DIR)
