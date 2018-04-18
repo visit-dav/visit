@@ -19,10 +19,20 @@
 #
 #     ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' --prompt
 #
+#     it will ask you to confirm (Y or y) or not (anything other than Y or y) for each
+#     file.
+#
 # -c arg is the category
 # -p arg is the pyfilename without .py extension
 # -d arg is the date tag of the test results from which to draw images
 # -m is the mode of the test results from which to draw images
+#
+# Note that if you choose to re-baseline a whole series of files which may include skips
+# or actual passes, then it will discover there are no *current* results for those cases
+# and then simply take the already existing baseline result.
+#
+# Sometimes, its easiest to use rebase.py on a whole series and then selectively revert
+# the ones you didn't want to rebase.py prior to committing them.
 #
 # Note: This will NOT HANDLE rebaselining of files in mode-specific baseline dirs
 #
