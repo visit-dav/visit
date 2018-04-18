@@ -784,7 +784,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         std::string newVarname = varname;
 
         if( isPerPatchVar )
-          newVarname = "patch/" + newVarname;
+          newVarname = "Patch/" + newVarname;
         else
           newVarname.append("/0");
 
@@ -818,7 +818,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
           std::string newVarname = varname;
 
           if( isPerPatchVar )
-            newVarname = "patch/" + newVarname;
+            newVarname = "Patch/" + newVarname;
           else
           {
             char buffer[128];
@@ -857,7 +857,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   if (addNodeData)
   {
     avtVectorMetaData *vector = new avtVectorMetaData();
-    vector->name = "patch/nodes";
+    vector->name = "Patch/Nodes";
     vector->meshName = "NC_Mesh";
     vector->centering = AVT_NODECENT;
     vector->hasDataExtents = false;
@@ -907,7 +907,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
 #if (VISIT_APP_VERSION_CHECK(2, 1, 0) <= UINTAH_VERSION_HEX )
     scalar = new avtScalarMetaData();
-    scalar->name = "patch/id";
+    scalar->name = "Patch/Id";
     scalar->meshName = mesh_for_this_var;
     scalar->centering = cent;
     scalar->hasDataExtents = false;
@@ -916,7 +916,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 #endif
 
     scalar = new avtScalarMetaData();
-    scalar->name = "patch/proc_rank";
+    scalar->name = "Patch/ProcId";
     scalar->meshName = mesh_for_this_var;
     scalar->centering = cent;
     scalar->hasDataExtents = false;
@@ -930,7 +930,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
            (*it).find("CC") != std::string::npos )
       {
         avtVectorMetaData *vector = new avtVectorMetaData();
-        vector->name = "patch/bounds/low/" + *it;
+        vector->name = "Patch/Bounds/Low/" + *it;
         vector->meshName = mesh_for_this_var;
         vector->centering = cent;
         vector->hasDataExtents = false;
@@ -938,7 +938,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         md->Add(vector);
       
         vector = new avtVectorMetaData();
-        vector->name = "patch/bounds/high/" + *it;
+        vector->name = "Patch/Bounds/High/" + *it;
         vector->meshName = mesh_for_this_var;
         vector->centering = cent;
         vector->hasDataExtents = false;
@@ -1863,17 +1863,16 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
   // from the data warehouse but instead from internal structures.
   std::string varType;
 
-  if( strncmp(varname, "patch/nodes", 11) == 0 )
+  if( strncmp(varname, "Patch/Nodes", 11) == 0 )
   {
     isInternalVar = true;
     varType = "NC_Mesh";
   }
-  else if( strcmp(varname, "patch/id") == 0 ||
-           strcmp(varname, "patch/proc_rank") == 0 ||
-           strcmp(varname, "patch/proc_node") == 0 ||
+  else if( strcmp(varname, "Patch/Id") == 0 ||
+           strcmp(varname, "Patch/ProcId") == 0 ||
 
-           strncmp(varname, "patch/bounds/low",  16) == 0 ||
-           strncmp(varname, "patch/bounds/high", 17) == 0 )
+           strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
+           strncmp(varname, "Patch/Bounds/High", 17) == 0 )
   {
     isInternalVar = true;
     varType = "CC_Mesh";
@@ -1882,9 +1881,9 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
   {
     // For PerPatch data remove the patch/ prefix and get the var
     // name and set the material to zero.
-    if( varName == "patch" )
+    if( varName == "Patch/" )
     {
-      // Get the var name and material sans "patch/".
+      // Get the var name and material sans "Patch/".
       varName = std::string(varname);
       found = varName.find("/");  
       varName = varName.substr(found + 1);
@@ -2012,7 +2011,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       gd = new GridDataRaw;
 
       // Using the node mesh
-      if (strncmp(varname, "patch/nodes", 11) == 0 )
+      if (strncmp(varname, "Patch/Nodes", 11) == 0 )
         gd->num = ((phigh[0] - plow[0]) *
                    (phigh[1] - plow[1]) *
                    (phigh[2] - plow[2]));
@@ -2022,19 +2021,18 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 
       // The runtime processor data and patch id and processor are
       // scalar values while the bounds are vector values.
-      if (strcmp(varname, "patch/id") == 0 ||
-          strcmp(varname, "patch/proc_rank") == 0 ||
-          strcmp(varname, "patch/proc_node") == 0 )
+      if (strcmp(varname, "Patch/Id") == 0 ||
+          strcmp(varname, "Patch/ProcId") == 0 )
         gd->components = 1;
-      else // if( strncmp(varname, "patch/nodes",  11) == 0 ||
-           //     strncmp(varname, "patch/bounds/low",  16) == 0 ||
-           //     strncmp(varname, "patch/bounds/high", 17) == 0)
+      else // if( strncmp(varname, "Patch/Nodes",  11) == 0 ||
+           //     strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
+           //     strncmp(varname, "Patch/Bounds/High", 17) == 0)
         gd->components = 3;
 
       gd->data = new double[gd->num * gd->components];
 
       // Patch Id
-      if (strcmp(varname, "patch/id") == 0 )
+      if (strcmp(varname, "Patch/Id") == 0 )
       {
 #if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
         double value = patchInfo.getPatchId();
@@ -2044,9 +2042,11 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 #endif      
       }
       // Patch processor rank
-      else if (strcmp(varname, "patch/proc_rank") == 0 )
+      else if (strcmp(varname, "Patch/ProcId") == 0 )
       {
-#if (VISIT_APP_VERSION_CHECK(2, 2, 0) <= UINTAH_VERSION_HEX )
+#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+        double value = patchInfo.getProcId();
+#elif (VISIT_APP_VERSION_CHECK(2, 2, 0) <= UINTAH_VERSION_HEX )
         double value = patchInfo.getProcRankId();
 #else
         double value = patchInfo.getProcId();
@@ -2055,7 +2055,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
           gd->data[i] = value;
       }
       // Patch node ids
-      else if (strncmp(varname, "patch/nodes", 11) == 0 )
+      else if (strncmp(varname, "Patch/Nodes", 11) == 0 )
       {
         int cc = 0;
         
@@ -2073,8 +2073,8 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         }
       }
       // Patch bounds
-      else if( strncmp(varname, "patch/bounds/low",  16) == 0 ||
-               strncmp(varname, "patch/bounds/high", 17) == 0 )
+      else if( strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
+               strncmp(varname, "Patch/Bounds/High", 17) == 0 )
       {
         // Get the bounds for this mesh as a variable (not for the grid).
         std::string meshname = std::string(varname);
@@ -2085,9 +2085,9 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       
         int *value;
 
-        if (strncmp(varname, "patch/bounds/low", 16) == 0 )
+        if (strncmp(varname, "Patch/Bounds/Low", 16) == 0 )
           value = &plow[0];
-        else if( strncmp(varname, "patch/bounds/high", 17) == 0)
+        else if( strncmp(varname, "Patch/Bounds/High", 17) == 0)
           value = &phigh[0];
 
         for (int i=0; i<gd->num; i++)
