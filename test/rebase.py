@@ -1,40 +1,7 @@
 #!/usr/bin/env python
 
 #
-#
-# Python script to facilitate rebase-lining a large number of results
-# from the posted HTML results
-#
-# Examples: This script must be run from the top of the test dir tree
-#
-# To rebaseline *all* files from oldsilo test from date tag 2018-04-07-09:12
-#
-#     ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12'
-#
-# To rebaseline silo_00.png & silo_01.png files from oldsilo test from same tag 
-#
-#     ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' 'oldsilo_0[0-1].png'
-#
-# To interactively rebaseline files from oldsilo test
-#
-#     ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' --prompt
-#
-#     it will ask you to confirm (Y or y) or not (anything other than Y or y) for each
-#     file.
-#
-# -c arg is the category
-# -p arg is the pyfilename without .py extension
-# -d arg is the date tag of the test results from which to draw images
-# -m is the mode of the test results from which to draw images
-#
-# Note that if you choose to re-baseline a whole series of files which may include skips
-# or actual passes, then it will discover there are no *current* results for those cases
-# and then simply take the already existing baseline result.
-#
-# Sometimes, its easiest to use rebase.py on a whole series and then selectively revert
-# the ones you didn't want to rebase.py prior to committing them.
-#
-# Note: This will NOT HANDLE rebaselining of files in mode-specific baseline dirs
+# run ./rebase.py --help for documentation
 #
 
 import argparse
@@ -67,29 +34,65 @@ def parse_args():
     """
     Parses arguments to runtest.
     """
-    parser = OptionParser()
+    usage = \
+"""
+%prog args [test-file1 test-file2 ...]
+
+where args specify the category, test .py filename, mode
+and date tag (of the posted html results) and test-file1,
+etc. are either the names or file glob(s) of tests to
+rebaseline. If no files or file globs are specified then
+all results from the specified test .py file are rebased.
+
+Note that if you choose to re-baseline a whole series of
+files which may include skips or actual passes, then it will
+discover there are no *current* results posted for those cases
+and then simply take the already existing baseline result.
+
+Sometimes, its easiest to use rebase.py on a whole series and
+then selectively revert the ones you didn't want to rebase.py
+prior to committing them.
+ 
+Note: This will NOT HANDLE rebaselining of files in mode-specific
+baseline dirs
+
+Examples...
+
+To rebaseline *all* files from oldsilo test from date tag 2018-04-07-09:12
+ 
+    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12'
+
+To rebaseline silo_00.png & silo_01.png files from oldsilo test from same tag 
+
+    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' 'oldsilo_0[0-1].png'
+
+To be interactively prompted upon each file to rebaseline from oldsilo test
+
+    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' --prompt
+"""
+    parser = OptionParser(usage)
     parser.add_option("-c",
                       "--category",
                       dest="category",
-                      help="Specify test category")
+                      help="[Required] Specify test category")
     parser.add_option("-p",
                       "--pyfile",
                       dest="pyfile",
-                      help="Specify test py filename without the .py extension")
+                      help="[Required] Specify test py filename without the .py extension")
     parser.add_option("-m",
                       "--mode",
                       dest="mode",
                       default="serial",
-                      help="Specify test mode")
+                      help="[Required] Specify test mode")
     parser.add_option("-d",
                       "--datetag",
                       dest="datetag",
-                      help="Specify the VisIt test result date tag (e.g. '2018-04-07-09:12') from which to draw new baselines")
+                      help="[Required] Specify the VisIt test result date tag (e.g. '2018-04-07-09:12') from which to draw new baselines")
     parser.add_option("--prompt",
                       default=False,
                       dest="prompt",
                       action="store_true",
-                      help="Prompt before copying each file")
+                      help="[Optional] Prompt before copying each file")
     opts, cases = parser.parse_args()
     return opts, cases
 
