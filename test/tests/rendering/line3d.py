@@ -11,6 +11,9 @@
 #  Date:       August 27, 2015
 #
 #  Modifications:
+#    Kathleen Biagas, Thu Apr 19 12:02:22 PDT 2018
+#    Remove lineStyle tests, no longer available.
+#
 # ----------------------------------------------------------------------------
 
 # Set up the annotation colors, etc.
@@ -26,7 +29,7 @@ OpenDatabase(silo_data_path("globe.silo"))
 AddPlot("Pseudocolor", "u")
 DrawPlots()
 
-# Create a Line2D object
+# Create a Line3D object
 line = CreateAnnotationObject("Line3D")
 line.point1 = (0, -15, 0)
 line.point2 = (0, 15, 0)
@@ -34,16 +37,6 @@ Test("line3d00")
 
 line.width = 7
 Test("Line3d01")
-
-line.style = line.DASH
-Test("Line3d02")
-
-line.style = line.DOT
-Test("Line3d03")
-
-line.style = line.DOTDASH
-Test("Line3d04")
-
 
 # Set the foreground color to see if it changes
 a.foregroundColor = (0, 255, 255, 255)
