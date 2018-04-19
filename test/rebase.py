@@ -50,8 +50,8 @@ discover there are no *current* results posted for those cases
 and then simply take the already existing baseline result.
 
 Sometimes, its easiest to use rebase.py on a whole series and
-then selectively revert the ones you didn't want to rebase.py
-prior to committing them.
+then selectively revert the ones you didn't want to rebase prior
+to committing them.
  
 Note: This will NOT HANDLE rebaselining of files in mode-specific
 baseline dirs
