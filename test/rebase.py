@@ -6,6 +6,7 @@
 
 import argparse
 import glob
+import imghdr
 from optparse import OptionParser
 import os
 import urllib
@@ -118,6 +119,8 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
             docopy = raw_input("Copy file \"%s\" (enter y/Y for yes)? "%f)
             if docopy != 'y' and docopy != 'Y':
                 continue
+        # As a sanity check, get current baseline image file size
+        cursize = os.stat("baseline/%s/%s/%s"%(cat,pyfile,f)).st_size
         print "Copying file \"%s\""%f
         g = urllib.urlopen("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f))
         if 'Not Found' in g.read():
@@ -127,6 +130,12 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
         else:
             urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f),
                 filename="baseline/%s/%s/%s"%(cat,pyfile,f))
+        # Do some simple sanity checks on the resulting file
+        if imghdr.what("baseline/%s/%s/%s"%(cat,pyfile,f)) != 'png':
+            print "Warning: file \"baseline/%s/%s/%s\" is not PNG format!"%(cat,pyfile,f)
+        newsize = os.stat("baseline/%s/%s/%s"%(cat,pyfile,f)).st_size
+        if newsize < cursize/2 or newsize > 2*cursize:
+            print "Warning: dramatic change in size of file \"baseline/%s/%s/%s\"!"%(cat,pyfile,f)
 
 #
 # Confirm in correct dir
