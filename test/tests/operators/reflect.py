@@ -271,7 +271,6 @@ atts = ReflectAttributes()
 atts.reflectType = atts.Plane
 atts.planePoint = (1, 1, 1)
 atts.planeNormal = (4, 5, 6)
-atts.planeNormal = (4, 5, 6)
 SetOperatorOptions(atts)
 
 DrawPlots()
