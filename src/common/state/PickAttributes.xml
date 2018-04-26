@@ -235,10 +235,10 @@
     </Field>
     <Field name="plotRequested" label="plotRequested" type="MapNode" internal="true" persistent="false">
     </Field>
-    <Field name="pickHighlightColor" label="pickHighlightColor" type="floatArray" length="3" persistent="false">
-      1.000000
-      0.000000
-      0.000000
+    <Field name="pickHighlightColor" label="pickHighlightColor" type="intArray" length="3" persistent="false">
+      255
+      0
+      0
     </Field>
     <Field name="removedPicks" label="Removed Picks" type="string">
     </Field>

@@ -223,7 +223,7 @@ public:
     void SetTimeCurveType(TimeCurveType timeCurveType_);
     void SetTimeOptions(const MapNode &timeOptions_);
     void SetPlotRequested(const MapNode &plotRequested_);
-    void SetPickHighlightColor(const float *pickHighlightColor_);
+    void SetPickHighlightColor(const int *pickHighlightColor_);
     void SetRemovedPicks(const std::string &removedPicks_);
 
     // Property getting methods
@@ -336,8 +336,8 @@ public:
           MapNode      &GetTimeOptions();
     const MapNode      &GetPlotRequested() const;
           MapNode      &GetPlotRequested();
-    const float        *GetPickHighlightColor() const;
-          float        *GetPickHighlightColor();
+    const int          *GetPickHighlightColor() const;
+          int          *GetPickHighlightColor();
     const std::string  &GetRemovedPicks() const;
           std::string  &GetRemovedPicks();
 
@@ -557,13 +557,13 @@ private:
     int                  timeCurveType;
     MapNode              timeOptions;
     MapNode              plotRequested;
-    float                pickHighlightColor[3];
+    int                  pickHighlightColor[3];
     std::string          removedPicks;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimmFs"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimmIs"
 
 #endif

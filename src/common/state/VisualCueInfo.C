@@ -899,7 +899,10 @@ VisualCueInfo::SetFromP(const PickAttributes *pa)
     SetPointD(0,pa->GetPickPoint());
     SetLabel(pa->GetPickLetter());
     SetShowLabel(pa->GetShowPickLetter());
-    SetHighlightColor(pa->GetPickHighlightColor());
+    float hColor[3];
+    for (int i = 0; i < 3; ++i)
+        hColor[i] = pa->GetPickHighlightColor()[i] / 255.0;
+    SetHighlightColor(hColor);
     if ((pa->GetPickType() != PickAttributes::Zone) &&
         (pa->GetPickType() != PickAttributes::DomainZone))
         SetGlyphType("Square");

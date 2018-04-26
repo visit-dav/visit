@@ -176,10 +176,10 @@ public class PickAttributes extends AttributeSubject
         timeCurveType = TIMECURVETYPE_SINGLE_Y_AXIS;
         timeOptions = new MapNode();
         plotRequested = new MapNode();
-        pickHighlightColor = new float[3];
-        pickHighlightColor[0] = 1f;
-        pickHighlightColor[1] = 0f;
-        pickHighlightColor[2] = 0f;
+        pickHighlightColor = new int[3];
+        pickHighlightColor[0] = 255;
+        pickHighlightColor[1] = 0;
+        pickHighlightColor[2] = 0;
         removedPicks = new String("");
     }
 
@@ -280,10 +280,10 @@ public class PickAttributes extends AttributeSubject
         timeCurveType = TIMECURVETYPE_SINGLE_Y_AXIS;
         timeOptions = new MapNode();
         plotRequested = new MapNode();
-        pickHighlightColor = new float[3];
-        pickHighlightColor[0] = 1f;
-        pickHighlightColor[1] = 0f;
-        pickHighlightColor[2] = 0f;
+        pickHighlightColor = new int[3];
+        pickHighlightColor[0] = 255;
+        pickHighlightColor[1] = 0;
+        pickHighlightColor[2] = 0;
         removedPicks = new String("");
     }
 
@@ -450,7 +450,7 @@ public class PickAttributes extends AttributeSubject
         timeCurveType = obj.timeCurveType;
         timeOptions = new MapNode(obj.timeOptions);
         plotRequested = new MapNode(obj.plotRequested);
-        pickHighlightColor = new float[3];
+        pickHighlightColor = new int[3];
         pickHighlightColor[0] = obj.pickHighlightColor[0];
         pickHighlightColor[1] = obj.pickHighlightColor[1];
         pickHighlightColor[2] = obj.pickHighlightColor[2];
@@ -1219,7 +1219,7 @@ public class PickAttributes extends AttributeSubject
         Select(76);
     }
 
-    public void SetPickHighlightColor(float[] pickHighlightColor_)
+    public void SetPickHighlightColor(int[] pickHighlightColor_)
     {
         pickHighlightColor[0] = pickHighlightColor_[0];
         pickHighlightColor[1] = pickHighlightColor_[1];
@@ -1227,7 +1227,7 @@ public class PickAttributes extends AttributeSubject
         Select(77);
     }
 
-    public void SetPickHighlightColor(float e0, float e1, float e2)
+    public void SetPickHighlightColor(int e0, int e1, int e2)
     {
         pickHighlightColor[0] = e0;
         pickHighlightColor[1] = e1;
@@ -1319,7 +1319,7 @@ public class PickAttributes extends AttributeSubject
     public int      GetTimeCurveType() { return timeCurveType; }
     public MapNode  GetTimeOptions() { return timeOptions; }
     public MapNode  GetPlotRequested() { return plotRequested; }
-    public float[]  GetPickHighlightColor() { return pickHighlightColor; }
+    public int[]    GetPickHighlightColor() { return pickHighlightColor; }
     public String   GetRemovedPicks() { return removedPicks; }
 
     // Write and read methods.
@@ -1487,7 +1487,7 @@ public class PickAttributes extends AttributeSubject
         if(WriteSelect(76, buf))
             plotRequested.Write(buf);
         if(WriteSelect(77, buf))
-            buf.WriteFloatArray(pickHighlightColor);
+            buf.WriteIntArray(pickHighlightColor);
         if(WriteSelect(78, buf))
             buf.WriteString(removedPicks);
     }
@@ -1738,7 +1738,7 @@ public class PickAttributes extends AttributeSubject
             plotRequested.Read(buf);
             break;
         case 77:
-            SetPickHighlightColor(buf.ReadFloatArray());
+            SetPickHighlightColor(buf.ReadIntArray());
             break;
         case 78:
             SetRemovedPicks(buf.ReadString());
@@ -1864,7 +1864,7 @@ public class PickAttributes extends AttributeSubject
         str = str + "\n";
         str = str + indent + "timeOptions = " + timeOptions.toString(indent);
         str = str + indent + "plotRequested = " + plotRequested.toString(indent);
-        str = str + floatArrayToString("pickHighlightColor", pickHighlightColor, indent) + "\n";
+        str = str + intArrayToString("pickHighlightColor", pickHighlightColor, indent) + "\n";
         str = str + stringToString("removedPicks", removedPicks, indent) + "\n";
         return str;
     }
@@ -1981,7 +1981,7 @@ public class PickAttributes extends AttributeSubject
     private int      timeCurveType;
     private MapNode  timeOptions;
     private MapNode  plotRequested;
-    private float[]  pickHighlightColor;
+    private int[]    pickHighlightColor;
     private String   removedPicks;
 }
 

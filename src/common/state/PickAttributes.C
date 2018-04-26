@@ -236,7 +236,7 @@ void PickAttributes::Init()
     floatFormat = "%g";
     timePreserveCoord = true;
     timeCurveType = Single_Y_Axis;
-    pickHighlightColor[0] = 1;
+    pickHighlightColor[0] = 255;
     pickHighlightColor[1] = 0;
     pickHighlightColor[2] = 0;
 
@@ -1802,7 +1802,7 @@ PickAttributes::SetPlotRequested(const MapNode &plotRequested_)
 }
 
 void
-PickAttributes::SetPickHighlightColor(const float *pickHighlightColor_)
+PickAttributes::SetPickHighlightColor(const int *pickHighlightColor_)
 {
     pickHighlightColor[0] = pickHighlightColor_[0];
     pickHighlightColor[1] = pickHighlightColor_[1];
@@ -2475,13 +2475,13 @@ PickAttributes::GetPlotRequested()
     return plotRequested;
 }
 
-const float *
+const int *
 PickAttributes::GetPickHighlightColor() const
 {
     return pickHighlightColor;
 }
 
-float *
+int *
 PickAttributes::GetPickHighlightColor()
 {
     return pickHighlightColor;
@@ -3108,7 +3108,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_timeCurveType:               return FieldType_enum;
     case ID_timeOptions:                 return FieldType_MapNode;
     case ID_plotRequested:               return FieldType_MapNode;
-    case ID_pickHighlightColor:          return FieldType_floatArray;
+    case ID_pickHighlightColor:          return FieldType_intArray;
     case ID_removedPicks:                return FieldType_string;
     default:  return FieldType_unknown;
     }
@@ -3211,7 +3211,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_timeCurveType:               return "enum";
     case ID_timeOptions:                 return "MapNode";
     case ID_plotRequested:               return "MapNode";
-    case ID_pickHighlightColor:          return "floatArray";
+    case ID_pickHighlightColor:          return "intArray";
     case ID_removedPicks:                return "string";
     default:  return "invalid index";
     }

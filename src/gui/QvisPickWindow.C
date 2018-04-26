@@ -2209,23 +2209,21 @@ QvisPickWindow::resetPickLetter()
 //
 // Modifications:
 //
+//     Alister Maguire, Thu Apr 26 10:59:22 PDT 2018
+//     Removed conversion to float. Range is now 0 - 255 int. 
+//
 // ****************************************************************************
 
 void
 QvisPickWindow::setHighlightColor()
 {
     QColor color = QColorDialog::getColor(Qt::red, this);
-    float  fRGB[3];
-    int    iRGB[3];
-    iRGB[0] = color.red();
-    iRGB[1] = color.green();
-    iRGB[2] = color.blue();
-    
-    //Convert the 0 -> 255 range to 0.0 -> 1.0
-    for (int j = 0; j < 3; ++j)
-        fRGB[j] = (float)iRGB[j]/255.0;
+    int RGB[3];
+    RGB[0] = color.red();
+    RGB[1] = color.green();
+    RGB[2] = color.blue();
 
-    pickAtts->SetPickHighlightColor(fRGB);
+    pickAtts->SetPickHighlightColor(RGB);
 }
 
 

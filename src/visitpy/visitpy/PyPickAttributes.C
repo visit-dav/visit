@@ -235,12 +235,12 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
           break;
     }
 
-    {   const float *pickHighlightColor = atts->GetPickHighlightColor();
+    {   const int *pickHighlightColor = atts->GetPickHighlightColor();
         SNPRINTF(tmpStr, 1000, "%spickHighlightColor = (", prefix);
         str += tmpStr;
         for(int i = 0; i < 3; ++i)
         {
-            SNPRINTF(tmpStr, 1000, "%g", pickHighlightColor[i]);
+            SNPRINTF(tmpStr, 1000, "%d", pickHighlightColor[i]);
             str += tmpStr;
             if(i < 2)
             {
@@ -961,8 +961,8 @@ PickAttributes_SetPickHighlightColor(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
 
-    float *fvals = obj->data->GetPickHighlightColor();
-    if(!PyArg_ParseTuple(args, "fff", &fvals[0], &fvals[1], &fvals[2]))
+    int *ivals = obj->data->GetPickHighlightColor();
+    if(!PyArg_ParseTuple(args, "iii", &ivals[0], &ivals[1], &ivals[2]))
     {
         PyObject     *tuple;
         if(!PyArg_ParseTuple(args, "O", &tuple))
@@ -978,13 +978,13 @@ PickAttributes_SetPickHighlightColor(PyObject *self, PyObject *args)
             {
                 PyObject *item = PyTuple_GET_ITEM(tuple, i);
                 if(PyFloat_Check(item))
-                    fvals[i] = float(PyFloat_AS_DOUBLE(item));
+                    ivals[i] = int(PyFloat_AS_DOUBLE(item));
                 else if(PyInt_Check(item))
-                    fvals[i] = float(PyInt_AS_LONG(item));
+                    ivals[i] = int(PyInt_AS_LONG(item));
                 else if(PyLong_Check(item))
-                    fvals[i] = float(PyLong_AsDouble(item));
+                    ivals[i] = int(PyLong_AsDouble(item));
                 else
-                    fvals[i] = 0.;
+                    ivals[i] = 0;
             }
         }
         else
@@ -1004,9 +1004,9 @@ PickAttributes_GetPickHighlightColor(PyObject *self, PyObject *args)
     PickAttributesObject *obj = (PickAttributesObject *)self;
     // Allocate a tuple the with enough entries to hold the pickHighlightColor.
     PyObject *retval = PyTuple_New(3);
-    const float *pickHighlightColor = obj->data->GetPickHighlightColor();
+    const int *pickHighlightColor = obj->data->GetPickHighlightColor();
     for(int i = 0; i < 3; ++i)
-        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(double(pickHighlightColor[i])));
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(pickHighlightColor[i])));
     return retval;
 }
 
