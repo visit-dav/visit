@@ -71,6 +71,11 @@ public:
         PXNYNZ,
         NXNYNZ
     };
+    enum ReflectType
+    {
+        Plane,
+        Axis
+    };
 
     // These constructors are for objects of this class
     ReflectAttributes();
@@ -98,6 +103,8 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectReflections();
+    void SelectPlanePoint();
+    void SelectPlaneNormal();
 
     // Property setting methods
     void SetOctant(Octant octant_);
@@ -108,17 +115,25 @@ public:
     void SetUseZBoundary(bool useZBoundary_);
     void SetSpecifiedZ(double specifiedZ_);
     void SetReflections(const int *reflections_);
+    void SetPlanePoint(const double *planePoint_);
+    void SetPlaneNormal(const double *planeNormal_);
+    void SetReflectType(ReflectType reflectType_);
 
     // Property getting methods
-    Octant    GetOctant() const;
-    bool      GetUseXBoundary() const;
-    double    GetSpecifiedX() const;
-    bool      GetUseYBoundary() const;
-    double    GetSpecifiedY() const;
-    bool      GetUseZBoundary() const;
-    double    GetSpecifiedZ() const;
-    const int *GetReflections() const;
-          int *GetReflections();
+    Octant       GetOctant() const;
+    bool         GetUseXBoundary() const;
+    double       GetSpecifiedX() const;
+    bool         GetUseYBoundary() const;
+    double       GetSpecifiedY() const;
+    bool         GetUseZBoundary() const;
+    double       GetSpecifiedZ() const;
+    const int    *GetReflections() const;
+          int    *GetReflections();
+    const double *GetPlanePoint() const;
+          double *GetPlanePoint();
+    const double *GetPlaneNormal() const;
+          double *GetPlaneNormal();
+    ReflectType  GetReflectType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -129,6 +144,11 @@ public:
     static bool Octant_FromString(const std::string &, Octant &);
 protected:
     static std::string Octant_ToString(int);
+public:
+    static std::string ReflectType_ToString(ReflectType);
+    static bool ReflectType_FromString(const std::string &, ReflectType &);
+protected:
+    static std::string ReflectType_ToString(int);
 public:
 
     // Keyframing methods
@@ -150,9 +170,16 @@ public:
         ID_useZBoundary,
         ID_specifiedZ,
         ID_reflections,
+        ID_planePoint,
+        ID_planeNormal,
+        ID_reflectType,
         ID__LAST
     };
 
+protected:
+    double planePoint[3];
+    double planeNormal[3];
+    int    reflectType;
 private:
     int    octant;
     bool   useXBoundary;
@@ -167,6 +194,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define REFLECTATTRIBUTES_TMFS "ibdbdbdI"
+#define REFLECTATTRIBUTES_TMFS "ibdbdbdIDDi"
 
 #endif

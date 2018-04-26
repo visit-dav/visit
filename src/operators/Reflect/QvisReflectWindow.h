@@ -49,6 +49,7 @@ class QButtonGroup;
 class QComboBox;
 class QRadioButton;
 class QvisReflectWidget;
+class QTabWidget;
 
 // ****************************************************************************
 //  Class:  QvisReflectWindow
@@ -68,6 +69,10 @@ class QvisReflectWidget;
 //
 //    Brad Whitlock, Wed Jun 25 09:22:58 PDT 2003
 //    I added a 2D view of the window.
+//
+//    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
+//    I added several variables needed to integrate reflecting
+//    over an arbitrary plane. 
 //
 // ****************************************************************************
 
@@ -96,6 +101,9 @@ class QvisReflectWindow : public QvisOperatorWindow
     void specifiedZProcessText();
     void selectOctants(bool *octants);
     void selectMode(int);
+    void reflectTabsChangedIndex(int);
+    void planePointProcessText();
+    void planeNormProcessText();
   private:
     bool               userSetMode;
     bool               mode2D;
@@ -117,6 +125,11 @@ class QvisReflectWindow : public QvisOperatorWindow
     QRadioButton      *zUseData;
     QRadioButton      *zSpecify;
     QLineEdit         *specifiedZ;
+    QLineEdit         *planePoint;
+    QLineEdit         *planeNorm;
+    QTabWidget        *reflectTabs;
+    QWidget           *planeTab;
+    QWidget           *axisTab;
 
     ReflectAttributes *atts;
 };

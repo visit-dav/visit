@@ -41,3 +41,4 @@ ReflectAttributes::ProcessOldVersions(DataNode *parentNode,
          reflectionsNode->SetIntArray(reflections, 8);
     }
 }
+

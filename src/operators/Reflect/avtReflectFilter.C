@@ -59,10 +59,12 @@
 #include <DebugStream.h>
 #include <ImproperUseException.h>
 
+#include <vtkStructuredGrid.h>
+#include <vtkRectilinearGridToPointSet.h>
+
 using   std::string;
 
 static void ReflectVectorData(vtkDataSet *in_ds, int dim, bool);
-
 
 // ****************************************************************************
 //  Function: Equal
@@ -125,6 +127,9 @@ Equal(float t1, double t2)
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Add Boolean for zero-ing velocities on the boundary.
 //
+//    Alister Maguire, Tue Apr 17 11:12:30 PDT 2018
+//    Added ghostsCreated. 
+//
 // ****************************************************************************
 
 avtReflectFilter::avtReflectFilter()
@@ -133,6 +138,7 @@ avtReflectFilter::avtReflectFilter()
     yReflect = 0.;
     zReflect = 0.;
     zeroOutVelocitiesOnBoundary = false;
+    ghostsCreated = false;
 }
 
 
@@ -338,6 +344,10 @@ avtReflectFilter::PreExecute(void)
 //    Hank Childs, Thu Aug 26 13:47:30 PDT 2010
 //    Change extents names.
 //
+//    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
+//    Added check to make sure ghost zones have been created
+//    before setting atts. 
+//
 // ****************************************************************************
 
 void
@@ -349,7 +359,7 @@ avtReflectFilter::PostExecute(void)
     outAtts.GetActualSpatialExtents()->Clear();
 
     if (GetInput()->GetInfo().GetAttributes().GetContainsGhostZones()
-           != AVT_HAS_GHOSTS)
+           != AVT_HAS_GHOSTS && ghostsCreated)
         outAtts.SetContainsGhostZones(AVT_CREATED_GHOSTS);
 
     double bounds[6];
@@ -497,6 +507,9 @@ avtReflectFilter::UpdateDataObjectInfo(void)
 //    Eric Brugger, Thu Jul 31 19:15:48 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Alister Maguire, Tue Apr 10 13:22:11 PDT 2018
+//    Added the option to reflect across an arbitrary plane. 
+//
 // ****************************************************************************
 
 avtDataTree_p 
@@ -509,41 +522,79 @@ avtReflectFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
     int domain = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
 
-    int  i;
-
     if (in_dr == NULL)
     {
         return NULL;
     }
 
-    //
-    // Perform any of the 8 possible reflections.
-    //
-    const int *shouldreflect = atts.GetReflections();
-    vtkDataSet *reflections[8];
-    for (i = 0 ; i < 8 ; i++)
-    {
-        reflections[i] = NULL;
-        if (shouldreflect[i] != 0)
-        {
-            reflections[i] = Reflect(in_ds, i);
-        }
-    }
+    avtDataTree_p rv = NULL;
+    int reflectType  = atts.GetReflectType();
 
-    //
-    // Construct a data tree out of our reflections.
-    //
-    avtDataTree_p rv = new avtDataTree(8, reflections, domain, label);
-
-    //
-    // Clean up memory.
-    //
-    for (i = 0 ; i < 8 ; i++)
+    switch(reflectType)
     {
-        if (reflections[i] != NULL)
+        case ReflectAttributes::Plane:
         {
-            reflections[i]->Delete();
+            //
+            // For reflecting about an arbitrary plane, we
+            // only need two output datasets: the original
+            // and the reflected. 
+            //
+            vtkDataSet *reflections[2];
+            reflections[0] = PlaneReflect(in_ds, false);
+            reflections[1] = PlaneReflect(in_ds, true);
+   
+            //
+            // Construct a data tree out of our reflections.
+            //
+            rv = new avtDataTree(2, reflections, domain, label);
+
+            //
+            // Clean up memory.
+            //
+            for (int i = 0 ; i < 2 ; i++)
+            {
+                if (reflections[i] != NULL)
+                {
+                    reflections[i]->Delete();
+                }
+            }
         }
+        break;
+
+        case ReflectAttributes::Axis:
+        {
+            //
+            // Perform any of the 8 possible reflections.
+            //
+            int  i;
+            const int *shouldreflect = atts.GetReflections();
+            vtkDataSet *reflections[8];
+            for (i = 0 ; i < 8 ; i++)
+            {
+                reflections[i] = NULL;
+                if (shouldreflect[i] != 0)
+                {
+                    reflections[i] = AxisReflect(in_ds, i);
+                }
+            }
+
+            //
+            // Construct a data tree out of our reflections.
+            //
+            rv = new avtDataTree(8, reflections, domain, label);
+
+            //
+            // Clean up memory.
+            //
+            for (i = 0 ; i < 8 ; i++)
+            {
+                if (reflections[i] != NULL)
+                {
+                    reflections[i]->Delete();
+                }
+            }
+        }
+        break;
     }
 
     return rv;
@@ -551,7 +602,123 @@ avtReflectFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 
 
 // ****************************************************************************
-//  Method: avtReflectFilter::Reflect
+//  Method: avtReflectFilter::PlaneReflect
+//
+//  Purpose:
+//      If doReflection is true, create a new dataset from the input
+//      and reflect this dataset across a given plane. Otherwise, 
+//      create a new dataset that is identical to the old one but 
+//      a vtkPointSet. 
+//
+//  Arguments:
+//      in_ds          The input data. 
+//      doReflection   Whether or not we should reflect the input data. 
+//
+//  Returns:    The dataset appropriately reflected.
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Apr  9 12:50:15 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+vtkDataSet *
+avtReflectFilter::PlaneReflect(vtkDataSet *in_ds, bool doReflection)
+{
+    vtkPointSet *out_ds = NULL;
+    vtkRectilinearGridToPointSet *gridToPointFilter = NULL;
+    
+    //
+    // If our input data is a rectilinear grid, we need to convert 
+    // this to a point set. Otherwise, we can just cast the input
+    // to a point set. 
+    //
+    if (in_ds->GetDataObjectType() == VTK_RECTILINEAR_GRID)
+    {
+        out_ds = (vtkPointSet *)vtkStructuredGrid::New();
+        vtkRectilinearGridToPointSet *gridToPointFilter = 
+            vtkRectilinearGridToPointSet::New();
+        gridToPointFilter->SetInputData(in_ds);
+        gridToPointFilter->Update();
+        out_ds->ShallowCopy(gridToPointFilter->GetOutput());
+    }
+    else
+    {
+        out_ds = (vtkPointSet *)in_ds->NewInstance();
+        out_ds->ShallowCopy(in_ds);
+    }
+
+    if (!doReflection)
+        return out_ds;
+
+    double *planePoint  = atts.GetPlanePoint();
+    double *planeNormal = atts.GetPlaneNormal();
+    double  beta        = 0.0;
+    double  normalMag   = sqrt(planeNormal[0]*planeNormal[0]+
+                               planeNormal[1]*planeNormal[1]+
+                               planeNormal[2]*planeNormal[2]);
+
+    //
+    // Make sure the normal is normalized, and calculate
+    // beta in the plane equation ax + by + cz = beta. 
+    //
+    for (int i = 0; i < 3; ++i)
+    {
+        planeNormal[i] = planeNormal[i] / normalMag;
+        beta += planeNormal[i]*planePoint[i];
+    }
+
+    vtkPoints *inPts  = out_ds->GetPoints();
+    vtkPoints *outPts = vtkPoints::New(inPts->GetDataType());
+    int nPts          = inPts->GetNumberOfPoints();
+    outPts->SetNumberOfPoints(nPts);
+
+    for (int i = 0 ; i < nPts ; i++)
+    {
+        double reflection[3];
+        double curPt[3];
+        inPts->GetPoint(i, curPt);
+
+        //
+        // Perform the reflection using the equation
+        // R = P-2*N*(dot(N, P)-D)
+        // where P = current point, N = planeNormal, D = beta, 
+        // and alpha = 2*(dot(N, P)-D)
+        //
+        double alpha = 0;
+        for (int i = 0; i < 3; ++i)
+        {
+           alpha += planeNormal[i]*curPt[i]; 
+        }
+
+        alpha -= beta;
+        alpha *= 2.0; 
+
+        for (int i = 0; i < 3; ++i)
+        {
+            reflection[i] = curPt[i] - (planeNormal[i] * alpha);
+        }
+
+        outPts->SetPoint(i, reflection);
+    }
+
+    //
+    // Add our new points to the output data, and clean
+    // up memory. 
+    //
+    out_ds->SetPoints(outPts);
+    outPts->Delete();
+
+    if (gridToPointFilter != NULL)
+        gridToPointFilter->Delete();
+
+    return out_ds;
+}
+
+
+// ****************************************************************************
+//  Method: avtReflectFilter::AxisReflect
 //
 //  Purpose:
 //      Determines what the mesh type is and calls the appropriate reflect
@@ -574,23 +741,27 @@ avtReflectFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
 //    Hank Childs, Fri Sep  3 12:10:47 PDT 2010
 //    Pass Boolean along to ReflectVectorData function.
 //
+//    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
+//    Changed name to AxisReflect to distinguish from arbitrary
+//    plane reflections. 
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtReflectFilter::Reflect(vtkDataSet *ds, int dim)
+avtReflectFilter::AxisReflect(vtkDataSet *ds, int dim)
 {
     int dstype = ds->GetDataObjectType();
     vtkDataSet *rv = NULL;
     switch (dstype)
     {
       case VTK_RECTILINEAR_GRID:
-        rv = ReflectRectilinear((vtkRectilinearGrid *) ds, dim);
+        rv = AxisReflectRectilinear((vtkRectilinearGrid *) ds, dim);
         break;
 
       case VTK_STRUCTURED_GRID:
       case VTK_UNSTRUCTURED_GRID:
       case VTK_POLY_DATA:
-        rv = ReflectPointSet((vtkPointSet *) ds, dim);
+        rv = AxisReflectPointSet((vtkPointSet *) ds, dim);
         break;
 
       default:
@@ -605,7 +776,7 @@ avtReflectFilter::Reflect(vtkDataSet *ds, int dim)
 
 
 // ****************************************************************************
-//  Method: avtReflectFilter::ReflectRectilinear
+//  Method: avtReflectFilter::AxisReflectRectilinear
 //
 //  Purpose:
 //      Reflects a rectilinear mesh.
@@ -632,10 +803,14 @@ avtReflectFilter::Reflect(vtkDataSet *ds, int dim)
 //    Hank Childs, Tue Jul  5 09:44:27 PDT 2005
 //    Don't produce meshes that are "inside-out"/"degenerate". ['6321]
 //
+//    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
+//    Changed name to AxisReflectRectilinear to distinguish from arbitrary
+//    plane reflections, and set ghostsCreated to true.
+//
 // ****************************************************************************
 
 vtkDataSet *
-avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
+avtReflectFilter::AxisReflectRectilinear(vtkRectilinearGrid *ds, int dim)
 {
     vtkRectilinearGrid *out = (vtkRectilinearGrid *) ds->NewInstance();
     int nPts = ds->GetNumberOfPoints();
@@ -807,6 +982,7 @@ avtReflectFilter::ReflectRectilinear(vtkRectilinearGrid *ds, int dim)
 
     out->GetPointData()->AddArray(gn);
     gn->Delete();
+    ghostsCreated = true;
 
     return out;
 }
@@ -874,7 +1050,7 @@ avtReflectFilter::ReflectDataArray(vtkDataArray *coords, double val)
 
 
 // ****************************************************************************
-//  Method: avtReflectFilter::ReflectPointSet
+//  Method: avtReflectFilter::AxisReflectPointSet
 //
 //  Purpose:
 //      Reflects a dataset that is derived from point set.
@@ -904,11 +1080,15 @@ avtReflectFilter::ReflectDataArray(vtkDataArray *coords, double val)
 //    Alister Maguire, Tue Nov 15 11:51:26 PST 2016
 //    Added DeepCopy of ds if threads are greater
 //    than 1. 
+//
+//    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
+//    Changed name to AxisReflectPointSet to distinguish from arbitrary
+//    plane reflections, and set ghostsCreated to true. 
 //   
 // ****************************************************************************
 
 vtkDataSet *
-avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
+avtReflectFilter::AxisReflectPointSet(vtkPointSet *ds, int dim)
 {
     vtkPointSet *out = (vtkPointSet *) ds->NewInstance();
 
@@ -963,6 +1143,7 @@ avtReflectFilter::ReflectPointSet(vtkPointSet *ds, int dim)
     outPts->Delete();
     out->GetPointData()->AddArray(gn);
     gn->Delete();
+    ghostsCreated = true;
 
     return out;
 }

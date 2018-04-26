@@ -74,6 +74,11 @@ class vtkRectilinearGrid;
 //    Alister Maguire, Tue Nov 15 11:51:26 PST 2016
 //    Added ThreadSafe method.     
 //
+//    Alister Maguire, Tue Apr 10 13:22:11 PDT 2018
+//    Added PlaneReflect for reflecting about an arbitrary plane, 
+//    ghostsCreated to signify when ghost zones have been created, 
+//    and changed names of previous reflect functions to AxisReflect*.
+//
 // ****************************************************************************
 
 class avtReflectFilter : public virtual avtSIMODataTreeIterator,
@@ -98,6 +103,7 @@ class avtReflectFilter : public virtual avtSIMODataTreeIterator,
     double                yReflect;
     double                zReflect;
     bool                  zeroOutVelocitiesOnBoundary;
+    bool                  ghostsCreated;
 
     virtual bool          ThreadSafe(void) { return(true); };
     virtual void          PreExecute(void);
@@ -107,9 +113,10 @@ class avtReflectFilter : public virtual avtSIMODataTreeIterator,
                           ModifyContract(avtContract_p);
     virtual void          UpdateDataObjectInfo(void);
 
-    vtkDataSet           *Reflect(vtkDataSet *, int);
-    vtkDataSet           *ReflectRectilinear(vtkRectilinearGrid *, int);
-    vtkDataSet           *ReflectPointSet(vtkPointSet *, int);
+    vtkDataSet           *PlaneReflect(vtkDataSet *, bool);
+    vtkDataSet           *AxisReflect(vtkDataSet *, int);
+    vtkDataSet           *AxisReflectRectilinear(vtkRectilinearGrid *, int);
+    vtkDataSet           *AxisReflectPointSet(vtkPointSet *, int);
     vtkDataArray         *ReflectDataArray(vtkDataArray *, double);
     void                  HasNeighbor(int, bool &, bool &, bool &);
 };

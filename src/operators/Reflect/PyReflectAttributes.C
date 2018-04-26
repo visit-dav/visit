@@ -153,6 +153,53 @@ PyReflectAttributes_ToString(const ReflectAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const double *planePoint = atts->GetPlanePoint();
+        SNPRINTF(tmpStr, 1000, "%splanePoint = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", planePoint[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const double *planeNormal = atts->GetPlaneNormal();
+        SNPRINTF(tmpStr, 1000, "%splaneNormal = (", prefix);
+        str += tmpStr;
+        for(int i = 0; i < 3; ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", planeNormal[i]);
+            str += tmpStr;
+            if(i < 2)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    const char *reflectType_names = "Plane, Axis";
+    switch (atts->GetReflectType())
+    {
+      case ReflectAttributes::Plane:
+          SNPRINTF(tmpStr, 1000, "%sreflectType = %sPlane  # %s\n", prefix, prefix, reflectType_names);
+          str += tmpStr;
+          break;
+      case ReflectAttributes::Axis:
+          SNPRINTF(tmpStr, 1000, "%sreflectType = %sAxis  # %s\n", prefix, prefix, reflectType_names);
+          str += tmpStr;
+          break;
+      default:
+          break;
+    }
+
     return str;
 }
 
@@ -397,6 +444,147 @@ ReflectAttributes_GetReflections(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+ReflectAttributes_SetPlanePoint(PyObject *self, PyObject *args)
+{
+    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+
+    double *dvals = obj->data->GetPlanePoint();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 3)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the planePoint in the object as modified.
+    obj->data->SelectPlanePoint();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ReflectAttributes_GetPlanePoint(PyObject *self, PyObject *args)
+{
+    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the planePoint.
+    PyObject *retval = PyTuple_New(3);
+    const double *planePoint = obj->data->GetPlanePoint();
+    for(int i = 0; i < 3; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(planePoint[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+ReflectAttributes_SetPlaneNormal(PyObject *self, PyObject *args)
+{
+    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+
+    double *dvals = obj->data->GetPlaneNormal();
+    if(!PyArg_ParseTuple(args, "ddd", &dvals[0], &dvals[1], &dvals[2]))
+    {
+        PyObject     *tuple;
+        if(!PyArg_ParseTuple(args, "O", &tuple))
+            return NULL;
+
+        if(PyTuple_Check(tuple))
+        {
+            if(PyTuple_Size(tuple) != 3)
+                return NULL;
+
+            PyErr_Clear();
+            for(int i = 0; i < PyTuple_Size(tuple); ++i)
+            {
+                PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                if(PyFloat_Check(item))
+                    dvals[i] = PyFloat_AS_DOUBLE(item);
+                else if(PyInt_Check(item))
+                    dvals[i] = double(PyInt_AS_LONG(item));
+                else if(PyLong_Check(item))
+                    dvals[i] = PyLong_AsDouble(item);
+                else
+                    dvals[i] = 0.;
+            }
+        }
+        else
+            return NULL;
+    }
+
+    // Mark the planeNormal in the object as modified.
+    obj->data->SelectPlaneNormal();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ReflectAttributes_GetPlaneNormal(PyObject *self, PyObject *args)
+{
+    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the planeNormal.
+    PyObject *retval = PyTuple_New(3);
+    const double *planeNormal = obj->data->GetPlaneNormal();
+    for(int i = 0; i < 3; ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(planeNormal[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+ReflectAttributes_SetReflectType(PyObject *self, PyObject *args)
+{
+    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the reflectType in the object.
+    if(ival >= 0 && ival < 2)
+        obj->data->SetReflectType(ReflectAttributes::ReflectType(ival));
+    else
+    {
+        fprintf(stderr, "An invalid reflectType value was given. "
+                        "Valid values are in the range of [0,1]. "
+                        "You can also use the following names: "
+                        "Plane, Axis.");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ReflectAttributes_GetReflectType(PyObject *self, PyObject *args)
+{
+    ReflectAttributesObject *obj = (ReflectAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetReflectType()));
+    return retval;
+}
+
 
 
 PyMethodDef PyReflectAttributes_methods[REFLECTATTRIBUTES_NMETH] = {
@@ -417,6 +605,12 @@ PyMethodDef PyReflectAttributes_methods[REFLECTATTRIBUTES_NMETH] = {
     {"GetSpecifiedZ", ReflectAttributes_GetSpecifiedZ, METH_VARARGS},
     {"SetReflections", ReflectAttributes_SetReflections, METH_VARARGS},
     {"GetReflections", ReflectAttributes_GetReflections, METH_VARARGS},
+    {"SetPlanePoint", ReflectAttributes_SetPlanePoint, METH_VARARGS},
+    {"GetPlanePoint", ReflectAttributes_GetPlanePoint, METH_VARARGS},
+    {"SetPlaneNormal", ReflectAttributes_SetPlaneNormal, METH_VARARGS},
+    {"GetPlaneNormal", ReflectAttributes_GetPlaneNormal, METH_VARARGS},
+    {"SetReflectType", ReflectAttributes_SetReflectType, METH_VARARGS},
+    {"GetReflectType", ReflectAttributes_GetReflectType, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -478,6 +672,17 @@ PyReflectAttributes_getattr(PyObject *self, char *name)
         return ReflectAttributes_GetSpecifiedZ(self, NULL);
     if(strcmp(name, "reflections") == 0)
         return ReflectAttributes_GetReflections(self, NULL);
+    if(strcmp(name, "planePoint") == 0)
+        return ReflectAttributes_GetPlanePoint(self, NULL);
+    if(strcmp(name, "planeNormal") == 0)
+        return ReflectAttributes_GetPlaneNormal(self, NULL);
+    if(strcmp(name, "reflectType") == 0)
+        return ReflectAttributes_GetReflectType(self, NULL);
+    if(strcmp(name, "Plane") == 0)
+        return PyInt_FromLong(long(ReflectAttributes::Plane));
+    if(strcmp(name, "Axis") == 0)
+        return PyInt_FromLong(long(ReflectAttributes::Axis));
+
 
     return Py_FindMethod(PyReflectAttributes_methods, self, name);
 }
@@ -508,6 +713,12 @@ PyReflectAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = ReflectAttributes_SetSpecifiedZ(self, tuple);
     else if(strcmp(name, "reflections") == 0)
         obj = ReflectAttributes_SetReflections(self, tuple);
+    else if(strcmp(name, "planePoint") == 0)
+        obj = ReflectAttributes_SetPlanePoint(self, tuple);
+    else if(strcmp(name, "planeNormal") == 0)
+        obj = ReflectAttributes_SetPlaneNormal(self, tuple);
+    else if(strcmp(name, "reflectType") == 0)
+        obj = ReflectAttributes_SetReflectType(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

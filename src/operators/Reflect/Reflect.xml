@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-  <Plugin name="Reflect" type="operator" label="Reflect" version="1.0" iconFile="Reflect.xpm" category="Transforms">
+  <Plugin name="Reflect" type="operator" label="Reflect" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" iconFile="Reflect.xpm" category="Transforms">
     <Files components="G">
       QvisReflectWidget.C
     </Files>
     <Files components="W">
       QvisReflectWidget.h
     </Files>
-    <Attribute name="ReflectAttributes" purpose="This class contains attributes for the reflect operator." persistent="true" codefile="ReflectAttributes.code">
+    <Attribute name="ReflectAttributes" purpose="This class contains attributes for the reflect operator." persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="ReflectAttributes.code">
       <Enum name="Octant">
         PXPYPZ
         NXPYPZ
@@ -16,6 +16,10 @@
         NXPYNZ
         PXNYNZ
         NXNYNZ
+      </Enum>
+      <Enum name="ReflectType">
+        Plane
+        Axis
       </Enum>
       <Field name="octant" label="octant" type="enum" subtype="Octant">
         PXPYPZ
@@ -47,6 +51,19 @@
         0
         0
         0
+      </Field>
+      <Field name="planePoint" label="planePoint" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeNormal" label="planeNormal" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="reflectType" label="reflectType" type="enum" subtype="ReflectType" access="protected">
+        Axis
       </Field>
       <Function name="ProcessOldVersions" user="true" member="true">
       </Function>

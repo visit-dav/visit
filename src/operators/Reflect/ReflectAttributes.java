@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ReflectAttributes extends AttributeSubject implements Plugin
 {
-    private static int ReflectAttributes_numAdditionalAtts = 8;
+    private static int ReflectAttributes_numAdditionalAtts = 11;
 
     // Enum values
     public final static int OCTANT_PXPYPZ = 0;
@@ -70,6 +70,9 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
     public final static int OCTANT_NXPYNZ = 5;
     public final static int OCTANT_PXNYNZ = 6;
     public final static int OCTANT_NXNYNZ = 7;
+
+    public final static int REFLECTTYPE_PLANE = 0;
+    public final static int REFLECTTYPE_AXIS = 1;
 
 
     public ReflectAttributes()
@@ -92,6 +95,15 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
         reflections[5] = 0;
         reflections[6] = 0;
         reflections[7] = 0;
+        planePoint = new double[3];
+        planePoint[0] = 0;
+        planePoint[1] = 0;
+        planePoint[2] = 0;
+        planeNormal = new double[3];
+        planeNormal[0] = 0;
+        planeNormal[1] = 0;
+        planeNormal[2] = 0;
+        reflectType = REFLECTTYPE_AXIS;
     }
 
     public ReflectAttributes(int nMoreFields)
@@ -114,6 +126,15 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
         reflections[5] = 0;
         reflections[6] = 0;
         reflections[7] = 0;
+        planePoint = new double[3];
+        planePoint[0] = 0;
+        planePoint[1] = 0;
+        planePoint[2] = 0;
+        planeNormal = new double[3];
+        planeNormal[0] = 0;
+        planeNormal[1] = 0;
+        planeNormal[2] = 0;
+        reflectType = REFLECTTYPE_AXIS;
     }
 
     public ReflectAttributes(ReflectAttributes obj)
@@ -133,6 +154,17 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < obj.reflections.length; ++i)
             reflections[i] = obj.reflections[i];
 
+        planePoint = new double[3];
+        planePoint[0] = obj.planePoint[0];
+        planePoint[1] = obj.planePoint[1];
+        planePoint[2] = obj.planePoint[2];
+
+        planeNormal = new double[3];
+        planeNormal[0] = obj.planeNormal[0];
+        planeNormal[1] = obj.planeNormal[1];
+        planeNormal[2] = obj.planeNormal[2];
+
+        reflectType = obj.reflectType;
 
         SelectAll();
     }
@@ -156,6 +188,16 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
         for(i = 0; i < 8 && reflections_equal; ++i)
             reflections_equal = (reflections[i] == obj.reflections[i]);
 
+        // Compare the planePoint arrays.
+        boolean planePoint_equal = true;
+        for(i = 0; i < 3 && planePoint_equal; ++i)
+            planePoint_equal = (planePoint[i] == obj.planePoint[i]);
+
+        // Compare the planeNormal arrays.
+        boolean planeNormal_equal = true;
+        for(i = 0; i < 3 && planeNormal_equal; ++i)
+            planeNormal_equal = (planeNormal[i] == obj.planeNormal[i]);
+
         // Create the return value
         return ((octant == obj.octant) &&
                 (useXBoundary == obj.useXBoundary) &&
@@ -164,7 +206,10 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
                 (specifiedY == obj.specifiedY) &&
                 (useZBoundary == obj.useZBoundary) &&
                 (specifiedZ == obj.specifiedZ) &&
-                reflections_equal);
+                reflections_equal &&
+                planePoint_equal &&
+                planeNormal_equal &&
+                (reflectType == obj.reflectType));
     }
 
     public String GetName() { return "Reflect"; }
@@ -220,15 +265,56 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
         Select(7);
     }
 
+    public void SetPlanePoint(double[] planePoint_)
+    {
+        planePoint[0] = planePoint_[0];
+        planePoint[1] = planePoint_[1];
+        planePoint[2] = planePoint_[2];
+        Select(8);
+    }
+
+    public void SetPlanePoint(double e0, double e1, double e2)
+    {
+        planePoint[0] = e0;
+        planePoint[1] = e1;
+        planePoint[2] = e2;
+        Select(8);
+    }
+
+    public void SetPlaneNormal(double[] planeNormal_)
+    {
+        planeNormal[0] = planeNormal_[0];
+        planeNormal[1] = planeNormal_[1];
+        planeNormal[2] = planeNormal_[2];
+        Select(9);
+    }
+
+    public void SetPlaneNormal(double e0, double e1, double e2)
+    {
+        planeNormal[0] = e0;
+        planeNormal[1] = e1;
+        planeNormal[2] = e2;
+        Select(9);
+    }
+
+    public void SetReflectType(int reflectType_)
+    {
+        reflectType = reflectType_;
+        Select(10);
+    }
+
     // Property getting methods
-    public int     GetOctant() { return octant; }
-    public boolean GetUseXBoundary() { return useXBoundary; }
-    public double  GetSpecifiedX() { return specifiedX; }
-    public boolean GetUseYBoundary() { return useYBoundary; }
-    public double  GetSpecifiedY() { return specifiedY; }
-    public boolean GetUseZBoundary() { return useZBoundary; }
-    public double  GetSpecifiedZ() { return specifiedZ; }
-    public int[]   GetReflections() { return reflections; }
+    public int      GetOctant() { return octant; }
+    public boolean  GetUseXBoundary() { return useXBoundary; }
+    public double   GetSpecifiedX() { return specifiedX; }
+    public boolean  GetUseYBoundary() { return useYBoundary; }
+    public double   GetSpecifiedY() { return specifiedY; }
+    public boolean  GetUseZBoundary() { return useZBoundary; }
+    public double   GetSpecifiedZ() { return specifiedZ; }
+    public int[]    GetReflections() { return reflections; }
+    public double[] GetPlanePoint() { return planePoint; }
+    public double[] GetPlaneNormal() { return planeNormal; }
+    public int      GetReflectType() { return reflectType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -249,6 +335,12 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
             buf.WriteDouble(specifiedZ);
         if(WriteSelect(7, buf))
             buf.WriteIntArray(reflections);
+        if(WriteSelect(8, buf))
+            buf.WriteDoubleArray(planePoint);
+        if(WriteSelect(9, buf))
+            buf.WriteDoubleArray(planeNormal);
+        if(WriteSelect(10, buf))
+            buf.WriteInt(reflectType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -278,6 +370,15 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
             break;
         case 7:
             SetReflections(buf.ReadIntArray());
+            break;
+        case 8:
+            SetPlanePoint(buf.ReadDoubleArray());
+            break;
+        case 9:
+            SetPlaneNormal(buf.ReadDoubleArray());
+            break;
+        case 10:
+            SetReflectType(buf.ReadInt());
             break;
         }
     }
@@ -310,18 +411,29 @@ public class ReflectAttributes extends AttributeSubject implements Plugin
         str = str + boolToString("useZBoundary", useZBoundary, indent) + "\n";
         str = str + doubleToString("specifiedZ", specifiedZ, indent) + "\n";
         str = str + intArrayToString("reflections", reflections, indent) + "\n";
+        str = str + doubleArrayToString("planePoint", planePoint, indent) + "\n";
+        str = str + doubleArrayToString("planeNormal", planeNormal, indent) + "\n";
+        str = str + indent + "reflectType = ";
+        if(reflectType == REFLECTTYPE_PLANE)
+            str = str + "REFLECTTYPE_PLANE";
+        if(reflectType == REFLECTTYPE_AXIS)
+            str = str + "REFLECTTYPE_AXIS";
+        str = str + "\n";
         return str;
     }
 
 
     // Attributes
-    private int     octant;
-    private boolean useXBoundary;
-    private double  specifiedX;
-    private boolean useYBoundary;
-    private double  specifiedY;
-    private boolean useZBoundary;
-    private double  specifiedZ;
-    private int[]   reflections;
+    private int      octant;
+    private boolean  useXBoundary;
+    private double   specifiedX;
+    private boolean  useYBoundary;
+    private double   specifiedY;
+    private boolean  useZBoundary;
+    private double   specifiedZ;
+    private int[]    reflections;
+    private double[] planePoint;
+    private double[] planeNormal;
+    private int      reflectType;
 }
 

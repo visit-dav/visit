@@ -78,6 +78,43 @@ ReflectAttributes::Octant_FromString(const std::string &s, ReflectAttributes::Oc
     return false;
 }
 
+//
+// Enum conversion methods for ReflectAttributes::ReflectType
+//
+
+static const char *ReflectType_strings[] = {
+"Plane", "Axis"};
+
+std::string
+ReflectAttributes::ReflectType_ToString(ReflectAttributes::ReflectType t)
+{
+    int index = int(t);
+    if(index < 0 || index >= 2) index = 0;
+    return ReflectType_strings[index];
+}
+
+std::string
+ReflectAttributes::ReflectType_ToString(int t)
+{
+    int index = (t < 0 || t >= 2) ? 0 : t;
+    return ReflectType_strings[index];
+}
+
+bool
+ReflectAttributes::ReflectType_FromString(const std::string &s, ReflectAttributes::ReflectType &val)
+{
+    val = ReflectAttributes::Plane;
+    for(int i = 0; i < 2; ++i)
+    {
+        if(s == ReflectType_strings[i])
+        {
+            val = (ReflectType)i;
+            return true;
+        }
+    }
+    return false;
+}
+
 // ****************************************************************************
 // Method: ReflectAttributes::ReflectAttributes
 //
@@ -110,6 +147,13 @@ void ReflectAttributes::Init()
     reflections[5] = 0;
     reflections[6] = 0;
     reflections[7] = 0;
+    planePoint[0] = 0;
+    planePoint[1] = 0;
+    planePoint[2] = 0;
+    planeNormal[0] = 0;
+    planeNormal[1] = 0;
+    planeNormal[2] = 0;
+    reflectType = Axis;
 
     ReflectAttributes::SelectAll();
 }
@@ -142,6 +186,15 @@ void ReflectAttributes::Copy(const ReflectAttributes &obj)
     for(int i = 0; i < 8; ++i)
         reflections[i] = obj.reflections[i];
 
+    planePoint[0] = obj.planePoint[0];
+    planePoint[1] = obj.planePoint[1];
+    planePoint[2] = obj.planePoint[2];
+
+    planeNormal[0] = obj.planeNormal[0];
+    planeNormal[1] = obj.planeNormal[1];
+    planeNormal[2] = obj.planeNormal[2];
+
+    reflectType = obj.reflectType;
 
     ReflectAttributes::SelectAll();
 }
@@ -303,6 +356,16 @@ ReflectAttributes::operator == (const ReflectAttributes &obj) const
     for(int i = 0; i < 8 && reflections_equal; ++i)
         reflections_equal = (reflections[i] == obj.reflections[i]);
 
+    // Compare the planePoint arrays.
+    bool planePoint_equal = true;
+    for(int i = 0; i < 3 && planePoint_equal; ++i)
+        planePoint_equal = (planePoint[i] == obj.planePoint[i]);
+
+    // Compare the planeNormal arrays.
+    bool planeNormal_equal = true;
+    for(int i = 0; i < 3 && planeNormal_equal; ++i)
+        planeNormal_equal = (planeNormal[i] == obj.planeNormal[i]);
+
     // Create the return value
     return ((octant == obj.octant) &&
             (useXBoundary == obj.useXBoundary) &&
@@ -311,7 +374,10 @@ ReflectAttributes::operator == (const ReflectAttributes &obj) const
             (specifiedY == obj.specifiedY) &&
             (useZBoundary == obj.useZBoundary) &&
             (specifiedZ == obj.specifiedZ) &&
-            reflections_equal);
+            reflections_equal &&
+            planePoint_equal &&
+            planeNormal_equal &&
+            (reflectType == obj.reflectType));
 }
 
 // ****************************************************************************
@@ -463,6 +529,9 @@ ReflectAttributes::SelectAll()
     Select(ID_useZBoundary, (void *)&useZBoundary);
     Select(ID_specifiedZ,   (void *)&specifiedZ);
     Select(ID_reflections,  (void *)reflections, 8);
+    Select(ID_planePoint,   (void *)planePoint, 3);
+    Select(ID_planeNormal,  (void *)planeNormal, 3);
+    Select(ID_reflectType,  (void *)&reflectType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -543,6 +612,24 @@ ReflectAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
         node->AddNode(new DataNode("reflections", reflections, 8));
     }
 
+    if(completeSave || !FieldsEqual(ID_planePoint, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("planePoint", planePoint, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_planeNormal, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("planeNormal", planeNormal, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_reflectType, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("reflectType", ReflectType_ToString(reflectType)));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -609,6 +696,26 @@ ReflectAttributes::SetFromNode(DataNode *parentNode)
         SetSpecifiedZ(node->AsDouble());
     if((node = searchNode->GetNode("reflections")) != 0)
         SetReflections(node->AsIntArray());
+    if((node = searchNode->GetNode("planePoint")) != 0)
+        SetPlanePoint(node->AsDoubleArray());
+    if((node = searchNode->GetNode("planeNormal")) != 0)
+        SetPlaneNormal(node->AsDoubleArray());
+    if((node = searchNode->GetNode("reflectType")) != 0)
+    {
+        // Allow enums to be int or string in the config file
+        if(node->GetNodeType() == INT_NODE)
+        {
+            int ival = node->AsInt();
+            if(ival >= 0 && ival < 2)
+                SetReflectType(ReflectType(ival));
+        }
+        else if(node->GetNodeType() == STRING_NODE)
+        {
+            ReflectType value;
+            if(ReflectType_FromString(node->AsString(), value))
+                SetReflectType(value);
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -672,6 +779,31 @@ ReflectAttributes::SetReflections(const int *reflections_)
     Select(ID_reflections, (void *)reflections, 8);
 }
 
+void
+ReflectAttributes::SetPlanePoint(const double *planePoint_)
+{
+    planePoint[0] = planePoint_[0];
+    planePoint[1] = planePoint_[1];
+    planePoint[2] = planePoint_[2];
+    Select(ID_planePoint, (void *)planePoint, 3);
+}
+
+void
+ReflectAttributes::SetPlaneNormal(const double *planeNormal_)
+{
+    planeNormal[0] = planeNormal_[0];
+    planeNormal[1] = planeNormal_[1];
+    planeNormal[2] = planeNormal_[2];
+    Select(ID_planeNormal, (void *)planeNormal, 3);
+}
+
+void
+ReflectAttributes::SetReflectType(ReflectAttributes::ReflectType reflectType_)
+{
+    reflectType = reflectType_;
+    Select(ID_reflectType, (void *)&reflectType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -730,6 +862,36 @@ ReflectAttributes::GetReflections()
     return reflections;
 }
 
+const double *
+ReflectAttributes::GetPlanePoint() const
+{
+    return planePoint;
+}
+
+double *
+ReflectAttributes::GetPlanePoint()
+{
+    return planePoint;
+}
+
+const double *
+ReflectAttributes::GetPlaneNormal() const
+{
+    return planeNormal;
+}
+
+double *
+ReflectAttributes::GetPlaneNormal()
+{
+    return planeNormal;
+}
+
+ReflectAttributes::ReflectType
+ReflectAttributes::GetReflectType() const
+{
+    return ReflectType(reflectType);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -738,6 +900,18 @@ void
 ReflectAttributes::SelectReflections()
 {
     Select(ID_reflections, (void *)reflections, 8);
+}
+
+void
+ReflectAttributes::SelectPlanePoint()
+{
+    Select(ID_planePoint, (void *)planePoint, 3);
+}
+
+void
+ReflectAttributes::SelectPlaneNormal()
+{
+    Select(ID_planeNormal, (void *)planeNormal, 3);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -772,6 +946,9 @@ ReflectAttributes::GetFieldName(int index) const
     case ID_useZBoundary: return "useZBoundary";
     case ID_specifiedZ:   return "specifiedZ";
     case ID_reflections:  return "reflections";
+    case ID_planePoint:   return "planePoint";
+    case ID_planeNormal:  return "planeNormal";
+    case ID_reflectType:  return "reflectType";
     default:  return "invalid index";
     }
 }
@@ -804,6 +981,9 @@ ReflectAttributes::GetFieldType(int index) const
     case ID_useZBoundary: return FieldType_bool;
     case ID_specifiedZ:   return FieldType_double;
     case ID_reflections:  return FieldType_intArray;
+    case ID_planePoint:   return FieldType_doubleArray;
+    case ID_planeNormal:  return FieldType_doubleArray;
+    case ID_reflectType:  return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -836,6 +1016,9 @@ ReflectAttributes::GetFieldTypeName(int index) const
     case ID_useZBoundary: return "bool";
     case ID_specifiedZ:   return "double";
     case ID_reflections:  return "intArray";
+    case ID_planePoint:   return "doubleArray";
+    case ID_planeNormal:  return "doubleArray";
+    case ID_reflectType:  return "enum";
     default:  return "invalid index";
     }
 }
@@ -905,6 +1088,31 @@ ReflectAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             reflections_equal = (reflections[i] == obj.reflections[i]);
 
         retval = reflections_equal;
+        }
+        break;
+    case ID_planePoint:
+        {  // new scope
+        // Compare the planePoint arrays.
+        bool planePoint_equal = true;
+        for(int i = 0; i < 3 && planePoint_equal; ++i)
+            planePoint_equal = (planePoint[i] == obj.planePoint[i]);
+
+        retval = planePoint_equal;
+        }
+        break;
+    case ID_planeNormal:
+        {  // new scope
+        // Compare the planeNormal arrays.
+        bool planeNormal_equal = true;
+        for(int i = 0; i < 3 && planeNormal_equal; ++i)
+            planeNormal_equal = (planeNormal[i] == obj.planeNormal[i]);
+
+        retval = planeNormal_equal;
+        }
+        break;
+    case ID_reflectType:
+        {  // new scope
+        retval = (reflectType == obj.reflectType);
         }
         break;
     default: retval = false;

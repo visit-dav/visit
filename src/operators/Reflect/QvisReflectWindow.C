@@ -48,6 +48,8 @@
 #include <QWidget>
 #include <QButtonGroup>
 #include <QRadioButton>
+#include <QTabWidget>
+#include <QPalette>
 
 static const int widget2OperatorOctants[] = {0, 1, 3, 2, 4, 5, 7, 6};
 static const int operator2WidgetOctants[] = {0, 1, 3, 2, 4, 5, 7, 6};
@@ -135,6 +137,10 @@ QvisReflectWindow::~QvisReflectWindow()
 //    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
 //    Qt4 Port.
 //
+//    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
+//    Added option for user to reflect by an arbitrary plane,
+//    and added tabs to distinguish options. 
+//
 // ****************************************************************************
 
 void
@@ -143,9 +149,22 @@ QvisReflectWindow::CreateWindowContents()
     QVBoxLayout *mainLayout = new QVBoxLayout();
     topLayout->addLayout(mainLayout);
 
+    // Create the reflection tabs.
+    reflectTabs = new QTabWidget();
+    axisTab = new QWidget(central);
+    planeTab = new QWidget(central);
+    connect(reflectTabs, SIGNAL(currentChanged(int)), 
+        this, SLOT(reflectTabsChangedIndex(int)));
+    reflectTabs->addTab(axisTab, tr("Reflect across axis"));
+    reflectTabs->addTab(planeTab, tr("Reflect across plane"));
+    mainLayout->addWidget(reflectTabs);
+
+    // The layout of the axis reflect.
+    QVBoxLayout *axisLayout = new QVBoxLayout(axisTab);
+
     // Add the controls to select the input mode.
     QGridLayout *octantLayout = new QGridLayout();
-    mainLayout->addLayout(octantLayout);
+    axisLayout->addLayout(octantLayout);
     
     modeButtons = new QButtonGroup(central);
     octantLayout->addWidget(new QLabel(tr("Input mode"), central),0, 0);
@@ -171,13 +190,18 @@ QvisReflectWindow::CreateWindowContents()
     connect(reflect, SIGNAL(valueChanged(bool*)),
             this, SLOT(selectOctants(bool*)));
     reflectionLabel = new QLabel(tr("Reflection quadrants"), central);
-    mainLayout->addWidget(reflectionLabel);
-    mainLayout->addWidget(reflect, 100);
+    // Change the background color to match the tab space. 
+    QPalette pal = QPalette();
+    pal.setColor(QPalette::Background, Qt::white);
+    reflect->setAutoFillBackground(true);
+    reflect->setPalette(pal); 
+    axisLayout->addWidget(reflectionLabel);
+    axisLayout->addWidget(reflect, 100);
 
     // Limits
-    mainLayout->addWidget(new QLabel(tr("Reflection Limits:"), central));
+    axisLayout->addWidget(new QLabel(tr("Reflection Limits:"), central));
     QGridLayout *limitsLayout = new QGridLayout();
-    mainLayout->addLayout(limitsLayout);
+    axisLayout->addLayout(limitsLayout);
     //limitsLayout->addColumnSpacing(0, 20);
 
     xBound = new QButtonGroup(central);
@@ -226,6 +250,29 @@ QvisReflectWindow::CreateWindowContents()
             this,          SLOT(zBoundaryChanged(int)));
     connect(specifiedZ,    SIGNAL(returnPressed()),
             this,          SLOT(specifiedZProcessText()));
+
+    // The layout of the plane reflect.
+    QGridLayout *planeLayout = new QGridLayout(planeTab);
+    
+    // Create the plane point editor.
+    QLabel *planePointLabel = new QLabel(tr("Plane Point"), central);
+    planeLayout->addWidget(planePointLabel, 0, 0, 1, 1);
+    planePoint = new QLineEdit(central);
+    planePoint->setPlaceholderText("0.0 0.0 0.0");
+    connect(planePoint, SIGNAL(returnPressed()),
+            this, SLOT(planePointProcessText()));
+    planeLayout->addWidget(planePoint, 0, 1, 1, 1);
+
+    // Create the plane normal editor.
+    QLabel *planeNormLabel = new QLabel(tr("Plane Normal"), central);
+    planeLayout->addWidget(planeNormLabel, 2, 0, 1, 1);
+    planeNorm = new QLineEdit(central);
+    planeNorm->setPlaceholderText("0.0 0.0 0.0");
+    connect(planeNorm, SIGNAL(returnPressed()),
+            this, SLOT(planeNormProcessText()));
+    planeLayout->addWidget(planeNorm, 2, 1, 1, 1);
+
+    planeLayout->setRowStretch(3, 100);
 }
 
 // ****************************************************************************
@@ -264,6 +311,9 @@ QvisReflectWindow::CreateWindowContents()
 //    Kathleen Biagas, Thu Apr 9 07:17:44 MST 2015
 //    Use helper functions DoubleToQString for consistency in formatting across
 //    all windows.
+//
+//    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
+//    Added updates for the plane point, plane normal, and reflect tabs.  
 //
 // ****************************************************************************
 
@@ -327,6 +377,24 @@ QvisReflectWindow::UpdateWindow(bool doAll)
                 }
 
                 reflect->setValues(octants);
+            }
+            break;
+          case ReflectAttributes::ID_planePoint:
+            planePoint->setText(DoublesToQString(atts->GetPlanePoint(), 3));
+            break;
+          case ReflectAttributes::ID_planeNormal:
+            planeNorm->setText(DoublesToQString(atts->GetPlaneNormal(), 3));
+            break;
+          case ReflectAttributes::ID_reflectType:
+            {
+                if (atts->GetReflectType() == ReflectAttributes::Axis)
+                {
+                    reflectTabs->setCurrentIndex(0); 
+                }
+                else if (atts->GetReflectType() == ReflectAttributes::Plane)
+                {
+                    reflectTabs->setCurrentIndex(1);
+                }
             }
             break;
         }
@@ -433,6 +501,9 @@ QvisReflectWindow::UpdateOctantMenuContents()
 //    Cyrus Harrison, Tue Aug 19 08:52:09 PDT 2008
 //    Qt4 Port.
 //
+//    Alister Maguire, Wed Apr 11 09:29:49 PDT 2018
+//    Added updates for the plane point and plane normal. 
+//
 // ****************************************************************************
 void
 QvisReflectWindow::GetCurrentValues(int which_field)
@@ -479,6 +550,34 @@ QvisReflectWindow::GetCurrentValues(int which_field)
             ResettingError(tr("Specified Z"),
                 DoubleToQString(atts->GetSpecifiedZ()));
             atts->SetSpecifiedZ(atts->GetSpecifiedZ());
+        }
+    }
+
+    // Do plane point
+    if(which_field == ReflectAttributes::ID_planePoint || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(planePoint, val, 3))
+            atts->SetPlanePoint(val);
+        else
+        {
+            ResettingError(tr("Plane Point"),
+                DoublesToQString(atts->GetPlanePoint(), 3));
+            atts->SetPlanePoint(atts->GetPlanePoint());
+        }
+    }
+
+    // Do plane normal
+    if(which_field == ReflectAttributes::ID_planeNormal || doAll)
+    {
+        double val[3];
+        if(LineEditGetDoubles(planeNorm, val, 3))
+            atts->SetPlaneNormal(val);
+        else
+        {
+            ResettingError(tr("Plane Normal"),
+                DoublesToQString(atts->GetPlaneNormal(), 3));
+            atts->SetPlaneNormal(atts->GetPlaneNormal());
         }
     }
 }
@@ -606,6 +705,7 @@ QvisReflectWindow::zBoundaryChanged(int val)
 //  Creation:    March 11, 2002
 //
 // ****************************************************************************
+
 void
 QvisReflectWindow::specifiedXProcessText()
 {
@@ -625,6 +725,38 @@ QvisReflectWindow::specifiedZProcessText()
 {
     GetCurrentValues(6);
     Apply();
+}
+
+// ****************************************************************************
+//  Method:  QvisReflectWindow::planePointProcessText
+//
+//  Purpose:
+//      Retrieve the user-input plane point. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Apr 11, 2018 
+//
+// ****************************************************************************
+void
+QvisReflectWindow::planePointProcessText()
+{
+    GetCurrentValues(ReflectAttributes::ID_planePoint);
+}
+
+// ****************************************************************************
+//  Method:  QvisReflectWindow::planeNormProcessText
+//
+//  Purpose:
+//      Retrieve the user-input plane normal. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Apr 11, 2018
+//
+// ****************************************************************************
+void
+QvisReflectWindow::planeNormProcessText()
+{
+    GetCurrentValues(ReflectAttributes::ID_planeNormal);
 }
 
 // ****************************************************************************
@@ -691,5 +823,39 @@ QvisReflectWindow::selectMode(int mode)
         }
 
         userSetMode = true;
+    }
+}
+
+// ****************************************************************************
+// Method: QvisReflectWindow::reflectTabsChangedIndex
+//
+// Purpose: 
+//     Set the reflect type based on the current tab selected. 
+//
+// Arguments:
+//     index    The index of the selected tab
+//
+// Programmer:  Alister Maguire
+// Creation:    Apr 11, 2018 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisReflectWindow::reflectTabsChangedIndex(int index)
+{
+    switch(index)
+    {
+        case 0:
+        {
+            atts->SetReflectType(ReflectAttributes::Axis);
+        }
+        break;
+        case 1:
+        {
+            atts->SetReflectType(ReflectAttributes::Plane);
+        }
+        break;
     }
 }
