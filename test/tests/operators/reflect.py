@@ -46,6 +46,9 @@
 #    Kathleen Biagas, Mon Dec 19 15:45:38 PST 2016
 #    Use FilledBoundary plot for materials instead of Subset.
 #
+#    Alister Maguire, Wed Apr 25 15:56:47 PDT 2018
+#    Added tests for reflecting across an arbitrary plane. 
+#
 # ----------------------------------------------------------------------------
 
 
@@ -252,5 +255,89 @@ AddPlot("Volume", "d")
 AddOperator("Reflect")
 DrawPlots()
 Test("ops_refl14")
+
+#
+# Now test reflecting different datasets over arbitrary planes.
+#
+
+# Test 3D rectilinear over arbitrary plane.
+DeleteAllPlots()
+OpenDatabase(silo_data_path("rect3d.silo"))
+
+AddPlot("Pseudocolor" ,"d")
+AddOperator("Reflect")
+
+atts = ReflectAttributes()
+atts.reflectType = atts.Plane
+atts.planePoint = (1, 1, 1)
+atts.planeNormal = (4, 5, 6)
+atts.planeNormal = (4, 5, 6)
+SetOperatorOptions(atts)
+
+DrawPlots()
+
+Test("arb_plane00")
+
+# Test 3D curvilinear over arbitrary plane. 
+DeleteAllPlots()
+ResetView()
+OpenDatabase(silo_data_path("curv3d.silo"))
+
+AddPlot("Pseudocolor" ,"v")
+AddOperator("Reflect")
+
+atts = ReflectAttributes()
+atts.reflectType = atts.Plane
+atts.planePoint = (-8, -3, -4)
+atts.planeNormal = (4.5, 3, 2)
+SetOperatorOptions(atts)
+
+DrawPlots()
+
+Test("arb_plane01")
+
+# Test 2D curvilinear
+DeleteAllPlots()
+OpenDatabase(silo_data_path("curv2d.silo"))
+
+AddPlot("Pseudocolor" ,"v")
+AddOperator("Reflect")
+
+atts = ReflectAttributes()
+atts.reflectType = atts.Plane
+atts.planePoint = (-8, -3, 0)
+atts.planeNormal = (4.5, 3, 0)
+SetOperatorOptions(atts)
+
+DrawPlots()
+
+Test("arb_plane02")
+
+# Test 3D unstructured
+DeleteAllPlots()
+OpenDatabase(silo_data_path("globe.silo"))
+
+AddPlot("Pseudocolor" ,"v")
+AddOperator("Reflect")
+
+atts = ReflectAttributes()
+atts.reflectType = atts.Plane
+atts.planePoint = (-8, -3, 0)
+atts.planeNormal = (7, 9, 1)
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("arb_plane03")
+
+AddOperator("Reflect")
+
+atts = ReflectAttributes()
+atts.reflectType = atts.Plane
+atts.planePoint = (20, 15, 19)
+atts.planeNormal = (3, 2, 4)
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("arb_plane04")
 
 Exit()
