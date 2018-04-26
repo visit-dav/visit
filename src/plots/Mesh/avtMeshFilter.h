@@ -103,8 +103,8 @@ class avtMeshFilter : public avtSIMODataTreeIterator
 
     virtual avtDataTree_p      ExecuteDataTree(avtDataRepresentation *);
     virtual void               UpdateDataObjectInfo(void);
-    virtual avtContract_p     
-                               ModifyContract(avtContract_p spec);
+    virtual void               PostExecute(void);
+    virtual avtContract_p      ModifyContract(avtContract_p spec);
 };
 
 

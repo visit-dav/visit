@@ -58,21 +58,23 @@
 
 #include <string>
 
+using std::string;
+
 // ****************************************************************************
 //  Method: avtMeshFilter constructor
 //
 //  Arguments:
 //
-//  Programmer: Kathleen Bonnell 
+//  Programmer: Kathleen Bonnell
 //  Creation:   June 8, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004 
-//    Removed featureEdges, hasn't been used in a long time.  
-//    Added extractEges. 
+//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004
+//    Removed featureEdges, hasn't been used in a long time.
+//    Added extractEges.
 //
-//    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004 
-//    Added keepNodeZone. 
+//    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004
+//    Added keepNodeZone.
 //
 //    Hank Childs, Thu Mar 10 09:13:03 PST 2005
 //    Removed data member filters.
@@ -82,7 +84,7 @@
 avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
 {
     atts = a;
-    keepNodeZone = false; 
+    keepNodeZone = false;
 }
 
 
@@ -93,9 +95,9 @@ avtMeshFilter::avtMeshFilter(const MeshAttributes &a)
 //  Creation:   June 8, 2001
 //
 //  Modifications:
-//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004 
-//    Removed featureEdges, hasn't been used in a long time.  
-//    Added extractEges. 
+//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004
+//    Removed featureEdges, hasn't been used in a long time.
+//    Added extractEges.
 //
 //    Hank Childs, Thu Mar 10 09:13:03 PST 2005
 //    Removed data member filters.
@@ -126,20 +128,20 @@ avtMeshFilter::~avtMeshFilter()
 //
 //    Kathleen Bonnell, Fri Jun 29 10:27:44 PDT 2001
 //    Added code to include a surface dataset for opaque mode.
-// 
-//    Kathleen Bonnell, Mon Aug 20 17:25:32 PDT 2001 
+//
+//    Kathleen Bonnell, Mon Aug 20 17:25:32 PDT 2001
 //    Added a ghostZone filter for the case when a subset selection
 //    has taken place (and ghostzones are present).  This allows
 //    the boundary faces between blocks to still have mesh lines drawn
 //    on them when block selection takes place. Also added logic
 //    to handle the case where the output dataset(s) have no cells.
-// 
-//    Kathleen Bonnell, Wed Aug 22 15:22:55 PDT 2001 
+//
+//    Kathleen Bonnell, Wed Aug 22 15:22:55 PDT 2001
 //    Instead of returning separate datasets for opaque mode and meshonly
-//    mode, append the two into one. Save this filter from requiring 
+//    mode, append the two into one. Save this filter from requiring
 //    re-execution when opaquemode is the only attribute that changes,
-//    by always creating the opaquemode polys if current topo dim is 3. 
-//    
+//    by always creating the opaquemode polys if current topo dim is 3.
+//
 //    Hank Childs, Wed Aug 22 15:29:44 PDT 2001
 //    If we have a line mesh, do not put them through a line filter.
 //
@@ -149,17 +151,17 @@ avtMeshFilter::~avtMeshFilter()
 //    Hank Childs, Fri Sep  7 10:41:38 PDT 2001
 //    Do not set the topological dimension to 2 if it is actually one.
 //
-//    Kathleen Bonnell, Mon Sep 10 16:21:59 PDT 2001 
-//    Enable opaque mode for 2d. 
+//    Kathleen Bonnell, Mon Sep 10 16:21:59 PDT 2001
+//    Enable opaque mode for 2d.
 //
-//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001 
-//    Added string argument so that labels will be passed to output. 
+//    Kathleen Bonnell, Wed Sep 19 12:55:57 PDT 2001
+//    Added string argument so that labels will be passed to output.
 //
 //    Hank Childs, Fri Apr 12 17:32:07 PDT 2002
 //    Fix memory leaks.
 //
-//    Kathleen Bonnell, Thu May 23 10:50:42 PDT 2002 
-//    Only set output topological dimension in UpdateDataObjectInfo. 
+//    Kathleen Bonnell, Thu May 23 10:50:42 PDT 2002
+//    Only set output topological dimension in UpdateDataObjectInfo.
 //
 //    Jeremy Meredith, Tue Jul  9 15:44:14 PDT 2002
 //    Made it throw an exception if it does not get polydata.  The Mesh
@@ -169,9 +171,9 @@ avtMeshFilter::~avtMeshFilter()
 //    Make sure that the topological dimension of the mesh is really as
 //    advertised by seeing if it really has triangle data.
 //
-//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004 
+//    Kathleen Bonnell, Thu Feb  5 10:42:16 PST 2004
 //    Use extractEdges, if user wants to see internal zones and input
-//    is not already polydata. 
+//    is not already polydata.
 //
 //    Jeremy Meredith, Tue May  4 12:34:25 PDT 2004
 //    Add support for unglyphed point meshes (i.e. topological dimension
@@ -180,12 +182,12 @@ avtMeshFilter::~avtMeshFilter()
 //    Hank Childs, Fri Aug 27 15:24:09 PDT 2004
 //    Renamed ghost data array.
 //
-//    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004 
-//    No need to process this data if topological dimension is 0 (point mesh). 
+//    Kathleen Bonnell, Tue Nov  2 10:37:14 PST 2004
+//    No need to process this data if topological dimension is 0 (point mesh).
 //
-//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006 
+//    Kathleen Bonnell, Tue May 16 09:41:46 PDT 2006
 //    Removed call to SetSource(NULL), with new vtk pipeline, it also removes
-//    necessary information from the dataset. 
+//    necessary information from the dataset.
 //
 //    Jeremy Meredith, Tue Oct 14 15:09:12 EDT 2008
 //    Made various optimizations for regular grids.
@@ -210,13 +212,16 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     //
     vtkDataSet *inDS = inDR->GetDataVTK();
     int domain = inDR->GetDomain();
-    std::string label = inDR->GetLabel();
+    string label = inDR->GetLabel();
 
     avtDataAttributes &datts = GetInput()->GetInfo().GetAttributes();
     int topoDim = datts.GetTopologicalDimension();
 
-    if (topoDim == 0) 
+    if (topoDim == 0)
+    {
+        label = string("points_") + label;
         return new avtDataTree(inDS, domain, label);
+    }
 
     vtkLinesFromOriginalCells *lineFilter = vtkLinesFromOriginalCells::New();
     vtkGeometryFilter *geometryFilter = vtkGeometryFilter::New();
@@ -229,12 +234,12 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     vtkPolyData *outDS = NULL;
     vtkRectilinearLinesNoDataFilter *rlines = NULL;
 
-    vtkDataSet *revisedInput = NULL; 
-    vtkDataSet *revisedInput2 = NULL; 
-    vtkDataSet *revisedInput3 = NULL; 
+    vtkDataSet *revisedInput = NULL;
+    vtkDataSet *revisedInput2 = NULL;
+    vtkDataSet *revisedInput3 = NULL;
 
     avtDataValidity &v = GetInput()->GetInfo().GetValidity();
-    if (!v.GetUsingAllData() && 
+    if (!v.GetUsingAllData() &&
         inDS->GetCellData()->GetArray("avtGhostZones"))
     {
         ghostFilter->SetInputData(inDS);
@@ -245,9 +250,9 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         revisedInput = inDS;
 
     //
-    // Do not perform opaque if topological dimension of input == 0 or 1 
-    // 
-    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() > 1) 
+    // Do not perform opaque if topological dimension of input == 0 or 1
+    //
+    if (GetInput()->GetInfo().GetAttributes().GetTopologicalDimension() > 1)
     {
         // Create a dataset that can be rendered as a solid surface, using
         // z buffer to shift so surface doesn't override lines of mesh.
@@ -270,7 +275,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         }
     }
 
-    if (atts.GetShowInternal() && 
+    if (atts.GetShowInternal() &&
         revisedInput->GetDataObjectType() != VTK_POLY_DATA)
     {
         extractEdges->SetInputData(revisedInput);
@@ -305,7 +310,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         revisedInput3->Register(NULL);
     }
 
-    if (revisedInput3->GetDataObjectType() == VTK_RECTILINEAR_GRID) 
+    if (revisedInput3->GetDataObjectType() == VTK_RECTILINEAR_GRID)
     {
         //
         // Yes, the rectilinear lines filter we're using here
@@ -320,7 +325,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         rlines->Update();
         outDS = rlines->GetOutput();
     }
-    else if (revisedInput3->GetDataObjectType() == VTK_POLY_DATA) 
+    else if (revisedInput3->GetDataObjectType() == VTK_POLY_DATA)
     {
         //
         // Make extra sure that we really have surfaces.
@@ -368,25 +373,23 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     }
     else
     {
-        //
-        //  Tack on the opaque poly's to the outDS (which is only lines
-        //  at this point. 
-        //
-        if (opaquePolys != NULL && opaquePolys->GetNumberOfCells() != 0 && !atts.GetShowInternal())
+        if (opaquePolys != NULL && opaquePolys->GetNumberOfCells() != 0 &&
+            !atts.GetShowInternal())
         {
-            vtkAppendPolyData *append = vtkAppendPolyData::New();
-            append->AddInputData(outDS);
-            append->AddInputData(opaquePolys);
-            append->Update();
-            vtkPolyData *outPoly = vtkPolyData::New();
-            outPoly->ShallowCopy(append->GetOutput());
-            rv = new avtDataTree(outPoly, domain, label);
-            outPoly->Delete();
-            append->Delete();
+            // create an avtDataTree with two ds, one for lines, one for polys,
+            // and tack on labels with prefix lines_ and polys_
+            // to keep them from being merged together by CompactTreeFilter
+            vtkDataSet *outs[2];
+            outs[0] = opaquePolys;
+            outs[1] = outDS;
+            stringVector l;
+            l.push_back(string("polys_") + label);
+            l.push_back(string("lines_") + label);
+            rv = new avtDataTree(2, outs, domain, l);
         }
-        else  
+        else
         {
-            rv = new avtDataTree(outDS, domain, label);
+            rv = new avtDataTree(outDS, domain, string("lines_") + label);
         }
     }
 
@@ -410,7 +413,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 //    Indicates that topological dimension of the output is 1.
 //
 //  Programmer: Kathleen Bonnell
-//  Creation:   June 8, 2001 
+//  Creation:   June 8, 2001
 //
 //  Modifications:
 //
@@ -420,16 +423,16 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
 //    Hank Childs, Tue Sep  4 16:14:49 PDT 2001
 //    Reflect new interface for avtDataAttributes.
 //
-//    Kathleen Bonnell, Thu May 23 10:50:42 PDT 2002 
+//    Kathleen Bonnell, Thu May 23 10:50:42 PDT 2002
 //    Set output topological dimension to 1, to allow plot to be shifted
-//    towards camera. 
+//    towards camera.
 //
 //    Hank Childs, Wed Oct  9 16:13:32 PDT 2002
 //    Do not calculate normals after the mesh plot.
 //
-//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
-//    Set KeepNodeZoneArrays, and don't set TopologicalDimension to 1 if 
-//    original topo dim was 0. 
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
+//    Set KeepNodeZoneArrays, and don't set TopologicalDimension to 1 if
+//    original topo dim was 0.
 //
 // ****************************************************************************
 
@@ -457,7 +460,7 @@ avtMeshFilter::UpdateDataObjectInfo(void)
 //
 //  Purpose:
 //    Turn on Zone numbers flag so that the database does not make
-//    any assumptions. 
+//    any assumptions.
 //
 //  Programmer: Kathleen Bonnell
 //  Creation:   March 25, 2002
@@ -477,7 +480,7 @@ avtMeshFilter::UpdateDataObjectInfo(void)
 //    Calculate the extents of the scaling variable.
 //
 // ****************************************************************************
- 
+
 avtContract_p
 avtMeshFilter::ModifyContract(avtContract_p spec)
 {
@@ -489,13 +492,13 @@ avtMeshFilter::ModifyContract(avtContract_p spec)
     }
     else
     {
-        std::string pointVar = atts.GetPointSizeVar();
+        string pointVar = atts.GetPointSizeVar();
         avtDataRequest_p dataRequest = spec->GetDataRequest();
 
         //
         // Find out if we REALLY need to add the secondary variable.
         //
-        if (atts.GetPointSizeVarEnabled() && 
+        if (atts.GetPointSizeVarEnabled() &&
             pointVar != "default" &&
             pointVar != "\0" &&
             pointVar != dataRequest->GetVariable() &&
@@ -520,4 +523,28 @@ avtMeshFilter::ModifyContract(avtContract_p spec)
     return rv;
 }
 
+
+// ****************************************************************************
+//  Method: avtMeshFilter::PostExcecute
+//
+//  Purpose:
+//    Sets the output's label attributes to reflect what is currently
+//    present in the tree.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   May 11, 2016
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtMeshFilter::PostExecute(void)
+{
+    // Use labels to ensure lines/polys aren't merged back together
+    // during CompactTreeFilter
+    stringVector treeLabels;
+    GetDataTree()->GetAllUniqueLabels(treeLabels);
+    GetOutput()->GetInfo().GetAttributes().SetLabels(treeLabels);
+}
 

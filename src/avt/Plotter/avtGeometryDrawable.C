@@ -83,7 +83,7 @@ avtGeometryDrawable::avtGeometryDrawable(int nA, vtkActor **a)
     nActors = nA;
     actors  = new vtkProp*[nActors];
     actorsVisibility  = new int[nActors];
-  
+
     for (int i = 0 ; i < nActors ; i++)
     {
         actors[i] = a[i];
@@ -119,7 +119,7 @@ avtGeometryDrawable::avtGeometryDrawable(int nA, vtkActor2D **a)
     nActors = nA;
     actors  = new vtkProp*[nActors];
     actorsVisibility  = new int[nActors];
-  
+
     for (int i = 0 ; i < nActors ; i++)
     {
         actors[i] = a[i];
@@ -360,7 +360,8 @@ avtGeometryDrawable::ShiftByVector(const double vec[3])
 {
     for (int i = 0 ; i < nActors ; i++)
     {
-        if (actors[i] != NULL && actors[i]->IsA("vtkActor"))
+        if (actors[i] != NULL && actors[i]->IsA("vtkActor") &&
+            mapper->ActorIsShiftable(i))
         {
             // VTK is ridiculous -- needs const.
             double v[3];
@@ -377,7 +378,7 @@ avtGeometryDrawable::ShiftByVector(const double vec[3])
 //  Method: avtGeometryDrawable::ScaleByVector
 //
 //  Purpose:
-//      Scales the drawable by a vector. 
+//      Scales the drawable by a vector.
 //
 //  Arguments:
 //      vec    The vector to scale by.
@@ -471,7 +472,7 @@ avtGeometryDrawable::SetTransparencyActor(avtTransparencyActor *act)
 //  Method: avtGeometryDrawable::UpdateScaleFactor
 //
 //  Purpose:
-//      Allow the actors to update their scale. 
+//      Allow the actors to update their scale.
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    July 19, 2002
@@ -532,7 +533,7 @@ avtGeometryDrawable::TurnLightingOff()
 //  Method: avtGeometryDrawable::SetAmbientCoefficient
 //
 //  Purpose:
-//      Allow the mapper to update the ambient lighting coefficient. 
+//      Allow the mapper to update the ambient lighting coefficient.
 //
 //  Programmer:  Kathleen Bonnell
 //  Creation:    August 13, 2002

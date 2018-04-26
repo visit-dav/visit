@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2016, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -66,7 +66,8 @@ class avtMeshPlotMapper : public avtMapper
     virtual                   ~avtMeshPlotMapper();
 
     //virtual void               SetSurfaceRepresentation(int rep);
-
+    virtual bool               GetLighting(void) { return false; }
+    virtual bool               ActorIsShiftable(int);
 
 
     void                       SetMeshColor(double rgb[3]);
@@ -80,8 +81,8 @@ class avtMeshPlotMapper : public avtMapper
     void                       InvalidateTransparencyCache(void);
 
   protected:
-    virtual vtkDataSetMapper  *CreateMapper(void);
     virtual void               CustomizeMappers(void);
+    virtual void               SetLabels(std::vector<std::string> &, bool);
 
   private:
 
@@ -90,6 +91,9 @@ class avtMeshPlotMapper : public avtMapper
     double opacity;
     double linesColor[3];
     double polysColor[3];
+    std::vector<std::string>   labels;
+
+    void                       NotifyTransparencyActor(void);
 
 };
 

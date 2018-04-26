@@ -73,22 +73,22 @@ class     avtTransparencyActor;
 //    Allows for different renderers for the decoration and the actual
 //    rendering.
 //
-//    Kathleen Bonnell, Tue Apr  3 15:24:00 PDT 2001 
+//    Kathleen Bonnell, Tue Apr  3 15:24:00 PDT 2001
 //    Add method to retrieve renderOrder.
 //
-//    Kathleen Bonnell, Tue May  7 09:36:15 PDT 2002 
-//    Add method GetDataExtents. 
+//    Kathleen Bonnell, Tue May  7 09:36:15 PDT 2002
+//    Add method GetDataExtents.
 //
 //    Hank Childs, Sun Jul  7 12:55:05 PDT 2002
 //    Added support for transparency.
 //
-//    Kathleen Bonnell, Fri Jul 12 16:20:08 PDT 2002 
+//    Kathleen Bonnell, Fri Jul 12 16:20:08 PDT 2002
 //    Added support for decorations.
 //
-//    Kathleen Bonnell, Fri Jul 19 08:39:04 PDT 2002 
-//    Added UpdateScaleFactor. 
+//    Kathleen Bonnell, Fri Jul 19 08:39:04 PDT 2002
+//    Added UpdateScaleFactor.
 //
-//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002 
+//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002
 //    Added methods in support of lighting.
 //
 //    Brad Whitlock, Mon Sep 23 15:50:38 PST 2002
@@ -101,8 +101,8 @@ class     avtTransparencyActor;
 //    Eric Brugger, Wed Aug 20 09:49:33 PDT 2003
 //    Added GetWindowMode.
 //
-//    Kathleen Bonnell, Mon Sep 29 13:44:01 PDT 2003 
-//    Added bool arg to GetRenderOrder. 
+//    Kathleen Bonnell, Mon Sep 29 13:44:01 PDT 2003
+//    Added bool arg to GetRenderOrder.
 //
 //    Jeremy Meredith, Fri Nov 14 11:10:53 PST 2003
 //    Added a method to set the specular properties.
@@ -123,10 +123,10 @@ class     avtTransparencyActor;
 //    error-prone (and easier and more efficient) to turn off the entire
 //    avtTransparencyActor at once.
 //
-//    Kathleen Bonnell, Mon Sep 27 10:19:11 PDT 2004 
-//    Added MakePickable and MakeUnPickable. 
+//    Kathleen Bonnell, Mon Sep 27 10:19:11 PDT 2004
+//    Added MakePickable and MakeUnPickable.
 //
-//    Kathleen Bonnell, Mon Jun 27 14:48:12 PDT 2005 
+//    Kathleen Bonnell, Mon Jun 27 14:48:12 PDT 2005
 //    Added GetZPosition.
 //
 //    Mark Blair, Wed Aug 30 14:09:00 PDT 2006
@@ -215,7 +215,7 @@ class PLOTTER_API avtActor
     avtTransparencyActor         *transparencyActor;
     int                           transparencyIndex;
     bool                          isVisible;
-    
+
     const char                   *typeName;
     char                         *actorName;
 

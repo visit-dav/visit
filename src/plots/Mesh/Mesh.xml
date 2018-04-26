@@ -3,12 +3,10 @@
     <Files components="V">
       avtMeshFilter.C
       avtMeshPlotMapper.C
-      vtkMeshPlotMapper.C
     </Files>
     <Files components="E">
       avtMeshFilter.C
       avtMeshPlotMapper.C
-      vtkMeshPlotMapper.C
     </Files>
     <Attribute name="MeshAttributes" purpose="Attributes for the mesh plot" persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="MeshAttributes.code">
       <Enum name="SmoothingLevel">

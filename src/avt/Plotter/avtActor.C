@@ -57,7 +57,7 @@
 //    Hank Childs, Sun Jul  7 12:55:05 PDT 2002
 //    Initialized new data member 'transparencyActor'.
 //
-//    Kathleen Bonnell, Fri Jul 12 16:10:49 PDT 2002 
+//    Kathleen Bonnell, Fri Jul 12 16:10:49 PDT 2002
 //    Add support for a decorations drawable.
 //
 //    Mark C. Miller, Thu Dec 19 16:19:23 PST 2002
@@ -176,8 +176,8 @@ avtActor::SetDrawable(avtDrawable_p d)
 //  Arguments:
 //      d      The decorations for this actor.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 12, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 12, 2002
 //
 // ****************************************************************************
 
@@ -233,14 +233,14 @@ const char *avtActor::GetTypeName()
 // ****************************************************************************
 // Method: avtActor::GetActorName
 //
-// Purpose: 
+// Purpose:
 //   Get the actor's name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Mar 19 17:43:14 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const char *
@@ -252,7 +252,7 @@ avtActor::GetActorName() const
 // ****************************************************************************
 // Method: avtActor::SetActorName
 //
-// Purpose: 
+// Purpose:
 //   Set the actor's name.
 //
 // Arguments:
@@ -262,7 +262,7 @@ avtActor::GetActorName() const
 // Creation:   Mon Mar 19 17:43:03 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -299,7 +299,7 @@ avtActor::SetActorName(const char *newName)
 //    Hank Childs, Sun Jul  7 12:55:05 PDT 2002
 //    Add support for transparency.
 //
-//    Kathleen Bonnell, Fri Jul 12 16:10:49 PDT 2002 
+//    Kathleen Bonnell, Fri Jul 12 16:10:49 PDT 2002
 //    Add support for a decorations drawable.
 //
 //    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
@@ -351,7 +351,7 @@ avtActor::Add(vtkRenderer *renderingCanvas, vtkRenderer *decorationCanvas)
 //    Hank Childs, Sun Jul  7 12:55:05 PDT 2002
 //    Add support for transparency.
 //
-//    Kathleen Bonnell, Fri Jul 12 16:10:49 PDT 2002 
+//    Kathleen Bonnell, Fri Jul 12 16:10:49 PDT 2002
 //    Add support for a decorations drawable.
 //
 //    Mark C. Miller, Tue Apr 13 13:11:03 PDT 2010
@@ -539,8 +539,8 @@ avtActor::AdaptsToAnyWindowMode(void)
 //
 //  Returns:    the render order of the plot
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   April 3, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   April 3, 2001
 //
 //  Modifications:
 //    Kathleen Bonnell, Mon Sep 29 13:44:01 PDT 2003
@@ -699,12 +699,15 @@ avtActor::ShiftByVector(const double vec[3])
     //
     double f = behavior->GetShiftFactor();
 
-    double v[3];
-    v[0] = vec[0]*f;
-    v[1] = vec[1]*f;
-    v[2] = vec[2]*f;
+    if (f > 0)
+    {
+        double v[3];
+        v[0] = vec[0]*f;
+        v[1] = vec[1]*f;
+        v[2] = vec[2]*f;
 
-    drawable->ShiftByVector(v);
+        drawable->ShiftByVector(v);
+    }
 }
 
 
@@ -717,8 +720,8 @@ avtActor::ShiftByVector(const double vec[3])
 //  Arguments:
 //      vec     The vector to scale by.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   July 12, 2002 
+//  Programmer: Kathleen Bonnell
+//  Creation:   July 12, 2002
 //
 //  Modifications:
 //    Kathleen Bonnell, Wed Jul 16 16:40:47 PDT 2003
@@ -749,11 +752,11 @@ avtActor::ScaleByVector(const double vec[3])
 //      Gets the data extents of an actor.
 //
 //  Arguments:
-//      dmin    A place to put minimum value. 
-//      dmax    A place to put maximum value. 
+//      dmin    A place to put minimum value.
+//      dmax    A place to put maximum value.
 //
-//  Programmer:   Kathleen Bonnell 
-//  Creation:     May 7, 2002 
+//  Programmer:   Kathleen Bonnell
+//  Creation:     May 7, 2002
 //
 //  Modifications:
 //
@@ -765,7 +768,7 @@ avtActor::ScaleByVector(const double vec[3])
 // ****************************************************************************
 
 void
-avtActor::GetDataExtents(double &dmin, double &dmax) 
+avtActor::GetDataExtents(double &dmin, double &dmax)
 {
     if (*behavior != NULL)
         behavior->GetDataExtents(dmin, dmax);
@@ -830,9 +833,9 @@ avtActor::SetTransparencyActor(avtTransparencyActor *actor)
 //  Method: avtActor::UpdateScaleFactor
 //
 //  Purpose:
-//      Tells the decorations to update the scale factor. 
+//      Tells the decorations to update the scale factor.
 //
-//  Programmer: Kathleen Bonenll 
+//  Programmer: Kathleen Bonenll
 //  Creation:   July 19, 2002
 //
 // ****************************************************************************
@@ -851,9 +854,9 @@ avtActor::UpdateScaleFactor()
 //  Method: avtActor::TurnLightingOn
 //
 //  Purpose:
-//      Tells the drawable to update the lighting coefficients. 
+//      Tells the drawable to update the lighting coefficients.
 //
-//  Programmer: Kathleen Bonenll 
+//  Programmer: Kathleen Bonenll
 //  Creation:   August 13, 2002
 //
 // ****************************************************************************
@@ -872,9 +875,9 @@ avtActor::TurnLightingOn()
 //  Method: avtActor::TurnLightingOff
 //
 //  Purpose:
-//      Tells the drawable to update the lighting coefficients. 
+//      Tells the drawable to update the lighting coefficients.
 //
-//  Programmer: Kathleen Bonenll 
+//  Programmer: Kathleen Bonenll
 //  Creation:   August 13, 2002
 //
 // ****************************************************************************
@@ -893,9 +896,9 @@ avtActor::TurnLightingOff()
 //  Method: avtActor::SetAmbientCoefficient
 //
 //  Purpose:
-//      Tells the drawable to update the ambient lighting coefficient. 
+//      Tells the drawable to update the ambient lighting coefficient.
 //
-//  Programmer: Kathleen Bonenll 
+//  Programmer: Kathleen Bonenll
 //  Creation:   August 13, 2002
 //
 // ****************************************************************************
@@ -913,7 +916,7 @@ avtActor::SetAmbientCoefficient(const double amb)
 //  Method: avtActor::SetSurfaceRepresentation
 //
 //  Purpose:
-//      Tells the drawable to set its surface representation. 
+//      Tells the drawable to set its surface representation.
 //
 //  Programmer: Brad Whitlock
 //  Creation:   Mon Sep 23 15:54:15 PST 2002
@@ -934,7 +937,7 @@ avtActor::SetSurfaceRepresentation(int rep)
 //  Method: avtActor::SetSpecularProperties
 //
 //  Purpose:
-//      Tells the drawable to set its specular properties. 
+//      Tells the drawable to set its specular properties.
 //
 //  Arguments:
 //      coeff :  the new specular coefficient
@@ -962,7 +965,7 @@ avtActor::SetSpecularProperties(bool flag, double coeff, double power,
 // ****************************************************************************
 // Method: avtActor::SetColorTexuringFlag
 //
-// Purpose: 
+// Purpose:
 //   Sets the actor's color texturing flag.
 //
 // Arguments:
@@ -972,7 +975,7 @@ avtActor::SetSpecularProperties(bool flag, double coeff, double power,
 // Creation:   Mon Sep 18 11:20:20 PDT 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -981,7 +984,7 @@ avtActor::SetColorTexturingFlag(bool val)
     if (*(drawable) != NULL)
     {
         drawable->SetColorTexturingFlag(val);
-    } 
+    }
 }
 
 // ****************************************************************************
@@ -1042,10 +1045,10 @@ avtActor::OpaqueVisibilityOff()
 //  Method: avtActor::MakePickable
 //
 //  Purpose:
-//    Tells the drawable to make its vtkActors pickable. 
+//    Tells the drawable to make its vtkActors pickable.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 27, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 27, 2004
 //
 // ****************************************************************************
 
@@ -1063,10 +1066,10 @@ avtActor::MakePickable()
 //  Method: avtActor::MakeUnPickable
 //
 //  Purpose:
-//    Tells the drawable to make its vtkActors unpickable. 
+//    Tells the drawable to make its vtkActors unpickable.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   September 27, 2004 
+//  Programmer: Kathleen Bonnell
+//  Creation:   September 27, 2004
 //
 // ****************************************************************************
 
@@ -1084,10 +1087,10 @@ avtActor::MakeUnPickable()
 //  Method: avtActor::GetZPosition
 //
 //  Purpose:
-//    Retrieves the z-position of the underlying vtk actor. 
+//    Retrieves the z-position of the underlying vtk actor.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   June 27, 2005 
+//  Programmer: Kathleen Bonnell
+//  Creation:   June 27, 2005
 //
 // ****************************************************************************
 
@@ -1100,14 +1103,14 @@ avtActor::GetZPosition()
 // ****************************************************************************
 // Method: avtActor::ReducedDetailModeOn
 //
-// Purpose: 
+// Purpose:
 //   Set whether the actor should use reduced detail when rendering.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Aug 22 11:00:22 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -1119,7 +1122,7 @@ avtActor::ReducedDetailModeOn()
 // ****************************************************************************
 // Method: avtActor::ReducedDetailModeOff
 //
-// Purpose: 
+// Purpose:
 //   Turn off reduced detail mode.
 //
 // Returns:
@@ -1130,7 +1133,7 @@ avtActor::ReducedDetailModeOn()
 // Creation:   Wed Aug 22 11:00:22 PDT 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool

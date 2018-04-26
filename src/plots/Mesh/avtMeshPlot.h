@@ -63,8 +63,8 @@ class     avtVariablePointGlyphMapper;
 //  Purpose:
 //      A concrete type of avtPlot for meshes.
 //
-//  Programmer: Kathleen Bonnell 
-//  Creation:   March 21, 2001 
+//  Programmer: Kathleen Bonnell
+//  Creation:   March 21, 2001
 //
 //  Modifications:
 //
@@ -72,24 +72,24 @@ class     avtVariablePointGlyphMapper;
 //    Allow storage of attributes as a class member.
 //
 //    Kathleen Bonnell, Fri Jun  15 14:15:43 PDT 2001
-//    Added mesh filter. 
+//    Added mesh filter.
 //
-//    Kathleen Bonnell, Fri Jun 29 10:27:44 PDT 2001 
-//    Added method to set opaque render mode. 
+//    Kathleen Bonnell, Fri Jun 29 10:27:44 PDT 2001
+//    Added method to set opaque render mode.
 //
 //    Hank Childs, Thu Jul 26 11:59:16 PDT 2001
 //    Went back to inheriting from avtPlot, since this can be a line plot or
 //    a surface plot.
 //
-//    Kathleen Bonnell, Wed Aug 22 15:22:55 PDT 2001 
+//    Kathleen Bonnell, Wed Aug 22 15:22:55 PDT 2001
 //    Use avtUserDefinedMapper and avtSurfaceAndWireframeRenderer instead
 //    of avtWireframeMapper to better draw opaque mode.  Modified arguments
 //    to SetLineWidth and SetLineStyle.  Added member property.
-//    
+//
 //    Kathleen Bonnell, Sep  5 12:13:54 PDT 2001
 //    Add method to set the color for opaque mode.
 //
-//    Kathleen Bonnell, Wed Sep 26 15:14:07 PDT 2001 
+//    Kathleen Bonnell, Wed Sep 26 15:14:07 PDT 2001
 //    Add methods to set the background/foreground colors.
 //
 //    Jeremy Meredith, Fri Nov  9 10:15:17 PST 2001
@@ -106,19 +106,19 @@ class     avtVariablePointGlyphMapper;
 //    filter.
 //
 //    Kathleen Bonnell, Tue Oct 22 08:33:26 PDT 2002
-//    Added ApplyRenderingTransformation. 
-//    
+//    Added ApplyRenderingTransformation.
+//
 //    Jeremy Meredith, Tue Dec 10 10:04:18 PST 2002
 //    Added smooth poly data filter.
 //
 //    Kathleen Bonnell, Mon Mar 24 17:48:27 PST 2003
 //    Added SetOpaqueColor with double* arg.  Added flag
-//    wireframeRenderingIsInappropriate. 
+//    wireframeRenderingIsInappropriate.
 //
-//    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003 
+//    Kathleen Bonnell, Wed Aug 27 15:45:45 PDT 2003
 //    Added SetOpaqueMeshIsAppropriate.
-//    
-//    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003 
+//
+//    Kathleen Bonnell, Thu Sep  4 11:15:30 PDT 2003
 //    Removed argument from 'SetRenderOpaque', added 'ShouldRenderOpaque'.
 //
 //    Mark C. Miller, Thu Aug 12 21:17:35 PDT 2004
@@ -126,15 +126,15 @@ class     avtVariablePointGlyphMapper;
 //
 //    Mark C. Miller, Mon Aug 23 20:24:31 PDT 2004
 //    Changed GetCellCountMultiplierForSRThreshold to Set...
-//    
-//    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004 
+//
+//    Kathleen Bonnell, Tue Aug 24 16:12:03 PDT 2004
 //    Added avtMeshType arg to SetOpaqueMeshIsAppropriate.
-//    
-//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
 //    Replaced avtPointToGlyphFilter with avtPointGlyphMapper.  Removed
 //    avtMeshType arg from SetOpaqueMeshIsAppropriate.
-//    
-//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004 
+//
+//    Kathleen Bonnell, Tue Nov  2 10:41:33 PST 2004
 //    Replaced avtPointGlyphMapper with avtVariablePointGlyphMapper.
 //
 //    Brad Whitlock, Wed Dec 15 10:48:35 PDT 2004
@@ -146,7 +146,7 @@ class     avtVariablePointGlyphMapper;
 //    Hank Childs, Wed Aug 13 11:42:07 PDT 2008
 //    Add NeedZBufferToCompositeEvenIn2D because thick lines can bleed into
 //    other processor's portion of image space.
-//   
+//
 //    Kathleen Biagas, Wed Feb 29 13:11:09 MST 2012
 //    Add GetExtraInfoForPick.
 //
@@ -182,7 +182,7 @@ avtMeshPlot : public avtPlot
     virtual bool    SetForegroundColor(const double *);
 
     virtual int     TargetTopologicalDimension(void);
-    virtual const AttributeSubject 
+    virtual const  AttributeSubject
                    *SetOpaqueMeshIsAppropriate(bool);
     virtual bool    NeedZBufferToCompositeEvenIn2D(void);
 

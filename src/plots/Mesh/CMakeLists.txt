@@ -17,9 +17,6 @@ set(MESH_OPENGL_SOURCES
 vtkOpenGLMeshPlotMapper.C
 )
 
-include(${VISIT_SOURCE_DIR}/CMake/VisItObjectFactory.cmake)
-visit_add_override(MeshPlot vtkMeshPlotMapper vtkOpenGLMeshPlotMapper)
-visit_object_factory_configure(MeshPlot "${visit_module_overrides}")
 
 SET(LIBG_SOURCES
 MeshGUIPluginInfo.C
@@ -36,9 +33,6 @@ MeshViewerPluginInfo.C
 avtMeshPlot.C
 avtMeshFilter.C
 avtMeshPlotMapper.C
-vtkMeshPlotMapper.C
-${MESH_OPENGL_SOURCES}
-${CMAKE_CURRENT_BINARY_DIR}/MeshPlotObjectFactory.C
 ${COMMON_SOURCES}
 )
 
@@ -48,9 +42,6 @@ MeshEnginePluginInfo.C
 avtMeshPlot.C
 avtMeshFilter.C
 avtMeshPlotMapper.C
-vtkMeshPlotMapper.C
-${MESH_OPENGL_SOURCES}
-${CMAKE_CURRENT_BINARY_DIR}/MeshPlotObjectFactory.C
 ${COMMON_SOURCES}
 )
 
