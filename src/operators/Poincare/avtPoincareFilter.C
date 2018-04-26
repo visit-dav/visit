@@ -3546,22 +3546,70 @@ avtPoincareFilter::CreatePoincareOutput( avtDataTree *dt,
         else if( type == FieldlineProperties::ISLAND_PRIMARY_CHAIN ||
                  type == FieldlineProperties::ISLAND_SECONDARY_CHAIN )
         {
+          std::cerr << __LINE__ << " have overlaps " << std::endl;
+          
           if( overlaps )
           {
             if( properties.analysisState == FieldlineProperties::COMPLETED )
             {
+              std::cerr << __LINE__ << " COMPLETED " << std::endl;
+              
               for( unsigned int s=0; s<nSections; ++s )
               {
                 // Loop through each group. In this case there should
                 // only be one as each island is in its own section.
                 for( unsigned int j=0; j<puncturePts[s].size(); ++j )
                 {
-                  // Erase all of the overlapping points.
-                  puncturePts[s][j].erase( puncturePts[s][j].begin()+nnodes,
-                                           puncturePts[s][j].end() );
+                  std::cerr << __LINE__ << " overlaps " << overlaps
+                            << std::endl;
+              
+                  if( overlaps == 2 )
+                  {
+                    unsigned int nPts = puncturePts[s][j].size();
+
+                    unsigned int nOverlaps = nPts / nnodes;
+
+                    std::cerr << __LINE__ << " nPts " << nPts
+                              << "      " << " nOverlaps " << nOverlaps
+                              << std::endl;
                     
-                  // Close the island if it is complete
-                  puncturePts[s][j].push_back( puncturePts[s][j][0] );
+                    std::vector < avtVector > tmpPts;               
+                    tmpPts.resize( nPts );
+
+                    unsigned int cc = 0;
+                    
+                    for( unsigned int jj=0; jj<nnodes; ++jj )
+                    {
+                      for( unsigned int ii=0; ii<nOverlaps; ++ii )
+                      {
+                        unsigned int index = jj + ii * nnodes;
+
+                        if( nPts <= index )
+                          break;
+
+                        if( s == 0 )
+                          std::cerr << cc << "  " << index << std::endl;
+                        
+                        tmpPts[cc++] = puncturePts[s][j][index];
+                      }
+                    }
+
+                    for( unsigned int ii=0; ii<nPts; ++ii )
+                      puncturePts[s][j][ii] = tmpPts[ii];
+                    
+                    // Erase the extra of the overlapping points.
+                    puncturePts[s][j].erase( puncturePts[s][j].begin()+
+                                             nnodes*nOverlaps,
+                                             puncturePts[s][j].end() );
+                  }
+                  else
+                  {
+                    // Erase all of the overlapping points.
+                    puncturePts[s][j].erase( puncturePts[s][j].begin()+nnodes,
+                                             puncturePts[s][j].end() );
+                    // Close the island if it is complete
+                    puncturePts[s][j].push_back( puncturePts[s][j][0] );
+                  }
                 }
               }
             }
