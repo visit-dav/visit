@@ -2813,7 +2813,7 @@ def PickHighlightColor():
     AddPlot("Pseudocolor", "hardyglobal")
     pickAtts = GetPickAttributes()
     pickAtts.showPickHighlight  = 1
-    pickAtts.pickHighlightColor = (0, 0, 1) 
+    pickAtts.pickHighlightColor = (0, 0, 255) 
     SetPickAttributes(pickAtts)
     DrawPlots()
     PickByZone(116242)
@@ -2821,7 +2821,7 @@ def PickHighlightColor():
     DeleteAllPlots()
     ResetPickLetter()
     #restore the attributes
-    pickAtts.pickHighlightColor = (1, 0, 0)
+    pickAtts.pickHighlightColor = (255, 0, 0)
     SetPickAttributes(pickAtts)
     annotAtts  = GetAnnotationAttributes() 
     annotAtts.userInfoFlag = 1
