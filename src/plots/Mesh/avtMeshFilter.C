@@ -196,6 +196,10 @@ avtMeshFilter::~avtMeshFilter()
 //    Eric Brugger, Tue Aug 19 10:55:44 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
 //
+//    Garrett Morrison, Wed Apr 25 17:03:10 PDT 2018
+//    Added show internal check to draw opaque polys to fix issue if using vtk
+//    ospray render passes
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -368,7 +372,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
         //  Tack on the opaque poly's to the outDS (which is only lines
         //  at this point. 
         //
-        if (opaquePolys != NULL && opaquePolys->GetNumberOfCells() != 0)
+        if (opaquePolys != NULL && opaquePolys->GetNumberOfCells() != 0 && !atts.GetShowInternal())
         {
             vtkAppendPolyData *append = vtkAppendPolyData::New();
             append->AddInputData(outDS);
