@@ -2061,34 +2061,72 @@ PlaneExplosion::PlaneExplosion()
 //      section with class method, and added safety
 //      checks. 
 //
+//      Alister Maguire, Fri Apr 27 11:13:22 PDT 2018
+//      If the data center lies on the plane, use a data point
+//      that is slightly skewed from the center. 
+//
 // ****************************************************************************
 
 void
 PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
                                  double scaleFactor, bool normalize)
 {
+
     //
-    // Project from our data center onto a plane. 
+    // We need to check if our data center lies on 
+    // our explode plane. If it does, our data point should
+    // be slightly skewed from the data center to prevent
+    // the data not moving at all. Otherwise, we can just
+    // use the data center as our point. 
+    //    
+    double planeDist;
+    for (int i = 0; i < 3; ++i)
+    {
+        planeDist += (dataCenter[i] - planePoint[i]) * planeNorm[i];
+    }
+
+    double dataPt[] = {0.0, 0.0, 0.0};
+    if  (planeDist == 0.0)
+    {
+        //
+        // Skew a small amount in the direction of the normal. 
+        //
+        for (int i = 0; i < 3; ++i)
+        {
+            dataPt[i] = dataCenter[i] + planeNorm[i]*1.0e-15;
+        }
+    }
+    else
+    {
+        for(int i = 0; i < 3; ++i)
+            dataPt[i] = dataCenter[i];
+    }
+
+    //
+    // Project from our data point onto a plane. 
     //
     double denom = 0.0;
     double alpha = 0.0;
     for (int i = 0; i < 3; ++i)
     {
         alpha += (planeNorm[i] * planePoint[i]) - 
-            (planeNorm[i] * dataCenter[i]);
+            (planeNorm[i] * dataPt[i]);
         denom += planeNorm[i] * planeNorm[i];
     }
+
+    if (denom == 0.0)
+        denom = 1.0;
 
     alpha /= denom;
 
     //
-    // Subtract the projection from the data center
+    // Subtract the projection from the data point
     // to get the distance from the plane. 
     //
     for (int i = 0; i < 3; ++i)
     {
-        displaceVec[i] = dataCenter[i] - 
-            (dataCenter[i] + (alpha * planeNorm[i]));
+        displaceVec[i] = dataPt[i] - 
+            (dataPt[i] + (alpha * planeNorm[i]));
     }
 
     ScaleExplosion(expFactor, scaleFactor, normalize);
