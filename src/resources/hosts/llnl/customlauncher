@@ -89,6 +89,9 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   Eric Brugger, Mon Mar 19 12:55:14 PDT 2018
 #   I set visitarch to linux-x86_64-toss3 for all the toss3 machines.
 #
+#   Eric Brugger, Mon Apr 30 09:18:14 PDT 2018
+#   I added rzhasgpu to the list of toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -154,6 +157,7 @@ class LLNLLauncher(MainLauncher):
         if self.sectorname() == "borax" or \
             self.sectorname() == "quartz" or \
             self.sectorname() == "rzgenie" or \
+            self.sectorname() == "rzhasgpu" or \
             self.sectorname() == "rztopaz" or \
             self.sectorname() == "rztrona" or \
             self.sectorname() == "jade" or \
