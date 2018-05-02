@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -47,6 +47,7 @@
 
 #include <string>
 
+class DBOptionsAttributes;
 
 // ****************************************************************************
 //  Class: avtBOVWriter
@@ -65,18 +66,26 @@
 //    Jeremy Meredith/Hank Childs, Tue Mar 27 17:03:47 EDT 2007
 //    Added numblocks to the OpenFile interface.
 //
+//    Alister Maguire, Fri Sep  1 15:18:58 PDT 2017
+//    Moved constructor and destructor definitions to the C file. 
+//    Added gzCompress and SetCompressOutput().
+//
+//    Alister Maguire, Thu Sep  7 09:02:03 PDT 2017
+//    Added DBOptionsAttributes as a constnructor argument. 
+//
 // ****************************************************************************
 
 class
 avtBOVWriter : public virtual avtDatabaseWriter
 {
   public:
-                   avtBOVWriter() {;};
-    virtual       ~avtBOVWriter() {;};
+                   avtBOVWriter(DBOptionsAttributes *);
+    virtual       ~avtBOVWriter();
 
   protected:
     std::string    stem;
     int            nblocks;
+    bool           gzCompress;
 
     virtual void   OpenFile(const std::string &, int);
     virtual void   WriteHeaders(const avtDatabaseMetaData *,
@@ -94,6 +103,9 @@ avtBOVWriter : public virtual avtDatabaseWriter
     // So we may as well report that we can already do it, so the MIR
     // doesn't execute unnecessarily.
     virtual bool   CanHandleMaterials(void) { return true; };
+
+    virtual void   SetCompressOutput(bool compress) { gzCompress = compress; };
+    virtual bool   GetCompressOutput(void) { return gzCompress; };
 };
 
 

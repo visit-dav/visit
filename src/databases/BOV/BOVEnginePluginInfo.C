@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -56,6 +56,6 @@ VISIT_DATABASE_PLUGIN_ENTRY(BOV,Engine)
 avtDatabaseWriter *
 BOVEnginePluginInfo::GetWriter(void)
 {
-    return new avtBOVWriter;
+    return new avtBOVWriter(writeOptions);
 }
 

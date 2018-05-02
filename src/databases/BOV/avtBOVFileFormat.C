@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -83,6 +83,9 @@
 #include <cstring>
 #include <cerrno>
 
+#include <avtBOVOptions.h>
+#include <DBOptionsAttributes.h>
+
 #ifdef _WIN32
 #define FSEEK _fseeki64
 #define strcasecmp stricmp
@@ -136,9 +139,13 @@ static bool fillSpace = true;
 //    Hank Childs, Tue Nov 30 11:41:44 PST 2010
 //    Initialize members for whether or not the time or cycle is accurate.
 //
+//    Alister Maguire, Thu Sep  7 09:02:03 PDT 2017
+//    Added DBOptionsAttributes as a constructor argument. 
+//
 // ****************************************************************************
-
-avtBOVFileFormat::avtBOVFileFormat(const char *fname)
+ 
+avtBOVFileFormat::avtBOVFileFormat(const char *fname, 
+    DBOptionsAttributes *opts)
     : avtSTMDFileFormat(&fname, 1)
 {
     //

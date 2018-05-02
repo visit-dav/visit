@@ -1,6 +1,6 @@
 /*****************************************************************************
 *
-* Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+* Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
 * Produced at the Lawrence Livermore National Laboratory
 * LLNL-CODE-442911
 * All rights reserved.
@@ -60,8 +60,53 @@
 #include <InvalidFilesException.h>
 #include <ImproperUseException.h>
 
+#include <avtBOVOptions.h>
+#include <DBOptionsAttributes.h>
+
 using     std::string;
 using     std::vector;
+
+
+// ****************************************************************************
+//  Method: avtBOVWriter construtor
+//
+//  Purpose:
+//      Initialize the option to compress the output files with gzip.
+//
+//  Programmer: Alister Maguire
+//  Creation:   September 1, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtBOVWriter::avtBOVWriter(DBOptionsAttributes *atts)
+{
+    switch(atts->GetEnum("Compression"))
+    {
+        case 0: gzCompress = false; break;
+        case 1: gzCompress = true; break;
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtBOVWriter destructor
+//
+//  Purpose:
+//      empty destructor.
+//
+//  Programmer: Alister Maguire
+//  Creation:   September 1, 2017
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtBOVWriter::~avtBOVWriter()
+{
+    ;
+}
 
 
 // ****************************************************************************
@@ -365,6 +410,10 @@ ResampleGrid(vtkRectilinearGrid *rgrid, float *ptr, float *samples, int numCompo
 //    Brad Whitlock, Fri Apr 12 15:42:36 PDT 2013
 //    Use gzFile instead of void* for gz_handle.
 //
+//    Alister Maguire, Thu Sep  7 09:02:03 PDT 2017
+//    Added an option for compressing the output files with
+//    gzip.
+//
 // ****************************************************************************
 
 void
@@ -584,7 +633,6 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                 *ofile << "CENTERING: nodal" << endl;
         }
     }
-
     if (nBricklets == 1 && brickletNI == dims[0] && brickletNJ == dims[1]
         && brickletNK == dims[2])
     {
@@ -598,16 +646,42 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
             EXCEPTION1(InvalidFilesException,
                        "Could not figure out stem filename.");
         }
-        FILE *file_handle = fopen(stem.c_str(), "w");
-        if(file_handle == NULL)
-        {
-            if (deletePtr) delete [] ptr;
-            EXCEPTION1(InvalidFilesException,
-                       "Could not open stem file.  Do you lack write access "
-                       "on the destination filesystem?");
+        //
+        // If the compress option is on, then output a compressed bov file
+        //
+        if (gzCompress)
+        { 
+            char fmt[1024]; 
+            sprintf(fmt, "%s.gz", stem.c_str());
+            gzFile gz_handle = gzopen(fmt, "w");
+
+            if(gz_handle == NULL)
+            {
+                if (deletePtr) delete [] ptr;
+                    EXCEPTION1(InvalidFilesException,
+                           "Could not open stem file.  Do you lack write access "
+                           "on the destination filesystem?");
+            }
+
+            gzwrite(gz_handle, ptr, nvals*sizeof(float));
+            gzclose(gz_handle);
         }
-        fwrite(ptr, sizeof(float), nvals, file_handle);
-        fclose(file_handle);
+        else
+        {
+            FILE *file_handle = fopen(stem.c_str(), "w");
+            if(file_handle == NULL)
+            {
+                if (deletePtr) delete [] ptr;
+                EXCEPTION1(InvalidFilesException,
+                           "Could not open stem file.  Do you lack write access "
+                           "on the destination filesystem?");
+            }
+            else
+            {
+                fwrite(ptr, sizeof(float), nvals, file_handle);
+                fclose(file_handle);
+            }
+        }
     }
     else
     {
@@ -644,6 +718,23 @@ avtBOVWriter::WriteChunk(vtkDataSet *ds, int chunk)
                         gzFile gz_handle = gzopen(str, "w");
                         gzwrite(gz_handle, samples, 
                                 vals_per_bricklet*sizeof(float));
+                        gzclose(gz_handle);
+                    }
+                    else if (gzCompress)
+                    {
+                        char fmt[1024]; 
+                        sprintf(fmt, "%s.gz", stem.c_str());
+                        gzFile gz_handle = gzopen(fmt, "w");
+
+                        if(gz_handle == NULL)
+                        {
+                            if (deletePtr) delete [] ptr;
+                                EXCEPTION1(InvalidFilesException,
+                                       "Could not open stem file.  Do you lack write access "
+                                       "on the destination filesystem?");
+                        }
+
+                        gzwrite(gz_handle, samples, vals_per_bricklet*sizeof(float));
                         gzclose(gz_handle);
                     }
                     else
