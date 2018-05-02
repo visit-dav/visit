@@ -46,16 +46,23 @@ rebaseline. If no files or file globs are specified then
 all results from the specified test .py file are rebased.
 
 Note that if you choose to re-baseline a whole series of
-files which may include skips or actual passes, then it will
-discover there are no *current* results posted for those cases
-and then simply take the already existing baseline result.
+files which may include skips or actual passes, then it
+will discover there are no *current* results posted for
+those cases and then simply take the already existing
+baseline result.
 
-Sometimes, its easiest to use rebase.py on a whole series and
-then selectively revert the ones you didn't want to rebase prior
-to committing them.
+Sometimes, its easiest to use rebase.py on a whole series
+and then selectively revert the ones you didn't want to
+rebase prior to committing them.
+
+Warning messages are generated if the data copied from the
+posted HTML results doesn't pass some basic sanity checks,
+PNG formatted image, file size is within 25% of original.
+These are only warnings and up to the user to decide whether
+any action is required.
  
-Note: This will NOT HANDLE rebaselining of files in mode-specific
-baseline dirs
+Note: This will NOT HANDLE rebaselining of files in
+mode-specific baseline dirs.
 
 Examples...
 
@@ -124,9 +131,9 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
         print "Copying file \"%s\""%f
         g = urllib.urlopen("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f))
         if 'Not Found' in g.read():
-            print "*** Current \"%s\" not found. Using base."%f
-            urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/b_%s"%(datetag,mode,f),
-                filename="baseline/%s/%s/%s"%(cat,pyfile,f))
+            print "*** Current \"%s\" not found. Skipping."%f
+#            urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/b_%s"%(datetag,mode,f),
+#                filename="baseline/%s/%s/%s"%(cat,pyfile,f))
         else:
             urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f),
                 filename="baseline/%s/%s/%s"%(cat,pyfile,f))
@@ -134,7 +141,7 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
         if imghdr.what("baseline/%s/%s/%s"%(cat,pyfile,f)) != 'png':
             print "Warning: file \"baseline/%s/%s/%s\" is not PNG format!"%(cat,pyfile,f)
         newsize = os.stat("baseline/%s/%s/%s"%(cat,pyfile,f)).st_size
-        if newsize < cursize/2 or newsize > 2*cursize:
+        if newsize < (1-0.25)*cursize or newsize > (1+0.25)*cursize:
             print "Warning: dramatic change in size of file \"baseline/%s/%s/%s\"!"%(cat,pyfile,f)
 
 #
