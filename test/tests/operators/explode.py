@@ -29,6 +29,9 @@
 #      Alister Maguire, Tue Feb 20 16:22:05 PST 2018
 #      Added a 2d test with no materials. 
 #
+#      Alister Maguire, Wed May  2 12:54:43 PDT 2018
+#      Added tests for recentering. 
+#
 # ----------------------------------------------------------------------------
 
 
@@ -407,11 +410,67 @@ def TwoDimNoMat():
     DrawPlots()
 
     atts = ExplodeAttributes()
-    atts.explodeAllCells      = 1
+    atts.explodeAllCells  = 1
     atts.explosionPattern = atts.Scatter
     SetOperatorOptions(atts)
     
     Test("explode_quad_disk_00")
+    ResetView()
+    DeleteAllPlots()
+
+def TestRecenter():
+    #
+    # Recentering is enabled when exploding all cells,
+    # and it allows a cell to be displaced even when 
+    # its center lies on an explode origin. 
+    #
+    OpenDatabase(silo_data_path("arbpoly-zoohybrid.silo"))
+    AddPlot("Pseudocolor", "3D/z1")
+
+    ResetView()
+    RecenterView()
+
+    AddOperator("Explode")
+    DrawPlots()
+
+    #
+    # Test when a cell center lies on an explode
+    # cylinder with radius 0. 
+    #
+    atts = ExplodeAttributes()
+    atts.explodeAllCells = 1
+    atts.explosionType   = atts.Cylinder 
+    atts.cylinderPoint1  = (0, .5, .5)
+    atts.cylinderPoint2  = (1, .5, .5)
+    SetOperatorOptions(atts)
+
+    Test("recenter_00")
+
+    #
+    # Test when a cell center lies on an explode
+    # point.
+    #
+    atts = ExplodeAttributes()
+    atts.explodeAllCells = 1
+    atts.explosionType   = atts.Point
+    atts.explosionPoint  = (.5, .5, .5)
+    SetOperatorOptions(atts)
+
+    Test("recenter_01")
+
+    #
+    # Test when a cell center lies on an explode
+    # plane.
+    #
+    atts = ExplodeAttributes()
+    atts.explodeAllCells = 1
+    atts.explosionType   = atts.Plane
+    atts.planePoint      = (1.5, 0, 0)
+    atts.planeNorm       = (1, 0, 0)
+    SetOperatorOptions(atts)
+
+    Test("recenter_02")
+
     ResetView()
     DeleteAllPlots()
 
@@ -423,6 +482,7 @@ def Main():
     multi_rectilinear_explosions()
     multi_tire()
     TwoDimNoMat()
+    TestRecenter()
     
 
 Main()
