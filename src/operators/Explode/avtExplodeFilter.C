@@ -73,6 +73,8 @@
 #include <mpi.h>
 #endif
 
+#define TINY_FACTOR 1.0e-15
+
 
 // ****************************************************************************
 //  Method: avtExplodeFilter constructor
@@ -1722,7 +1724,7 @@ Explosion::ExplodeAndDisplaceMaterial(vtkUnstructuredGrid *ugrid,
         // Calculate the displacement for this cell. 
         //
         CalcDisplacement(cellCenter, cellExplosionFactor, 
-            scaleFactor, normalize); 
+            scaleFactor, normalize, true); 
 
         //
         // Create a new set of points that are identical to the old
@@ -1834,7 +1836,7 @@ Explosion::ExplodeAllCells(vtkDataSet *in_ds,
         // Calculate the displacement for this cell. 
         //
         CalcDisplacement(cellCenter, cellExplosionFactor, 
-            scaleFactor, normalize); 
+            scaleFactor, normalize, true); 
 
         //
         // Create a new set of points that are identical to the old
@@ -1985,19 +1987,40 @@ PointExplosion::PointExplosion()
 //      section with class method, and added safety
 //      checks. 
 //
+//      Alister Maguire, Wed May  2 10:32:48 PDT 2018
+//      Added recenter argument. If recenter is enabled, 
+//      create a different data point when appropriate. 
+//
 // ****************************************************************************
 
 void
 PointExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
-                                 double scaleFactor, bool normalize)
+                                 double scaleFactor, bool normalize,
+                                 bool recenter)
 {
     //
     //  Find the distance between the data center and the
     //  explosion point.
     //
+    double sum = 0.0;
     for (int i = 0; i < 3; ++i)
     {
         displaceVec[i] = dataCenter[i] - explosionPoint[i];
+        sum           += displaceVec[i];
+    }
+
+    //
+    // If our explosion point matches our data center and
+    // recenter is enabled, create a tiny displacement vector
+    // which assumes exploding from a data point very close
+    // to the data center. 
+    //
+    if (sum == 0.0 && recenter)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            displaceVec[i] = TINY_FACTOR;
+        }
     }
 
     ScaleExplosion(expFactor, scaleFactor, normalize);
@@ -2065,41 +2088,47 @@ PlaneExplosion::PlaneExplosion()
 //      If the data center lies on the plane, use a data point
 //      that is slightly skewed from the center. 
 //
+//      Alister Maguire, Wed May  2 10:32:48 PDT 2018
+//      Added recenter argument. Only recenter the data point
+//      when recenter is enabled. 
+//
 // ****************************************************************************
 
 void
 PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
-                                 double scaleFactor, bool normalize)
+                                 double scaleFactor, bool normalize, 
+                                 bool recenter)
 {
-
-    //
-    // We need to check if our data center lies on 
-    // our explode plane. If it does, our data point should
-    // be slightly skewed from the data center to prevent
-    // the data not moving at all. Otherwise, we can just
-    // use the data center as our point. 
-    //    
-    double planeDist;
+    double dataPt[] = {0.0, 0.0, 0.0};
+    
     for (int i = 0; i < 3; ++i)
     {
-        planeDist += (dataCenter[i] - planePoint[i]) * planeNorm[i];
+        dataPt[i] = dataCenter[i];
     }
 
-    double dataPt[] = {0.0, 0.0, 0.0};
-    if  (planeDist == 0.0)
+    if (recenter)
     {
         //
-        // Skew a small amount in the direction of the normal. 
+        // If recenter is enabled, check if our data point lies
+        // on the plane. If it does, use a new data point that
+        // isn't the cell center but still should be in the cell. 
         //
+        double planeDist;
         for (int i = 0; i < 3; ++i)
         {
-            dataPt[i] = dataCenter[i] + planeNorm[i]*1.0e-15;
+            planeDist += (dataPt[i] - planePoint[i]) * planeNorm[i];
         }
-    }
-    else
-    {
-        for(int i = 0; i < 3; ++i)
-            dataPt[i] = dataCenter[i];
+
+        if  (planeDist == 0.0)
+        {
+            //
+            // Create a new point's that slightly off the center. 
+            //
+            for (int i = 0; i < 3; ++i)
+            {
+                dataPt[i] = dataPt[i] + planeNorm[i] * TINY_FACTOR;
+            }
+        }
     }
 
     //
@@ -2110,7 +2139,7 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor,
     for (int i = 0; i < 3; ++i)
     {
         alpha += (planeNorm[i] * planePoint[i]) - 
-            (planeNorm[i] * dataPt[i]);
+                 (planeNorm[i] * dataPt[i]);
         denom += planeNorm[i] * planeNorm[i];
     }
 
@@ -2188,11 +2217,16 @@ CylinderExplosion::CylinderExplosion()
 //      section with class method, and added safety 
 //      checks. 
 //
+//      Alister Maguire, Wed May  2 10:32:48 PDT 2018
+//      Added recenter argument. If enabled, recenter the 
+//      cell's data point when appropriate. 
+//
 // ****************************************************************************
 
 void
 CylinderExplosion::CalcDisplacement(double *dataCenter, double expFactor, 
-                                    double scaleFactor, bool normalize)
+                                    double scaleFactor, bool normalize, 
+                                    bool recenter)
 {
     //
     // Project from our data center to the line which runs 
@@ -2218,18 +2252,94 @@ CylinderExplosion::CalcDisplacement(double *dataCenter, double expFactor,
     for (int i = 0; i < 3; ++i)
         projection[i] = cylinderPoint1[i] + ((dot1 / dot2) * AB[i]);
 
-    //
-    // If the data is within the cylinder's radius, we don't want to 
-    // displace it, so just set the displacement to 0.0 and return. 
-    //
     double dist = 0.0;
     for (int i = 0; i < 3; ++i)
     {
         dist += (dataCenter[i] - projection[i]) * 
-            (dataCenter[i] - projection[i]);
+                (dataCenter[i] - projection[i]);
     }
+
+    //
+    // Check to see if our data center is in the cylinder's
+    // radius. 
+    //
     if (dist <= cylinderRadius)
     {
+        //
+        // If our radius is 0.0 and recenter is enabled, our
+        // data center lies within a 'non-existent' radius. 
+        // Let's create a tiny perpendicular vector for our
+        // displacement. 
+        //
+        if (recenter && cylinderRadius == 0.0)
+        {
+            //
+            // Create a vector perpendicular to our line. Use 
+            // the fact that dot(V1, V2) = 0 IFF V1 and V2 are
+            // perpendicular. 
+            //
+            double parVec[] = {0.0, 0.0, 0.0};
+            double parMag   = 0.0;
+
+            for (int i = 0; i < 3; ++i)
+            {
+                parVec[i] = cylinderPoint1[i] - cylinderPoint2[i];
+                parMag   += parVec[i]*parVec[i];
+            }
+            parMag = sqrt(parMag);
+
+            int nonZeroIdx   = -1;
+            double numerator = 0.0;
+            for (int i = 0; i < 3; ++i)
+            {
+                parVec[i] /= parMag;
+                if (nonZeroIdx < 0 && parVec[i] != 0.0)
+                {
+                    nonZeroIdx = i;
+                }
+                else
+                {
+                    numerator -= parVec[i];
+                }
+            }
+
+            if (nonZeroIdx < 0 || nonZeroIdx > 2)
+            {
+                char recieved[256];
+                char expected[256];
+                sprintf(expected, "An index in the range 0-2");
+                sprintf(recieved, "%d", nonZeroIdx);
+                EXCEPTION2(UnexpectedValueException, expected, recieved);
+                return;
+            }
+
+            double perpVec[]    = {1.0, 1.0, 1.0};
+            perpVec[nonZeroIdx] = 0.0;
+            perpVec[nonZeroIdx] = numerator / parVec[nonZeroIdx];
+
+            double perpMag   = sqrt(perpVec[0]*perpVec[0] +
+                                    perpVec[1]*perpVec[1] + 
+                                    perpVec[2]*perpVec[2]);
+
+            //
+            // Scale our perpendicular vector to be very small, 
+            // and use this tiny vector as our displacement. 
+            //
+            for (int i = 0; i < 3; ++i)
+            {
+                perpVec[i]    /= perpMag;
+                displaceVec[i] = perpVec[i] * TINY_FACTOR;
+            }
+
+            ScaleExplosion(expFactor, scaleFactor, normalize);
+            return;
+        }
+
+        //
+        // If the data is within a positive cylinder radius, 
+        // we don't want to displace it, so just set the 
+        // displacement to 0.0 and return. 
+        //
         for (int i = 0; i < 3; ++i)
             displaceVec[i] = 0.0;
         return;

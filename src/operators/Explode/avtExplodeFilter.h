@@ -154,6 +154,9 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
 //      this base class to the children and added 
 //      ScaleExplosion(). 
 //
+//      Alister Maguire, Tue May  1 16:19:18 PDT 2018
+//      Added recenter argument to CalcDisplacement. 
+//
 // ****************************************************************************
 
 class Explosion
@@ -162,8 +165,12 @@ class Explosion
                          Explosion();
     virtual             ~Explosion() {};
 
-    virtual void         CalcDisplacement(double *, double, 
-                                          double, bool) = 0;
+    virtual void         CalcDisplacement(double *dataCenter, 
+                                          double  expFactor, 
+                                          double  scaleFactor, 
+                                          bool    normalize, 
+                                          bool    recenter = false) = 0;
+
     void                 DisplaceMaterial(vtkUnstructuredGrid *, 
                                           double *, double);
     void                 ExplodeAllCells(vtkDataSet *,
@@ -199,6 +206,9 @@ class Explosion
 //      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
 //      Changed pointers to lists. 
 //
+//      Alister Maguire, Tue May  1 16:19:18 PDT 2018
+//      Added recenter argument to CalcDisplacement. 
+//
 // ****************************************************************************
 
 class PointExplosion : virtual public Explosion
@@ -206,8 +216,11 @@ class PointExplosion : virtual public Explosion
   public:
                       PointExplosion();
     virtual          ~PointExplosion() {};
-    virtual void      CalcDisplacement(double *, double, 
-                                       double, bool);
+    virtual void      CalcDisplacement(double *dataCenter, 
+                                       double  expFactor, 
+                                       double  scaleFactor, 
+                                       bool    normalize, 
+                                       bool    recenter = false);
 
     double            explosionPoint[3];
 };
@@ -229,6 +242,9 @@ class PointExplosion : virtual public Explosion
 //      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
 //      Changed pointers to lists. 
 //
+//      Alister Maguire, Tue May  1 16:19:18 PDT 2018
+//      Added recenter argument to CalcDisplacement. 
+//
 // ****************************************************************************
 
 class PlaneExplosion : virtual public Explosion
@@ -236,8 +252,11 @@ class PlaneExplosion : virtual public Explosion
   public:
                       PlaneExplosion();
     virtual          ~PlaneExplosion() {};
-    virtual void      CalcDisplacement(double *, double, 
-                                       double, bool);
+    virtual void      CalcDisplacement(double *dataCenter, 
+                                       double  expFactor, 
+                                       double  scaleFactor, 
+                                       bool    normalize, 
+                                       bool    recenter = false);
 
     double            planePoint[3];
     double            planeNorm[3];
@@ -260,6 +279,9 @@ class PlaneExplosion : virtual public Explosion
 //      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
 //      Changed pointers to lists. 
 //
+//      Alister Maguire, Tue May  1 16:19:18 PDT 2018
+//      Added recenter argument to CalcDisplacement. 
+//
 // ****************************************************************************
 
 class CylinderExplosion : virtual public Explosion
@@ -267,8 +289,11 @@ class CylinderExplosion : virtual public Explosion
   public:
                       CylinderExplosion();
     virtual          ~CylinderExplosion() {};
-    virtual void      CalcDisplacement(double *, double, 
-                                       double, bool);
+    virtual void      CalcDisplacement(double *dataCenter, 
+                                       double  expFactor, 
+                                       double  scaleFactor, 
+                                       bool    normalize,
+                                       bool    recenter = false);
 
     double            cylinderPoint1[3];
     double            cylinderPoint2[3];
