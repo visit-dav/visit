@@ -37,9 +37,14 @@
 #    Update for new VTK export options.  Added test4, which tests the new
 #    options.
 #
+#    Alister Maguire, Thu Apr 26 13:31:31 PDT 2018
+#    Added test for bov compression. 
+#
 # ----------------------------------------------------------------------------
 import string
 import time
+import os.path
+import subprocess
 
 def test0():
     OpenDatabase(silo_data_path("globe.silo"))
@@ -454,6 +459,45 @@ def test4():
 
     DeleteAllPlots()
 
+def test_bov():
+    TestSection("Test bov export with and without compression.")
+    maindb = silo_data_path("noise.silo")
+    OpenDatabase(maindb)
+    AddPlot("Pseudocolor", "hardyglobal")
+    DrawPlots()
+
+    #
+    # test w/o compression
+    #
+    e = ExportDBAttributes()
+    e.db_type = "BOV"
+    e.db_type_fullname = "BOV_1.0"
+    e.filename = "test_bov_uncompressed"
+    e.variables = ("default")
+    opts = GetExportOptions("BOV")
+    opts["Compression"] = "None"
+    ExportDatabase(e, opts)
+    time.sleep(1)
+    AssertTrue(os.path.isfile("test_bov_uncompressed.bov"), True)
+    AssertTrue(os.path.isfile("test_bov_uncompressed"), True)
+    ReplaceDatabase("test_bov_uncompressed.bov")
+    Test("export_db_5_01")
+
+    #
+    # test w gzip compression
+    #
+    e.filename = "test_bov_gzip"
+    opts["Compression"] = "gzip"
+    ExportDatabase(e, opts)
+    time.sleep(1)
+    AssertTrue(os.path.isfile("test_bov_gzip.bov"), True)
+    AssertTrue(os.path.isfile("test_bov_gzip.gz"), True)
+    subprocess.Popen(["gunzip", "test_bov_gzip.gz"])
+    ReplaceDatabase("test_bov_gzip.bov")
+    Test("export_db_5_02")
+
+    DeleteAllPlots()
+
 
 def main():
     test0()
@@ -466,6 +510,7 @@ def main():
         test2(1)
     test3()
     test4()
+    test_bov()
 
 main()
 Exit()
