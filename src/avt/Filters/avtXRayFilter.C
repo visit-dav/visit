@@ -1754,6 +1754,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
 
     for (i = 0 ; i < linesForThisPass ; i++)
     {
+
         //
         // Determine which cells intersect the line.
         //
@@ -1779,6 +1780,7 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
         double lineLength = sqrt((pt2[0]-pt1[0]) * (pt2[0]-pt1[0]) +
                                  (pt2[1]-pt1[1]) * (pt2[1]-pt1[1]) +
                                  (pt2[2]-pt1[2]) * (pt2[2]-pt1[2]));
+
         for (j = 0 ; j < nCells ; j++)
         {
             int id = list[j];
@@ -1796,7 +1798,6 @@ avtXRayFilter::CylindricalExecute(vtkDataSet *ds, int &nLinesPerDataset,
                 int id2 = edge->GetPointId(1);
                 double ePt2[3];
                 ds->GetPoint(id2, ePt2);
-
                 double curInter[100];  // shouldn't really be more than 4.
                 int numInter =
                     IntersectLineWithRevolvedSegment(pt1, dir, ePt1, ePt2,
@@ -2703,10 +2704,10 @@ avtXRayFilter::IntegrateLines(int pixelOffset, int nPts, int *lineId,
     // Make another pass if ray debugging is set. We only trace the first
     // bin.
     //
+
     if (debugRay != -1)
     {
-        double intensityBinZero;
-
+        double intensityBinZero(0.);
         prevLineId = -1;
 
         FILE *f = NULL;
@@ -2932,6 +2933,15 @@ avtXRayFilter::CollectFragments(int root, int nFragments, int *fragmentSizes,
 //    I had the routine return instead of throwing an exception if the
 //    segment had a negative R value.  Throwing an exception caused a
 //    crash in parallel.
+//    
+//    Matt Larsen, Thurs May 3rd 09:00:01 PDT 2018
+//    I fixed two issues. One, if the coordinates of a mesh were nearly
+//    vertical or horizontal, floating point error resulted in misses
+//    when there was absolutely a hit. In the worst cases, this resulted in
+//    answers being off by over 66%. Two, there was never a check for a 0
+//    discriminant when solving a quadratic. This resulted in two intersections
+//    when there was only ever one, and the logic around the caller would assume
+//    something whet terribly wrong and ignore the cell.
 //  
 // ****************************************************************************
 
@@ -2947,12 +2957,12 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
     {
         return 0;
     }
-
     //
     // Note that in the logic below, we are using the Z-component
     // of the line to compare with the X-component of the cell,
     // since the cell's X-component is actually 'Z' in RZ-space.
     //
+
     if (seg_p1[0] == seg_p2[0])
     {
         // Vertical line .. revolves to hollow disc.
@@ -2982,7 +2992,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
                 double soln1 = (-B + sqrt(det)) / (2*A);
                 double soln2 = (-B - sqrt(det)) / (2*A);
                 inter[nInter++] = soln1;
-                inter[nInter++] = soln2;
+                if(det != 0.f) inter[nInter++] = soln2;
             }
             C = C0 - Rmin*Rmin;
             det = B*B - 4*A*C;
@@ -2991,7 +3001,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
                 double soln1 = (-B + sqrt(det)) / (2*A);
                 double soln2 = (-B - sqrt(det)) / (2*A);
                 inter[nInter++] = soln1;
-                inter[nInter++] = soln2;
+                if(det != 0.) inter[nInter++] = soln2;
             }
         }
         else
@@ -3042,7 +3052,7 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
             inter[nInter] = soln1;
             nInter++;
         }
-        if (Zmin <= Z2 && Z2 <= Zmax)
+        if (Zmin <= Z2 && Z2 <= Zmax && det != 0.)
         {
             inter[nInter] = soln2;
             nInter++;
@@ -3093,23 +3103,70 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
         double det = B*B - 4*A*C;
         if (det < 0)
             return 0;
-        double soln1 = (-B + sqrt(det)) / (2*A);
-        double soln2 = (-B - sqrt(det)) / (2*A);
-        double Z1 = line_pt[2] + soln1*line_dir[2];
-        double Z2 = line_pt[2] + soln2*line_dir[2];
-        int nInter = 0;
+        double soln1 = (-B + sqrt(det)) / (2. * A);
+        double soln2 = (-B - sqrt(det)) / (2. * A);
+       
+        //
+        // So we are left with a choice to solve for r or z.
+        // Because of floating point madness, we can have a
+        // case there the edge segment is "nearly" horizontal
+        // or vertical. This leads to very small errors and 
+        // incorrect misses. To account for this, we will look
+        // at the R and Z ranges to see which one is larger,
+        // then solve for that to see if the intersection is
+        // within the segments valid range.
+        // 
         double Zmin = (seg_p1[0] < seg_p2[0] ? seg_p1[0] : seg_p2[0]);
         double Zmax = (seg_p1[0] > seg_p2[0] ? seg_p1[0] : seg_p2[0]);
-        if (Zmin <= Z1 && Z1 <= Zmax)
+        
+        double Rmin = (seg_p1[1] < seg_p2[1] ? seg_p1[1] : seg_p2[1]);
+        double Rmax = (seg_p1[1] > seg_p2[1] ? seg_p1[1] : seg_p2[1]);
+
+        double rRange = Rmax - Rmin;
+        double zRange = Zmin - Zmax;
+
+        bool useZ = zRange > rRange;
+
+        int nInter = 0;
+        
+        if(useZ)
         {
-            inter[nInter] = soln1;
-            nInter++;
+            double Z1 = line_pt[2] + soln1*line_dir[2];
+            double Z2 = line_pt[2] + soln2*line_dir[2];
+
+            if (Zmin <= Z1 && Z1 <= Zmax)
+            {
+                inter[nInter] = soln1;
+                nInter++;
+            }
+            // We have to check to see if the discrim in
+            // 0, since both solutions would be identicle
+            if (Zmin <= Z2 && Z2 <= Zmax && det != 0.)
+            {
+                inter[nInter] = soln2;
+                nInter++;
+            }
         }
-        if (Zmin <= Z2 && Z2 <= Zmax)
+        else
         {
-            inter[nInter] = soln2;
-            nInter++;
+            double R1 = line_pt[0] + soln1*line_dir[0];
+            double R2 = line_pt[0] + soln2*line_dir[0];
+
+            if (Rmin <= R1 && R1 <= Rmax)
+            {
+                inter[nInter] = soln1;
+                nInter++;
+            }
+
+            // We have to check to see if the discrim in
+            // 0, since both solutions would be identicle
+            if (Rmin <= R2 && R2 <= Rmax && det != 0.)
+            {
+                inter[nInter] = soln2;
+                nInter++;
+            }
         }
+
         return nInter;
     }
 
