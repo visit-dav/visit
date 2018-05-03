@@ -20,13 +20,13 @@ function bv_tbb_depends_on
 
 function bv_tbb_info
 {
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-        export TBB_FILE=${TBB_FILE:-"tbb2018_20171205oss_mac.tgz"}
-    else
-        export TBB_FILE=${TBB_FILE:-"tbb2018_20171205oss_lin.tgz"}
-    fi
     export TBB_VERSION=${TBB_VERSION:-"tbb2018_20171205oss"}
-    export TBB_COMPATIBILITY_VERSION=${TBB_COMPATIBILITY_VERSION:-"tbb2018_20171205oss"}
+    if [[ "$OPSYS" == "Darwin" ]] ; then
+        export TBB_FILE=${TBB_FILE:-"${TBB_VERSION}_mac.tgz"}
+    else
+        export TBB_FILE=${TBB_FILE:-"${TBB_VERSION}_lin.tgz"}
+    fi
+    export TBB_COMPATIBILITY_VERSION=${TBB_COMPATIBILITY_VERSION:-"${TBB_VERSION}"}
     export TBB_BUILD_DIR=${TBB_BUILD_DIR:-"${TBB_VERSION}"}
     export TBB_MD5_CHECKSUM=""
     export TBB_SHA256_CHECKSUM=""
