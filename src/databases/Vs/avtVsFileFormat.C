@@ -4394,136 +4394,6 @@ void avtVsFileFormat::ActivateTimestep()
 }
 
 // *****************************************************************************
-//  Method: avtVsFileFormat::UpdateCyclesAndTimes
-//
-//  Purpose:
-//      How do you do the voododo that you do
-//
-//  Programmer: Marc Durant
-//  Creation:   June, 2010
-//
-//  Modifications:
-//
-void avtVsFileFormat::UpdateCyclesAndTimes(avtDatabaseMetaData* md)
-{
-    VsLog::debugLog() << CLASSFUNCLINE << "entering." << std::endl;
-    
-    LoadData();
-
-    if (!md) {
-      VsLog::debugLog() << CLASSFUNCLINE
-                        << "md was NULL, returning." <<std::endl;
-        return;
-    }
-
-    int timeStep = 0;
-
-    // Extract timestep from filename
-    // First, get file name from full path
-    std::string fileName(dataFileName);
-    std::string::size_type lastSlash = fileName.find_last_of('/');
-    if (lastSlash == std::string::npos) {
-        lastSlash = fileName.find_last_of('\\');
-    }
-    VsLog::debugLog() << CLASSFUNCLINE
-    <<"Last slash is " <<lastSlash << std::endl;
-    if (lastSlash != std::string::npos) {
-        std::string::size_type nameLength = fileName.length() - (lastSlash + 1);
-        fileName = fileName.substr(lastSlash + 1, nameLength);
-    }
-    VsLog::debugLog() << CLASSFUNCLINE
-                      <<"Extracted filename is \"" <<fileName <<"\"" << std::endl;
-
-    // Timestep = the number between the last underscore and the first dot
-    std::string::size_type lastUnderscore = fileName.find_last_of('_');
-    VsLog::debugLog() << CLASSFUNCLINE
-                      <<"lastUnderscore is " <<lastUnderscore << std::endl;
-
-    std::string::size_type firstDot = fileName.find_first_of('.');
-    VsLog::debugLog() << CLASSFUNCLINE
-                      <<"firstDot is " <<firstDot << std::endl;
-
-    if ((lastUnderscore != std::string::npos) &&
-            (firstDot != std::string::npos) &&
-            (firstDot > lastUnderscore + 1)) {
-        std::string step =
-        fileName.substr(lastUnderscore + 1, firstDot - (lastUnderscore + 1));
-
-        VsLog::debugLog() << CLASSFUNCLINE
-                          << "Step is \"" << step << "\""
-                          << std::endl;
-
-        timeStep = atoi(step.c_str());
-
-        VsLog::debugLog() << CLASSFUNCLINE
-                          <<"Converted to integer is \"" << timeStep << "\""
-                          << std::endl;
-    }
-
-    // If time data is present, tell VisIt
-    if (registry->hasTime()) {
-        VsLog::debugLog() << CLASSFUNCLINE
-        << "This file supplies time: "
-        << registry->getTime() << std::endl;
-
-        md->SetTime(timeStep, registry->getTime());
-        md->SetTimeIsAccurate(true, registry->getTime());
-    }
-
-    // If time cycle is present, tell VisIt
-    if (registry->hasCycle()) {
-        VsLog::debugLog() << CLASSFUNCLINE
-        << "This file supplies cycle: "
-        << registry->getCycle() << std::endl;
-
-        md->SetCycle(timeStep, registry->getCycle());
-        md->SetCycleIsAccurate(true, registry->getCycle());
-    }
-
-    // If time data is present, tell VisIt
-    // if (registry->hasTime()) {
-    //     VsLog::debugLog() << CLASSFUNCLINE
-    //                       << "This file supplies time: "
-    //                       << registry->getTime() << std::endl;
-
-    //     std::vector<double> times;
-    //     times.resize( 1 );
-    //     times[0] = registry->getTime();
-
-    //     md->SetTimesAreAccurate(true);
-    //     md->SetTimes( times );
-    // }
-    
-    // If cycle data is present, tell VisIt
-    // if (registry->hasCycle()) {
-    //     VsLog::debugLog() << CLASSFUNCLINE
-    //                       << "This file supplies cycle: "
-    //                       << registry->getCycle() << std::endl;
-
-    //     std::vector<int> cycles;
-    //     cycles.resize( 1 );
-    //     cycles[0] = registry->getCycle();
-
-    //     md->SetCyclesAreAccurate(true);
-    //     md->SetCycles( cycles );
-    // }
-
-    if (registry->hasLowerBounds() && registry->hasUpperBounds()) {
-
-      VsLog::debugLog() << CLASSFUNCLINE
-                        << "Getting bounds for mesh." << std::endl;
-      
-      std::vector<float> lowerBounds;
-      registry->getLowerBounds(&lowerBounds);
-
-      std::vector<float> upperBounds;
-      registry->getUpperBounds(&upperBounds);
-    }
-
-    VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
-}
-
-// *****************************************************************************
 //  Method: avtVsFileFormat::LoadData
 //
 //  Purpose:
@@ -4633,8 +4503,25 @@ void avtVsFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData* md)
         md->Add(mmd);
     }
 
-    //VsLog::debugLog() << "Calling UpdateCyclesAndTimes for file: " << dataFileName << std::endl;
-    UpdateCyclesAndTimes(md);
+    // If time data is present, tell VisIt
+    if (registry->hasTime()) {
+        VsLog::debugLog() << CLASSFUNCLINE
+        << "This file supplies time: "
+        << registry->getTime() << std::endl;
+
+        md->SetTime(timestep, registry->getTime());
+        md->SetTimeIsAccurate(true, timestep);
+    }
+
+    // If time cycle is present, tell VisIt
+    if (registry->hasCycle()) {
+        VsLog::debugLog() << CLASSFUNCLINE
+        << "This file supplies cycle: "
+        << registry->getCycle() << std::endl;
+
+        md->SetCycle(timestep, registry->getCycle());
+        md->SetCycleIsAccurate(true, timestep);
+    }
 
     VsLog::debugLog() << CLASSFUNCLINE << "exiting." << std::endl;
 }
