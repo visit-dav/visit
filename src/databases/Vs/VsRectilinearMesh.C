@@ -88,20 +88,36 @@ bool VsRectilinearMesh::initialize() {
       std::vector<int> axisDims = axis->getDims();
 
       if (axisDims.size() != 1) {
-        VsLog::errorLog()
-          << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
-          << "Expected 1-d dataset for Axis "
-          << i << " '" << getAxisDatasetName(i) << "', "
-          << "actually have " << axisDims.size() << std::endl;
-        return false;
+        // 
+        if( axisDims.size() == 2 && axisDims[1] == 1 )
+        {
+          VsLog::debugLog()
+            << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+            << "Expected 1-d dataset for Axis "
+            << i << " '" << getAxisDatasetName(i) << "', "
+            << "actually have " << axisDims.size() << ".  "
+            << "Ignoring because the second dimension is 1." << std::endl;
+        }
+        else
+        {
+          VsLog::errorLog()
+            << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
+            << "Expected 1-d dataset for Axis "
+            << i << " '" << getAxisDatasetName(i) << "', "
+            << "actually have " << axisDims.size() << "." << std::endl;
+          
+          return false;
+        }
       }
       
       if (axisDims[0] == 0) {
-        VsLog::debugLog()
+        VsLog::errorLog()
           << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
           << "Expected data in dataset for Axis "
           << i << " '" << getAxisDatasetName(i) << "', "
           << "actually have none." << std::endl;
+
+        return false;
       }
       
       numSpatialDims = i + 1;
