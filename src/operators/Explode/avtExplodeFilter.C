@@ -73,7 +73,9 @@
 #include <mpi.h>
 #endif
 
+#ifndef TINY_FACTOR
 #define TINY_FACTOR 1.0e-15
+#endif
 
 
 // ****************************************************************************
