@@ -1167,6 +1167,9 @@ avtLineScanFilter::CylindricalExecute(vtkDataSet *ds)
 //    discriminant when solving a quadratic. This resulted in two intersections
 //    when there was only ever one, and the logic around the caller would assume
 //    something whet terribly wrong and ignore the cell.
+//
+//    Matt Larsen, Mon May 7th, 15:33:01 PDT 2018
+//    Altering previous fix to work via a tolerance
 //  
 // ****************************************************************************
 
@@ -1190,7 +1193,23 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
     // of the line to compare with the X-component of the cell,
     // since the cell's X-component is actually 'Z' in RZ-space.
     //
-    if (seg_p1[0] == seg_p2[0])
+   
+    //
+    // We have to check for lines that are near vertical. Slopes
+    // greater than 1B can lead to floating point errors that lead
+    // to missed cell intersections, no matter how large the cell.
+    //
+    bool near_vertical = false;
+    if(seg_p1[0] != seg_p2[0])
+    {
+        double slope = (seg_p1[1] - seg_p2[1]) / (seg_p1[0] - seg_p2[0]);
+        if(slope > 1e10 || slope < -1e10)
+        {
+          near_vertical = true;
+        }
+    }
+
+    if (seg_p1[0] == seg_p2[0] || near_vertical)
     {
         // Vertical line .. revolves to hollow disc.
         // Disc is at some constant Z (seg_p1[0]) and ranges between some
@@ -1332,70 +1351,30 @@ IntersectLineWithRevolvedSegment(const double *line_pt,
             return 0;
         double soln1 = (-B + sqrt(det)) / (2*A);
         double soln2 = (-B - sqrt(det)) / (2*A);
-        //
-        // So we are left with a choice to solve for r or z.
-        // Because of floating point madness, we can have a
-        // case there the edge segment is "nearly" horizontal
-        // or vertical. This leads to very small errors and 
-        // incorrect misses. To account for this, we will look
-        // at the R and Z ranges to see which one is larger,
-        // then solve for that to see if the intersection is
-        // within the segments valid range.
-        // 
+
         double Zmin = (seg_p1[0] < seg_p2[0] ? seg_p1[0] : seg_p2[0]);
         double Zmax = (seg_p1[0] > seg_p2[0] ? seg_p1[0] : seg_p2[0]);
         
-        double Rmin = (seg_p1[1] < seg_p2[1] ? seg_p1[1] : seg_p2[1]);
-        double Rmax = (seg_p1[1] > seg_p2[1] ? seg_p1[1] : seg_p2[1]);
-
-        double rRange = Rmax - Rmin;
-        double zRange = Zmin - Zmax;
-
-        bool useZ = zRange > rRange;
-
         int nInter = 0;
         
-        if(useZ)
-        {
-            double Z1 = line_pt[2] + soln1*line_dir[2];
-            double Z2 = line_pt[2] + soln2*line_dir[2];
+        double Z1 = line_pt[2] + soln1*line_dir[2];
+        double Z2 = line_pt[2] + soln2*line_dir[2];
 
-            if (Zmin <= Z1 && Z1 <= Zmax)
-            {
-                inter[nInter] = soln1;
-                nInter++;
-            }
-            // We have to check to see if the discrim in
-            // 0, since both solutions would be identicle
-            if (Zmin <= Z2 && Z2 <= Zmax && det != 0.)
-            {
-                inter[nInter] = soln2;
-                nInter++;
-            }
+        if (Zmin <= Z1 && Z1 <= Zmax)
+        {
+            inter[nInter] = soln1;
+            nInter++;
         }
-        else
+        // We have to check to see if the discrim in
+        // 0, since both solutions would be identicle
+        if (Zmin <= Z2 && Z2 <= Zmax && det != 0.)
         {
-            double R1 = line_pt[0] + soln1*line_dir[0];
-            double R2 = line_pt[0] + soln2*line_dir[0];
-
-            if (Rmin <= R1 && R1 <= Rmax)
-            {
-                inter[nInter] = soln1;
-                nInter++;
-            }
-
-            // We have to check to see if the discrim in
-            // 0, since both solutions would be identicle
-            if (Rmin <= R2 && R2 <= Rmax && det != 0.)
-            {
-                inter[nInter] = soln2;
-                nInter++;
-            }
+            inter[nInter] = soln2;
+            nInter++;
         }
 
         return nInter;
     }
-
     return 0;
 }
 
