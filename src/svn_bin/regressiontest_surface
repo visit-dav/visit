@@ -140,7 +140,7 @@ serial="false"
 testHost="surface"
 testDir="/nfs/tmp2/"
 post="true"
-nerscHost="cori.nersc.gov"
+nerscHost="edison.nersc.gov"
 
 for abc
 do
@@ -225,23 +225,23 @@ echo "Checkout of $branch started at: \`date\`"
 
 if test "$branch" = "trunk" ; then
     if test "$revision" = "latest" ; then
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src > buildlog 2>&1
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test >> buildlog 2>&1
     else
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src -r $revision > buildlog 2>&1
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data -r $revision >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/trunk/test -r $revision >> buildlog 2>&1
     fi
 else
     if test "$revision" = "latest" ; then
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src > buildlog 2>&1
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src > buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test >> buildlog 2>&1
     else
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src -r $revision > buildlog 2>&1
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data -r $revision >> buildlog 2>&1
-        svn co svn+ssh://$userNersc@cori.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/src -r $revision > buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/data -r $revision >> buildlog 2>&1
+        svn co svn+ssh://$userNersc@edison.nersc.gov/project/projectdirs/visit/svn/visit/branches/$branch/test -r $revision >> buildlog 2>&1
     fi
 fi
 if test "$debug" = "true" ; then
@@ -426,5 +426,5 @@ chmod 750 $testHost
 if test "$testHost" = "surface" ; then
     scp surface surface:surface_testit
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh syrah "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o surface_testit_$subTag.out -q pbatch -A wbronze -z ./surface_testit"
+    ssh cab "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o surface_testit_$subTag.out -q pbatch -A wbronze -z ./surface_testit"
 fi

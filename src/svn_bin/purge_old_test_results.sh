@@ -35,14 +35,15 @@ purge_range () {
 # Loop to purge ranges of length 7 days (1 week)
 # starting at 30 days through one half year back (180 days)
 #
-removals=0
-i=30
-len=7
-while [[ $i -lt 180 ]]; do
-   j=$(expr $i + $len)
-   purge_range $i $j $root 
-   i=$j
-done 
+# TEMPORARY COMMENT OUT
+#removals=0
+#i=30
+#len=7
+#while [[ $i -lt 180 ]]; do
+#   j=$(expr $i + $len)
+#   purge_range $i $j $root 
+#   i=$j
+#done 
 
 #
 # Loop to purge ranges of length 30 days (1 month)
