@@ -73,20 +73,16 @@
             <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="gdal"/>
-            <lib name="glu"/>
             <lib name="fastbit"/>
             <lib name="fastquery"/>
             <lib name="hdf5"/>
             <lib name="h5part"/>
-            <lib name="llvm"/>
-            <lib name="mesagl"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
             <lib name="nektarpp"/>
             <lib name="openexr"/>
             <lib name="openssl"/>
-            <lib name="osmesa"/>
             <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
@@ -170,11 +166,7 @@
             #all the optional non io libraries
         -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
-            <lib name="glu"/>
             <lib name="icet"/>
-            <lib name="llvm"/>
-            <lib name="mesagl"/>
-            <lib name="osmesa"/>
         </group>
 
         <!--
@@ -274,11 +266,7 @@
         </group>
         <!-- #all the optional non io libraries -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
-            <lib name="glu"/>
             <lib name="icet"/>
-            <lib name="llvm"/>
-            <lib name="mesagl"/>
-            <lib name="osmesa"/>
         </group>
     </license>
 </modules>
