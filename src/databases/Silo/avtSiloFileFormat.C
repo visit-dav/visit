@@ -134,7 +134,6 @@ using std::ostringstream;
 using namespace SiloDBOptions;
 
 static void      ExceptionGenerator(char *);
-static void      ExceptionGenerator(char *);
 static char     *GenerateName(const char *, const char *, const char *);
 static string    PrepareDirName(const char *, const char *);
 static void      SplitDirVarName(const char *dirvar, const char *curdir,
@@ -15608,12 +15607,17 @@ avtSiloFileFormat::CheckForTimeVaryingMetadata(DBfile *toc)
 //
 //    Mark C. Miller, Wed Feb  8 10:37:38 PST 2012
 //    Made it a static function
+//
+//    Mark C. Miller, Thu May  3 11:10:06 PDT 2018
+//    Made it issue warning message too.
 // ****************************************************************************
 static void
 ExceptionGenerator(char *msg)
 {
     if (msg)
     {
+        if (strstr(msg, "Checksum failure"))
+            avtCallback::IssueWarning(msg);
         debug1 << "The following Silo error occurred: " << msg << endl;
     }
     else
