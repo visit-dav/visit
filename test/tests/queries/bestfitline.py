@@ -18,6 +18,9 @@
 #    
 #    Mark C. Miller, Wed Jan 20 07:37:11 PST 2010
 #    Added ability to swtich between Silo's HDF5 and PDB data.
+#
+#    Matt Larsen Wed May 09 08:31:00 PST 2018
+#    Adding view reset so image actual shows a line 
 # ----------------------------------------------------------------------------
 
 import math
@@ -135,6 +138,7 @@ def test2():
     s.var2 = "line"
     SetPlotOptions(s)
     DrawPlots()
+    ResetView()
     Test("bestline_2_02")
     Query("Best Fit Line")
     TestText("bestline_2_03", GetQueryOutputString())

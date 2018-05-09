@@ -229,18 +229,18 @@ d:  <zonal> = 0.287983
 
 Q:  multi_rect3d.silo
 mesh1 domain 1 
-Point: <0.166667, 0.075, 0.1>
-Node:  401
-Incident Zones:  334  324  224  234  335  325  225  235  
+Point: <0.2, 0.075, 0.1>
+Node:  402
+Incident Zones:  335  325  225  235  336  326  226  236  
 d:  <zonal> 
-    (334) = 0.663024
-    (324) = 0.67886
-    (224) = 0.698224
-    (234) = 0.682838
     (335) = 0.646048
     (325) = 0.66229
     (225) = 0.682125
     (235) = 0.666367
+    (336) = 0.63038
+    (326) = 0.647015
+    (226) = 0.667304
+    (236) = 0.651187
 
 
 R:  multi_rect3d.silo
@@ -261,14 +261,14 @@ d:  <zonal>
 
 S:  multi_rect3d.silo
 mesh1 domain 19 
-Point: <0.166667, 0.5, 0.566667>
-Node:  852
-Incident Zones:  704  604  705  605  
+Point: <0.2, 0.5, 0.566667>
+Node:  853
+Incident Zones:  705  605  706  606  
 d:  <zonal> 
-    (704) = 0.360001
-    (604) = 0.353774
     (705) = 0.327687
     (605) = 0.320833
+    (706) = 0.295599
+    (606) = 0.287983
 
 
 T:  multi_rect3d.silo
@@ -288,9 +288,9 @@ Pick with material 2 turned off:
 U:  multi_rect3d.silo
 mesh1 domain 1 
 Point: <0.2, 0.0666667, 0.0888889>
-Zone:  225
-Incident Nodes:  269  270  280  281  390  391  401  402  
-d:  <zonal> = 0.682125
+Zone:  226
+Incident Nodes:  270  271  281  282  391  392  402  403  
+d:  <zonal> = 0.667304
 
 
 V:  multi_rect3d.silo
@@ -304,9 +304,9 @@ d:  <zonal> = 0.667304
 W:  multi_rect3d.silo
 mesh1 domain 19 
 Point: <0.2, 0.511111, 0.555556>
-Zone:  605
-Incident Nodes:  731  732  742  743  852  853  863  864  
-d:  <zonal> = 0.320833
+Zone:  606
+Incident Nodes:  732  733  743  744  853  854  864  865  
+d:  <zonal> = 0.287983
 
 
 X:  multi_rect3d.silo
@@ -319,18 +319,18 @@ d:  <zonal> = 0.287983
 
 Y:  multi_rect3d.silo
 mesh1 domain 1 
-Point: <0.166667, 0.075, 0.1>
-Node:  401
-Incident Zones:  334  324  224  234  335  325  225  235  
+Point: <0.2, 0.075, 0.1>
+Node:  402
+Incident Zones:  335  325  225  235  336  326  226  236  
 d:  <zonal> 
-    (334) = 0.663024
-    (324) = 0.67886
-    (224) = 0.698224
-    (234) = 0.682838
     (335) = 0.646048
     (325) = 0.66229
     (225) = 0.682125
     (235) = 0.666367
+    (336) = 0.63038
+    (326) = 0.647015
+    (226) = 0.667304
+    (236) = 0.651187
 
 
 Z:  multi_rect3d.silo
@@ -351,14 +351,14 @@ d:  <zonal>
 
 a:  multi_rect3d.silo
 mesh1 domain 19 
-Point: <0.166667, 0.5, 0.566667>
-Node:  852
-Incident Zones:  704  604  705  605  
+Point: <0.2, 0.5, 0.566667>
+Node:  853
+Incident Zones:  705  605  706  606  
 d:  <zonal> 
-    (704) = 0.360001
-    (604) = 0.353774
     (705) = 0.327687
     (605) = 0.320833
+    (706) = 0.295599
+    (606) = 0.287983
 
 
 b:  multi_rect3d.silo
