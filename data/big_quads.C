@@ -121,7 +121,7 @@ main(int argc, char *argv[])
         9, NULL, 0, DB_DOUBLE, DB_NODECENT, 0);
 
 
-    // Output mesh as 8 triangles with diagonals chosen "coorectly"
+    // Output mesh as 8 triangles with diagonals chosen "correctly"
     DBPutUcdmesh(dbfile, "tris", 2, coordnames, ucdcoords,
                 9, 8, "tris_zl", NULL, DB_FLOAT, NULL);
     DBPutZonelist2(dbfile, "tris_zl", 8, 2, trizonelist, (int) sizeof(trizonelist),
@@ -181,6 +181,88 @@ main(int argc, char *argv[])
         DBPutQuadvar1(dbfile, "highres_field", "qmesh", nodal_field_highres,
             qdims, 2, NULL, 0, DB_DOUBLE, DB_NODECENT, NULL);
     }
+
+    // Compute various qualities of lineouts from (0,1.5,0) to (1.5,0,0)
+    {
+        // Equation of the line of the lineout (y = mx + b)
+        // b=1.5, m=-1, so points along the line are given by
+        // y=-x+1.5. But, we really want a ray-type representation
+        // for the lineout with an initial point, p0, and a
+        // direction vector, r. A point, p(t), along the lineout
+        // ray is given by p(t) = p0 + t*r where p0=(0,1.5) and
+        // r = (1x -1y) / sqrt(2) (making a unit step in t along
+        // the ray the same geometric length as x or y.
+
+        // Equation of a piecewise-linear interpolant over a quad given
+        // dofs at the corners and u,v in [0,1]
+        //
+        //        ^ y/v
+        //        |
+        //        |
+        //         
+        //       h01---+-------h11
+        //        |    |        |
+        //        |    |        |
+        //        |    |        |
+        //      v +----x--------+
+        //        |    |        |
+        //       h00---+-------h10   ---> x/u
+        //             u
+        //
+        // h(u,v) = v*(u*h11+(1-u)*h01) + (1-v)*(u*h10+(1-u)*h00) 
+        // h(u,v) = h00 + (h10-h00)*u + (h01-h00)*v + (h11+h00-(h10+h01))*u*v
+        //
+        // For a given quad, we need to calculate the point of entrance of
+        // the lineout ray with the quad. We then convert that point to 
+        // the quad's local u,v coordinate system. That point becomes the
+        // local ray origin. The direction vector is the same since, in
+        // this example anyways, the quad's local u,v coordinate system
+        // aligns with the global x,y coordinate system. That, however,
+        // is not true in general.
+        //
+        // Labeling the Quads in this mesh as 
+        //
+        //       +-+-+
+        //       |A|B|
+        //       +-+-+
+        //       |C|D|
+        //       +-+-+
+        //
+        // ...the lineout starts in Quad A, then C and then D
+        //
+        //
+        // For Quad A: P0(x,y)=(0,1.5) ==> P0(u,v)=(0,0.5)
+        //             r(x,y)=(x-y)/sqrt(2) ==> r(u,v)=(u-v)/sqrt(2)
+        //             p(t') = P0(u,v)+r(u,v)*t'
+        // So, for points along the ray, t', we have
+        //             p(t'),u = 0.0 + 1/q*t'
+        //             p(t'),v = 0.5 - 1/q*t'
+        // where q=sqrt(2)
+        //
+        // Substituting into h(u,v), above and solving for t' we have...
+        //
+        // h(t') = h00 +
+        //         (h10-h00)*(0.0+1/q*t') +
+        //         (h01-h00)*(0.5-1/q*t') +
+        //         (h11+h00-(h10+h01))*(0.0+1/q*t')*(0.5-1/q*t')
+        //
+        //         h00 + 0.0*(h10-h00) + 0.5*(h01-h00) + 0.0*0.5*(h11+h00-(h10+h01)) +
+        //         t'*[(h10-h00)*1/q - (h01-h00)*1/q - 1/q*0.0*(h11+h00-(h10+h01)) + 1/q*0.5*(h11+h00-(h10+h01))] +
+        //         t'*t'*[1/q*-1/q*(h11+h00-(h10+h01))]
+        //
+        // or
+        //
+        //         h00 + A*(h10-h00) + B*(h01-h00) + A*B*(h11+h00-(h10+h01)) +
+        //         t'*[(h10-h00)*P + (h01-h00)*Q + Q*A*(h11+h00-(h10+h01)) + P*B*(h11+h00-(h10+h01))] +
+        //         t'*t'*[P*Q*(h11+h00-(h10+h01))]
+        //
+        //         where P0(u,v)=(A,B) and r = (Pu+Qv)
+    }
+
+#if 0
+    WriteLineouts(dbfile, 0, 1.5, 1, -1, "quads_lineouts", ucdcoords,
+        zonelist, (int) sizeof(zonelist), &shapetype, &shapesize, &shapecnt);
+#endif
 
     // Close the Silo file.
     DBClose(dbfile);

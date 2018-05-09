@@ -1807,6 +1807,7 @@ main(int argc, char **argv)
         }
     }
 
+    DBSetCompression("METHOD=GZIP LEVEL=9");
     dbfile = DBCreate("globe.silo", DB_CLOBBER, DB_LOCAL,
                       "unstructured mesh of globe", driver);
     dbfilec = DBCreate("globe_matcolors.silo", DB_CLOBBER, DB_LOCAL,
