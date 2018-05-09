@@ -1941,6 +1941,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Alister Maguire, Thu Oct 26 16:48:04 PDT 2017
 //    When picking by label, set the pick letter to be the label. 
 //
+//    Alister Maguire, Wed May  9 09:48:44 PDT 2018
+//    After preparing for new pick, call UpdatePickAtts. Otherwise, 
+//    old attributes will carry on to new picks. 
+//
 // ****************************************************************************
 
 bool
@@ -1997,6 +2001,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         // elsewhere in the pick process.
         //
         pickAtts->PrepareForNewPick();
+        UpdatePickAtts();
 
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
 
