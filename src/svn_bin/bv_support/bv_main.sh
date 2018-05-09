@@ -1389,7 +1389,7 @@ function run_build_visit()
                 VISITARCH=${VISITARCH}-${VERSION}
             fi
         elif [[ "$CXX_COMPILER_BASENAME" == "icpc" ]] ; then
-            VERSION=$(${CXX_COMPILER} -v 2>&1 | cut -d' ' -f3)
+            VERSION=$(${CXX_COMPILER} --version | cut -d' ' -f3 | head -n1)
             VISITARCH=${VISITARCH}-${VERSION}
         fi
     fi
