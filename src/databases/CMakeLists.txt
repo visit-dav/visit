@@ -192,6 +192,8 @@
 #    Kathleen Biagas, Fri Mar 31 08:57:41 PDT 2017
 #    Remove VCellMTMD plugin, no longer needed/used. (Per Jim Schaff at UCHC).
 #
+#    Mark C. Miller, Tue May  8 21:18:35 PDT 2018
+#    Add ffp plugin (from Olivier Cessenat)
 #****************************************************************************/
 
 IF(NOT WIN32)
@@ -459,6 +461,7 @@ WellLogs
 XSF
 XYZ
 Xmdv
+ffp
 lata
 volimage
 unv
