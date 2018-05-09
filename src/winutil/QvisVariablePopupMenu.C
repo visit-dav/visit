@@ -84,10 +84,15 @@ QvisVariablePopupMenu::QvisVariablePopupMenu(int plotType_, QWidget *parent) :
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue May  8 18:37:52 PDT 2018
+//   Add defensive logic to clear the object's actions as well as the
+//   member actions before deleting. This does indeed fix leaks.
 // ****************************************************************************
 
 QvisVariablePopupMenu::~QvisVariablePopupMenu()
 {
+    this->clear();
+    actions->actions().clear();
     delete actions;
 }
 
@@ -111,12 +116,15 @@ QvisVariablePopupMenu::~QvisVariablePopupMenu()
 //
 // Modifications:
 //   
+//   Mark C. Miller, Tue May  8 18:38:37 PDT 2018
+//   Defensively ensure calling this objects addAction and not some other
+//   method.
 // ****************************************************************************
 
 QAction *
 QvisVariablePopupMenu::addVar(const QString &var, bool valid)
 {
-    QAction *a = addAction(var);
+    QAction *a = this->addAction(var);
     a->setEnabled(valid);
     actions->addAction(a);
     return a;

@@ -1297,6 +1297,10 @@ VariableMenuPopulator::ItemEnabled(int varType) const
 //   Mark C. Miller, Thu Jun  8 15:26:45 PDT 2017
 //   Compute hash of variable names and stuff result into both menu and
 //   variable list. 
+//
+//   Mark C. Miller, Tue May  8 18:39:18 PDT 2018
+//   Remove call to parent->addMenu for case where popup is not found becase
+//   the widget is already parented in the constructor where it is created. 
 // ****************************************************************************
 
 void
@@ -1376,7 +1380,6 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
                 }
 
                 popups[path] = newPopup;
-                parent->addMenu(newPopup);
                 parent = newPopup;
             }
             else
