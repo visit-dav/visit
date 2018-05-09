@@ -60,6 +60,9 @@
 #    Alister Maguire, Tue Oct 17 16:54:48 PDT 2017
 #    Added TestPickRangeTimeQuery
 #
+#    Alister Maguire, Wed May  9 10:13:26 PDT 2018
+#    Added TestReturnValue. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
@@ -648,6 +651,24 @@ def TestPickRangeTimeQuery():
     ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
+
+def TestReturnValue():
+    #
+    # There used to be a bug where the return value
+    # from previous picks would propagate to the following
+    # time query. Let's make sure this isn't re-introduced. 
+    #
+    OpenDatabase(silo_data_path("wave.visit"))
+    time1   = NodePick(coord=(3, .5, 3), do_time=1, start_time=0, end_time=70)
+    no_time = NodePick(coord=(2, .2, 2), do_time=0)
+    time2   = NodePick(coord=(3, .5, 3), do_time=1, start_time=0, end_time=70)
+
+    AssertTrue(type(time1) == type(time2), True)
+
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+
    
 def TimeQueryMain():
     TestAllTimeQueries()
@@ -661,6 +682,7 @@ def TimeQueryMain():
     TestMili()
     MultiVarTimePick()
     TestPickRangeTimeQuery()
+    TestReturnValue()
 
 # main
 InitAnnotation()
