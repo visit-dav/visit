@@ -75,7 +75,7 @@ class VISIT_VTK_LIGHT_API vtkPolyDataRelevantPointsFilter :
 public:
   static vtkPolyDataRelevantPointsFilter *New();
   vtkTypeMacro(vtkPolyDataRelevantPointsFilter, vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
 protected:
   vtkPolyDataRelevantPointsFilter(){};
@@ -83,7 +83,7 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
+                          vtkInformationVector *) override;
 
 private:
   vtkPolyDataRelevantPointsFilter(const vtkPolyDataRelevantPointsFilter&); 

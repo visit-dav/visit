@@ -93,7 +93,7 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
 {
   public:
     vtkTypeMacro(vtkVisItClipper,vtkUnstructuredGridAlgorithm);
-    void PrintSelf(ostream& os, vtkIndent indent);
+    void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkVisItClipper *New();
 
@@ -140,8 +140,8 @@ class VISIT_VTK_API vtkVisItClipper : public vtkUnstructuredGridAlgorithm
 
     virtual int RequestData(vtkInformation *,
                             vtkInformationVector **,
-                            vtkInformationVector *);
-    virtual int FillInputPortInformation(int port, vtkInformation *info);
+                            vtkInformationVector *) override;
+    virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
     void ClipDataset(vtkDataSet *, vtkUnstructuredGrid *);
 

@@ -77,7 +77,7 @@ class VISIT_VTK_API vtkVisItSplitter :
 {
   public:
     vtkTypeMacro(vtkVisItSplitter,vtkUnstructuredGridAlgorithm);
-    void PrintSelf(ostream& os, vtkIndent indent);
+    void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkVisItSplitter *New();
 
@@ -123,8 +123,8 @@ class VISIT_VTK_API vtkVisItSplitter :
 
     virtual int RequestData(vtkInformation *,
                             vtkInformationVector **,
-                            vtkInformationVector *);
-    virtual int FillInputPortInformation(int port, vtkInformation *info);
+                            vtkInformationVector *) override;
+    virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   private:
      // Contains the state for the filter.

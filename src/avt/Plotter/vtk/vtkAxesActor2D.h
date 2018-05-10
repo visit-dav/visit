@@ -67,7 +67,7 @@ class PLOTTER_API vtkAxesActor2D : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkAxesActor2D,vtkActor2D);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Instantiate object.
@@ -75,16 +75,16 @@ public:
   
   // Description:
   // Draw the axes. 
-  int RenderOverlay(vtkViewport* viewport);
-  int RenderOpaqueGeometry(vtkViewport* viewport);
-  int RenderTranslucentPolygonalGeometry(vtkViewport *) {return 0;}
-  int HasTranslucentPolygonalGeometry() {return 0;}
+  int RenderOverlay(vtkViewport* viewport) override;
+  int RenderOpaqueGeometry(vtkViewport* viewport) override;
+  int RenderTranslucentPolygonalGeometry(vtkViewport *) override {return 0;}
+  int HasTranslucentPolygonalGeometry() override {return 0;}
 
   // Description:
   // Release any graphics resources that are being consumed by this actor.
   // The parameter window could be used to determine which graphic
   // resources to release.
-  void ReleaseGraphicsResources(vtkWindow *);
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
   // GENERAL
   //
@@ -218,7 +218,7 @@ public:
 
   // Description:
   // Return this object's MTime.
-  vtkMTimeType GetMTime();
+  vtkMTimeType GetMTime() override;
    
 protected:
   vtkAxesActor2D();

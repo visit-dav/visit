@@ -62,7 +62,7 @@ class VISIT_VTK_LIGHT_API vtkVisItCellLocator : public vtkLocator
 {
 public:
   vtkTypeMacro(vtkVisItCellLocator,vtkLocator);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Construct with automatic computation of divisions, averaging
@@ -229,9 +229,9 @@ public:
 
   // Description:
   // Satisfy vtkLocator abstract interface.
-  void FreeSearchStructure();
-  void BuildLocator();
-  void GenerateRepresentation(int level, vtkPolyData *pd);
+  void FreeSearchStructure() override;
+  void BuildLocator() override;
+  void GenerateRepresentation(int level, vtkPolyData *pd) override;
   vtkGetMacro(MinCellLength, double); 
 
   

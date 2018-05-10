@@ -45,7 +45,7 @@ class VISIT_VTK_API vtkVisItStreamLine : public vtkStreamer
 {
 public:
   vtkTypeMacro(vtkVisItStreamLine,vtkStreamer);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Construct object with step size set to 1.0.

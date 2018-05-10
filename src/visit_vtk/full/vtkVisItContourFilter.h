@@ -29,7 +29,7 @@ class VISIT_VTK_API vtkVisItContourFilter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkVisItContourFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Construct with user-specified implicit function; initial value of 0.0; and
@@ -52,8 +52,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int, vtkInformation *);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int, vtkInformation *) override;
 
   int RectilinearGridExecute(vtkDataSet *, vtkPolyData*);
   int StructuredGridExecute(vtkDataSet *, vtkPolyData*);

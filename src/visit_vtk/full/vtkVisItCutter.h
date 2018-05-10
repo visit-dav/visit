@@ -64,7 +64,7 @@ class VISIT_VTK_API vtkVisItCutter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkVisItCutter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Construct with user-specified implicit function; initial value of 0.0; and
@@ -122,7 +122,7 @@ public:
   // Description:
   // Override GetMTime because we delegate to vtkContourValues and refer to
   // vtkImplicitFunction.
-  vtkMTimeType GetMTime();
+  vtkMTimeType GetMTime() override;
 
   // Description
   // Specify the implicit function to perform the cutting.
@@ -172,8 +172,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   void UnstructuredGridCutter();
   void DataSetCutter();

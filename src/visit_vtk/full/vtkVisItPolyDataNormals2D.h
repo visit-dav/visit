@@ -74,7 +74,7 @@ class VISIT_VTK_API vtkVisItPolyDataNormals2D : public vtkPolyDataAlgorithm
 
     // Usual data generation method
     int RequestData(vtkInformation*, vtkInformationVector**,
-                     vtkInformationVector*);
+                     vtkInformationVector*) override;
     void ExecutePoint(vtkPolyData*, vtkPolyData*);
     void ExecuteCell(vtkPolyData *, vtkPolyData*);
 

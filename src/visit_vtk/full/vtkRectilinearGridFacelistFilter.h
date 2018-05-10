@@ -72,7 +72,7 @@ class VISIT_VTK_API vtkRectilinearGridFacelistFilter :
 {
 public:
   vtkTypeMacro(vtkRectilinearGridFacelistFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Create a vtkRectilinearGridFacelistFilter.
@@ -89,8 +89,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   int  ForceFaceConsolidation;
 

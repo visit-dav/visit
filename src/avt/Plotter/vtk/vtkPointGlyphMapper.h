@@ -79,13 +79,13 @@ class PLOTTER_API vtkPointGlyphMapper : public vtkPolyDataMapper
 public:
   static vtkPointGlyphMapper *New();
   vtkTypeMacro(vtkPointGlyphMapper,vtkPolyDataMapper);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
-  virtual void Render(vtkRenderer *, vtkActor *);
-  virtual void ReleaseGraphicsResources(vtkWindow *);
+  virtual void Render(vtkRenderer *, vtkActor *) override;
+  virtual void ReleaseGraphicsResources(vtkWindow *) override;
 
   // To pass on to underlying mappers
-  void SetScalarRange(double, double);
+  void SetScalarRange(double, double) override;
   void SetLookupTable(vtkLookupTable *lut);
 
   vtkGetMacro(SpatialDimension, int);
@@ -104,7 +104,7 @@ protected:
   vtkPointGlyphMapper();
   ~vtkPointGlyphMapper();
 
-  virtual void RenderPiece(vtkRenderer *, vtkActor *);
+  virtual void RenderPiece(vtkRenderer *, vtkActor *) override;
 
   // Description:
   bool        UseImposters;

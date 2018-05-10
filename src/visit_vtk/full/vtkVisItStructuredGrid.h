@@ -57,7 +57,7 @@ public:
   vtkTypeMacro(vtkVisItStructuredGrid,vtkStructuredGrid);
   static vtkVisItStructuredGrid *New();
 
-  virtual vtkCell *GetCell(vtkIdType cellId);
+  virtual vtkCell *GetCell(vtkIdType cellId) override;
 
 protected:
   vtkVisItStructuredGrid();

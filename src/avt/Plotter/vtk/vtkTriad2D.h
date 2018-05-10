@@ -67,7 +67,7 @@ class PLOTTER_API vtkTriad2D : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkTriad2D, vtkActor2D);
-  void PrintSelf(ostream &os, vtkIndent indent);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
   // Description:
   // Instantiate a triad with origin at (0.1, 0.1) in normalized viewport 
@@ -76,10 +76,10 @@ public:
 
   // Description:
   // Draw the triad as per the vtkProp superclass' API.
-  int RenderOverlay(vtkViewport *);
-  int RenderOpaqueGeometry(vtkViewport *);
-  int RenderTranslucentPolygonalGeometry(vtkViewport *) { return 0;}
-  int HasTranslucentPolygonalGeometry() { return 0;}
+  int RenderOverlay(vtkViewport *) override;
+  int RenderOpaqueGeometry(vtkViewport *) override;
+  int RenderTranslucentPolygonalGeometry(vtkViewport *) override { return 0;}
+  int HasTranslucentPolygonalGeometry() override { return 0;}
 
   // Description:
   // Set the origin of the triad in normalized viewport coordinates.

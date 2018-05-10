@@ -47,7 +47,7 @@ class VISIT_VTK_LIGHT_API vtkVisItPointDataToCellData : public vtkDataSetAlgorit
 public:
   static vtkVisItPointDataToCellData *New();
   vtkTypeMacro(vtkVisItPointDataToCellData,vtkDataSetAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Control whether the input point data is to be passed to the output. If
@@ -63,7 +63,7 @@ protected:
 
   virtual int RequestData(vtkInformation* request,
                           vtkInformationVector** inputVector,
-                          vtkInformationVector* outputVector);
+                          vtkInformationVector* outputVector) override;
 
   bool PassPointData;
 private:

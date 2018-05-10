@@ -62,7 +62,7 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
   public:
     static vtkEnumThreshold *New();
     vtkTypeMacro(vtkEnumThreshold,vtkUnstructuredGridAlgorithm);
-    void PrintSelf(ostream& os, vtkIndent indent);
+    void PrintSelf(ostream& os, vtkIndent indent) override;
 
     void SetEnumerationRanges(const std::vector<double>&);
     void SetEnumerationValues(const std::vector<int> &vals);
@@ -99,9 +99,9 @@ class VISIT_VTK_LIGHT_API vtkEnumThreshold : public vtkUnstructuredGridAlgorithm
     ~vtkEnumThreshold();
 
     // Usual data generation method
-    virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+    virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
-    virtual int FillInputPortInformation(int port, vtkInformation *info);
+    virtual int FillInputPortInformation(int port, vtkInformation *info) override;
   
     int EvaluateComponents( vtkDataArray *scalars, vtkIdType id );
     bool IsInEnumerationRanges(double val);

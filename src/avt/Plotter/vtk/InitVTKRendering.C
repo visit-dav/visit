@@ -66,8 +66,8 @@ class vtkVisItGraphicsFactory : public vtkObjectFactory
     static vtkVisItGraphicsFactory * New();
     vtkTypeMacro(vtkVisItGraphicsFactory, vtkObjectFactory)
 
-    const char* GetDescription() { return "vtkVisItGraphicsFactory"; };
-    const char* GetVTKSourceVersion();
+    const char* GetDescription() override { return "vtkVisItGraphicsFactory"; };
+    const char* GetVTKSourceVersion() override;
 
   protected:
     vtkVisItGraphicsFactory();

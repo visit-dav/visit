@@ -65,7 +65,7 @@ class VISIT_VTK_API vtkUnstructuredGridRelevantPointsFilter :
 public:
   vtkTypeMacro(vtkUnstructuredGridRelevantPointsFilter, 
                vtkUnstructuredGridAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkUnstructuredGridRelevantPointsFilter *New();
 
@@ -76,8 +76,8 @@ protected:
   // Usual data generation method
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
   vtkUnstructuredGridRelevantPointsFilter

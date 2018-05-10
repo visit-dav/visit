@@ -76,7 +76,7 @@ class VISIT_VTK_API vtkLineoutFilter : public vtkPolyDataAlgorithm
 public:
   static vtkLineoutFilter *New();
   vtkTypeMacro(vtkLineoutFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Set/Get the endpoints of the line used for probing. 
@@ -98,8 +98,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
   double          Point1[3];

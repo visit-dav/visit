@@ -71,7 +71,7 @@ protected:
   vtkOpenEXRWriter();
   virtual ~vtkOpenEXRWriter();
 
-  virtual void Write();
+  virtual void Write() override;
 
 private:
   vtkOpenEXRWriter(const vtkOpenEXRWriter&);

@@ -57,13 +57,13 @@ public:
   vtkTypeMacro(vtkVisItRectilinearGrid,vtkRectilinearGrid);
   static vtkVisItRectilinearGrid *New();
 
-  virtual vtkCell *GetCell(vtkIdType cellId);
+  virtual vtkCell *GetCell(vtkIdType cellId) override;
   virtual vtkCell *FindAndGetCell(double x[3],
                                   vtkCell *vtkNotUsed(cell), 
                                   vtkIdType vtkNotUsed(cellId),
                                   double vtkNotUsed(tol2),
                                   int& subId, 
-                                  double pcoords[3], double *weights);
+                                  double pcoords[3], double *weights) override;
 protected:
   vtkVisItRectilinearGrid();
   virtual ~vtkVisItRectilinearGrid();

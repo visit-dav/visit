@@ -55,7 +55,7 @@ public:
   static vtkVisItPointLocator *New();
 
   vtkTypeMacro(vtkVisItPointLocator,vtkLocator);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Set the number of divisions in x-y-z directions.
@@ -200,10 +200,10 @@ public:
   // Description:
   // See vtkLocator interface documentation.
   // These methods are not thread safe.
-  void Initialize();
-  void FreeSearchStructure();
-  void BuildLocator();
-  void GenerateRepresentation(int level, vtkPolyData *pd);
+  void Initialize() override;
+  void FreeSearchStructure() override;
+  void BuildLocator() override;
+  void GenerateRepresentation(int level, vtkPolyData *pd) override;
 
 protected:
   vtkVisItPointLocator();

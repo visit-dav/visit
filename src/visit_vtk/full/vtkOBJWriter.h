@@ -62,7 +62,7 @@ protected:
   vtkOBJWriter();
   ~vtkOBJWriter();
 
-  void WriteData();
+  void WriteData() override;
 private:
   vtkOBJWriter(const vtkOBJWriter&);  // Not implemented.
   void operator=(const vtkOBJWriter&);  // Not implemented.

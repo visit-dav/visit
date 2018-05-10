@@ -65,7 +65,7 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
+                          vtkInformationVector *) override;
 
 private:
   vtkLinesFromOriginalCells(const vtkLinesFromOriginalCells&);

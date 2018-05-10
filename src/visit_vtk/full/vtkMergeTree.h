@@ -88,7 +88,7 @@ public:
     vtkSetMacro(Minimum,double);
 
     // Create the right vertex data
-    virtual void Initialize();
+    virtual void Initialize() override;
 
 
     // Construct a new node
@@ -146,7 +146,7 @@ public:
     static vtkSegmentedMergeTree *New();
 
     // Construct a new node
-    virtual vtkTypeUInt32 AddNode(vtkIdType id);
+    virtual vtkTypeUInt32 AddNode(vtkIdType id) override;
 
     // Add a vertex to a branch
     void AddVertexToBranch(vtkTypeUInt32 branch, vtkIdType id);

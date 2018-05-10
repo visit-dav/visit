@@ -55,7 +55,7 @@ class VISIT_VTK_API vtkStructuredGridFacelistFilter :
 {
 public:
   vtkTypeMacro(vtkStructuredGridFacelistFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Create a vtkStructuredGridFacelistFilter.
@@ -67,8 +67,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
   vtkStructuredGridFacelistFilter(const vtkStructuredGridFacelistFilter&); // not implemented

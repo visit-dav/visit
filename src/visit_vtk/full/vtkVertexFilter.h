@@ -67,7 +67,7 @@ class VISIT_VTK_API vtkVertexFilter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkVertexFilter, vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   vtkSetMacro(VertexAtPoints,bool);
   vtkGetMacro(VertexAtPoints,bool);
@@ -81,8 +81,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   bool VertexAtPoints;
 

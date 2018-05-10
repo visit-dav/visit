@@ -105,7 +105,7 @@ class VISIT_VTK_API vtkVisItGlyph3D : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkVisItGlyph3D,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description
   // Construct object with scaling on, scaling mode is by scalar value, 
@@ -287,11 +287,11 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
+                          vtkInformationVector *) override;
   virtual int RequestUpdateExtent(vtkInformation *,
                                   vtkInformationVector **,
-                                  vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                                  vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   vtkPolyData* GetSource(int idx, vtkInformationVector *sourceInfo);
 

@@ -51,7 +51,7 @@ public:
 
   static void   Initialize(void);
 
-  virtual void  DisplayText(const char *);
+  virtual void  DisplayText(const char *) override;
   
   static void   FrequentEventsFilter(bool on){filterFrequentEvents = on;}
 

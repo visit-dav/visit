@@ -28,7 +28,7 @@ class vtkCQS : public vtkDataSetAlgorithm
 
   protected:
     vtkCQS ();
-    virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+    virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
   private:
     //! Unimplemented copy constructor

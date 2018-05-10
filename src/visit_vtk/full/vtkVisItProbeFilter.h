@@ -41,7 +41,7 @@ class VISIT_VTK_API vtkVisItProbeFilter : public vtkDataSetAlgorithm
 public:
   static vtkVisItProbeFilter *New();
   vtkTypeMacro(vtkVisItProbeFilter,vtkDataSetAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Specify the point locations used to probe input. Any geometry
@@ -84,13 +84,13 @@ protected:
 
   virtual int RequestData(vtkInformation *, 
                           vtkInformationVector **, 
-                          vtkInformationVector *);
+                          vtkInformationVector *) override;
   virtual int RequestInformation(vtkInformation *, 
                                  vtkInformationVector **, 
-                                 vtkInformationVector *);
+                                 vtkInformationVector *) override;
   virtual int RequestUpdateExtent(vtkInformation *, 
                                   vtkInformationVector **, 
-                                  vtkInformationVector *);
+                                  vtkInformationVector *) override;
 
   vtkIdTypeArray *ValidPoints;
 private:

@@ -82,7 +82,7 @@ class VISIT_VTK_API vtkVisItTubeFilter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkVisItTubeFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Construct object with radius 0.5, radius variation turned off, the
@@ -194,7 +194,7 @@ protected:
   ~vtkVisItTubeFilter();
 
   // Usual data generation method
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
   double Radius; //minimum radius of tube
   int VaryRadius; //controls radius variation

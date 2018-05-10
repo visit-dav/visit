@@ -75,7 +75,7 @@ class VISIT_VTK_API vtkVisItPolyDataNormals : public vtkPolyDataAlgorithm
 
     // Usual data generation method
     int RequestData(vtkInformation*, vtkInformationVector**,
-                     vtkInformationVector*);
+                     vtkInformationVector*) override;
     void ExecutePointWithoutSplitting(vtkPolyData*, vtkPolyData*);
     void ExecutePointWithSplitting(vtkPolyData*, vtkPolyData*);
     void ExecuteCell(vtkPolyData *, vtkPolyData*);

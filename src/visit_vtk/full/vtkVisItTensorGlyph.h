@@ -83,7 +83,7 @@ class VISIT_VTK_API vtkVisItTensorGlyph : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkVisItTensorGlyph,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description
   // Construct object with scaling on and scale factor 1.0. Eigenvalues are
@@ -195,10 +195,10 @@ protected:
   vtkVisItTensorGlyph();
   ~vtkVisItTensorGlyph();
 
-  virtual int RequestUpdateExtent(vtkInformation *,  vtkInformationVector **, vtkInformationVector *);
+  virtual int RequestUpdateExtent(vtkInformation *,  vtkInformationVector **, vtkInformationVector *) override;
   virtual int RequestData(vtkInformation *, vtkInformationVector **, 
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *) override;
 
   bool Scaling; // Determine whether scaling of geometry is performed
   double ScaleFactor; // Scale factor to use to scale geometry

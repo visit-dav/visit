@@ -73,7 +73,7 @@ class VISIT_VTK_API vtkDataSetRemoveGhostCells : public vtkDataSetAlgorithm
 public:
   static vtkDataSetRemoveGhostCells *New();
   vtkTypeMacro(vtkDataSetRemoveGhostCells, vtkDataSetAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
   
   vtkSetMacro(GhostNodeTypesToRemove,unsigned char);
   vtkGetMacro(GhostNodeTypesToRemove,unsigned char);
@@ -87,7 +87,7 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
+                          vtkInformationVector *) override;
 
   // Specific data generation methods
   void StructuredGridExecute();

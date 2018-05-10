@@ -63,7 +63,7 @@ class PLOTTER_API vtkPointMapper : public vtkPolyDataMapper
 public:
   static vtkPointMapper *New();
   vtkTypeMacro(vtkPointMapper, vtkPolyDataMapper)
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
 
   // Toggle for Sphere Imposters

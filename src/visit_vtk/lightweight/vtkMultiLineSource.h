@@ -43,7 +43,7 @@ class VISIT_VTK_LIGHT_API vtkMultiLineSource : public vtkPolyDataAlgorithm
 public:
   static vtkMultiLineSource *New();
   vtkTypeMacro(vtkMultiLineSource,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   void AddLine(double[3],double[3]);
   void Shift3d(const double[3], const double &);
@@ -58,8 +58,8 @@ protected:
   vtkMultiLineSource();
   virtual ~vtkMultiLineSource();
 
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
   //All the points of a the lines i*2+0 and i*2+1
   //We are supporting a shift from the original position

@@ -114,7 +114,7 @@ vtkOnionPeelFilter : public vtkUnstructuredGridAlgorithm
 {
 public:
   vtkTypeMacro(vtkOnionPeelFilter,vtkUnstructuredGridAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkOnionPeelFilter *New();
 
@@ -168,8 +168,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   void Grow(vtkDataSet *);
   void GenerateOutputGrid(vtkDataSet *, vtkUnstructuredGrid *);

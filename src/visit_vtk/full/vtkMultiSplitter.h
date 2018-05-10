@@ -73,7 +73,7 @@ class VISIT_VTK_API vtkMultiSplitter :
 {
   public:
     vtkTypeMacro(vtkMultiSplitter,vtkUnstructuredGridAlgorithm);
-    void PrintSelf(ostream& os, vtkIndent indent);
+    void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkMultiSplitter *New();
 
@@ -86,8 +86,8 @@ class VISIT_VTK_API vtkMultiSplitter :
 
     virtual int RequestData(vtkInformation *,
                             vtkInformationVector **,
-                            vtkInformationVector *);
-    virtual int FillInputPortInformation(int port, vtkInformation *info);
+                            vtkInformationVector *) override;
+    virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   private:
     double *bounds;

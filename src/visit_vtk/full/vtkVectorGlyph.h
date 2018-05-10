@@ -73,7 +73,7 @@ class VISIT_VTK_API vtkVectorGlyph : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkVectorGlyph, vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Instantiate a stride filter that throws away nine of every ten elements.
@@ -117,8 +117,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                   vtkInformationVector **,
-                  vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                  vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   bool HighQuality;
   bool CapEnds;

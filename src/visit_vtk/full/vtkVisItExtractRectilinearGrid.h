@@ -34,7 +34,7 @@ class VISIT_VTK_API vtkVisItExtractRectilinearGrid : public vtkRectilinearGridAl
 public:
   static vtkVisItExtractRectilinearGrid *New();
   vtkTypeMacro(vtkVisItExtractRectilinearGrid,vtkRectilinearGridAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Specify i-j-k (min,max) pairs to extract. The resulting structured grid
@@ -66,9 +66,9 @@ protected:
   vtkVisItExtractRectilinearGrid();
   ~vtkVisItExtractRectilinearGrid() {};
 
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  virtual int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-  virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  virtual int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  virtual int RequestUpdateExtent(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
   
   int VOI[6];
   int SampleRate[3];

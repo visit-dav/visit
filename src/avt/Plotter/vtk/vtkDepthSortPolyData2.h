@@ -52,7 +52,7 @@ public:
   static vtkDepthSortPolyData2 *New();
 
   vtkTypeMacro(vtkDepthSortPolyData2,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Specify the sort method for the polygonal primitives. By default, the
@@ -123,13 +123,13 @@ public:
   // Description:
   // Return MTime also considering the dependent objects: the camera
   // and/or the prop3D.
-  vtkMTimeType GetMTime();
+  vtkMTimeType GetMTime() override;
 
 protected:
   vtkDepthSortPolyData2();
   ~vtkDepthSortPolyData2();
 
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
   void ComputeProjectionVector(double vector[3], double origin[3]);
 
   int Direction;

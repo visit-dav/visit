@@ -61,7 +61,7 @@ class vtkDataSetGradient : public vtkDataSetAlgorithm
   protected:
     vtkDataSetGradient ();
 
-    virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+    virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
     char* GradientArrayName;
 

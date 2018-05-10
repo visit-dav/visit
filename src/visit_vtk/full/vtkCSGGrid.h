@@ -148,7 +148,7 @@ public:
   static vtkCSGGrid *New();
 
   vtkTypeMacro(vtkCSGGrid,vtkDataSet);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Create a similar type object.
@@ -156,53 +156,53 @@ public:
 
   // Description:
   // Return what type of dataset this is.
-  int GetDataObjectType() {return VTK_CSG_GRID;};
+  int GetDataObjectType() override {return VTK_CSG_GRID;};
   virtual const char *GetClassName() {return "vtkCSGGrid";};
 
   // Description:
   // Copy the geometric and topological structure of an input rectilinear grid
   // object.
-  void CopyStructure(vtkDataSet *ds);
+  void CopyStructure(vtkDataSet *ds) override;
 
   // Description:
   // Restore object to initial state. Release memory back to system.
-  void Initialize();
+  void Initialize() override;
 
   // Description:
   // Standard vtkDataSet API methods. See vtkDataSet for more information.
-  vtkIdType GetNumberOfCells();
-  vtkIdType GetNumberOfPoints();
+  vtkIdType GetNumberOfCells() override;
+  vtkIdType GetNumberOfPoints() override;
   vtkIdType GetNumberOfBoundaries() const;
-  double *GetPoint(vtkIdType ptId);
+  double *GetPoint(vtkIdType ptId) override;
   double *GetBoundary(vtkIdType bndId) const;
-  void GetPoint(vtkIdType id, double x[3]);
+  void GetPoint(vtkIdType id, double x[3]) override;
 
-  vtkCell *GetCell(vtkIdType cellId);
-  void GetCell(vtkIdType cellId, vtkGenericCell *cell);
-  void GetCellBounds(vtkIdType cellId, double bounds[6]);
+  vtkCell *GetCell(vtkIdType cellId) override;
+  void GetCell(vtkIdType cellId, vtkGenericCell *cell) override;
+  void GetCellBounds(vtkIdType cellId, double bounds[6]) override;
   int FindPoint(double x, double y, double z) { return this->vtkDataSet::FindPoint(x, y, z);};
-  vtkIdType FindPoint(double x[3]);
+  vtkIdType FindPoint(double x[3]) override;
   vtkIdType FindCell(double x[3], vtkCell *cell, vtkIdType cellId, double tol2,
-                     int& subId, double pcoords[3], double *weights);
+                     int& subId, double pcoords[3], double *weights) override;
   vtkIdType FindCell(double x[3], vtkCell *cell, vtkGenericCell *gencell,
                      vtkIdType cellId, double tol2, int& subId, 
-                     double pcoords[3], double *weights);
+                     double pcoords[3], double *weights) override;
   vtkCell *FindAndGetCell(double x[3], vtkCell *cell, vtkIdType cellId, 
                           double tol2, int& subId, double pcoords[3],
-                          double *weights);
-  int GetCellType(vtkIdType cellId);
-  void GetCellPoints(vtkIdType cellId, vtkIdList *ptIds);
-  void GetPointCells(vtkIdType ptId, vtkIdList *cellIds);
-  void ComputeBounds();
+                          double *weights) override;
+  int GetCellType(vtkIdType cellId) override;
+  void GetCellPoints(vtkIdType cellId, vtkIdList *ptIds) override;
+  void GetPointCells(vtkIdType ptId, vtkIdList *cellIds) override;
+  void ComputeBounds() override;
   void SetBounds(double minX, double maxX,
                  double minY, double maxY,
                  double minZ, double maxZ)
       {Bounds[0] = minX; Bounds[1] = maxX;
        Bounds[2] = minY; Bounds[3] = maxY;
        Bounds[4] = minZ; Bounds[5] = maxZ;};
-  int GetMaxCellSize();
+  int GetMaxCellSize() override;
   void GetCellNeighbors(vtkIdType cellId, vtkIdList *ptIds,
-                        vtkIdList *cellIds);
+                        vtkIdList *cellIds) override;
 
   void BuildVTKImplicitFunction(int zoneId, vtkImplicitFunction **func) const;
 
@@ -246,12 +246,12 @@ public:
   // memory required to represent the data (e.g., extra space in
   // arrays, etc. are not included in the return value). THIS METHOD
   // IS THREAD SAFE.
-  unsigned long GetActualMemorySize();
+  unsigned long GetActualMemorySize() override;
 
   // Description:
   // Shallow and Deep copy.
-  void ShallowCopy(vtkDataObject *src);  
-  void DeepCopy(vtkDataObject *src);
+  void ShallowCopy(vtkDataObject *src) override;
+  void DeepCopy(vtkDataObject *src) override;
 
   typedef enum {
     QUADRIC_G,

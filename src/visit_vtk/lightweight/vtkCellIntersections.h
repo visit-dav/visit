@@ -64,7 +64,7 @@ class VISIT_VTK_LIGHT_API vtkCellIntersections : public vtkObject
 {
 public:
   vtkTypeMacro(vtkCellIntersections,vtkObject);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   static vtkCellIntersections *New();

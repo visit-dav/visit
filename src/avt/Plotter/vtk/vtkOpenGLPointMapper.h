@@ -51,15 +51,15 @@ class PLOTTER_API vtkOpenGLPointMapper : public vtkPointMapper
 public:
   static vtkOpenGLPointMapper *New();
   vtkTypeMacro(vtkOpenGLPointMapper, vtkPointMapper)
-  void PrintSelf(ostream &os, vtkIndent indent);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
-  void ReleaseGraphicsResources(vtkWindow *);
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
 protected:
   vtkOpenGLPointMapper();
  ~vtkOpenGLPointMapper();
 
-  virtual void RenderPiece(vtkRenderer *ren, vtkActor *act);
+  virtual void RenderPiece(vtkRenderer *ren, vtkActor *act) override;
 
   vtkImposterHelper *IHelper;
   vtkPointHelper *PHelper;

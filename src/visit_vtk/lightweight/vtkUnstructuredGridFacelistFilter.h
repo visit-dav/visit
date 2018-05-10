@@ -47,7 +47,7 @@ class VISIT_VTK_LIGHT_API vtkUnstructuredGridFacelistFilter :
 {
   public:
     vtkTypeMacro(vtkUnstructuredGridFacelistFilter, vtkPolyDataAlgorithm);
-    void PrintSelf(ostream& os, vtkIndent indent);
+    void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkUnstructuredGridFacelistFilter *New();
 
@@ -57,8 +57,8 @@ class VISIT_VTK_LIGHT_API vtkUnstructuredGridFacelistFilter :
  
     virtual int RequestData(vtkInformation *,
                             vtkInformationVector **,
-                            vtkInformationVector *);
-    virtual int FillInputPortInformation(int port, vtkInformation *info);
+                            vtkInformationVector *) override;
+    virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 };
 
 #endif

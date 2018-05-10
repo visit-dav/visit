@@ -67,7 +67,7 @@ class VISIT_VTK_API vtkRectilinearLinesNoDataFilter :
 {
 public:
   vtkTypeMacro(vtkRectilinearLinesNoDataFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Create a vtkRectilinearLinesNoDataFilter.
@@ -79,8 +79,8 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
   vtkRectilinearLinesNoDataFilter(const vtkRectilinearLinesNoDataFilter&);

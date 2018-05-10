@@ -64,7 +64,7 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
 {
   public:
     vtkTypeMacro(vtkConnectedTubeFilter,vtkPolyDataAlgorithm);
-    void PrintSelf(ostream& os, vtkIndent indent);
+    void PrintSelf(ostream& os, vtkIndent indent) override;
     bool BuildConnectivityArrays(vtkPolyData *);
 
     // Description:
@@ -158,7 +158,7 @@ class VISIT_VTK_API vtkConnectedTubeFilter : public vtkPolyDataAlgorithm
 
     virtual int RequestData(vtkInformation *,
                             vtkInformationVector **,
-                            vtkInformationVector *);
+                            vtkInformationVector *) override;
 
     float Radius;       // minimum radius of tube
     int NumberOfSides;  // number of sides to create tube

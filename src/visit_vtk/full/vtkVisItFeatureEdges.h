@@ -56,7 +56,7 @@ class VISIT_VTK_API vtkVisItFeatureEdges : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkVisItFeatureEdges,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Construct object with feature angle = 30; all types of edges extracted
@@ -110,7 +110,7 @@ public:
 
   // Description:
   // Return MTime also considering the locator.
-  vtkMTimeType GetMTime();
+  vtkMTimeType GetMTime() override;
 
 protected:
   vtkVisItFeatureEdges();
@@ -118,10 +118,10 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
+                          vtkInformationVector *) override;
   virtual int RequestUpdateExtent(vtkInformation *,
                                   vtkInformationVector **,
-                                  vtkInformationVector *);
+                                  vtkInformationVector *) override;
   
   double FeatureAngle;
   bool BoundaryEdges;

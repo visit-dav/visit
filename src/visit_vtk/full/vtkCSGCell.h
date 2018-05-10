@@ -63,28 +63,28 @@ public:
   // Description:
   // See the vtkCell API for descriptions of these methods.
   vtkCell *MakeObject() {return vtkCSGCell::New();};
-  int GetCellType() {return VTK_CSG_CELL;};
-  int GetCellDimension() {return 0;};
-  int GetNumberOfEdges() {return 0;};
-  int GetNumberOfFaces() {return 0;};
-  vtkCell *GetEdge(int) {return 0;};
-  vtkCell *GetFace(int) {return 0;};
-  int CellBoundary(int subId, double pcoords[3], vtkIdList *pts);
+  int GetCellType() override {return VTK_CSG_CELL;};
+  int GetCellDimension() override {return 0;};
+  int GetNumberOfEdges() override {return 0;};
+  int GetNumberOfFaces() override {return 0;};
+  vtkCell *GetEdge(int) override {return 0;};
+  vtkCell *GetFace(int) override {return 0;};
+  int CellBoundary(int subId, double pcoords[3], vtkIdList *pts) override;
 
-  virtual void Contour(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkCellArray*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*);
+  virtual void Contour(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkCellArray*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*) override;
 
-  virtual void Clip(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*, int);
+  virtual void Clip(double, vtkDataArray*, vtkIncrementalPointLocator*, vtkCellArray*, vtkPointData*, vtkPointData*, vtkCellData*, vtkIdType, vtkCellData*, int) override;
 
   int EvaluatePosition(double x[3], double* closestPoint, 
                        int& subId, double pcoords[3], 
-                       double& dist2, double *weights);
+                       double& dist2, double *weights) override;
   void EvaluateLocation(int& subId, double pcoords[3], double x[3],
-                        double *weights);
+                        double *weights) override;
   int IntersectWithLine(double p1[3], double p2[3], double tol, double& t,
-                        double x[3], double pcoords[3], int& subId);
-  int Triangulate(int index, vtkIdList *ptIds, vtkPoints *pts);
+                        double x[3], double pcoords[3], int& subId) override;
+  int Triangulate(int index, vtkIdList *ptIds, vtkPoints *pts) override;
   void Derivatives(int subId, double pcoords[3], double *values, 
-                   int dim, double *derivs);
+                   int dim, double *derivs) override;
 
 protected:
   vtkCSGCell() {};

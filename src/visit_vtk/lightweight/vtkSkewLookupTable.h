@@ -88,17 +88,17 @@ public:
   static vtkSkewLookupTable *New();
   
   vtkTypeMacro(vtkSkewLookupTable,vtkLookupTable);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Map one value through the lookup table.
-  unsigned char *MapValue(double v);
+  unsigned char *MapValue(double v) override;
 
   // Description:
   // map a set of scalars through the lookup table
   void MapScalarsThroughTable2(void *input, unsigned char *output,
                                int inputDataType, int numberOfValues,
-                               int inputIncrement, int outputIncrement);
+                               int inputIncrement, int outputIncrement) override;
 
   // Description:
   // Sets/Gets the skew factor. 

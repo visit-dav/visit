@@ -59,7 +59,7 @@ protected:
   vtkVisItSTLWriter();
   ~vtkVisItSTLWriter() {};
 
-  void WriteData();
+  void WriteData() override;
 
   void WriteBinarySTL(vtkPoints *pts, vtkCellArray *polys);
   void WriteAsciiSTL(vtkPoints *pts, vtkCellArray *polys);
