@@ -302,6 +302,9 @@ function initialize_build_visit()
         # See issue #1499 (https://visitbugs.ornl.gov/issues/1499)
 
         # use gcc for 10.9 & earlier
+        export C_COMPILER=${C_COMPILER:-"gcc"}
+        export CXX_COMPILER=${CXX_COMPILER:-"g++"}
+        export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
 
 
         if [[ ${VER%%.*} < 8 ]] ; then
@@ -342,9 +345,6 @@ function initialize_build_visit()
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
         fi
 
-        export C_COMPILER=${C_COMPILER:-"gcc"}
-        export CXX_COMPILER=${CXX_COMPILER:-"g++"}
-        export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CFLAGS=${CFLAGS:-"-fno-common -fexceptions"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}

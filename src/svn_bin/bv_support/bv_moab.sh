@@ -199,8 +199,19 @@ function build_moab
         $MAKE install
 
         if [[ "$DO_GROUP" == "yes" ]] ; then
-            chmod -R ug+w,a+rX "$VISITDIR/moab"
-            chgrp -R ${GROUP} "$VISITDIR/moab"
+            chmod -R ug+w,a+rX "$VISITDIR/moab${cf_par_suffix}"
+            chgrp -R ${GROUP} "$VISITDIR/moab${cf_par_suffix}"
+        fi
+
+        #
+        # Change name of installed lib to libXXX_mpi.whatever
+        #
+        if [[ "$bt" == "parallel" ]]; then
+            pushd $VISITDIR/moab${cf_par_suffix}/$MOAB_VERSION/$VISITARCH/lib
+            if [[ "$OPSYS" == "Darwin" ]]; then
+                install_name_tool -id $VISITDIR/moab${cf_par_suffix}/$MOAB_VERSION/$VISITARCH/lib/libMOAB_mpi.dylib libMOAB_mpi.dylib
+            fi
+            popd
         fi
 
         popd
