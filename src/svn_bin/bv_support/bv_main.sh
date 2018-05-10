@@ -303,35 +303,39 @@ function initialize_build_visit()
 
         # use gcc for 10.9 & earlier
 
-        if [[ ${VER%%.*} < 8 ]] ; then
+	VER_MAJOR==${VER%%.*}
+
+	# Note for the less than conditional parenthesis must be used
+	# ratehr than square brackets.
+        if (( ${VER_MAJOR} < "8" )) ; then
             export MACOSX_DEPLOYMENT_TARGET=10.3
-        elif [[ ${VER%%.*} == 8 ]] ; then
+        elif [[ VER_MAJOR == 8 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.4
-        elif [[ ${VER%%.*} == 9 ]] ; then
+        elif [[ VER_MAJOR == 9 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.5
-        elif [[ ${VER%%.*} == 10 ]] ; then
+        elif [[ VER_MAJOR == 10 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.6
-        elif [[ ${VER%%.*} == 11 ]] ; then
+        elif [[ VER_MAJOR == 11 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.7
-        elif [[ ${VER%%.*} == 12 ]] ; then
+        elif [[ VER_MAJOR == 12 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.8
-        elif [[ ${VER%%.*} == 13 ]] ; then
+        elif [[ VER_MAJOR == 13 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.9
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER%%.*} == 14 ]] ; then
+        elif [[ VER_MAJOR == 14 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.10
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER%%.*} == 15 ]] ; then
+        elif [[ VER_MAJOR == 15 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.11
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER%%.*} == 16 ]] ; then
+        elif [[ VER_MAJOR == 16 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.12
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ ${VER%%.*} == 17 ]] ; then
+        elif [[ VER_MAJOR == 17 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.13
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
@@ -351,6 +355,7 @@ function initialize_build_visit()
         export FCFLAGS=${FCFLAGS:-$CFLAGS}
         export MESA_TARGET=${MESA_TARGET:-"darwin"}
         export QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
+	
     elif [[ "$OPSYS" == "Linux" ]]; then
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
