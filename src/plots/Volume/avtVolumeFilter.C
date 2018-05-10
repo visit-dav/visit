@@ -294,8 +294,13 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
     else
 #endif
     {
-        // Set the opacity map just using the transfer function.
-        om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
+        if ((atts.GetRendererType() == VolumeAttributes::RayCasting) && (atts.GetSampling() == VolumeAttributes::Trilinear))
+            om.SetTable(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
+        else
+        {
+            // Set the opacity map just using the transfer function.
+            om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
+        }
     }
 
     double actualRange[2];
