@@ -295,19 +295,28 @@ function initialize_build_visit()
         #  export VISITARCH=${VISITARCH-${ARCH}}
         export SO_EXT="dylib"
         VER=$(uname -r)
-        # Check for Panther, because MACOSX_DEPLOYMENT_TARGET will default to 10.1
-        # Used http://en.wikipedia.org/wiki/Darwin_(operating_system) to map Darwin
-        # Kernel versions to OSX version numbers.
-        # Other options for dealing with MACOSX_DEPLOYMENT_TARGET didn't work
-        # See issue #1499 (https://visitbugs.ornl.gov/issues/1499)
+        # Check for Panther, because MACOSX_DEPLOYMENT_TARGET will
+        # default to 10.1
+	
+        # Used http://en.wikipedia.org/wiki/Darwin_(operating_system)
+        # to map Darwin Kernel versions to OSX version numbers.  Other
+        # options for dealing with MACOSX_DEPLOYMENT_TARGET didn't
+        # work See issue #1499 (https://visitbugs.ornl.gov/issues/1499)
 
         # use gcc for 10.9 & earlier
 
 	VER_MAJOR==${VER%%.*}
 
-	# Note for the less than conditional parenthesis must be used
-	# ratehr than square brackets.
-        if (( ${VER_MAJOR} < "8" )) ; then
+	# bash script educational note:
+	# The less than sign "<" is an arithmetic expression and
+	# as such one must use parenthesis (( .. )) and not square brackets.
+	# i.e. if (( ${VER_MAJOR} < 8 )) ; then
+
+	# Square brackets are for contionals only. To make it a
+	# conditional one must use "-lt"
+        # i.e. if [[ ${VER_MAJOR} -lt 8 ]] ; then
+	    
+        if [[ ${VER_MAJOR} -lt 8 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.3
         elif [[ VER_MAJOR == 8 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.4
