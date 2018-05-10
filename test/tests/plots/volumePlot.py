@@ -30,6 +30,9 @@
 #    Hank Childs, Sun Aug 29 16:07:56 PDT 2010
 #    Change Log10 to Log, to reflect change in naming.
 #
+#    Brad Whitlock, Thu May 10 15:21:51 PDT 2018
+#    Add test case for sampling types.
+#
 # ----------------------------------------------------------------------------
 
 def InitAnnotations():
@@ -248,6 +251,50 @@ def TestVolumeGaussianControlPoints():
     Test("volumeGaussian_01")
     DeleteAllPlots()
 
+def TestVolumeSampling():
+    OpenDatabase(silo_data_path("noise.silo"))
+    AddPlot("Volume", "hardyglobal")
+    v = VolumeAttributes()
+    v.lightingFlag = 0
+    v.rendererType = v.RayCasting
+    v.sampling = v.KernelBased
+    ct = GetColorTable("hot_desaturated")
+    v.GetColorControlPoints().ClearControlPoints()
+    for i in xrange(ct.GetNumControlPoints()):
+        v.GetColorControlPoints().AddControlPoints(ct.GetControlPoints(i))
+    SetPlotOptions(v)
+
+    view = GetView3D()
+    view.viewNormal = (-1, 0, 0)
+    view.focus = (0, 0, 0)
+    view.viewUp = (0, 1, 0)
+    view.viewAngle = 30
+    view.parallelScale = 17.3205
+    view.nearPlane = -34.641
+    view.farPlane = 34.641
+    view.imagePan = (0.0720459, -0.00108509)
+    view.imageZoom = 1.85429
+    view.perspective = 1
+    view.eyeAngle = 2
+    view.centerOfRotationSet = 0
+    view.centerOfRotation = (0, 0, 0)
+    view.axis3DScaleFlag = 0
+    view.axis3DScales = (1, 1, 1)
+    view.shear = (0, 0, 1)
+    view.windowValid = 1
+    DrawPlots()
+    SetView3D(view)
+    Test("volumeSampling_01")
+
+    v.sampling = v.Rasterization
+    SetPlotOptions(v)
+    Test("volumeSampling_02")
+
+    v.sampling = v.Trilinear
+    SetPlotOptions(v)
+    Test("volumeSampling_03")
+
+    DeleteAllPlots()
 
 InitAnnotationsLegendOn()
 TestVolumeColorControlPoints()
@@ -256,4 +303,6 @@ TestVolumeAspect()
 TestVolumeOpacity()
 InitAnnotations()
 TestVolumeScaling()
+TestVolumeSampling()
+
 Exit()
