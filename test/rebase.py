@@ -126,21 +126,25 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
             docopy = raw_input("Copy file \"%s\" (enter y/Y for yes)? "%f)
             if docopy != 'y' and docopy != 'Y':
                 continue
+        if mode == "serial":
+            target_file = "baseline/%s/%s/%s"%(cat,pyfile,f)
+        else:
+            target_file = "baseline/%s/%s/%s/%s"%(cat,pyfile,mode,f)
         # As a sanity check, get current baseline image file size
-        cursize = os.stat("baseline/%s/%s/%s"%(cat,pyfile,f)).st_size
+        cursize = os.stat(target_file).st_size
         g = urllib.urlopen("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f))
         if 'Not Found' in g.read():
             print "*** Current \"%s\" not found. Skipping."%f
         else:
             print "Copying file \"%s\""%f
             urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f),
-                filename="baseline/%s/%s/%s"%(cat,pyfile,f))
+                filename=target_file)
         # Do some simple sanity checks on the resulting file
-        if imghdr.what("baseline/%s/%s/%s"%(cat,pyfile,f)) != 'png':
-            print "Warning: file \"baseline/%s/%s/%s\" is not PNG format!"%(cat,pyfile,f)
-        newsize = os.stat("baseline/%s/%s/%s"%(cat,pyfile,f)).st_size
+        if imghdr.what(target_file) != 'png':
+            print "Warning: file \"%s\" is not PNG format!"%target_file
+        newsize = os.stat(target_file).st_size
         if newsize < (1-0.25)*cursize or newsize > (1+0.25)*cursize:
-            print "Warning: dramatic change in size of file \"baseline/%s/%s/%s\"!"%(cat,pyfile,f)
+            print "Warning: dramatic change in size of file \"%s\"!"%target_file
 
 #
 # Confirm in correct dir
