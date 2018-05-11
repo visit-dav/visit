@@ -102,6 +102,8 @@ class VariableMenuPopulator;
 //   Hank Childs, Mon Aug  2 11:21:49 PDT 2010
 //   Refactor class so that the menu can be explicitly set.
 //
+//   Mark C. Miller, Tue May  8 18:36:57 PDT 2018
+//   Adjust default values for destroyMenuItems in methods where it is used.
 // ****************************************************************************
 
 class WINUTIL_API QvisBaseVariableButton : public QPushButton
@@ -184,7 +186,7 @@ protected:
         virtual ~VariablePopupInfo();
 
         void Initialize();
-        void UpdateMenus(VariableMenuPopulator *pop, bool destroyMenuItems=false);
+        void UpdateMenus(VariableMenuPopulator *pop, bool destroyMenuItems=true);
         void CreateMenu(int);
         void DeleteMenu(int);
         void connect(QvisBaseVariableButton *);
@@ -225,9 +227,9 @@ class WINUTIL_API QvisVariableButton : public QvisBaseVariableButton
     // Static methods that are used in connection with all variable menus.
     //
     static void UpdateActiveSourceButtons(VariableMenuPopulator *pop,
-        bool destroyMenuItems=false);
+        bool destroyMenuItems=true);
     static void UpdatePlotSourceButtons(VariableMenuPopulator *pop,
-        bool destroyMenyItems=false);
+        bool destroyMenyItems=true);
 #endif
 
   protected:

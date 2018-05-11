@@ -238,6 +238,9 @@ typedef std::vector<PluginEntry> PluginEntryVector;
 //   Brad Whitlock, Fri Jul 23 15:23:49 PDT 2010
 //   I made the widget observe the selection list.
 //
+//   Mark C. Miller, Tue May  8 18:35:59 PDT 2018
+//   Adjust default values for destroyMenuItems and forceUpdate in calls
+//   where they are used to match old logic.
 // ****************************************************************************
 
 class GUI_API QvisPlotManagerWidget : public QGroupBox, public GUIBase,
@@ -289,8 +292,8 @@ private:
     void CreateVariableMenu();
     bool PopulateVariableLists(VariableMenuPopulator &,
                                const QualifiedFilename &filename);
-    void UpdatePlotVariableMenu(bool destoryMenuItems=false, bool forceUpdate=false);
-    void UpdateVariableMenu(bool destoryMenuItems=false, bool forceUpdate=false);
+    void UpdatePlotVariableMenu(bool destroyMenuItems=true, bool forceUpdate=false);
+    void UpdateVariableMenu(bool destroyMenuItems=true, bool forceUpdate=false);
     void UpdatePlotAndOperatorMenuEnabledState();
     void UpdateHideDeleteDrawButtonsEnabledState() const;
 

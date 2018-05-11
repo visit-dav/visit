@@ -810,6 +810,9 @@ QvisPlotListBox::contextMenuCreateActions()
 //
 // Modifications:
 //
+//   Mark C. Miller, Tue May  8 18:31:15 PDT 2018
+//   Add defensive logic to clear the menu before deleting it. This does
+//   indeed fix leak observed. But, I don't know why it fixes them.
 // ****************************************************************************
 void
 QvisPlotListBox::contextMenuCreate()
@@ -821,7 +824,10 @@ QvisPlotListBox::contextMenuCreate()
 
     // Incase it is being rebuilt.
     if( plotContextMenu )
+    {
+      plotContextMenu->clear();
       delete plotContextMenu;
+    }
 
     // build the menu
     plotContextMenu = new QMenu(this);

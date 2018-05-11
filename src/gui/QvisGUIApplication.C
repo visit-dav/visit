@@ -5528,6 +5528,9 @@ QvisGUIApplication::ProcessWindowConfigSettings(DataNode *node)
 //   Went back to using GetMenuName for the key, as it matches what is used
 //   to write the plugin settings.
 //
+//   Mark C. Miller, Sat May  5 19:42:11 PDT 2018
+//   Fix leak of QString menuName.
+//
 // ****************************************************************************
 
 void
@@ -5546,7 +5549,9 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
         GUIPlotPluginInfo *GUIInfo = plotPluginManager->GetGUIPluginInfo(
             plotPluginManager->GetEnabledID(i));
 
-        std::string key(GUIInfo->GetMenuName()->toStdString());
+        QString *menuName = GUIInfo->GetMenuName();
+        std::string key(menuName->toStdString());
+        delete menuName;
         key += " plot attributes";
 
         if(plotWindows[i] != 0 &&
@@ -5577,7 +5582,9 @@ QvisGUIApplication::ReadPluginWindowConfigs(DataNode *parentNode,
         GUIOperatorPluginInfo *GUIInfo = operatorPluginManager->GetGUIPluginInfo(
                                        operatorPluginManager->GetEnabledID(i));
 
-        std::string key(GUIInfo->GetMenuName()->toStdString());
+        QString *menuName = GUIInfo->GetMenuName();
+        std::string key(menuName->toStdString());
+        delete menuName;
         key += " operator attributes";
 
         if(operatorWindows[i] != 0 &&
