@@ -55,7 +55,6 @@
 
 #include <avtCallback.h>
 #include <avtMaterial.h>
-#include <avtMetaData.h>
 #include <avtSpecies.h>
 
 #include <DebugStream.h>
