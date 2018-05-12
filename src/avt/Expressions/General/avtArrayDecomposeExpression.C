@@ -42,7 +42,8 @@
 
 #include <avtArrayDecomposeExpression.h>
 
-#include <math.h>
+#include <cmath>
+#include <cerrno>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -137,6 +138,71 @@ avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomain
     if (index < 0 || index >= data->GetNumberOfComponents())
         EXCEPTION2(ExpressionException, outputVariableName, 
                    "Index into array is not valid.");
+
+    std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
+    ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
+    if (*dbp == NULL)
+        EXCEPTION1(InvalidFilesException, db.c_str());
+
+    // Handle case where given index in expression may need to be mapped
+    // through indices embedded in the array's meta data component names.
+    // In truth, we really ought to enhance avtArrayMetaData to indicate
+    // if it should be treated this way. Instead, we are using existence
+    // of a compNames array of strings of the form xx...x#..# where x is
+    // any non-digit and # is any digit and that the number part of the
+    // names is increasing from a minimum of zero.
+    size_t n;
+    avtDatabaseMetaData *md = dbp->GetMetaData(currentTimeState);
+    avtArrayMetaData const *amd = md->GetArray(std::string(activeVariable));
+    if (amd && amd->compNames.size() &&
+       (n = strcspn(amd->compNames[0].c_str(), "0123456789")) < strlen(amd->compNames[0].c_str()))
+    {
+        int absDistMin = INT_MAX;
+        int nearestIndex = -1;
+        int lastIdxVal = -1;
+        bool validIdxSequence = true;
+        for (size_t i = 0; i < amd->compNames.size(); i++)
+        {
+            // An exact match by component name wins
+            if (indexStr == amd->compNames[i])
+            {
+                nearestIndex = i;
+                break;
+            }
+
+            // get the current component index from its name and validate it
+            int compIdxVal = (int) strtol(amd->compNames[i].c_str()+n, 0, 10);
+            if ((errno != 0 && compIdxVal == 0) || compIdxVal < 0 || compIdxVal <= lastIdxVal)
+            {
+                validIdxSequence = false;
+                break;
+            }
+            lastIdxVal = compIdxVal;
+
+            int absDist = abs(index - compIdxVal);
+            if (absDist < absDistMin)
+            {
+                absDistMin = absDist;
+                nearestIndex = (int) i; 
+            }
+        }
+
+        if (validIdxSequence && nearestIndex != -1)
+            index = nearestIndex;
+        else
+        {
+            if (indexStr != "")
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                           "Component name for array is not valid.");
+            }
+            else if (index >= data->GetNumberOfComponents())
+            {
+                EXCEPTION2(ExpressionException, outputVariableName, 
+                           "Index into array is not valid.");
+            }
+        }
+    }
 
     vtkDataArray *rv = data->NewInstance();
     vtkIdType nvals = data->GetNumberOfTuples();

@@ -45,6 +45,9 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIntArray.h>
+#if 1
+#include <vtkUnsignedLongLongArray.h>
+#endif
 #include <vtkPointData.h>
 
 #include <avtCallback.h>
@@ -133,7 +136,11 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     else
         nvals = in_ds->GetNumberOfPoints();
 
+#if 0
     vtkIntArray *rv = vtkIntArray::New();
+#else
+    vtkUnsignedLongLongArray *rv = vtkUnsignedLongLongArray::New();
+#endif
     rv->SetNumberOfTuples(nvals);
 
     vtkDataArray *arr = NULL;
@@ -149,7 +156,11 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
     if (arr == NULL)
     {
         for (vtkIdType i = 0 ; i < nvals ; i++)
+#if 0
             rv->SetValue(i, (int)i);
+#else
+            rv->SetValue(i, (unsigned long long)i);
+#endif
         char standard_msg[1024] = "VisIt was not able to create the requested"
                 " ids.  Please see a VisIt developer.";
         char globalmsg[1024] = "VisIt was not able to create global ids, most "
@@ -169,9 +180,17 @@ avtDataIdExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomainsIndex)
         if (arr->GetNumberOfComponents() == 2)
             // When there are two components, they are typically packed as 
             // <dom, id>.  We will want the second one.
+#if 0
             rv->SetValue(i, (int)arr->GetComponent(i, 1));
+#else
+            rv->SetValue(i, (unsigned long long)arr->GetComponent(i, 1));
+#endif
         else
+#if 0
             rv->SetValue(i, (int)arr->GetComponent(i, 0));
+#else
+            rv->SetValue(i, (unsigned long long)arr->GetComponent(i, 0));
+#endif
     }
 
     return rv;
