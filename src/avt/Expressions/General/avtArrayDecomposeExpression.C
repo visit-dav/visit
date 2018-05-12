@@ -42,9 +42,10 @@
 
 #include <avtArrayDecomposeExpression.h>
 
-#include <math.h>
+#include <cmath>
 #include <cstring>
 #include <cstdlib>
+#include <cerrno>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -157,14 +158,19 @@ avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomain
     // through indices embedded in the array's meta data component names.
     // In truth, we really ought to enhance avtArrayMetaData to indicate
     // if it should be treated this way. Instead, we are using existence
-    // of compNames together with at least one such name having some
-    // digit characters to imply that such mapping is desired.
+    // of a compNames array of strings of the form xx...x#..# where x is
+    // any non-digit and # is any digit and that the number part of the
+    // names is increasing from a minimum of zero.
+    size_t n;
     avtDatabaseMetaData *md = dbp->GetMetaData(currentTimeState);
     avtArrayMetaData const *amd = md->GetArray(std::string(activeVariable));
-    if (amd && amd->compNames.size())
+    if (amd && amd->compNames.size() &&
+       (n = strcspn(amd->compNames[0].c_str(), "0123456789")) < strlen(amd->compNames[0].c_str()))
     {
         int absDistMin = INT_MAX;
         int nearestIndex = -1;
+        int lastIdxVal = -1;
+        bool validIdxSequence = true;
         for (size_t i = 0; i < amd->compNames.size(); i++)
         {
             // An exact match by component name wins
@@ -174,22 +180,26 @@ avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomain
                 break;
             }
 
-            // Otherwise, keep looking for closest numerical value
-            char const *p = amd->compNames[i].c_str();
-            size_t n = strcspn(p, "0123456789");
-            if (n)
+            // get the current component index from its name and validate it
+            int compIdxVal = (int) strtol(amd->compNames[i].c_str()+n, 0, 10);
+            if ((errno != 0 && compIdxVal == 0) || compIdxVal < 0 || compIdxVal <= lastIdxVal)
             {
-                int compIdxVal = (int) strtol(p+n, 0, 10);
-                int absDist = abs(index - compIdxVal);
-                if (absDist < absDistMin)
-                {
-                    absDistMin = absDist;
-                    nearestIndex = (int) i; 
-                }
+                validIdxSequence = false;
+                break;
+            }
+            lastIdxVal = compIdxVal;
+
+            int absDist = abs(index - compIdxVal);
+            if (absDist < absDistMin)
+            {
+                absDistMin = absDist;
+                nearestIndex = (int) i; 
             }
         }
 
-        if (nearestIndex == -1)
+        if (validIdxSequence && nearestIndex != -1)
+            index = nearestIndex;
+        else
         {
             if (indexStr != "")
             {
@@ -201,10 +211,6 @@ avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomain
                 EXCEPTION2(ExpressionException, outputVariableName, 
                            "Index into array is not valid.");
             }
-        }
-        else
-        {
-            index = nearestIndex;
         }
     }
 
