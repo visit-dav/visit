@@ -899,15 +899,15 @@ avtffpFileFormat::ReadFile(void)
 #else
             debug1 << "On the way to read ffp file " << filename << endl;
 #endif
-            int len = 2048; // Longest line length
+            const int len = 2048; // Longest line length
             char buf[len]; // A line length
             int nret = 0 ;
             while (fgets(buf, len, handle) != NULL)
             {
                 // Look for factor rindex
-                if (strstr(buf, "FAC=") != NULL)
+                if (strstr((const char*)buf, "FAC=") != NULL)
                 {
-                    sscanf(strstr(buf, "FAC=")+4, "%lf\n", &fac);
+                    sscanf(strstr((const char*)buf, "FAC=")+4, "%lf\n", &fac);
 #if INTERACTIVEREAD
                    if (debuglevel >= 1) fprintf(stdout,"fac=%lf\n",fac) ;
 #else
@@ -1023,15 +1023,15 @@ avtffpFileFormat::ReadFile(void)
                 EXCEPTION1(InvalidDBTypeException, "This ffp.gz file could not be openend.");
             }
 
-            int len = 2048; // Longest line length
+            const int len = 2048; // Longest line length
             char buf[len]; // A line length
             int nret = 0 ;
             while (gzgets(gzhandle, buf, len) != Z_NULL)
             {
                 // Look for factor rindex
-                if (strstr(buf, "FAC=") != NULL)
+                if (strstr((const char*)buf, "FAC=") != NULL)
                 {
-                    sscanf(strstr(buf, "FAC=")+4, "%lf\n", &fac);
+                    sscanf(strstr((const char*)buf, "FAC=")+4, "%lf\n", &fac);
 #if INTERACTIVEREAD
                    if (debuglevel >= 1) fprintf(stdout,"fac=%lf\n",fac) ;
 #else
