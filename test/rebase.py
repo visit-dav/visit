@@ -1,8 +1,47 @@
 #!/usr/bin/env python
 
-#
 # run ./rebase.py --help for documentation
-#
+def usage():
+    return \
+"""
+%prog args [test-file1 test-file2 ...]
+
+where args specify the category, test .py filename, mode
+and date tag (of the posted html results) and test-file1,
+etc. are either the names or file globs (protected by
+quotes as necessary) of tests to rebaseline. If no files
+or file globs are specified then all results from the
+specified test .py file are rebased.
+
+Note that if you choose to re-baseline a whole series of
+files which may include skips or actual passes, then it
+will discover there are no *current* results posted for
+those cases, issue a warning message and skip those cases.
+
+Sometimes, its easiest to use rebase.py on a whole series
+and then selectively svn revert the ones you didn't want to
+rebase prior to committing them.
+
+Warning messages are generated if the data copied from the
+posted HTML results doesn't pass some basic sanity checks,
+PNG formatted image, file size is within 25% of original.
+These are only warnings and up to the user to decide whether
+any action is required.
+ 
+Examples...
+
+To rebaseline *all* files from oldsilo test from date tag 2018-04-07-09:12
+ 
+    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12'
+
+To rebaseline silo_00.png & silo_01.png files from oldsilo test from same tag 
+
+    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' 'oldsilo_0[0-1].png'
+
+To be interactively prompted upon each file to rebaseline from oldsilo test
+
+    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' --prompt
+"""
 
 import argparse
 import glob
@@ -35,50 +74,7 @@ def parse_args():
     """
     Parses arguments to runtest.
     """
-    usage = \
-"""
-%prog args [test-file1 test-file2 ...]
-
-where args specify the category, test .py filename, mode
-and date tag (of the posted html results) and test-file1,
-etc. are either the names or file glob(s) of tests to
-rebaseline. If no files or file globs are specified then
-all results from the specified test .py file are rebased.
-
-Note that if you choose to re-baseline a whole series of
-files which may include skips or actual passes, then it
-will discover there are no *current* results posted for
-those cases and then simply take the already existing
-baseline result.
-
-Sometimes, its easiest to use rebase.py on a whole series
-and then selectively revert the ones you didn't want to
-rebase prior to committing them.
-
-Warning messages are generated if the data copied from the
-posted HTML results doesn't pass some basic sanity checks,
-PNG formatted image, file size is within 25% of original.
-These are only warnings and up to the user to decide whether
-any action is required.
- 
-Note: This will NOT HANDLE rebaselining of files in
-mode-specific baseline dirs.
-
-Examples...
-
-To rebaseline *all* files from oldsilo test from date tag 2018-04-07-09:12
- 
-    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12'
-
-To rebaseline silo_00.png & silo_01.png files from oldsilo test from same tag 
-
-    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' 'oldsilo_0[0-1].png'
-
-To be interactively prompted upon each file to rebaseline from oldsilo test
-
-    ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' --prompt
-"""
-    parser = OptionParser(usage)
+    parser = OptionParser(usage())
     parser.add_option("-c",
                       "--category",
                       dest="category",
@@ -96,6 +92,11 @@ To be interactively prompted upon each file to rebaseline from oldsilo test
                       "--datetag",
                       dest="datetag",
                       help="[Required] Specify the VisIt test result date tag (e.g. '2018-04-07-09:12') from which to draw new baselines")
+    parser.add_option("-t",
+                      "--type",
+                      dest="type",
+                      default="png",
+                      help="[Optional] Specify test result type (e.g. 'png' or 'txt') [png]")
     parser.add_option("--prompt",
                       default=False,
                       dest="prompt",
@@ -105,13 +106,13 @@ To be interactively prompted upon each file to rebaseline from oldsilo test
     return opts, cases
 
 # Get list of baseline image names for this category and py file
-def get_baseline_image_filenames(cat, pyfile, cases):
+def get_baseline_filenames(cat, pyfile, test_type, cases):
     retval = []
     if cases:
         for patt in cases:
             retval += glob.glob("baseline/%s/%s/%s"%(cat,pyfile,patt))
     else:
-        retval = glob.glob("baseline/%s/%s/*.png"%(cat,pyfile))
+        retval = glob.glob("baseline/%s/%s/*.%s"%(cat,pyfile,test_type))
 
     newretval = []
     for f in retval:
@@ -119,8 +120,8 @@ def get_baseline_image_filenames(cat, pyfile, cases):
 
     return newretval
 
-# Iterate, getting current PNGs from HTML server and putting
-def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
+# Iterate, getting current results from HTML server and putting
+def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt, test_type):
     for f in filelist:
         if prompt:
             docopy = raw_input("Copy file \"%s\" (enter y/Y for yes)? "%f)
@@ -140,7 +141,7 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt):
             urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f),
                 filename=target_file)
         # Do some simple sanity checks on the resulting file
-        if imghdr.what(target_file) != 'png':
+        if test_type == 'png' and imghdr.what(target_file) != 'png':
             print "Warning: file \"%s\" is not PNG format!"%target_file
         newsize = os.stat(target_file).st_size
         if newsize < (1-0.25)*cursize or newsize > (1+0.25)*cursize:
@@ -160,14 +161,15 @@ vopts = vars(opts)
 #
 # Get list of images to re-base
 #
-imagelist = get_baseline_image_filenames(vopts['category'], vopts['pyfile'], cases)
+filelist = get_baseline_filenames(vopts['category'], vopts['pyfile'], vopts['type'], cases)
 
 #
 # Iterate, copying currents from HTML pages to baseline dir
 #
-copy_currents_from_html_pages(imagelist,
+copy_currents_from_html_pages(filelist,
     vopts['category'],
     vopts['pyfile'],
     vopts['mode'],
     vopts['datetag'],
-    vopts['prompt'])
+    vopts['prompt'],
+    vopts['type'])
