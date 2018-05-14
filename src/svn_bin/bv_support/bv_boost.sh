@@ -40,11 +40,11 @@ function bv_boost_initialize_vars
 
 function bv_boost_info
 {
-    export BOOST_VERSION=${BOOST_VERSION:-"1_60_0"}
+    export BOOST_VERSION=${BOOST_VERSION:-"1_67_0"}
     export BOOST_FILE=${BOOST_FILE:-"boost_${BOOST_VERSION}.tar.gz"}
-    export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_60"}
+    export BOOST_COMPATIBILITY_VERSION=${BOOST_COMPATIBILITY_VERSION:-"1_67"}
     export BOOST_BUILD_DIR=${BOOST_BUILD_DIR:-"boost_${BOOST_VERSION}"}
-    export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.60.0"}
+    export BOOST_URL=${BOOST_URL:-"http://sourceforge.net/projects/boost/files/boost/1.67.0"}
 }
 
 function bv_boost_print
