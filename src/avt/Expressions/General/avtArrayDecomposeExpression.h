@@ -43,6 +43,8 @@
 #ifndef AVT_ARRAY_DECOMPOSE_FILTER_H
 #define AVT_ARRAY_DECOMPOSE_FILTER_H
 
+#include <string>
+
 #include <avtSingleInputExpressionFilter.h>
 
 class     vtkDataArray;
@@ -81,6 +83,7 @@ class EXPRESSION_API avtArrayDecomposeExpression
   protected:
     bool issuedWarning;
     int  index;
+    std::string indexStr;
 
     virtual vtkDataArray     *DeriveVariable(vtkDataSet *, int currentDomainsIndex);
     virtual void              PreExecute(void);
