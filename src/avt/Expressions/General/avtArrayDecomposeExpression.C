@@ -42,8 +42,10 @@
 
 #include <avtArrayDecomposeExpression.h>
 
-#include <cmath>
 #include <cerrno>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -51,12 +53,16 @@
 #include <vtkPointData.h>
 
 #include <ExprToken.h>
+#include <avtArrayMetaData.h>
+#include <avtCallback.h>
+#include <avtDatabase.h>
+#include <avtDatabaseMetaData.h>
 #include <avtExprNode.h>
-
 
 #include <DebugStream.h>
 #include <ExpressionException.h>
 #include <ImproperUseException.h>
+#include <InvalidFilesException.h>
 
 #include <string>
 #include <vector>
@@ -124,7 +130,7 @@ avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomain
 {
     if (activeVariable == NULL)
         EXCEPTION2(ExpressionException, outputVariableName, 
-                   "Asked to decompose an array, but did "
+                   "Asked to decompose an array, but did not "
                    "specify which variable to decompose");
 
     vtkDataArray *data = in_ds->GetPointData()->GetArray(activeVariable);
@@ -135,9 +141,12 @@ avtArrayDecomposeExpression::DeriveVariable(vtkDataSet *in_ds, int currentDomain
         EXCEPTION2(ExpressionException, outputVariableName, 
                    "Unable to locate variable to decompose");
 
-    if (index < 0 || index >= data->GetNumberOfComponents())
-        EXCEPTION2(ExpressionException, outputVariableName, 
-                   "Index into array is not valid.");
+    if (indexStr == "")
+    {
+        if (index < 0)
+            EXCEPTION2(ExpressionException, outputVariableName, 
+                       "Index into array is not valid.");
+    }
 
     std::string db = GetInput()->GetInfo().GetAttributes().GetFullDBName();
     ref_ptr<avtDatabase> dbp = avtCallback::GetDatabase(db, 0, NULL);
@@ -256,12 +265,14 @@ avtArrayDecomposeExpression::ProcessArguments(ArgsExpr *args,
     std::string type = secondTree->GetTypeName();
     if (type == "IntegerConst")
         index = dynamic_cast<IntegerConstExpr*>(secondTree)->GetValue();
+    else if (type == "StringConst")
+        indexStr = dynamic_cast<StringConstExpr*>(secondTree)->GetValue();
     else
     {
-        debug5 << "avtArrayDecomposeExpression: Second argument is not an int."
-               << endl;
+        debug5 << "avtArrayDecomposeExpression: Second argument is not an integer index "
+               << "or string component name." << endl;
         EXCEPTION2(ExpressionException, outputVariableName, "Second argument to array_decompose "
-                                        "must be a number.");
+                                        "must be either a number or string.");
     }
 }
 
