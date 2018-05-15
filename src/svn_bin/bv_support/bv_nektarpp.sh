@@ -46,7 +46,7 @@ function bv_nektarpp_initialize_vars
 
 function bv_nektarpp_info
 {
-    export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"4.4.0"}
+    export NEKTAR_PLUS_PLUS_VERSION=${NEKTAR_PLUS_PLUS_VERSION:-"4.4.1"}
     export NEKTAR_PLUS_PLUS_FILE=${NEKTAR_PLUS_PLUS_FILE:-"nektar-${NEKTAR_PLUS_PLUS_VERSION}.tar.gz"}
     export NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION=${NEKTAR_PLUS_PLUS_COMPATIBILITY_VERSION:-"4.4"}
     export NEKTAR_PLUS_PLUS_BUILD_DIR=${NEKTAR_PLUS_PLUS_BUILD_DIR:-"nektar++-${NEKTAR_PLUS_PLUS_VERSION}"}
@@ -124,9 +124,9 @@ function bv_nektarpp_dry_run
     fi
 }
 
-function apply_nektarpp_4_4_patch
+function apply_nektarpp_4_4_0_patch
 {
-    info "Patching Nektar++ 4.4"
+    info "Patching Nektar++ 4.4.0"
     patch -p0 << \EOF
 diff -rcN nektar++-4.4.0/library/LibUtilities/Communication/CommDataType_orig.h nektar++-4.4.0/library/LibUtilities/Communication/CommDataType.h
 *** nektar++-4.4.0/library/LibUtilities/Communication/CommDataType_orig.h	2017-03-06 11:04:22.000000000 -0700
@@ -199,9 +199,84 @@ diff -rcN nektar++-4.4.0/library/LibUtilities/Communication/CommDataType_orig.h 
 EOF
 }
 
-function apply_nektarpp_4_4_OSX_patch
+function apply_nektarpp_4_4_1_patch
 {
-    info "Patching Nektar++ 4.4 for OS X"
+    info "Patching Nektar++ 4.4.1"
+    patch -p0 << \EOF
+diff -rcN nektar++-4.4.1/library/LibUtilities/Communication/CommDataType_orig.h nektar++-4.4.1/library/LibUtilities/Communication/CommDataType.h
+*** nektar++-4.4.1/library/LibUtilities/Communication/CommDataType_orig.h	2017-03-06 11:04:22.000000000 -0700
+--- nektar++-4.4.1/library/LibUtilities/Communication/CommDataType.h	2017-09-05 14:22:16.000000000 -0600
+***************
+*** 56,73 ****
+  {
+  namespace LibUtilities
+  {
+! enum CommDataType
+! {
+!     MPI_INT,
+!     MPI_UNSIGNED,
+!     MPI_LONG,
+!     MPI_UNSIGNED_LONG,
+!     MPI_LONG_LONG,
+!     MPI_UNSIGNED_LONG_LONG,
+!     MPI_FLOAT,
+!     MPI_DOUBLE,
+!     MPI_LONG_DOUBLE
+! };
+  }
+  }
+  #endif
+--- 56,99 ----
+  {
+  namespace LibUtilities
+  {
+! typedef int CommDataType;
+! 
+! #ifndef MPI_INT
+!     #define MPI_INT            ((CommDataType)0x4c000405)
+! #endif
+! 
+! #ifndef MPI_UNSIGNED
+!     #define MPI_UNSIGNED       ((CommDataType)0x4c000406)
+! #endif
+! 
+! #ifndef MPI_LONG
+!     #define MPI_LONG           ((CommDataType)0x4c000807)
+! #endif
+! 
+! #ifndef MPI_UNSIGNED_LONG
+!     #define MPI_UNSIGNED_LONG  ((CommDataType)0x4c000808)
+! #endif
+! 
+! #ifndef MPI_LONG_LONG
+!     #define MPI_LONG_LONG      ((CommDataType)0x4c000809)
+! #endif
+! 
+! #ifndef MPI_UNSIGNED_LONG_LONG
+!     #define MPI_UNSIGNED_LONG_LONG ((CommDataType)0x4c000819)
+! #endif
+! 
+! #ifndef MPI_FLOAT
+!     #define MPI_FLOAT          ((CommDataType)0x4c00040a)
+! #endif
+! 
+! #ifndef MPI_DOUBLE
+!     #define MPI_DOUBLE         ((CommDataType)0x4c00080b)
+! #endif
+! 
+! #ifndef MPI_LONG_DOUBLE
+!     #define MPI_LONG_DOUBLE    ((CommDataType)0x4c00100c)
+! #endif
+! 
+  }
+  }
+  #endif
+EOF
+}
+
+function apply_nektarpp_4_4_0_OSX_patch
+{
+    info "Patching Nektar++ 4.4.0 for OS X"
     patch -p0 << \EOF
 diff -rcN nektar++-4.4.0/CMakeLists_orig.txt  nektar++-4.4.0/CMakeLists.txt 
 *** nektar++-4.4.0/CMakeLists_orig.txt	2017-03-06 11:04:22.000000000 -0700
@@ -228,16 +303,56 @@ diff -rcN nektar++-4.4.0/CMakeLists_orig.txt  nektar++-4.4.0/CMakeLists.txt
 EOF
 }
 
+function apply_nektarpp_4_4_1_OSX_patch
+{
+    info "Patching Nektar++ 4.4.1 for OS X"
+    patch -p0 << \EOF
+diff -rcN nektar++-4.4.1/CMakeLists_orig.txt  nektar++-4.4.1/CMakeLists.txt 
+*** nektar++-4.4.1/CMakeLists_orig.txt	2017-03-06 11:04:22.000000000 -0700
+--- nektar++-4.4.1/CMakeLists.txt	2017-09-05 14:47:37.000000000 -0600
+***************
+*** 326,333 ****
+  
+  # Build active components
+  IF (NEKTAR_BUILD_LIBRARY)
+!     SET(NEKTAR++_LIBRARIES SolverUtils LibUtilities StdRegions SpatialDomains LocalRegions
+!          MultiRegions Collections GlobalMapping FieldUtils NekMeshUtils)
+      INCLUDE_DIRECTORIES(library)
+      ADD_SUBDIRECTORY(library)
+--- 326,333 ----
+  
+  # Build active components
+  IF (NEKTAR_BUILD_LIBRARY)
+!     SET(NEKTAR++_LIBRARIES LibUtilities StdRegions SpatialDomains LocalRegions
+!          MultiRegions Collections GlobalMapping FieldUtils)
+      INCLUDE_DIRECTORIES(library)
+      ADD_SUBDIRECTORY(library)
+EOF
+}
+
 function apply_nektarpp_patch
 {
     if [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 4.4.0 ]] ; then
-        apply_nektarpp_4_4_patch
+        apply_nektarpp_4_4_0_patch
         if [[ $? != 0 ]]; then
            return 1
         fi
 
 #        if [[ "$OPSYS" == "Darwin" ]]; then
             apply_nektarpp_4_4_OSX_patch
+            if [[ $? != 0 ]]; then
+		return 1
+            fi
+#	fi	
+
+    elif [[ "${NEKTAR_PLUS_PLUS_VERSION}" == 4.4.1 ]] ; then
+        apply_nektarpp_4_4_1_patch
+        if [[ $? != 0 ]]; then
+           return 1
+        fi
+
+#        if [[ "$OPSYS" == "Darwin" ]]; then
+            apply_nektarpp_4_4_1_OSX_patch
             if [[ $? != 0 ]]; then
 		return 1
             fi
