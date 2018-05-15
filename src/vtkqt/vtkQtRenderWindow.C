@@ -94,7 +94,6 @@ public:
         }
     #endif
         
-#endif
     }
 
     virtual ~vtkQtRenderWindowPrivate()
