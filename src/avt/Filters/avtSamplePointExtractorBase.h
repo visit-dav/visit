@@ -37,42 +37,35 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtSamplePointExtractor.h                       //
+//                       avtSamplePointExtractorBase.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_SAMPLE_POINT_EXTRACTOR_H
-#define AVT_SAMPLE_POINT_EXTRACTOR_H
+#ifndef AVT_SAMPLE_POINT_EXTRACTOR_BASE_H
+#define AVT_SAMPLE_POINT_EXTRACTOR_BASE_H
 
 #include <filters_exports.h>
 
-#include <avtSamplePointExtractorBase.h>
+#include <avtDatasetToSamplePointsFilter.h>
+#include <avtVolume.h>
 
+#include <avtViewInfo.h>
+
+#include <avtOpacityMap.h>
+#include <vector>
+#include <map>
+
+#include <vtkCamera.h>
+#include <vtkMatrix4x4.h>
+
+
+class  vtkDataArray;
 class  vtkDataSet;
-class  vtkHexahedron;
-class  vtkQuadraticHexahedron;
-class  vtkPixel;
-class  vtkPyramid;
-class  vtkQuad;
-class  vtkTetra;
-class  vtkTriangle;
-class  vtkVoxel;
-class  vtkWedge;
-class  vtkPolygon;
-
-class  avtHexahedronExtractor;
-class  avtHexahedron20Extractor;
-class  avtMassVoxelExtractor;
-class  avtPointExtractor;
-class  avtPyramidExtractor;
-class  avtSamplePointArbitrator;
-class  avtTetrahedronExtractor;
-class  avtWedgeExtractor;
 
 class  avtRayFunction;
 
 
 // ****************************************************************************
-//  Class: avtSamplePointExtractor
+//  Class: avtSamplePointExtractorBase
 //
 //  Purpose:
 //      This is a component that will take an avtDataset as an input and find
@@ -132,73 +125,74 @@ class  avtRayFunction;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtSamplePointExtractor 
-    : public avtSamplePointExtractorBase
+class AVTFILTERS_API avtSamplePointExtractorBase 
+    : public avtDatasetToSamplePointsFilter
 {
   public:
-                              avtSamplePointExtractor(int, int, int);
-    virtual                  ~avtSamplePointExtractor();
+                              avtSamplePointExtractorBase(int, int, int);
+    virtual                  ~avtSamplePointExtractorBase();
 
     virtual const char       *GetType(void)
-                                         { return "avtSamplePointExtractor"; }
+                                  { return "avtSamplePointExtractorBase"; }
     virtual const char       *GetDescription(void)
-                                         { return "Extracting sample points";}
+                                  { return "Extracting sample points";}
 
-    void                      RegisterRayFunction(avtRayFunction *rf)
-                                         { rayfoo = rf; }
-    void                      SendCellsMode(bool);
-    void                      Set3DMode(bool m) { modeIs3D = m; }
-    void                      SetKernelBasedSampling(bool);
-    void                      SetTrilinear(bool t)
-                                         { trilinearInterpolation = t; }
+    void                      SetRectilinearGridsAreInWorldSpace(bool, 
+                                                   const avtViewInfo &,double);
+    void                      RestrictToTile(int, int, int, int);
+    void                      StopTiling(void) { shouldDoTiling = false; }
+
+
+    void                      SetUpArbitrator(std::string &name, bool min);
+
+    void                      SetTransferFn(avtOpacityMap *_transferFn1D)
+                                  { transferFn1D = _transferFn1D; }
+
+    void                      SetJittering(bool);
 
   protected:
-    bool                      modeIs3D;
-    bool                      kernelBasedSampling;
-    double                    point_radius;
+    int                       width, height, depth;
+    int                       currentNode, totalNodes;
 
-    avtHexahedronExtractor   *hexExtractor;
-    avtHexahedron20Extractor *hex20Extractor;
-    avtMassVoxelExtractor    *massVoxelExtractor;
-    avtPointExtractor        *pointExtractor;
-    avtPyramidExtractor      *pyramidExtractor;
-    avtTetrahedronExtractor  *tetExtractor;
-    avtWedgeExtractor        *wedgeExtractor;
+    bool                      shouldDoTiling;
+    int                       width_min, width_max;
+    int                       height_min, height_max;
 
-    bool                      sendCells;
-    avtRayFunction           *rayfoo;
+    bool                      shouldSetUpArbitrator;
+    std::string               arbitratorVarName;
+    bool                      arbitratorPrefersMinimum;
+    avtSamplePointArbitrator *arbitrator;
 
-    bool                      trilinearInterpolation;
+    bool                      jitter;
 
+    bool                      rectilinearGridsAreInWorldSpace;
+    avtViewInfo               viewInfo;
+    double                    aspect;
+
+    avtOpacityMap             *transferFn1D;
+    virtual void              Execute(void);
+    virtual void              ExecuteTree(avtDataTree_p);
     virtual void              PreExecute(void);
-    virtual void              DoSampling(vtkDataSet *, int);
-    virtual bool              FilterUnderstandsTransformedRectMesh();
-    virtual void              SetUpExtractors(void);
-    virtual void              SendJittering(void);
+    virtual void              PostExecute(void);
 
-    inline void               ExtractHex(vtkHexahedron*,vtkDataSet*, int,
-                                           LoadingInfo &);
-    inline void               ExtractHex20(vtkQuadraticHexahedron*,vtkDataSet*, int,
-                                           LoadingInfo &);
-    inline void               ExtractVoxel(vtkVoxel *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractTet(vtkTetra *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractPyramid(vtkPyramid *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractWedge(vtkWedge *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractTriangle(vtkTriangle *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractQuad(vtkQuad *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractPixel(vtkPixel *, vtkDataSet *, int, 
-                                           LoadingInfo &);
-    inline void               ExtractPolygon(vtkPolygon *, vtkDataSet *, int,
-                                             LoadingInfo &);
+    typedef struct 
+    {
+      std::vector<int>                  cellDataIndex;
+      std::vector<int>                  pointDataIndex;
+      std::vector<int>                  cellDataSize;
+      std::vector<int>                  pointDataSize;
+      std::vector<vtkDataArray *>       cellArrays;
+      std::vector<vtkDataArray *>       pointArrays;
+      int                               nVars;
+    } LoadingInfo;
 
-    void                      KernelBasedSample(vtkDataSet *);
-    void                      RasterBasedSample(vtkDataSet *, int num = 0);
+    void                      GetLoadingInfoForArrays(vtkDataSet *, LoadingInfo &);
+
+    virtual bool              FilterUnderstandsTransformedRectMesh() = 0;
+    virtual void              SetUpExtractors(void) = 0;
+    virtual void              SendJittering(void) = 0;
+    virtual void              DoSampling(vtkDataSet *ds, int idx) = 0;
+
 };
 
 

@@ -1022,30 +1022,6 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         raycastingLayout->addWidget(rendererSamplesWidget,1,4,1,2);
         pLayout->addWidget(raycastingGroup);
     }
-    
-#ifdef VISIT_SLIVR
-    //slivr group
-    {
-        slivrGroup = new QGroupBox(parent);
-        slivrGroup->setTitle(tr("SLIVR Options"));
-        slivrGroupLayout             = new QVBoxLayout(                  slivrGroup);
-        slivrOptions                 = new QWidget(                      slivrGroup);
-        QHBoxLayout *slivrLayout     = new QHBoxLayout(                  slivrOptions);
-        rendererSamplesSLIVRLabel    = new QLabel(tr("Sampling rate"),   slivrOptions);
-        rendererSamplesSLIVR         = new QDoubleSpinBox(               slivrOptions);
-        rendererSamplesSLIVR->setKeyboardTracking(false);
-        rendererSamplesSLIVR->setMinimum(1);
-        rendererSamplesSLIVR->setMaximum(20);
-        rendererSamplesSLIVR->setSingleStep(.1);
-        rendererSamplesSLIVRLabel->setBuddy(rendererSamplesSLIVR);
-        connect(rendererSamplesSLIVR, SIGNAL(valueChanged(double)), this, SLOT(rendererSamplesChanged(double)));
-        slivrLayout->addWidget(rendererSamplesSLIVRLabel);
-        slivrLayout->addWidget(rendererSamplesSLIVR);
-        slivrLayout->addStretch(QSizePolicy::Maximum);
-        slivrGroupLayout->addWidget(slivrOptions);
-        pLayout->addWidget(slivrGroup);
-    }
-#endif
 }
 
 void QvisVolumePlotWindow::EnableSamplingMethods(bool enable)
@@ -1078,24 +1054,12 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
     defaultOptions->setEnabled(true);
 }
 
-#ifdef VISIT_SLIVR
-void QvisVolumePlotWindow::EnableSLIVRGroup()
-{
-    slivrGroup->setVisible(true);
-    rendererSamplesSLIVRLabel->setEnabled(true);
-    rendererSamplesSLIVR->setEnabled(true);
-}
-#endif
-
 void QvisVolumePlotWindow::UpdateSamplingGroup()
 {
     //hide all groups
     resampleGroup->setVisible(false);
     defaultGroup->setVisible(false);
     raycastingGroup->setVisible(false);
-#ifdef VISIT_SLIVR
-    slivrGroup->setVisible(false);
-#endif
 
     tfTabs->setTabEnabled(1, true);
 
@@ -1159,16 +1123,14 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
 
 #ifdef VISIT_SLIVR
     case VolumeAttributes::RayCastingSLIVR:
-        EnableSLIVRGroup();
-        resampleGroup->setEnabled(false);
-        raycastingGroup->setVisible(false);
+        raycastingGroup->setVisible(true);
         UpdateLowGradientGroup(false);
-        materialProperties->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingSLIVR && volumeAtts->GetLightingFlag());
-        EnableSamplingMethods(true);
-        samplesPerRayWidget->setEnabled(volumeAtts->GetRendererType()!=VolumeAttributes::RayCastingSLIVR);
-        rendererSamplesWidget->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingSLIVR);
-        rendererSamplesSLIVRLabel->setEnabled(true);
-        rendererSamplesSLIVR->setEnabled(true);
+        materialProperties->setEnabled(volumeAtts->GetLightingFlag());
+        EnableSamplingMethods(false);
+        samplesPerRayWidget->setEnabled(true);
+        rendererSamplesWidget->setEnabled(true);
+        rendererSamples->setEnabled(true);
+        rendererSamplesLabel->setEnabled(true);
         centeredDiffButton->setEnabled(true);
         centeredDiffButton->setChecked(true);
         sobelButton->setEnabled(false);
@@ -1765,11 +1727,6 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             rendererSamples->blockSignals(true);
             rendererSamples->setValue(volumeAtts->GetRendererSamples());
             rendererSamples->blockSignals(false);
-#ifdef VISIT_SLIVR
-            rendererSamplesSLIVR->blockSignals(true);
-            rendererSamplesSLIVR->setValue(volumeAtts->GetRendererSamples());
-            rendererSamplesSLIVR->blockSignals(false);
-#endif
             break;
         case VolumeAttributes::ID_materialProperties:
             matKa->blockSignals(true);

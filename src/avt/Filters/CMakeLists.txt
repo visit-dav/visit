@@ -102,9 +102,11 @@ avtPolylineCleanupFilter.C
 avtPolylineToRibbonFilter.C
 avtPolylineToTubeFilter.C
 avtRayCompositer.C
+avtRayTracerBase.C
 avtRayTracer.C
 avtResampleFilter.C
 avtSamplePointCommunicator.C
+avtSamplePointExtractorBase.C
 avtSamplePointExtractor.C
 avtSamplePointToSurfaceFilter.C
 avtShiftCenteringFilter.C
@@ -132,6 +134,8 @@ avtXRayFilter.C
 if (VISIT_SLIVR)
     list(APPEND AVTFILTERS_SOURCES
          avtImgCommunicator.C
+         avtSLIVRRayTracer.C
+         avtSLIVRSamplePointExtractor.C
          avtSLIVRVoxelExtractor.C)
     add_definitions(-DVISIT_SLIVR)
 endif()

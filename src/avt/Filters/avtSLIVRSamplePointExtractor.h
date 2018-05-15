@@ -37,42 +37,28 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                           avtSamplePointExtractor.h                       //
+//                      avtSLIVRSamplePointExtractor.h                       //
 // ************************************************************************* //
 
-#ifndef AVT_SAMPLE_POINT_EXTRACTOR_H
-#define AVT_SAMPLE_POINT_EXTRACTOR_H
+#ifndef AVT_SLIVR_SAMPLE_POINT_EXTRACTOR_H
+#define AVT_SLIVR_SAMPLE_POINT_EXTRACTOR_H
 
 #include <filters_exports.h>
 
 #include <avtSamplePointExtractorBase.h>
 
-class  vtkDataSet;
-class  vtkHexahedron;
-class  vtkQuadraticHexahedron;
-class  vtkPixel;
-class  vtkPyramid;
-class  vtkQuad;
-class  vtkTetra;
-class  vtkTriangle;
-class  vtkVoxel;
-class  vtkWedge;
-class  vtkPolygon;
+#include <vector>
+#include <map>
 
-class  avtHexahedronExtractor;
-class  avtHexahedron20Extractor;
-class  avtMassVoxelExtractor;
-class  avtPointExtractor;
-class  avtPyramidExtractor;
-class  avtSamplePointArbitrator;
-class  avtTetrahedronExtractor;
-class  avtWedgeExtractor;
+#include <vtkMatrix4x4.h>
 
-class  avtRayFunction;
+#include <imgMetaData.h>
+
+class  avtSLIVRVoxelExtractor;
 
 
 // ****************************************************************************
-//  Class: avtSamplePointExtractor
+//  Class: avtSLIVRSamplePointExtractor
 //
 //  Purpose:
 //      This is a component that will take an avtDataset as an input and find
@@ -132,73 +118,83 @@ class  avtRayFunction;
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtSamplePointExtractor 
+class AVTFILTERS_API avtSLIVRSamplePointExtractor 
     : public avtSamplePointExtractorBase
 {
   public:
-                              avtSamplePointExtractor(int, int, int);
-    virtual                  ~avtSamplePointExtractor();
+                              avtSLIVRSamplePointExtractor(int, int, int);
+    virtual                  ~avtSLIVRSamplePointExtractor();
 
     virtual const char       *GetType(void)
-                                         { return "avtSamplePointExtractor"; }
+                                         { return "avtSLIVRSamplePointExtractor"; };
     virtual const char       *GetDescription(void)
-                                         { return "Extracting sample points";}
+                                         { return "Extracting sample points";};
 
-    void                      RegisterRayFunction(avtRayFunction *rf)
-                                         { rayfoo = rf; }
-    void                      SendCellsMode(bool);
-    void                      Set3DMode(bool m) { modeIs3D = m; }
-    void                      SetKernelBasedSampling(bool);
-    void                      SetTrilinear(bool t)
-                                         { trilinearInterpolation = t; }
+
+    void                      SetLighting(bool l) {lighting = l; };
+    void                      SetLightPosition(double _lightPos[4]) { for (int i=0;i<4;i++) lightPosition[i]=_lightPos[i]; }
+    void                      SetLightDirection(double _lightDir[3]) { for (int i=0;i<3;i++) lightDirection[i]=_lightDir[i]; }
+    void                      SetMatProperties(double _matProp[4]) { for (int i=0;i<4;i++) materialProperties[i]=_matProp[i]; }
+    void                      SetViewDirection(double *vD){ for (int i=0; i<3; i++) view_direction[i] = vD[i]; }
+    void                      SetClipPlanes(double _camClip[2]){ clipPlanes[0]=_camClip[0]; clipPlanes[1]=_camClip[1]; }
+    void                      SetPanPercentages(double _pan[2]){ panPercentage[0]=_pan[0]; panPercentage[1]=_pan[1]; }
+    void                      SetDepthExtents(double _depthExtents[2]){ depthExtents[0]=_depthExtents[0]; depthExtents[1]=_depthExtents[1]; }
+    void                      SetMVPMatrix(vtkMatrix4x4 *_mvp){ modelViewProj->DeepCopy(_mvp); }
+
+    void                      getSpatialExtents(double _spatialExtents[6]){ for (int i=0; i<6; i++) _spatialExtents[i] = minMaxSpatialBounds[i]; }
+    void                      getAvgPatchExtents(double _avgPatchExtents[6]){ for (int i=0; i<3; i++) _avgPatchExtents[i] = avgPatchExtents[i]; }
+    void                      getCellDimension(double _cellDimension[6]){ for (int i=0; i<3; i++) _cellDimension[i] = cellDimension[i]; }
+
+    // Getting image information
+    int                       getImgPatchSize(){ return patchCount;}
+                       // gets the number of patches
+    imgMetaData               getImgMetaPatch(int patchId){ return imageMetaPatchVector.at(patchId);} // gets the metadata
+    void                      getnDelImgData(int patchId, imgData &tempImgData);                      // gets the image & erase its existence
+    void                      delImgPatches();                                                        // deletes patches
+
+    // Set background buffer
+    void                      setDepthBuffer(float *_zBuffer, int size){ depthBuffer=_zBuffer; }
+    void                      setRGBBuffer(unsigned char  *_colorBuffer, int width, int height){ rgbColorBuffer=_colorBuffer; }
+    void                      setBufferExtents(int _extents[4]){ for (int i=0;i<4; i++) bufferExtents[i]=_extents[i]; }
+
+    // Output data for RC SLIVR
+    std::vector<imgMetaData>    imageMetaPatchVector;
+    std::multimap<int, imgData> imgDataHashMap;
+    typedef std::multimap<int, imgData>::iterator iter_t;
 
   protected:
-    bool                      modeIs3D;
-    bool                      kernelBasedSampling;
-    double                    point_radius;
-
-    avtHexahedronExtractor   *hexExtractor;
-    avtHexahedron20Extractor *hex20Extractor;
-    avtMassVoxelExtractor    *massVoxelExtractor;
-    avtPointExtractor        *pointExtractor;
-    avtPyramidExtractor      *pyramidExtractor;
-    avtTetrahedronExtractor  *tetExtractor;
-    avtWedgeExtractor        *wedgeExtractor;
-
-    bool                      sendCells;
-    avtRayFunction           *rayfoo;
-
-    bool                      trilinearInterpolation;
-
-    virtual void              PreExecute(void);
     virtual void              DoSampling(vtkDataSet *, int);
-    virtual bool              FilterUnderstandsTransformedRectMesh();
     virtual void              SetUpExtractors(void);
     virtual void              SendJittering(void);
+    virtual bool              FilterUnderstandsTransformedRectMesh(void);
 
-    inline void               ExtractHex(vtkHexahedron*,vtkDataSet*, int,
-                                           LoadingInfo &);
-    inline void               ExtractHex20(vtkQuadraticHexahedron*,vtkDataSet*, int,
-                                           LoadingInfo &);
-    inline void               ExtractVoxel(vtkVoxel *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractTet(vtkTetra *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractPyramid(vtkPyramid *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractWedge(vtkWedge *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractTriangle(vtkTriangle *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractQuad(vtkQuad *, vtkDataSet *, int,
-                                           LoadingInfo &);
-    inline void               ExtractPixel(vtkPixel *, vtkDataSet *, int, 
-                                           LoadingInfo &);
-    inline void               ExtractPolygon(vtkPolygon *, vtkDataSet *, int,
-                                             LoadingInfo &);
+    double                    minMaxSpatialBounds[6];
+    double                    avgPatchExtents[3];
+    double                    cellDimension[3];
 
-    void                      KernelBasedSample(vtkDataSet *);
-    void                      RasterBasedSample(vtkDataSet *, int num = 0);
+    // Background + other plots
+    float                    *depthBuffer;             // depth buffer for the background and other plots
+    unsigned char            *rgbColorBuffer;          // bounding box + pseudo color + ...
+    int                       bufferExtents[4];         // extents of the buffer( minX, maxX, minY, maxY)
+
+    avtSLIVRVoxelExtractor   *slivrVoxelExtractor;
+    int                       patchCount;
+    // Camera stuff
+    double                    view_direction[3];
+    double                    depthExtents[2];
+    double                    clipPlanes[2];
+    double                    panPercentage[2];
+    vtkMatrix4x4             *modelViewProj;
+
+    // lighting & material
+    bool                      lighting;
+    double                    lightPosition[4];
+    double                    lightDirection[3];
+    double                    materialProperties[4];
+
+    imgMetaData               initMetaPatch(int id);    // initialize a patch
+
+    void                      RasterBasedSample(vtkDataSet *, int num=0);
 };
 
 

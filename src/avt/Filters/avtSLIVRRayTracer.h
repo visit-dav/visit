@@ -37,19 +37,21 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                                 avtRayTracer.h                            //
+//                            avtSLIVRRayTracer.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_RAY_TRACER_H
-#define AVT_RAY_TRACER_H
+#ifndef AVT_SLIVR_RAY_TRACER_H
+#define AVT_SLIVR_RAY_TRACER_H
 
 #include <filters_exports.h>
 
 #include <avtRayTracerBase.h>
+#include <avtImgCommunicator.h>
 
+class   vtkMatrix4x4;
 
 // ****************************************************************************
-//  Class: avtRayTracer
+//  Class: avtSLIVRRayTracer
 //
 //  Purpose:
 //      Performs ray tracing, taking in a dataset as a source and has an
@@ -93,24 +95,46 @@
 //
 // ****************************************************************************
 
-class AVTFILTERS_API avtRayTracer : public avtRayTracerBase
+class AVTFILTERS_API avtSLIVRRayTracer : public avtRayTracerBase
 {
   public:
-                          avtRayTracer();
-    virtual              ~avtRayTracer();
+                          avtSLIVRRayTracer();
+    virtual              ~avtSLIVRRayTracer();
 
-    virtual const char   *GetType(void) { return "avtRayTracer"; };
-    virtual const char   *GetDescription(void) { return "Ray tracing"; };
+    virtual const char   *GetType(void) { return "avtSLIVRRayTracer"; };
+    virtual const char   *GetDescription(void) { return "SLIVR Ray tracing"; };
 
-    void                  SetBackgroundMode(int mode);
-    void                  SetGradientBackgroundColors(const double [3],
-                                                      const double [3]);
+
+    void                  blendImages(float *src, int dimsSrc[2], int posSrc[2], float *dst, int dimsDst[2], int posDst[2]);
+    void                  SetLighting(bool l) {lighting = l; };
+    void                  SetLightPosition(double _lightPos[4]) { for (int i=0;i<4;i++) lightPosition[i]=_lightPos[i]; }
+    void                  SetLightDirection(double _lightDir[3]) { for (int i=0;i<3;i++) lightDirection[i]=_lightDir[i]; }
+    void                  SetMatProperties(double _matProp[4]) { for (int i=0;i<4;i++) materialProperties[i]=_matProp[i]; }
+    void                  SetViewDirection(double *vd){ for (int i=0; i<3; i++) view_direction[i] = vd[i]; }
+
   protected:
-    int                   backgroundMode;
-    double                gradBG1[3];
-    double                gradBG2[3];
 
     virtual void          Execute(void);
+
+    avtImgCommunicator    imgComm;
+    bool                  lighting;
+    double                lightPosition[4];
+    double                lightDirection[3];
+    double                materialProperties[4];
+    double                view_direction[3];
+    double                panPercentage[2];
+
+    void project3Dto2D(double _3Dextents[6], int width, int height,
+                       vtkMatrix4x4 *_mvp, int _2DExtents[4],
+                       double depthExtents[2]);
+    double project(double _worldCoordinates[3], int pos2D[2], 
+                   int _width, int _height, vtkMatrix4x4 *_mvp);
+    void unProject(int _x, int _y, float _z, double _worldCoordinates[3],
+                   int _width, int _height, vtkMatrix4x4 *invModelViewProj);
+    bool checkInBounds(double volBounds[6], double coord[3]);
+    void computeRay(double camera[3], double position[3], double ray[3]);
+    bool intersect(double bounds[6], double ray[3], double cameraPos[3],
+                   double &tMin, double &tMax);
 };
 
 

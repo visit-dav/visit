@@ -75,6 +75,10 @@
 #include <vector>
 #include <cmath>
 
+#ifdef VISIT_SLIVR
+#include <avtSLIVRRayTracer.h>
+#endif
+
 //
 // Function Prototypes
 //
@@ -397,9 +401,7 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     //
     // Set up the volume renderer.
     //
-    avtRayTracer *software = new avtRayTracer;
-    software->SetRayCastingSLIVR(true);
-    software->SetTrilinear(false);
+    avtSLIVRRayTracer *software = new avtSLIVRRayTracer;
     software->SetInput(termsrc.GetOutput());
     software->InsertOpaqueImage(opaque_image);
 
@@ -574,9 +576,9 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     // Set the volume renderer's background color and mode from the
     // window attributes.
     //
-    software->SetBackgroundMode(window.GetBackgroundMode());
+    //software->SetBackgroundMode(window.GetBackgroundMode());
     software->SetBackgroundColor(window.GetBackground());
-    software->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
+    //software->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
 
 
     //
@@ -731,9 +733,6 @@ avtVolumeFilter::RenderImage(avtImage_p opaque_image,
     avtRayTracer *software = new avtRayTracer;
     software->SetInput(termsrc.GetOutput());
     software->InsertOpaqueImage(opaque_image);
-#ifdef VISIT_SLIVR
-    software->SetRayCastingSLIVR(false);
-#endif
 
     double range[2] = {0., 0.};
     avtOpacityMap om(CreateOpacityMap(range));
