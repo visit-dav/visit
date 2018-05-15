@@ -84,12 +84,16 @@ public:
         }
         gl->GetRenderWindow()->AlphaBitPlanesOn();
         gl->GetRenderWindow()->SetStereoRender( stereo );
-#if defined Q_OS_OSX && (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))
-        if(QSysInfo::macVersion() >= QSysInfo::MV_YOSEMITE &&
-           QSysInfo::macVersion() <= QSysInfo::MV_ELCAPITAN) // OSX 10.10 and 10.11
+        gl->GetRenderWindow()->AlphaBitPlanesOn();
+        gl->GetRenderWindow()->SetStereoRender( stereo );
+        
+    #ifdef Q_OS_OSX
+        if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10)
         {
             disableGLHiDPI(gl->winId());
         }
+    #endif
+        
 #endif
     }
 
