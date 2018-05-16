@@ -1,6 +1,6 @@
 /*****************************************************************************
  *
- * Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+ * Copyright (c) 2000 - 2017, Lawrence Livermore National Security, LLC
  * Produced at the Lawrence Livermore National Laboratory
  * LLNL-CODE-442911
  * All rights reserved.
@@ -1749,9 +1749,13 @@ int avtunvFileFormat::getNbfreeSets ()
                 for (itre = freeelts.begin(); itre != freeelts.end(); itre++)
                 {
                     if (itre->matid == iorder)
+                    {
                         itre->matid = imax;
+                    }
                     else if (itre->matid == imax)
+                    {
                         itre->matid = iorder;
+                    }
                 }
             }
         }
@@ -1791,11 +1795,11 @@ int avtunvFileFormat::getNbfreeSets ()
 //
 // ****************************************************************************
 
-avtunvFileFormat::avtunvFileFormat(const char *fn) : avtSTSDFileFormat(fn)
+avtunvFileFormat::avtunvFileFormat(const char *fname) : avtSTSDFileFormat(fname)
 {
     // INITIALIZE DATA MEMBERS
     fileRead = false;
-    filename = strdup(fn);
+    filename = fname ; // strdup(fn);
     // File handles
     handle = NULL;
     gzhandle = Z_NULL;
@@ -1868,6 +1872,7 @@ avtunvFileFormat::FreeUpResources(void)
         meshUnvFacePressures[i].faces.clear();
 
     meshUnvFacePressures.clear();
+    fileRead = false;
 }
 
 
@@ -2142,6 +2147,10 @@ avtunvFileFormat::GetMesh(const char *meshname)
     if (PAR_Rank() != 0)
         return 0 ;
 #endif
+
+    if (!fileRead)
+        ReadFile();
+
     if (strcmp(meshname, "mesh") == 0)
     {
         // Builds the VTK data structure:
@@ -3137,7 +3146,7 @@ avtunvFileFormat::ReadFile()
             debug1 << "On the way to read unv file " << filename << endl;
 #endif
             int len = 2048; // Longest line length
-            char *buf = new char[len]; // A line length
+            char buf[len]; // A line length
             int code;
             int label;
             double fac = 1.;
@@ -3486,7 +3495,6 @@ avtunvFileFormat::ReadFile()
                     }
                 }
             }
-            delete [] buf;
             fclose(handle);
         }
 #if GZSTUFF
@@ -3504,7 +3512,7 @@ avtunvFileFormat::ReadFile()
             }
 
             int len = 2048; // Longest line length
-            char *buf = new char[len]; // A line length
+            char buf[len]; // A line length
             int code;
             int label;
             double fac = 1.;
@@ -3892,7 +3900,6 @@ avtunvFileFormat::ReadFile()
                     }
                 }
             }
-            delete [] buf;
             gzclose(gzhandle);
 #if INTERACTIVEREAD
             if (debuglevel >= 1) fprintf(stdout,"Closing file, nbnodes=%d, nbelts=%d\n",nbnodes,nb3dcells+nb2dcells);

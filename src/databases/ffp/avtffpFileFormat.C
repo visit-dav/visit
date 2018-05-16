@@ -97,7 +97,12 @@ avtffpFileFormat::avtffpFileFormat(const char *fname)
 {
     // INITIALIZE DATA MEMBERS
     fileRead = false;
-    filename = strdup(fname);
+    filename = fname ; // strdup(fname);
+#if INTERACTIVEREAD
+    if (debuglevel >= 1) fprintf(stdout, "Constructor file %s\n",filename.c_str());
+#else
+    debug1 << "Constructor file " << filename << endl;
+#endif
     // File handles
     handle = NULL;
     gzhandle = Z_NULL;
@@ -154,6 +159,8 @@ avtffpFileFormat::FreeUpResources(void)
         thetas = NULL ;
         phis = NULL ;
     }
+    fileRead = false;
+
 }
 
 // ****************************************************************************
@@ -166,20 +173,7 @@ avtffpFileFormat::FreeUpResources(void)
 
 avtffpFileFormat::~avtffpFileFormat()
 {
-    if (valeurs != NULL)
-    {
-        free(valeurs) ;
-        free(maleurs) ;
-        valeurs = NULL ; 
-        maleurs = NULL ; 
-    }
-    if (thetas != NULL)
-    {
-        free(thetas) ;
-        free(phis) ;
-        thetas = NULL ;
-        phis = NULL ;
-    }
+    FreeUpResources();
 }
 
 
@@ -205,6 +199,11 @@ avtffpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     // Make sure file is read
     if (!fileRead)
     {
+#if INTERACTIVEREAD
+        if (debuglevel >= 1) fprintf(stdout, "PopulateDatabaseMetaData ReadFile file %s\n",filename.c_str());
+#else
+        debug1 << "PopulateDatabaseMetaData ReadFile file " << filename << endl;
+#endif
         ReadFile();
     }
 
@@ -220,7 +219,6 @@ avtffpFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     int block_origin = 0;
     int spatial_dimension = 3;
     int topological_dimension = 2;
-    double *extents = NULL; // replace with already set range
     //
     // Here's the call that tells the meta-data object that we have a mesh:
     //
@@ -377,6 +375,11 @@ avtffpFileFormat::GetMesh(const char *meshname)
 #endif
     if (!fileRead)
     {
+#if INTERACTIVEREAD
+        if (debuglevel >= 2) fprintf(stdout, "ReadFile meshname=%s for file %s\n",meshname,filename.c_str());
+#else
+        debug2 << "ReadFile meshname= " << meshname << " for file " << filename << endl;
+#endif
         ReadFile();
     }
     if (strcmp(meshname, "mesh") == 0 || strcmp(meshname, "tesh") == 0 || strcmp(meshname, "sphere") == 0 || strcmp(meshname, "cphere") == 0)
@@ -387,18 +390,18 @@ avtffpFileFormat::GetMesh(const char *meshname)
         if (phicomplete == 1 && thetacomplete == 1)
         {
 #if INTERACTIVEREAD
-            if (debuglevel >= 1) fprintf(stdout,"Building #nodes=%d\n",nbtheta*nbphi+2);
+            if (debuglevel >= 1) fprintf(stdout,"Building mesh #nodes=%d\n",nbtheta*nbphi+2);
 #else
-            debug1 << "Building #nodes= " << nbtheta*nbphi+2 << endl;
+            debug1 << "Building mesh #nodes= " << nbtheta*nbphi+2 << endl;
 #endif
             pts->SetNumberOfPoints(nbtheta*nbphi+2);
         }
         else
         {
 #if INTERACTIVEREAD
-            if (debuglevel >= 1) fprintf(stdout,"Building #nodes=%d\n",nbtheta*nbphi);
+            if (debuglevel >= 1) fprintf(stdout,"Building mesh #nodes=%d\n",nbtheta*nbphi);
 #else
-            debug1 << "Building #nodes= " << nbtheta*nbphi << endl;
+            debug1 << "Building mesh #nodes= " << nbtheta*nbphi << endl;
 #endif
             pts->SetNumberOfPoints(nbtheta*nbphi);
         }
@@ -495,10 +498,14 @@ avtffpFileFormat::GetMesh(const char *meshname)
                 }
             }
         }
+ #if 0
+        // What the hell is that for ?i=64441 v=1.000000
         if (phicomplete == 1 && thetacomplete == 1)
             pts->SetPoint(nbtheta*nbphi+1, x, y, z);
         else if (phicomplete == 1)
             pts->SetPoint(nbtheta*nbphi, x, y, z);
+#endif
+
         // Build the mesh
         flag = 1;
         if (strcmp(meshname, "tesh") == 0) {
@@ -690,6 +697,16 @@ avtffpFileFormat::GetVar(const char *varname)
 #else
     debug1 << "FFP: GetVar function is called, var=" << varname << endl ;
 #endif
+    // Make sure file is read
+    if (!fileRead)
+    {
+#if INTERACTIVEREAD
+        if (debuglevel >= 2) fprintf(stdout, "ReadFile varname=%s for file %s\n",varname,filename.c_str());
+#else
+        debug2 << "ReadFile varname= " << varname << " for file " << filename << endl;
+#endif
+        ReadFile();
+    }
 
     //
     // If you have a file format where variables don't apply (for example a
@@ -761,6 +778,16 @@ avtffpFileFormat::GetVectorVar(const char *varname)
 #else
     debug1 << "FFP: GetVectorVar function is called, var=" << varname << endl ;
 #endif
+    // Make sure file is read
+    if (!fileRead)
+    {
+#if INTERACTIVEREAD
+        if (debuglevel >= 2) fprintf(stdout, "ReadFile vectorvarname=%s for file %s\n",varname,filename.c_str());
+#else
+        debug2 << "ReadFile vectorvarname= " << varname << " for file " << filename << endl;
+#endif
+        ReadFile();
+    }
 
     //
     // If you have a file format where variables don't apply (for example a
@@ -829,7 +856,14 @@ void
 avtffpFileFormat::ReadFile(void)
 {
     if (fileRead)
+    {
+#if INTERACTIVEREAD
+        if (debuglevel >= 1) fprintf(stdout, "ReadFile for file %s\n",filename.c_str());
+#else
+        debug1 << "ReadFile for file " << filename << endl;
+#endif
         return;
+    }
 
     // fileRead = true ;
     ifstream in(filename.c_str());
@@ -912,6 +946,16 @@ avtffpFileFormat::ReadFile(void)
                    if (debuglevel >= 1) fprintf(stdout,"fac=%lf\n",fac) ;
 #else
                    debug1 << "fac=" << fac << endl;
+#endif
+                }
+                // Look for frequency value
+                if (strstr(buf, "FRE=") != NULL)
+                {
+                    sscanf(strstr(buf, "FRE=")+4, "%lf\n", &ffpTime);
+#if INTERACTIVEREAD
+                   if (debuglevel >= 1) fprintf(stdout,"frequency=%lf\n",ffpTime) ;
+#else
+                   debug1 << "ffpTime=" << ffpTime << endl;
 #endif
                 }
 
@@ -1036,6 +1080,16 @@ avtffpFileFormat::ReadFile(void)
                    if (debuglevel >= 1) fprintf(stdout,"fac=%lf\n",fac) ;
 #else
                    debug1 << "fac=" << fac << endl;
+#endif
+                }
+                // Look for frequency value
+                if (strstr(buf, "FRE=") != NULL)
+                {
+                    sscanf(strstr(buf, "FRE=")+4, "%lf\n", &ffpTime);
+#if INTERACTIVEREAD
+                   if (debuglevel >= 1) fprintf(stdout,"frequency=%lf\n",ffpTime) ;
+#else
+                   debug1 << "ffpTime=" << ffpTime << endl;
 #endif
                 }
 
@@ -1505,6 +1559,11 @@ avtffpFileFormat::ReadFile(void)
     }
     else
     {
+#if INTERACTIVEREAD
+        if (debuglevel >= 1) fprintf(stdout, "ReadFile flag is set for file %s\n",filename.c_str());
+#else
+        debug1 << "ReadFile flag is set for file " << filename << endl;
+#endif
         fileRead = true;
     }
 }
@@ -1607,6 +1666,16 @@ avtffpFileFormat::GetAuxiliaryData(const char *var, const char *type, void *,Des
         {
             double mrange[6] ;
             mrange[0] = -1. ;  mrange[1] = +1. ;  mrange[2] = -1. ;  mrange[3] = +1. ;  mrange[4] = -1. ;  mrange[5] = +1. ; 
+            avtIntervalTree *itree = new avtIntervalTree(1, 3);
+            itree->AddElement(0, mrange);
+            itree->Calculate(true);
+            df = avtIntervalTree::Destruct;
+            return ((void *) itree);
+        }
+        else if (strstr(var, "cphere") != NULL)
+        {
+            double mrange[6] ;
+            mrange[0] = -2. ;  mrange[1] = +2. ;  mrange[2] = -2. ;  mrange[3] = +2. ;  mrange[4] = -2. ;  mrange[5] = +2. ; 
             avtIntervalTree *itree = new avtIntervalTree(1, 3);
             itree->AddElement(0, mrange);
             itree->Calculate(true);
