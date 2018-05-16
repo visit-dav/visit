@@ -45,7 +45,7 @@
 
 #include "conduit.hpp"
 #include <string>
-
+#include "InvalidVariableException.h"
 
 //-----------------------------------------------------------------------------
 // visit includes
@@ -56,31 +56,24 @@
 /// Macros for info messages, warnings and and errors
 //-----------------------------------------------------------------------------
 
-//
-// uncomment the CONDUIT_INFO call to get detailed info sent to stdout
-//
 #define BP_PLUGIN_INFO(  msg  )                                     \
 {                                                                   \
-    /* CONDUIT_INFO( msg ); */                                      \
-    debug5 << msg << endl;                                          \
+    CONDUIT_INFO( msg );                                            \
 }                                                                   \
 
-// in the future, wire as necessary
 #define BP_PLUGIN_WARNING(  msg  )                                  \
 {                                                                   \
-    /* CONDUIT_INFO( "[warning] " << msg ); */                      \
-    debug5 << "[warning] " << msg << endl;                          \
+    CONDUIT_INFO( "[blueprint warning] " << msg );                  \
 }                                                                   \
 
-// in the future, opt to throw proper visit error
-#define BP_PLUGIN_ERROR(  msg  )                                    \
+#define BP_PLUGIN_EXCEPTION1(  etype , msg )                        \
 {                                                                   \
-    CONDUIT_INFO( "[error] " << msg );                              \
-    debug1 << "[error] " << msg << endl;                            \
-}         
+    std::ostringstream bp_err_oss;                                  \
+    bp_err_oss << msg << std::endl;                                 \
+    debug1 << "[blueprint plugin error] " << bp_err_oss.str();      \
+    EXCEPTION1( etype  , bp_err_oss.str() );                        \
+}                                                                   \
 
-// TODO: What should we use to map general errors to visit exceptions?
-// EXCEPTION2(UnexpectedValueException, "A standard data type", dt.name());
 
 //-----------------------------------------------------------------------------
 /// The CHECK_HDF5_ERROR macro is used to check error codes from HDF5.
@@ -93,7 +86,8 @@
         hdf5_err_oss << "HDF5 Error code"                           \
             <<  hdf5_err                                            \
             << " " << msg;                                          \
-        BP_PLUGIN_ERROR( hdf5_err_oss.str());                       \
+        BP_PLUGIN_EXCEPTION1( InvalidVariableException,             \
+                              hdf5_err_oss.str());                  \
     }                                                               \
 }                                                                   \
 

@@ -220,7 +220,8 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
         Node v_info;
         if(!blueprint::mcarray::verify(n,v_info))
         {
-            BP_PLUGIN_ERROR("Node is not a mcarray " << v_info.to_json());
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "Node is not a mcarray " << v_info.to_json());
         }
         
         // in this case, each child is a component of the array
@@ -324,8 +325,9 @@ ConduitArrayToVTKDataArray(const conduit::Node &n)
     }
     else
     {
-        BP_PLUGIN_ERROR("unsupported datatype " << n.dtype().name());
-        EXCEPTION2(UnexpectedValueException, "A standard data type", "unknown");
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "Conduit Array to VTK Data Array"
+                             "unsupported data type: " << n.dtype().name());
     }
     return retval;
 }
@@ -391,8 +393,9 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
             da = vtkDoubleArray::New();
         else
         {
-            BP_PLUGIN_ERROR("unsupported data type " << dt.name());
-            EXCEPTION2(UnexpectedValueException, "A standard data type", dt.name());
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "Conduit Blueprint to Rectilinear Grid coordinates "
+                                 "unsupported data type: " << dt.name());
         }
 
         da->SetNumberOfTuples(nx[i]);
@@ -678,11 +681,9 @@ avtBlueprintDataAdaptor::VTK::MeshToVTK(const Node &n_mesh)
     }
     else
     {
-        BP_PLUGIN_ERROR( "expected Coordinate type of \"uniform\", \"rectilinear\", or \"explicit\""
-                          << " but found " << n_coords["type"].as_string());
-        EXCEPTION2(UnexpectedValueException,
-                   "Coordinate type of \"uniform\", \"rectilinear\", or \"explicit\"",
-                   n_coords["type"].as_string());
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                              "expected Coordinate type of \"uniform\", \"rectilinear\", or \"explicit\""
+                              << " but found " << n_coords["type"].as_string());
     }
 
     BP_PLUGIN_INFO("BlueprintVTK::MeshToVTKDataSet End");
@@ -806,7 +807,7 @@ ShapeNameToGeomType(const std::string &shape_name)
    }
    else
    {
-      BP_PLUGIN_ERROR("Unsupported Element Shape: " << shape_name);
+       BP_PLUGIN_WARNING("Unsupported Element Shape: " << shape_name);
    }
 
    return res;
@@ -842,8 +843,11 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh,
    
    if(!n_mesh.has_path("topologies/" + topo_name))
    {
-        BP_PLUGIN_ERROR("Expected topology named \"" + topo_name + "\" "
-                        "(node is missing path \"topologies/" + topo_name + "\")");
+       BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                            "Expected topology named \""
+                            << topo_name << "\" "
+                            "(node is missing path \"topologies/"
+                            << topo_name << "\")");
    }
    
    // find coord set
@@ -853,8 +857,11 @@ avtBlueprintDataAdaptor::MFEM::MeshToMFEM(const Node &n_mesh,
 
    if(!n_mesh.has_path("coordsets/" + coords_name))
    {
-        BP_PLUGIN_ERROR("Expected topology named \"" + coords_name + "\" "
-                       "(node is missing path \"coordsets/" + coords_name + "\")")
+       BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                            "Expected coordinate set named \""
+                            << coords_name << "\" "
+                            << "(node is missing path \"coordsets/"
+                            << coords_name << "\")")
    }
 
    const Node &n_coordset = n_mesh["coordsets"][coords_name];
