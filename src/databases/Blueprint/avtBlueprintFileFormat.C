@@ -106,9 +106,12 @@ blueprint_plugin_print_msg(const std::string &msg,
                            const std::string &file,
                            int line)
 {
-    debug5 << "File:"    << file << std::endl
-           << "Line:"    << line << std::endl
-           << "Message:" << msg  << std::endl;
+    // Uncomment for very verbose traces:
+    //
+    // debug5 << "File:"    << file << std::endl
+    //        << "Line:"    << line << std::endl
+    //        << "Message:" << msg  << std::endl;
+    debug5 << msg  << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -1037,14 +1040,10 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
                     << mesh_name << " " << mesh_topo_name);
 
 
-    // TODO: CYRUS keep track of what meshes are mfem in another way
-    // we may have a mesh topo with no gf, but it has
-    // a field that is an mfem field, for that we need to create
-    // the mfem mesh
-
     // check for the mfem case
-    if( data["topologies"][mesh_topo_name].has_child("grid_function") )
+    if( m_mfem_mesh_map[mesh_topo_name] )
     {
+        BP_PLUGIN_INFO("mesh  " << mesh_topo_name << " is a mfem mesh");
         // use mfem to refine and create a vtk dataset
         mfem::Mesh *mesh = avtBlueprintDataAdaptor::MFEM::MeshToMFEM(data);
         res = avtBlueprintDataAdaptor::MFEM::RefineMeshToVTK(mesh, m_selected_lod+1);
@@ -1054,6 +1053,7 @@ avtBlueprintFileFormat::GetMesh(int domain, const char *abs_meshname)
     }
     else
     {
+        BP_PLUGIN_INFO("mesh  " << mesh_topo_name << " is a standard mesh");
         // construct a vtk dataset directly from blueprint data
         // in a conduit tree
         res = avtBlueprintDataAdaptor::VTK::MeshToVTK(data);
