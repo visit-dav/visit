@@ -40,6 +40,11 @@
 #    Alister Maguire, Thu Apr 26 13:31:31 PDT 2018
 #    Added test for bov compression. 
 #
+#    Kathleen Biagas, Wed May 16, 2018
+#    Use python's gzip instead of subprocess('gunzip') so test will run
+#    correctly on Windows.  Modified AssertTrue calls to have text stating
+#    what is being tested.
+#
 # ----------------------------------------------------------------------------
 import string
 import time
@@ -478,8 +483,8 @@ def test_bov():
     opts["Compression"] = "None"
     ExportDatabase(e, opts)
     time.sleep(1)
-    AssertTrue(os.path.isfile("test_bov_uncompressed.bov"), True)
-    AssertTrue(os.path.isfile("test_bov_uncompressed"), True)
+    AssertTrue("test_bov_uncompressed.bov exists", os.path.isfile("test_bov_uncompressed.bov"))
+    AssertTrue("test_bov_uncompressed exists", os.path.isfile("test_bov_uncompressed"))
     ReplaceDatabase("test_bov_uncompressed.bov")
     Test("export_db_5_01")
 
@@ -490,9 +495,11 @@ def test_bov():
     opts["Compression"] = "gzip"
     ExportDatabase(e, opts)
     time.sleep(1)
-    AssertTrue(os.path.isfile("test_bov_gzip.bov"), True)
-    AssertTrue(os.path.isfile("test_bov_gzip.gz"), True)
-    subprocess.Popen(["gunzip", "test_bov_gzip.gz"])
+    AssertTrue("test_bov_gzip.bov exists", os.path.isfile("test_bov_gzip.bov"))
+    AssertTrue("test_bov_gzip.gz exists", os.path.isfile("test_bov_gzip.gz"))
+    with gzip.open("test_bov_gzip.gz", "rb") as f_in:
+        with open("test_bov_gzip", "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out);
     ReplaceDatabase("test_bov_gzip.bov")
     Test("export_db_5_02")
 
