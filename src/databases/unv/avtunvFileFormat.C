@@ -3145,14 +3145,14 @@ avtunvFileFormat::ReadFile()
 #else
             debug1 << "On the way to read unv file " << filename << endl;
 #endif
-            int len = 2048; // Longest line length
+            const int len = 2048; // Longest line length
             char buf[len]; // A line length
             int code;
             int label;
             double fac = 1.;
             while (fgets(buf, len, handle) != NULL)
             {
-                if (strstr(buf, "    -1") != NULL)
+                if (strstr((const char *)buf, "    -1") != NULL)
                 {
                     // Adding another ideas block
                     // fprintf(stdout,"Found -1 code\n");
@@ -3365,7 +3365,7 @@ avtunvFileFormat::ReadFile()
                             }
                             while (fgets(buf, len, handle) != NULL)
                             {
-                                if (strstr(buf, "    -1") != NULL)
+                                if (strstr((const char *)buf, "    -1") != NULL)
                                 {
 #if INTERACTIVEREAD
                                     if (debuglevel >= 3) fprintf(stdout,"Found End unit section code=%d\n",code);
@@ -3511,14 +3511,14 @@ avtunvFileFormat::ReadFile()
                 EXCEPTION1(InvalidDBTypeException, "This unv.gz file could not be openend.");
             }
 
-            int len = 2048; // Longest line length
+            const int len = 2048; // Longest line length
             char buf[len]; // A line length
             int code;
             int label;
             double fac = 1.;
             while (gzgets(gzhandle, buf, len) != Z_NULL)
             {
-                if (strstr(buf, "    -1") != NULL)
+                if (strstr((const char*)buf, "    -1") != NULL)
                 {
                     if (gzgets(gzhandle, buf, len) != Z_NULL)
                     {
@@ -3540,7 +3540,7 @@ avtunvFileFormat::ReadFile()
 #endif
                             while (gzgets(gzhandle, buf, len) != Z_NULL)
                             {
-                                if (strstr(buf, "    -1") != NULL)
+                                if (strstr((const char*)buf, "    -1") != NULL)
                                 {
 #if INTERACTIVEREAD
                                     if (debuglevel >= 2) fprintf(stdout,"Found Element section end, nb3dcells=%d, nb2dcells=%d, nb1dcells=%d\n",nb3dcells,nb2dcells,nb1dcells);
@@ -3694,7 +3694,7 @@ avtunvFileFormat::ReadFile()
 #endif
                             while (gzgets(gzhandle, buf, len) != Z_NULL)
                             {
-                                if (strstr(buf, "    -1") != NULL)
+                                if (strstr((const char*)buf, "    -1") != NULL)
                                 {
 #if !defined(MDSERVER)
                                     nbnodes = anode.number;
@@ -3767,7 +3767,7 @@ avtunvFileFormat::ReadFile()
                             }
                             while (gzgets(gzhandle, buf, len) != Z_NULL)
                             {
-                                if (strstr(buf, "    -1") != NULL)
+                                if (strstr((const char*)buf, "    -1") != NULL)
                                 {
 #if INTERACTIVEREAD
                                     if (debuglevel >= 3) fprintf(stdout,"Found End unit section code=%d\n",code);
@@ -3818,7 +3818,7 @@ avtunvFileFormat::ReadFile()
                                 set<UnvElement, UnvElement::compare_UnvElement>::iterator itre; // Global elements iterator
                                 while (gzgets(gzhandle, buf, len) != NULL)
                                 {
-                                    if (strstr(buf, "    -1") != NULL)
+                                    if (strstr((const char*)buf, "    -1") != NULL)
                                     {
                                         meshUnvFacePressures.push_back(anfp);
 #if INTERACTIVEREAD
@@ -3886,7 +3886,7 @@ avtunvFileFormat::ReadFile()
                         {
                             while (gzgets(gzhandle, buf, len) != Z_NULL)
                             {
-                                if (strstr(buf, "    -1") != NULL)
+                                if (strstr((const char*)buf, "    -1") != NULL)
                                 {
 #if INTERACTIVEREAD
                                     if (debuglevel >= 3) fprintf(stdout,"Found End section code=%d\n",code);
