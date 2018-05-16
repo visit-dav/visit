@@ -56,6 +56,7 @@
 #include "Expression.h"
 #include "FileFunctions.h"
 #include "InvalidVariableException.h"
+#include "InvalidFilesException.h"
 #include "UnexpectedValueException.h"
 
 //-----------------------------------------------------------------------------
@@ -98,24 +99,16 @@ using namespace mfem;
 
 
 //-----------------------------------------------------------------------------
-// These methods are used to re-wire conduit's error default error handling
-// in their current form, they really only for debugging purposes.
-// TODO: Plumb to debug streams and visit exceptions as appropriate 
+// These methods are used to re-wire conduit's default error handling
 //-----------------------------------------------------------------------------
 void 
 blueprint_plugin_print_msg(const std::string &msg,
                            const std::string &file,
                            int line)
 {
-    //std::cout << "File:"    << file << std::endl;
-    //std::cout << "Line:"    << line << std::endl;
-    //std::cout << "Message:" << msg  << std::endl;
-
-    debug5 << "File:"    << file << std::endl;
-    debug5 << "Line:"    << line << std::endl;
-    debug5 << "Message:" << msg  << std::endl;
-
-    // std::cout << msg << std::endl;
+    debug5 << "File:"    << file << std::endl
+           << "Line:"    << line << std::endl
+           << "Message:" << msg  << std::endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -135,24 +128,24 @@ blueprint_plugin_warning_handler(const std::string &msg,
                                  int line)
 {
     blueprint_plugin_print_msg(msg,file,line);
-    
-    std::ostringstream oss;
-    oss << "File:"    << file
-        << "Line:"    << line
-        << "Message:" << msg  << std::endl;
-    
-    EXCEPTION1(ImproperUseException, oss.str().c_str());
 }
 
 //-----------------------------------------------------------------------------
-void 
+void
 blueprint_plugin_error_handler(const std::string &msg,
                                const std::string &file,
                                int line)
 {
-    // TODO, plumb to visit exception
-    blueprint_plugin_print_msg(msg,file,line);
+    std::ostringstream bp_err_oss;
+    bp_err_oss << "[ERROR]" 
+               << "File:"    << file << std::endl
+               << "Line:"    << line << std::endl
+               << "Message:" << msg  << std::endl;
+
+    debug1 << bp_err_oss.str();
     
+    BP_PLUGIN_EXCEPTION1(InvalidVariableException, bp_err_oss.str());
+
 }
 
 // ****************************************************************************
@@ -192,20 +185,13 @@ avtBlueprintFileFormat::avtBlueprintFileFormat(const char *filename)
       m_selected_lod(0)
 {
     m_tree_cache = new avtBlueprintTreeCache();
-    
-    // in pop db metadata, visit swallows up any exceptions we throw in 
-    // conduit, which makes it quite hard to debug issues 
-    // so we can use the following to re-wire conduit's handler to a 
-    // simple function
 
+    // these redirect conduit info and warnings to debug 5
     conduit::utils::set_info_handler(blueprint_plugin_info_handler);
-    // when commented out, conduit warnings and errors will throw exceptions
     conduit::utils::set_warning_handler(blueprint_plugin_warning_handler);
-    
-    // we rely on exceptions to kick us out of pop db metadata
-    // in the case we have a bad root file, so only uncomment this 
-    // when debugging.
-    // conduit::utils::set_error_handler(blueprint_plugin_error_handler);
+    // this catches any uncaught conduit errors, logs them to debug 1
+    // and  converts them into a VisIt Exception
+    conduit::utils::set_error_handler(blueprint_plugin_error_handler);    
 }
 
 avtBlueprintFileFormat::~avtBlueprintFileFormat()
@@ -355,14 +341,17 @@ avtBlueprintFileFormat::ReadBlueprintMesh(int domain,
         BP_PLUGIN_INFO("field for grid_function for topology is named: " << gf_name);
         if(!bp_index_mesh_node["fields"].has_child(gf_name))
         {
-            BP_PLUGIN_ERROR("grid_function '" << gf_name << "' for topology not found in fields");
+            BP_PLUGIN_WARNING("grid_function '" << gf_name << "' for topology not found in fields");
         }
-        string gf_path = bp_index_mesh_node["fields"][gf_name]["path"].as_string();
+        else
+        {
+           string gf_path = bp_index_mesh_node["fields"][gf_name]["path"].as_string();
 
-        BP_PLUGIN_INFO("grid function path " << gf_path);
-        m_tree_cache->FetchBlueprintTree(domain,
-                                         gf_path,
-                                         out["fields"][gf_name]);
+           BP_PLUGIN_INFO("grid function path " << gf_path);
+           m_tree_cache->FetchBlueprintTree(domain,
+                                            gf_path,
+                                            out["fields"][gf_name]);
+        }
     }
     
     // to construct an mfem mesh object, 
@@ -463,9 +452,8 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
     
     if (!m_root_node["blueprint_index"].has_child(mesh_name))
     {
-        BP_PLUGIN_ERROR("mesh " << mesh_name << " not found in blueprint index");
-        
-        EXCEPTION1(InvalidVariableException, varname);
+        BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                             "mesh " << mesh_name << " not found in blueprint index");
     }
 
     if (!m_root_node["blueprint_index"][mesh_name]["fields"].has_child(varname))
@@ -474,8 +462,8 @@ avtBlueprintFileFormat::ReadBlueprintField(int domain,
         // element_coloring won't be in the index, its automatic.
         if(varname.find("element_coloring") == std::string::npos)
         {   
-            BP_PLUGIN_ERROR("field " << varname << " not found in blueprint index");
-            EXCEPTION1(InvalidVariableException, varname);
+            BP_PLUGIN_EXCEPTION1(InvalidVariableException,
+                                 "field " << varname << " not found in blueprint index");
         }
     }
 
@@ -656,9 +644,9 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
 
             if (topo_dims[var_topo_name] == 0)
             {
-                BP_PLUGIN_ERROR("Field \"" << varname_wmesh 
-                                << "\" defined on unknown topology=\"" 
-                                << n_field["topology"].as_string());
+                BP_PLUGIN_WARNING("Field \"" << varname_wmesh 
+                                  << "\" defined on unknown topology=\"" 
+                                  << n_field["topology"].as_string());
                 continue;
             }
         
@@ -786,8 +774,8 @@ avtBlueprintFileFormat::ReadRootFile()
 #endif
        if(error != 0)
        {
-           BP_PLUGIN_ERROR("Error reading root file: " 
-                            << root_fname);
+           BP_PLUGIN_EXCEPTION1(InvalidFilesException, 
+                                "Error reading root file: " << root_fname);
        }
 
 #ifdef PARALLEL
@@ -805,12 +793,14 @@ avtBlueprintFileFormat::ReadRootFile()
 
         if(!m_root_node.has_child("file_pattern"))
         {
-            BP_PLUGIN_ERROR("Root file missing 'file_pattern'");
+            BP_PLUGIN_EXCEPTION1(InvalidFilesException, 
+                                 "Root file missing 'file_pattern'");
         }
         
         if(!m_root_node.has_child("blueprint_index"))
         {
-            BP_PLUGIN_ERROR("Root file missing 'blueprint_index'");
+            BP_PLUGIN_EXCEPTION1(InvalidFilesException,
+                                 "Root file missing 'blueprint_index'");
         }
         
         NodeConstIterator itr = m_root_node["blueprint_index"].children();
@@ -829,8 +819,9 @@ avtBlueprintFileFormat::ReadRootFile()
         
         if(!index_ok)
         {
-            BP_PLUGIN_ERROR("Mesh index verify failed\n" 
-                            << n_verify_info.to_json());
+            BP_PLUGIN_EXCEPTION1(InvalidFilesException, 
+                                 "Mesh index verify failed\n" 
+                                 << n_verify_info.to_json());
         }
         
 }
@@ -907,9 +898,11 @@ avtBlueprintFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     catch(conduit::Error &e)
     {
-        BP_PLUGIN_INFO("Conduit Exception in Blueprint Plugin "
-                       << "Populate Database MetaData: " << endl
-                       << e.message());
+        std::ostringstream err_oss;
+        err_oss <<  "Conduit Exception in Blueprint Plugin "
+                    << "Populate Database MetaData: " << endl
+                    << e.message();
+        EXCEPTION1(InvalidFilesException, err_oss.str());
     }
     
     

@@ -432,13 +432,14 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
             }
             else
             {
-                BP_PLUGIN_ERROR("Failed to read tree path: " << tree_path
-                                << std::endl
-                                << "Expected to find Sidre Group: "
-                                << tree_root << "/sidre/" << sidre_mtree_group
-                                << " or "
-                                << "Sidre View: " 
-                                << tree_root << "/sidre/" << sidre_mtree_view);
+                BP_PLUGIN_EXCEPTION1( InvalidVariableException, 
+                                     "Failed to read tree path: " << tree_path
+                                     << std::endl
+                                     << "Expected to find Sidre Group: "
+                                     << tree_root << "/sidre/" << sidre_mtree_group
+                                     << " or "
+                                     << "Sidre View: " 
+                                     << tree_root << "/sidre/" << sidre_mtree_view);
             }
 
             visitTimer->StopTimer(t_sidre_meta_read, "fetch sidre meta data from hdf5");
@@ -463,7 +464,8 @@ avtBlueprintTreeCache::IO::LoadBlueprintTree(avtBlueprintTreeCache &tree_cache,
     }
     else
     {
-        BP_PLUGIN_ERROR("unknown protocol" << protocol);
+         BP_PLUGIN_EXCEPTION1( InvalidVariableException,
+                               "unknown protocol" << protocol);
     }
 
     visitTimer->StopTimer(t_load_bp_tree, "IO::LoadBlueprintTree");
@@ -634,7 +636,8 @@ avtBlueprintTreeCache::IO::LoadSidreView(Node &sidre_meta_view,
     }
     else
     {
-        BP_PLUGIN_ERROR("unsupported sidre view state: " << view_state );
+        BP_PLUGIN_EXCEPTION1( InvalidVariableException,
+                              "unsupported sidre view state: " << view_state );
     }
 }
 
@@ -731,7 +734,8 @@ avtBlueprintTreeCache::IO::LoadSidreTree(Node &sidre_meta,
         BP_PLUGIN_INFO(curr_path << tree_curr << " is a group");
         if(tree_next.size() != 0)
         {
-            BP_PLUGIN_ERROR("path extends beyond sidre view (views are leaves)");
+            BP_PLUGIN_EXCEPTION1( InvalidVariableException,
+                                  "path extends beyond sidre view (views are leaves)");
         }
         else
         {
@@ -745,7 +749,8 @@ avtBlueprintTreeCache::IO::LoadSidreTree(Node &sidre_meta,
     }
     else
     {
-         BP_PLUGIN_ERROR("sidre tree path " << tree_curr << " does not exist");
+        BP_PLUGIN_EXCEPTION1( InvalidVariableException,
+                              "sidre tree path " << tree_curr << " does not exist");
     }
 }
 
@@ -789,8 +794,8 @@ avtBlueprintTreeCache::IO::ReadHDF5Slab(hid_t h5_file_id,
 
         CHECK_HDF5_ERROR(H5Dclose(h5_dset_id),
                           "Error closing HDF5 dataset: " << fetch_path);
-
-        BP_PLUGIN_ERROR("Can't slab fetch from an empty hdf5 data set.");
+        BP_PLUGIN_EXCEPTION1( InvalidVariableException,
+                              "Can't slab fetch from an empty hdf5 data set.");
     }
 
     hid_t h5_dtype_id  = H5Dget_type(h5_dset_id);
@@ -812,10 +817,11 @@ avtBlueprintTreeCache::IO::ReadHDF5Slab(hid_t h5_file_id,
         CHECK_HDF5_ERROR(H5Dclose(h5_dset_id),
                           "Error closing HDF5 dataset: " << fetch_path);
 
-        BP_PLUGIN_ERROR("Can't slab fetch a buffer larger than the source"
-                        " hdf5 data set. Requested number of elements" 
-                        << dtype.number_of_elements()
-                        << " hdf5 dataset number of elements" << h5_nelems);
+        BP_PLUGIN_EXCEPTION1( InvalidVariableException,
+                              "Can't slab fetch a buffer larger than the source"
+                              " hdf5 data set. Requested number of elements" 
+                              << dtype.number_of_elements()
+                              << " hdf5 dataset number of elements" << h5_nelems);
     }
 
 
