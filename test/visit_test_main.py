@@ -361,6 +361,11 @@ def RemoveFile(f):
 #   I added the modeSpecific return value, which indicates if the baseline
 #   image is mode specific.
 #
+#   Eric Brugger, Wed May 16 10:15:29 PDT 2018
+#   I corrected a bug where mode_specific wasn't being set properly
+#   when it was using a mode specific baseline that wasn't listed in
+#   "mode_specific.json".
+#
 # ----------------------------------------------------------------------------
 def GenFileNames(test_case, ext):
     pyfilebase = TestEnv.params["name"]
@@ -388,7 +393,7 @@ def GenFileNames(test_case, ext):
         if os.path.isfile(altbase):
             # check for alternate mapping from
             base = altbase
-            mode_specific = 0
+            mode_specific = 1
             Log("Using mode specific baseline: %s" % base)
         elif os.path.isfile(modefile):
             modemap = json_load(modefile)
