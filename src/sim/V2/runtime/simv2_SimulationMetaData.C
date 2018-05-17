@@ -282,17 +282,22 @@ GET_METADATA_ITEM(simv2_SimulationMetaData_getNumMessages, simv2_SimulationMetaD
 int
 simv2_SimulationMetaData_check(visit_handle h)
 {
+    char tmp[128];
     int retval = VISIT_ERROR;
     VisIt_SimulationMetaData *obj = GetObject(h, "simv2_SimulationMetaData_check"); 
     if(obj != NULL) 
     { 
         size_t i;
         retval = VISIT_OKAY;
+
+        // Mesh check
         stringVector meshNames;
         for(i = 0; i < obj->meshes.size(); ++i)
         {
             if(simv2_MeshMetaData_check(obj->meshes[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
             else
             {
                 char *name = NULL;
@@ -303,10 +308,13 @@ simv2_SimulationMetaData_check(visit_handle h)
                 }
             }
         }
+        // Variable check
         for(i = 0; i < obj->variables.size(); ++i)
         {
             if(simv2_VariableMetaData_check(obj->variables[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
             else
             {
                 // Make sure the variable has a valid mesh name
@@ -314,16 +322,34 @@ simv2_SimulationMetaData_check(visit_handle h)
                 if(simv2_VariableMetaData_getMeshName(obj->variables[i], &name) == VISIT_OKAY)
                 {
                     if(std::find(meshNames.begin(), meshNames.end(), name) == meshNames.end())
+                    {
+                        char *varName;
+                        simv2_VariableMetaData_getName(obj->variables[i],
+                                                       &varName);
+                      
+                        SNPRINTF(tmp, 128,
+                                 "VariableMetaData for variable: %s: "
+                                 " has an unknown mesh: %s",
+                                 varName, name);
+                        VisItError(tmp);
+
+                        free(varName);
+                        
                         retval = VISIT_ERROR;
+                    }
+                    
                     free(name);
                 }
             }
         }
+        // Material check
         stringVector matNames;
         for(i = 0; i < obj->materials.size(); ++i)
         {
             if(simv2_MaterialMetaData_check(obj->materials[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
             else
             {
                 char *name = NULL;
@@ -337,25 +363,49 @@ simv2_SimulationMetaData_check(visit_handle h)
                 {
                     matNames.push_back(name);
                     if(std::find(meshNames.begin(), meshNames.end(), name) == meshNames.end())
+                    {
+                        char *varName;
+                        simv2_MaterialMetaData_getName(obj->variables[i],
+                                                       &varName);
+                      
+                        SNPRINTF(tmp, 128,
+                                 "MaterialMetaData for material: %s: "
+                                 " has an unknown mesh: %s",
+                                 varName, name);
+                        VisItError(tmp);
+
+                        free(varName);
+
                         retval = VISIT_ERROR;
+                    }
+                    
                     free(name);
                 }
             }
         }
+        // Curve check
         for(i = 0; i < obj->curves.size(); ++i)
         {
             if(simv2_CurveMetaData_check(obj->curves[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
         }
+        // Expression check
         for(i = 0; i < obj->expressions.size(); ++i)
         {
             if(simv2_ExpressionMetaData_check(obj->expressions[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
         }
+        // Species check
         for(i = 0; i < obj->species.size(); ++i)
         {
             if(simv2_SpeciesMetaData_check(obj->species[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
             else
             {
                 // Make sure the species has a valid mesh name
@@ -363,32 +413,72 @@ simv2_SimulationMetaData_check(visit_handle h)
                 if(simv2_SpeciesMetaData_getMeshName(obj->species[i], &name) == VISIT_OKAY)
                 {
                     if(std::find(meshNames.begin(), meshNames.end(), name) == meshNames.end())
+                    {
+                        char *varName;
+                        simv2_SpeciesMetaData_getName(obj->species[i],
+                                                      &varName);
+                      
+                        SNPRINTF(tmp, 128,
+                                 "SpeciesMetaData for species: %s: "
+                                 " has an unknown mesh: %s",
+                                 varName, name);
+                        VisItError(tmp);
+
+                        free(varName);
+
                         retval = VISIT_ERROR;
+                    }
+                    
                     free(name);
                 }
+
                 // Make sure the species has a valid material name.
                 if(simv2_SpeciesMetaData_getMaterialName(obj->species[i], &name) == VISIT_OKAY)
                 {
                     if(std::find(matNames.begin(), matNames.end(), name) == matNames.end())
+                    {
+                        char *varName;
+                        simv2_SpeciesMetaData_getName(obj->species[i],
+                                                      &varName);
+                      
+                        SNPRINTF(tmp, 128,
+                                 "SpeciesMetaData for species: %s: "
+                                 " has an unknown material: %s",
+                                 varName, name);
+                        VisItError(tmp);
+
+                        free(varName);
+
                         retval = VISIT_ERROR;
+                    }
+                    
                     free(name);
                 }
             }
         }
+        // Generic command check
         for(i = 0; i < obj->genericCommands.size(); ++i)
         {
             if(simv2_CommandMetaData_check(obj->genericCommands[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
         }
+        // Custom command check
         for(i = 0; i < obj->customCommands.size(); ++i)
         {
             if(simv2_CommandMetaData_check(obj->customCommands[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
         }
+        // Message check
         for(i = 0; i < obj->messages.size(); ++i)
         {
             if(simv2_MessageMetaData_check(obj->messages[i]) == VISIT_ERROR)
+            {
                 retval = VISIT_ERROR;
+            }
         }
     }
     return retval;
