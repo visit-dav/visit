@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+  <Plugin name="Explode" type="operator" label="Explode" version="1.0" enabled="true" mdspecificcode="false" engspecificcode="false" onlyengine="false" noengine="false" category="Transforms">
+    <Attribute name="ExplodeAttributes" purpose="This class contains attributes for the explode operator. " persistent="true" keyframe="true" exportAPI="" exportInclude="" codefile="Explode.code">
+      <Enum name="ExplodeType">
+        Point
+        Plane
+        Cylinder
+      </Enum>
+      <Enum name="ExplosionPattern">
+        Impact
+        Scatter
+      </Enum>
+      <Field name="explosionType" label="explosionType" type="enum" subtype="ExplodeType" access="protected">
+        Point
+      </Field>
+      <Field name="explosionPoint" label="explosionPoint" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planePoint" label="planePoint" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="planeNorm" label="planeNorm" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="cylinderPoint1" label="cylinderPoint1" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="cylinderPoint2" label="cylinderPoint2" type="doubleArray" length="3" access="protected">
+        0.000000
+        0.000000
+        0.000000
+      </Field>
+      <Field name="materialExplosionFactor" label="materialExplosionFactor" type="double" access="protected">
+        1.000000
+      </Field>
+      <Field name="material" label="material" type="string" access="protected">
+      </Field>
+      <Field name="cylinderRadius" label="cylinderRadius" type="double" access="protected">
+        0.000000
+      </Field>
+      <Field name="explodeMaterialCells" label="explodeMaterialCells" type="bool" access="protected">
+        false
+      </Field>
+      <Field name="cellExplosionFactor" label="cellExplosionFactor" type="double" access="protected">
+        1.000000
+      </Field>
+      <Field name="explosionPattern" label="explosionPattern" type="enum" subtype="ExplosionPattern" access="protected">
+        Impact
+      </Field>
+      <Field name="explodeAllCells" label="explodeAllCells" type="bool" access="protected">
+        false
+      </Field>
+      <Field name="boundaryNames" label="boundaryNames" type="stringVector" access="protected">
+      </Field>
+      <Field name="explosions" label="explosions" type="attVector" subtype="ExplodeAttributes" access="protected">
+      </Field>
+      <Include file="header" quoted="false">
+        MapNode.h
+      </Include>
+    </Attribute>
+  </Plugin>

@@ -280,6 +280,10 @@ avtFacelistFilter::SetCreateEdgeListFor2DDatasets(bool val)
 //    Added a check for threading. If threads > 1, don't 
 //    retrieve data from memory. 
 //
+//    Alister Maguire, Tue Jan  2 09:16:25 PST 2018
+//    Added a check to make sure that metadata is preserved
+//    before retrieving metadata. 
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -294,6 +298,7 @@ avtFacelistFilter::ExecuteDataTree(avtDataRepresentation *in_dr)
     avtDataValidity &v = GetInput()->GetInfo().GetValidity();
     if (v.GetUsingAllData() && 
         v.GetZonesPreserved() && 
+        v.GetDataMetaDataPreserved() &&
         VisItInit::GetNumberOfThreads() <= 1) 
     {
         avtMetaData *md = GetMetaData();

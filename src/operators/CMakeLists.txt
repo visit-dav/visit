@@ -102,6 +102,7 @@ EllipsoidSlice
 ExternalSurface
 ExtractPointFunction2D
 Extrude
+Explode
 FFT
 FiveFoldTetSubdivision
 Flux
