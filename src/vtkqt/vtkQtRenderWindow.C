@@ -55,6 +55,12 @@ VTK_MODULE_INIT(vtkRenderingOpenGL2);
 //   problems with the viewer window in OSX 10.13 and Qt 5.10.0 appears to
 //   have fixed the underlying issue. This fixes Bug #3020.
 //
+//   Kevin Griffin, Thu May 17 08:16:16 PDT 2018
+//   Commented-out the disable HiDPI work-around for the trunk since we've 
+//   upgraded to VTK-8 and are no longer using QVTKWidget/2 which was causing 
+//   the initial issues. I will investigate whether another form of work-around
+//   is needed, if not I will remove the uncommented code.
+//
 // ****************************************************************************
 
 class VTKQT_API vtkQtRenderWindowPrivate
@@ -87,12 +93,12 @@ public:
         gl->GetRenderWindow()->AlphaBitPlanesOn();
         gl->GetRenderWindow()->SetStereoRender( stereo );
         
-    #ifdef Q_OS_OSX
-        if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10)
-        {
-            disableGLHiDPI(gl->winId());
-        }
-    #endif
+   // #ifdef Q_OS_OSX
+   //     if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10)
+   //     {
+   //         disableGLHiDPI(gl->winId());
+   //     }
+   //  #endif
         
     }
 
