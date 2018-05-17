@@ -195,13 +195,19 @@ function build_silo
         FORTRANARGS="FC=\"$FC_COMPILER\" F77=\"$FC_COMPILER\" FCFLAGS=\"$FCFLAGS\" FFLAGS=\"$FCFLAGS\""
     fi
 
+    extra_ac_flags=""
+    # detect coral systems, which older versions of autoconf don't detect
+    if [[ "$(uname -m)" == "ppc64le" ]] ; then
+         extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    fi 
+
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
         $FORTRANARGS \
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
         --enable-install-lite-headers --without-readline \
-        $ZLIBARGS $SILO_EXTRA_OPTIONS"
+        $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
 
     # In order to ensure $FORTRANARGS is expanded to build the arguments to
     # configure, we wrap the invokation in 'sh -c "..."' syntax
@@ -211,7 +217,7 @@ function build_silo
         --prefix=\"$VISITDIR/silo/$SILO_VERSION/$VISITARCH\" \
         $WITHHDF5ARG $WITHSZIPARG $WITHSILOQTARG $WITHSHAREDARG \
         --enable-install-lite-headers --without-readline \
-        $ZLIBARGS $SILO_EXTRA_OPTIONS"
+        $ZLIBARGS $SILO_EXTRA_OPTIONS ${extra_ac_flags}"
 
     if [[ $? != 0 ]] ; then
         warn "Silo configure failed.  Giving up"

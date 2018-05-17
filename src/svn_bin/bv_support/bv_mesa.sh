@@ -20,11 +20,19 @@ function bv_mesa_depends_on
 
 function bv_mesa_info
 {
-    export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
-    export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
-    export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
-    export MESA_MD5_CHECKSUM=""
-    export MESA_SHA256_CHECKSUM=""
+    if [[ "$(uname -m)" == "ppc64le" ]] ; then
+        export MESA_FILE=${MESA_FILE:-"MesaLib-7.8.2.tar.gz"}
+        export MESA_VERSION=${MESA_VERSION:-"7.8.2"}
+        export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.8.2"}
+        export MESA_MD5_CHECKSUM=""
+        export MESA_SHA256_CHECKSUM=""
+    else
+        export MESA_FILE=${MESA_FILE:-"MesaLib-7.10.2.tar.gz"}
+        export MESA_VERSION=${MESA_VERSION:-"7.10.2"}
+        export MESA_BUILD_DIR=${MESA_BUILD_DIR:-"Mesa-7.10.2"}
+        export MESA_MD5_CHECKSUM=""
+        export MESA_SHA256_CHECKSUM=""
+    fi
 }
 
 function bv_mesa_print
@@ -715,6 +723,11 @@ function build_mesa
             cp src/glu/sgi/glu.exports.darwin.edit src/glu/sgi/glu.exports.darwin
         fi
     fi
+    extra_ac_flags=""
+    # detect coral systems, which older versions of autoconf don't detect
+    if [[ "$(uname -m)" == "ppc64le" ]] ; then
+         extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    fi 
 
     ./configure \
         CC="${C_COMPILER}" \
@@ -730,6 +743,7 @@ function build_mesa
         --enable-glx-tls                  \
         --disable-glw                     \
         ${DISABLE_GLU}                    \
+        ${extra_ac_flags}                 \
         --disable-egl  ${MESA_STATIC_DYNAMIC}
     if [[ $? != 0 ]] ; then
         warn "Mesa: 'configure' for Offscreen failed.  Giving up"
