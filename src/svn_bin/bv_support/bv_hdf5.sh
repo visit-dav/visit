@@ -655,6 +655,12 @@ function build_hdf5
         par_build_types="$par_build_types parallel"
     fi
 
+    extra_ac_flags=""
+    # detect coral systems, which older versions of autoconf don't detect
+    if [[ "$(uname -m)" == "ppc64le" ]] ; then
+         extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    fi 
+    
     for bt in $par_build_types; do
 
         rm -rf build_$bt
@@ -684,12 +690,12 @@ function build_hdf5
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
-            ${cf_build_parallel}"
+            ${cf_build_parallel} ${extra_ac_flags}"
         sh -c "../configure CC=\"$cf_c_compiler\" \
             CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" $cf_fortranargs \
             --prefix=\"$VISITDIR/hdf5${cf_par_suffix}/$HDF5_VERSION/$VISITARCH\" \
             ${cf_szip} ${cf_zlib} ${cf_build_type} ${cf_build_thread} \
-            ${cf_build_parallel}"
+            ${cf_build_parallel} ${extra_ac_flags}"
         if [[ $? != 0 ]] ; then
             warn "$bt HDF5 configure failed.  Giving up"
             return 1
