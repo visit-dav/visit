@@ -18,6 +18,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li><a href="#Bugs_fixed">Bug Fixes</a></li>
   <li><a href="#Enhancements">Enhancements</a></li>
+  <li><a href="#Enhancements">Operator_changes</a></li>
   <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
@@ -32,6 +33,12 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added host profiles for the LLNL <i>rzalastor</i> machine.</li>
   <li>Corrected several errors in the NERSC host profiles. The <i>haswell_interactive</i> and <i>knl_interactive</i> profiles for <i>cori</i> had the partition set when they shouldn't have. The <i>regular</i> profile for <i>edison</i> had an invalid node to processor ratio.</li>
+</ul>
+
+<a name="Operator_changes"></a>
+<p><b><font size="4">Changes to VisIt's operators in version 2.13.2</font></b></p>
+<ul>
+  <li>The Explode operator has been added. This operator allows users to extract and manipulate the materials and cells of their datasets through "explosions" of different origins. There are three types of origins allowed: point, plane, and cylinder. When exploding materials, the dataset's materials are extracted and displaced in a direction and distance derived from their relationship to the origin. Exploding cells prodcues a similar effect, but with cells rather than materials. There are a number of options available to users for refining the behavior of explosions, such as tuning the force applied to the materials/cells during explosion, deciding whether to explode the cells of a material or the entire dataset, and having the ability to layer multiple explosions over one antoher. For more general information on this operator, visit our <a href="http://visit-sphinx-user-manual.readthedocs.io/en/latest/Operators/OperatorTypes/Explode_operator.html">Sphinx documentation</a>. For a tutorial on making movies using the explode operator, visit our <a href="http://www.visitusers.org/index.php?title=Making_Movies_with_the_Explode_Operator">Wiki page</a>.</li>
 </ul>
 
 <a name="Dev_changes"></a>
