@@ -349,6 +349,9 @@ FileFunctions::GetCurrentWorkingDirectory()
 //   Kathleen Bonnell, Fri Nov 7 15:46:33 PST 2008
 //   Forgot path separator between homeDir and username. 
 //
+//   Kathleen Biagas, Thu May 17, 2018
+//   Support UNC paths on windows.
+//
 // ****************************************************************************
 
 std::string
@@ -440,6 +443,11 @@ FileFunctions::ExpandPath(const std::string &path,
         // special path. do nothing
         newPath = path;
     }
+    else if (path.substr(0,2) == "\\\\")
+    {
+        // absolute UNC path. do nothing
+        newPath = path;
+    }
     else
     {
         // relative path:
@@ -487,16 +495,30 @@ FileFunctions::ExpandPath(const std::string &path,
 //   Brad Whitlock, Mon Sep 28 16:36:18 PDT 2009
 //   Don't pop_back unless there's something to remove.
 //
+//   Kathleen Biagas, Thu May 17, 2018
+//   Support UNC paths on windows.
+//
 // ****************************************************************************
 
 std::string
 FileFunctions::FilteredPath(const std::string &path)
 {
     // Remove multiple slashes in a row.
-    size_t i = 0;
     size_t state = 0;
+    size_t start = 0;
     std::string filteredPath;
-    for(i = 0; i < path.length(); ++i)
+#ifdef WIN32
+    bool isUNC = false;
+    if (path.substr(0,2) == "\\\\")
+    {
+        // unc style path, we don't want to remove the
+        // double-slashes at the beginning
+        start = 2;
+        filteredPath = "\\\\";
+        isUNC = true;
+    }
+#endif
+    for(size_t i = start; i < path.length(); ++i)
     {
         if(state == 0)
         {
@@ -524,9 +546,8 @@ FileFunctions::FilteredPath(const std::string &path)
         // Filter out .. so we get the right path.
         stringVector tmpNames;
         std::string  tmp;
-        state = 0;
         const char *str = filteredPath.c_str();
-        for(i = 0; i < filteredPath.length() + 1; ++i)
+        for(size_t i = 0; i < filteredPath.length() + 1; ++i)
         {
             if(str[i] == VISIT_SLASH_CHAR || str[i] == '\0')
             {
@@ -550,14 +571,18 @@ FileFunctions::FilteredPath(const std::string &path)
         if(tmpNames.size() > 0)
         {
             filteredPath = "";
-            for(i = 0; i < tmpNames.size(); ++i)
-            { 
-#if defined(_WIN32)
-                if(i > 0)
-                    filteredPath += VISIT_SLASH_STRING;
-#else
-                filteredPath += VISIT_SLASH_STRING;
+            size_t start = 0;
+#ifdef WIN32
+            if (isUNC)
+            {
+                filteredPath = "\\\\";
+            }
+            filteredPath += tmpNames[0];
+            start = 1;
 #endif
+            for(size_t i = start; i < tmpNames.size(); ++i)
+            { 
+                filteredPath += VISIT_SLASH_STRING;
                 filteredPath += tmpNames[i];
             }
         }
@@ -1128,13 +1153,19 @@ FileFunctions::SplitHostDatabase(const std::string &hostDB,
 // Creation:   Thu Mar 25 15:05:40 PST 2004
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thu May 17, 2018
+//   Allow for UNC style paths.
+//
 // ****************************************************************************
 
 std::string
 FileFunctions::ComposeDatabaseName(const std::string &host,
     const std::string &db)
 {
+#ifdef WIN32
+    if (db.substr(0,2) == "\\\\")
+        return db;
+#endif
     std::string h(host);
 
     if(h == "")

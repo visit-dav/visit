@@ -596,6 +596,11 @@ ConfigManager::FinishTag(std::istream& in)
 //
 //    Allen Sanderson, Thu Sep  1 15:25:29 PDT 2016
 //    Add logic to undue XML-style escaping
+//
+//   Kathleen Biagas, Thu May 17, 2018
+//   UNC style paths on Windows start with '\\', account for that and put them
+//   back into the string as passed.
+//
 // ****************************************************************************
 
 stringVector
@@ -639,7 +644,7 @@ ConfigManager::ReadStringVector(std::istream& in, char termChar)
         {
             if(escaped)
             {
-                tempString += c;
+                tempString += "\\\\";
                 escaped = false;
             }
             else

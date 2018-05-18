@@ -4572,6 +4572,9 @@ QvisGUIApplication::SaveSession()
 //   David Camp, Tue Aug  4 11:04:14 PDT 2015
 //   Added new dialog to be able to save session files on remote host.
 //
+//   Kathleen Biagas, Thu May 18, 2018
+//   Support UNC style paths on Windows.
+//
 // ****************************************************************************
 
 void
@@ -4580,9 +4583,18 @@ QvisGUIApplication::SaveSessionAs()
     // Create the name of a VisIt session file to use.
     QString defaultFile;
     if(sessionHost.empty())
+    {
         defaultFile.sprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
+    }
     else
+    {
+#ifdef WIN32
+        if (sessionDir.substr(0,2) == "\\\\")
+            defaultFile.sprintf("%svisit%04d.session", sessionDir.c_str(), sessionCount);
+        else
+#endif
         defaultFile.sprintf("%s:%svisit%04d.session", sessionHost.c_str(), sessionDir.c_str(), sessionCount);
+    }
 
     // Get the name of the file that the user saved.
     QualifiedFilename qfilename;

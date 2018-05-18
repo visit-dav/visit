@@ -1080,6 +1080,9 @@ avtDatabaseFactory::SetupDatabase(CommonDatabasePluginInfo *info,
 //    Brad Whitlock, Tue Jun 24 15:33:58 PDT 2008
 //    Pass in the database plugin manager since it's no longer a singleton.
 //
+//    Kathleen Biagas, Thu May 17, 2018
+//    Support UNC style paths on Windows.
+//
 // ****************************************************************************
 
 avtDatabase *
@@ -1124,7 +1127,8 @@ avtDatabaseFactory::VisitFile(DatabasePluginManager *dbmgr,
             // the whole path to the file. We don't need to prepend a 
             // path if it already contains one.
             if((fileName.find(":") != std::string::npos) ||
-               (fileName.size() > 0 && fileName[0] == '!'))
+               (fileName.size() > 0 && fileName[0] == '!') ||
+               (fileName.substr(0,2) == "\\\\"))
                 continue;
 
             // If the filename begins with "./", remove it.

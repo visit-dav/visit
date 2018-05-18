@@ -25,6 +25,7 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">Bugs fixed in version 2.13.2</font></b></p>
 <ul>
   <li>Added back the disabling of using High-Resolution drawing on OSX versions at 10.10 or higher since it causes rendering issues on Retina Displays.</li>
+  <li>Added UNC style path support for Windows.  This should resolve problems saving/reading config files when running on diskless images, and remove the necessity for setting VISITUSERHOME environment variable.</li>
   <li>Corrected several errors in the NERSC host profiles. The <i>haswell_interactive</i> and <i>knl_interactive</i> profiles for <i>cori</i> had the partition set when they shouldn't have. The <i>regular</i> profile for <i>edison</i> had an invalid node to processor ratio.</li>
 </ul>
 

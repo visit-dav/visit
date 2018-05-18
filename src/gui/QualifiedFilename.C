@@ -399,11 +399,24 @@ QualifiedFilename::SetFromString(const std::string &str)
 //   Brad Whitlock, Mon Aug 26 17:08:35 PST 2002
 //   I changed the code so it can use different separators.
 //
+//   Kathleen Biagas, Thu May 17, 2018
+//   Support UNC style paths on windows, where host is part of the path.
+//
 // ****************************************************************************
 
 std::string
 QualifiedFilename::FullName() const
 {
+#ifdef WIN32
+    if (path.substr(0,2) == "\\\\")
+    {
+        std::string temp(path);
+        if (filename.size() != 0)
+            temp = path + "\\" + filename;
+        return temp;
+    }
+#endif
+
     std::string temp(host);
 
     if(path.size() != 0 && filename.size() != 0)
