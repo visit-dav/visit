@@ -305,7 +305,7 @@ function initialize_build_visit()
 
         # use gcc for 10.9 & earlier
 
-	VER_MAJOR==${VER%%.*}
+	VER_MAJOR=${VER%%.*}
 
 	# bash script educational note:
 	# The less than sign "<" is an arithmetic expression and
@@ -318,33 +318,33 @@ function initialize_build_visit()
 	    
         if [[ ${VER_MAJOR} -lt 8 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.3
-        elif [[ VER_MAJOR == 8 ]] ; then
+        elif [[ ${VER_MAJOR} == 8 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.4
-        elif [[ VER_MAJOR == 9 ]] ; then
+        elif [[ ${VER_MAJOR} == 9 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.5
-        elif [[ VER_MAJOR == 10 ]] ; then
+        elif [[ ${VER_MAJOR} == 10 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.6
-        elif [[ VER_MAJOR == 11 ]] ; then
+        elif [[ ${VER_MAJOR} == 11 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.7
-        elif [[ VER_MAJOR == 12 ]] ; then
+        elif [[ ${VER_MAJOR} == 12 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.8
-        elif [[ VER_MAJOR == 13 ]] ; then
+        elif [[ ${VER_MAJOR} == 13 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.9
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ VER_MAJOR == 14 ]] ; then
+        elif [[ ${VER_MAJOR} == 14 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.10
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ VER_MAJOR == 15 ]] ; then
+        elif [[ ${VER_MAJOR} == 15 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.11
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ VER_MAJOR == 16 ]] ; then
+        elif [[ ${VER_MAJOR} == 16 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.12
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
-        elif [[ VER_MAJOR == 17 ]] ; then
+        elif [[ ${VER_MAJOR} == 17 ]] ; then
             export MACOSX_DEPLOYMENT_TARGET=10.13
             export C_COMPILER=${C_COMPILER:-"clang"}
             export CXX_COMPILER=${CXX_COMPILER:-"clang++"}
