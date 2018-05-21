@@ -853,68 +853,6 @@ ExplodeAttributes::SetFromNode(DataNode *parentNode)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Comparison Methods
-///////////////////////////////////////////////////////////////////////////////
-
-// ****************************************************************************
-// Method: ExplodeAttributes::AttributesMatch
-//
-// Purpose: 
-//     Compare two attributes, excluding their explosions list. 
-//
-// Programmer: Alister Maguire
-// Creation:   Tue Feb 20 11:06:54 PST 2018
-//
-// Modifications:
-//   
-// ****************************************************************************
-
-bool
-ExplodeAttributes::AttributesMatch (const ExplodeAttributes &obj) const
-{
-    // Compare the explosionPoint arrays.
-    bool explosionPoint_equal = true;
-    for(int i = 0; i < 3 && explosionPoint_equal; ++i)
-        explosionPoint_equal = (explosionPoint[i] == obj.explosionPoint[i]);
-
-    // Compare the planePoint arrays.
-    bool planePoint_equal = true;
-    for(int i = 0; i < 3 && planePoint_equal; ++i)
-        planePoint_equal = (planePoint[i] == obj.planePoint[i]);
-
-    // Compare the planeNorm arrays.
-    bool planeNorm_equal = true;
-    for(int i = 0; i < 3 && planeNorm_equal; ++i)
-        planeNorm_equal = (planeNorm[i] == obj.planeNorm[i]);
-
-    // Compare the cylinderPoint1 arrays.
-    bool cylinderPoint1_equal = true;
-    for(int i = 0; i < 3 && cylinderPoint1_equal; ++i)
-        cylinderPoint1_equal = (cylinderPoint1[i] == obj.cylinderPoint1[i]);
-
-    // Compare the cylinderPoint2 arrays.
-    bool cylinderPoint2_equal = true;
-    for(int i = 0; i < 3 && cylinderPoint2_equal; ++i)
-        cylinderPoint2_equal = (cylinderPoint2[i] == obj.cylinderPoint2[i]);
-
-    // Create the return value
-    return ((explosionType == obj.explosionType) &&
-            explosionPoint_equal &&
-            planePoint_equal &&
-            planeNorm_equal &&
-            cylinderPoint1_equal &&
-            cylinderPoint2_equal &&
-            (materialExplosionFactor == obj.materialExplosionFactor) &&
-            (material == obj.material) &&
-            (cylinderRadius == obj.cylinderRadius) &&
-            (explodeMaterialCells == obj.explodeMaterialCells) &&
-            (cellExplosionFactor == obj.cellExplosionFactor) &&
-            (explosionPattern == obj.explosionPattern) &&
-            (explodeAllCells == obj.explodeAllCells) &&
-            (boundaryNames == obj.boundaryNames));
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1678,4 +1616,62 @@ ExplodeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 ///////////////////////////////////////////////////////////////////////////////
 // User-defined methods.
 ///////////////////////////////////////////////////////////////////////////////
+
+// ****************************************************************************
+// Method: ExplodeAttributes::AttributesMatch
+//
+// Purpose: 
+//     Compare two attributes, excluding their explosions list. 
+//
+// Programmer: Alister Maguire
+// Creation:   Tue Feb 20 11:06:54 PST 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ExplodeAttributes::AttributesMatch (const ExplodeAttributes &obj) const
+{
+    // Compare the explosionPoint arrays.
+    bool explosionPoint_equal = true;
+    for(int i = 0; i < 3 && explosionPoint_equal; ++i)
+        explosionPoint_equal = (explosionPoint[i] == obj.explosionPoint[i]);
+
+    // Compare the planePoint arrays.
+    bool planePoint_equal = true;
+    for(int i = 0; i < 3 && planePoint_equal; ++i)
+        planePoint_equal = (planePoint[i] == obj.planePoint[i]);
+
+    // Compare the planeNorm arrays.
+    bool planeNorm_equal = true;
+    for(int i = 0; i < 3 && planeNorm_equal; ++i)
+        planeNorm_equal = (planeNorm[i] == obj.planeNorm[i]);
+
+    // Compare the cylinderPoint1 arrays.
+    bool cylinderPoint1_equal = true;
+    for(int i = 0; i < 3 && cylinderPoint1_equal; ++i)
+        cylinderPoint1_equal = (cylinderPoint1[i] == obj.cylinderPoint1[i]);
+
+    // Compare the cylinderPoint2 arrays.
+    bool cylinderPoint2_equal = true;
+    for(int i = 0; i < 3 && cylinderPoint2_equal; ++i)
+        cylinderPoint2_equal = (cylinderPoint2[i] == obj.cylinderPoint2[i]);
+
+    // Create the return value
+    return ((explosionType == obj.explosionType) &&
+            explosionPoint_equal &&
+            planePoint_equal &&
+            planeNorm_equal &&
+            cylinderPoint1_equal &&
+            cylinderPoint2_equal &&
+            (materialExplosionFactor == obj.materialExplosionFactor) &&
+            (material == obj.material) &&
+            (cylinderRadius == obj.cylinderRadius) &&
+            (explodeMaterialCells == obj.explodeMaterialCells) &&
+            (cellExplosionFactor == obj.cellExplosionFactor) &&
+            (explosionPattern == obj.explosionPattern) &&
+            (explodeAllCells == obj.explodeAllCells) &&
+            (boundaryNames == obj.boundaryNames));
+}
 

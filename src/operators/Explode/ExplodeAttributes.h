@@ -149,8 +149,6 @@ public:
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
     virtual void SetFromNode(DataNode *node);
 
-    // Comparison methods
-    bool AttributesMatch(const ExplodeAttributes &) const; 
 
     // Attributegroup convenience methods
     void AddExplosions(const ExplodeAttributes &);
@@ -181,6 +179,8 @@ public:
     virtual std::string               GetFieldTypeName(int index) const;
     virtual bool                      FieldsEqual(int index, const AttributeGroup *rhs) const;
 
+    // User-defined methods
+    bool AttributesMatch (const ExplodeAttributes &obj) const;
 
     // IDs that can be used to identify fields in case statements
     enum {

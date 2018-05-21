@@ -42,7 +42,6 @@ import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
 import java.util.Vector;
-import llnl.visit.ExplodeAttributes;
 
 // ****************************************************************************
 // Class: ExplodeAttributes
