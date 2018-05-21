@@ -65,5 +65,7 @@
       <Include file="header" quoted="false">
         MapNode.h
       </Include>
+      <Function name="AttributesMatch" user="true" member="true">
+      </Function>
     </Attribute>
   </Plugin>
