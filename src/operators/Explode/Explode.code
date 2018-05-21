@@ -60,3 +60,19 @@ ExplodeAttributes::AttributesMatch (const ExplodeAttributes &obj) const
             (boundaryNames == obj.boundaryNames));
 }
 
+Target: xml2python
+Function: PyExplodeAttributes_SetDefaults
+Declaration: PyExplodeAttributes_SetDefaults
+Definition:
+//****************************************************************************
+//  Modifications:
+//    Alister Maguire, Wed Jan 10 11:29:50 PST 2018
+//    Make defaultAtts point to the passed atts directly.
+//
+//****************************************************************************
+void
+PyExplodeAttributes_SetDefaults(const ExplodeAttributes *atts)
+{
+    defaultAtts = const_cast<ExplodeAttributes*>(atts);
+}
+

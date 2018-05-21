@@ -67,5 +67,7 @@
       </Include>
       <Function name="AttributesMatch" user="true" member="true">
       </Function>
+      <Function name="PyExplodeAttributes_SetDefaults" user="false" member="true">
+      </Function>
     </Attribute>
   </Plugin>
