@@ -27,6 +27,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added back the disabling of using High-Resolution drawing on OSX versions at 10.10 or higher since it causes rendering issues on Retina Displays.</li>
   <li>Added UNC style path support for Windows.  This should resolve problems saving/reading config files when running on diskless images, and remove the necessity for setting VISITUSERHOME environment variable.</li>
   <li>Corrected several errors in the NERSC host profiles. The <i>haswell_interactive</i> and <i>knl_interactive</i> profiles for <i>cori</i> had the partition set when they shouldn't have. The <i>regular</i> profile for <i>edison</i> had an invalid node to processor ratio.</li>
+  <li>Fixed a bad memory leak where GUI could easily go over 1 gigabytes in memory usage.</li>
+  <li>Fixed a problem introduced in 2.13.1 opening files with a .root extension.</li> 
 </ul>
 
 <a name="Enhancements"></a>
@@ -34,6 +36,9 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>Added host profiles for the LLNL <i>rzalastor</i> machine.</li>
   <li>The Explode operator has been added. This operator allows users to extract and manipulate the materials and cells of their datasets through "explosions" of different origins. There are three types of origins allowed: point, plane, and cylinder. When exploding materials, the dataset's materials are extracted and displaced in a direction and distance derived from their relationship to the origin. Exploding cells prodcues a similar effect, but with cells rather than materials. There are a number of options available to users for refining the behavior of explosions, such as tuning the force applied to the materials/cells during explosion, deciding whether to explode the cells of a material or the entire dataset, and having the ability to layer multiple explosions over one antoher. For more general information on this operator, visit our <a href="http://visit-sphinx-user-manual.readthedocs.io/en/latest/Operators/OperatorTypes/Explode_operator.html">Sphinx documentation</a>. For a tutorial on making movies using the explode operator, visit our <a href="http://www.visitusers.org/index.php?title=Making_Movies_with_the_Explode_Operator">Wiki page</a>.</li>
+  <li>Minor enhancements to ffp and unv readers.</li>
+  <li>Enhanced array_decompose() expression function to specify components by name (string) as well as pick closest
+      component to that specified in the expression.</li>
 </ul>
 
 <a name="Dev_changes"></a>
