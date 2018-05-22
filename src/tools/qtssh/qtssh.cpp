@@ -135,7 +135,10 @@ qtssh_strdup(const std::string &s)
 // Modifications:
 //     Kevin Griffin, Thu Jan 12 14:29:26 PST 2017
 //     Used strcmp instead of ==, set CONF_username to the new username
-//   
+//
+//     Kathleen Biagas, Tue May 22, 2018
+//     Removed WIN32 code that Freed and Alloc'd new console.
+//
 // ****************************************************************************
 
 static void
@@ -189,19 +192,6 @@ qtssh_handle_new_username(const char *host)
         for(int i = 0; i < index; ++i)
             printf(" %s", new_argv[i]);
         printf("\n");
-#endif
-
-#if defined(_WIN32)
-        // make a new console and minimize it.
-        FreeConsole();
-        AllocConsole();
-        ShowWindow(GetConsoleWindow(), SW_MINIMIZE);
-
-        // Start the new qtssh.exe
-        _spawnvp(_P_NOWAIT, new_argv[0], new_argv);
-
-        // Exit this one.
-        cleanup_exit(0);
 #endif
     }
 }

@@ -29,6 +29,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected several errors in the NERSC host profiles. The <i>haswell_interactive</i> and <i>knl_interactive</i> profiles for <i>cori</i> had the partition set when they shouldn't have. The <i>regular</i> profile for <i>edison</i> had an invalid node to processor ratio.</li>
   <li>Corrected a serious memory leak where the graphical user interface could easily go over 1 gigabytes in memory usage. Memory was leaked each time the active plot was changed as well as when plots were added, deleted, hidden or shown.</li>
   <li>Corrected a problem introduced in version 2.13.1 opening multipart Silo files that had a <i>.root</i> extension.</li> 
+  <li>Fixed bug on Windows, introduced in 2.13.1, where clicking the 'Change username' option in the password window when connecting to a remote host would prevent the password window from reappearing.</li>
 </ul>
 
 <a name="Enhancements"></a>
