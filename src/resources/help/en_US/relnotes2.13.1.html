@@ -35,7 +35,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected a bug with build_visit with the building of Qt with -no-openssl specified on the command line on Fedora systems.</li>
   <li>Modified the exporting of data to Silo files to always set the MetadataIsTimeVarying attribute to ensure VisIt handles exported data correctly in cases where the metadata is time-varying. This will probably result in a minimal performance degradation in cases where its not necessary.</li>
   <li>Corrected a bug where VisIt would crash opening certain NetCDF-4 files on Windows.</li>
-  <li>Corrected a bug where VisIt would crash when the number of nodes or zones or tuples times the number of components exceeds INT_MAX in a single block.<li>
+  <li>Corrected a bug where VisIt would crash when the number of nodes or zones or tuples times the number of components exceeds INT_MAX in a single block.</li>
   <li>Corrected a bug with the Save Window compression options so that only those options appropriate to the currently selected format are enabled for selection.</li>
   <li>Corrected a bug with the active window selector in the main window so that it now displays more than a single digit if necessary.</li>
   <li>Corrected a bug with running Python filters in parallel on Windows.</li>
@@ -53,8 +53,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Modified the <i>parallel viz</i> host profile for the LANL <i>trinity</i> machine to handle job launching changes on the machine.</li>
   <li>Enhanced the Pixie reader to read datasets with more than INT_MAX nodes or zones.</li>
   <li>Changed the default compression method for saving windows from PackBits to None.</li>
-  <li>Improved the performance of VisIt when populating file lists from directories with large numbers of entries.<li>
-  <li>Modified VisIt to save crash session files for a specific VisIt process. The user can choose which crash session file to restore if multiple ones exist.<li>
+  <li>Improved the performance of VisIt when populating file lists from directories with large numbers of entries.</li>
+  <li>Modified VisIt to save crash session files for a specific VisIt process. The user can choose which crash session file to restore if multiple ones exist.</li>
   <li>Enhanced VisIt to select between chaos 5 and toss 3 executables on LLNL systems based on the machine name instead of the environment variable SYS_TYPE. Some users didn't have the SYS_TYPE environment variable set causing the previous logic to fail in some instances.</li>
   <li>Removed the host profiles for the LLNL <i>rzgpu</i> machine.</li>
   <li>Added host profiles for the LLNL <i>rzhasgpu</i> machine.</li>
