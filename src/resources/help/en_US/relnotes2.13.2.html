@@ -18,7 +18,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li><a href="#Bugs_fixed">Bug Fixes</a></li>
   <li><a href="#Enhancements">Enhancements</a></li>
-  <li><a href="#Dev_changes">Changes for VisIt developers</a></li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -29,7 +28,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected several errors in the NERSC host profiles. The <i>haswell_interactive</i> and <i>knl_interactive</i> profiles for <i>cori</i> had the partition set when they shouldn't have. The <i>regular</i> profile for <i>edison</i> had an invalid node to processor ratio.</li>
   <li>Corrected a serious memory leak where the graphical user interface could easily go over 1 gigabytes in memory usage. Memory was leaked each time the active plot was changed as well as when plots were added, deleted, hidden or shown.</li>
   <li>Corrected a problem introduced in version 2.13.1 opening multipart Silo files that had a <i>.root</i> extension.</li> 
-  <li>Fixed bug on Windows, introduced in 2.13.1, where clicking the 'Change username' option in the password window when connecting to a remote host would prevent the password window from reappearing.</li>
+  <li>Corrected a bug on Windows, introduced in 2.13.1, where clicking the 'Change username' option in the password window when connecting to a remote host would prevent the password window from reappearing.</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -39,12 +38,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Explode operator has been added. This operator allows users to extract and manipulate the materials and cells of their datasets through "explosions" of different origins. There are three types of origins allowed: point, plane, and cylinder. When exploding materials, the dataset's materials are extracted and displaced in a direction and distance derived from their relationship to the origin. Exploding cells prodcues a similar effect, but with cells rather than materials. There are a number of options available to users for refining the behavior of explosions, such as tuning the force applied to the materials/cells during explosion, deciding whether to explode the cells of a material or the entire dataset, and having the ability to layer multiple explosions over one antoher. For more general information on this operator, visit our <a href="http://visit-sphinx-user-manual.readthedocs.io/en/latest/Operators/OperatorTypes/Explode_operator.html">Sphinx documentation</a>. For a tutorial on making movies using the explode operator, visit our <a href="http://www.visitusers.org/index.php?title=Making_Movies_with_the_Explode_Operator">Wiki page</a>.</li>
   <li>Added some minor enhancements to the ffp and unv readers.</li>
   <li>Enhanced the array_decompose() expression function to specify components by name (string) as well as pick the closest component to that specified in the expression.</li>
-</ul>
-
-<a name="Dev_changes"></a>
-<p><b><font size="4">Changes for VisIt developers in version 2.13.2</font></b></p>
-<ul>
-  <li></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
