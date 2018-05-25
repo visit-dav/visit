@@ -346,16 +346,37 @@ UniformCoordsToVTKRectilinearGrid(const Node &n_coords)
     nx[2] = n_coords["dims"].has_child("k") ? n_coords["dims/k"].to_int() : 1;
     rectgrid->SetDimensions(nx);
 
-    double dx[3];
-    dx[0] = n_coords["spacing"].has_child("dx") ? n_coords["spacing/dx"].to_double() : 0;
-    dx[1] = n_coords["spacing"].has_child("dy") ? n_coords["spacing/dy"].to_double() : 0;
-    dx[2] = n_coords["spacing"].has_child("dz") ? n_coords["spacing/dz"].to_double() : 0;
+    double dx[3] = {1.0,1.0,1.0};
+    if(n_coords.has_child("spacing"))
+    {
+        const Node &n_spacing = n_coords["spacing"];
 
-    double x0[3]; 
+        if(n_spacing.has_child("dx"))
+            dx[0] = n_spacing["dx"].to_double();
+
+        if(n_spacing.has_child("dy"))
+            dx[1] = n_spacing["dy"].to_double();
+
+        if(n_spacing.has_child("dz"))
+            dx[2] = n_spacing["dz"].to_double();
+    }
+
+    double x0[3] = {0.0, 0.0, 0.0};
     
-    x0[0] = n_coords["origin"].has_child("x") ? n_coords["origin/x"].to_double() : 0;
-    x0[1] = n_coords["origin"].has_child("y") ? n_coords["origin/y"].to_double() : 0;
-    x0[2] = n_coords["origin"].has_child("z") ? n_coords["origin/z"].to_double() : 0;
+    if(n_coords.has_child("origin"))
+    {
+        const Node &n_origin =  n_coords["origin"];
+
+        if(n_origin.has_child("x"))
+            x0[0] = n_origin["x"].to_double();
+        
+        if(n_origin.has_child("y"))
+            x0[1] = n_origin["y"].to_double();
+
+        if(n_origin.has_child("z"))
+            x0[2] = n_origin["z"].to_double();
+
+    }
 
     for (int i = 0; i < 3; i++)
     {
