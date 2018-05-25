@@ -374,7 +374,7 @@ avtMeshFilter::ExecuteDataTree(avtDataRepresentation *inDR)
     else
     {
         if (opaquePolys != NULL && opaquePolys->GetNumberOfCells() != 0 &&
-            !atts.GetShowInternal())
+           (atts.GetOpaqueMode() == MeshAttributes::On || !atts.GetShowInternal()))
         {
             // create an avtDataTree with two ds, one for lines, one for polys,
             // and tack on labels with prefix lines_ and polys_
