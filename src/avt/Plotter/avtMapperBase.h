@@ -156,7 +156,7 @@ class PLOTTER_API avtMapperBase : public avtTerminatingDatasetSink
     bool                       GetSpecularIsInappropriate()
                                    { return specularIsInappropriate; }
 
-    virtual void               SetSurfaceRepresentation(int rep) {;}
+    virtual void               SetSurfaceRepresentation(int) {;}
     virtual void               SetSpecularProperties(bool,double,double,
                                                      const ColorAttribute&) = 0;
 

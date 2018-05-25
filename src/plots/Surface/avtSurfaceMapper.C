@@ -339,6 +339,10 @@ avtSurfaceMapper::CanApplyGlobalRepresentation(bool val)
 //  Programmer: Kathleen Biagas
 //  Creation:   July 18, 2016
 //
+//  Modifications:
+//    Kathleen Biagas, Fri May 25 12:09:23 PDT 2018
+//    Ensure lighting settings are correct for the representation mode.
+//
 // ****************************************************************************
 
 void
@@ -355,14 +359,23 @@ avtSurfaceMapper::SetRepresentation(bool val)
             if (wireMode)
             {
                 mappers[i]->ScalarVisibilityOff();
-                actors[i]->GetProperty()->SetColor(edgeColor);
-                actors[i]->GetProperty()->SetRepresentationToWireframe();
+                vtkProperty *prop = actors[i]->GetProperty();
+                prop->SetColor(edgeColor);
+                prop->SetRepresentationToWireframe();
+                prop->SetAmbient(1.);
+                prop->SetDiffuse(0.);
             }
-            else 
+            else
             {
                 mappers[i]->SetScalarVisibility(scalarVis);
-                actors[i]->GetProperty()->SetColor(surfaceColor);
-                actors[i]->GetProperty()->SetRepresentationToSurface();
+                vtkProperty *prop = actors[i]->GetProperty();
+                prop->SetColor(surfaceColor);
+                prop->SetRepresentationToSurface();
+                if (GetLighting())
+                {
+                    prop->SetAmbient(GetGlobalAmbientCoefficient());
+                    prop->SetDiffuse(1.);
+                }
             }
         }
     }
