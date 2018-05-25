@@ -92,6 +92,9 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   Eric Brugger, Mon Apr 30 09:18:14 PDT 2018
 #   I added rzhasgpu to the list of toss3 machines.
 #
+#   Eric Brugger, Fri May 25 11:55:08 PDT 2018
+#   I added pascal to the list of toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -152,9 +155,11 @@ class LLNLLauncher(MainLauncher):
 
         #
         # Set the LD_LIBRARY_PATH to include the path to MPI on borax,
-        # quartz, rzgenie, rztopaz, rztrona, jade, mica, and agate.
+        # pascal, quartz, rzgenie, rzhasgpu, rztopaz, rztrona, jade, mica,
+        # and agate.
         #
         if self.sectorname() == "borax" or \
+            self.sectorname() == "pascal" or \
             self.sectorname() == "quartz" or \
             self.sectorname() == "rzgenie" or \
             self.sectorname() == "rzhasgpu" or \
