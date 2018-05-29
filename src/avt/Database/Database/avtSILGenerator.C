@@ -119,6 +119,8 @@ static int GroupSorter(const void *, const void *);
 //    Kathleen Biagas, Thu Aug 22 10:00:11 PDT 2013
 //    Pass groupNames to AddGroups call.
 //
+//    Mark C. Miller, Tue May 22 18:34:15 PDT 2018
+//    Support curves re-interpreted from multi-block meshes.
 // ****************************************************************************
 
 void
@@ -227,8 +229,39 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
     for (i = 0 ; i < md->GetNumCurves() ; i++)
     {
         const avtCurveMetaData *curve = md->GetCurve(i);
-        avtSILSet_p set = new avtSILSet(curve->name, 0);
-        sil->AddWhole(set);
+
+        // Look for telltale signs its a mesh re-interpreted as a curve. If not
+        // it is the simple ole' curve case.
+        if (!(curve->name.substr(0, 14) == "Scalar_Curves/" &&
+            curve->name.substr(14, string::npos) == curve->from1DScalarName))
+        {
+            avtSILSet_p set = new avtSILSet(curve->name, 0);
+            sil->AddWhole(set);
+            continue;
+        }
+
+        // Assume its a mesh re-interpreted as a curve object and get the mesh.
+        // If that fails, treat it like the simple ole' curve case.
+        const avtMeshMetaData *mesh = md->GetMesh(md->MeshForVar(curve->from1DScalarName));
+        if (!mesh)
+        {
+            avtSILSet_p set = new avtSILSet(curve->name, 0);
+            sil->AddWhole(set);
+            continue;
+        }
+
+        // Arriving here, this curve object is a re-interpretation of a 1D
+        // mesh object. So, handle the possibility that it is a multi-block
+        // curve and create its subsets.
+        bool const useArrays = false;
+        int id = -1;
+        avtSILSet_p set = new avtSILSet(curve->name, id);
+        int topIndex = sil->AddWhole(set);
+        vector<int> domainList;
+        if (mesh->numBlocks > 1)
+            AddSubsets(sil, topIndex, mesh->numBlocks, mesh->blockOrigin,
+                domainList, mesh->blockTitle, mesh->blockPieceName,
+                mesh->blockNames, mesh->blockNameScheme, false);
     }
     
     //

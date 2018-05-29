@@ -1357,6 +1357,9 @@ avtDatabase::GetNewMetaData(int timeState, bool forceReadAllCyclesTimes)
 //    Mark C. Miller, Wed Feb 18 14:54:59 PST 2009
 //    Fixed naming of curve md objects so their names don't wind up colliding
 //    with thier original scalar var objects.
+//
+//    Mark C. Miller Tue May 22 18:34:15 PDT 2018
+//    Remove single block restriction for re-interpreting 1D meshes as curves.
 // ****************************************************************************
 
 void
@@ -1372,7 +1375,7 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
     for (i = 0; i < md->GetNumMeshes(); ++i)
     {
         const avtMeshMetaData *mmd = md->GetMesh(i);
-        if (mmd->spatialDimension == 1 && mmd->numBlocks == 1)
+        if (mmd->spatialDimension == 1)
             meshNameToNumMap[mmd->name] = i;
     }
     if (meshNameToNumMap.empty())
