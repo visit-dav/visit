@@ -526,14 +526,14 @@ void vtkPointGlyphMapper::UpdatePointData()
 void vtkPointGlyphMapper::SetGlyphType(GlyphType gt)
 {
   if (this->Helper->GetGlyphType() != gt)
-    {
+  {
     this->Helper->SetGlyphType(gt);
     this->Modified();
     if (gt == Sphere)
-        this->PointMapper->UseImpostersOn();
+      this->PointMapper->UseImpostersOn();
     else
-        this->PointMapper->UseImpostersOff();
-    }
+      this->PointMapper->UseImpostersOff();
+  }
 }
 
 GlyphType vtkPointGlyphMapper::GetGlyphType()
@@ -545,6 +545,8 @@ GlyphType vtkPointGlyphMapper::GetGlyphType()
 void vtkPointGlyphMapper::SetScale(double s)
 {
   this->GlyphFilter->SetScaleFactor(s);
+  // Scale reduced by 1/2 for imposters, in attempt to duplicate size of
+  // Sphere geometry when scaled by same amount.
   this->PointMapper->SetImposterRadius(s*0.5);
 }
 

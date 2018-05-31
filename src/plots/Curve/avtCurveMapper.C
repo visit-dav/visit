@@ -261,7 +261,8 @@ avtCurveMapper::SetDrawCurve(bool val)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        ((vtkCurveMapper*)mappers[i])->SetDrawCurve(drawCurve);
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetDrawCurve(drawCurve);
     }
 }
 
@@ -289,7 +290,8 @@ avtCurveMapper::SetDrawPoints(bool val)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        ((vtkCurveMapper*)mappers[i])->SetDrawPoints(drawPoints);
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetDrawPoints(drawPoints);
     }
 }
 
@@ -317,9 +319,11 @@ avtCurveMapper::SetPointSize(double val)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        vtkCurveMapper *cm = (vtkCurveMapper*)mappers[i];
-        cm->SetPointSize(pointSize);
-        actors[i]->GetProperty()->SetPointSize(pointSize);
+        if (mappers[i] != NULL)
+        {
+            ((vtkCurveMapper*)mappers[i])->SetPointSize(pointSize);
+            actors[i]->GetProperty()->SetPointSize(pointSize);
+        }
     }
 }
 
@@ -347,7 +351,8 @@ avtCurveMapper::SetPointStride(int val)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        ((vtkCurveMapper*)mappers[i])->SetPointStride(pointStride);
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetPointStride(pointStride);
     }
 }
 
@@ -375,7 +380,8 @@ avtCurveMapper::SetSymbolType(int val)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        ((vtkCurveMapper*)mappers[i])->SetSymbolType(symbolType);
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetSymbolType(symbolType);
     }
 }
 
@@ -403,7 +409,8 @@ avtCurveMapper::SetPointDensity(int val)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        ((vtkCurveMapper*)mappers[i])->SetPointDensity(val);
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetPointDensity(val);
     }
 }
 
@@ -431,7 +438,8 @@ avtCurveMapper::SetStaticPoints(bool val)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        ((vtkCurveMapper*)mappers[i])->SetStaticPoints(val);
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetStaticPoints(val);
     }
 }
 
@@ -461,7 +469,8 @@ avtCurveMapper::SetFullFrameScaling(bool, const double *s)
 
     for (int i = 0 ; i < nMappers ; i++)
     {
-        ((vtkCurveMapper*)mappers[i])->SetFFScale(ffScale);
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetFFScale(ffScale);
     }
     return true;
 }

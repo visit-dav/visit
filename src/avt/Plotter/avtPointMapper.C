@@ -421,7 +421,11 @@ avtPointMapper::SetFullFrameScaling(bool useScale, const double *s)
 {
     bool retval = false;
     for (int i = 0; i < nMappers && !retval; ++i)
-        retval = ((vtkPointGlyphMapper*)mappers[i])->SetFullFrameScaling(useScale, s);
+    {
+        if (mappers[i] != NULL)
+           retval = ((vtkPointGlyphMapper*)mappers[i])->
+                SetFullFrameScaling(useScale, s);
+    }
     return retval;
 }
 
