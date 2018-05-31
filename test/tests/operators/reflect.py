@@ -262,7 +262,7 @@ Test("ops_refl14")
 
 # Test 3D rectilinear over arbitrary plane.
 DeleteAllPlots()
-OpenDatabase(silo_data_path("rect3d.silo"))
+OpenDatabase(silo_data_path("multi_rect3d.silo"))
 
 AddPlot("Pseudocolor" ,"d")
 AddOperator("Reflect")

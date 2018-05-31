@@ -63,6 +63,10 @@
 #    Alister Maguire, Wed May  9 10:13:26 PDT 2018
 #    Added TestReturnValue. 
 #
+#    Alister Maguire, Wed May 30 14:16:28 PDT 2018
+#    Added tests for performing pick ranges over time with and 
+#    without plotting and returning the curves. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("PDB", "Mili", "SAMRAI"))
 
@@ -615,19 +619,29 @@ def MultiVarTimePick():
     DeleteAllPlots()
 
 def TestPickRangeTimeQuery():
+
     OpenDatabase(silo_data_path("wave_tv.visit"))
     SetTimeSliderState(17)
-    pickAtts = GetPickAttributes()
-    pickAtts.showPickHighlight = 1
-    SetPickAttributes(pickAtts)
 
     AddPlot("Pseudocolor", "v")
     DrawPlots()
 
-    #query entire time range
+    pickAtts = GetPickAttributes()
+    pickAtts.doTimeCurve = 0
+    pickAtts.variables = ("default", "v")
+    pickAtts.timeCurveType =  pickAtts.Single_Y_Axis
+    SetPickAttributes(pickAtts)
+
+    #
+    # Return the curves without plotting, and show
+    # highlights. 
+    #
+    pickAtts.showPickHighlight = 1
+    SetPickAttributes(pickAtts)
     options = {}
     options["pick_range"] = "100-105, 100, 1"
-    options["do_time"] = 1
+    options["do_time"] = 0
+    options["return_curves"] = 1
     output_dict = PickByZone(options)
     s = str(output_dict)
 
@@ -635,19 +649,51 @@ def TestPickRangeTimeQuery():
     TestText("TimePickRangeDict_00",s)
     ClearPickPoints()
 
-    #query specific time range and stride
+    #
+    # Plot the curves, but don't return them. 
+    #
+    pickAtts.showPickHighlight = 0
+    SetPickAttributes(pickAtts)
     options = {}
     options["pick_range"] = "100-105, 100, 1"
     options["do_time"] = 1
+    options["return_curves"] = 0
     options["start_time"] = 10
     options["end_time"] = 14
     options["stride"] = 2
     output_dict = PickByNode(options)
     s = str(output_dict)
-
+    SetActiveWindow(2)
     Test("TimePickRange_01")
     TestText("TimePickRangeDict_01",s)
+    ClearPickPoints()
+    SetActiveWindow(1)
 
+    #
+    # Plot the curves, and return them. 
+    #
+    pickAtts.showPickHighlight = 0
+    SetPickAttributes(pickAtts)
+    options = {}
+    options["pick_range"] = "100-105"
+    options["do_time"] = 1
+    options["return_curves"] = 1
+    options["start_time"] = 20
+    options["end_time"] = 60
+    options["stride"] = 2
+    output_dict = PickByNode(options)
+    s = str(output_dict)
+
+    SetActiveWindow(2)
+    Test("TimePickRange_02")
+    TestText("TimePickRangeDict_02",s)
+    SetActiveWindow(1)
+
+    ClearPickPoints()
+    DeleteAllPlots()
+    ResetPickLetter()
+
+    SetActiveWindow(1)
     ClearPickPoints()
     DeleteAllPlots()
     ResetPickLetter()
