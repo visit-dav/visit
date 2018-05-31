@@ -12384,6 +12384,69 @@ visit_SetQueryOutputToString(PyObject *self, PyObject *args)
     return Py_None;
 }
 
+// ****************************************************************************
+// Function: ParseTimePickOptins
+//
+// Purpose:
+//   Places time query options into their own MapNode entry in the PickParams,
+//   so that VQM knows how to parse them.
+//
+// Notes:
+//
+// Programmer: Kathleen Biagas
+// Creation:   January 12, 2012
+//
+// Modifications:
+//    Kathleen Biagas, Thu Jan 10 09:00:14 PST 2013
+//    Verify numeric entries.
+//
+//    Alister Maguire, Tue May 22 10:17:15 PDT 2018
+//    Moved the location of this function so that NodePick and ZonePick
+//    could have access to it. I also added retrieval of "return_curves" 
+//    and updated the condition in which time values are retrieved. 
+//    
+//
+// ****************************************************************************
+
+void
+ParseTimePickOptions(MapNode &pickParams)
+{
+
+    bool returnCurves = (pickParams.HasEntry("pick_range") &&
+                         pickParams.HasNumericEntry("return_curves") &&
+                         pickParams.GetEntry("return_curves")->ToBool());
+
+    if (((pickParams.HasNumericEntry("do_time") && 
+        pickParams.GetEntry("do_time")->ToBool()) ||
+        returnCurves) &&
+        !pickParams.HasEntry("time_options"))
+    {
+        MapNode timeOptions;
+        if (pickParams.HasNumericEntry("stride"))
+        {
+            timeOptions["stride"] = pickParams.GetEntry("stride")->ToInt();
+            pickParams.RemoveEntry("stride");
+        }
+        if (pickParams.HasNumericEntry("start_time"))
+        {
+            timeOptions["start_time"] = pickParams.GetEntry("start_time")->ToInt();
+            pickParams.RemoveEntry("start_time");
+        }
+        if (pickParams.HasNumericEntry("end_time"))
+        {
+            timeOptions["end_time"] = pickParams.GetEntry("end_time")->ToInt();
+            pickParams.RemoveEntry("end_time");
+        }
+        if (pickParams.HasNumericEntry("return_curves"))
+        {
+            timeOptions["return_curves"] = pickParams.GetEntry("return_curves")->ToBool();
+            pickParams.RemoveEntry("return_curves");
+        }
+        if (timeOptions.GetNumEntries() > 0)
+            pickParams["time_options"] = timeOptions;
+    }
+}
+
 
 // ****************************************************************************
 // Function: visit_SetQueryFloatFormat()
@@ -12658,6 +12721,9 @@ visit_QueryOverTime(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
+//   Alister Maguire, Tue May 22 10:17:15 PDT 2018
+//   Added a call to ParseTimePickOptions.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12713,6 +12779,8 @@ visit_ZonePick_deprecated(PyObject *self, PyObject *args)
         params["coord"] = pt;
     }
 
+    ParseTimePickOptions(params);
+
     if (!suppressQueryOutputState)
         ToggleSuppressQueryOutput_NoLogging(true);
 
@@ -12745,6 +12813,9 @@ visit_ZonePick_deprecated(PyObject *self, PyObject *args)
 //
 //   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
+//
+//   Alister Maguire, Tue May 22 10:17:15 PDT 2018
+//   Added a call to ParseTimePickOptions.
 //
 // ****************************************************************************
 
@@ -12797,6 +12868,9 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     pickParams["query_name"] = std::string("Pick");
+
+    ParseTimePickOptions(pickParams);
+
     if (!suppressQueryOutputState)
         ToggleSuppressQueryOutput_NoLogging(true);
 
@@ -12853,6 +12927,9 @@ visit_ZonePick(PyObject *self, PyObject *args, PyObject *kwargs)
 //   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
 //
+//   Alister Maguire, Tue May 22 10:17:15 PDT 2018
+//   Added a call to ParseTimePickOptions.
+//
 // ****************************************************************************
 
 STATIC PyObject *
@@ -12908,6 +12985,8 @@ visit_NodePick_deprecated(PyObject *self, PyObject *args)
         params["coord"] = pt;
     }
 
+    ParseTimePickOptions(params);
+
     if (!suppressQueryOutputState)
         ToggleSuppressQueryOutput_NoLogging(true);
 
@@ -12921,7 +13000,6 @@ visit_NodePick_deprecated(PyObject *self, PyObject *args)
 
     return visit_GetPickOutputObject(self, args);
 }
-
 
 // ****************************************************************************
 // Function: visit_NodePick
@@ -12940,6 +13018,9 @@ visit_NodePick_deprecated(PyObject *self, PyObject *args)
 //
 //   Kathleen Biagas, Wed Jan  9 08:55:03 PST 2013
 //   Use new helper method that doesn't log the SuppressQueryOutput call.
+//
+//   Alister Maguire, Tue May 22 10:17:15 PDT 2018
+//   Added a call to ParseTimePickOptions.
 //
 // ****************************************************************************
 
@@ -12992,6 +13073,8 @@ visit_NodePick(PyObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     pickParams["query_name"] = std::string("Pick");
+
+    ParseTimePickOptions(pickParams);
 
     if (!suppressQueryOutputState)
         ToggleSuppressQueryOutput_NoLogging(true);
@@ -13629,52 +13712,6 @@ visit_GetGlobalLineoutAttributes(PyObject *self, PyObject *args)
     *gla = *(GetViewerState()->GetGlobalLineoutAttributes());
 
     return retval;
-}
-
-// ****************************************************************************
-// Function: ParseTimePickOptins
-//
-// Purpose:
-//   Places time query options into their own MapNode entry in the PickParams,
-//   so that VQM knows how to parse them.
-//
-// Notes:
-//
-// Programmer: Kathleen Biagas
-// Creation:   January 12, 2012
-//
-// Modifications:
-//    Kathleen Biagas, Thu Jan 10 09:00:14 PST 2013
-//    Verify numeric entries.
-//
-// ****************************************************************************
-
-void
-ParseTimePickOptions(MapNode &pickParams)
-{
-    if (pickParams.HasNumericEntry("do_time") && 
-        pickParams.GetEntry("do_time")->ToBool() &&
-        !pickParams.HasEntry("time_options"))
-    {
-        MapNode timeOptions;
-        if (pickParams.HasNumericEntry("stride"))
-        {
-            timeOptions["stride"] = pickParams.GetEntry("stride")->ToInt();
-            pickParams.RemoveEntry("stride");
-        }
-        if (pickParams.HasNumericEntry("start_time"))
-        {
-            timeOptions["start_time"] = pickParams.GetEntry("start_time")->ToInt();
-            pickParams.RemoveEntry("start_time");
-        }
-        if (pickParams.HasNumericEntry("end_time"))
-        {
-            timeOptions["end_time"] = pickParams.GetEntry("end_time")->ToInt();
-            pickParams.RemoveEntry("end_time");
-        }
-        if (timeOptions.GetNumEntries() > 0)
-            pickParams["time_options"] = timeOptions;
-    }
 }
 
 // ****************************************************************************

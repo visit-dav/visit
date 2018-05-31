@@ -103,6 +103,7 @@ void QueryOverTimeAttributes::Init()
     stride = 1;
     createWindow = true;
     windowId = 2;
+    useCachedPts = false;
 
     QueryOverTimeAttributes::SelectAll();
 }
@@ -135,6 +136,8 @@ void QueryOverTimeAttributes::Copy(const QueryOverTimeAttributes &obj)
     windowId = obj.windowId;
     queryAtts = obj.queryAtts;
     pickAtts = obj.pickAtts;
+    cachedCurvePts = obj.cachedCurvePts;
+    useCachedPts = obj.useCachedPts;
 
     QueryOverTimeAttributes::SelectAll();
 }
@@ -302,7 +305,9 @@ QueryOverTimeAttributes::operator == (const QueryOverTimeAttributes &obj) const
             (createWindow == obj.createWindow) &&
             (windowId == obj.windowId) &&
             (queryAtts == obj.queryAtts) &&
-            (pickAtts == obj.pickAtts));
+            (pickAtts == obj.pickAtts) &&
+            (cachedCurvePts == obj.cachedCurvePts) &&
+            (useCachedPts == obj.useCachedPts));
 }
 
 // ****************************************************************************
@@ -446,17 +451,19 @@ QueryOverTimeAttributes::NewInstance(bool copy) const
 void
 QueryOverTimeAttributes::SelectAll()
 {
-    Select(ID_timeType,      (void *)&timeType);
-    Select(ID_startTimeFlag, (void *)&startTimeFlag);
-    Select(ID_startTime,     (void *)&startTime);
-    Select(ID_endTimeFlag,   (void *)&endTimeFlag);
-    Select(ID_endTime,       (void *)&endTime);
-    Select(ID_strideFlag,    (void *)&strideFlag);
-    Select(ID_stride,        (void *)&stride);
-    Select(ID_createWindow,  (void *)&createWindow);
-    Select(ID_windowId,      (void *)&windowId);
-    Select(ID_queryAtts,     (void *)&queryAtts);
-    Select(ID_pickAtts,      (void *)&pickAtts);
+    Select(ID_timeType,       (void *)&timeType);
+    Select(ID_startTimeFlag,  (void *)&startTimeFlag);
+    Select(ID_startTime,      (void *)&startTime);
+    Select(ID_endTimeFlag,    (void *)&endTimeFlag);
+    Select(ID_endTime,        (void *)&endTime);
+    Select(ID_strideFlag,     (void *)&strideFlag);
+    Select(ID_stride,         (void *)&stride);
+    Select(ID_createWindow,   (void *)&createWindow);
+    Select(ID_windowId,       (void *)&windowId);
+    Select(ID_queryAtts,      (void *)&queryAtts);
+    Select(ID_pickAtts,       (void *)&pickAtts);
+    Select(ID_cachedCurvePts, (void *)&cachedCurvePts);
+    Select(ID_useCachedPts,   (void *)&useCachedPts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -683,6 +690,20 @@ QueryOverTimeAttributes::SetPickAtts(const PickAttributes &pickAtts_)
     Select(ID_pickAtts, (void *)&pickAtts);
 }
 
+void
+QueryOverTimeAttributes::SetCachedCurvePts(const doubleVector &cachedCurvePts_)
+{
+    cachedCurvePts = cachedCurvePts_;
+    Select(ID_cachedCurvePts, (void *)&cachedCurvePts);
+}
+
+void
+QueryOverTimeAttributes::SetUseCachedPts(bool useCachedPts_)
+{
+    useCachedPts = useCachedPts_;
+    Select(ID_useCachedPts, (void *)&useCachedPts);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -765,6 +786,24 @@ QueryOverTimeAttributes::GetPickAtts()
     return pickAtts;
 }
 
+const doubleVector &
+QueryOverTimeAttributes::GetCachedCurvePts() const
+{
+    return cachedCurvePts;
+}
+
+doubleVector &
+QueryOverTimeAttributes::GetCachedCurvePts()
+{
+    return cachedCurvePts;
+}
+
+bool
+QueryOverTimeAttributes::GetUseCachedPts() const
+{
+    return useCachedPts;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -779,6 +818,12 @@ void
 QueryOverTimeAttributes::SelectPickAtts()
 {
     Select(ID_pickAtts, (void *)&pickAtts);
+}
+
+void
+QueryOverTimeAttributes::SelectCachedCurvePts()
+{
+    Select(ID_cachedCurvePts, (void *)&cachedCurvePts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -805,17 +850,19 @@ QueryOverTimeAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_timeType:      return "timeType";
-    case ID_startTimeFlag: return "startTimeFlag";
-    case ID_startTime:     return "startTime";
-    case ID_endTimeFlag:   return "endTimeFlag";
-    case ID_endTime:       return "endTime";
-    case ID_strideFlag:    return "strideFlag";
-    case ID_stride:        return "stride";
-    case ID_createWindow:  return "createWindow";
-    case ID_windowId:      return "windowId";
-    case ID_queryAtts:     return "queryAtts";
-    case ID_pickAtts:      return "pickAtts";
+    case ID_timeType:       return "timeType";
+    case ID_startTimeFlag:  return "startTimeFlag";
+    case ID_startTime:      return "startTime";
+    case ID_endTimeFlag:    return "endTimeFlag";
+    case ID_endTime:        return "endTime";
+    case ID_strideFlag:     return "strideFlag";
+    case ID_stride:         return "stride";
+    case ID_createWindow:   return "createWindow";
+    case ID_windowId:       return "windowId";
+    case ID_queryAtts:      return "queryAtts";
+    case ID_pickAtts:       return "pickAtts";
+    case ID_cachedCurvePts: return "cachedCurvePts";
+    case ID_useCachedPts:   return "useCachedPts";
     default:  return "invalid index";
     }
 }
@@ -840,17 +887,19 @@ QueryOverTimeAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_timeType:      return FieldType_enum;
-    case ID_startTimeFlag: return FieldType_bool;
-    case ID_startTime:     return FieldType_int;
-    case ID_endTimeFlag:   return FieldType_bool;
-    case ID_endTime:       return FieldType_int;
-    case ID_strideFlag:    return FieldType_bool;
-    case ID_stride:        return FieldType_int;
-    case ID_createWindow:  return FieldType_bool;
-    case ID_windowId:      return FieldType_int;
-    case ID_queryAtts:     return FieldType_att;
-    case ID_pickAtts:      return FieldType_att;
+    case ID_timeType:       return FieldType_enum;
+    case ID_startTimeFlag:  return FieldType_bool;
+    case ID_startTime:      return FieldType_int;
+    case ID_endTimeFlag:    return FieldType_bool;
+    case ID_endTime:        return FieldType_int;
+    case ID_strideFlag:     return FieldType_bool;
+    case ID_stride:         return FieldType_int;
+    case ID_createWindow:   return FieldType_bool;
+    case ID_windowId:       return FieldType_int;
+    case ID_queryAtts:      return FieldType_att;
+    case ID_pickAtts:       return FieldType_att;
+    case ID_cachedCurvePts: return FieldType_doubleVector;
+    case ID_useCachedPts:   return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -875,17 +924,19 @@ QueryOverTimeAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_timeType:      return "enum";
-    case ID_startTimeFlag: return "bool";
-    case ID_startTime:     return "int";
-    case ID_endTimeFlag:   return "bool";
-    case ID_endTime:       return "int";
-    case ID_strideFlag:    return "bool";
-    case ID_stride:        return "int";
-    case ID_createWindow:  return "bool";
-    case ID_windowId:      return "int";
-    case ID_queryAtts:     return "att";
-    case ID_pickAtts:      return "att";
+    case ID_timeType:       return "enum";
+    case ID_startTimeFlag:  return "bool";
+    case ID_startTime:      return "int";
+    case ID_endTimeFlag:    return "bool";
+    case ID_endTime:        return "int";
+    case ID_strideFlag:     return "bool";
+    case ID_stride:         return "int";
+    case ID_createWindow:   return "bool";
+    case ID_windowId:       return "int";
+    case ID_queryAtts:      return "att";
+    case ID_pickAtts:       return "att";
+    case ID_cachedCurvePts: return "doubleVector";
+    case ID_useCachedPts:   return "bool";
     default:  return "invalid index";
     }
 }
@@ -965,6 +1016,16 @@ QueryOverTimeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) cons
     case ID_pickAtts:
         {  // new scope
         retval = (pickAtts == obj.pickAtts);
+        }
+        break;
+    case ID_cachedCurvePts:
+        {  // new scope
+        retval = (cachedCurvePts == obj.cachedCurvePts);
+        }
+        break;
+    case ID_useCachedPts:
+        {  // new scope
+        retval = (useCachedPts == obj.useCachedPts);
         }
         break;
     default: retval = false;

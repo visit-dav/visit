@@ -36,6 +36,11 @@
     </Field>
     <Field name="pickAtts" label="pickAtts" type="att" subtype="PickAttributes" internal="true">
     </Field>
+    <Field name="cachedCurvePts" label="cachedCurvePts" type="doubleVector" access="protected">
+    </Field>
+    <Field name="useCachedPts" label="useCachedPts" type="bool" access="protected">
+      false
+    </Field>
     <Function name="CreateNode" user="false" member="true">
     </Function>
     <Function name="SetFromNode" user="false" member="true">

@@ -97,6 +97,7 @@ public:
     virtual void SelectAll();
     void SelectQueryAtts();
     void SelectPickAtts();
+    void SelectCachedCurvePts();
 
     // Property setting methods
     void SetTimeType(TimeType timeType_);
@@ -110,6 +111,8 @@ public:
     void SetWindowId(int windowId_);
     void SetQueryAtts(const QueryAttributes &queryAtts_);
     void SetPickAtts(const PickAttributes &pickAtts_);
+    void SetCachedCurvePts(const doubleVector &cachedCurvePts_);
+    void SetUseCachedPts(bool useCachedPts_);
 
     // Property getting methods
     TimeType              GetTimeType() const;
@@ -125,6 +128,9 @@ public:
           QueryAttributes &GetQueryAtts();
     const PickAttributes  &GetPickAtts() const;
           PickAttributes  &GetPickAtts();
+    const doubleVector    &GetCachedCurvePts() const;
+          doubleVector    &GetCachedCurvePts();
+    bool                  GetUseCachedPts() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -157,9 +163,14 @@ public:
         ID_windowId,
         ID_queryAtts,
         ID_pickAtts,
+        ID_cachedCurvePts,
+        ID_useCachedPts,
         ID__LAST
     };
 
+protected:
+    doubleVector    cachedCurvePts;
+    bool            useCachedPts;
 private:
     int             timeType;
     bool            startTimeFlag;
@@ -177,6 +188,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define QUERYOVERTIMEATTRIBUTES_TMFS "ibibibibiaa"
+#define QUERYOVERTIMEATTRIBUTES_TMFS "ibibibibiaad*b"
 
 #endif

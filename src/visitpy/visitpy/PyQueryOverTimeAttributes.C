@@ -125,6 +125,27 @@ PyQueryOverTimeAttributes_ToString(const QueryOverTimeAttributes *atts, const ch
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%swindowId = %d\n", prefix, atts->GetWindowId());
     str += tmpStr;
+    {   const doubleVector &cachedCurvePts = atts->GetCachedCurvePts();
+        SNPRINTF(tmpStr, 1000, "%scachedCurvePts = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < cachedCurvePts.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%g", cachedCurvePts[i]);
+            str += tmpStr;
+            if(i < cachedCurvePts.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    if(atts->GetUseCachedPts())
+        SNPRINTF(tmpStr, 1000, "%suseCachedPts = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suseCachedPts = 0\n", prefix);
+    str += tmpStr;
     return str;
 }
 
@@ -362,6 +383,93 @@ QueryOverTimeAttributes_GetWindowId(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+QueryOverTimeAttributes_SetCachedCurvePts(PyObject *self, PyObject *args)
+{
+    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+
+    doubleVector  &vec = obj->data->GetCachedCurvePts();
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = PyFloat_AS_DOUBLE(item);
+            else if(PyInt_Check(item))
+                vec[i] = double(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = PyLong_AsDouble(item);
+            else
+                vec[i] = 0.;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyFloat_AS_DOUBLE(tuple);
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = double(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = PyLong_AsDouble(tuple);
+    }
+    else
+        return NULL;
+
+    // Mark the cachedCurvePts in the object as modified.
+    obj->data->SelectCachedCurvePts();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+QueryOverTimeAttributes_GetCachedCurvePts(PyObject *self, PyObject *args)
+{
+    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the cachedCurvePts.
+    const doubleVector &cachedCurvePts = obj->data->GetCachedCurvePts();
+    PyObject *retval = PyTuple_New(cachedCurvePts.size());
+    for(size_t i = 0; i < cachedCurvePts.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(cachedCurvePts[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+QueryOverTimeAttributes_SetUseCachedPts(PyObject *self, PyObject *args)
+{
+    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the useCachedPts in the object.
+    obj->data->SetUseCachedPts(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+QueryOverTimeAttributes_GetUseCachedPts(PyObject *self, PyObject *args)
+{
+    QueryOverTimeAttributesObject *obj = (QueryOverTimeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseCachedPts()?1L:0L);
+    return retval;
+}
+
 
 
 PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH] = {
@@ -384,6 +492,10 @@ PyMethodDef PyQueryOverTimeAttributes_methods[QUERYOVERTIMEATTRIBUTES_NMETH] = {
     {"GetCreateWindow", QueryOverTimeAttributes_GetCreateWindow, METH_VARARGS},
     {"SetWindowId", QueryOverTimeAttributes_SetWindowId, METH_VARARGS},
     {"GetWindowId", QueryOverTimeAttributes_GetWindowId, METH_VARARGS},
+    {"SetCachedCurvePts", QueryOverTimeAttributes_SetCachedCurvePts, METH_VARARGS},
+    {"GetCachedCurvePts", QueryOverTimeAttributes_GetCachedCurvePts, METH_VARARGS},
+    {"SetUseCachedPts", QueryOverTimeAttributes_SetUseCachedPts, METH_VARARGS},
+    {"GetUseCachedPts", QueryOverTimeAttributes_GetUseCachedPts, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -437,6 +549,10 @@ PyQueryOverTimeAttributes_getattr(PyObject *self, char *name)
         return QueryOverTimeAttributes_GetCreateWindow(self, NULL);
     if(strcmp(name, "windowId") == 0)
         return QueryOverTimeAttributes_GetWindowId(self, NULL);
+    if(strcmp(name, "cachedCurvePts") == 0)
+        return QueryOverTimeAttributes_GetCachedCurvePts(self, NULL);
+    if(strcmp(name, "useCachedPts") == 0)
+        return QueryOverTimeAttributes_GetUseCachedPts(self, NULL);
 
     return Py_FindMethod(PyQueryOverTimeAttributes_methods, self, name);
 }
@@ -469,6 +585,10 @@ PyQueryOverTimeAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = QueryOverTimeAttributes_SetCreateWindow(self, tuple);
     else if(strcmp(name, "windowId") == 0)
         obj = QueryOverTimeAttributes_SetWindowId(self, tuple);
+    else if(strcmp(name, "cachedCurvePts") == 0)
+        obj = QueryOverTimeAttributes_SetCachedCurvePts(self, tuple);
+    else if(strcmp(name, "useCachedPts") == 0)
+        obj = QueryOverTimeAttributes_SetUseCachedPts(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

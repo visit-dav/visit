@@ -38,6 +38,8 @@
 
 package llnl.visit;
 
+import java.lang.Double;
+import java.util.Vector;
 
 // ****************************************************************************
 // Class: QueryOverTimeAttributes
@@ -56,7 +58,7 @@ package llnl.visit;
 
 public class QueryOverTimeAttributes extends AttributeSubject
 {
-    private static int QueryOverTimeAttributes_numAdditionalAtts = 11;
+    private static int QueryOverTimeAttributes_numAdditionalAtts = 13;
 
     // Enum values
     public final static int TIMETYPE_CYCLE = 0;
@@ -79,6 +81,8 @@ public class QueryOverTimeAttributes extends AttributeSubject
         windowId = 2;
         queryAtts = new QueryAttributes();
         pickAtts = new PickAttributes();
+        cachedCurvePts = new Vector();
+        useCachedPts = false;
     }
 
     public QueryOverTimeAttributes(int nMoreFields)
@@ -96,11 +100,15 @@ public class QueryOverTimeAttributes extends AttributeSubject
         windowId = 2;
         queryAtts = new QueryAttributes();
         pickAtts = new PickAttributes();
+        cachedCurvePts = new Vector();
+        useCachedPts = false;
     }
 
     public QueryOverTimeAttributes(QueryOverTimeAttributes obj)
     {
         super(obj);
+
+        int i;
 
         timeType = obj.timeType;
         startTimeFlag = obj.startTimeFlag;
@@ -113,6 +121,14 @@ public class QueryOverTimeAttributes extends AttributeSubject
         windowId = obj.windowId;
         queryAtts = new QueryAttributes(obj.queryAtts);
         pickAtts = new PickAttributes(obj.pickAtts);
+        cachedCurvePts = new Vector(obj.cachedCurvePts.size());
+        for(i = 0; i < obj.cachedCurvePts.size(); ++i)
+        {
+            Double dv = (Double)obj.cachedCurvePts.elementAt(i);
+            cachedCurvePts.addElement(new Double(dv.doubleValue()));
+        }
+
+        useCachedPts = obj.useCachedPts;
 
         SelectAll();
     }
@@ -129,6 +145,17 @@ public class QueryOverTimeAttributes extends AttributeSubject
 
     public boolean equals(QueryOverTimeAttributes obj)
     {
+        int i;
+
+        // Compare the elements in the cachedCurvePts vector.
+        boolean cachedCurvePts_equal = (obj.cachedCurvePts.size() == cachedCurvePts.size());
+        for(i = 0; (i < cachedCurvePts.size()) && cachedCurvePts_equal; ++i)
+        {
+            // Make references to Double from Object.
+            Double cachedCurvePts1 = (Double)cachedCurvePts.elementAt(i);
+            Double cachedCurvePts2 = (Double)obj.cachedCurvePts.elementAt(i);
+            cachedCurvePts_equal = cachedCurvePts1.equals(cachedCurvePts2);
+        }
         // Create the return value
         return ((timeType == obj.timeType) &&
                 (startTimeFlag == obj.startTimeFlag) &&
@@ -140,7 +167,9 @@ public class QueryOverTimeAttributes extends AttributeSubject
                 (createWindow == obj.createWindow) &&
                 (windowId == obj.windowId) &&
                 (queryAtts.equals(obj.queryAtts)) &&
-                (pickAtts.equals(obj.pickAtts)));
+                (pickAtts.equals(obj.pickAtts)) &&
+                cachedCurvePts_equal &&
+                (useCachedPts == obj.useCachedPts));
     }
 
     // Property setting methods
@@ -210,6 +239,18 @@ public class QueryOverTimeAttributes extends AttributeSubject
         Select(10);
     }
 
+    public void SetCachedCurvePts(Vector cachedCurvePts_)
+    {
+        cachedCurvePts = cachedCurvePts_;
+        Select(11);
+    }
+
+    public void SetUseCachedPts(boolean useCachedPts_)
+    {
+        useCachedPts = useCachedPts_;
+        Select(12);
+    }
+
     // Property getting methods
     public int             GetTimeType() { return timeType; }
     public boolean         GetStartTimeFlag() { return startTimeFlag; }
@@ -222,6 +263,8 @@ public class QueryOverTimeAttributes extends AttributeSubject
     public int             GetWindowId() { return windowId; }
     public QueryAttributes GetQueryAtts() { return queryAtts; }
     public PickAttributes  GetPickAtts() { return pickAtts; }
+    public Vector          GetCachedCurvePts() { return cachedCurvePts; }
+    public boolean         GetUseCachedPts() { return useCachedPts; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -248,6 +291,10 @@ public class QueryOverTimeAttributes extends AttributeSubject
             queryAtts.Write(buf);
         if(WriteSelect(10, buf))
             pickAtts.Write(buf);
+        if(WriteSelect(11, buf))
+            buf.WriteDoubleVector(cachedCurvePts);
+        if(WriteSelect(12, buf))
+            buf.WriteBool(useCachedPts);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -289,6 +336,12 @@ public class QueryOverTimeAttributes extends AttributeSubject
             pickAtts.Read(buf);
             Select(10);
             break;
+        case 11:
+            SetCachedCurvePts(buf.ReadDoubleVector());
+            break;
+        case 12:
+            SetUseCachedPts(buf.ReadBool());
+            break;
         }
     }
 
@@ -313,6 +366,8 @@ public class QueryOverTimeAttributes extends AttributeSubject
         str = str + intToString("windowId", windowId, indent) + "\n";
         str = str + indent + "queryAtts = {\n" + queryAtts.toString(indent + "    ") + indent + "}\n";
         str = str + indent + "pickAtts = {\n" + pickAtts.toString(indent + "    ") + indent + "}\n";
+        str = str + doubleVectorToString("cachedCurvePts", cachedCurvePts, indent) + "\n";
+        str = str + boolToString("useCachedPts", useCachedPts, indent) + "\n";
         return str;
     }
 
@@ -329,5 +384,7 @@ public class QueryOverTimeAttributes extends AttributeSubject
     private int             windowId;
     private QueryAttributes queryAtts;
     private PickAttributes  pickAtts;
+    private Vector          cachedCurvePts; // vector of Double objects
+    private boolean         useCachedPts;
 }
 

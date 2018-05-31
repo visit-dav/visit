@@ -102,6 +102,10 @@ class vtkRectilinearGrid;
 //    Kathleen Bonnell, Thu Feb 17 09:50:28 PST 2011
 //    Replace CreateRGrid with CreateTree, to allow multiple outputs.
 //
+//    Alister Maguire, Wed May 23 09:21:45 PDT 2018
+//    Added cacheIdx and useCache to allow plotting pick curves
+//    from cached picks. 
+//
 // ****************************************************************************
 
 class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
@@ -132,6 +136,8 @@ class QUERY_API avtQueryOverTimeFilter : public avtTimeLoopFilter,
     bool                  useVarForYAxis;
     int                   nResultsToStore;
     int                   numAdditionalFilters;
+    int                   cacheIdx;
+    bool                  useCache;
 
     virtual void          Execute(void);
     virtual void          UpdateDataObjectInfo(void);

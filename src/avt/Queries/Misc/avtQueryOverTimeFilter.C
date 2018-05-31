@@ -101,12 +101,17 @@
 //    Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //    Replaced CATCHALL(...) with CATCHALL.
 //
+//    Alister Maguire, Tue May 22 10:17:15 PDT 2018
+//    Added init of cacheIdx and useCache. 
+//
 // ****************************************************************************
 
 avtQueryOverTimeFilter::avtQueryOverTimeFilter(const AttributeGroup *a)
 {
     atts = *(QueryOverTimeAttributes*)a;
     SetTimeLoop(atts.GetStartTime(), atts.GetEndTime(), atts.GetStride());
+    cacheIdx = 0;
+    useCache = atts.GetUseCachedPts();
     finalOutputCreated = false;
     useTimeForXAxis = true;
     useVarForYAxis = false;
@@ -222,6 +227,9 @@ avtQueryOverTimeFilter::Create(const AttributeGroup *atts)
 //    Hank Childs, Sun Dec 26 12:13:19 PST 2010
 //    Add support for parallelizing over time.
 //
+//    Alister Maguire, Tue May 22 10:17:15 PDT 2018
+//    Added ability to plot pick curves from a cache. 
+//
 // ****************************************************************************
 
 void
@@ -237,7 +245,6 @@ avtQueryOverTimeFilter::Execute(void)
     // Set up error conditions and return early if any processor had an
     // error upstream.
     //
-
     int hadError = 0;
     if (GetInput()->GetInfo().GetValidity().HasErrorOccurred())
     {
@@ -254,80 +261,108 @@ avtQueryOverTimeFilter::Execute(void)
     }
 
     //
-    // Set up the query.
+    // If the curve points are already cached, there's no need to
+    // perform any more queries. Otherwise, we need to perform
+    // the queries ourselves. 
     //
-    QueryAttributes qatts = atts.GetQueryAtts();
-    qatts.SetTimeStep(currentTime);
-    avtDataObjectQuery *query = avtQueryFactory::Instance()->
-        CreateQuery(&qatts);
-    query->SetInput(GetInput());
-    if (ParallelizingOverTime())
-    {
-        query->SetParallelizingOverTime(true);
-    }
-
-    if (strncmp(query->GetType(), "avtVariableByNodeQuery",22) == 0)
-    {
-        PickAttributes patts = atts.GetPickAtts();
-        ((avtVariableByNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
-    }
-    else if (strncmp(query->GetType(), "avtVariableByZoneQuery",22) == 0)
-    {
-        PickAttributes patts = atts.GetPickAtts();
-        ((avtVariableByZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
-    }
-    else if (strncmp(query->GetType(), "avtLocateAndPickZoneQuery",25) == 0)
-    {
-        PickAttributes patts = atts.GetPickAtts();
-        ((avtLocateAndPickZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
-    }
-    else if (strncmp(query->GetType(), "avtLocateAndPickNodeQuery",25) == 0)
-    {
-        PickAttributes patts = atts.GetPickAtts();
-        ((avtLocateAndPickNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
-    }
-    query->SetTimeVarying(true);
-    query->SetSILRestriction(currentSILR);
-
-    //
-    // HokeyHack ... we want only 1 curve, so limit the
-    // query to 1 variable to avoid unnecessary processing.
-    //
-    if (nResultsToStore==1)
-    {
-        stringVector useThisVar;
-        useThisVar.push_back(qatts.GetVariables()[0]);
-        qatts.SetVariables(useThisVar);
-    }
-    //
-    // End HokeyHack.
-    //
-
-    TRY
-    {
-        query->PerformQuery(&qatts);
-    }
-    CATCHALL
+    if (useCache)
     {
         SetOutputDataTree(dummy);
-        success = false;
-        delete query;
-        RETHROW;
-    }
-    ENDTRY
 
-    SetOutputDataTree(dummy);
-    delete query;
+        if (atts.GetCachedCurvePts().empty())
+        {
+            success = false;
+            return;
+        }
+        success = true;
 
-    doubleVector results = qatts.GetResultsValue();
-    if (results.size() == 0)
-    {
-        success = false;
-        return;
+        for (int i = 0; i < nResultsToStore; i++)
+        {
+            qRes.push_back(atts.GetCachedCurvePts()[cacheIdx]);
+            cacheIdx++;
+        }
     }
     else
     {
-        success = true;
+        //
+        // Set up the query.
+        //
+        QueryAttributes qatts = atts.GetQueryAtts();
+        qatts.SetTimeStep(currentTime);
+        avtDataObjectQuery *query = avtQueryFactory::Instance()->
+            CreateQuery(&qatts);
+        query->SetInput(GetInput());
+        if (ParallelizingOverTime())
+        {
+            query->SetParallelizingOverTime(true);
+        }
+
+        if (strncmp(query->GetType(), "avtVariableByNodeQuery",22) == 0)
+        {
+            PickAttributes patts = atts.GetPickAtts();
+            ((avtVariableByNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
+        }
+        else if (strncmp(query->GetType(), "avtVariableByZoneQuery",22) == 0)
+        {
+            PickAttributes patts = atts.GetPickAtts();
+            ((avtVariableByZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
+        }
+        else if (strncmp(query->GetType(), "avtLocateAndPickZoneQuery",25) == 0)
+        {
+            PickAttributes patts = atts.GetPickAtts();
+            ((avtLocateAndPickZoneQuery*)query)->SetPickAttsForTimeQuery(&patts);
+        }
+        else if (strncmp(query->GetType(), "avtLocateAndPickNodeQuery",25) == 0)
+        {
+            PickAttributes patts = atts.GetPickAtts();
+            ((avtLocateAndPickNodeQuery*)query)->SetPickAttsForTimeQuery(&patts);
+        }
+        query->SetTimeVarying(true);
+        query->SetSILRestriction(currentSILR);
+
+        //  
+        // HokeyHack ... we want only 1 curve, so limit the
+        // query to 1 variable to avoid unnecessary processing.
+        // 
+        if (nResultsToStore==1)
+        {
+            stringVector useThisVar;
+            useThisVar.push_back(qatts.GetVariables()[0]);
+            qatts.SetVariables(useThisVar);
+        }
+        // 
+        // End HokeyHack.
+        //
+
+        TRY
+        {
+            query->PerformQuery(&qatts);
+        }
+        CATCHALL
+        {
+            SetOutputDataTree(dummy);
+            success = false;
+            delete query;
+            RETHROW;
+        }
+        ENDTRY
+
+        SetOutputDataTree(dummy);
+        delete query;
+
+        doubleVector results = qatts.GetResultsValue();
+        if (results.size() == 0)
+        {
+            success = false;
+            return;
+        }
+        else
+        {
+            success = true;
+        }
+
+        for (int i = 0; i < nResultsToStore; i++)
+            qRes.push_back(results[i]);
     }
 
     //
@@ -351,8 +386,7 @@ avtQueryOverTimeFilter::Execute(void)
         }
         times.push_back(tval);
     }
-    for (int i = 0; i < nResultsToStore; i++)
-        qRes.push_back(results[i]);
+
 }
 
 
