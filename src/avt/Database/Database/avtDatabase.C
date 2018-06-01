@@ -1397,6 +1397,7 @@ avtDatabase::Convert1DVarMDsToCurveMDs(avtDatabaseMetaData *md)
             scalarsToHide.push_back(i);
             avtCurveMetaData *cmd = new avtCurveMetaData();
             cmd->name = "Scalar_Curves/" + smd->name;
+            cmd->meshName = smd->meshName;
             cmd->originalName = smd->originalName;
             cmd->validVariable = smd->validVariable;
             cmd->yUnits = smd->units;
