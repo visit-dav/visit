@@ -73,7 +73,7 @@ c = CurveAttributes()
 c.showLabels = 0
 SetDefaultPlotOptions(c)
 
-OpenDatabase(data_path("Rect_test_data/1d/curv_data/datafile.rect"))
+OpenDatabase(data_path("Rect_test_data/1d/rect_data/datafile.rect"))
 
 AddPlot("Curve", "Scalar_Curves/pressure")
 DrawPlots()
