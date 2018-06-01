@@ -258,7 +258,7 @@ avtSILGenerator::CreateSIL(avtDatabaseMetaData *md, avtSIL *sil)
         avtSILSet_p set = new avtSILSet(curve->name, id);
         int topIndex = sil->AddWhole(set);
         vector<int> domainList;
-        if (mesh->numBlocks > 1)
+        if (mesh->numBlocks >= 1)
             AddSubsets(sil, topIndex, mesh->numBlocks, mesh->blockOrigin,
                 domainList, mesh->blockTitle, mesh->blockPieceName,
                 mesh->blockNames, mesh->blockNameScheme, false);

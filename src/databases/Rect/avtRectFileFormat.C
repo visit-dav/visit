@@ -457,7 +457,7 @@ avtRectFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md,
 {
     avtMeshMetaData *mesh = new avtMeshMetaData;
     mesh->name = "Mesh";
-    mesh->meshType = AVT_CURVILINEAR_MESH;
+    mesh->meshType = gridType;
     mesh->numBlocks = ndomains;
     mesh->blockOrigin = 0;
     int ndims = 0;
