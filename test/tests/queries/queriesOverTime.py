@@ -707,6 +707,13 @@ def TestReturnValue():
     OpenDatabase(silo_data_path("wave.visit"))
     AddPlot("Pseudocolor", "v")
     DrawPlots()
+
+    pickAtts = GetPickAttributes()
+    pickAtts.doTimeCurve = 0
+    pickAtts.variables = ("default", "v")
+    pickAtts.timeCurveType =  pickAtts.Single_Y_Axis
+    SetPickAttributes(pickAtts)
+
     time1   = NodePick(coord=(3, .5, 3), do_time=1, start_time=0, end_time=70)
     no_time = NodePick(coord=(2, .2, 2), do_time=0)
     time2   = NodePick(coord=(3, .5, 3), do_time=1, start_time=0, end_time=70)
