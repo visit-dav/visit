@@ -233,6 +233,9 @@ avtViewCurve::SetToDefault()
 //    Kathleen Bonnell, Thu Mar 22 20:12:04 PDT 2007 
 //    Added domainScale, rangeScale. 
 //
+//    Alister Maguire, Tue Jun  5 09:13:10 PDT 2018
+//    Replaced computation of view scale with ComputeViewScale().
+//
 // ****************************************************************************
 
 void
@@ -246,9 +249,7 @@ avtViewCurve::SetViewInfoFromView(avtViewInfo &viewInfo, int *size)
     double    viewScale;
     double    realRange[2];
 
-    viewScale = ((domain[1] - domain[0]) / (range[1] -  range[0])) *
-                ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
-                ((double) size[1] / (double) size[0]) ;
+    viewScale = ComputeViewScale(size);
 
     realRange[0] = range[0] * viewScale;
     realRange[1] = range[1] * viewScale;
@@ -347,20 +348,53 @@ avtViewCurve::GetViewport(double *winViewport) const
 //    Eric Brugger, Tue Nov 18 09:23:44 PST 2003
 //    I replaced GetValidDomainRange with CheckAndCorrectDomainRange.
 //
+//    Alister Maguire, Tue Jun  5 09:13:10 PDT 2018
+//    Replaced computation of view scale with ComputeViewScale().
+//
 // ****************************************************************************
 
-double
+double 
 avtViewCurve::GetScaleFactor(int *size)
 {
     double s;
 
     CheckAndCorrectDomainRange();
 
-    s = ((domain[1] - domain[0]) / (range[1]  - range[0])) *
-        ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
-        ((double) size[1] / (double) size[0]);
+    return ComputeViewScale(size);
+}
 
-    return s;
+// ****************************************************************************
+//  Method: avtViewCurve::GetScaleFactor
+//
+//  Purpose:
+//    This is a const version of GetScaleFactor which can be used
+//    in sections of the pipeline that require const functions 
+//    (such as the ViewerWindow). If the domain, range, or size
+//    is invalid, the scale will be set to 1, and false will be 
+//    returned. 
+//
+//  Returns:
+//    True if the scale was sucessfully computed. False otherwise. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Jun  4 15:13:43 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool 
+avtViewCurve::GetScaleFactor(int *size, double &scale) const
+{
+    bool validSize = (size[0] > 0 && size[1] > 0);
+    if (ValidDomainRange() && validSize)
+    {
+        scale = ComputeViewScale(size);
+        return true;
+    }
+    
+    scale = 1.0;
+    return false;
 }
 
 // ****************************************************************************
@@ -431,6 +465,30 @@ avtViewCurve::SetToViewCurveAttributes(ViewCurveAttributes *viewAtts) const
 }
 
 // ****************************************************************************
+//  Method: avtViewCurve::ValidDomainRange
+//
+//  Purpose:
+//    Checks the window parameters and determines if they are valid. 
+//
+//  Returns:
+//    True if the window parameters are valid. False otherwise. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Jun  4 15:13:43 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtViewCurve::ValidDomainRange() const
+{
+    double width  = domain[1] - domain[0];
+    double height = range[1]  - range[0];
+    return (width > 0. && height > 0.);
+}
+
+// ****************************************************************************
 //  Method: avtViewCurve::CheckAndCorrectDomainRange
 //
 //  Purpose:
@@ -490,5 +548,29 @@ avtViewCurve::CheckAndCorrectDomainRange()
         range[0] -= width / 2.;
         range[1] += width / 2.;
     }
+}
+
+// ****************************************************************************
+//  Method: avtViewCurve::ComputeViewScale
+//
+//  Purpose:
+//    This is a convenience method for computing the view scale. 
+//
+//  Returns:
+//    The view scale. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Mon Jun  4 15:13:43 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+double
+avtViewCurve::ComputeViewScale(int *size) const
+{
+    return ((domain[1] - domain[0]) / (range[1]  - range[0])) *
+           ((viewport[3] - viewport[2]) / (viewport[1] - viewport[0])) *
+           ((double) size[1] / (double) size[0]);
 }
 

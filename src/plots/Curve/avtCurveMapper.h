@@ -57,6 +57,10 @@
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jun  4 15:13:43 PDT 2018
+//      Added SetViewScale to allow adding a view scale
+//      to the mapper. 
+//
 // ****************************************************************************
 
 class avtCurveMapper : virtual public avtMapper
@@ -80,6 +84,7 @@ class avtCurveMapper : virtual public avtMapper
     void                      SetPointDensity(int);
     void                      SetSymbolType(int);
     bool                      SetFullFrameScaling(bool, const double *);
+    bool                      SetViewScale(const double);            
 
   protected:
     virtual vtkDataSetMapper *CreateMapper(void); 

@@ -474,3 +474,32 @@ avtCurveMapper::SetFullFrameScaling(bool, const double *s)
     }
     return true;
 }
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetViewScale
+//
+//  Purpose:
+//      Sets the view scale. This is used when the dimension ranges 
+//      do not match, and the up vector from the model view matrix
+//      needs to be scaled. 
+//
+//  Arguments:
+//      vs       The new view scale.
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Mon Jun  4 15:02:38 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtCurveMapper::SetViewScale(const double vs)
+{
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetViewScale(vs);
+    }
+    return true;
+}

@@ -127,6 +127,9 @@ class   ColorAttribute;
 //    Simplify this class by removing surface/wireframe/points settings.
 //    Add SetUpTransparencyActor.
 //
+//    Alister Maguire, Tue Jun  5 10:08:59 PDT 2018
+//    Added SetViewScale. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtMapperBase : public avtTerminatingDatasetSink
@@ -164,6 +167,8 @@ class PLOTTER_API avtMapperBase : public avtTerminatingDatasetSink
 
     virtual bool               SetFullFrameScaling(bool, const double *)
                                    { return false; };
+
+    virtual bool               SetViewScale(const double) { return false; };
 
     virtual void               SetAlternateDisplay(void *) {; }
 

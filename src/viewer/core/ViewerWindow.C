@@ -2757,12 +2757,29 @@ ViewerWindow::UpdateView(const WINDOW_MODE mode, const double *limits)
 //    I renamed haveRenderedInCurve to viewSetInCurve, since it was more
 //    accurate.
 //
+//    Alister Maguire, Tue Jun  5 09:13:10 PDT 2018
+//    Added retrieval and setting of the view scale to prevent
+//    skew when rendering. 
+//
 // ****************************************************************************
 
 void
 ViewerWindow::SetViewCurve(const avtViewCurve &v)
 {
     visWindow->SetViewCurve(v);
+
+    double scale;
+    int size[2];
+    visWindow->GetSize(size[0], size[1]);
+    bool validViewScale = v.GetScaleFactor(size, scale);
+    if (!validViewScale)
+    {
+        debug1 << "WARNING: an unsuccessful attempt to retrieve the "
+               << "view scale was made. This may result in the view being "
+               << "skewed..." << endl;
+    }
+
+    plotList->SetViewScale(scale);
 
     viewSetInCurve = true;
 

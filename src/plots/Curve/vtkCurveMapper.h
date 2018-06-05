@@ -65,6 +65,10 @@ class vtkTrivialProducer;
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jun  4 15:13:43 PDT 2018
+//      Added ViewScale to scale the up vector from the model view
+//      matrix when necessary. 
+//
 // **************************************************************************** 
 
 class vtkCurveMapper : public vtkPolyDataMapper
@@ -96,6 +100,8 @@ public:
   vtkSetMacro(PointSize, double);
   vtkGetMacro(PointSize, double);
 
+  vtkSetMacro(ViewScale, double);
+  vtkGetMacro(ViewScale, double);
 
   vtkSetVector3Macro(FFScale, double);
   vtkGetVector3Macro(FFScale, double);
@@ -114,6 +120,7 @@ protected:
   bool        StaticPoints;
   int         PointDensity;
   double      PointSize;
+  double      ViewScale;
   double      FFScale[3];
 
   

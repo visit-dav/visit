@@ -84,6 +84,10 @@ class ViewCurveAttributes;
 //    Mark Blair, Mon Jul 16 17:16:29 PDT 2007
 //    Added SetViewport.
 //
+//    Alister Maguire, Tue Jun  5 09:13:10 PDT 2018
+//    Added a const version of GetScaleFactor, ValidDomainRange,
+//    and ComputeScaleFactor. 
+//
 // ****************************************************************************
 
 struct AVTVIEW_API avtViewCurve
@@ -106,12 +110,15 @@ struct AVTVIEW_API avtViewCurve
 
     void            GetViewport(double *) const;
     double          GetScaleFactor(int *);
+    bool            GetScaleFactor(int *, double &) const;
 
     void            SetFromViewCurveAttributes(const ViewCurveAttributes *);
     void            SetToViewCurveAttributes(ViewCurveAttributes *) const;
 
   protected:
     void            CheckAndCorrectDomainRange();
+    bool            ValidDomainRange() const;
+    double          ComputeViewScale(int *) const;
 };
 
 

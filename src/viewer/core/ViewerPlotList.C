@@ -9715,6 +9715,39 @@ ViewerPlotList::SetFullFrameScaling(bool useScale, double *scale)
 }
 
 // ****************************************************************************
+// Method: ViewerPlotList::SetViewScale
+//
+// Purpose: 
+//     Sets the view scale to avoid stretching when the dimensional ranges
+//     do not match. This scale is typically applied to the up vector from 
+//     the model view matrix. 
+//
+// Arguments:
+//   scale    : the view scale to use. 
+//
+// Returns:    True if any plots changed their settings.
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Jun  4 15:13:43 PDT 2018 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+ViewerPlotList::SetViewScale(const double scale)
+{
+    bool retval = false;
+    for (int i = 0; i < nPlots; i++)
+    {
+        if (plots[i].realized)
+            retval |= plots[i].plot->SetViewScale(scale);
+    }
+
+    return retval;
+}
+
+// ****************************************************************************
 // Method: ViewerPlotList::AlternateDisplayChangedPlotAttributes
 //
 // Purpose: 

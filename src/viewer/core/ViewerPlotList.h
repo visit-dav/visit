@@ -332,6 +332,9 @@ typedef std::map<std::string, int> StringIntMap;
 //    Added a default argument to DeleteActivePlots to determine if the current
 //    active plots should be considered when updating the expression list.
 //
+//    Alister Maguire, Mon Jun  4 15:13:43 PDT 2018
+//    Added SetViewScale. 
+//
 // ****************************************************************************
 
 
@@ -510,6 +513,7 @@ public:
                                                  int state,
                                                  bool returnDefault=false);
     bool SetFullFrameScaling(bool, double *);
+    bool SetViewScale(const double);
 
     void CreateNode(DataNode *, const std::map<std::string, std::string> &);
     bool SetFromNode(DataNode *, const std::map<std::string, std::string> &,

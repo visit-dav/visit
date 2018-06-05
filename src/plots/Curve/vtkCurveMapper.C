@@ -70,6 +70,7 @@ vtkCurveMapper::vtkCurveMapper()
     StaticPoints(true), 
     PointDensity(50), 
     PointSize(5.0), 
+    ViewScale(1.0),
     LinesDataInitialized(false),
     PointsDataInitialized(false)
 {
@@ -153,7 +154,7 @@ vtkCurveMapper::GetAspect(vtkRenderer *ren,
         m[i][j] = mvtm->GetElement(j, i);
 
     double m0 = m[0][0] * FFScale[0];
-    double m5 = m[1][1] * FFScale[1];
+    double m5 = m[1][1] * FFScale[1] * ViewScale;
     double lowerleft[3] = {-1., -1., 0.}; 
     ren->ViewToWorld(lowerleft[0], lowerleft[1], lowerleft[2]);
     double upperright[3] = {1., 1., 0.};

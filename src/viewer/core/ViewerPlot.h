@@ -312,6 +312,9 @@ class avtToolInterface;
 //    Burlen Loring, Wed Aug 26 14:04:16 PDT 2015
 //    clean up a compiler warning
 //
+//    Alister Maguire, Tue Jun  5 09:13:10 PDT 2018
+//    Added SetViewScale. 
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerPlot : public ViewerBase
@@ -529,6 +532,7 @@ public:
 
     void UpdateDataExtents();
     bool SetFullFrameScaling(bool, double *);
+    bool SetViewScale(const double);
 
     void UpdatePlotInformation() const;
 

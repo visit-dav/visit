@@ -6245,6 +6245,34 @@ ViewerPlot::SetFullFrameScaling(bool useScale, double *s)
 }
 
 // ****************************************************************************
+// Method: ViewerPlot::SetViewScale
+//
+// Purpose:
+//   Set the view scale of the mapper. 
+//
+// Arguments:
+//   vs    The view scale. 
+//
+// Returns:    
+//   Whether or not the view scale was set. 
+//
+// Programmer: Alister Maguire
+// Creation:   Mon Jun  4 15:13:43 PDT 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+ViewerPlot::SetViewScale(const double vs)
+{
+    bool retval = false;
+    if(*plotList[cacheIndex] != NULL)
+        retval = plotList[cacheIndex]->GetMapper()->SetViewScale(vs);
+
+    return retval;
+}
+// ****************************************************************************
 // Method: ViewerPlot::AlternateDisplayHide
 //
 // Purpose:
