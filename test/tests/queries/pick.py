@@ -2952,23 +2952,24 @@ def TestRemovePicks():
     PickByZone(18)
     Test("RemovePicks_01")
     to_remove = "A, C, D"
+    expected  = to_remove
     removed   = RemovePicks(to_remove)
     Test("RemovePicks_02")
 
     #check that the returned list matches
     #what we expect
-    AssertTrue(removed == to_remove, True)
+    AssertEqual("Removed expected picks", removed, expected)
     ClearPickPoints() 
 
     PickByZone(0)
     PickByZone(18)
     Test("RemovePicks_03")
     to_remove = "A, C, D, E"
+    expected  = "E"
     removed   = RemovePicks(to_remove)
     Test("RemovePicks_04")
 
-    expected = "C, D, E"
-    AssertTrue(expected == to_remove, True)
+    AssertEqual("Removed expected picks 2", removed, expected)
 
     ClearPickPoints() 
     DeleteAllPlots()
@@ -2997,7 +2998,7 @@ def TestRemoveLabeledPicks():
     Test("RemoveLabeledPicks_01")
 
     expected = "brick 1, brick 2"
-    AssertTrue(expected == removed, True)
+    AssertEqual("Removed expected bricks", expected, removed)
 
     ClearPickPoints() 
     DeleteAllPlots()

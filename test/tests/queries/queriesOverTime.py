@@ -705,11 +705,13 @@ def TestReturnValue():
     # time query. Let's make sure this isn't re-introduced. 
     #
     OpenDatabase(silo_data_path("wave.visit"))
+    AddPlot("Pseudocolor", "v")
+    DrawPlots()
     time1   = NodePick(coord=(3, .5, 3), do_time=1, start_time=0, end_time=70)
     no_time = NodePick(coord=(2, .2, 2), do_time=0)
     time2   = NodePick(coord=(3, .5, 3), do_time=1, start_time=0, end_time=70)
 
-    AssertTrue(type(time1) == type(time2), True)
+    AssertEqual("Pick Updated", type(time1), type(time2))
 
     ClearPickPoints() 
     DeleteAllPlots()
