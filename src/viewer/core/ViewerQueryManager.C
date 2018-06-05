@@ -1930,6 +1930,10 @@ ViewerQueryManager::ClearPickPoints()
 //    Brad Whitlock, Wed Jun 27 16:29:29 PDT 2012
 //    I fixed a small memory leak.
 //
+//    Alister Maguire, Wed May  9 09:48:44 PDT 2018
+//    After preparing for new pick, call UpdatePickAtts. Otherwise, 
+//    old attributes will carry on to new picks.
+//
 // ****************************************************************************
 
 bool
@@ -1986,6 +1990,7 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         // elsewhere in the pick process.
         //
         pickAtts->PrepareForNewPick();
+        UpdatePickAtts();
 
         ViewerWindow *win = (ViewerWindow *)pd.callbackData;
 
