@@ -4698,6 +4698,9 @@ ViewerWindow::RecenterViewAxisArray(const double *limits)
 //    Kathleen Bonnell, Tue Mar  3 15:04:57 PST 2009
 //    CanDoLogViewScaling changed to PermitsLogViewScaling.
 //
+//    Alister Maguire, Tue Jun  5 13:56:57 PDT 2018
+//    Added an update for the view scale. 
+//
 // ****************************************************************************
 
 void
@@ -4769,6 +4772,14 @@ ViewerWindow::ResetViewCurve()
         }
     }
     visWindow->SetViewCurve(viewCurve);
+
+    //
+    // Update the view scale. 
+    //
+    int size[2];
+    visWindow->GetSize(size[0], size[1]);
+    double scale = viewCurve.GetScaleFactor(size);
+    plotList->SetViewScale(scale);
 
     //
     // Flag the view as unmodified.

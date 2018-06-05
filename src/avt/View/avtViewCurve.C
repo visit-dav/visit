@@ -356,8 +356,6 @@ avtViewCurve::GetViewport(double *winViewport) const
 double 
 avtViewCurve::GetScaleFactor(int *size)
 {
-    double s;
-
     CheckAndCorrectDomainRange();
 
     return ComputeViewScale(size);
