@@ -38,6 +38,10 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Kathleen Biagas, Thu Jun  7 14:45:49 PDT 2018
+#   Remove use of VTK_DEFINTIONS in compiler. It initializes some vtk
+#   modules, which is now being done in avt/Plotter/vtk/InitVTKRendering.C.
+#
 #****************************************************************************/
 
 INCLUDE_DIRECTORIES(
@@ -63,10 +67,6 @@ if(HAVE_OSMESA)
 elseif(HAVE_EGL)
     target_link_libraries(time_annotation ${EGL_LIBRARIES})
 endif()
-
-# add vtk definitions
-ADD_TARGET_DEFINITIONS(time_annotation "${VTK_DEFINITIONS}")
-
 
 VISIT_INSTALL_TARGETS(text2polys time_annotation)
 VISIT_TOOLS_ADD_FOLDER(annotations text2polys time_annotation)

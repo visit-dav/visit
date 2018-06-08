@@ -48,8 +48,6 @@ ${VTK_INCLUDE_DIRS}
 
 add_library(visit_vtk_offscreen vtkOffScreenRenderingFactory.C)
 
-ADD_TARGET_DEFINITIONS(visit_vtk_offscreen ${VTK_DEFINITIONS})
-
 if(HAVE_OSMESA)
     target_link_libraries(visit_vtk_offscreen ${OSMESA_LIBRARIES})
 elseif(HAVE_EGL)

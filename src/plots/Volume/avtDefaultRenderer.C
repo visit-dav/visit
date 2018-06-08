@@ -40,9 +40,6 @@
 //                           avtDefaultRenderer.C                            //
 // ************************************************************************* //
 
-#include <vtkAutoInit.h>
-VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2);
-
 #include "avtDefaultRenderer.h"
 
 #include <vtkRectilinearGrid.h>

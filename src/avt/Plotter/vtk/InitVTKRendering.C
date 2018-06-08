@@ -57,6 +57,21 @@
 #include <DebugStream.h>
 
 //
+// The following calls initialize VTK modules.  They are built-in factories
+// similar to what is done below, but are standard VTK, providing a lot of
+// OpenGL overrides for rendering classes.
+//
+#include <vtkAutoInit.h>
+VTK_MODULE_INIT(vtkInteractionStyle)
+VTK_MODULE_INIT(vtkRenderingFreeType)
+VTK_MODULE_INIT(vtkRenderingOpenGL2)
+//
+// Not necessarily needed outside of Volume plot, but Viewer crashes on exit
+// during de-registration of factories if this is called from Volume plot.
+//
+VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2)
+
+//
 // A factory that will allow VisIt to override any vtkObject
 // with a sub-class of that object.
 //
