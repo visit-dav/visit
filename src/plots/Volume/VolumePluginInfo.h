@@ -110,6 +110,9 @@ class VolumeViewerEnginePluginInfo : public virtual ViewerEnginePlotPluginInfo, 
   private:
     static VolumeAttributes *defaultAtts;
     static VolumeAttributes *clientAtts;
+    // User-defined functions
+  public:
+    virtual ~VolumeViewerEnginePluginInfo();
 };
 
 class VolumeViewerPluginInfo : public virtual ViewerPlotPluginInfo, public virtual VolumeViewerEnginePluginInfo

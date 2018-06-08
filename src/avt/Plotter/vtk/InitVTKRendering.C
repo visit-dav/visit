@@ -65,11 +65,6 @@
 VTK_MODULE_INIT(vtkInteractionStyle)
 VTK_MODULE_INIT(vtkRenderingFreeType)
 VTK_MODULE_INIT(vtkRenderingOpenGL2)
-//
-// Not necessarily needed outside of Volume plot, but Viewer crashes on exit
-// during de-registration of factories if this is called from Volume plot.
-//
-VTK_MODULE_INIT(vtkRenderingVolumeOpenGL2)
 
 //
 // A factory that will allow VisIt to override any vtkObject

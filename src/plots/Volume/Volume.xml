@@ -191,6 +191,10 @@
       </Function>
       <Function name="VolumeViewerEnginePluginInfo::Permits2DViewScaling" user="false" member="true">
       </Function>
+      <Function name="VolumeViewerEnginePluginInfo::InitializeGlobalObjects" user="false" member="true">
+      </Function>
+      <Function name="VolumeViewerEnginePluginInfo::~VolumeViewerEnginePluginInfo" user="true" member="true">
+      </Function>
       <Function name="VolumeAttributes_SetMaterialProperties" user="false" member="true">
       </Function>
       <Include file="source" quoted="false">

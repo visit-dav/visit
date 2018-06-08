@@ -73,6 +73,10 @@
 #   to link line.  Needed because the module is now init'd from
 #   InitVTKRendering.
 #
+#   Kathleen Biagas, Fri Jun  8 12:17:45 PDT 2018
+#   Remove vtkRenderingVolumeOpenGL2 from link line. Moved module init back
+#   into volume plot.
+#
 #****************************************************************************/
 
 if(VISIT_OSPRAY)
@@ -212,7 +216,7 @@ ADD_LIBRARY(avtplotter_ser ${AVTPLOTTER_SOURCES})
 TARGET_LINK_LIBRARIES(avtplotter_ser 
     visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk 
     lightweight_visit_vtk vtkFiltersHybrid vtkRenderingOpenGL2 
-    vtkRenderingVolumeOpenGL2 vtkRenderingFreeType ${OPENGL_LIBRARIES})
+    vtkRenderingFreeType ${OPENGL_LIBRARIES})
 
 IF(VISIT_OSPRAY)
     MESSAGE(STATUS "OSPRAY_TARGET_LINK_LIBRARIES: " ${OSPRAY_TARGET_LINK_LIBRARIES})
@@ -227,7 +231,7 @@ VISIT_INSTALL_TARGETS(avtplotter_ser)
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
-    TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkFiltersHybrid vtkRenderingOpenGL2 vtkRenderingVolumeOpenGL2 vtkRenderingFreeType ${OPENGL_LIBRARIES})
+    TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkFiltersHybrid vtkRenderingOpenGL2 vtkRenderingFreeType ${OPENGL_LIBRARIES})
     IF(VISIT_OSPRAY)
         TARGET_LINK_LIBRARIES(avtplotter_par ${OSPRAY_TARGET_LINK_LIBRARIES}
             ${OSPRAY_LIBRARIES})
