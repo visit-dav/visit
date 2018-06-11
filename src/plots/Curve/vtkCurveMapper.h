@@ -46,6 +46,7 @@
 #define vtkCurveMapper_h
 
 #include <vtkPolyDataMapper.h>
+#include <vtkLineSource.h>
 #include <vtkNew.h>
 
 
@@ -69,6 +70,9 @@ class vtkTrivialProducer;
 //      Added ViewScale to scale the up vector from the model view
 //      matrix when necessary. 
 //
+//      Alister Maguire, Mon Jun 11 10:15:25 PDT 2018
+//      Implemented the time cue options. 
+//
 // **************************************************************************** 
 
 class vtkCurveMapper : public vtkPolyDataMapper
@@ -84,7 +88,6 @@ public:
   // Toggle for drawing the curve lines
   vtkGetMacro(DrawCurve, bool);
   vtkSetMacro(DrawCurve, bool);
-
  
   // Settings for drawing the curve points
   vtkGetMacro(DrawPoints, bool);
@@ -103,6 +106,24 @@ public:
   vtkSetMacro(ViewScale, double);
   vtkGetMacro(ViewScale, double);
 
+  // Settings for time cue
+  vtkSetMacro(TimeForTimeCue, double);
+  vtkGetMacro(TimeForTimeCue, double);
+  vtkSetMacro(DoBallTimeCue, bool);
+  vtkGetMacro(DoBallTimeCue, bool);
+  vtkSetMacro(TimeCueBallSize, double);
+  vtkGetMacro(TimeCueBallSize, double);
+  vtkSetVector3Macro(TimeCueBallColor, double);
+  vtkGetVector3Macro(TimeCueBallColor, double);
+  vtkSetMacro(DoLineTimeCue, bool);
+  vtkGetMacro(DoLineTimeCue, bool);
+  vtkSetMacro(TimeCueLineWidth, double);
+  vtkGetMacro(TimeCueLineWidth, double);
+  vtkSetVector3Macro(TimeCueLineColor, double);
+  vtkGetVector3Macro(TimeCueLineColor, double);
+  vtkSetMacro(DoCropTimeCue, bool);
+  vtkGetMacro(DoCropTimeCue, bool);
+
   vtkSetVector3Macro(FFScale, double);
   vtkGetVector3Macro(FFScale, double);
 
@@ -111,8 +132,8 @@ protected:
   ~vtkCurveMapper();
 
   virtual void RenderPiece(vtkRenderer *, vtkActor *);
-
  
+
   bool        DrawCurve;
   bool        DrawPoints;
   int         SymbolType;
@@ -121,6 +142,14 @@ protected:
   int         PointDensity;
   double      PointSize;
   double      ViewScale;
+  double      TimeForTimeCue;
+  bool        DoBallTimeCue;
+  double      TimeCueBallSize;
+  double      TimeCueBallColor[3];
+  bool        DoLineTimeCue;
+  double      TimeCueLineWidth;
+  double      TimeCueLineColor[3];
+  bool        DoCropTimeCue;
   double      FFScale[3];
 
   
@@ -134,6 +163,14 @@ protected:
   vtkNew<vtkPolyDataMapper>       PointsMapper;
   bool                            PointsDataInitialized;
 
+  vtkNew<vtkPolyData>             BallCuePolyData;
+  vtkNew<vtkTrivialProducer>      BallCueOutput;
+  vtkNew<vtkPolyDataMapper>       BallCueMapper;
+  bool                            BallCueDataInitialized;
+
+  vtkNew<vtkLineSource>           LineCueData;
+  vtkNew<vtkPolyDataMapper>       LineCueMapper;
+  bool                            LineCueDataInitialized;
 
 private:
   vtkCurveMapper(const vtkCurveMapper&); 
@@ -141,9 +178,13 @@ private:
 
   void UpdateLinesData(vtkRenderer *);
   void UpdatePointsData(vtkRenderer *);
+  void UpdateBallCueData(vtkRenderer *);
+  void UpdateLineCueData(vtkRenderer *);
   bool GetAspect(vtkRenderer *, int &, double &, double &,
                  int &, double &, double &);
   void SetUpPoints(vtkRenderer *);
+  void SetUpBallCue(vtkRenderer *);
+  void SetUpLineCue(vtkRenderer *);
 
 };
 

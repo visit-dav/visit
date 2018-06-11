@@ -380,6 +380,9 @@ avtCurvePlot::CustomizeBehavior(void)
 //    Advertise window-mode here, since it never changes and may need
 //    to be known before plot executes.
 //
+//    Alister Maguire, Mon Jun 11 10:24:59 PDT 2018
+//    Set attributes for the time cue options. 
+//
 // ****************************************************************************
 
 void
@@ -389,10 +392,10 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
         atts.ChangesRequireRecalculation(*(const CurveAttributes*)a);
     atts = *(const CurveAttributes*)a;
 
-    double rgb[4];
-    atts.GetCurveColor().GetRgb(rgb);
-    curveLegend->SetColor(rgb);
-    mapper->SetColor(rgb);
+    double curveRgb[4];
+    atts.GetCurveColor().GetRgb(curveRgb);
+    curveLegend->SetColor(curveRgb);
+    mapper->SetColor(curveRgb);
     mapper->SetDrawCurve(atts.GetShowLines());
     mapper->SetDrawPoints(atts.GetShowPoints());
     mapper->SetPointSize(atts.GetPointSize());
@@ -400,7 +403,19 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
     mapper->SetSymbolType(atts.GetSymbol());
     mapper->SetStaticPoints(atts.GetPointFillMode() == CurveAttributes::Static);
     mapper->SetPointDensity(atts.GetSymbolDensity());
-
+    mapper->SetTimeForTimeCue(atts.GetTimeForTimeCue());
+    mapper->SetDoBallTimeCue(atts.GetDoBallTimeCue());
+    mapper->SetTimeCueBallSize(atts.GetTimeCueBallSize());
+    double ballRgb[3];
+    atts.GetBallTimeCueColor().GetRgb(ballRgb);
+    mapper->SetTimeCueBallColor(ballRgb);
+    mapper->SetDoLineTimeCue(atts.GetDoLineTimeCue());
+    mapper->SetTimeCueLineWidth(atts.GetLineTimeCueWidth());
+    double lineRgb[3];
+    atts.GetLineTimeCueColor().GetRgb(lineRgb);
+    mapper->SetTimeCueLineColor(lineRgb);
+    mapper->SetDoCropTimeCue(atts.GetDoCropTimeCue());
+   
     if (atts.GetShowLegend())
     {
         curveLegend->LegendOn();
@@ -412,7 +427,7 @@ avtCurvePlot::SetAtts(const AttributeGroup *a)
 
     SetLineWidth(atts.GetLineWidth());
 
-    decoMapper->SetLabelColor(rgb);
+    decoMapper->SetLabelColor(curveRgb);
     decoMapper->SetLabelVisibility(atts.GetShowLabels());
 
     behavior->GetInfo().GetAttributes().SetWindowMode(WINMODE_CURVE);

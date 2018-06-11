@@ -56,6 +56,9 @@
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jun 11 10:24:59 PDT 2018
+//      Added initialization of time cue options. 
+//
 // ****************************************************************************
 
 avtCurveMapper::avtCurveMapper()
@@ -70,6 +73,14 @@ avtCurveMapper::avtCurveMapper()
     pointDensity = 50;
     ffScale[0] = ffScale[1] = ffScale[2] = 1.;
     symbolType = 0;
+    timeForTimeCue = 0.0;
+    doBallTimeCue = false;
+    timeCueBallSize = 1.0;
+    timeCueBallColor[0] = timeCueBallColor[1] = timeCueBallColor[2] = 1.0;
+    doLineTimeCue = false; 
+    timeCueLineWidth = 1.0;
+    timeCueLineColor[0] = timeCueLineColor[1] = timeCueLineColor[2] = 1.0;
+    doCropTimeCue = false;
 }
 
 
@@ -118,6 +129,9 @@ avtCurveMapper::CreateMapper()
 //
 //  Modifications:
 //
+//      Alister Maguire, Mon Jun 11 10:24:59 PDT 2018
+//      Added setting of time cue options. 
+//
 // ****************************************************************************
 
 void
@@ -136,6 +150,14 @@ avtCurveMapper::CustomizeMappers(void)
             cm->SetPointSize(pointSize);
             cm->SetSymbolType(symbolType);
             cm->SetFFScale(ffScale);
+            cm->SetTimeForTimeCue(timeForTimeCue);
+            cm->SetDoBallTimeCue(doBallTimeCue);
+            cm->SetTimeCueBallSize(timeCueBallSize);
+            cm->SetTimeCueBallColor(timeCueBallColor);
+            cm->SetDoLineTimeCue(doLineTimeCue);
+            cm->SetTimeCueLineWidth(timeCueLineWidth);
+            cm->SetTimeCueLineColor(timeCueLineColor);
+            cm->SetDoCropTimeCue(doCropTimeCue);
 
             vtkProperty* prop = actors[i]->GetProperty();
             prop->SetColor(curveColor);
@@ -203,7 +225,6 @@ avtCurveMapper::SetColor(double r, double g, double b)
         }
     }
 }
-
 
 
 // ****************************************************************************
@@ -382,6 +403,243 @@ avtCurveMapper::SetSymbolType(int val)
     {
         if (mappers[i] != NULL)
             ((vtkCurveMapper*)mappers[i])->SetSymbolType(symbolType);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetTimeForTimeCue
+//
+//  Purpose:
+//      Sets the time for time cue. 
+//
+//  Arguments:
+//      time    The time for the time cue. 
+//
+//  Programmer: Aister Maguire 
+//  Creation:   Jun 11, 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMapper::SetTimeForTimeCue(double time)
+{
+    timeForTimeCue = time;
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetTimeForTimeCue(timeForTimeCue);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetDoBallTimeCue
+//
+//  Purpose:
+//      Sets whether or not to do the ball time cue. 
+//
+//  Arguments:
+//      doBallCue    Whether or not to do the ball time cue. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Jun 11, 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMapper::SetDoBallTimeCue(bool doBallCue)
+{
+    doBallTimeCue = doBallCue;
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetDoBallTimeCue(doBallTimeCue);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetTimeCueBallSize
+//
+//  Purpose:
+//      Set the size of the time cue ball. 
+//
+//  Arguments:
+//      ballSize    The size of the time cue ball. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jun 11, 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMapper::SetTimeCueBallSize(double ballSize)
+{
+    timeCueBallSize = ballSize;
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetTimeCueBallSize(timeCueBallSize);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetTimeCueBallColor
+//
+//  Purpose:
+//      Set the color of the time cue ball. 
+//
+//  Arguments:
+//      ballColor    The color of the ball (RGB: 0.0 -> 1.0).
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jun 11, 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMapper::SetTimeCueBallColor(double ballColor[3])
+{
+    for (int i = 0; i < 3; ++i)
+        timeCueBallColor[i] = ballColor[i];
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->
+                SetTimeCueBallColor(timeCueBallColor);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetDoLineTimeCue
+//
+//  Purpose:
+//      Set whether or not to do the line cue. 
+//
+//  Arguments:
+//      doLineCue    Whether or not to do the line cue. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jun 11, 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMapper::SetDoLineTimeCue(bool doLineCue)
+{
+    doLineTimeCue = doLineCue;
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetDoLineTimeCue(doLineTimeCue);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetTimeCueLineWidth
+//
+//  Purpose:
+//      Set the line width for the line cue. 
+//
+//  Arguments:
+//      lineWidth    The width of the line cue. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jun 11, 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMapper::SetTimeCueLineWidth(double lineWidth)
+{
+    timeCueLineWidth = lineWidth;
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->
+                SetTimeCueLineWidth(Int2LineWidth(timeCueLineWidth));
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetTimeCueLineColor
+//
+//  Purpose:
+//      Set the color of the line cue. 
+//
+//  Arguments:
+//      lineColor    The color of the line cue (RGB: 0.0 -> 1.0).
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jun 11, 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMapper::SetTimeCueLineColor(double lineColor[3])
+{
+    for (int i = 0; i < 3; ++i)
+        timeCueLineColor[i] = lineColor[i];
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->
+                SetTimeCueLineColor(timeCueLineColor);
+    }
+}
+
+
+// ****************************************************************************
+//  Method: avtCurveMapper::SetDoCropTimeCue
+//
+//  Purpose:
+//      Set whether or not to crop based on the time cue. 
+//
+//  Arguments:
+//      doCropCue    Whether or not to crop based on the time cue. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Jun 11, 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+avtCurveMapper::SetDoCropTimeCue(bool doCropCue)
+{
+    doCropTimeCue = doCropCue;
+
+    for (int i = 0 ; i < nMappers ; i++)
+    {
+        if (mappers[i] != NULL)
+            ((vtkCurveMapper*)mappers[i])->SetDoCropTimeCue(doCropTimeCue);
     }
 }
 

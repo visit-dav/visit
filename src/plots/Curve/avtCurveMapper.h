@@ -61,6 +61,9 @@
 //      Added SetViewScale to allow adding a view scale
 //      to the mapper. 
 //
+//      Alister Maguire, Mon Jun 11 10:15:25 PDT 2018
+//      Added time cue options. 
+//
 // ****************************************************************************
 
 class avtCurveMapper : virtual public avtMapper
@@ -83,6 +86,14 @@ class avtCurveMapper : virtual public avtMapper
     void                      SetPointStride(int);
     void                      SetPointDensity(int);
     void                      SetSymbolType(int);
+    void                      SetTimeForTimeCue(double);
+    void                      SetDoBallTimeCue(bool);
+    void                      SetTimeCueBallSize(double);
+    void                      SetTimeCueBallColor(double [3]);
+    void                      SetDoLineTimeCue(bool);
+    void                      SetTimeCueLineWidth(double);
+    void                      SetTimeCueLineColor(double [3]);
+    void                      SetDoCropTimeCue(bool);
     bool                      SetFullFrameScaling(bool, const double *);
     bool                      SetViewScale(const double);            
 
@@ -101,6 +112,14 @@ class avtCurveMapper : virtual public avtMapper
     int                       pointDensity;
     double                    ffScale[3];
     int                       symbolType;
+    double                    timeForTimeCue;
+    bool                      doBallTimeCue;
+    double                    timeCueBallSize;
+    double                    timeCueBallColor[3]; 
+    bool                      doLineTimeCue;
+    double                    timeCueLineWidth;
+    double                    timeCueLineColor[3];
+    bool                      doCropTimeCue;
 
 };
 
