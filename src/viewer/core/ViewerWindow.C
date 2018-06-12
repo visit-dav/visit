@@ -5503,6 +5503,9 @@ ViewerWindow::SetInitialView3d()
 //    Kathleen Bonnell, Tue Mar  3 15:04:57 PST 2009
 //    CanDoLogViewScaling changed to PermitsLogViewScaling.
 //
+//    Alister Maguire, Tue Jun 12 16:38:16 PDT 2018
+//    Added update of the view scale. 
+//
 // ****************************************************************************
 
 void
@@ -5590,6 +5593,23 @@ ViewerWindow::UpdateViewCurve(const double *limits)
         else 
             ResetViewCurve();
     }
+
+    //
+    // Update the plot lists' view scale. 
+    //
+    const avtViewCurve &newViewCurve = GetViewCurve();
+    double scale;
+    int size[2];
+    visWindow->GetSize(size[0], size[1]);
+    bool validViewScale = newViewCurve.GetScaleFactor(size, scale);
+    if (!validViewScale)
+    {
+        debug1 << "WARNING: an unsuccessful attempt to retrieve the "
+               << "view scale was made. This may result in the view being "
+               << "skewed..." << endl;
+    }
+
+    plotList->SetViewScale(scale);
 
     viewSetInCurve = true;
 }
