@@ -153,7 +153,7 @@ void Axes3D::Init()
     triadColor[0] = 0;
     triadColor[1] = 0;
     triadColor[2] = 0;
-    triadLineWidth = 0;
+    triadLineWidth = 1;
     triadFont = 0;
     triadBold = true;
     triadItalic = true;

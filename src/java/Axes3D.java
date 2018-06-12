@@ -97,7 +97,7 @@ public class Axes3D extends AttributeSubject
         triadColor[0] = 0;
         triadColor[1] = 0;
         triadColor[2] = 0;
-        triadLineWidth = 0f;
+        triadLineWidth = 1f;
         triadFont = 0;
         triadBold = true;
         triadItalic = true;
@@ -131,7 +131,7 @@ public class Axes3D extends AttributeSubject
         triadColor[0] = 0;
         triadColor[1] = 0;
         triadColor[2] = 0;
-        triadLineWidth = 0f;
+        triadLineWidth = 1f;
         triadFont = 0;
         triadBold = true;
         triadItalic = true;
