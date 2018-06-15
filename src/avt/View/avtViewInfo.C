@@ -329,6 +329,9 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     vtkcam->SetViewUp(viewUp);
     vtkcam->SetWindowCenter(2.0*imagePan[0], 2.0*imagePan[1]);
     vtkcam->SetFocalDisk(imageZoom);
+#ifdef VISIT_OSPRAY
+    vtkcam->Zoom(imageZoom);
+#else
     if (imageZoom != 1.0)
     {
         double matrix[4][4];
@@ -345,4 +348,5 @@ avtViewInfo::SetCameraFromView(vtkCamera *vtkcam) const
     {
         vtkcam->SetUserTransform(NULL);
     }
+#endif
 }

@@ -2648,10 +2648,12 @@ ViewerSubject::ProcessCommandLine(int argc, char **argv)
         {
             WindowMetrics::SetEmbeddedWindowState(true);
         }
+#ifdef VISIT_OSPRAY
         else if (strcmp(argv[i], "-ospray") == 0)
         {
             avtCallback::SetOSPRayMode(true);
         }
+#endif
         else if (strcmp(argv[i], "-fullscreen") == 0)
         {
             GetViewerProperties()->SetWindowFullScreen(true);

@@ -35,31 +35,35 @@
 * DAMAGE.
 *
 *****************************************************************************/
+/**
+ * @class   vtkOSPRayVisItCubeAxesActorNode
+ * @brief   links vtkVisItCubeAxesActor to OSPRay
+ *
+ * Translates vtkVisItCubeAxesActor state into OSPRay rendering calls
+*/
 
-#ifndef PY_RENDERINGATTRIBUTES_H
-#define PY_RENDERINGATTRIBUTES_H
-#include <Python.h>
-#include <RenderingAttributes.h>
-#include <visitpy_exports.h>
+#ifndef vtkOSPRayVisItCubeAxesActorNode_h
+#define vtkOSPRayVisItCubeAxesActorNode_h
 
-//
-// Functions exposed to the VisIt module.
-//
-#define RENDERINGATTRIBUTES_NMETH 72
-void VISITPY_API           PyRenderingAttributes_StartUp(RenderingAttributes *subj, void *data);
-void VISITPY_API           PyRenderingAttributes_CloseDown();
-VISITPY_API PyMethodDef *  PyRenderingAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyRenderingAttributes_Check(PyObject *obj);
-VISITPY_API RenderingAttributes *  PyRenderingAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PyRenderingAttributes_New();
-VISITPY_API PyObject *     PyRenderingAttributes_Wrap(const RenderingAttributes *attr);
-void VISITPY_API           PyRenderingAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyRenderingAttributes_SetDefaults(const RenderingAttributes *atts);
-std::string VISITPY_API    PyRenderingAttributes_GetLogString();
-std::string VISITPY_API    PyRenderingAttributes_ToString(const RenderingAttributes *, const char *);
-VISITPY_API PyObject *     PyRenderingAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH];
+#include "vtkOSPRayActorNode.h"
 
+class VTKRENDERINGOSPRAY_EXPORT vtkOSPRayVisItCubeAxesActorNode :
+  public vtkOSPRayActorNode
+{
+public:
+  static vtkOSPRayVisItCubeAxesActorNode* New();
+  vtkTypeMacro(vtkOSPRayVisItCubeAxesActorNode, vtkOSPRayActorNode);
+
+  vtkMTimeType GetMTime() override;
+
+  void Build(bool prepass) override;
+
+protected:
+  vtkOSPRayVisItCubeAxesActorNode();
+  ~vtkOSPRayVisItCubeAxesActorNode();
+
+private:
+  vtkOSPRayVisItCubeAxesActorNode(const vtkOSPRayVisItCubeAxesActorNode&) = delete;
+  void operator=(const vtkOSPRayVisItCubeAxesActorNode&) = delete;
+};
 #endif
-

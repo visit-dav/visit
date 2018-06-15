@@ -2136,6 +2136,8 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor,
     //
     // Project from our data point onto a plane. 
     //
+    // Project from our data point onto a plane. 
+    //
     double denom = 0.0;
     double alpha = 0.0;
     for (int i = 0; i < 3; ++i)

@@ -76,15 +76,17 @@ VisItViewer::Initialize(int *argc, char ***argv)
     bool nowin = false;
     for (int i = 0 ; i < *argc ; i++)
     {
-        if (strcmp((*argv)[i], "-ospray") == 0)
+        if (strcmp((*argv)[i], "-nowin") == 0)
+        {
+            nowin = true;
+        }
+#ifdef VISIT_OSPRAY
+        else if (strcmp((*argv)[i], "-ospray") == 0)
         {
             debug5 << "Viewer launching with OSPRay" << endl;
             avtCallback::SetOSPRayMode(true);
         }
-        else if (strcmp((*argv)[i], "-nowin") == 0)
-        {
-            nowin = true;
-        }
+#endif
     }
     RuntimeSetting::parse_command_line(*argc, const_cast<const char**>(*argv));
     if (!nowin)

@@ -21,6 +21,7 @@ All rights reserved.
 #include "vtkObjectFactory.h"
 #include <vtkProperty.h>
 #include <vtkViewport.h>
+#include <vtkCollection.h>
 #include <DebugStream.h>
 #include <float.h>
 #include <snprintf.h>
@@ -517,6 +518,61 @@ int vtkVisItCubeAxesActor::RenderOpaqueGeometry(vtkViewport *viewport)
       }
     }
   return renderedSomething;
+}
+
+// *************************************************************************
+// Build the underlying geometry for SceneGraph API
+//
+// *************************************************************************
+
+void vtkVisItCubeAxesActor::BuildGeometry(vtkViewport *viewport, vtkCollection* collection)
+{
+  static bool initialBuild = true; 
+  
+  if (!this->Camera)
+  {
+    vtkErrorMacro(<<"No camera!");
+    this->RenderSomething = false;
+    return;
+  }
+ 
+  this->BuildAxes(viewport); 
+
+  if (initialBuild)
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      this->XAxes[i]->BuildAxis(viewport, true);
+      this->YAxes[i]->BuildAxis(viewport, true);
+      this->ZAxes[i]->BuildAxis(viewport, true);
+    }
+  }
+  
+  this->DetermineRenderAxes(viewport);
+
+  if (this->XAxisVisibility)
+  {
+    for (int i = 0; i < this->numAxesX; i++)
+    { 
+      collection->AddItem(this->XAxes[this->renderAxesX[i]]);
+    } 
+  }
+
+  if (this->YAxisVisibility)
+  {
+    for (int i = 0; i < this->numAxesY; i++)
+    {
+      collection->AddItem(this->YAxes[this->renderAxesY[i]]);
+    }
+  }
+
+  if (this->ZAxisVisibility)
+  {
+    for (int i = 0; i < this->numAxesZ; i++)
+    {
+      collection->AddItem(this->ZAxes[this->renderAxesZ[i]]);
+    }
+  }
 }
 
 // Release any graphics resources that are being consumed by this actor.

@@ -93,6 +93,7 @@ All rights reserved.
 //
 // ****************************************************************************
 
+class vtkCollection;
 
 class PLOTTER_API vtkVisItAxisActor : public vtkActor
 {
@@ -249,6 +250,10 @@ public:
   virtual int RenderTranslucentPolygonalGeometry(vtkViewport *) {return 0;}
   virtual int HasTranslucentPolygonalGeometry() {return 0;}
 
+  // Description:
+  // Build the axis objects that can be used with VTK's scenegraph API 
+  void BuildGeometry(vtkViewport* viewport, vtkCollection* collection);
+  
   // Description:
   // Release any graphics resources that are being consumed by this actor.
   // The parameter window could be used to determine which graphic

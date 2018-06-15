@@ -739,7 +739,16 @@ public:
     int                  GetCompactDomainsActivationMode() const;
     void                 SetCompactDomainsAutoThreshold(int val);
     int                  GetCompactDomainsAutoThreshold() const;
-
+#ifdef VISIT_OSPRAY
+    void                 SetOsprayRendering(bool enabled);
+    bool                 GetOsprayRendering() const;
+    void                 SetOspraySPP(int val);
+    int                  GetOspraySPP() const;
+    void                 SetOsprayAO(int val);
+    int                  GetOsprayAO() const;
+    void                 SetOsprayShadows(bool enabled);
+    bool                 GetOsprayShadows() const;
+#endif
     void                 SetSpecularProperties(bool,double,double,
                                                const ColorAttribute&);
     bool                 GetSpecularFlag();

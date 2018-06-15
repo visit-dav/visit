@@ -56,6 +56,8 @@
 #include <WindowInformation.h>
 #include <QvisOpacitySlider.h>
 
+#include <DebugStream.h>
+
 // ****************************************************************************
 // Method: QvisRenderingWindow::QvisRenderingWindow
 //
@@ -136,6 +138,7 @@ QvisRenderingWindow::~QvisRenderingWindow()
     if(windowInfo)
         windowInfo->Detach(this);
 }
+
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::CreateBasicPage
@@ -421,6 +424,11 @@ QvisRenderingWindow::CreateBasicPage()
 // Creation:   Thu Jun 19 13:18:25 PDT 2008
 //
 // Modifications:
+//   Alok Hota, Mon 23 Apr 07:12:51 PM EDT 2018
+//   Added OSPRay rendering toggle and associated parameters
+//
+//   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//   Added OSPRay option default values
 //   
 // ****************************************************************************
 
@@ -574,8 +582,58 @@ QvisRenderingWindow::CreateAdvancedPage()
     advLayout->addWidget(colorTexturingToggle, row, 0, 1, 3);
     row++;
 
+#ifdef VISIT_OSPRAY
+    // Create the OSPRay rendering toggle
+    osprayRenderingToggle = new QCheckBox(tr("OSPRay rendering"),
+            advancedOptions);
+    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayRenderingToggled(bool)));
+    advLayout->addWidget(osprayRenderingToggle, row, 0, 1, 3);
+    row++;
+
+    ospraySPPLabel = new QLabel(tr("Samples per pixel"), advancedOptions);
+    ospraySPPLabel->setEnabled(false);
+    advLayout->addWidget(ospraySPPLabel, row, 1, 1, 2);
+    ospraySPP = new QSpinBox(advancedOptions);
+    ospraySPP->setMinimum(1);
+    ospraySPP->setEnabled(false);
+    connect(ospraySPP, SIGNAL(valueChanged(int)),
+            this, SLOT(ospraySPPChanged(int)));
+    advLayout->addWidget(ospraySPP, row, 3);
+    row++;
+    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
+            ospraySPPLabel, SLOT(setEnabled(bool)));
+    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
+            ospraySPP, SLOT(setEnabled(bool)));
+
+    osprayAOLabel = new QLabel(tr("Ambient occlusion samples"), advancedOptions);
+    osprayAOLabel->setEnabled(false);
+    advLayout->addWidget(osprayAOLabel, row, 1, 1, 2);
+    osprayAO = new QSpinBox(advancedOptions);
+    osprayAO->setMinimum(0);
+    osprayAO->setEnabled(false);
+    connect(osprayAO, SIGNAL(valueChanged(int)),
+            this, SLOT(osprayAOChanged(int)));
+    advLayout->addWidget(osprayAO, row, 3);
+    row++;
+    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
+            osprayAOLabel, SLOT(setEnabled(bool)));
+    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
+            osprayAO, SLOT(setEnabled(bool)));
+
+    osprayShadowsToggle = new QCheckBox(tr("Shadows"), advancedOptions);
+    osprayShadowsToggle->setEnabled(false);
+    connect(osprayShadowsToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayShadowsToggled(bool)));
+    advLayout->addWidget(osprayShadowsToggle, row, 1, 1, 2);
+    connect(osprayRenderingToggle, SIGNAL(toggled(bool)),
+            osprayShadowsToggle, SLOT(setEnabled(bool)));
+    row++;
+#endif
+
     return advancedOptions;
 }
+
 
 // ****************************************************************************
 // Method: QvisRenderingWindow::CreateInformationPage
@@ -786,6 +844,13 @@ QvisRenderingWindow::UpdateWindow(bool doAll)
 //   Eric Brugger, Tue Oct 25 12:32:40 PDT 2011
 //   Add a multi resolution display capability for AMR data.
 //
+//   Alok Hota, Mon 23 Apr 07:12:51 PM EDT 2018
+//   Added OSPRay rendering toggle
+//
+//   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//   Modified OSPRay rendering toggle to disable other OSPRay options
+//   when it is disabled
+//
 // ****************************************************************************
 
 void
@@ -844,6 +909,28 @@ QvisRenderingWindow::UpdateOptions(bool doAll)
             renderNotifyToggle->setChecked(renderAtts->GetNotifyForEachRender());
             renderNotifyToggle->blockSignals(false);
             break;
+#ifdef VISIT_OSPRAY
+        case RenderingAttributes::ID_osprayRendering:
+            osprayRenderingToggle->blockSignals(true);
+            osprayRenderingToggle->setChecked(renderAtts->GetOsprayRendering());
+            osprayRenderingToggle->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_ospraySPP:
+            ospraySPP->blockSignals(true);
+            ospraySPP->setValue(int(renderAtts->GetOspraySPP()));
+            ospraySPP->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_osprayAO:
+            osprayAO->blockSignals(true);
+            osprayAO->setValue(int(renderAtts->GetOsprayAO()));
+            osprayAO->blockSignals(false);
+            break;
+        case RenderingAttributes::ID_osprayShadows:
+            osprayShadowsToggle->blockSignals(true);
+            osprayShadowsToggle->setChecked(renderAtts->GetOsprayShadows());
+            osprayShadowsToggle->blockSignals(false);
+            break;
+#endif
         case RenderingAttributes::ID_scalableActivationMode:
             { // new scope
             RenderingAttributes::TriStateMode rtmp;
@@ -2182,4 +2269,98 @@ QvisRenderingWindow::GetCurrentValues()
                        DoublesToQString(renderAtts->GetEndCuePoint(), 3));
         renderAtts->SetEndCuePoint(renderAtts->GetEndCuePoint());
     }
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::osprayRenderingToggled
+//
+// Purpose: 
+//    Triggered when ospray rendering is toggled.
+//
+// Programmer:  Garrett Morrison
+// Creation:    Wed May 16 17:42:42 PDT 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisRenderingWindow::osprayRenderingToggled(bool val)
+{
+    renderAtts->SetOsprayRendering(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::ospraySPPChanged
+//
+// Purpose: 
+//    Triggered when ospray samples per pixel are changed.
+//
+//  Arguments:
+//    val        the new value 
+//
+// Programmer:  Garrett Morrison
+// Creation:    Wed May 16 17:42:42 PDT 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisRenderingWindow::ospraySPPChanged(int val)
+{
+    renderAtts->SetOspraySPP(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::osprayAOChanged
+//
+// Purpose: 
+//    Triggered when ospray ambient occlusion samples are changed.
+//
+//  Arguments:
+//    val        the new value 
+//
+// Programmer:  Garrett Morrison
+// Creation:    Wed May 16 17:42:42 PDT 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisRenderingWindow::osprayAOChanged(int val)
+{
+    renderAtts->SetOsprayAO(val);
+    SetUpdate(false);
+    Apply();
+}
+
+
+// ****************************************************************************
+// Method: QvisRenderingWindow::osprayShadowsToggled
+//
+// Purpose: 
+//    Triggered when ospray shadows are toggled.
+//
+// Programmer:  Garrett Morrison
+// Creation:    Wed May 16 17:42:42 PDT 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisRenderingWindow::osprayShadowsToggled(bool val)
+{
+    renderAtts->SetOsprayShadows(val);
+    SetUpdate(false);
+    Apply();
 }

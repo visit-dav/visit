@@ -1196,3 +1196,77 @@ VisWindowProtectionProxy::ProxiedGetExtents(double ext[2])
 {
      return viswin->GetExtents(ext);
 }
+
+#ifdef VISIT_OSPRAY
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetOsprayRendering
+//
+// Purpose:     Returns the OSPRay rendering flag
+//
+// Returns:     The OSPRay rendering flag
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:59:54 AM EDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetOsprayRendering()
+{
+    return viswin->GetOsprayRendering();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetOspraySPP
+//
+// Purpose:     Returns the OSPRay samples per pixel
+//
+// Returns:     The OSPRay samples per pixel
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:59:54 AM EDT
+//
+// ****************************************************************************
+
+int
+VisWindowProtectionProxy::ProxiedGetOspraySPP()
+{
+    return viswin->GetOspraySPP();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetOsprayAO
+//
+// Purpose:     Returns the OSPRay ambient occlusion samples
+//
+// Returns:     The OSPRay ambient occlusion samples
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:59:54 AM EDT
+//
+// ****************************************************************************
+
+int
+VisWindowProtectionProxy::ProxiedGetOsprayAO()
+{
+    return viswin->GetOsprayAO();
+}
+
+// ****************************************************************************
+// Method: VisWindowProtectionProxy::ProxiedGetOsprayShadows
+//
+// Purpose:     Returns the OSPRay shadows flag
+//
+// Returns:     The OSPRay shadows flag
+//
+// Programmer:  Alok Hota
+// Creation:    Wed 02 May 2018 10:10:29 AM EDT
+//
+// ****************************************************************************
+
+bool
+VisWindowProtectionProxy::ProxiedGetOsprayShadows()
+{
+    return viswin->GetOsprayShadows();
+}
+#endif

@@ -116,6 +116,18 @@
     <Field name="compactDomainsAutoThreshold" label="compactDomainsAutoThreshold" type="int">
       256
     </Field>
+    <Field name="osprayRendering" label="OSPRay Rendering" type="bool">
+      false
+    </Field>
+    <Field name="ospraySPP" label="OSPRay samples per pixel" type="int">
+      1
+    </Field>
+    <Field name="osprayAO" label="OSPRay ambient occlusion samples" type="int">
+      0
+    </Field>
+    <Field name="osprayShadows" label="OSPRay shadows" type="bool">
+      false
+    </Field>
     <Function name="GetEffectiveScalableThreshold" user="true" member="true">
     </Function>
     <Function name="GetEffectiveCompactDomainsThreshold" user="true" member="true">

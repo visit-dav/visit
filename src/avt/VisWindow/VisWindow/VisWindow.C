@@ -6833,6 +6833,191 @@ VisWindow::GetCompactDomainsAutoThreshold() const
     return rendering->GetCompactDomainsAutoThreshold();
 }
 
+#ifdef VISIT_OSPRAY
+// ****************************************************************************
+// Method: VisWindow::SetOsprayRendering
+//
+// Purpose: 
+//   Sets the OSPRay rendering flag
+//
+// Arguments:
+//   enabled : Whether or not OSPRay rendering is enabled
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:15:25 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetOsprayRendering(bool enabled)
+{
+    if (enabled != rendering->GetOsprayRendering())
+    {
+        rendering->SetOsprayRendering(enabled);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetOsprayRendering
+//
+// Purpose: 
+//   Returns the OSPRay rendering flag
+//
+// Returns:    The OSPRay rendering flag
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:17:21 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VisWindow::GetOsprayRendering() const
+{
+    return rendering->GetOsprayRendering();
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetOspraySPP
+//
+// Purpose: 
+//   Sets the OSPRay samples per pixel
+//
+// Arguments:
+//   val : The new number of samples per pixel
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:15:25 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetOspraySPP(int val)
+{
+    if (val != rendering->GetOspraySPP())
+    {
+        rendering->SetOspraySPP(val);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetOspraySPP
+//
+// Purpose: 
+//   Returns the OSPRay samples per pixel
+//
+// Returns:    The OSPRay samples per pixel
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:17:21 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+VisWindow::GetOspraySPP() const
+{
+    return rendering->GetOspraySPP();
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetOsprayAO
+//
+// Purpose: 
+//   Sets the OSPRay ambient occlusion samples
+//
+// Arguments:
+//   val : The new number of ambient occlusion samples
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:15:25 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetOsprayAO(int val)
+{
+    if (val != rendering->GetOsprayAO())
+    {
+        rendering->SetOsprayAO(val);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetOsprayAO
+//
+// Purpose: 
+//   Returns the OSPRay ambient occlusion samples
+//
+// Returns:    The OSPRay ambient occlusion samples
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:17:21 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+int
+VisWindow::GetOsprayAO() const
+{
+    return rendering->GetOsprayAO();
+}
+
+// ****************************************************************************
+// Method: VisWindow::SetOsprayShadows
+//
+// Purpose: 
+//   Set OSPRay shadows on or off
+//
+// Arguments:
+//   enabled : The new on/off setting for shadows
+//
+// Programmer: Alok Hota
+// Creation:   Wed 02 May 2018 10:01:18 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWindow::SetOsprayShadows(bool enabled)
+{
+    if (enabled != rendering->GetOsprayShadows())
+    {
+        rendering->SetOsprayShadows(enabled);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWindow::GetOsprayShadows
+//
+// Purpose: 
+//   Returns the OSPRay shadows flag
+//
+// Returns:    The OSPRay shadows flag
+//
+// Programmer: Alok Hota
+// Creation:   Wed 02 May 2018 10:01:18 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+bool
+VisWindow::GetOsprayShadows() const
+{
+    return rendering->GetOsprayShadows();
+}
+#endif
 
 
 // ****************************************************************************

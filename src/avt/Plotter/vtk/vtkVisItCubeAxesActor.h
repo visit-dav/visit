@@ -81,6 +81,8 @@ All rights reserve
 #define VTK_TICKS_OUTSIDE       1
 #define VTK_TICKS_BOTH          2
 
+class vtkCollection;
+
 class PLOTTER_API vtkVisItCubeAxesActor : public vtkActor
 {
 public:
@@ -96,6 +98,10 @@ public:
   // Draw the axes as per the vtkProp superclass' API.
   virtual int RenderOpaqueGeometry(vtkViewport*);
   virtual int RenderTranslucentGeometry(vtkViewport *) {return 0;}
+
+  // Descrition
+  // Build the axes that can be used with VTK's scenegraph API
+  void BuildGeometry(vtkViewport*, vtkCollection* collection);
 
   // Description:
   // Explicitly specify the region in space around which to draw the bounds.

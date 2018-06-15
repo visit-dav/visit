@@ -213,6 +213,10 @@ void RenderingAttributes::Init()
     colorTexturingFlag = true;
     compactDomainsActivationMode = Never;
     compactDomainsAutoThreshold = 256;
+    osprayRendering = false;
+    ospraySPP = 1;
+    osprayAO = 0;
+    osprayShadows = false;
 
     RenderingAttributes::SelectAll();
 }
@@ -271,6 +275,10 @@ void RenderingAttributes::Copy(const RenderingAttributes &obj)
     colorTexturingFlag = obj.colorTexturingFlag;
     compactDomainsActivationMode = obj.compactDomainsActivationMode;
     compactDomainsAutoThreshold = obj.compactDomainsAutoThreshold;
+    osprayRendering = obj.osprayRendering;
+    ospraySPP = obj.ospraySPP;
+    osprayAO = obj.osprayAO;
+    osprayShadows = obj.osprayShadows;
 
     RenderingAttributes::SelectAll();
 }
@@ -470,7 +478,11 @@ RenderingAttributes::operator == (const RenderingAttributes &obj) const
             (compressionActivationMode == obj.compressionActivationMode) &&
             (colorTexturingFlag == obj.colorTexturingFlag) &&
             (compactDomainsActivationMode == obj.compactDomainsActivationMode) &&
-            (compactDomainsAutoThreshold == obj.compactDomainsAutoThreshold));
+            (compactDomainsAutoThreshold == obj.compactDomainsAutoThreshold) &&
+            (osprayRendering == obj.osprayRendering) &&
+            (ospraySPP == obj.ospraySPP) &&
+            (osprayAO == obj.osprayAO) &&
+            (osprayShadows == obj.osprayShadows));
 }
 
 // ****************************************************************************
@@ -645,6 +657,10 @@ RenderingAttributes::SelectAll()
     Select(ID_colorTexturingFlag,           (void *)&colorTexturingFlag);
     Select(ID_compactDomainsActivationMode, (void *)&compactDomainsActivationMode);
     Select(ID_compactDomainsAutoThreshold,  (void *)&compactDomainsAutoThreshold);
+    Select(ID_osprayRendering,              (void *)&osprayRendering);
+    Select(ID_ospraySPP,                    (void *)&ospraySPP);
+    Select(ID_osprayAO,                     (void *)&osprayAO);
+    Select(ID_osprayShadows,                (void *)&osprayShadows);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -865,6 +881,30 @@ RenderingAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool fo
         node->AddNode(new DataNode("compactDomainsAutoThreshold", compactDomainsAutoThreshold));
     }
 
+    if(completeSave || !FieldsEqual(ID_osprayRendering, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayRendering", osprayRendering));
+    }
+
+    if(completeSave || !FieldsEqual(ID_ospraySPP, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("ospraySPP", ospraySPP));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayAO, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayAO", osprayAO));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayShadows, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayShadows", osprayShadows));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1033,6 +1073,14 @@ RenderingAttributes::SetFromNode(DataNode *parentNode)
     }
     if((node = searchNode->GetNode("compactDomainsAutoThreshold")) != 0)
         SetCompactDomainsAutoThreshold(node->AsInt());
+    if((node = searchNode->GetNode("osprayRendering")) != 0)
+        SetOsprayRendering(node->AsBool());
+    if((node = searchNode->GetNode("ospraySPP")) != 0)
+        SetOspraySPP(node->AsInt());
+    if((node = searchNode->GetNode("osprayAO")) != 0)
+        SetOsprayAO(node->AsInt());
+    if((node = searchNode->GetNode("osprayShadows")) != 0)
+        SetOsprayShadows(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1260,6 +1308,34 @@ RenderingAttributes::SetCompactDomainsAutoThreshold(int compactDomainsAutoThresh
     Select(ID_compactDomainsAutoThreshold, (void *)&compactDomainsAutoThreshold);
 }
 
+void
+RenderingAttributes::SetOsprayRendering(bool osprayRendering_)
+{
+    osprayRendering = osprayRendering_;
+    Select(ID_osprayRendering, (void *)&osprayRendering);
+}
+
+void
+RenderingAttributes::SetOspraySPP(int ospraySPP_)
+{
+    ospraySPP = ospraySPP_;
+    Select(ID_ospraySPP, (void *)&ospraySPP);
+}
+
+void
+RenderingAttributes::SetOsprayAO(int osprayAO_)
+{
+    osprayAO = osprayAO_;
+    Select(ID_osprayAO, (void *)&osprayAO);
+}
+
+void
+RenderingAttributes::SetOsprayShadows(bool osprayShadows_)
+{
+    osprayShadows = osprayShadows_;
+    Select(ID_osprayShadows, (void *)&osprayShadows);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1468,6 +1544,30 @@ RenderingAttributes::GetCompactDomainsAutoThreshold() const
     return compactDomainsAutoThreshold;
 }
 
+bool
+RenderingAttributes::GetOsprayRendering() const
+{
+    return osprayRendering;
+}
+
+int
+RenderingAttributes::GetOspraySPP() const
+{
+    return ospraySPP;
+}
+
+int
+RenderingAttributes::GetOsprayAO() const
+{
+    return osprayAO;
+}
+
+bool
+RenderingAttributes::GetOsprayShadows() const
+{
+    return osprayShadows;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1545,6 +1645,10 @@ RenderingAttributes::GetFieldName(int index) const
     case ID_colorTexturingFlag:           return "colorTexturingFlag";
     case ID_compactDomainsActivationMode: return "compactDomainsActivationMode";
     case ID_compactDomainsAutoThreshold:  return "compactDomainsAutoThreshold";
+    case ID_osprayRendering:              return "osprayRendering";
+    case ID_ospraySPP:                    return "ospraySPP";
+    case ID_osprayAO:                     return "osprayAO";
+    case ID_osprayShadows:                return "osprayShadows";
     default:  return "invalid index";
     }
 }
@@ -1600,6 +1704,10 @@ RenderingAttributes::GetFieldType(int index) const
     case ID_colorTexturingFlag:           return FieldType_bool;
     case ID_compactDomainsActivationMode: return FieldType_enum;
     case ID_compactDomainsAutoThreshold:  return FieldType_int;
+    case ID_osprayRendering:              return FieldType_bool;
+    case ID_ospraySPP:                    return FieldType_int;
+    case ID_osprayAO:                     return FieldType_int;
+    case ID_osprayShadows:                return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -1655,6 +1763,10 @@ RenderingAttributes::GetFieldTypeName(int index) const
     case ID_colorTexturingFlag:           return "bool";
     case ID_compactDomainsActivationMode: return "enum";
     case ID_compactDomainsAutoThreshold:  return "int";
+    case ID_osprayRendering:              return "bool";
+    case ID_ospraySPP:                    return "int";
+    case ID_osprayAO:                     return "int";
+    case ID_osprayShadows:                return "bool";
     default:  return "invalid index";
     }
 }
@@ -1844,6 +1956,26 @@ RenderingAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_compactDomainsAutoThreshold:
         {  // new scope
         retval = (compactDomainsAutoThreshold == obj.compactDomainsAutoThreshold);
+        }
+        break;
+    case ID_osprayRendering:
+        {  // new scope
+        retval = (osprayRendering == obj.osprayRendering);
+        }
+        break;
+    case ID_ospraySPP:
+        {  // new scope
+        retval = (ospraySPP == obj.ospraySPP);
+        }
+        break;
+    case ID_osprayAO:
+        {  // new scope
+        retval = (osprayAO == obj.osprayAO);
+        }
+        break;
+    case ID_osprayShadows:
+        {  // new scope
+        retval = (osprayShadows == obj.osprayShadows);
         }
         break;
     default: retval = false;

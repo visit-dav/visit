@@ -3487,6 +3487,9 @@ ViewerWindowManager::SetViewExtentsType(avtExtentType viewType,
 //    Burlen Loring, Tue Sep 29 14:25:19 PDT 2015
 //    Added options for compositer threading.
 //
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added options for ospray rendering
+//
 // ****************************************************************************
 
 void
@@ -3614,6 +3617,17 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
                 ratts->GetColorTexturingFlag());
         }
 
+#ifdef VISIT_OSPRAY
+        if (windows[index]->GetOsprayRendering() != ratts->GetOsprayRendering())
+            windows[index]->SetOsprayRendering(ratts->GetOsprayRendering());
+        if (windows[index]->GetOspraySPP() != ratts->GetOspraySPP())
+            windows[index]->SetOspraySPP(ratts->GetOspraySPP());
+        if (windows[index]->GetOsprayAO() != ratts->GetOsprayAO())
+            windows[index]->SetOsprayAO(ratts->GetOsprayAO());
+        if (windows[index]->GetOsprayShadows() != ratts->GetOsprayShadows())
+            windows[index]->SetOsprayShadows(ratts->GetOsprayShadows());
+#endif
+
         // If the updatesEnabled flag was true before we temporarily disabled
         // updates, turn updates back on and force the window to redraw so the
         // rendering options such as the surface representation and antialiasing
@@ -3627,6 +3641,7 @@ ViewerWindowManager::SetRenderingAttributes(int windowIndex)
         UpdateRenderingAtts(index);
         UpdateWindowInformation(WINDOWINFO_WINDOWFLAGS, index);
     }
+
 }
 
 // ****************************************************************************
@@ -5180,6 +5195,9 @@ ViewerWindowManager::UpdateLightListAtts()
 //   Eric Brugger, Fri Oct 28 10:07:28 PDT 2011
 //   Add a multi resolution display capability for AMR data.
 //
+//   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//   Added ospray rendering properties
+//
 // ****************************************************************************
 
 void
@@ -5217,6 +5235,13 @@ ViewerWindowManager::UpdateRenderingAtts(int windowIndex)
         GetViewerState()->GetRenderingAttributes()->SetStartCuePoint(win->GetStartCuePoint());
         GetViewerState()->GetRenderingAttributes()->SetEndCuePoint(win->GetEndCuePoint());
         GetViewerState()->GetRenderingAttributes()->SetColorTexturingFlag(win->GetColorTexturingFlag());
+#ifdef VISIT_OSPRAY
+//NOTE: win->GetOsprayRendering is returning 0 here which means that ospray is immediately getting turned off after the config setup turns it on
+        GetViewerState()->GetRenderingAttributes()->SetOsprayRendering(win->GetOsprayRendering());
+        GetViewerState()->GetRenderingAttributes()->SetOspraySPP(win->GetOspraySPP());
+        GetViewerState()->GetRenderingAttributes()->SetOsprayAO(win->GetOsprayAO());
+        GetViewerState()->GetRenderingAttributes()->SetOsprayShadows(win->GetOsprayShadows());
+#endif
 
         // Tell the client about the new rendering information.
         GetViewerState()->GetRenderingAttributes()->Notify();

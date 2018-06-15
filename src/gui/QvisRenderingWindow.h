@@ -183,6 +183,11 @@ private slots:
     void depthCueingStartChanged();
     void depthCueingEndChanged();
     void colorTexturingToggled(bool);
+    void osprayRenderingToggled(bool);
+    void ospraySPPChanged(int);
+    void osprayAOChanged(int);
+    void osprayShadowsToggled(bool);
+
 private:
     QWidget *CreateBasicPage();
     QWidget *CreateAdvancedPage();
@@ -250,6 +255,12 @@ private:
     QLabel            *depthCueingEndLabel;
     QLineEdit         *depthCueingEndEdit;
     QCheckBox         *colorTexturingToggle;
+    QCheckBox         *osprayRenderingToggle;
+    QLabel            *ospraySPPLabel;
+    QSpinBox          *ospraySPP;
+    QLabel            *osprayAOLabel;
+    QSpinBox          *osprayAO;
+    QCheckBox         *osprayShadowsToggle;
 
     // Labels to display renderer information.
     QLabel            *scalrenUsingLabel;

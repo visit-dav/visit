@@ -50,10 +50,14 @@ function bv_vtk_depends_on
         depends_on="${depends_on} mesagl glu"
     fi
 
+    if [[ "$DO_OSPRAY" == "yes" ]]; then
+        depends_on="${depends_on} ospray"
+    fi
+
     # Only depend on Qt if we're not doing server-only builds.
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_ENGINE_ONLY" != "yes" ]]; then
-            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then 
+            if [[ "$DO_SERVER_COMPONENTS_ONLY" != "yes" ]]; then
                 depends_on="${depends_on} qt"
             fi
         fi
@@ -92,7 +96,7 @@ function bv_vtk_print
 
 function bv_vtk_print_usage
 {
-    printf "%-20s %s\n" "--vtk" "Build VTK" 
+    printf "%-20s %s\n" "--vtk" "Build VTK"
     printf "%-20s %s [%s]\n" "--system-vtk" "Use the system installed VTK"
     printf "%-20s %s [%s]\n" "--alt-vtk-dir" "Use VTK from an alternative directory"
 }
@@ -143,11 +147,11 @@ function apply_vtkxopenglrenderwindow_patch
   # offscreen mode.
 
    patch -p0 << \EOF
-*** Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx.orig 2018-03-30 14:38:07.000000000 
---- Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx 2018-03-30 14:38:40.000000000 
+*** Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx.orig 2018-03-30 14:38:07.000000000
+--- Rendering/OpenGL2/vtkXOpenGLRenderWindow.cxx 2018-03-30 14:38:40.000000000
 ***************
 *** 1148,1160 ****
-  
+
   void vtkXOpenGLRenderWindow::PopContext()
   {
     GLXContext current = glXGetCurrentContext();
@@ -161,7 +165,7 @@ function apply_vtkxopenglrenderwindow_patch
     }
     this->DisplayStack.pop();
 --- 1148,1160 ----
-  
+
   void vtkXOpenGLRenderWindow::PopContext()
   {
     GLXContext current = glXGetCurrentContext();
@@ -188,11 +192,11 @@ EOF
 function apply_vtkopenglspheremapper_patch
 {
   # patch vtk's vtkOpenGLSphereMapper to fix bug that ignores opacity when
-  # specifying single color for the sphere imposters 
+  # specifying single color for the sphere imposters
 
    patch -p0 << \EOF
-*** Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx.original 2018-01-19 14:03:28.000000000 
---- Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx 2018-01-19 14:04:15.000000000 
+*** Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx.original 2018-01-19 14:03:28.000000000
+--- Rendering/OpenGL2/vtkOpenGLSphereMapper.cxx 2018-01-19 14:04:15.000000000
 ***************
 *** 330,347 ****
       nc = numPts;
@@ -208,7 +212,7 @@ function apply_vtkopenglspheremapper_patch
       nc = 1;
 !     cc = 3;
     }
-  
+
     float *scales;
     vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
     if (this->ScaleArray != NULL &&
@@ -229,7 +233,7 @@ function apply_vtkopenglspheremapper_patch
       nc = 1;
 !     cc = 4;
     }
-  
+
     float *scales;
     vtkIdType ns = poly->GetPoints()->GetNumberOfPoints();
     if (this->ScaleArray != NULL &&
@@ -249,8 +253,8 @@ function apply_vtkdatawriter_patch
   # patch vtk's vtkDataWriter to fix bug when writing binary vtkBitArray.
 
    patch -p0 << \EOF
-*** IO/Legacy/vtkDataWriter.cxx.original 2018-01-19 13:52:19.000000000 
---- IO/Legacy/vtkDataWriter.cxx 2018-01-19 13:52:49.000000000 
+*** IO/Legacy/vtkDataWriter.cxx.original 2018-01-19 13:52:19.000000000
+--- IO/Legacy/vtkDataWriter.cxx 2018-01-19 13:52:49.000000000
 ***************
 *** 1070,1082 ****
             }
@@ -262,7 +266,7 @@ function apply_vtkdatawriter_patch
 !           static_cast<vtkUnsignedCharArray *>(data)->GetPointer(0);
           fp->write(reinterpret_cast<char *>(cptr),
                     (sizeof(unsigned char))*((num-1)/8+1));
-  
+
         }
         *fp << "\n";
       }
@@ -276,7 +280,7 @@ function apply_vtkdatawriter_patch
 !           static_cast<vtkBitArray *>(data)->GetPointer(0);
           fp->write(reinterpret_cast<char *>(cptr),
                     (sizeof(unsigned char))*((num-1)/8+1));
-  
+
         }
         *fp << "\n";
       }
@@ -289,11 +293,265 @@ EOF
     return 0;
 }
 
+function apply_vtkospray_patches
+{
+	count_patches=3
+    # patch vtkOSPRay files:
+
+    # 1) expose vtkViewNodeFactory via vtkOSPRayPass
+	current_patch=1
+    patch -p0 << \EOF
+*** Rendering/OSPRay/vtkOSPRayPass.h.original     2018-04-23 19:23:29.000000000 -0700
+--- Rendering/OSPRay/vtkOSPRayPass.h  2018-04-30 21:31:49.911508591 -0700
+***************
+*** 48,53 ****
+--- 48,54 ----
+  class vtkRenderPassCollection;
+  class vtkSequencePass;
+  class vtkVolumetricPass;
++ class vtkViewNodeFactory;
+
+  class VTKRENDERINGOSPRAY_EXPORT vtkOSPRayPass : public vtkRenderPass
+  {
+***************
+*** 74,79 ****
+--- 75,82 ----
+     */
+    virtual void RenderInternal(const vtkRenderState *s);
+
++   virtual vtkViewNodeFactory* GetViewNodeFactory();
++
+   protected:
+    /**
+     * Default constructor.
+*** Rendering/OSPRay/vtkOSPRayPass.cxx.original	2018-04-23 19:23:29.000000000 -0700
+--- Rendering/OSPRay/vtkOSPRayPass.cxx	2018-04-30 21:31:49.907508611 -0700
+***************
+*** 273,275 ****
+--- 273,280 ----
+      }
+    }
+  }
++
++ vtkViewNodeFactory* vtkOSPRayPass::GetViewNodeFactory()
++ {
++   return this->Internal->Factory;
++ }
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch ${current_patch}/${count_patches} for vtkOSPRayPass failed."
+        return 1
+    fi
+
+	# 2) enable vtkOSPRayFollowerNode
+	((current_patch++))
+	patch -p0 << \EOF
+*** Rendering/OSPRay/vtkOSPRayViewNodeFactory.cxx.original	2018-04-23 19:23:29.000000000 -0700
+--- Rendering/OSPRay/vtkOSPRayViewNodeFactory.cxx	2018-05-07 19:43:23.902077745 -0700
+***************
+*** 19,24 ****
+--- 19,25 ----
+  #include "vtkOSPRayAMRVolumeMapperNode.h"
+  #include "vtkOSPRayCameraNode.h"
+  #include "vtkOSPRayCompositePolyDataMapper2Node.h"
++ #include "vtkOSPRayFollowerNode.h"
+  #include "vtkOSPRayLightNode.h"
+  #include "vtkOSPRayRendererNode.h"
+  #include "vtkOSPRayPolyDataMapperNode.h"
+***************
+*** 44,49 ****
+--- 45,56 ----
+    return vn;
+  }
+
++ vtkViewNode *fol_maker()
++ {
++   vtkOSPRayFollowerNode *vn = vtkOSPRayFollowerNode::New();
++   return vn;
++ }
++
+  vtkViewNode *vol_maker()
+  {
+    return vtkOSPRayVolumeNode::New();
+***************
+*** 96,101 ****
+--- 103,109 ----
+    this->RegisterOverride("vtkOpenGLRenderer", ren_maker);
+    this->RegisterOverride("vtkOpenGLActor", act_maker);
+    this->RegisterOverride("vtkPVLODActor", act_maker);
++   this->RegisterOverride("vtkFollower", fol_maker);
+    this->RegisterOverride("vtkPVLODVolume", vol_maker);
+    this->RegisterOverride("vtkVolume", vol_maker);
+    this->RegisterOverride("vtkOpenGLCamera", cam_maker);
+*** Rendering/OSPRay/CMakeLists.txt.original	2018-04-23 19:23:28.000000000 -0700
+--- Rendering/OSPRay/CMakeLists.txt	2018-04-23 21:07:41.269154859 -0700
+***************
+*** 7,12 ****
+--- 7,13 ----
+    vtkOSPRayVolumeNode.cxx
+    vtkOSPRayCameraNode.cxx
+    vtkOSPRayCompositePolyDataMapper2Node.cxx
++   vtkOSPRayFollowerNode.cxx
+    vtkOSPRayLightNode.cxx
+    vtkOSPRayMaterialHelpers.cxx
+    vtkOSPRayMaterialLibrary.cxx
+*** Rendering/OSPRay/vtkOSPRayFollowerNode.h.original	1969-12-31 16:00:00.000000000 -0800
+--- Rendering/OSPRay/vtkOSPRayFollowerNode.h	2018-04-23 21:07:41.269154859 -0700
+***************
+*** 0 ****
+--- 1,49 ----
++ /*=========================================================================
++
++   Program:   Visualization Toolkit
++   Module:    vtkOSPRayFollowerNode.h
++
++   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
++   All rights reserved.
++   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
++
++      This software is distributed WITHOUT ANY WARRANTY; without even
++      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++      PURPOSE.  See the above copyright notice for more information.
++
++ =========================================================================*/
++ /**
++  * @class   vtkOSPRayFollowerNode
++  * @brief   links vtkFollower to OSPRay
++  *
++  * Translates vtkFollower state into OSPRay rendering calls
++ */
++
++ #ifndef vtkOSPRayFollowerNode_h
++ #define vtkOSPRayFollowerNode_h
++
++ #include "vtkOSPRayActorNode.h"
++
++ class VTKRENDERINGOSPRAY_EXPORT vtkOSPRayFollowerNode :
++   public vtkOSPRayActorNode
++ {
++ public:
++   static vtkOSPRayFollowerNode* New();
++   vtkTypeMacro(vtkOSPRayFollowerNode, vtkOSPRayActorNode);
++   void PrintSelf(ostream& os, vtkIndent indent) override;
++
++   /**
++    * Overridden to take into account my renderables time, including
++    * its associated camera
++    */
++   virtual vtkMTimeType GetMTime() override;
++
++ protected:
++   vtkOSPRayFollowerNode();
++   ~vtkOSPRayFollowerNode();
++
++ private:
++   vtkOSPRayFollowerNode(const vtkOSPRayFollowerNode&) = delete;
++   void operator=(const vtkOSPRayFollowerNode&) = delete;
++ };
++ #endif
+*** Rendering/OSPRay/vtkOSPRayFollowerNode.cxx.original	1969-12-31 16:00:00.000000000 -0800
+--- Rendering/OSPRay/vtkOSPRayFollowerNode.cxx	2018-04-27 18:41:41.770557480 -0700
+***************
+*** 0 ****
+--- 1,51 ----
++ /*=========================================================================
++
++   Program:   Visualization Toolkit
++   Module:    vtkOSPRayFollowerNode.cxx
++
++   Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
++   All rights reserved.
++   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
++
++      This software is distributed WITHOUT ANY WARRANTY; without even
++      the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
++      PURPOSE.  See the above copyright notice for more information.
++
++ =========================================================================*/
++ #include "vtkOSPRayFollowerNode.h"
++ #include "vtkCamera.h"
++ #include "vtkFollower.h"
++ #include "vtkObjectFactory.h"
++
++ //============================================================================
++ vtkStandardNewMacro(vtkOSPRayFollowerNode);
++
++ //----------------------------------------------------------------------------
++ vtkOSPRayFollowerNode::vtkOSPRayFollowerNode()
++ {
++ }
++
++ //----------------------------------------------------------------------------
++ vtkOSPRayFollowerNode::~vtkOSPRayFollowerNode()
++ {
++ }
++
++ //----------------------------------------------------------------------------
++ void vtkOSPRayFollowerNode::PrintSelf(ostream& os, vtkIndent indent)
++ {
++   this->Superclass::PrintSelf(os, indent);
++ }
++
++ //----------------------------------------------------------------------------
++ vtkMTimeType vtkOSPRayFollowerNode::GetMTime()
++ {
++   vtkMTimeType mtime = this->Superclass::GetMTime();
++   vtkCamera *cam = ((vtkFollower*)this->GetRenderable())->GetCamera();
++
++   if (cam->GetMTime() > mtime)
++   {
++     mtime = cam->GetMTime();
++   }
++
++   return mtime;
++ }
+*** Rendering/Core/vtkFollower.cxx.original	2017-12-22 10:33:25.000000000 -0600
+--- Rendering/Core/vtkFollower.cxx	2018-06-14 13:35:08.481815058 -0500
+***************
+*** 156,161 ****
+--- 156,165 ----
+      this->Transform->GetMatrix(this->Matrix);
+      this->MatrixMTime.Modified();
+      this->Transform->Pop();
++
++     // if we get to here it's pretty safe to assume
++     // that our transform isn't an identity matrix
++     this->IsIdentity = 0;
+    }
+  }
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayFollowerNode failed."
+        return 1
+    fi
+
+	((current_patch++))
+    patch -p0 << \EOF
+*** Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx.original	2018-04-23 15:32:58.538749914 -0400
+--- Rendering/OSPRay/vtkOSPRayVolumeMapper.cxx	2018-04-23 15:34:58.399824907 -0400
+***************
+*** 72,77 ****
+--- 72,79 ----
+    {
+      this->Init();
+    }
++   vtkOSPRayRendererNode::SetSamplesPerPixel(vtkOSPRayRendererNode::GetSamplesPerPixel(ren), this->InternalRenderer);
++   vtkOSPRayRendererNode::SetAmbientSamples(vtkOSPRayRendererNode::GetAmbientSamples(ren), this->InternalRenderer);
+    this->InternalRenderer->SetRenderWindow(ren->GetRenderWindow());
+    this->InternalRenderer->SetActiveCamera(ren->GetActiveCamera());
+    this->InternalRenderer->SetBackground(ren->GetBackground());
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "vtk patch $current_patch/$count_patches for vtkOSPRayVolumeMapper failed."
+        return 1
+    fi
+}
+
 function apply_vtk_patch
-{  
+{
     apply_vtkdatawriter_patch
     if [[ $? != 0 ]] ; then
-        return 1
+       return 1
     fi
 
     apply_vtkopenglspheremapper_patch
@@ -304,6 +562,13 @@ function apply_vtk_patch
     apply_vtkxopenglrenderwindow_patch
     if [[ $? != 0 ]] ; then
         return 1
+    fi
+
+    if [[ "$DO_OSPRAY" == "yes" ]] ; then
+        apply_vtkospray_patches
+        if [[ $? != 0 ]] ; then
+            return 1
+        fi
     fi
 
     return 0
@@ -350,7 +615,7 @@ function build_vtk
         fi
     fi
 
-    # move back up to the start dir 
+    # move back up to the start dir
     cd "$START_DIR"
 
     #
@@ -402,7 +667,7 @@ function build_vtk
         lf="${lf},-current_version,${VTK_VERSION}"
     fi
 
-    # Add some extra arguments to the VTK cmake command line via the 
+    # Add some extra arguments to the VTK cmake command line via the
     # VTK_EXTRA_OPTIONS environment variable.
     if test -n "$VTK_EXTRA_OPTIONS" ; then
         vopts="${vopts} $VTK_EXTRA_OPTIONS"
@@ -518,7 +783,7 @@ function build_vtk
         fi
     fi
 
-    # Use Mesa as GL? 
+    # Use Mesa as GL?
     if [[ "$DO_MESAGL" == "yes" ]] ; then
         vopts="${vopts} -DVTK_OPENGL_HAS_OSMESA:BOOL=ON"
         vopts="${vopts} -DOPENGL_INCLUDE_DIR:PATH=${MESAGL_INCLUDE_DIR}"
@@ -534,14 +799,20 @@ function build_vtk
         fi
     fi
 
+    # Use OSPRay?
+    if [[ "$DO_OSPRAY" == "yes" ]] ; then
+        vopts="${vopts} -DModule_vtkRenderingOSPRay:BOOL=ON"
+        vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
+    fi
+
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     cd ${VTK_BUILD_DIR}
 
     #
     # Several platforms have had problems with the VTK cmake configure command
-    # issued simply via "issue_command".  This was first discovered on 
-    # BGQ and then showed up in random cases for both OSX and Linux machines. 
-    # Brad resolved this on BGQ  with a simple work around - we write a simple 
+    # issued simply via "issue_command".  This was first discovered on
+    # BGQ and then showed up in random cases for both OSX and Linux machines.
+    # Brad resolved this on BGQ  with a simple work around - we write a simple
     # script that we invoke with bash which calls cmake with all of the properly
     # arguments. We are now using this strategy for all platforms.
     #

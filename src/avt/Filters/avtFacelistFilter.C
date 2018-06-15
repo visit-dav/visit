@@ -60,6 +60,7 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkVisItUtility.h>
 
+#include <avtCallback.h>
 #include <avtDataset.h>
 #include <avtFacelist.h>
 #include <avtMetaData.h>
@@ -533,6 +534,9 @@ avtFacelistFilter::FindFaces(avtDataRepresentation *in_dr,
 //    Kathleen Biagas, Fri Jan 25 16:04:46 PST 2013
 //    Call Update on the filter, not the data object.
 //
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Disabled rectilinear grid optimization for OSPRay builds
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -540,6 +544,11 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
                                bool forceFaceConsolidation, bool mustCreatePolyData,
                                avtDataObjectInformation &info, avtFacelist *fl)
 {
+#ifdef VISIT_OSPRAY 
+    // OSPRay can't handle this optimization so we disable it for now
+    mustCreatePolyData = true;
+#endif
+
     vtkDataSet    *out_ds = NULL;
     avtDataTree_p  out_dt;
     vtkPolyData   *pd = vtkPolyData::New();
@@ -871,12 +880,20 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
 //    and then the polygons. This is needed because polydata puts the those 
 //    cell types into different bins, which affects the order of the cell data.
 //
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Disabled rectilinear grid optimization for OSPRay builds
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
                                bool mustCreatePolyData)
 {
+#ifdef VISIT_OSPRAY 
+    // OSPRay can't handle this optimization so we disable it for now
+    mustCreatePolyData = true;
+#endif
+
     int dstype = in_ds->GetDataObjectType();
 
     //

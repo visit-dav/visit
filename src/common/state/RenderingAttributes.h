@@ -148,6 +148,10 @@ public:
     void SetColorTexturingFlag(bool colorTexturingFlag_);
     void SetCompactDomainsActivationMode(TriStateMode compactDomainsActivationMode_);
     void SetCompactDomainsAutoThreshold(int compactDomainsAutoThreshold_);
+    void SetOsprayRendering(bool osprayRendering_);
+    void SetOspraySPP(int ospraySPP_);
+    void SetOsprayAO(int osprayAO_);
+    void SetOsprayShadows(bool osprayShadows_);
 
     // Property getting methods
     bool                 GetAntialiasing() const;
@@ -184,6 +188,10 @@ public:
     bool                 GetColorTexturingFlag() const;
     TriStateMode         GetCompactDomainsActivationMode() const;
     int                  GetCompactDomainsAutoThreshold() const;
+    bool                 GetOsprayRendering() const;
+    int                  GetOspraySPP() const;
+    int                  GetOsprayAO() const;
+    bool                 GetOsprayShadows() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -249,6 +257,10 @@ public:
         ID_colorTexturingFlag,
         ID_compactDomainsActivationMode,
         ID_compactDomainsAutoThreshold,
+        ID_osprayRendering,
+        ID_ospraySPP,
+        ID_osprayAO,
+        ID_osprayShadows,
         ID__LAST
     };
 
@@ -284,11 +296,15 @@ private:
     bool           colorTexturingFlag;
     int            compactDomainsActivationMode;
     int            compactDomainsAutoThreshold;
+    bool           osprayRendering;
+    int            ospraySPP;
+    int            osprayAO;
+    bool           osprayShadows;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfibibiibffabdbbDDibii"
+#define RENDERINGATTRIBUTES_TMFS "bbiiiibdibfibibiibffabdbbDDibiibiib"
 
 #endif

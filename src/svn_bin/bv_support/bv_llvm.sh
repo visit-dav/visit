@@ -25,10 +25,11 @@ function bv_llvm_depends_on
 
 function bv_llvm_info
 {
-    export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-4.0.0.src.tar.gz"}
-    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"4.0.0"}
-    export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-4.0.0.src"}
-    export LLVM_MD5_CHECKSUM="7cbcd974e214d08928d53df90bf57221"
+    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.0"}
+    export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
+    export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
+    export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
+    export LLVM_MD5_CHECKSUM=""
     export LLVM_SHA256_CHECKSUM=""
 }
 
@@ -83,7 +84,7 @@ function bv_llvm_ensure
 {
     if [[ "$DO_DBIO_ONLY" != "yes" ]]; then
         if [[ "$DO_LLVM" == "yes" ]] ; then
-            ensure_built_or_ready "llvm"   $BV_LLVM_VERSION   $BV_LLVM_BUILD_DIR   $BV_LLVM_FILE
+            ensure_built_or_ready "llvm"   $BV_LLVM_VERSION   $BV_LLVM_BUILD_DIR   $BV_LLVM_FILE $BV_LLVM_URL
             if [[ $? != 0 ]] ; then
                 return 1
             fi
@@ -95,6 +96,42 @@ function bv_llvm_dry_run
 {
     if [[ "$DO_LLVM" == "yes" ]] ; then
         echo "Dry run option not set for llvm."
+    fi
+}
+
+function apply_llvm_patch
+{
+    # fixes a bug in LLVM 6.0.0
+    # where if the LLVM_BUILD_LLVM_DYLIB CMake var is set to ON,
+    # CMake will fail when checking an internal variable that is empty
+    # patch based on https://reviews.llvm.org/D31445
+
+    patch -p0 << \EOF
+*** tools/llvm-shlib/CMakeLists.txt.original     2018-06-14 16:16:13.185286160 -0500
+--- tools/llvm-shlib/CMakeLists.txt      2018-06-14 16:16:59.773283611 -0500
+***************
+*** 36,42 ****
+
+  add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
+
+! list(REMOVE_DUPLICATES LIB_NAMES)
+  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU)
+     OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
+     OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")
+--- 36,44 ----
+
+  add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
+
+! if(LIB_NAMES)
+!     list(REMOVE_DUPLICATES LIB_NAMES)
+! endif()
+  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU)
+     OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
+     OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "llvm patch for tools/llvm-shlib/CMakeLists.txt failed"
+        return 1
     fi
 }
 
@@ -123,6 +160,26 @@ function build_llvm
         info "Making build directory ${BV_LLVM_BUILD_DIR}"
         mkdir ${BV_LLVM_BUILD_DIR}
     fi
+
+    #
+    # Patch LLVM
+    #
+    
+    cd "$BV_LLVM_SRC_DIR" || error "Couldn't cd to llvm src dir."
+    apply_llvm_patch
+    if [[ $? != 0 ]] ; then
+        if [[ $untarred_llvm == 1 ]] ; then
+            warn "Giving up on LLVM build because the patch failed."
+            return 1
+        else
+            warn "Patch failed, but continuing.  I believe that this script\n" \
+                 "tried to apply a patch to an existing directory that had\n" \
+                 "already been patched ... that is, the patch is\n" \
+                 "failing harmlessly on a second application."
+        fi
+    fi
+
+    cd "$START_DIR"
     cd ${BV_LLVM_BUILD_DIR} || error "Couldn't cd to llvm build dir."
 
     #
@@ -136,10 +193,10 @@ function build_llvm
     fi
 
     ${CMAKE_COMMAND} \
-        -DCMAKE_INSTALL_PREFIX:PATH="${VISITDIR}/llvm/${BV_LLVM_VERSION}/${VISITARCH}" \
+        -DCMAKE_INSTALL_PREFIX:PATH="${VISIT_LLVM_DIR}" \
         -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-        -DBUILD_SHARED_LIBS:BOOL=OFF \
+        -DBUILD_SHARED_LIBS:BOOL=ON \
         -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
         -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \

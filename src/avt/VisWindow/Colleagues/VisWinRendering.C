@@ -53,6 +53,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkInteractorStyle.h>
 #include <vtkToolkits.h>
+#include <vtkInformation.h>
 
 #include <RenderingAttributes.h>
 
@@ -75,6 +76,12 @@
 #ifdef VALUE_IMAGE_RENDERING_PRE_VTK8
 #include <vtkVisItDataSetMapper.h>
 #include <vtkProperty.h>
+#endif
+
+#ifdef VISIT_OSPRAY
+#include <vtkOSPRayPass.h>
+#include <vtkViewNodeFactory.h>
+#include <vtkVisItViewNodeFactory.h>
 #endif
 
 #include <limits>
@@ -160,6 +167,8 @@ bool VisWinRendering::stereoEnabled = false;
 //   Burlen Loring, Sun Sep  6 09:03:17 PDT 2015
 //   Added option to disable ordered compositing
 //
+//   Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//   Added optional OSPRay initialization to constructor
 // ****************************************************************************
 
 VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
@@ -200,6 +209,18 @@ VisWinRendering::VisWinRendering(VisWindowColleagueProxy &p) :
     RemoveCullers(foreground);
 
     curRenderTimes[0] = curRenderTimes[1] = curRenderTimes[2] = 0.0;
+
+#ifdef VISIT_OSPRAY
+    osprayPass = vtkOSPRayPass::New();
+    vtkViewNodeFactory* factory = osprayPass->GetViewNodeFactory();
+    factory->RegisterOverride("vtkDataSetMapper", pd_maker);
+    factory->RegisterOverride("vtkPointGlyphMapper", pd_maker);
+    factory->RegisterOverride("vtkMultiRepMapper", pd_maker);
+    factory->RegisterOverride("vtkMeshPlotMapper", pd_maker);
+    factory->RegisterOverride("vtkOpenGLMeshPlotMapper", pd_maker);
+    factory->RegisterOverride("vtkVisItCubeAxesActor", cube_axes_act_maker);
+    factory->RegisterOverride("vtkVisItAxisActor", axis_act_maker);
+#endif
 }
 
 
@@ -570,6 +591,9 @@ VisWinRendering::DisableAlphaChannel()
 //    Eric Brugger, Fri Aug 24 09:15:28 PDT 2001
 //    I added a call to compute the aspect ratio after setting the view.
 //
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added state tracking for non-perspective modes needed by OSPRay
+//
 // ****************************************************************************
 
 void
@@ -582,6 +606,10 @@ VisWinRendering::Start2DMode(void)
     mediator.GetViewport(vport);
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
+
+#ifdef VISIT_OSPRAY 
+    SetModePerspective(true);
+#endif
 }
 
 
@@ -603,6 +631,9 @@ VisWinRendering::Start2DMode(void)
 //    Eric Brugger, Fri Aug 24 09:15:28 PDT 2001
 //    I added a call to compute the aspect ratio after setting the view.
 //
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added state tracking for non-perspective modes needed by OSPRay
+//
 // ****************************************************************************
 
 void
@@ -614,6 +645,10 @@ VisWinRendering::Stop2DMode(void)
     //
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
+
+#ifdef VISIT_OSPRAY 
+    SetModePerspective(false);
+#endif
 }
 
 // ****************************************************************************
@@ -625,6 +660,10 @@ VisWinRendering::Stop2DMode(void)
 //
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 7, 2002 
+//
+//  Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added state tracking for non-perspective modes needed by OSPRay
 //
 // ****************************************************************************
 
@@ -638,6 +677,10 @@ VisWinRendering::StartCurveMode(void)
     mediator.GetViewport(vport);
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
+
+#ifdef VISIT_OSPRAY 
+    SetModePerspective(true);
+#endif
 }
 
 
@@ -652,6 +695,10 @@ VisWinRendering::StartCurveMode(void)
 //  Programmer: Kathleen Bonnell 
 //  Creation:   May 7, 2002 
 //
+//  Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added state tracking for non-perspective modes needed by OSPRay
+//
 // ****************************************************************************
 
 void
@@ -663,6 +710,10 @@ VisWinRendering::StopCurveMode(void)
     //
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
+
+#ifdef VISIT_OSPRAY
+    SetModePerspective(false);
+#endif
 }
      
 // ****************************************************************************
@@ -676,6 +727,8 @@ VisWinRendering::StopCurveMode(void)
 //  Creation:   January 30, 2008
 //
 //  Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added state tracking for non-perspective modes needed by OSPRay
 //
 // ****************************************************************************
 
@@ -689,6 +742,10 @@ VisWinRendering::StartAxisArrayMode(void)
     mediator.GetViewport(vport);
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
+
+#ifdef VISIT_OSPRAY 
+    SetModePerspective(true);
+#endif
 }
 
 
@@ -704,6 +761,8 @@ VisWinRendering::StartAxisArrayMode(void)
 //  Creation:   January 30, 2008
 //
 //  Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added state tracking for non-perspective modes needed by OSPRay
 //
 // ****************************************************************************
 
@@ -716,6 +775,10 @@ VisWinRendering::StopAxisArrayMode(void)
     //
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
+
+#ifdef VISIT_OSPRAY 
+    SetModePerspective(false);
+#endif
 }
 
 // ****************************************************************************
@@ -729,6 +792,8 @@ VisWinRendering::StopAxisArrayMode(void)
 //  Creation:   December 9, 2008
 //
 //  Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added state tracking for non-perspective modes needed by OSPRay
 //
 // ****************************************************************************
 
@@ -742,6 +807,10 @@ VisWinRendering::StartParallelAxesMode(void)
     mediator.GetViewport(vport);
     canvas->SetViewport(vport);
     canvas->ComputeAspect();
+
+#ifdef VISIT_OSPRAY 
+    SetModePerspective(true);
+#endif
 }
 
 
@@ -757,6 +826,8 @@ VisWinRendering::StartParallelAxesMode(void)
 //  Creation:   December 9, 2008
 //
 //  Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Added state tracking for non-perspective modes needed by OSPRay
 //
 // ****************************************************************************
 
@@ -769,6 +840,10 @@ VisWinRendering::StopParallelAxesMode(void)
     //
     canvas->SetViewport(0., 0., 1., 1.);
     canvas->ComputeAspect();
+
+#ifdef VISIT_OSPRAY 
+    SetModePerspective(false);
+#endif
 }
 
 // ****************************************************************************
@@ -1036,12 +1111,27 @@ VisWinRendering::Realize(void)
 // Creation:   Wed Mar 13 16:04:23 PDT 2013
 //
 // Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Force-disable shadows when not using OSPRay to prevent a crash caused
+//    by VTK getting into a strange state when switching back to GL rendering.
 //   
 // ****************************************************************************
 
 void
 VisWinRendering::RenderRenderWindow(void)
 {
+#ifdef VISIT_OSPRAY
+    if (!GetOsprayRendering())
+    {
+        canvas->SetPass(0);
+        canvas->SetUseShadows(false);
+    }
+    else
+    {
+        canvas->SetPass(osprayPass);
+    }
+#endif
+
     GetRenderWindow()->Render();
 }
 
@@ -2684,3 +2774,159 @@ VisWinRendering::UpdateMouseActions(std::string action, double start_dx, double 
         };
     }
 }
+
+#ifdef VISIT_OSPRAY
+// ****************************************************************************
+// Method: VisWinRendering::SetModePerspective
+//
+// Purpose: 
+//   Stores rendering mode state information needed by OSPRay
+//
+// Arguments:
+//   enabled : Whether or not we're using a perspective rendering mode
+//
+// Programmer: Garrett Morrison
+// Creation:   Wed 2 May 2018 08:39:06 PM PDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::SetModePerspective(bool modePerspective)
+{
+    if (modePerspective != modeIsPerspective)
+    {
+        modeIsPerspective = modePerspective;
+        SetOsprayRendering(modeIsPerspective);
+    }
+}
+
+
+// ****************************************************************************
+// Method: VisWinRendering::SetOsprayRendering
+//
+// Purpose: 
+//   Sets the OSPRay rendering flag
+//
+// Arguments:
+//   enabled : Whether or not OSPRay rendering is enabled.
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:22:05 AM EDT
+//
+// Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Force-disable shadows when not using OSPRay to prevent a crash caused
+//    by VTK getting into a strange state when switching back to GL rendering.
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::SetOsprayRendering(bool enabled)
+{
+    if (enabled != GetOsprayRendering())
+    {
+        osprayRendering = enabled;
+    }
+
+    if (GetOsprayRendering() && !modeIsPerspective)
+    {
+        canvas->SetPass(osprayPass);
+    }
+    else
+    {
+        SetOsprayShadows(false);
+        canvas->SetPass(0);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetOspraySPP
+//
+// Purpose: 
+//   Sets the OSPRay samples per pixel
+//
+// Arguments:
+//   val : The new number of samples per pixel
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:22:05 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::SetOspraySPP(int val)
+{
+    if(val != ospraySPP)
+    {
+        ospraySPP = val;
+        vtkOSPRayRendererNode::SetSamplesPerPixel(val, canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetOsprayAO
+//
+// Purpose: 
+//   Sets the OSPRay ambient occlusion samples
+//
+// Arguments:
+//   val : the new number of ambient occlusion samples
+//
+// Programmer: Alok Hota
+// Creation:   Tue 24 Apr 2018 11:22:05 AM EDT
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::SetOsprayAO(int val)
+{
+    if(val != osprayAO)
+    {
+        osprayAO = val;
+        vtkOSPRayRendererNode::SetAmbientSamples(val, canvas);
+    }
+}
+
+// ****************************************************************************
+// Method: VisWinRendering::SetOsprayShadows
+//
+// Purpose: 
+//   Sets the OSPRay shadows flag
+//
+// Arguments:
+//   enabled : The new shadows boolean flag
+//
+// Programmer: Alok Hota
+// Creation:   Wed 02 May 2018 09:41:20 AM EDT
+//
+// Modifications:
+//    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
+//    Force-disable shadows when not using OSPRay to prevent a crash caused
+//    by VTK getting into a strange state when switching back to GL rendering.
+//   
+// ****************************************************************************
+
+void
+VisWinRendering::SetOsprayShadows(bool enabled)
+{
+    if(enabled != osprayShadows)
+    {
+        osprayShadows = enabled;
+    }
+    
+    if(osprayShadows && !modeIsPerspective)
+    {
+        canvas->SetUseShadows(true);
+    }
+    else
+    {
+        canvas->SetUseShadows(false);
+    }
+}
+#endif

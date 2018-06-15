@@ -2393,7 +2393,10 @@ AttributeGroup::SelectField(int index)
 // Creation:   Tue May 3 11:11:32 PDT 2005
 //
 // Modifications:
-//   
+//   Manish Mathai, Mon May  7 16:59:20 PDT 2018
+//   I modified code to use member function SelectField instead of repeating
+//   its code, ensuring that the checks for bounds and address are performed.
+//
 // ****************************************************************************
 
 void
@@ -2407,9 +2410,7 @@ AttributeGroup::SelectFields(const std::vector<int> &indices)
 
         for(size_t i = 0; i < indices.size(); ++i)
         {
-            int index = indices[i];
-            if(index >= 0 && (size_t)index < typeMap.size())
-                typeMap[index].selected = true;
+            SelectField(indices[i]);
         }
     }
 }

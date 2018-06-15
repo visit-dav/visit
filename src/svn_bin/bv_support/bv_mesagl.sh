@@ -21,10 +21,10 @@ function bv_mesagl_depends_on
 
 function bv_mesagl_info
 {
-    export MESAGL_VERSION=${MESAGL_VERSION:-"17.1.9"}
+    export MESAGL_VERSION=${MESAGL_VERSION:-"18.1.1"}
     export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.gz"}
     export MESAGL_BUILD_DIR=${MESAGL_BUILD_DIR:-"mesa-$MESAGL_VERSION"}
-    export MESAGL_URL=${MESAGL_URL:-"ftp://ftp.freedesktop.org/pub/mesa"}
+    export MESAGL_URL=${MESAGL_URL:-"https://mesa.freedesktop.org/archive/"}
     export MESAGL_MD5_CHECKSUM=""
     export MESAGL_SHA256_CHECKSUM=""
 }
@@ -143,7 +143,6 @@ function build_mesagl
         --disable-gles2 \
         --disable-xvmc \
         --disable-vdpau \
-        --disable-omx \
         --disable-va \
         --enable-glx \
         --enable-llvm \
@@ -165,7 +164,6 @@ function build_mesagl
         --disable-gles2 \
         --disable-xvmc \
         --disable-vdpau \
-        --disable-omx \
         --disable-va \
         --enable-glx \
         --enable-llvm \

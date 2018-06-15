@@ -36,30 +36,58 @@
 *
 *****************************************************************************/
 
-#ifndef PY_RENDERINGATTRIBUTES_H
-#define PY_RENDERINGATTRIBUTES_H
-#include <Python.h>
-#include <RenderingAttributes.h>
-#include <visitpy_exports.h>
+#include "vtkOSPRayVisItAxisActorNode.h"
+#include "vtkVisItAxisActor.h"
+#include "vtkVisItAxisActor.h"
+#include "vtkOSPRayRendererNode.h"
+#include "vtkRenderer.h"
 
-//
-// Functions exposed to the VisIt module.
-//
-#define RENDERINGATTRIBUTES_NMETH 72
-void VISITPY_API           PyRenderingAttributes_StartUp(RenderingAttributes *subj, void *data);
-void VISITPY_API           PyRenderingAttributes_CloseDown();
-VISITPY_API PyMethodDef *  PyRenderingAttributes_GetMethodTable(int *nMethods);
-bool VISITPY_API           PyRenderingAttributes_Check(PyObject *obj);
-VISITPY_API RenderingAttributes *  PyRenderingAttributes_FromPyObject(PyObject *obj);
-VISITPY_API PyObject *     PyRenderingAttributes_New();
-VISITPY_API PyObject *     PyRenderingAttributes_Wrap(const RenderingAttributes *attr);
-void VISITPY_API           PyRenderingAttributes_SetParent(PyObject *obj, PyObject *parent);
-void VISITPY_API           PyRenderingAttributes_SetDefaults(const RenderingAttributes *atts);
-std::string VISITPY_API    PyRenderingAttributes_GetLogString();
-std::string VISITPY_API    PyRenderingAttributes_ToString(const RenderingAttributes *, const char *);
-VISITPY_API PyObject *     PyRenderingAttributes_getattr(PyObject *self, char *name);
-int VISITPY_API            PyRenderingAttributes_setattr(PyObject *self, char *name, PyObject *args);
-VISITPY_API extern PyMethodDef PyRenderingAttributes_methods[RENDERINGATTRIBUTES_NMETH];
+//============================================================================
+vtkStandardNewMacro(vtkOSPRayVisItAxisActorNode);
 
-#endif
+//----------------------------------------------------------------------------
+vtkOSPRayVisItAxisActorNode::vtkOSPRayVisItAxisActorNode()
+{
+}
 
+//----------------------------------------------------------------------------
+vtkOSPRayVisItAxisActorNode::~vtkOSPRayVisItAxisActorNode()
+{
+}
+
+//----------------------------------------------------------------------------
+void vtkOSPRayVisItAxisActorNode::Build(bool prepass)
+{
+  if(prepass)
+  {
+    vtkVisItAxisActor* axisActor = vtkVisItAxisActor::SafeDownCast(
+        this->GetRenderable());
+    vtkOSPRayRendererNode* ospRenderer = static_cast<vtkOSPRayRendererNode*>(
+        this->GetFirstAncestorOfType("vtkOSPRayRendererNode"));
+
+    vtkRenderer* ren = vtkRenderer::SafeDownCast(ospRenderer->GetRenderable());
+    
+    vtkCollection* objCollection = vtkCollection::New();
+    axisActor->BuildGeometry(ren, objCollection);
+    this->PrepareNodes();
+    this->AddMissingNodes(objCollection);
+    this->RemoveUnusedNodes();
+    objCollection->Delete();
+  }
+}
+
+//----------------------------------------------------------------------------
+vtkMTimeType vtkOSPRayVisItAxisActorNode::GetMTime()
+{
+  vtkMTimeType mtime = this->Superclass::GetMTime();
+  vtkVisItAxisActor* axisActor = vtkVisItAxisActor::SafeDownCast
+      (this->GetRenderable());
+  vtkCamera *cam = axisActor->GetCamera();
+
+  if (cam->GetMTime() > mtime)
+  {
+    mtime = cam->GetMTime();
+  }
+
+  return mtime;
+}

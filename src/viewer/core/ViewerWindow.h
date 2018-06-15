@@ -754,6 +754,16 @@ public:
     int GetCompressionActivationMode() const;
     int SetCompressionActivationMode(int);
     bool GetIsCompressingScalableImage() const;
+#ifdef VISIT_OSPRAY
+    void SetOsprayRendering(bool);
+    bool GetOsprayRendering() const;
+    void SetOspraySPP(int);
+    int GetOspraySPP() const;
+    void SetOsprayAO(int);
+    int GetOsprayAO() const;
+    void SetOsprayShadows(bool);
+    bool GetOsprayShadows() const;
+#endif
 
     void Lineout(const bool);
 

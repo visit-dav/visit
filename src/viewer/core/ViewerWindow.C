@@ -5503,9 +5503,6 @@ ViewerWindow::SetInitialView3d()
 //    Kathleen Bonnell, Tue Mar  3 15:04:57 PST 2009
 //    CanDoLogViewScaling changed to PermitsLogViewScaling.
 //
-//    Alister Maguire, Tue Jun 12 16:38:16 PDT 2018
-//    Added update of the view scale. 
-//
 // ****************************************************************************
 
 void
@@ -5593,23 +5590,6 @@ ViewerWindow::UpdateViewCurve(const double *limits)
         else 
             ResetViewCurve();
     }
-
-    //
-    // Update the plot lists' view scale. 
-    //
-    const avtViewCurve &newViewCurve = GetViewCurve();
-    double scale;
-    int size[2];
-    visWindow->GetSize(size[0], size[1]);
-    bool validViewScale = newViewCurve.GetScaleFactor(size, scale);
-    if (!validViewScale)
-    {
-        debug1 << "WARNING: an unsuccessful attempt to retrieve the "
-               << "view scale was made. This may result in the view being "
-               << "skewed..." << endl;
-    }
-
-    plotList->SetViewScale(scale);
 
     viewSetInCurve = true;
 }
@@ -6480,6 +6460,13 @@ debug5 << "GetWindowAttributes: size=" << size[0] << ", " << size[1] << endl;
 
     renderAtts.SetCompressionActivationMode(
         (RenderingAttributes::TriStateMode) compressionActivationMode);
+
+#ifdef VISIT_OSPRAY
+    renderAtts.SetOsprayRendering(GetOsprayRendering());
+    renderAtts.SetOsprayShadows(GetOsprayShadows());
+    renderAtts.SetOspraySPP(GetOspraySPP());
+    renderAtts.SetOsprayAO(GetOsprayAO());
+#endif
 
     winAtts.SetRenderAtts(renderAtts);
 
@@ -8444,6 +8431,136 @@ ViewerWindow::GetCompactDomainsAutoThreshold() const
 {
     return visWindow->GetCompactDomainsAutoThreshold();
 }
+
+#ifdef VISIT_OSPRAY
+// ****************************************************************************
+// Method:  ViewerWindow::SetOsprayRendering
+//
+// Purpose: Set/Get OSPRay rendering flag
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:09:41 AM EDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetOsprayRendering(bool enabled)
+{
+    visWindow->SetOsprayRendering(enabled);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetOsprayRendering
+//
+// Purpose: Set/Get OSPRay rendering flag
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:10:04 AM EDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetOsprayRendering() const
+{
+    return visWindow->GetOsprayRendering();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetOspraySPP
+//
+// Purpose: Set/Get OSPRay samples per pixel
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:09:41 AM EDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetOspraySPP(int val)
+{
+    visWindow->SetOspraySPP(val);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetOspraySPP
+//
+// Purpose: Set/Get OSPRay samples per pixel
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:10:04 AM EDT
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetOspraySPP() const
+{
+    return visWindow->GetOspraySPP();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetOsprayAO
+//
+// Purpose: Set/Get OSPRay ambient occlusion samples per pixel
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:09:41 AM EDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetOsprayAO(int val)
+{
+    visWindow->SetOsprayAO(val);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetOsprayAO
+//
+// Purpose: Set/Get OSPRay ambient occlusion samples per pixel
+//
+// Programmer:  Alok Hota
+// Creation:    Wed 02 May 2018 10:01:18 AM EDT
+//
+// ****************************************************************************
+
+int
+ViewerWindow::GetOsprayAO() const
+{
+    return visWindow->GetOsprayAO();
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::SetOsprayShadows
+//
+// Purpose: Set/Get OSPRay shadows
+//
+// Programmer:  Alok Hota
+// Creation:    Wed 02 May 2018 10:01:18 AM EDT
+//
+// ****************************************************************************
+
+void
+ViewerWindow::SetOsprayShadows(bool enabled)
+{
+    visWindow->SetOsprayShadows(enabled);
+}
+
+// ****************************************************************************
+// Method:  ViewerWindow::GetOsprayShadows
+//
+// Purpose: Set/Get OSPRay shadows
+//
+// Programmer:  Alok Hota
+// Creation:    Tue 24 Apr 2018 11:10:04 AM EDT
+//
+// ****************************************************************************
+
+bool
+ViewerWindow::GetOsprayShadows() const
+{
+    return visWindow->GetOsprayShadows();
+}
+#endif
 
 // ****************************************************************************
 // Method: ViewerWindow::CreateNode

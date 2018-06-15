@@ -44,6 +44,9 @@
 #bv_<module>_depends_on : What other modules does this module depend on. Example "adios" returns string "mxml"
 #bv_<module>_build : build the module
 
+# Then add the module name to bv_support/modules.xml under the appropriate
+# categories
+
 #order of execution
 #1. bv_<module>_initialize anything to intialize the module
 #2. bv_<module>_info runs to setup download locations,directories,etc..
@@ -58,9 +61,9 @@ export VISIT_VERSION=${VISIT_VERSION:-"3.0.0"}
 # Trunk:
 ####
 export TRUNK_BUILD="yes"
-export SVN_SOURCE_PATH=${SVN_SOURCE_PATH-"trunk/src"}
-export SVN_DESTINATION_PATH=${SVN_DESTINATION_PATH-"trunk/src"}
-export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH-"trunk/third_party"}
+export SVN_SOURCE_PATH=${SVN_SOURCE_PATH:-"trunk/src"}
+export SVN_DESTINATION_PATH=${SVN_DESTINATION_PATH:-"trunk/src"}
+export SVN_THIRDPARTY_PATH=${SVN_THIRDPARTY_PATH:-"trunk/third_party"}
 
 ###
 # RC Branch:

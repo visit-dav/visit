@@ -46,10 +46,14 @@
 
 #include <VisWinColleague.h>
 
+#include <avtCallback.h>
 #include <avtImage.h>
 #include <avtImageType.h>
 #include <ColorAttribute.h>
 
+#ifdef VISIT_OSPRAY
+#include <vtkOSPRayPass.h>
+#endif
 
 class vtkInteractorStyle;
 class vtkPolyDataMapper2D;
@@ -407,6 +411,21 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     int                      GetCompactDomainsAutoThreshold() const
                                  { return compactDomainsAutoThreshold; }
     int                      SetCompactDomainsAutoThreshold(int val);
+#ifdef VISIT_OSPRAY
+    void                     SetModePerspective(bool modePerspective);
+    void                     SetOsprayRendering(bool enabled);
+    bool                     GetOsprayRendering() const
+                                 { return osprayRendering; };
+    void                     SetOspraySPP(int val);
+    int                      GetOspraySPP() const
+                                 { return ospraySPP; };
+    void                     SetOsprayAO(int val);
+    int                      GetOsprayAO() const
+                                 { return osprayAO; };
+    void                     SetOsprayShadows(bool enabled);
+    bool                     GetOsprayShadows() const
+                                 { return osprayShadows; };
+#endif
 
     virtual void            *CreateToolbar(const char *) { return 0; };
     virtual void             SetLargeIcons(bool) { };
@@ -448,6 +467,13 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
     double                        occlusionRatio;
     int                           numberOfPeels;
     int                           multiSamples;
+#ifdef VISIT_OSPRAY
+    bool                          osprayRendering;
+    int                           ospraySPP;
+    int                           osprayAO;
+    bool                          osprayShadows;
+    bool                          modeIsPerspective;
+#endif
 
     void(*renderInfo)(void *);
     void                         *renderInfoData;
@@ -486,6 +512,11 @@ class VISWINDOW_API VisWinRendering : public VisWinColleague
 
     virtual void                  RealizeRenderWindow(void) = 0;
     virtual void                  RenderRenderWindow(void);
+
+#ifdef VISIT_OSPRAY
+    // OSPRay render pass
+    vtkOSPRayPass                *osprayPass;
+#endif
 
 private:
     void                     SetRenderUpdate(bool _setRenderUpdate)

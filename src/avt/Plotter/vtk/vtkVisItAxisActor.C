@@ -22,6 +22,7 @@ All rights reserved.
 #include "vtkVisItAxisActor.h"
 #include <vtkCellArray.h>
 #include <vtkObjectFactory.h>
+#include <vtkCollection.h>
 #include <vtkProperty.h>
 #include <vtkViewport.h>
 #include <snprintf.h>
@@ -397,6 +398,37 @@ int vtkVisItAxisActor::RenderOpaqueGeometry(vtkViewport *viewport)
     }
 
   return renderedSomething;
+}
+
+// ****************************************************************
+// Build the axis, ticks, title, and labels and render.
+//
+// ****************************************************************
+
+void vtkVisItAxisActor::BuildGeometry(vtkViewport* viewport, vtkCollection* collection)
+{
+  this->BuildAxis(viewport, true);
+  
+  if (!this->AxisHasZeroLength)
+  {
+    if (this->Title != NULL && this->Title[0] != 0 && this->TitleVisibility)
+    {
+      collection->AddItem(this->TitleActor);
+    }
+
+    if (this->AxisVisibility || this->TickVisibility)
+    {
+      collection->AddItem(this->AxisActor);
+    }
+    
+    if (this->LabelVisibility)
+    {
+      for (int i=0; i<this->NumberOfLabelsBuilt; i++)
+      {
+        collection->AddItem(this->LabelActors[i]);
+      }
+    }
+  }
 }
 
 // **************************************************************************

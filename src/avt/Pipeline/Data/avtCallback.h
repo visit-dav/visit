@@ -142,12 +142,12 @@ class PIPELINE_API avtCallback
                                      { swRendering = b; };
     static bool                  GetSoftwareRendering(void)
                                      { return swRendering; };
-
+#ifdef VISIT_OSPRAY
     static void                  SetOSPRayMode(bool b)
                                      { useOSPRay = b; }
     static bool                  UseOSPRay(void)
                                      { return useOSPRay; }
-
+#endif
     static void                  RegisterGetDatabaseCallback(
                                                   GetDatabaseCallback, void *);
     static ref_ptr<avtDatabase>  GetDatabase(const std::string &, int,
@@ -188,7 +188,9 @@ class PIPELINE_API avtCallback
     static bool                  nowinMode;
     static bool                  nowinInteractionMode;
     static bool                  swRendering;
+#ifdef VISIT_OSPRAY
     static bool                  useOSPRay;
+#endif
     static bool                  safeMode;
 
     static GlobalAttributes::BackendType backendType;

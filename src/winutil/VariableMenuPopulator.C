@@ -1380,7 +1380,6 @@ VariableMenuPopulator::UpdateSingleMenu(QvisVariablePopupMenu *menu,
                 }
 
                 popups[path] = newPopup;
-                parent->addMenu(newPopup);
                 parent = newPopup;
             }
             else

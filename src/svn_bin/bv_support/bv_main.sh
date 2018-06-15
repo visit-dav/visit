@@ -224,7 +224,7 @@ function check_opengl_context()
     echo "  return 0;" >> checkogl.cpp
     echo "}" >> checkogl.cpp
 
-    $CXX_COMPILER -Wl,-lGL -lSM -lICE -lX11 -lXext checkogl.cpp
+    $CXX_COMPILER checkogl.cpp -Wl,-lGL -lSM -lICE -lX11 -lXext
     if [[ $? != 0 ]]; then
         echo "failed to compile checkogl.cpp"
         exit 1
@@ -1107,7 +1107,7 @@ function run_build_visit()
             declare -F "bv_${resolve_arg}_enable" &>/dev/null
 
             if [[ $? == 0 ]] ; then
-                #echo "enabling ${resolve_arg}"
+                #echo "enabling $resolve_arg"
                 initializeFunc="bv_${resolve_arg}_enable"
                 #argument is being explicitly set by the user so add a "force" flag
                 $initializeFunc force
