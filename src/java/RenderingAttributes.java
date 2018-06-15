@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class RenderingAttributes extends AttributeSubject
 {
-    private static int RenderingAttributes_numAdditionalAtts = 31;
+    private static int RenderingAttributes_numAdditionalAtts = 35;
 
     // Enum values
     public final static int GEOMETRYREPRESENTATION_SURFACES = 0;
@@ -123,6 +123,10 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         colorTexturingFlag = true;
         compactDomainsActivationMode = TRISTATEMODE_NEVER;
         compactDomainsAutoThreshold = 256;
+        osprayRendering = false;
+        ospraySPP = 1;
+        osprayAO = 0;
+        osprayShadows = false;
     }
 
     public RenderingAttributes(int nMoreFields)
@@ -166,6 +170,10 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         colorTexturingFlag = true;
         compactDomainsActivationMode = TRISTATEMODE_NEVER;
         compactDomainsAutoThreshold = 256;
+        osprayRendering = false;
+        ospraySPP = 1;
+        osprayAO = 0;
+        osprayShadows = false;
     }
 
     public RenderingAttributes(RenderingAttributes obj)
@@ -213,6 +221,10 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         colorTexturingFlag = obj.colorTexturingFlag;
         compactDomainsActivationMode = obj.compactDomainsActivationMode;
         compactDomainsAutoThreshold = obj.compactDomainsAutoThreshold;
+        osprayRendering = obj.osprayRendering;
+        ospraySPP = obj.ospraySPP;
+        osprayAO = obj.osprayAO;
+        osprayShadows = obj.osprayShadows;
 
         SelectAll();
     }
@@ -272,7 +284,11 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
                 (compressionActivationMode == obj.compressionActivationMode) &&
                 (colorTexturingFlag == obj.colorTexturingFlag) &&
                 (compactDomainsActivationMode == obj.compactDomainsActivationMode) &&
-                (compactDomainsAutoThreshold == obj.compactDomainsAutoThreshold));
+                (compactDomainsAutoThreshold == obj.compactDomainsAutoThreshold) &&
+                (osprayRendering == obj.osprayRendering) &&
+                (ospraySPP == obj.ospraySPP) &&
+                (osprayAO == obj.osprayAO) &&
+                (osprayShadows == obj.osprayShadows));
     }
 
     // Property setting methods
@@ -482,6 +498,30 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         Select(30);
     }
 
+    public void SetOsprayRendering(boolean osprayRendering_)
+    {
+        osprayRendering = osprayRendering_;
+        Select(31);
+    }
+
+    public void SetOspraySPP(int ospraySPP_)
+    {
+        ospraySPP = ospraySPP_;
+        Select(32);
+    }
+
+    public void SetOsprayAO(int osprayAO_)
+    {
+        osprayAO = osprayAO_;
+        Select(33);
+    }
+
+    public void SetOsprayShadows(boolean osprayShadows_)
+    {
+        osprayShadows = osprayShadows_;
+        Select(34);
+    }
+
     // Property getting methods
     public boolean        GetAntialiasing() { return antialiasing; }
     public boolean        GetOrderComposite() { return orderComposite; }
@@ -514,6 +554,10 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     public boolean        GetColorTexturingFlag() { return colorTexturingFlag; }
     public int            GetCompactDomainsActivationMode() { return compactDomainsActivationMode; }
     public int            GetCompactDomainsAutoThreshold() { return compactDomainsAutoThreshold; }
+    public boolean        GetOsprayRendering() { return osprayRendering; }
+    public int            GetOspraySPP() { return ospraySPP; }
+    public int            GetOsprayAO() { return osprayAO; }
+    public boolean        GetOsprayShadows() { return osprayShadows; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -580,6 +624,14 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             buf.WriteInt(compactDomainsActivationMode);
         if(WriteSelect(30, buf))
             buf.WriteInt(compactDomainsAutoThreshold);
+        if(WriteSelect(31, buf))
+            buf.WriteBool(osprayRendering);
+        if(WriteSelect(32, buf))
+            buf.WriteInt(ospraySPP);
+        if(WriteSelect(33, buf))
+            buf.WriteInt(osprayAO);
+        if(WriteSelect(34, buf))
+            buf.WriteBool(osprayShadows);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -680,6 +732,18 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
         case 30:
             SetCompactDomainsAutoThreshold(buf.ReadInt());
             break;
+        case 31:
+            SetOsprayRendering(buf.ReadBool());
+            break;
+        case 32:
+            SetOspraySPP(buf.ReadInt());
+            break;
+        case 33:
+            SetOsprayAO(buf.ReadInt());
+            break;
+        case 34:
+            SetOsprayShadows(buf.ReadBool());
+            break;
         }
     }
 
@@ -754,6 +818,10 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
             str = str + "TRISTATEMODE_AUTO";
         str = str + "\n";
         str = str + intToString("compactDomainsAutoThreshold", compactDomainsAutoThreshold, indent) + "\n";
+        str = str + boolToString("osprayRendering", osprayRendering, indent) + "\n";
+        str = str + intToString("ospraySPP", ospraySPP, indent) + "\n";
+        str = str + intToString("osprayAO", osprayAO, indent) + "\n";
+        str = str + boolToString("osprayShadows", osprayShadows, indent) + "\n";
         return str;
     }
 
@@ -790,5 +858,9 @@ public final static int DEFAULT_COMPACT_DOMAINS_AUTO_THRESHOLD = 256;
     private boolean        colorTexturingFlag;
     private int            compactDomainsActivationMode;
     private int            compactDomainsAutoThreshold;
+    private boolean        osprayRendering;
+    private int            ospraySPP;
+    private int            osprayAO;
+    private boolean        osprayShadows;
 }
 
