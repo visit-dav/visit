@@ -21,7 +21,7 @@ function bv_mesagl_depends_on
 
 function bv_mesagl_info
 {
-    export MESAGL_VERSION=${MESAGL_VERSION:-"18.1.1"}
+    export MESAGL_VERSION=${MESAGL_VERSION:-"17.2.8"}
     export MESAGL_FILE=${MESAGL_FILE:-"mesa-$MESAGL_VERSION.tar.gz"}
     export MESAGL_BUILD_DIR=${MESAGL_BUILD_DIR:-"mesa-$MESAGL_VERSION"}
     export MESAGL_URL=${MESAGL_URL:-"https://mesa.freedesktop.org/archive/"}

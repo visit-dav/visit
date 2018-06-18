@@ -25,7 +25,7 @@ function bv_llvm_depends_on
 
 function bv_llvm_info
 {
-    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"6.0.0"}
+    export BV_LLVM_VERSION=${BV_LLVM_VERSION:-"5.0.0"}
     export BV_LLVM_FILE=${BV_LLVM_FILE:-"llvm-${BV_LLVM_VERSION}.src.tar.xz"}
     export BV_LLVM_BUILD_DIR=${BV_LLVM_BUILD_DIR:-"llvm-${BV_LLVM_VERSION}.src"}
     export BV_LLVM_URL=${BV_LLVM_URL:-"http://releases.llvm.org/${BV_LLVM_VERSION}/"}
@@ -101,7 +101,7 @@ function bv_llvm_dry_run
 
 function apply_llvm_patch
 {
-    # fixes a bug in LLVM 6.0.0
+    # fixes a bug in LLVM 5.0.0
     # where if the LLVM_BUILD_LLVM_DYLIB CMake var is set to ON,
     # CMake will fail when checking an internal variable that is empty
     # patch based on https://reviews.llvm.org/D31445
@@ -115,9 +115,9 @@ function apply_llvm_patch
   add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
 
 ! list(REMOVE_DUPLICATES LIB_NAMES)
-  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU)
-     OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
-     OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")
+  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU) OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")) # FIXME: It should be "GNU ld for elf"
+    configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/simple_version_script.map.in
 --- 36,44 ----
 
   add_llvm_library(LLVM SHARED DISABLE_LLVM_LINK_LLVM_DYLIB SONAME ${SOURCES})
@@ -125,9 +125,9 @@ function apply_llvm_patch
 ! if(LIB_NAMES)
 !     list(REMOVE_DUPLICATES LIB_NAMES)
 ! endif()
-  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU)
-     OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD")
-     OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")
+  if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") OR (MINGW) OR (HAIKU) OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "FreeBSD") OR ("${CMAKE_SYSTEM_NAME}" STREQUAL "DragonFly")) # FIXME: It should be "GNU ld for elf"
+    configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/simple_version_script.map.in
 EOF
     if [[ $? != 0 ]] ; then
         warn "llvm patch for tools/llvm-shlib/CMakeLists.txt failed"
@@ -168,14 +168,14 @@ function build_llvm
     cd "$BV_LLVM_SRC_DIR" || error "Couldn't cd to llvm src dir."
     apply_llvm_patch
     if [[ $? != 0 ]] ; then
-        if [[ $untarred_llvm == 1 ]] ; then
-            warn "Giving up on LLVM build because the patch failed."
-            return 1
-        else
-            warn "Patch failed, but continuing.  I believe that this script\n" \
-                 "tried to apply a patch to an existing directory that had\n" \
-                 "already been patched ... that is, the patch is\n" \
-                 "failing harmlessly on a second application."
+	if [[ $untarred_llvm == 1 ]] ; then
+	    warn "Giving up on LLVM build because the patch failed."
+	    return 1
+	else
+	    warn "Patch failed, but continuing.  I believe that this script\n" \
+		 "tried to apply a patch to an existing directory that had\n" \
+		 "already been patched ... that is, the patch is\n" \
+		 "failing harmlessly on a second application."
         fi
     fi
 
