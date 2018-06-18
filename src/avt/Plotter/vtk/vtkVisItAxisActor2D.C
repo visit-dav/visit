@@ -516,6 +516,9 @@ void vtkVisItAxisActor2D::PrintSelf(ostream& os, vtkIndent indent)
 //   Create a new vtkTextProperty when updating the properties
 //   of the TitleActor. Fixes bug with triad letters. 
 //
+//   Eric Brugger, Thu Jun 14 09:02:39 PDT 2018
+//   Correct the title placement for vertical axes for the VTK8 upgrade.
+//
 // ****************************************************************************
 
 void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
@@ -917,13 +920,13 @@ void vtkVisItAxisActor2D::BuildAxis(vtkViewport *viewport)
       this->TitleActor->SetPosition(pos[0], pos[1]);
       if(this->TitleAtEnd)
         {
-        titleTprop->SetJustificationToCentered();
-        titleTprop->SetVerticalJustificationToBottom();
+        titleTprop->SetJustificationToLeft();
+        titleTprop->SetVerticalJustificationToCentered();
         }
       else
         {
-        titleTprop->SetJustificationToRight();
-        titleTprop->SetVerticalJustificationToCentered();
+        titleTprop->SetJustificationToCentered();
+        titleTprop->SetVerticalJustificationToBottom();
         }
       }
     else
