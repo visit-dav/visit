@@ -8,6 +8,13 @@
  * interface file instead.
  * ----------------------------------------------------------------------------- */
 
+///------------------------------------------------
+/// Cyrus Harrison, Tue Jun 19 15:53:56 PDT 2018
+///  
+/// Hand edit to fix missing header
+///
+#include <cmath>
+///------------------------------------------------
 
 #ifndef SWIGPYTHON
 #define SWIGPYTHON
