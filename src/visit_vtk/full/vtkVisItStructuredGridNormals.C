@@ -133,6 +133,12 @@ vtkVisItStructuredGridNormals::RequestData(vtkInformation *vtkNotUsed(request),
 //  Programmer:  Hank Childs
 //  Creation:    December 28, 2006
 //
+//  Modifications:
+//    
+//      Alister Maguire, Wed Jun 20 10:14:15 PDT 2018
+//      Flip the normals when calculating dims 0 -> 2 so that the
+//      normals are consistent in direction. 
+//
 // ****************************************************************************
 
 void
@@ -153,6 +159,7 @@ vtkVisItStructuredGridNormals::ExecutePoint(vtkStructuredGrid *input,
     output->GetPointData()->SetNormals(normals);
     normals->Delete();
 
+    bool dimFlip = false;
     int fastDim, slowDim;
     if (dims[0] <= 1)
     {
@@ -161,6 +168,7 @@ vtkVisItStructuredGridNormals::ExecutePoint(vtkStructuredGrid *input,
     }
     else if (dims[1] <= 1)
     {
+        dimFlip = true;
         fastDim = dims[0];
         slowDim = dims[2];
     }
@@ -228,7 +236,13 @@ vtkVisItStructuredGridNormals::ExecutePoint(vtkStructuredGrid *input,
 
             // If we are at a corner, there is a way our indexing
             // could be reversed (see ordering above for creation of compass).
-            if (cIdx == 2 && (i-1 >= 0) && (j+1 < slowDim))
+            bool cornerFlip = cIdx == 2 && (i-1 >= 0) && (j+1 < slowDim);
+
+            //
+            // We should only flip if we need a corner flip XOR we need
+            // a dimFlip flip. 
+            //
+            if (cornerFlip != dimFlip)
             {
                 normal[0] *= -1;
                 normal[1] *= -1;
@@ -262,6 +276,12 @@ vtkVisItStructuredGridNormals::ExecutePoint(vtkStructuredGrid *input,
 //  Programmer:  Hank Childs
 //  Creation:    December 28, 2006
 //
+//  Modifications:
+//    
+//      Alister Maguire, Wed Jun 20 10:14:15 PDT 2018
+//      Flip the normals when calculating dims 0 -> 2 so that the
+//      normals are consistent in direction. 
+//
 // ****************************************************************************
 void
 vtkVisItStructuredGridNormals::ExecuteCell(vtkStructuredGrid *input, 
@@ -283,6 +303,7 @@ vtkVisItStructuredGridNormals::ExecuteCell(vtkStructuredGrid *input,
     newNormals->SetNumberOfTuples(nCells);
     newNormals->SetName("Normals");
 
+    bool dimFlip = false;
     int fastDim, slowDim;
     if (dims[0] <= 1)
     {
@@ -291,6 +312,7 @@ vtkVisItStructuredGridNormals::ExecuteCell(vtkStructuredGrid *input,
     }
     else if (dims[1] <= 1)
     {
+        dimFlip = true;
         fastDim = dims[0];
         slowDim = dims[2];
     }
@@ -367,6 +389,17 @@ vtkVisItStructuredGridNormals::ExecuteCell(vtkStructuredGrid *input,
                 normal[0] = 0.f;
                 normal[1] = 0.f;
                 normal[2] = 1.f;
+            }
+
+            //
+            // We need to flip when computing one of the 
+            // dimensions for consistency in normals direction. 
+            //
+            if (dimFlip)
+            {
+                normal[0] *= -1;
+                normal[1] *= -1;
+                normal[2] *= -1;
             }
        
             int idx = j*(fastDim-1) + i;

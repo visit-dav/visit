@@ -104,6 +104,7 @@ vtkVisItGlyph3D.C
 vtkVisItInterpolatedVelocityField.C
 vtkVisItPolyDataNormals.C
 vtkVisItPolyDataNormals2D.C
+vtkVisItStructuredGridNormals.C
 vtkVisItProbeFilter.C
 vtkVisItRectilinearGrid.C
 vtkVisItSTLWriter.C

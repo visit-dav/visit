@@ -45,6 +45,7 @@
 #include <vtkPolyData.h>
 #include <vtkStructuredGrid.h>
 #include <vtkVisItPolyDataNormals.h>
+#include <vtkVisItStructuredGridNormals.h>
 
 #include <avtDataset.h>
 
@@ -163,6 +164,10 @@ avtVertexNormalsFilter::~avtVertexNormalsFilter()
 //    fails miserably with VTK-8, though the calculated normals are the same
 //    as pre-vtk-8.
 //
+//    Alister Maguire, Wed Jun 20 10:33:31 PDT 2018
+//    Re-integrated structured-grid specific normals calculation after
+//    fixing bug regarding VTK-8. 
+//
 // ****************************************************************************
 
 avtDataRepresentation *
@@ -218,6 +223,36 @@ avtVertexNormalsFilter::ExecuteData(avtDataRepresentation *in_dr)
 
         normals->Delete();
     
+        return out_dr;
+    }
+    else if (in_ds->GetDataObjectType() == VTK_STRUCTURED_GRID)
+    {
+        vtkStructuredGrid *sgrid = (vtkStructuredGrid *)in_ds;
+
+        bool pointNormals = true;
+        if (atts.ValidActiveVariable())
+        {
+            avtCentering cent = atts.GetCentering();
+            if (cent == AVT_ZONECENT)
+                pointNormals = false;
+        }
+        vtkVisItStructuredGridNormals *normals =
+                                            vtkVisItStructuredGridNormals::New();
+        normals->SetInputData(sgrid);
+        if (pointNormals)
+            normals->SetNormalTypeToPoint();
+        else
+            normals->SetNormalTypeToCell();
+
+        normals->Update();
+
+        vtkStructuredGrid *out_ds = normals->GetOutput();
+
+        avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+            in_dr->GetDomain(), in_dr->GetLabel());
+
+        normals->Delete();
+
         return out_dr;
     }
 
