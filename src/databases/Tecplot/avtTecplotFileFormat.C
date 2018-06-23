@@ -1964,6 +1964,11 @@ avtMeshType avtTecplotFileFormat::DetermineAVTMeshType() const
 //
 //    Mark C. Miller, Thu Jun  4 11:47:43 PDT 2015
 //    Adjusted logic for detecting curves defined on FELINESEG elem types
+//
+//    Mark C. Miller, Sat Jun 23 11:28:22 PDT 2018
+//    Adjust logic for curves such that defining every curve against every
+//    other curve only happens if the *first* variable listed does not
+//    appear to be a coordinate variable.
 // ****************************************************************************
 
 void
@@ -2028,11 +2033,21 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     }
     else
     {
+        bool doAllVsAll = true;
+
+        if (variableNames[0] == "x" ||
+            variableNames[0] == "X" ||
+            variableNames[0] == "i" ||
+            variableNames[0] == "I" ||
+           !strcasestr(variableNames[0].c_str(), "coord"))
+           doAllVsAll = false;
+
         //
         // We're pretty sneaky about 1D plots -- we
-        // actual populate every n^2 (roughly) pairing
-        // of 1D values in the metadata but only 
-        // construct the meshes upon request.
+        // actual populate every pairing (n*(n-1)
+        // of 1D values in the metadata.  But, DO NOT do
+        // this if the FIRST variable listed
+        // is "x","X","i","I" or contains "coord"
         //
         char s[200];
         for (unsigned int z = 0 ; z < zoneTitles.size(); z++)
@@ -2041,26 +2056,42 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             {
                 for (unsigned int j=0; j<variableNames.size(); j++)
                 {
-                    if (i==j) 
-                        continue;
-                    if (zoneTitles.size() > 1)
+                    if (doAllVsAll)
                     {
-                        sprintf(s, "%s/%s vs/%s",
-                                zoneTitles[z].c_str(),
-                                variableNames[i].c_str(),
-                                variableNames[j].c_str());
+                        if (i == j) continue;
                     }
                     else
                     {
-                        sprintf(s, "%s vs/%s",
-                                variableNames[i].c_str(),
-                                variableNames[j].c_str());
+                        if (i != j) continue;
+                    }
+
+                    if (zoneTitles.size() > 1)
+                    {
+                        if (doAllVsAll)
+                            sprintf(s, "%s/%s vs/%s",
+                                    zoneTitles[z].c_str(),
+                                    variableNames[i].c_str(),
+                                    variableNames[j].c_str());
+                        else
+                            sprintf(s, "%s/%s",
+                                    zoneTitles[z].c_str(),
+                                    variableNames[i].c_str());
+                    }
+                    else
+                    {
+                        if (doAllVsAll)
+                            sprintf(s, "%s vs/%s",
+                                    variableNames[i].c_str(),
+                                    variableNames[j].c_str());
+                        else
+                            sprintf(s, "%s",
+                                    variableNames[i].c_str());
                     }
                     curveIndices[s] = (int)curveNames.size();
                     curveNames.push_back(s);
                     curveDomains.push_back(z);
                     curveFirstVar.push_back(i);
-                    curveSecondVar.push_back(j);
+                    curveSecondVar.push_back(doAllVsAll?j:0);
                     avtCurveMetaData *curve = new avtCurveMetaData;
                     curve->name = s;
                     md->Add(curve);
