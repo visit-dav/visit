@@ -62,6 +62,10 @@
 #include <Expression.h>
 #include <DebugStream.h>
 
+#ifdef _MSC_VER
+#include<shlwapi.h>
+#endif
+
 using std::string;
 using std::vector;
 #ifndef MAX
@@ -2039,7 +2043,11 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             variableNames[0] == "X" ||
             variableNames[0] == "i" ||
             variableNames[0] == "I" ||
+#ifdef _MSC_VER
+           !StrStrIA(variableNames[0].c_str(), "coord"))
+#else
            !strcasestr(variableNames[0].c_str(), "coord"))
+#endif
            doAllVsAll = false;
 
         //
