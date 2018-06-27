@@ -27,7 +27,18 @@ posted HTML results doesn't pass some basic sanity checks,
 PNG formatted image, file size is within 25% of original.
 These are only warnings and up to the user to decide whether
 any action is required.
- 
+
+You can use file globbing for -c, -p args and test-file
+options. But, be sure to single-quote them on the command line.
+Also, you need to single-quote any string options that might
+otherwise be interpreted by the shell such as the date tag
+option.
+
+If you run this script and discover it did a bunch of changes
+you don't want, you can always run svn revert -R . to undu
+everything this script changed or you can run svn revert
+selectively to undo just some changes.
+
 Examples...
 
 To rebaseline *all* files from oldsilo test from date tag 2018-04-07-09:12
@@ -41,6 +52,15 @@ To rebaseline silo_00.png & silo_01.png files from oldsilo test from same tag
 To be interactively prompted upon each file to rebaseline from oldsilo test
 
     ./rebase.py -c databases -p oldsilo -m serial -d '2018-04-07-09:12' --prompt
+
+To rebaseline all results for all test files from hybrid
+
+    ./rebase.py -c hybrid -p '*.py' -m serial -d '2018-04-07-09:12'
+
+To rebaseline literally everything except tecplot results
+
+    ./rebase.py -c '*' -p '*.py' -m serial -d '2018-04-07-09:12'
+    svn revert -R baseline/databases/tecplot
 """
 
 import argparse
@@ -116,13 +136,16 @@ def get_baseline_filenames(cat, pyfile, test_type, cases):
 
     newretval = []
     for f in retval:
-        newretval.append(f.split('/')[-1])
+        newretval.append(f.split('/')[1:])
 
     return newretval
 
 # Iterate, getting current results from HTML server and putting
-def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt, test_type):
-    for f in filelist:
+def copy_currents_from_html_pages(filelist, mode, datetag, prompt, test_type):
+    for ffields in filelist:
+        cat = ffields[0]
+        pyfile = ffields[1]
+        f = ffields[2]
         if prompt:
             docopy = raw_input("Copy file \"%s\" (enter y/Y for yes)? "%f)
             if docopy != 'y' and docopy != 'Y':
@@ -167,8 +190,6 @@ filelist = get_baseline_filenames(vopts['category'], vopts['pyfile'], vopts['typ
 # Iterate, copying currents from HTML pages to baseline dir
 #
 copy_currents_from_html_pages(filelist,
-    vopts['category'],
-    vopts['pyfile'],
     vopts['mode'],
     vopts['datetag'],
     vopts['prompt'],
