@@ -133,12 +133,12 @@ def copy_currents_from_html_pages(filelist, cat, pyfile, mode, datetag, prompt, 
             target_file = "baseline/%s/%s/%s/%s"%(cat,pyfile,mode,f)
         # As a sanity check, get current baseline image file size
         cursize = os.stat(target_file).st_size
-        g = urllib.urlopen("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f))
+        g = urllib.urlopen("http://portal.nersc.gov/project/visit/tests/%s/pascal_trunk_%s/c_%s"%(datetag,mode,f))
         if 'Not Found' in g.read():
             print "*** Current \"%s\" not found. Skipping."%f
         else:
             print "Copying file \"%s\""%f
-            urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/surface_trunk_%s/c_%s"%(datetag,mode,f),
+            urllib.urlretrieve("http://portal.nersc.gov/project/visit/tests/%s/pascal_trunk_%s/c_%s"%(datetag,mode,f),
                 filename=target_file)
         # Do some simple sanity checks on the resulting file
         if test_type == 'png' and imghdr.what(target_file) != 'png':
