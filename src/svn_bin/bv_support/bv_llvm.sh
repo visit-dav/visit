@@ -192,11 +192,14 @@ function build_llvm
         LLVM_CMAKE_PYTHON="-DPYTHON_EXECUTABLE:FILEPATH=$PYTHON_COMMAND"
     fi
 
+    # LLVM documentation states thet BUILD_SHARED_LIBS is not to be used
+    # in conjuction with LLVM_BUILD_LLVM_DYLIB, and should only be used
+    # by LLVM developers.
     ${CMAKE_COMMAND} \
         -DCMAKE_INSTALL_PREFIX:PATH="${VISIT_LLVM_DIR}" \
         -DCMAKE_BUILD_TYPE:STRING="${VISIT_BUILD_MODE}" \
         -DCMAKE_BUILD_WITH_INSTALL_RPATH:BOOL=ON \
-        -DBUILD_SHARED_LIBS:BOOL=ON \
+        -DBUILD_SHARED_LIBS:BOOL=OFF \
         -DCMAKE_CXX_FLAGS:STRING="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER} \
         -DCMAKE_C_FLAGS:STRING="${CFLAGS} ${C_OPT_FLAGS}" \
