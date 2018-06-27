@@ -58,13 +58,16 @@
 #   Eric Brugger, Thu May 18 15:51:13 PDT 2017
 #   I added support for the LLVM and OpenSWR packages.
 #
+#   Kathleen Biagas, Wed Jun 27 14:40:39 MST 2018
+#   Set OSMESA_INCLUDE_DIR OSMESA_LIBRARIES in cache.
+#
 #****************************************************************************/
 
-# Use the VTK_DIR hint from the config-site .cmake file 
+# Use the OSMESA_DIR hint from the config-site .cmake file
 
 if (VISIT_OSMESA_DIR)
-    find_library(OSMESA_LIBRARY OSMesa 
-                 PATH ${VISIT_OSMESA_DIR}/lib 
+    find_library(OSMESA_LIBRARY OSMesa
+                 PATH ${VISIT_OSMESA_DIR}/lib
                  NO_DEFAULT_PATH)
     if (OSMESA_LIBRARY)
         set(OSMESA_FOUND true)
@@ -91,9 +94,9 @@ if (VISIT_OSMESA_DIR)
                 string(STRIP ${OSMESA_SONAME} OSMESA_SONAME)
                 set(OSMESA_LIBRARY ${VISIT_OSMESA_DIR}/lib/${OSMESA_SONAME})
         endif()
-        set(OSMESA_LIBRARIES ${OSMESA_LIBRARY})
+        set(OSMESA_LIBRARIES ${OSMESA_LIBRARY} CACHE STRING "OSMesa libraries")
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy 
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${OSMESA_LIBRARY}
                                 ${VISIT_BINARY_DIR}/lib/osmesa/)
 
@@ -104,10 +107,12 @@ if (VISIT_OSMESA_DIR)
         set(HAVE_OSMESA_SIZE 0 CACHE INTERNAL "support for osmesa_size")
         set(OSMESA_SIZE_LIMIT 4096)
         return()
-    endif() 
+    endif()
 
-    find_library(GLAPI_LIBRARY glapi 
-                 PATH ${VISIT_OSMESA_DIR}/lib 
+    set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include CACHE PATH "OSMesa include path")
+
+    find_library(GLAPI_LIBRARY glapi
+                 PATH ${VISIT_OSMESA_DIR}/lib
                  NO_DEFAULT_PATH)
 
     get_filename_component(GLAPI_LIB ${GLAPI_LIBRARY} NAME)
@@ -167,34 +172,35 @@ if (VISIT_OSMESA_DIR)
         set(OSMESA_SIZE_LIMIT 4096)
     endif()
     # end Check for OSMesa size limit --- IS THIS STILL NECESSARY?
- 
-endif(VISIT_OSMESA_DIR) 
 
-if (VISIT_LLVM_DIR)
-    find_library(LLVM_LIBRARY LLVM 
-                     PATH ${VISIT_LLVM_DIR}/lib 
-                     NO_DEFAULT_PATH)
-    if (LLVM_LIBRARY)
-        get_filename_component(LLVM_LIB ${LLVM_LIBRARY} NAME)
 
-        execute_process(COMMAND objdump -p ${LLVM_LIBRARY}
-                        COMMAND grep SONAME
-                        RESULT_VARIABLE LLVM_SONAME_RESULT
-                        OUTPUT_VARIABLE LLVM_SONAME
-                        ERROR_VARIABLE  LLVM_SONAME_ERROR)
+    if (VISIT_LLVM_DIR)
+        find_library(LLVM_LIBRARY LLVM
+                         PATH ${VISIT_LLVM_DIR}/lib
+                         NO_DEFAULT_PATH)
+        if (LLVM_LIBRARY)
+            get_filename_component(LLVM_LIB ${LLVM_LIBRARY} NAME)
 
-        if(LLVM_SONAME)
-            string(REPLACE "SONAME" "" LLVM_SONAME ${LLVM_SONAME})
-            string(STRIP ${LLVM_SONAME} LLVM_SONAME)
-            set(LLVM_LIBRARY ${VISIT_LLVM_DIR}/lib/${LLVM_SONAME})
+            execute_process(COMMAND objdump -p ${LLVM_LIBRARY}
+                            COMMAND grep SONAME
+                            RESULT_VARIABLE LLVM_SONAME_RESULT
+                            OUTPUT_VARIABLE LLVM_SONAME
+                            ERROR_VARIABLE  LLVM_SONAME_ERROR)
+
+            if(LLVM_SONAME)
+                string(REPLACE "SONAME" "" LLVM_SONAME ${LLVM_SONAME})
+                string(STRIP ${LLVM_SONAME} LLVM_SONAME)
+                set(LLVM_LIBRARY ${VISIT_LLVM_DIR}/lib/${LLVM_SONAME})
+            endif()
+            execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                                  ${LLVM_LIBRARY}
+                                  ${VISIT_BINARY_DIR}/lib/osmesa/)
+
+            list(APPEND OSMESA_LIBRARIES ${LLVM_LIBRARY})
+            set(OSMESA_LIBRARIES ${OSMESA_LIBRARIES} CACHE STRING "OSMesa libraries" FORCE)
         endif()
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy 
-                              ${LLVM_LIBRARY}
-                              ${VISIT_BINARY_DIR}/lib/osmesa/)
+    endif(VISIT_LLVM_DIR)
 
-        list(APPEND OSMESA_LIBRARIES ${LLVM_LIBRARY})
-    endif() 
-endif(VISIT_LLVM_DIR) 
-
-message("OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
+    message(STATUS "OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
+endif(VISIT_OSMESA_DIR)
 

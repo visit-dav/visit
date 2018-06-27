@@ -35,6 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Wed Jun 27 14:40:39 MST 2018
+#   Set OPENGL_gl_LIBRARY, OPENGL_LIBRARIES, OPENGL_glu_LIBRARY, and
+#   OPENGL_INCLUDE_DIR in cache.
 #
 #****************************************************************************/
 
@@ -43,7 +46,7 @@
 # is insufficient for running VisIt (VTK 8), and Mesa-17x was compiled,
 # as was LLVM.
 #
-# This Find module simply determines the correct soname's for mesa's GL and 
+# This Find module simply determines the correct soname's for mesa's GL and
 # LLVM and copies them to the build-dir/lib/mesagl.
 #
 # This new lib path will be used to set LD_LIBRARY_PATH at run-time for gui
@@ -74,12 +77,13 @@ if (VISIT_MESAGL_DIR)
           set(MESAGL_LIBRARY ${VISIT_MESAGL_DIR}/lib/${MESAGL_SONAME})
       endif()
 
-      execute_process(COMMAND ${CMAKE_COMMAND} -E copy 
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                               ${MESAGL_LIBRARY}
                               ${VISIT_BINARY_DIR}/lib/mesagl/)
 
-      set(OPENGL_gl_LIBRARY ${MESAGL_LIBRARY})
-      set(OPENGL_LIBRARIES ${MESAGL_LIBRARY})
+      set(OPENGL_gl_LIBRARY ${MESAGL_LIBRARY} CACHE STRING "OpenGL library")
+      set(OPENGL_LIBRARIES ${MESAGL_LIBRARY} CACHE STRING "OpenGL libraries")
+      set(OPENGL_INCLUDE_DIR ${VISIT_MESAGL_DIR}/include CACHE PATH "OpenGL include path")
 
       # need install commands as well, but I think they should go in
       # lib/CMakeLists.txt
@@ -101,11 +105,11 @@ if (VISIT_MESAGL_DIR)
           set(MESAGLU_LIBRARY ${VISIT_MESAGL_DIR}/lib/${MESAGLU_SONAME})
       endif()
 
-      execute_process(COMMAND ${CMAKE_COMMAND} -E copy 
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                               ${MESAGLU_LIBRARY}
                               ${VISIT_BINARY_DIR}/lib/mesagl/)
 
-      set(OPENGL_glu_LIBRARY ${MESAGLU_LIBRARY})
+      set(OPENGL_glu_LIBRARY ${MESAGLU_LIBRARY} CACHE STRING "OpenGL glu library")
       # need install commands as well, but I think they should go in
       # lib/CMakeLists.txt
   endif()
@@ -127,12 +131,14 @@ if (VISIT_MESAGL_DIR)
             set(MESAGL_LLVM_LIBRARY ${VISIT_LLVM_DIR}/lib/${MESAGL_LLVM_SONAME})
         endif()
 
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy 
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                               ${MESAGL_LLVM_LIBRARY}
                               ${VISIT_BINARY_DIR}/lib/mesagl/)
 
-    list(APPEND OPENGL_gl_LIBRARY ${MESAGL_LLVM_LIBRARY})
-    list(APPEND OPENGL_LIBRARIES ${MESAGL_LLVM_LIBRARY})
-    endif() 
-  endif(VISIT_LLVM_DIR) 
+        list(APPEND OPENGL_gl_LIBRARY ${MESAGL_LLVM_LIBRARY})
+        list(APPEND OPENGL_LIBRARIES ${MESAGL_LLVM_LIBRARY})
+        set(OPENGL_gl_LIBRARY ${OPENGL_gl_LIBRARY} CACHE STRING "OpenGL library" FORCE)
+        set(OPENGL_LIBRARIES ${OPENGL_LIBRARIES} CACHE STRING "OpenGL libraries" FORCE)
+    endif()
+  endif(VISIT_LLVM_DIR)
 endif(VISIT_MESAGL_DIR)
