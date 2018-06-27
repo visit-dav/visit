@@ -22,7 +22,7 @@ function bv_osmesa_depends_on
 
 function bv_osmesa_info
 {
-    export OSMESA_VERSION=${OSMESA_VERSION:-"17.1.9"}
+    export OSMESA_VERSION=${OSMESA_VERSION:-"17.2.8"}
     export OSMESA_FILE=${OSMESA_FILE:-"mesa-$OSMESA_VERSION.tar.gz"}
     export OSMESA_BUILD_DIR=${OSMESA_BUILD_DIR:-"mesa-$OSMESA_VERSION"}
     export OSMESA_URL=${OSMESA_URL:-"ftp://ftp.freedesktop.org/pub/mesa"}
@@ -128,6 +128,9 @@ function build_osmesa
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         OSMESA_STATIC_DYNAMIC="--disable-shared --disable-shared-glapi --enable-static --enable-static-glapi"
     fi
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        OSMESA_DEBUG_BUILD="--enable-debug"
+    fi
 
     info "Configuring OSMesa . . ."
     echo CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
@@ -146,11 +149,10 @@ function build_osmesa
         --disable-gbm \
         --disable-xvmc \
         --disable-vdpau \
-        --disable-omx \
         --disable-va \
         --with-platforms= \
         --with-gallium-drivers=swrast,swr \
-        --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC \
+        --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC  $OSMESA_DEBUG_BUILD \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
@@ -168,11 +170,10 @@ function build_osmesa
         --disable-gbm \
         --disable-xvmc \
         --disable-vdpau \
-        --disable-omx \
         --disable-va \
         --with-platforms= \
         --with-gallium-drivers=swrast,swr \
-        --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC \
+        --enable-gallium-osmesa $OSMESA_STATIC_DYNAMIC $OSMESA_DEBUG_BUILD \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
 
     if [[ $? != 0 ]] ; then

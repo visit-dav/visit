@@ -126,6 +126,9 @@ function build_mesagl
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
         MESAGL_STATIC_DYNAMIC="--disable-shared --disable-shared-glapi --enable-static --enable-static-glapi"
     fi
+    if [[ "$VISIT_BUILD_MODE" == "Debug" ]]; then
+        MESAGL_DEBUG_BUILD="--enable-debug"
+    fi
 
     info "Configuring MesaGL . . ."
     echo CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
@@ -147,7 +150,7 @@ function build_mesagl
         --enable-glx \
         --enable-llvm \
         --with-gallium-drivers=swrast,swr \
-        --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC \
+        --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
     env CXXFLAGS="${CXXFLAGS} ${CXX_OPT_FLAGS}" \
         CXX=${CXX_COMPILER} \
@@ -168,7 +171,7 @@ function build_mesagl
         --enable-glx \
         --enable-llvm \
         --with-gallium-drivers=swrast,swr \
-        --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC \
+        --enable-gallium-osmesa $MESAGL_STATIC_DYNAMIC $MESAGL_DEBUG_BUILD \
         --with-llvm-prefix=${VISIT_LLVM_DIR}
 
     if [[ $? != 0 ]] ; then
