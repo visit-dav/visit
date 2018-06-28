@@ -326,7 +326,7 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     root_md.DataSets(dset_names);
 
     // enumerate datasets)
-
+    selectedLOD = 0;
     for(int i=0;i<(int)dset_names.size();i++)
     {
         JSONRootDataSet &dset =  root_md.DataSet(dset_names[i]);
@@ -367,6 +367,9 @@ avtMFEMFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
         for(size_t j=0;j<field_names.size();j++)
         {
             JSONRootEntry &field = dset.Field(field_names[j]);
+            std::string slod = field.Tag("lod");
+            int ilod = std::min(md->GetMeshes(i).LODs,atoi(slod.c_str()));
+            selectedLOD = std::max(selectedLOD,ilod);
             std::string f_assoc = field.Tag("assoc");
 
             if(f_assoc == "elements")
