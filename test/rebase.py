@@ -39,6 +39,21 @@ you don't want, you can always run svn revert -R . to undu
 everything this script changed or you can run svn revert
 selectively to undo just some changes.
 
+For mode-specific cases, sometimes a new mode-specific baseline
+needs to be added. In that case, rebase.py may fail to do anything
+or produce any output. This is becasue your working copy does not
+have an instance of the previous mode-specific image and you must
+create it manually. For example, if test operators/foo.py had
+no mode-specific (parallel) sub-dir, but foo_02.png is now generating
+a parallel-specific result, you would
+    * mkdir operators/foo/parallel
+    * touch operators/foo/parallel/foo_02.png
+    * svn add operators/foo/parallel
+and then do the rebase operation as normal. It will warn about file
+size change because the touched file is empty and the rebased file
+will be much larger. That is ok.
+
+
 Examples...
 
 To rebaseline *all* files from oldsilo test from date tag 2018-04-07-09:12
@@ -126,13 +141,19 @@ def parse_args():
     return opts, cases
 
 # Get list of baseline image names for this category and py file
-def get_baseline_filenames(cat, pyfile, test_type, cases):
+def get_baseline_filenames(mode, cat, pyfile, test_type, cases):
     retval = []
     if cases:
         for patt in cases:
-            retval += glob.glob("baseline/%s/%s/%s"%(cat,pyfile,patt))
+            if mode == "serial":
+                retval += glob.glob("baseline/%s/%s/%s"%(cat,pyfile,patt))
+            else:
+                retval += glob.glob("baseline/%s/%s/%s/%s"%(cat,pyfile,mode,patt))
     else:
-        retval = glob.glob("baseline/%s/%s/*.%s"%(cat,pyfile,test_type))
+        if mode == "serial":
+            retval = glob.glob("baseline/%s/%s/*.%s"%(cat,pyfile,test_type))
+        else:
+            retval = glob.glob("baseline/%s/%s/%s/*.%s"%(cat,pyfile,mode,test_type))
 
     newretval = []
     for f in retval:
@@ -141,11 +162,16 @@ def get_baseline_filenames(cat, pyfile, test_type, cases):
     return newretval
 
 # Iterate, getting current results from HTML server and putting
-def copy_currents_from_html_pages(filelist, mode, datetag, prompt, test_type):
+def copy_currents_from_html_pages(filelist, datetag, prompt, test_type):
     for ffields in filelist:
         cat = ffields[0]
         pyfile = ffields[1]
-        f = ffields[2]
+        if len(ffields) > 3:
+            mode = ffields[2]
+            f = ffields[3]
+        else:
+            mode = "serial"
+            f = ffields[2]
         if prompt:
             docopy = raw_input("Copy file \"%s\" (enter y/Y for yes)? "%f)
             if docopy != 'y' and docopy != 'Y':
@@ -184,13 +210,17 @@ vopts = vars(opts)
 #
 # Get list of images to re-base
 #
-filelist = get_baseline_filenames(vopts['category'], vopts['pyfile'], vopts['type'], cases)
+filelist = get_baseline_filenames(
+    vopts['mode'],
+    vopts['category'],
+    vopts['pyfile'],
+    vopts['type'],
+    cases)
 
 #
 # Iterate, copying currents from HTML pages to baseline dir
 #
 copy_currents_from_html_pages(filelist,
-    vopts['mode'],
     vopts['datetag'],
     vopts['prompt'],
     vopts['type'])
