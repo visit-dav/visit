@@ -1754,6 +1754,10 @@ def CheckInteractive(case_name):
 #
 #   Mark C. Miller, Wed Jul  9 18:43:41 PDT 2014
 #   Added setFailed and setSkipped args for caller to control these
+#
+#   Mark C. Miller, Thu Jun 28 18:37:31 PDT 2018
+#   Added logic to copy current file to "html" dir so it gets posted with
+#   results so it can be more easily re-based later if needed.
 # ----------------------------------------------------------------------------
 def TestText(case_name, inText):
     """
@@ -1786,6 +1790,11 @@ def TestText(case_name, inText):
     d = HtmlDiff.Differencer(base, cur)
     # change to use difflib
     (nchanges, nlines) = d.Difference(out_path("html","%s.html"%case_name), case_name)
+
+    # Copy the text file itself to "html" dir if there are diffs
+    # to facilitate rebase, later if desired.
+    if nchanges > 0:
+        shutil.copy(cur, out_path("html", "c_%s.txt"%case_name))
 
     # save the diff output
     # TODO_WINDOWS THIS WONT WORK ON WINDOWS
