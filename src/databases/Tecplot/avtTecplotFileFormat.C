@@ -1973,6 +1973,9 @@ avtMeshType avtTecplotFileFormat::DetermineAVTMeshType() const
 //    Adjust logic for curves such that defining every curve against every
 //    other curve only happens if the *first* variable listed does not
 //    appear to be a coordinate variable.
+//
+//    Mark C. Miller, Sat Jun 30 09:03:43 PDT 2018
+//    Fix negated logic for strcasestr test for doAllVsAll
 // ****************************************************************************
 
 void
@@ -2044,9 +2047,9 @@ avtTecplotFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             variableNames[0] == "i" ||
             variableNames[0] == "I" ||
 #ifdef _MSC_VER
-           !StrStrIA(variableNames[0].c_str(), "coord"))
+           StrStrIA(variableNames[0].c_str(), "coord"))
 #else
-           !strcasestr(variableNames[0].c_str(), "coord"))
+           strcasestr(variableNames[0].c_str(), "coord"))
 #endif
            doAllVsAll = false;
 
