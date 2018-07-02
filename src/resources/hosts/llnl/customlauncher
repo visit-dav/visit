@@ -95,6 +95,9 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   Eric Brugger, Fri May 25 11:55:08 PDT 2018
 #   I added pascal to the list of toss3 machines.
 #
+#   Cyrus Harrison, Wed Jun 27 12:41:03 PDT 2018
+#   I added catalyst to the list of toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -159,6 +162,7 @@ class LLNLLauncher(MainLauncher):
         # and agate.
         #
         if self.sectorname() == "borax" or \
+            self.sectorname() == "catalyst" or \
             self.sectorname() == "pascal" or \
             self.sectorname() == "quartz" or \
             self.sectorname() == "rzgenie" or \
