@@ -40,12 +40,10 @@ launch_cases = {
 "psub/mpirun"    : ["-nn", "1", "-n", "JOB_NAME", "-p", "pbatch", "-b", "bdivp", "-t", "30:00", "-expedite", "-slpre", "echo 'pre command'", "-slpost", "echo 'post command'"],
 "psub/srun"      : ["-nn", "1", "-n", "JOB_NAME", "-p", "pbatch", "-b", "bdivp", "-t", "30:00", "-expedite", "-slpre", "echo 'pre command'", "-slpost", "echo 'post command'"],
 
-"qsub/mpiexec"   : ["-np", "16", "-nn", "4", "-t", "1:00:00", "-sla", "-env MV2_ON_DEMAND_THRESHOLD 1024", "-slpre", "cd $PBS_O_WORKDIR; setenv NUM_NODES `wc -l $PBS_NODEFILE | cut -f 1 --delimiter=\" \"`; mpdboot -n $NUM_NODES -f $PBS_NODEFILE --remcons", "-slpost", "cd $PBS_O_WORKDIR; mpdallexit"],
 
 "salloc"         : ["-p", "pbatch", "-t", "30:00", "-nn", "1"],
 "sbatch"         : ["-p", "pbatch", "-b", "bdivp", "-nn", "1"],
 "sbatch/aprun"   : ["-p", "pbatch", "-b", "bdivp", "-nn", "1", "-sla", "-arg1 -arg2"],
-"sbatch/mpiexec" : ["-p", "pbatch", "-b", "bdivp", "-nn", "1", "-sla", "-arg1 -arg2"],
 "srun"           : ["-nn", "1", "-p", "pbatch", "-b", "bdivp", "-n", "JOB_NAME", "-t", "30:00"],
 "yod"            : []}
 
