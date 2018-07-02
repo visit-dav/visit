@@ -46,7 +46,7 @@ function bv_pidx_initialize_vars
 
 function bv_pidx_info
 {
-    export PIDX_VERSION=${PIDX_VERSION:-"0.9.1"}
+    export PIDX_VERSION=${PIDX_VERSION:-"0.9.2"}
     export PIDX_FILE=${PIDX_FILE:-"PIDX-${PIDX_VERSION}.tar.gz"}
     export PIDX_COMPATIBILITY_VERSION=${PIDX_COMPATIBILITY_VERSION:-"1.8"}
     export PIDX_BUILD_DIR=${PIDX_BUILD_DIR:-"PIDX-${PIDX_VERSION}"}
