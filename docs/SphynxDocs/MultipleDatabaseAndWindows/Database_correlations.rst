@@ -368,7 +368,7 @@ Automatic database correlation
 
 VisIt can automatically create database correlations when they are needed
 if you enable certain global settings to control the creation of database
-correlations. By default, will prompt you to when it wants to create a
+correlations. By default, VisIt will prompt you when it wants to create a
 database correlation. VisIt can automatically create a database correlation
 when you add a plot of a multiple time-varying database to a vis window
 that already contains a plot from a different time-varying database. VisIt
