@@ -88,6 +88,9 @@
 #    Alister Maguire, Thu Sep 14 14:26:07 PDT 2017
 #    Added case for userid "alister"
 #
+#    Edward Rusu, Fri Jun 29 8:35:26 PDT 2018
+#    Added case for userid "rusu1"
+#
 # *****************************************************************************
 
 
@@ -230,6 +233,10 @@ case $1 in
     # Alister Maguire
     "alister")
         emaddr=maguire7@llnl.gov
+        ;;
+    # Edward Rusu
+    "rusu1")
+        emaddr=rusu1@llnl.gov
         ;;
     *)
         emaddr=visit-core-support@elist.ornl.gov
