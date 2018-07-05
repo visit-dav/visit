@@ -60,7 +60,7 @@ public:
     getHigh(high,type,extra);
   }
 
-  void getBounds(int low[3],int high[3], int extraCells[3], const std::string &typestr, bool extra=false) const 
+  void getBounds(int low[3],int high[3], int extraCells[6], const std::string &typestr, bool extra=false) const 
   {
     GridType type=str2GridType(typestr);
     getLow(low,type,extra);
