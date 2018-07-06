@@ -150,9 +150,9 @@ bool PIDXIO::openDataset(const String filename){
   if (ret != PIDX_success)  terminate_with_error_msg("PIDX_set_variable_count");
 
   int first_tstep = 0, last_tstep = 0;
-  ret = PIDX_get_first_tstep(pidx_file, &first_tstep);
+  ret = PIDX_get_first_time_step(pidx_file, &first_tstep);
   if (ret != PIDX_success)  terminate_with_error_msg("PIDX_get_first_tstep");
-  ret = PIDX_get_last_tstep(pidx_file, &last_tstep);
+  ret = PIDX_get_last_time_step(pidx_file, &last_tstep);
   if (ret != PIDX_success)  terminate_with_error_msg("PIDX_get_last_tstep");
 
 #ifdef PARALELL  

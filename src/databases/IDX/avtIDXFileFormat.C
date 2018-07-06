@@ -1558,12 +1558,12 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     if(isVector && dim < 3){
 
       unsigned char* newdata = convertTo3Components<unsigned char>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((unsigned char*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<unsigned char>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((unsigned char*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else
-        rv->SetArray((unsigned char*)data,ncomponents*ntuples,1/*delete when done*/,vtkDataArrayTemplate<unsigned char>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((unsigned char*)data,ncomponents*ntuples,1/*delete when done*/,0);
       return rv;
   }
   else if(type == VisitIDXIO::IDX_UINT16){
@@ -1574,12 +1574,12 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     if(isVector && dim < 3){
 
       unsigned short* newdata = convertTo3Components<unsigned short>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((unsigned short*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<unsigned short>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((unsigned short*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else
-      rv->SetArray((unsigned short*)data,ncomponents*ntuples,1,vtkDataArrayTemplate<unsigned short>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((unsigned short*)data,ncomponents*ntuples,1,0);
     
     if(reverse_endian){
       unsigned short *buff = (unsigned short *) rv->GetVoidPointer(0);
@@ -1600,12 +1600,12 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     if(isVector && dim < 3){
 
       unsigned int* newdata = convertTo3Components<unsigned int>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((unsigned int*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<unsigned int>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((unsigned int*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else
-      rv->SetArray((unsigned int*)data,ncomponents*ntuples,1,vtkDataArrayTemplate<unsigned int>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((unsigned int*)data,ncomponents*ntuples,1,0);
     
     if(reverse_endian){
       unsigned int *buff = (unsigned int *) rv->GetVoidPointer(0);
@@ -1626,12 +1626,12 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     if(isVector && dim < 3){
 
       char* newdata = convertTo3Components<char>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((char*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<char>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((char*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else
-      rv->SetArray((char*)data,ncomponents*ntuples,1,vtkDataArrayTemplate<char>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((char*)data,ncomponents*ntuples,1,0);
     
     return rv;
   }
@@ -1642,12 +1642,12 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     if(isVector && dim < 3){
 
       short* newdata = convertTo3Components<short>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((short*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<short>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((short*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else
-      rv->SetArray((short*)data,ncomponents*ntuples,1,vtkDataArrayTemplate<short>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((short*)data,ncomponents*ntuples,1,0);
     
     if(reverse_endian){
       short *buff = (short *) rv->GetVoidPointer(0);
@@ -1668,12 +1668,12 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     if(isVector && dim < 3){
 
       int* newdata = convertTo3Components<int>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((int*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<int>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((int*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else
-      rv->SetArray((int*)data,ncomponents*ntuples,1,vtkDataArrayTemplate<int>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((int*)data,ncomponents*ntuples,1,0);
     
     if(reverse_endian){
       int *buff = (int *) rv->GetVoidPointer(0);
@@ -1695,12 +1695,12 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     if(isVector && dim < 3){
 
       long* newdata = convertTo3Components<long>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((long*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<long>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((long*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else
-      rv->SetArray((long*)data,ncomponents*ntuples,1,vtkDataArrayTemplate<long>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((long*)data,ncomponents*ntuples,1,0);
     
     if(reverse_endian){
       long *buff = (long *) rv->GetVoidPointer(0);
@@ -1721,12 +1721,12 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     
     if(isVector && dim < 3){
       float* newdata = convertTo3Components<float>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((float*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<int>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((float*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else{
-      rv->SetArray((float*)data,ncomponents*ntuples,1,vtkDataArrayTemplate<int>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((float*)data,ncomponents*ntuples,1,0);
     }
     
     if(reverse_endian){
@@ -1763,13 +1763,13 @@ vtkDataArray* avtIDXFileFormat::queryToVtk(int timestate, int domain, const char
     if(isVector && dim < 3){
 
       double* newdata = convertTo3Components<double>(data, field.ncomponents, 3, ntuples);
-      rv->SetArray((double*)newdata,ncomponents*ntuples,1,vtkDataArrayTemplate<double>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((double*)newdata,ncomponents*ntuples,1,0);
 
       delete data;
     }
     else{
      // printf("DOUBLE converting %d \n", ncomponents*ntuples);
-      rv->SetArray((double*)data,ncomponents*ntuples,1,vtkDataArrayTemplate<double>::VTK_DATA_ARRAY_FREE);
+      rv->SetArray((double*)data,ncomponents*ntuples,1,0);
     }
 
     if(reverse_endian){
