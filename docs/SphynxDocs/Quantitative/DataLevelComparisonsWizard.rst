@@ -4,11 +4,12 @@ Data-Level Comparisons Wizard
 -----------------------------
 The data-level comparisons wizard facilitates creation of expressions that can
 be used when comparing fields on different meshes and/or in different databases.
-Such expressions are also known as Cross-Mesh Field Evaluation (CMFE)
-Expressions because they effectively take a field defined on one mesh and
+Such expressions are also known as
+:ref:`Cross-Mesh Field Evaluation (CMFE) <Comparison_Expressions>`
+expressions because they effectively take a field defined on one mesh and
 *evaluate* it (e.g. map it) onto a new mesh. The data-level comparisons wizard
 is a very helpful alternative to entering CMFE expressions directly into the
-Expression system manually.
+expression system manually.
 
 These expressions involve the concepts of a *donor variable*
 and a *target mesh*. The donor variable is the variable to be mapped onto a new

@@ -1312,6 +1312,8 @@ Relative Face Planarity Function: ``relative_face_planarity()`` : ``relative_fac
     :ref:`face_planarity() <Face_Planarity_Function>`, except where each
     face's value is normalized by the average edge length of the face.
 
+.. _Comparison_Expressions:
+
 Comparison Expressions
 """"""""""""""""""""""
 Comparing variables defined on the *same* mesh is often as simple as taking
