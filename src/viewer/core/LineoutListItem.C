@@ -57,7 +57,6 @@
 #include <float.h>
 
 #include <vector>
-using std::vector;
 
 // ****************************************************************************
 //  Method: LineoutListItem Constructor
@@ -66,58 +65,64 @@ using std::vector;
 //    op        The plot that originated the lineout.
 //    ow        The window that originated the lineout.
 //    rw        The window where lineout results will be displayed
-//
-//  Programmer: Kathleen Bonnell
+// 
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
-LineoutListItem::LineoutListItem(ViewerPlot *op, ViewerWindow *ow, ViewerWindow *rw) : queries()
+LineoutListItem::LineoutListItem(ViewerPlot *op, ViewerWindow *ow, ViewerWindow *rw)
 {
     origPlot = op;
     origWin = ow;
     resWin = rw;
     origPlotQueryInfo = 0;
+
+    queries = 0;
+    nQueries = 0;
+    nQueriesAlloc = 0;
 }
 
 
 // ****************************************************************************
 //  Method: LineoutListItem Copy Constructor
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
 LineoutListItem::LineoutListItem(const LineoutListItem &rhs)
 {
+    int i;
     origPlot = rhs.origPlot;
     origWin = rhs.origWin;
     resWin = rhs.resWin;
     origPlotQueryInfo = 0;
-    queries = rhs.queries;
     if (rhs.origPlotQueryInfo)
         ObserveOriginatingPlot();
+
+    nQueriesAlloc = rhs.nQueriesAlloc;
+    nQueries = rhs.nQueries;
+    queries = new ViewerQuery_p [nQueriesAlloc];
+    for (i = 0; i < nQueries; ++i) 
+    {
+        queries[i] = rhs.queries[i];
+    }
 }
 
 
 // ****************************************************************************
 //  Method: LineoutListItem destructor
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
@@ -127,53 +132,57 @@ LineoutListItem::~LineoutListItem()
     //
     // Delete the list and any queries in the queries list.
     //
-    for (auto q : queries)
-        q->DeleteVisualCue();
+    if (nQueriesAlloc > 0)
+    {
+        for (int i = 0; i < nQueries; i++)
+        {
+            queries[i]->DeleteVisualCue();
+            queries[i] = (ViewerQuery *)0;
+        }
 
-    queries.clear();
+        delete [] queries;
+    }
 }
 
 
 // ****************************************************************************
 //  Method: LineoutListItem assignment operator
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
-LineoutListItem &
+LineoutListItem & 
 LineoutListItem::operator=(const LineoutListItem &rhs)
 {
-    StopObservingPlot();
-    for (auto q : queries)
-    {
-        q->DeleteVisualCue();
-    }
-    queries.clear();
+    int i;
+
+    StopObservingPlot(); 
+    if (nQueries > 0)
+        delete [] queries;
 
     origPlot = rhs.origPlot;
     origWin = rhs.origWin;
     resWin = rhs.resWin;
-
     if (rhs.origPlotQueryInfo)
         ObserveOriginatingPlot();
-
-    queries = rhs.queries;
-
-    for (auto q : queries)
-        q->SendVisualCue();
-
+    nQueries = rhs.nQueries;
+    nQueriesAlloc = rhs.nQueriesAlloc;
+    queries = new ViewerQuery_p [nQueriesAlloc];
+    for (i = 0; i < nQueries; ++i) 
+    {
+        queries[i] = rhs.queries[i];
+        queries[i]->SendVisualCue(); 
+    }
     return *this;
 }
 
 
 // ****************************************************************************
-//  Method: LineoutListItem::AddQuery
+//  Method: LineoutListItem::AddQuery 
 //
 //  Purpose:
 //    Add a query to the list.
@@ -181,59 +190,77 @@ LineoutListItem::operator=(const LineoutListItem &rhs)
 //  Arguments:
 //    query     The query to be added.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Mar  7 16:27:04 PST 2003
 //    Removed memcpy, not needed since we are dealing with refptrs.
 //
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
-//
 // ****************************************************************************
 
 void
 LineoutListItem::AddQuery(ViewerQuery_p query)
 {
+    if (nQueries >= nQueriesAlloc)
+    {
+        //
+        // Expand the list of queries if necessary.
+        //
+        ViewerQuery_p *queriesNew=0;
+
+        nQueriesAlloc += 10;
+        queriesNew = new ViewerQuery_p [nQueriesAlloc];
+        if (nQueries > 0)
+        {
+            for (int i = 0; i < nQueries; i++)
+            {
+                queriesNew[i] = queries[i];
+            }
+
+            delete [] queries;
+        }
+        queries = queriesNew;
+    }
+
     //
     // Add the query to the list.
     //
-    queries.push_back(query);
+    queries[nQueries] = query;
+
+    nQueries++;
 }
 
 
 // ****************************************************************************
-//  Method: LineoutListItem::IsEmpty
+//  Method: LineoutListItem::IsEmpty 
 //
 //  Purpose:
-//    Determines if this list item is empty.
+//    Determines if this list item is empty. 
 //
 //  Returns:
 //    True if the origPlot is not set and the querie list is empty, False
-//    otherwise.
+//    otherwise. 
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
 bool
 LineoutListItem::IsEmpty()
 {
-    return (origPlot == 0 && queries.empty());
+    return (origPlot == 0 && nQueries == 0); 
 }
 
 
 // ****************************************************************************
-//  Method: LineoutListItem::Matches
+//  Method: LineoutListItem::Matches 
 //
 //  Purpose:
-//    Determines if this list item's members match the argument list.
+//    Determines if this list item's members match the argument list. 
 //
 //  Arguments:
 //    op        to compare with origPlot.
@@ -242,9 +269,9 @@ LineoutListItem::IsEmpty()
 //
 //  Returns:
 //    True if the passed origiating plot, originating window and results
-//    window match the corresponding members, false otherwise.
+//    window match the corresponding members, false otherwise. 
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
@@ -254,9 +281,9 @@ LineoutListItem::IsEmpty()
 bool
 LineoutListItem::Matches(ViewerPlot *op, ViewerWindow *ow, ViewerWindow *rw)
 {
-    return ((origPlot != 0 && origPlot == op) &&
-            (origWin  != 0 && origWin  == ow) &&
-            (resWin   != 0 && resWin   == rw));
+    return ((origPlot != 0 && origPlot == op) && 
+            (origWin  != 0 && origWin  == ow) && 
+            (resWin   != 0 && resWin   == rw)); 
 }
 
 
@@ -264,14 +291,14 @@ LineoutListItem::Matches(ViewerPlot *op, ViewerWindow *ow, ViewerWindow *rw)
 //  Method: LineoutListItem::MatchOriginatingPlot
 //
 //  Purpose:
-//    Determines if this list item's origPlot matches the argument.
+//    Determines if this list item's origPlot matches the argument. 
 //
 //  Arguments:
 //    op        to compare with origPlot.
 //  Returns:
 //    True if the passed origiating plot, matches the origPlot member.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
@@ -281,7 +308,7 @@ LineoutListItem::Matches(ViewerPlot *op, ViewerWindow *ow, ViewerWindow *rw)
 bool
 LineoutListItem::MatchOriginatingPlot(ViewerPlot *op)
 {
-    return (origPlot != 0 && origPlot == op);
+    return (origPlot != 0 && origPlot == op); 
 }
 
 
@@ -289,7 +316,7 @@ LineoutListItem::MatchOriginatingPlot(ViewerPlot *op)
 //  Method: LineoutListItem::MatchOriginatingWindow
 //
 //  Purpose:
-//    Determines if this list item's origWin matches the argument.
+//    Determines if this list item's origWin matches the argument. 
 //
 //  Argument:
 //    ow        The window to compare with.
@@ -297,7 +324,7 @@ LineoutListItem::MatchOriginatingPlot(ViewerPlot *op)
 //  Returns:
 //    True if the passed origiating window, matches the origWin member.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
@@ -307,7 +334,7 @@ LineoutListItem::MatchOriginatingPlot(ViewerPlot *op)
 bool
 LineoutListItem::MatchOriginatingWindow(ViewerWindow *ow)
 {
-    return (origWin != 0 && origWin == ow);
+    return (origWin != 0 && origWin == ow); 
 }
 
 
@@ -315,7 +342,7 @@ LineoutListItem::MatchOriginatingWindow(ViewerWindow *ow)
 //  Method: LineoutListItem::MatchResultsWindow
 //
 //  Purpose:
-//    Determines if this list item's resWin matches the argument.
+//    Determines if this list item's resWin matches the argument. 
 //
 //  Argument:
 //    rw        The window to compare with.
@@ -323,7 +350,7 @@ LineoutListItem::MatchOriginatingWindow(ViewerWindow *ow)
 //  Returns:
 //    True if the passed results window, matches the resWin member.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
@@ -333,7 +360,7 @@ LineoutListItem::MatchOriginatingWindow(ViewerWindow *ow)
 bool
 LineoutListItem::MatchResultsWindow(ViewerWindow *rw)
 {
-    return (resWin != 0 && resWin == rw);
+    return (resWin != 0 && resWin == rw); 
 }
 
 
@@ -343,7 +370,7 @@ LineoutListItem::MatchResultsWindow(ViewerWindow *rw)
 //  Purpose:
 //    Attach to the originating plot's query atts.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
@@ -367,7 +394,7 @@ LineoutListItem::ObserveOriginatingPlot()
 //  Purpose:
 //    Detach from the originating plot's query atts.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
@@ -391,12 +418,10 @@ LineoutListItem::StopObservingPlot()
 //  Purpose:
 //    The originating plot has been deleted, remove references to it.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
@@ -404,8 +429,8 @@ void
 LineoutListItem::DeleteOriginatingPlot()
 {
     StopObservingPlot();
-    for (auto q : queries)
-        q->DeleteOriginatingPlot();
+    for (int i = 0; i < nQueries; i++)
+        queries[i]->DeleteOriginatingPlot();
     origPlot = 0;
     origWin = 0;
 }
@@ -415,7 +440,7 @@ LineoutListItem::DeleteOriginatingPlot()
 //  Method: LineoutListItem::DeleteResultsPlot
 //
 //  Purpose:
-//    A results plot has been deleted, delete associated queries.
+//    A results plot has been deleted, delete associated queries. 
 //
 //  Arguments:
 //    vp        The plot that has been deleted.
@@ -423,15 +448,12 @@ LineoutListItem::DeleteOriginatingPlot()
 //  Returns:
 //    True if an associated query was deleted, false otherwise.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
 //    Kathleen Bonnell, Fri Sep 29 10:08:46 PDT 2006
 //    Ensure queries in removed slots get deleted.
-//
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
@@ -439,21 +461,26 @@ bool
 LineoutListItem::DeleteResultsPlot(ViewerPlot *vp)
 {
     bool found = false;
-    queries.erase(std::remove_if
-        ( queries.begin(), queries.end(),
-          [vp, &found](ViewerQuery_p q){
-               if (q->MatchResultsPlot(vp))
-               {
-                   q->DeleteVisualCue();
-                   found = true;
-                   return true;
-               }
-               return false;
-           }
-        ),
-        queries.end()
-    );
-
+    int nQueriesNew = 0;
+    for (int i = 0;  i < nQueries; i++)
+     {
+        if (queries[i]->MatchResultsPlot(vp))
+        {
+            queries[i]->DeleteVisualCue();
+            queries[i] = (ViewerQuery *)0;
+            found = true;
+        }
+        else
+        {
+            queries[nQueriesNew] = queries[i];
+            nQueriesNew++;
+        }
+    }
+    nQueries= nQueriesNew;
+    for (int j = nQueries; j < nQueriesAlloc; j++)
+    {
+        queries[j] = (ViewerQuery *)0;
+    }
     return found;
 }
 
@@ -464,12 +491,10 @@ LineoutListItem::DeleteResultsPlot(ViewerPlot *vp)
 //  Purpose:
 //    The originating window has been deleted, remove references to it.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
@@ -477,8 +502,8 @@ void
 LineoutListItem::DeleteOriginatingWindow()
 {
     StopObservingPlot();
-    for (auto q : queries)
-        q->DeleteOriginatingWindow();
+    for (int i = 0; i < nQueries; i++)
+        queries[i]->DeleteOriginatingWindow();
     origPlot = 0;
     origWin = 0;
 }
@@ -488,35 +513,33 @@ LineoutListItem::DeleteOriginatingWindow()
 //  Method: LineoutListItem::HandleTool
 //
 //  Purpose:
-//    Allow the lineout queries to handle a tool.
+//    Allow the lineout queries to handle a tool.   
 //
 //   Arguments:
 //     ti       The tool interface to be handled.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
 //    Brad Whitlock, Tue Jan 27 00:52:37 PDT 2004
 //    I made it use the plot list instead of an animation.
 //
-//    Kathleen Bonnell, Mon Aug 23 09:31:07 PDT 2004
+//    Kathleen Bonnell, Mon Aug 23 09:31:07 PDT 2004 
 //    Don't set the active window.
-//
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
 void
 LineoutListItem::HandleTool(const avtToolInterface &ti)
 {
+    int i;
     bool success = false;
     if (ti.GetAttributes()->TypeName() == "Line")
     {
-        for (auto q : queries)
+        for (i = 0; i < nQueries; i++)
         {
-            success |= q->HandleTool(ti);
+            success |= queries[i]->HandleTool(ti); 
         }
     }
     else if (origPlotQueryInfo)  // in Dynamic mode, other tools can be handled
@@ -524,16 +547,16 @@ LineoutListItem::HandleTool(const avtToolInterface &ti)
         if (ti.GetAttributes()->TypeName() == "PlaneAttributes")
         {
            PlaneAttributes *planeAtts = (PlaneAttributes*)ti.GetAttributes()->
-                                        CreateCompatible("PlaneAttributes");
+                                        CreateCompatible("PlaneAttributes"); 
            if (planeAtts)
            {
-               for (auto q : queries)
+               for (i =0; i < nQueries; i++)
                {
-                   success |= q->UpdateLineFromSlice(planeAtts);
+                   success |= queries[i]->UpdateLineFromSlice(planeAtts);
                }
                delete planeAtts;
            }
-        }
+        } 
         else // some other tool, have the plot list handle it in the usual way.
         {
             ViewerPlotList *resPL = resWin->GetPlotList();
@@ -556,20 +579,18 @@ LineoutListItem::HandleTool(const avtToolInterface &ti)
 //  Method: LineoutListItem::InitializeTool
 //
 //  Purpose:
-//    Allow the lineout queries to initialize a tool.
+//    Allow the lineout queries to initialize a tool.   
 //
 //   Arguments:
 //     ti       The tool interface to be initialized.
 //
 //   Returns:
-//     True if the tool was updated, false otherwise.
+//     True if the tool was updated, false otherwise. 
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
@@ -577,11 +598,11 @@ bool
 LineoutListItem::InitializeTool(avtToolInterface &ti)
 {
     bool success = false;
-    for (auto q : queries)
+    for (int i = 0; i < nQueries; i++)
     {
-        if (q->CanHandleTool())
+        if (queries[i]->CanHandleTool()) 
         {
-            success = q->InitializeTool(ti);
+            success = queries[i]->InitializeTool(ti);
             break;
         }
     }
@@ -595,20 +616,20 @@ LineoutListItem::InitializeTool(avtToolInterface &ti)
 //  Purpose:
 //    Allow the lineout queries to stop handling a tool.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
 //
 // ****************************************************************************
 
 void
 LineoutListItem::DisableTool()
 {
-    for (auto q : queries)
-        q->DisableTool();
+    for (int i = 0; i < nQueries; i++)
+    {
+        queries[i]->DisableTool();
+    }
 }
 
 
@@ -619,7 +640,7 @@ LineoutListItem::DisableTool()
 //    This method is called when certains apects of the originating Plot
 //    are modified.  Allows lineout queries to be udpated as necessary.
 //
-//  Programmer: Kathleen Bonnell
+//  Programmer: Kathleen Bonnell 
 //  Creation:   March 4, 2003
 //
 //  Modifications:
@@ -638,11 +659,11 @@ LineoutListItem::DisableTool()
 //    Brad Whitlock, Mon May 3 13:49:17 PST 2004
 //    I made it use an engine key in ReplaceDatabase.
 //
-//    Kathleen Bonnell, Thu Feb  3 16:27:10 PST 2005
-//    Added case for CacheIndex change.
+//    Kathleen Bonnell, Thu Feb  3 16:27:10 PST 2005 
+//    Added case for CacheIndex change. 
 //
 //    Kathleen Bonnell, Wed Jun 21 17:52:26 PDT 2006
-//    Modified the way CacheIndex change is handled.
+//    Modified the way CacheIndex change is handled. 
 //
 //    Kathleen Bonnell, Wed Jun 28 11:42:31 PDT 2006
 //    Revert back to previous way of handling CachIndex change for times
@@ -653,9 +674,6 @@ LineoutListItem::DisableTool()
 //    Cyrus Harrison, Tue Apr 14 13:35:54 PDT 2009
 //    Changed the interface to ViewerPlotList::ReplaceDatabase.
 //
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
-//
 // ****************************************************************************
 
 void
@@ -664,7 +682,7 @@ LineoutListItem::Update(Subject *TheChangedSubject)
      if (origPlotQueryInfo == TheChangedSubject)
      {
          ViewerPlotList *vpl = resWin->GetPlotList();
-         int nOps;
+         int i, nOps;
          switch(origPlotQueryInfo->GetChangeType())
          {
              case PlotQueryInfo::Database:
@@ -676,7 +694,7 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                  break;
              case PlotQueryInfo::OpAtts:
                  nOps = origPlot->GetNOperators();
-                 for (int i = 0; i < nOps; i++)
+                 for (i = 0; i < nOps; i++)
                  {
                      vpl->SetPlotOperatorAtts(origPlot->GetOperator(i)->GetType());
                  }
@@ -687,12 +705,18 @@ LineoutListItem::Update(Subject *TheChangedSubject)
                  {
                      int newf = origPlotQueryInfo->GetNewFrameIndex();
                      int oldf = origPlotQueryInfo->GetOldFrameIndex();
-                     for (auto q : queries)
+                     std::vector<ViewerQuery_p> addme;
+                     for (i = 0; i < nQueries; i++)
                      {
-                         if (q->MatchTimeState(oldf))
+                         if (queries[i]->MatchTimeState(oldf))
                          {
-                             queries.push_back(new ViewerQuery(*q, newf));
+                             ViewerQuery_p nq = new ViewerQuery(*queries[i], newf);
+                             addme.push_back(nq);
                          }
+                     }
+                     for (i = 0; i < (int)addme.size(); i++)
+                     {
+                         AddQuery(addme[i]);
                      }
                  }
                  else
@@ -708,9 +732,9 @@ LineoutListItem::Update(Subject *TheChangedSubject)
              case PlotQueryInfo::RemoveOperator: // fall through
              case PlotQueryInfo::RemoveAll:      // fall through
              case PlotQueryInfo::RemoveLast:
-                 for (auto q : queries)
+                 for (i = 0; i < nQueries; i++)
                  {
-                     q->ReCreateLineout();
+                     queries[i]->ReCreateLineout(); 
                  }
                  break;
              default:
@@ -726,24 +750,25 @@ LineoutListItem::Update(Subject *TheChangedSubject)
 //  Method: LineoutListItem::ViewDimChanged
 //
 //  Purpose:
-//    This method is called when the view dimension of the originating window
+//    This method is called when the view dimension of the originating window 
 //    has changed, and lineouts are nto dynamic (e.g. can be updated by changes
 //    to the originating plot). Remove all visual cues from the window.
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   July 9, 2003
-//
-//  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
+//  Programmer: Kathleen Bonnell 
+//  Creation:   July 9, 2003 
 //
 // ****************************************************************************
 
 void
 LineoutListItem::ViewDimChanged()
 {
-    for (auto q : queries)
-        q->DeleteVisualCue();
+    if (nQueriesAlloc > 0)
+    {
+        for (int i = 0; i < nQueries; i++)
+        {
+            queries[i]->DeleteVisualCue();
+        }
+    }
 }
 
 
@@ -753,19 +778,15 @@ LineoutListItem::ViewDimChanged()
 //  Purpose:
 //    Tells the queries whether or not their results plot should follow time.
 //
-//  Programmer: Kathleen Bonnell
-//  Creation:   February 3, 2005
-//
-//  Modifications:
-//    Kathleen Biagas, Wed Jul 11 12:58:34 PDT 2018
-//    queries now stored in std::vector.
+//  Programmer: Kathleen Bonnell 
+//  Creation:   February 3, 2005 
 //
 // ****************************************************************************
 
 void
 LineoutListItem::SetLineoutsFollowTime(bool newMode)
 {
-    for (auto q : queries)
-        q->SetFollowsTime(newMode);
+    for (int i = 0; i < nQueries; i++)
+        queries[i]->SetFollowsTime(newMode);
 }
 

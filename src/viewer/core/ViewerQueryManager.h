@@ -44,7 +44,6 @@
 #define VIEWER_QUERY_MANAGER_H
 #include <viewercore_exports.h>
 #include <ViewerBase.h>
-#include <LineoutListItem.h>
 #include <PickPointInfo.h>
 #include <ColorAttribute.h>
 #include <ViewerQuery.h>
@@ -56,6 +55,7 @@
 class DataNode;
 class GlobalLineoutAttributes;
 class Line;
+class LineoutListItem;
 class PickAttributes;
 class QueryAttributes;
 class QueryList;
@@ -261,9 +261,6 @@ typedef struct {
 //    Alister Maguire, Wed May 23 09:46:54 PDT 2018
 //    Added RetrieveTimeSteps to simplify and reduce repetition. 
 //
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
     
 class VIEWERCORE_API ViewerQueryManager : public ViewerBase
@@ -406,7 +403,9 @@ class VIEWERCORE_API ViewerQueryManager : public ViewerBase
     char                  baseDesignator; 
     bool                  cycleDesignator; 
 
-    std::vector<LineoutListItem>  lineoutList;
+    LineoutListItem     **lineoutList;
+    int                   nLineouts;
+    int                   nLineoutsAlloc;
     int                   colorIndex;
 
     CachedLineout         lineoutCache;

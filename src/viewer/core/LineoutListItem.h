@@ -46,7 +46,6 @@
 
 #include <SimpleObserver.h>
 #include <ViewerQuery.h>
-#include <vector>
 
 // Forward declarations.
 
@@ -84,8 +83,6 @@ class avtToolInterface;
 //    Kathleen Bonnell, Tue Jan 17 11:30:15 PST 2006 
 //    Removed SetTimeSlider. 
 //
-//    Kathleen Biagas, Wed Jul 11 12:57:41 PDT 2018
-//    Store queries in a std::vector.
 //
 // ****************************************************************************
 
@@ -128,7 +125,9 @@ class VIEWERCORE_API LineoutListItem : public SimpleObserver
     ViewerWindow *origWin;
     ViewerWindow *resWin;
     PlotQueryInfo *origPlotQueryInfo;
-    std::vector <ViewerQuery_p> queries;
+    ViewerQuery_p *queries;
+    int nQueries;
+    int nQueriesAlloc;
 };
 
 #endif

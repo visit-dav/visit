@@ -233,6 +233,9 @@ CreateExtentsString(const double * extents,
 
 ViewerQueryManager::ViewerQueryManager() : ViewerBase()
 {
+    lineoutList    = 0;
+    nLineouts      = 0;
+    nLineoutsAlloc = 0;
     colorIndex     = 0;
 
     baseDesignator = 'A';
@@ -303,17 +306,22 @@ ViewerQueryManager::Instance()
 //    Kathleen Bonnell, Fri Dec 20 09:48:48 PST 2002
 //    Delete designator.
 //
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 ViewerQueryManager::~ViewerQueryManager()
 {
+    int i;
     //
     // Delete the list and any queries in the queries list.
     //
-    lineoutList.clear();
+    if (nLineoutsAlloc > 0)
+    {
+        for (i = 0; i < nLineouts; i++)
+        {
+            delete lineoutList[i];
+        }
+        delete [] lineoutList;
+    }
 
     delete [] designator;
 }
@@ -502,45 +510,77 @@ ViewerQueryManager::AddQuery(ViewerWindow *origWin, Line *lineAtts,
 //   Kathleen Bonnell, Thu Nov  2 13:52:00 PST 2006
 //   Added test for FreezeInTime when determining if lineout FollwowsTime.
 //
-//   Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//   lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 void
 ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
                                    ViewerWindow *owin, ViewerWindow *rwin)
 {
+    int i, index = -1;
+
     GlobalLineoutAttributes *gla = GetGlobalLineoutAtts();
     //
     //  Determine the correct list.
     //
-    vector<LineoutListItem>::iterator it; 
-    for (it = lineoutList.begin(); it != lineoutList.end(); ++it)
+    for (i = 0; i < nLineouts && index == -1; i++)
     {
-        if ((*it).Matches(oplot, owin, rwin))
+        if (lineoutList[i]->Matches(oplot, owin, rwin))
         {
-            break;
+            index = i;
         }
     }
-    if (lineoutList.end() == it)
+    if (index == -1)
     {
+        if (nLineouts >= nLineoutsAlloc)
+        {
+            //
+            // Expand the lineout list if necessary.
+            //
+            LineoutListItem **lineoutsNew=0;
+
+            nLineoutsAlloc += 2;
+            lineoutsNew= new LineoutListItem*[nLineoutsAlloc];
+            for (i = 0; i < nLineoutsAlloc; i++)
+            {
+                lineoutsNew[i] = NULL;
+            }
+
+            if (nLineouts > 0)
+            {
+                for (i = 0; i < nLineouts; i++)
+                {
+                    lineoutsNew[i] = new LineoutListItem(*(lineoutList[i]));
+                    delete lineoutList[i];
+                }
+                delete [] lineoutList;
+            }
+
+            lineoutList = lineoutsNew;
+        }
+        index = nLineouts;
         LineoutListItem loli(oplot, owin, rwin);
-        lineoutList.push_back(loli);
-        it = lineoutList.end() -1;
+        if (lineoutList[index] == NULL)
+        {
+            lineoutList[index] = new LineoutListItem(loli);
+        }
+        else
+        {
+            *(lineoutList[index]) = loli;
+        }
         //
         // Observe the originating plot if necessary.
         //
         if (gla->GetDynamic())
         {
-            (*it).ObserveOriginatingPlot();
+            lineoutList[index]->ObserveOriginatingPlot();
         }
+        nLineouts++;
     }
 
     //
     // Add the query to the correct list.
     //
-    (*it).AddQuery(query);
+    lineoutList[index]->AddQuery(query);
 
     //
     // Tell it whether or not to follow time.
@@ -548,15 +588,15 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
     if (gla->GetDynamic() &&
         gla->GetCurveOption() == GlobalLineoutAttributes::CreateCurve)
     {
-        (*it).SetLineoutsFollowTime(false);
+        lineoutList[index]->SetLineoutsFollowTime(false);
     }
     else if (gla->GetFreezeInTime())
     {
-        (*it).SetLineoutsFollowTime(false);
+        lineoutList[index]->SetLineoutsFollowTime(false);
     }
     else
     {
-        (*it).SetLineoutsFollowTime(true);
+        lineoutList[index]->SetLineoutsFollowTime(true);
     }
 }
 
@@ -584,25 +624,23 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
 //    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
 //    I removed a call to UpdateScaleFactor since it no longer exists.
 //
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 void
 ViewerQueryManager::Delete(ViewerPlot *vp)
 {
-    if (lineoutList.empty())
+    if (nLineouts == 0)
     {
         return;
     }
 
     bool needPhysicalDelete = true;
-    for (auto ll : lineoutList)
+    int i;
+    for (i = 0; i < nLineouts; i++)
     {
-        if (ll.MatchOriginatingPlot(vp))
+        if (lineoutList[i]->MatchOriginatingPlot(vp))
         {
-            ll.DeleteOriginatingPlot();
+            lineoutList[i]->DeleteOriginatingPlot();
             needPhysicalDelete = false;
         }
     }
@@ -615,28 +653,29 @@ ViewerQueryManager::Delete(ViewerPlot *vp)
     //
     // Delete the query whose resultsPlot == vp;
     //
+    int nLineoutsNew = nLineouts;
     ViewerWindow *resWin = 0;
     //
     //  There should be only one match, so stop once we found it.
     //
-
-    lineoutList.erase(std::remove_if
-        ( lineoutList.begin(), lineoutList.end(),
-          [vp, &resWin](LineoutListItem lli){
-               
-              if (lli.DeleteResultsPlot(vp))
-              {
-                  resWin = lli.GetResultsWindow();
-                  if (lli.IsEmpty())
-                  {
-                      return true;
-                  }
-              }
-              return false;
-          }
-        ),
-        lineoutList.end()
-    );
+    for (i = 0;  i < nLineouts && resWin == 0; ++i)
+    {
+        if (lineoutList[i]->DeleteResultsPlot(vp))
+        {
+            resWin = lineoutList[i]->GetResultsWindow();
+            if (lineoutList[i]->IsEmpty())
+            {
+                nLineoutsNew--;
+                if (nLineoutsNew > 0 )
+                {
+                    *(lineoutList[i]) = *(lineoutList[nLineoutsNew]);
+                }
+                delete lineoutList[nLineoutsNew];
+                lineoutList[nLineoutsNew] = NULL;
+            }
+        }
+    }
+    nLineouts = nLineoutsNew;
 }
 
 
@@ -661,25 +700,23 @@ ViewerQueryManager::Delete(ViewerPlot *vp)
 //   the list item will be deleted anyway).  Set lineoutList[i] to NULL
 //   after delete.
 //
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 void
 ViewerQueryManager::Delete(ViewerWindow *vw)
 {
-    if (lineoutList.empty())
+    if (nLineouts == 0)
     {
         return;
     }
 
     bool needPhysicalDelete = true;
-    for (auto ll : lineoutList)
+    int i;
+    for (i = 0; i < nLineouts; i++)
     {
-        if (ll.MatchOriginatingWindow(vw))
+        if (lineoutList[i]->MatchOriginatingWindow(vw))
         {
-            ll.DeleteOriginatingWindow();
+            lineoutList[i]->DeleteOriginatingWindow();
             needPhysicalDelete = false;
         }
     }
@@ -692,14 +729,21 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
     //
     // Delete the query whose resultsWindow == vw;
     //
-    lineoutList.erase(std::remove_if
-        ( lineoutList.begin(), lineoutList.end(),
-          [vw] (LineoutListItem lli) {
-              return (lli.MatchResultsWindow(vw));
-          }
-        ),
-        lineoutList.end()
-    );
+    int nLineoutsNew = 0;
+    for (i = 0;  i < nLineouts; i++)
+    {
+        if (!(lineoutList[i]->MatchResultsWindow(vw)))
+        {
+            lineoutList[nLineoutsNew] = lineoutList[i];
+            nLineoutsNew++;
+        }
+    }
+    for (i = nLineoutsNew; i < nLineouts; i++)
+    {
+        delete lineoutList[i];
+        lineoutList[i] = NULL;
+    }
+    nLineouts = nLineoutsNew;
 }
 
 
@@ -723,9 +767,6 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
 //    Hank Childs, Thu Oct  2 14:22:16 PDT 2003
 //    Account for multiple active plots.
 //
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 void
@@ -733,7 +774,7 @@ ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
 {
     intVector plotIDs;
     oWin->GetPlotList()->GetActivePlotIDs(plotIDs);
-    if ((lineoutList.empty()) || (plotIDs.empty()))
+    if ((nLineouts == 0) || (plotIDs.size() == 0))
     {
         return;
     }
@@ -741,11 +782,11 @@ ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
     int plotId = plotIDs[0];
 
     ViewerPlot *oPlot = oWin->GetPlotList()->GetPlot(plotId);
-    for (auto ll : lineoutList)
+    for (int i = 0; i < nLineouts; i++)
     {
-        if (ll.MatchOriginatingPlot(oPlot))
+        if (lineoutList[i]->MatchOriginatingPlot(oPlot))
         {
-            ll.HandleTool(ti);
+            lineoutList[i]->HandleTool(ti);
         }
     }
 }
@@ -773,22 +814,19 @@ ViewerQueryManager::HandleTool(ViewerWindow *oWin, const avtToolInterface &ti)
 //    Hank Childs, Thu Oct  2 14:22:16 PDT 200
 //    Account for multiple plots.
 //
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 bool
 ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
 {
-    if (ti.GetAttributes()->TypeName() != "Line" || lineoutList.empty())
+    if (ti.GetAttributes()->TypeName() != "Line")
     {
         return false;
     }
 
     intVector plotIDs;
     oWin->GetPlotList()->GetActivePlotIDs(plotIDs);
-    if (plotIDs.empty())
+    if ((nLineouts == 0) || (plotIDs.size() == 0))
     {
         return false;
     }
@@ -797,11 +835,11 @@ ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
 
     bool retval = false;
     ViewerPlot *oPlot = oWin->GetPlotList()->GetPlot(plotId);
-    for (auto ll : lineoutList)
+    for (int i = 0; i < nLineouts; i++)
     {
-        if (ll.MatchOriginatingPlot(oPlot))
+        if (lineoutList[i]->MatchOriginatingPlot(oPlot))
         {
-            retval = ll.InitializeTool(ti);
+            retval = lineoutList[i]->InitializeTool(ti);
             break;
         }
     }
@@ -827,9 +865,6 @@ ViewerQueryManager::InitializeTool(ViewerWindow *oWin, avtToolInterface &ti)
 //    Kathleen Bonnell, Tue Mar  4 13:36:54 PST 2003
 //    Have lineout lists handle the tool.
 //
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 void
@@ -840,11 +875,11 @@ ViewerQueryManager::DisableTool(ViewerWindow *oWin, avtToolInterface &ti)
         return;
     }
 
-    for (auto ll : lineoutList)
+    for (int i = 0; i < nLineouts; i++)
     {
-        if (ll.MatchOriginatingWindow(oWin))
+        if (lineoutList[i]->MatchOriginatingWindow(oWin))
         {
-            ll.DisableTool();
+            lineoutList[i]->DisableTool();
         }
     }
 }
@@ -3100,21 +3135,17 @@ ViewerQueryManager::GetGlobalLineoutAtts()
 //  Programmer: Kathleen Bonnell
 //  Creation:   January 13, 2003
 //
-//  Modifications:
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 void
 ViewerQueryManager::SetDynamicLineout(bool newMode)
 {
-    for (auto ll : lineoutList)
+    for (int i = 0; i < nLineouts; ++i)
     {
         if (newMode)
-            ll.ObserveOriginatingPlot();
+            lineoutList[i]->ObserveOriginatingPlot();
         else
-            ll.StopObservingPlot();
+            lineoutList[i]->StopObservingPlot();
     }
 }
 
@@ -4027,8 +4058,6 @@ ViewerQueryManager::StartLineout(ViewerWindow *origWin, Line *lineAtts)
 // Creation:   July 9, 2003
 //
 // Modifications:
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
 //
 // ****************************************************************************
 
@@ -4039,16 +4068,16 @@ ViewerQueryManager::ViewDimChanged(ViewerWindow *modWin)
     // No work to do if there are no lineouts, or if lineouts
     // are in dynamic mode.
     //
-    if (lineoutList.empty() || GetGlobalLineoutAtts()->GetDynamic())
+    if (nLineouts == 0 || GetGlobalLineoutAtts()->GetDynamic())
     {
         return;
     }
 
-    for (auto ll : lineoutList)
+    for (int i = 0; i < nLineouts; i++)
     {
-        if (ll.MatchOriginatingWindow(modWin))
+        if (lineoutList[i]->MatchOriginatingWindow(modWin))
         {
-            ll.ViewDimChanged();
+            lineoutList[i]->ViewDimChanged();
         }
     }
 }
@@ -5945,18 +5974,14 @@ ViewerQueryManager::ResetLineoutColor()
 //  Programmer: Kathleen Bonnell
 //  Creation:   February 3, 2005
 //
-//  Modifications:
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 void
 ViewerQueryManager::SetLineoutsFollowTime(bool followTime)
 {
-    for (auto ll : lineoutList)
+    for (int i = 0; i < nLineouts; ++i)
     {
-        ll.SetLineoutsFollowTime(followTime);
+        lineoutList[i]->SetLineoutsFollowTime(followTime);
     }
 }
 
@@ -5974,20 +5999,16 @@ ViewerQueryManager::SetLineoutsFollowTime(bool followTime)
 //  Programmer: Kathleen Bonnell
 //  Creation:   March 23, 2005
 //
-//  Modifications:
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
-//
 // ****************************************************************************
 
 void
 ViewerQueryManager::ClearRefLines(ViewerWindow *origWin)
 {
-    for (auto ll : lineoutList)
+    for (int i = 0; i < nLineouts; i++)
     {
-        if (ll.MatchOriginatingWindow(origWin))
+        if (lineoutList[i]->MatchOriginatingWindow(origWin))
         {
-            ll.StopObservingPlot();
+            lineoutList[i]->StopObservingPlot();
         }
     }
 }
@@ -6044,8 +6065,6 @@ ViewerQueryManager::EngineExistsForQuery(ViewerPlot *plot)
 //  Creation:   June 22, 2006
 //
 //  Modifications:
-//    Kathleen Biagas, Wed Jul 11 13:37:31 PDT 2018
-//    lineoutList is now stored in std::vector.
 //
 // ****************************************************************************
 
@@ -6060,12 +6079,17 @@ ViewerQueryManager::CloneQuery(ViewerQuery *toBeCloned, int newTS, int oldTS)
     //
     //  Determine the correct list in which to store the query.
     //
-    for (auto ll : lineoutList)
+    int i, index = -1;
+    for (i = 0; i < nLineouts && index == -1; i++)
     {
-        if (ll.Matches(oplot, owin, rwin))
+        if (lineoutList[i]->Matches(oplot, owin, rwin))
         {
-            ll.AddQuery(clone);
+            index = i;
         }
+    }
+    if (index != -1)
+    {
+        lineoutList[index]->AddQuery(clone);
     }
 }
 
