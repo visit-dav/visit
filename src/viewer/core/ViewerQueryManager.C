@@ -620,6 +620,10 @@ ViewerQueryManager::SimpleAddQuery(ViewerQuery_p query, ViewerPlot *oplot,
 //    Eric Brugger, Wed Aug 20 11:05:54 PDT 2003
 //    I removed a call to UpdateScaleFactor since it no longer exists.
 //
+//    Kathleen Biagas, Thu Jul 12 11:58:34 PDT 2018
+//    Fix corruption of ViewerQuery pointers by changing how lineouts are
+//    deleted and moved in the list when the Results plot is being deleted.
+//
 // ****************************************************************************
 
 void
@@ -649,26 +653,18 @@ ViewerQueryManager::Delete(ViewerPlot *vp)
     //
     // Delete the query whose resultsPlot == vp;
     //
-    int nLineoutsNew = nLineouts;
-    ViewerWindow *resWin = 0;
-    //
-    //  There should be only one match, so stop once we found it.
-    //
-    for (i = 0;  i < nLineouts && resWin == 0; ++i)
+    int nLineoutsNew = 0;
+    for (i = 0;  i < nLineouts ; ++i)
     {
-        if (lineoutList[i]->DeleteResultsPlot(vp))
+        if (lineoutList[i]->DeleteResultsPlot(vp) && lineoutList[i]->IsEmpty())
         {
-            resWin = lineoutList[i]->GetResultsWindow();
-            if (lineoutList[i]->IsEmpty())
-            {
-                nLineoutsNew--;
-                if (nLineoutsNew > 0 )
-                {
-                    *(lineoutList[i]) = *(lineoutList[nLineoutsNew]);
-                }
-                delete lineoutList[nLineoutsNew];
-                lineoutList[nLineoutsNew] = NULL;
-            }
+            delete lineoutList[i];
+            lineoutList[i] = NULL;
+        }
+        else
+        {
+            lineoutList[nLineoutsNew] = lineoutList[i];
+            nLineoutsNew++;
         }
     }
     nLineouts = nLineoutsNew;
@@ -695,6 +691,10 @@ ViewerQueryManager::Delete(ViewerPlot *vp)
 //   Removed call to lineoutList->DeleteResultsWindow (redundant since
 //   the list item will be deleted anyway).  Set lineoutList[i] to NULL
 //   after delete.
+//
+//   Kathleen Biagas, Thu Jul 12 11:58:34 PDT 2018
+//   Fix corruption of ViewerQuery pointers by changing how lineouts are
+//   deleted and moved in the list when the Results window is being deleted.
 //
 // ****************************************************************************
 
@@ -728,16 +728,16 @@ ViewerQueryManager::Delete(ViewerWindow *vw)
     int nLineoutsNew = 0;
     for (i = 0;  i < nLineouts; i++)
     {
-        if (!(lineoutList[i]->MatchResultsWindow(vw)))
+        if (lineoutList[i]->MatchResultsWindow(vw))
+        {
+            delete lineoutList[i];
+            lineoutList[i] = NULL;
+        }
+        else
         {
             lineoutList[nLineoutsNew] = lineoutList[i];
             nLineoutsNew++;
         }
-    }
-    for (i = nLineoutsNew; i < nLineouts; i++)
-    {
-        delete lineoutList[i];
-        lineoutList[i] = NULL;
     }
     nLineouts = nLineoutsNew;
 }
@@ -1931,7 +1931,7 @@ ViewerQueryManager::ClearPickPoints()
 //    I fixed a small memory leak.
 //
 //    Alister Maguire, Wed May  9 09:48:44 PDT 2018
-//    After preparing for new pick, call UpdatePickAtts. Otherwise, 
+//    After preparing for new pick, call UpdatePickAtts. Otherwise,
 //    old attributes will carry on to new picks.
 //
 // ****************************************************************************
