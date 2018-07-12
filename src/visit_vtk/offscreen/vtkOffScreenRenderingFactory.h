@@ -36,8 +36,8 @@
 *
 *****************************************************************************/
 
-#ifndef __VTK_OFFSCREEN_RENDERING_FACOTRY_H
-#define __VTK_OFFSCREEN_RENDERING_FACOTRY_H
+#ifndef __VTK_OFFSCREEN_RENDERING_FACTORY_H
+#define __VTK_OFFSCREEN_RENDERING_FACTORY_H
 
 #include <vtkObjectFactory.h>
 #include <vtkVersion.h>

@@ -85,8 +85,6 @@ if (VISIT_MESAGL_DIR)
       set(OPENGL_LIBRARIES ${MESAGL_LIBRARY} CACHE STRING "OpenGL libraries")
       set(OPENGL_INCLUDE_DIR ${VISIT_MESAGL_DIR}/include CACHE PATH "OpenGL include path")
 
-      # need install commands as well, but I think they should go in
-      # lib/CMakeLists.txt
   else()
       message(FATAL_ERROR "VISIT_MESAGL_DIR provided, but it doesn't contain GL library")
   endif()
@@ -110,8 +108,7 @@ if (VISIT_MESAGL_DIR)
                               ${VISIT_BINARY_DIR}/lib/mesagl/)
 
       set(OPENGL_glu_LIBRARY ${MESAGLU_LIBRARY} CACHE STRING "OpenGL glu library")
-      # need install commands as well, but I think they should go in
-      # lib/CMakeLists.txt
+
   endif()
 
   if (VISIT_LLVM_DIR)
@@ -141,4 +138,16 @@ if (VISIT_MESAGL_DIR)
         set(OPENGL_LIBRARIES ${OPENGL_LIBRARIES} CACHE STRING "OpenGL libraries" FORCE)
     endif()
   endif(VISIT_LLVM_DIR)
+
+
+  install(DIRECTORY ${VISIT_BINARY_DIR}/lib/mesagl
+          DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+          DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                WORLD_READ             WORLD_EXECUTE
+          FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                WORLD_READ             WORLD_EXECUTE
+          CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
+
 endif(VISIT_MESAGL_DIR)

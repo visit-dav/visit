@@ -62,20 +62,20 @@
 
 vtkOffScreenRenderingFactory::vtkOffScreenRenderingFactory()
 {
-    // If VTK was compiled with VTK_OPENGL_HAS_OSMESA then 
+    // If VTK was compiled with VTK_OPENGL_HAS_OSMESA then
     // vtkOSOpenGLRenderWindow was compiled into vtkRenderingOpenGL.
     //
-    // If VTK was compiled with VTK_OPENGL_HAS_EGL then 
+    // If VTK was compiled with VTK_OPENGL_HAS_EGL then
     // vtkEGLRenderWindow was compiled into vtkRenderingOpenGL.
     //
     // If VTK was comiled with VTK_USE_X, then, despite either of the above
     // vtkXOpenGLRenderWindow will be the override when instantiating a
-    // vtkRenderWindow.  
+    // vtkRenderWindow.
     //
     // This will cause problems for us on headless nodes, so here we create
     // overrides for vtkXOpenGLRenderWindow, depending on whether we want
     // OSMesa or EGL.
-    // 
+    //
 
 #if defined(HAVE_OSMESA)
     this->RegisterOverride("vtkXOpenGLRenderWindow",
@@ -95,7 +95,7 @@ vtkOffScreenRenderingFactory::vtkOffScreenRenderingFactory()
 
 
 // ****************************************************************************
-//  Method:  vtkOffScreenRenderingFactory::ForcOeffScreen
+//  Method:  vtkOffScreenRenderingFactory::ForceOffScreen
 //
 //  Purpose:
 //

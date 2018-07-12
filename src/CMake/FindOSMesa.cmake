@@ -95,6 +95,7 @@ if (VISIT_OSMESA_DIR)
                 set(OSMESA_LIBRARY ${VISIT_OSMESA_DIR}/lib/${OSMESA_SONAME})
         endif()
         set(OSMESA_LIBRARIES ${OSMESA_LIBRARY} CACHE STRING "OSMesa libraries")
+        set(OSMESA_INCLUDE_DIR ${VISIT_OSMESA_DIR}/include)
 
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy
                                 ${OSMESA_LIBRARY}
@@ -202,5 +203,16 @@ if (VISIT_OSMESA_DIR)
     endif(VISIT_LLVM_DIR)
 
     message(STATUS "OSMESA_LIBRARIES: ${OSMESA_LIBRARIES}")
-endif(VISIT_OSMESA_DIR)
+
+    install(DIRECTORY ${VISIT_BINARY_DIR}/lib/osmesa
+            DESTINATION ${VISIT_INSTALLED_VERSION_LIB}
+            DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                                  GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                  WORLD_READ             WORLD_EXECUTE
+            FILE_PERMISSIONS      OWNER_READ OWNER_WRITE OWNER_EXECUTE
+                                  GROUP_READ GROUP_WRITE GROUP_EXECUTE
+                                  WORLD_READ             WORLD_EXECUTE
+            CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
+
+endif(VISIT_OSMESA_DIR) 
 
