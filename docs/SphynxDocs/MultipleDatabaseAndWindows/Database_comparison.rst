@@ -4,29 +4,32 @@ Database comparison
 -------------------
 
 Comparing the results of multiple related simulation databases is one of
-VisIt's main uses. You can put plots from multiple databases in the same
+VisIt_'s main uses. You can put plots from multiple databases in the same
 window or you can put plots from each database in adjacent visualization
 windows, allowing you to compare plots visually. In addition to these
-visual comparison modes, VisIt supports more direct comparison of databases
+visual comparison modes, VisIt_ supports more direct comparison of databases
 using database comparisons. Database comparison allows you to plot direct
 differences between two databases or between different time states in the
-same database (i.e. time derivatives). VisIt's expression language is used
+same database (i.e. time derivatives). VisIt_'s expression language is used
 extensively to facilitate the database comparison.
 
 The role of expressions
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Database comparison is accomplished by creating new expressions that
-involve the contents of multiple databases using VisIt's expression
-language. Database comparisons use a special expression called *conn_cmfe*,
-which is capable of mapping a field from one mesh to another mesh
+involve the contents of multiple databases using VisIt_'s expression
+language. Database comparisons use a special expressions called
+:ref:`Cross-Mesh Field Evaluation (CMFE) <Comparison_Expressions>`
+expressions, :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>` and
+:ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>`,
+which are capable of mapping a field from one mesh to another mesh
 using a mesh connectivity-based approach. The name "conn_cmfe" means
-*connectivity-based cross-mesh field evaluation* (CMFE) and as the name
+*connectivity-based cross mesh field evaluation* (CMFE) and as the name
 implies, the expression takes fields from one mesh and maps the field onto
 another mesh by taking the cell or node-centered values on the donor mesh
 and mapping them onto the cells or nodes having the same indices in the
 new mesh. Mismatches in mesh sizes result in not all data values being
-used or, alternatively, VisIt can pad the remapped field with zeros. The
+used or, alternatively, VisIt_ can pad the remapped field with zeros. The
 conn_cmfe expression can be used to map fields from one database onto a
 mesh in another database, which then allows you to create expressions
 involving the active database.
@@ -34,8 +37,9 @@ involving the active database.
 There is also a position-based CMFE (*pos_cmfe*), which will resample the field
 from one mesh onto another mesh by calculating the values of the field on
 the first mesh using the locations of the cells or nodes in a second mesh.
-More information on CMFE expressions are found in the :ref:`Expressions` 
-chapter.
+More information on CMFE expressions are found in the
+:ref:`Cross-Mesh Field Evaluation (CMFE) <Comparison_Expressions>` section
+of the :ref:`Exprssions <Expressions>` chapter.
 
 Plotting the difference between two databases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,7 +48,7 @@ Simulations are often run as parts of parameter studies, meaning the
 initial conditions are changed slightly to see what observable effects
 the changes produce. The ability to do direct numerical comparison of
 multiple simulation databases is required in order to observe the often
-miniscule differences between the fields in the two databases. VisIt
+miniscule differences between the fields in the two databases. VisIt_
 provides the conn_cmfe expression, which allows you to map a field from
 one simulation database onto a mesh from another simulation database.
 Once the mapping has been done, you can then perform difference operations
