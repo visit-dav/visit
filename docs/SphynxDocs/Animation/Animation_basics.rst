@@ -82,7 +82,7 @@ rules to group files with similar prefixes into a virtual database. VisIt will a
 from a filename so sequences of numbers can be abstracted out. Multiple files that match the same pattern are
 added to the same virtual database.  The *Smart* setting applies the same logic as well as some extra rules 
 that permit additional file grouping. For instance, certain file extensions that include numbers such as
- ``.hdf5`` are excluded from the pattern generation so the number in the file extension
+``.hdf5`` are excluded from the pattern generation so the number in the file extension
 does not prevent useful file groupings. 
 
 .. _file_open_fig:
