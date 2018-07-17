@@ -18,21 +18,22 @@ The role of expressions
 
 Database comparison is accomplished by creating new expressions that
 involve the contents of multiple databases using VisIt_'s expression
-language. Database comparisons use a special expressions called
+language. Database comparisons use special expressions called
 :ref:`Cross-Mesh Field Evaluation (CMFE) <Comparison_Expressions>`
 expressions, :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>` and
 :ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>`,
 which are capable of mapping a field from one mesh to another mesh
-using a mesh connectivity-based approach. The name "conn_cmfe" means
+The name "conn_cmfe" means
 *connectivity-based cross mesh field evaluation* (CMFE) and as the name
 implies, the expression takes fields from one mesh and maps the field onto
 another mesh by taking the cell or node-centered values on the donor mesh
 and mapping them onto the cells or nodes having the same indices in the
-new mesh. Mismatches in mesh sizes result in not all data values being
-used or, alternatively, VisIt_ can pad the remapped field with zeros. The
-conn_cmfe expression can be used to map fields from one database onto a
-mesh in another database, which then allows you to create expressions
-involving the active database.
+new mesh. For valid results, conn_cmfe requires the donar and target meshes
+be topologically congruent (e.g. size, connectivity, decomposition, etc.).
+If this is not the case, then one should use the position-based, pos_cmfe
+expression. The CMFE expressions can be used to map fields from a mesh in
+one database onto a mesh in the active database, which then allows you to
+create difference expressions involving the active database.
 
 There is also a position-based CMFE (*pos_cmfe*), which will resample the field
 from one mesh onto another mesh by calculating the values of the field on
@@ -40,6 +41,12 @@ the first mesh using the locations of the cells or nodes in a second mesh.
 More information on CMFE expressions are found in the
 :ref:`Cross-Mesh Field Evaluation (CMFE) <Comparison_Expressions>` section
 of the :ref:`Exprssions <Expressions>` chapter.
+
+Note that there is also a helpful *wizard*, the
+:ref:`Data Level Comparison Wizard <DataLevelComparisonsWizard>`, that
+simplifies the process of defining comparison expressions. Here, we
+describe the :ref:`CMFE <Comparison_Expressions>` expressions and
+demonstrate how to use them in comparisons.
 
 Plotting the difference between two databases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
