@@ -2443,6 +2443,7 @@ public class ViewerMethods
         GetViewerState().GetViewerRPC().SetBoolFlag(inVisItDir);
         GetViewerState().GetViewerRPC().SetProgramOptions(sources);
         GetViewerState().GetViewerRPC().SetStringArg1(hostname);
+        GetViewerState().GetViewerRPC().SetIntArg1(0);
         GetViewerState().GetViewerRPC().Notify();
         return Synchronize();
     }

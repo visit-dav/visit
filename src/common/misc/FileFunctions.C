@@ -1313,3 +1313,46 @@ FileFunctions::GetFileType(std::string const &filename, struct dirent const *den
 {
     return GetFileType(filename.c_str(), dent, statbuf);
 }
+
+// ****************************************************************************
+// Method: FileFunctions::ReadTextFile
+//
+// Purpose:
+//   Read an entire file into a std::string.
+//
+// Arguments:
+//   filename     : The name of the file to read.
+//   fileContents : The string that contains the file contents.
+//
+// Returns:    True if the file was read, false otherwise.
+//
+// Note:       We're reading as binary (we could do getlines to get EOLN
+//             conversion but that's not currently what we're doing).
+//
+// Programmer: Brad Whitlock
+// Creation:   Wed Jul 18 10:22:55 PDT 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+FileFunctions::ReadTextFile(const std::string &filename, std::string &fileContents)
+{
+    bool retval = false;
+    VisItStat_t s;
+    fileContents.clear();
+    if(VisItStat(filename, &s) == 0)
+    {
+        fileContents.resize(s.st_size);
+        FILE *f = fopen(filename.c_str(), "rb");
+        if(f != NULL)
+        {
+            fileContents.resize(s.st_size);
+            fread(&fileContents[0], 1, s.st_size, f);
+            fclose(f);
+            retval = true;
+        }
+    }
+    return retval;
+}

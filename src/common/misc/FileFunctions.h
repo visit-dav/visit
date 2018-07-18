@@ -153,6 +153,8 @@ FileType MISC_API GetFileType(char const *filename, struct dirent const *dent = 
          VisItStat_t *statbuf = 0);
 FileType MISC_API GetFileType(std::string const &filename, struct dirent const *dent = 0,
          VisItStat_t *statbuf = 0);
+
+bool ReadTextFile(const std::string &filename, std::string &fileContents);
 };
 
 #endif

@@ -429,6 +429,8 @@ public:
                                                bool inVisItDir,
                                                const stringVector &sources,
                                                const std::string &hostname);
+    void ImportEntireStateWithDifferentSourcesFromString(const std::string &s,
+                                               const stringVector &sources);
     void ReadHostProfilesFromDirectory(const std::string &dir, bool clear);
 
     void SetPlotSILRestriction();

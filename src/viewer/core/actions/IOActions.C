@@ -303,8 +303,8 @@ ExportDBAction::Execute()
 void
 ExportEntireStateAction::Execute()
 {
-    GetViewerStateManager()->SaveSession(args.GetVariable(), 
-                                         args.GetStringArg1());
+    GetViewerStateManager()->SaveSession(args.GetStringArg1(),
+                                         args.GetVariable());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -384,10 +384,10 @@ void
 ImportEntireStateAction::Execute()
 {
     stringVector empty;
-    GetViewerStateManager()->RestoreSession(args.GetVariable(),
+    GetViewerStateManager()->RestoreSession(args.GetStringArg1(),
+                                            args.GetVariable(),
                                             args.GetBoolFlag(),
-                                            empty,
-                                            args.GetStringArg1());
+                                            empty);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -404,16 +404,30 @@ ImportEntireStateAction::Execute()
 // Modifications:
 //    David Camp, Thu Aug 27 09:40:00 PDT 2015
 //    Added hostname to argument list.
-//   
+//
+//    Brad Whitlock, Tue Jul 17 17:06:38 PDT 2018
+//    Add support for passing in session file contents.
+//
 // ****************************************************************************
 
 void
 ImportEntireStateWithDifferentSourcesAction::Execute()
 {
-    GetViewerStateManager()->RestoreSession(args.GetVariable(),
-                                            args.GetBoolFlag(),
-                                            args.GetProgramOptions(),
-                                            args.GetStringArg1());
+    if(args.GetIntArg1() == 1)
+    {
+        // We have passed in the contents of the session file.
+        GetViewerStateManager()->RestoreSession(std::string("memory"),
+                                                args.GetVariable(),
+                                                args.GetProgramOptions());
+    }
+    else
+    {
+        // We need to actually read the session file.
+        GetViewerStateManager()->RestoreSession(args.GetStringArg1(),
+                                                args.GetVariable(),
+                                                args.GetBoolFlag(),
+                                                args.GetProgramOptions());
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

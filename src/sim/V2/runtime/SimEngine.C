@@ -705,6 +705,8 @@ SimEngine::ExportDatabase(const std::string &filename, const std::string &format
 // Creation:   Thu Sep 18 11:29:09 PDT 2014
 //
 // Modifications:
+//   Brad Whitlock, Tue Jul 17 16:37:46 PDT 2018
+//   Broadcast the session file contents if we can for batch.
 //
 // ****************************************************************************
 
@@ -721,9 +723,26 @@ SimEngine::RestoreSession(const std::string &filename)
 
         TRY
         {
-            std::string hostname;
-            GetViewerMethods()->
-                ImportEntireStateWithDifferentSources(filename, false, sources, hostname);
+            std::string sessionContents, hostname;
+            if(PAR_Rank() == 0)
+                FileFunctions::ReadTextFile(filename, sessionContents);
+            int s = static_cast<int>(sessionContents.size());
+            BroadcastInt(s);
+            if(s > 0)
+                BroadcastString(sessionContents, PAR_Rank());
+
+            if(sessionContents.empty())
+            {
+                GetViewerMethods()->
+                    ImportEntireStateWithDifferentSources(filename, false, sources, hostname);
+            }
+            else
+            {
+                // Load the session from the buffer.
+                GetViewerMethods()->
+                    ImportEntireStateWithDifferentSourcesFromString(sessionContents,
+                        sources);
+            }
             retval = true;
         }
         CATCHALL

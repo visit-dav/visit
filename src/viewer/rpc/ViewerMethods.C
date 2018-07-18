@@ -3944,6 +3944,39 @@ ViewerMethods::ImportEntireStateWithDifferentSources(const std::string &filename
     state->GetViewerRPC()->SetBoolFlag(inVisItDir);
     state->GetViewerRPC()->SetProgramOptions(sources);
     state->GetViewerRPC()->SetStringArg1(hostname);
+    state->GetViewerRPC()->SetIntArg1(0 /* filename contains a file name. */);
+    state->GetViewerRPC()->Notify();
+}
+
+// ****************************************************************************
+// Method: ViewerMethods::ImportEntireStateWithDifferentSourcesFromString
+//
+// Purpose: 
+//   Tells the viewer to set its entire state using the values stored in
+//   the named file. It uses the sources that are provided instead of the
+//   sources in the file.
+//
+// Arguments:
+//   buffer     : The session file contents.
+//   sources    : The list of sources to use.
+//
+// Programmer: Brad Whitlock
+// Creation:   Tue Jul 17 16:48:07 PDT 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+void
+ViewerMethods::ImportEntireStateWithDifferentSourcesFromString(
+    const std::string &s, 
+    const stringVector &sources)
+{
+    state->GetViewerRPC()->SetRPCType(ViewerRPC::ImportEntireStateWithDifferentSourcesRPC);
+    state->GetViewerRPC()->SetVariable(s);
+    state->GetViewerRPC()->SetBoolFlag(false);
+    state->GetViewerRPC()->SetProgramOptions(sources);
+    state->GetViewerRPC()->SetStringArg1("");
+    state->GetViewerRPC()->SetIntArg1(1 /* filename contains session file contents. */);
     state->GetViewerRPC()->Notify();
 }
 

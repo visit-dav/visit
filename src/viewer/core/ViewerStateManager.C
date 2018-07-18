@@ -80,6 +80,7 @@
 #include <View3DAttributes.h>
 #include <ViewerWindowManagerAttributes.h>
 #include <WindowInformation.h>
+#include <VisItException.h>
 
 #include <DataNode.h>
 #include <DebugStream.h>
@@ -98,6 +99,7 @@
 #endif
 
 #include <snprintf.h>
+#include <sstream>
 
 static void ReadHostProfileCallback(void *, const std::string&,bool,bool,long);
 static void CleanHostProfileCallback(void *, const std::string&,bool,bool,long);
@@ -606,7 +608,7 @@ ViewerStateManager::WriteConfigFile()
 // ****************************************************************************
 
 void
-ViewerStateManager::SaveSession(const std::string &filename, const std::string &hostname)
+ViewerStateManager::SaveSession(const std::string &hostname, const std::string &filename)
 {
     bool wroteSession;
 
@@ -764,10 +766,10 @@ ViewerStateManager::CreateNode(DataNode *parentNode, bool detailed)
 //   Restore a session file.
 //
 // Arguments:
+//   hostname   : Host name to load the session file from.
 //   filename   : The name of the session file.
 //   inVisItDir : Whether the file is in the .visit directory.
 //   sources    : A list of sources to use to override the sources in the file.
-//   hostname   : Host name to load the session file from.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Aug 28 22:49:28 PDT 2014
@@ -776,11 +778,15 @@ ViewerStateManager::CreateNode(DataNode *parentNode, bool detailed)
 //    David Camp, Thu Aug 27 09:40:00 PDT 2015
 //    Added hostname to be able to load session from remote hosts.
 //
+//    Brad Whitlock, Wed Jul 18 10:43:39 PDT 2018
+//    Read the file and pass its contents to the other RestoreSession method.
+//
 // ****************************************************************************
 
 void
-ViewerStateManager::RestoreSession(const std::string &filename, 
-    bool inVisItDir, const stringVector &sources, const std::string &hostname)
+ViewerStateManager::RestoreSession(const std::string &hostname, 
+    const std::string &filename, 
+    bool inVisItDir, const stringVector &sources)
 {
     // If we're importing a session, delete the localSettings in case the
     // DelayedProcessSettings method has not fired yet. This affects session
@@ -799,23 +805,86 @@ ViewerStateManager::RestoreSession(const std::string &filename,
                 filename;
     }
 
-    // Read the config file.
-    DataNode *node = NULL;
-    if(hostname.empty() || hostname == "localhost")
+    // Read the session file into a string.
+    bool err = false;
+    std::string sessionContents;
+    TRY
     {
-        node = configMgr->ReadConfigFile(file2.c_str());
+        if(hostname.empty() || hostname == "localhost")
+        {
+            err = !FileFunctions::ReadTextFile(file2, sessionContents);
+        }
+        else
+        {
+            // Load a session file from the remote host.
+            GetViewerFileServer()->RestoreSession(hostname, filename, sessionContents);
+        }
+    }
+    CATCHALL
+    {
+        err = true;
+    }
+    ENDTRY
+
+    if(err)
+    {
+        ViewerText str;
+        if(inVisItDir)
+        {
+            str = TR("VisIt could not locate the session file: %1.").arg(filename);
+            str += TR(" VisIt looks for session files in %1 by default.").
+                       arg(GetUserVisItDirectory());
+        }
+        else
+            str = TR("VisIt could not locate the session file: %1.").arg(file2);
+
+        str += TR(" Check that you provided the correct session "
+                  "file name or try including the entire path to the "
+                  "session file.");
+        GetViewerMessaging()->Error(str);
     }
     else
     {
-        // Load a session file from the remote host.
-        std::istringstream sessionViewer;
-        std::string sessionViewerFile;
-
-        GetViewerFileServer()->RestoreSession(hostname, filename, sessionViewerFile);
-        sessionViewer.str(sessionViewerFile);
-
-        node = configMgr->ReadConfigFile(sessionViewer);
+        // We have some session contents. Try and process it.
+        RestoreSession(file2, sessionContents, sources);
     }
+}
+
+// ****************************************************************************
+// Method: ViewerStateManager::RestoreSession
+//
+// Purpose:
+//   Restore a session file.
+//
+// Arguments:
+//   filename        : The file name (if any) that provided the contents.
+//   sessionContents : The contents of a session file.
+//   sources         : A list of sources to use to override the sources in the file.
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Aug 28 22:49:28 PDT 2014
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerStateManager::RestoreSession(const std::string &filename,
+    const std::string &sessionContents, const stringVector &sources)
+{
+    // If we're importing a session, delete the localSettings in case the
+    // DelayedProcessSettings method has not fired yet. This affects session
+    // loading via the -sessionfile command line argument.
+    if(localSettings != 0)
+    {
+        delete localSettings;
+        localSettings = 0;
+    }
+
+    // Restore from the session file contents.
+    std::istringstream session;
+    session.str(sessionContents);
+    DataNode *node = configMgr->ReadConfigFile(session);
     if(node != NULL)
     {
         // Make the hooked up objects get their settings.
@@ -874,26 +943,12 @@ ViewerStateManager::RestoreSession(const std::string &filename,
                     // For state objects that changed, notify any observers.
                     configMgr->NotifyIfSelected();
                 }
-
-                return;
             }
         }
-    }
 
-    ViewerText str;
-    if(inVisItDir)
-    {
-        str = TR("VisIt could not locate the session file: %1.").arg(filename);
-        str += TR(" VisIt looks for session files in %1 by default.").
-            arg(GetUserVisItDirectory());
+        // Delete the session file node that we read.
+        delete node;
     }
-    else
-        str = TR("VisIt could not locate the session file: %1.").arg(file2);
-
-    str += TR(" Check that you provided the correct session "
-           "file name or try including the entire path to the "
-           "session file.");
-    GetViewerMessaging()->Error(str);
 }
 
 // ****************************************************************************

@@ -72,6 +72,9 @@ class MeshManagementAttributes;
 //    Added hostname to the SaveSession and RestoreSession functions, to add
 //    the remote save and load functionality.
 //
+//    Brad Whitlock, Tue Jul 17 17:08:30 PDT 2018
+//    Add override for RestoreSession.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerStateManager : public ViewerBase
@@ -96,9 +99,12 @@ public:
     void WriteConfigFile();
 
     // For sessions.
-    void SaveSession(const std::string &filename, const std::string &hostname);
-    void RestoreSession(const std::string &filename, bool inVisItDir, 
-                        const stringVector &sources, const std::string &hostname);
+    void SaveSession(const std::string &hostname, const std::string &filename);
+    void RestoreSession(const std::string &hostname, const std::string &filename,
+                        bool inVisItDir, const stringVector &sources);
+    void RestoreSession(const std::string &filename,
+                        const std::string &buffer, 
+                        const stringVector &sources);
 
     // For user-defined host profiles
     void ReadHostProfiles();
