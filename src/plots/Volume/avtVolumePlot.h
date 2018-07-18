@@ -169,7 +169,6 @@ avtVolumePlot : public avtVolumeDataPlot
     virtual avtContract_p    EnhanceSpecification(avtContract_p);
 };
 
-
 #endif
 
 

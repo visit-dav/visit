@@ -183,7 +183,7 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
     SNPRINTF(tmpStr, 1000, "%ssamplesPerRay = %d\n", prefix, atts->GetSamplesPerRay());
     str += tmpStr;
     const char *rendererType_names = "Splatting, Texture3D, RayCasting, RayCastingIntegration, SLIVR, "
-        "RayCastingSLIVR, Tuvok";
+        "RayCastingSLIVR, RayCastingOSPRay, Tuvok";
     switch (atts->GetRendererType())
     {
       case VolumeAttributes::Splatting:
@@ -208,6 +208,10 @@ PyVolumeAttributes_ToString(const VolumeAttributes *atts, const char *prefix)
           break;
       case VolumeAttributes::RayCastingSLIVR:
           SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingSLIVR  # %s\n", prefix, prefix, rendererType_names);
+          str += tmpStr;
+          break;
+      case VolumeAttributes::RayCastingOSPRay:
+          SNPRINTF(tmpStr, 1000, "%srendererType = %sRayCastingOSPRay  # %s\n", prefix, prefix, rendererType_names);
           str += tmpStr;
           break;
       case VolumeAttributes::Tuvok:
@@ -988,15 +992,15 @@ VolumeAttributes_SetRendererType(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the rendererType in the object.
-    if(ival >= 0 && ival < 7)
+    if(ival >= 0 && ival < 8)
         obj->data->SetRendererType(VolumeAttributes::Renderer(ival));
     else
     {
         fprintf(stderr, "An invalid rendererType value was given. "
-                        "Valid values are in the range of [0,6]. "
+                        "Valid values are in the range of [0,7]. "
                         "You can also use the following names: "
                         "Splatting, Texture3D, RayCasting, RayCastingIntegration, SLIVR, "
-                        "RayCastingSLIVR, Tuvok.");
+                        "RayCastingSLIVR, RayCastingOSPRay, Tuvok.");
         return NULL;
     }
 
@@ -1662,6 +1666,8 @@ PyVolumeAttributes_getattr(PyObject *self, char *name)
         return PyInt_FromLong(long(VolumeAttributes::SLIVR));
     if(strcmp(name, "RayCastingSLIVR") == 0)
         return PyInt_FromLong(long(VolumeAttributes::RayCastingSLIVR));
+    if(strcmp(name, "RayCastingOSPRay") == 0)
+        return PyInt_FromLong(long(VolumeAttributes::RayCastingOSPRay));
     if(strcmp(name, "Tuvok") == 0)
         return PyInt_FromLong(long(VolumeAttributes::Tuvok));
 

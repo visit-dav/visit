@@ -54,7 +54,7 @@ struct RGBA
     float         A;
 };
 
-struct _RGBA
+struct RGBAF
 {
     float R;
     float G;
@@ -96,9 +96,11 @@ class PIPELINE_API avtOpacityMap
     virtual                     ~avtOpacityMap();
 
     const RGBA                  *GetTable(void) { return table; };
+    const RGBAF                 *GetTableFloat(void) { return transferFn1D; };
     void                         SetTable(unsigned char *, int, double = 1.);
     void                         SetTable(unsigned char *arr, int te, double attenuation, float over);
     void                         SetTableFloat(unsigned char *arr, int te, double attenuation, float over);
+    void                         SetTableFloatNOC(unsigned char *arr, int te, double attenuation);
     void                         SetTable(RGBA *, int, double = 1.);
     const RGBA                  &GetOpacity(double);
 
@@ -122,7 +124,7 @@ class PIPELINE_API avtOpacityMap
 
   protected:
     RGBA                        *table;
-    _RGBA                       *transferFn1D;
+    RGBAF                       *transferFn1D;
     int                          tableEntries;
 
     double                       max, min;
@@ -239,7 +241,7 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4])
     if (scalarValue <= min){
         int index = 0;
 
-        _RGBA colorRGBA = transferFn1D[index];
+        RGBAF colorRGBA = transferFn1D[index];
         color[0] = colorRGBA.R;
         color[1] = colorRGBA.G;
         color[2] = colorRGBA.B;
@@ -250,7 +252,7 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4])
 
     if (scalarValue >= max){
         int index = tableEntries-1;
-        _RGBA colorRGBA = transferFn1D[index];
+        RGBAF colorRGBA = transferFn1D[index];
         color[0] = colorRGBA.R;
         color[1] = colorRGBA.G;
         color[2] = colorRGBA.B;
@@ -260,7 +262,7 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4])
     }
 
     int indexLow, indexHigh;
-    _RGBA colorRGBALow, colorRGBAHigh;
+    RGBAF colorRGBALow, colorRGBAHigh;
     double colorLow[4], colorHigh[4];
     float indexPos, indexDiff;
 

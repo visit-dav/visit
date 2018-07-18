@@ -46,8 +46,9 @@
 #include <avtDatasetToDatasetFilter.h>
 
 #include <VolumeAttributes.h>
-
 #include <avtImage.h>
+#include <avtSLIVROSPRayFilter.h> // ospray integration
+
 #include <vtkMatrix4x4.h>
 #include <vtkCamera.h>
 
@@ -90,7 +91,8 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
                                   { return "Volume rendering"; };
 
     avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
-    avtImage_p               RenderImageRaycastingSLIVR(avtImage_p opaque_image, const WindowAttributes &);
+    avtImage_p               RenderImageRaycastingSLIVR(avtImage_p opaque_image, 
+                                                        const WindowAttributes &);
     int                      GetNumberOfStages(const WindowAttributes &);
 
   protected:
@@ -101,9 +103,9 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
     virtual avtContract_p    ModifyContract(avtContract_p);
     virtual void             VerifyInput(void);
     virtual bool             FilterUnderstandsTransformedRectMesh();
+
+    // ospray integration
+    OSPVisItContext *ospray;
 };
 
-
 #endif
-
-

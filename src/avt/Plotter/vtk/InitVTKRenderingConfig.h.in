@@ -1,2 +1,2 @@
 #cmakedefine VISIT_MANTA
-#cmakedefine VISIT_OSPRAY
+//#cmakedefine VISIT_OSPRAY

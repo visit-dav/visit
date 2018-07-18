@@ -63,6 +63,7 @@
 #include <avtSourceFromAVTDataset.h>
 #include <avtView3D.h>
 #include <avtViewInfo.h>
+#include <avtMemory.h>
 
 #include <DebugStream.h>
 #include <InvalidDimensionsException.h>
@@ -96,11 +97,15 @@ static void CreateViewInfoFromViewAttributes(avtViewInfo &,
 //    Hank Childs, Wed Nov 24 16:23:41 PST 2004
 //    Removed references to data members that have been moved.
 //
+//    Qi WU, Wed Jun 20 2018
+//    Add support for ospray volume rendering
+//
 // ****************************************************************************
 
 avtVolumeFilter::avtVolumeFilter()
 {
     primaryVariable = NULL;
+    ospray = NULL;
 }
 
 
@@ -115,6 +120,9 @@ avtVolumeFilter::avtVolumeFilter()
 //    Hank Childs, Wed Nov 24 16:23:41 PST 2004
 //    Removed references to data members that have been moved.
 //
+//    Qi WU, Wed Jun 20 2018
+//    Add support for ospray volume rendering
+//
 // ****************************************************************************
 
 avtVolumeFilter::~avtVolumeFilter()
@@ -123,6 +131,9 @@ avtVolumeFilter::~avtVolumeFilter()
     {
         delete [] primaryVariable;
         primaryVariable = NULL;
+    }
+    if (ospray != NULL) {
+        delete ospray;
     }
 }
 
@@ -362,6 +373,9 @@ avtVolumeFilter::Execute(void)
 //    We don't use lighting in the raycasting integration case.
 //    Make sure we don't require the gradient calc.
 //
+//    Qi WU, Wed Jun 20 2018
+//    Add support for ospray volume rendering
+//
 // ****************************************************************************
 extern bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth);
 
@@ -379,19 +393,35 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     //
     // Set up the volume renderer.
     //
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay) {
+        avtCallback::SetOSPRayMode(true);
+        debug1 << "running with OSPRay backend" << std::endl;
+    } else {
+        avtCallback::SetOSPRayMode(false);
+        debug1 << "running with CPU Raycasting backend" << std::endl;
+    }
     avtRayTracer *software = new avtRayTracer;
     software->SetRayCastingSLIVR(true);
     software->SetTrilinear(false);
     software->SetInput(termsrc.GetOutput());
     software->InsertOpaqueImage(opaque_image);
-
+    if (avtCallback::UseOSPRay()) 
+    {
+        if (ospray == NULL) { ospray = new OSPVisItContext(); }
+        software->SetOSPRay(ospray);
+    }
     //
     // Set up the transfer function
     //
     unsigned char vtf[4*256];
     atts.GetTransferFunction(vtf);
     avtOpacityMap om(256);
-    om.SetTableFloat(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
+    // remove alpha correction when using ospray (because ospray will handle that also)
+    if (avtCallback::UseOSPRay()) {
+        om.SetTableFloatNOC(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0); // no alpha correction
+    } else {
+        om.SetTableFloat(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
+    }
 
     double actualRange[2];
     bool artificialMin = atts.GetUseColorVarMin();
@@ -441,9 +471,8 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     avtCompositeRF *compositeRF = new avtCompositeRF(lm, &om, &om);
     software->SetTransferFn(&om);
 
-    debug5 << "Min visible scalar range:" << om.GetMinVisibleScalar() << "  Max visible scalar range: "  <<  om.GetMaxVisibleScalar() << std::endl;
-
-
+    debug5 << "Min visible scalar range: " << om.GetMinVisibleScalar() << " "
+           << "Max visible scalar range: " << om.GetMaxVisibleScalar() << std::endl;
 
     //
     // Determine which variables to use and tell the ray function.
@@ -523,10 +552,10 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     //
     software->SetRayFunction(compositeRF);
     software->SetSamplesPerRay(atts.GetSamplesPerRay());
+    software->SetRendererSampleRate(atts.GetRendererSamples());
 
-    debug5 << "Sampling rate: "  << atts.GetRendererSamples() << std::endl;
-
-
+    debug5 << "Sampling rate: (GetSamplesPerRay)   " << atts.GetSamplesPerRay() << std::endl;
+    debug5 << "Sampling rate: (GetRendererSamples) " << atts.GetRendererSamples() << std::endl;
 
     //
     // Set camera parameters
@@ -632,7 +661,8 @@ avtImage_p
 avtVolumeFilter::RenderImage(avtImage_p opaque_image,
                              const WindowAttributes &window)
 {
-    if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR){
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
+        atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay) {
         return RenderImageRaycastingSLIVR(opaque_image,window);
     }
 
@@ -1188,6 +1218,9 @@ CreateViewInfoFromViewAttributes(avtViewInfo &vi, const View3DAttributes &view)
 //    Modify how expressions are setup, to prevent multiple expressions
 //    with the same name being added to the ExpressionList.
 //
+//    Qi WU, Wed Jun 20 2018
+//    Add support for ospray volume rendering
+//
 // ****************************************************************************
 
 avtContract_p
@@ -1210,9 +1243,13 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     if (atts.GetScaling() == VolumeAttributes::Linear)
     {
 #ifdef HAVE_LIBSLIVR
-        if ((atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR) ||
-            ((atts.GetRendererType() == VolumeAttributes::RayCasting) && (atts.GetSampling() == VolumeAttributes::Trilinear)))
+        if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
+            atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay) {
             ds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        } else if ((atts.GetRendererType() == VolumeAttributes::RayCasting) && 
+                   (atts.GetSampling() == VolumeAttributes::Trilinear)) {           
+            ds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        }
 #endif
         newcontract = new avtContract(contract, ds);
         primaryVariable = new char[strlen(var)+1];
@@ -1235,9 +1272,13 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
                                ds->GetTimestep(), ds->GetRestriction());
         nds->AddSecondaryVariable(var);
 #ifdef HAVE_LIBSLIVR
-        if ((atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR) ||
-            ((atts.GetRendererType() == VolumeAttributes::RayCasting) && (atts.GetSampling() == VolumeAttributes::Trilinear)))
+        if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
+            atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay) {
             nds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        } else if ((atts.GetRendererType() == VolumeAttributes::RayCasting) && 
+                   (atts.GetSampling() == VolumeAttributes::Trilinear)) {           
+            nds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        }
 #endif
         newcontract = new avtContract(contract, nds);
         primaryVariable = new char[exprName.size()+1];
@@ -1253,9 +1294,13 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
                                ds->GetTimestep(), ds->GetRestriction());
         nds->AddSecondaryVariable(var);
 #ifdef HAVE_LIBSLIVR
-        if ((atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR) ||
-            ((atts.GetRendererType() == VolumeAttributes::RayCasting) && (atts.GetSampling() == VolumeAttributes::Trilinear)))
+        if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
+            atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay) {
             nds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        } else if ((atts.GetRendererType() == VolumeAttributes::RayCasting) && 
+                   (atts.GetSampling() == VolumeAttributes::Trilinear)) {
+            nds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
+        }
 #endif
         newcontract = new avtContract(contract, nds);
         primaryVariable = new char[strlen(exprName.c_str())+1];
@@ -1331,4 +1376,3 @@ avtVolumeFilter::FilterUnderstandsTransformedRectMesh()
     // these kinds of grids, so we can now safely return true.
     return true;
 }
-

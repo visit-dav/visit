@@ -1314,6 +1314,22 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         sobelButton->setEnabled(false);
         break;
 
+    case VolumeAttributes::RayCastingOSPRay:
+        EnableSLIVRGroup();
+        resampleGroup->setEnabled(false);
+        raycastingGroup->setVisible(false);
+        UpdateLowGradientGroup(false);
+        materialProperties->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingOSPRay);
+        EnableSamplingMethods(true);
+        samplesPerRayWidget->setEnabled(volumeAtts->GetRendererType()!=VolumeAttributes::RayCastingOSPRay);
+        rendererSamplesWidget->setEnabled(volumeAtts->GetRendererType()==VolumeAttributes::RayCastingOSPRay);
+        rendererSamplesSLIVRLabel->setEnabled(true);
+        rendererSamplesSLIVR->setEnabled(true);
+        centeredDiffButton->setEnabled(true);
+        centeredDiffButton->setChecked(true);
+        sobelButton->setEnabled(false);
+        break;
+
     default:
         EXCEPTION1(ImproperUseException, "No such renderer type.");
     }        
@@ -1357,6 +1373,9 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 #ifdef HAVE_LIBSLIVR
     rendererTypesComboBox->addItem(tr("SLIVR"));
     rendererTypesComboBox->addItem(tr("Ray casting: SLIVR"));
+#ifdef VISIT_OSPRAY
+    rendererTypesComboBox->addItem(tr("Ray casting: OSPRay"));
+#endif
 #endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
@@ -1921,6 +1940,12 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
                 int idx=std::max(1,rendererTypesComboBox->findText("Ray casting: SLIVR"));
                 rendererTypesComboBox->setCurrentIndex(idx);
             }
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingOSPRay)
+            {
+                int idx=std::max(1,rendererTypesComboBox->findText("Ray casting: OSPRay"));
+                rendererTypesComboBox->setCurrentIndex(idx);
+            }
+
 
 
             // Just for now, disable the opacity variable if we are using the
@@ -3790,6 +3815,7 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
       case 4:
       case 5:
       case 6:
+      case 7:
       {
           if (rendererTypesComboBox->findText("Tuvok") == val)
               volumeAtts->SetRendererType(VolumeAttributes::Tuvok);
@@ -3797,6 +3823,9 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
               volumeAtts->SetRendererType(VolumeAttributes::SLIVR);
           else if (rendererTypesComboBox->findText("Ray casting: SLIVR") == val)
               volumeAtts->SetRendererType(VolumeAttributes::RayCastingSLIVR);
+          else if (rendererTypesComboBox->findText("Ray casting: OSPRay") == val)
+              volumeAtts->SetRendererType(VolumeAttributes::RayCastingOSPRay);
+
           break;
       }
       default:

@@ -71,6 +71,7 @@ public:
         RayCastingIntegration,
         SLIVR,
         RayCastingSLIVR,
+        RayCastingOSPRay,
         Tuvok
     };
     enum GradientType

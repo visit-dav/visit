@@ -72,7 +72,8 @@ public class VolumeAttributes extends AttributeSubject implements Plugin
     public final static int RENDERER_RAYCASTINGINTEGRATION = 3;
     public final static int RENDERER_SLIVR = 4;
     public final static int RENDERER_RAYCASTINGSLIVR = 5;
-    public final static int RENDERER_TUVOK = 6;
+    public final static int RENDERER_RAYCASTINGOSPRAY = 6;
+    public final static int RENDERER_TUVOK = 7;
 
     public final static int GRADIENTTYPE_CENTEREDDIFFERENCES = 0;
     public final static int GRADIENTTYPE_SOBELOPERATOR = 1;

@@ -61,11 +61,11 @@
 #
 #****************************************************************************/
 
-if(VISIT_OSPRAY)
-   SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
-       ${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay/CMake)
-   FIND_PACKAGE(OSPRay REQUIRED)
-endif()
+# if(VISIT_OSPRAY)
+#    SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
+#        ${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay/CMake)
+#    FIND_PACKAGE(OSPRay REQUIRED)
+# endif()
 
 SET(VISIT_VTK_MANTA_SOURCES
 Manta/vtkMantaPolyDataMapper.C 
@@ -81,22 +81,22 @@ Manta/vtkMantaManager.C
 Manta/vtkMantaCubeAxesActor.C
 )
 
-SET(VISIT_VTK_OSPRAY_SOURCES
-    OSPRay/vtkOSPRay/vtkOSPRay.h
-    OSPRay/vtkOSPRay/vtkOSPRayActor.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayCamera.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayLight.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayManager.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.h
-    OSPRay/vtkOSPRay/vtkOSPRayPolyDataMapper.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayProperty.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayRenderer.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayTexture.cxx
-    OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.h
-    OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.cxx
-    OSPRay/vtkOSPRayModule.h
-)
+# SET(VISIT_VTK_OSPRAY_SOURCES
+#     OSPRay/vtkOSPRay/vtkOSPRay.h
+#     OSPRay/vtkOSPRay/vtkOSPRayActor.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayCamera.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayLight.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayManager.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.h
+#     OSPRay/vtkOSPRay/vtkOSPRayPolyDataMapper.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayProperty.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayRenderer.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayTexture.cxx
+#     OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.h
+#     OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.cxx
+#     OSPRay/vtkOSPRayModule.h
+# )
 
 # create configuration file to pass off cmake options
 CONFIGURE_FILE(
@@ -187,11 +187,11 @@ IF(VISIT_MANTA)
   SET(AVTPLOTTER_SOURCES ${AVTPLOTTER_SOURCES} ${VISIT_VTK_MANTA_SOURCES} )
 ENDIF(VISIT_MANTA)
 
-IF(VISIT_OSPRAY)
-    SET(AVTPLOTTER_SOURCES ${AVTPLOTTER_SOURCES} ${VISIT_VTK_OSPRAY_SOURCES} )
-    SET(VTK_INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
-        ${VISIT_SOURCE_DIR}/../../VTK-6.1.0/Rendering/Volume)
-ENDIF(VISIT_OSPRAY)
+# IF(VISIT_OSPRAY)
+#   SET(AVTPLOTTER_SOURCES ${AVTPLOTTER_SOURCES} ${VISIT_VTK_OSPRAY_SOURCES})
+#   SET(VTK_INCLUDE_DIRS ${VTK_INCLUDE_DIRS}
+#       ${VISIT_SOURCE_DIR}/../../VTK-6.1.0/Rendering/Volume)
+# ENDIF(VISIT_OSPRAY)
 
 INCLUDE_DIRECTORIES(
 ${VISIT_COMMON_INCLUDES}
@@ -209,8 +209,8 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/avt/Plotter/Manta
-${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay
-${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay/vtkOSPRay
+# ${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay
+# ${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay/vtkOSPRay
 ${VISIT_SOURCE_DIR}/avt/View
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
@@ -235,14 +235,16 @@ ADD_TARGET_DEFINITIONS(avtplotter_ser "${VTK_DEFINITIONS}")
 IF(VISIT_MANTA)
   TARGET_LINK_LIBRARIES(avtplotter_ser ${MANTA_TARGET_LINK_LIBRARIES})
 ENDIF(VISIT_MANTA)
-IF(VISIT_OSPRAY)
-    MESSAGE(STATUS "OSPRAY_TARGET_LINK_LIBRARIES: " ${OSPRAY_TARGET_LINK_LIBRARIES})
-    MESSAGE(STATUS "OSPRAY_LIBRARIES: " ${OSPRAY_LIBRARIES})
-    MESSAGE(STATUS "OSPRAY_INCLUDE_DIRS: " ${OSPRAY_INCLUDE_DIRS})
-    TARGET_LINK_LIBRARIES(avtplotter_ser ${OSPRAY_TARGET_LINK_LIBRARIES}
-        ${OSPRAY_LIBRARIES} ${VTK_LIBRARIES})
-    INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS} ${VISIT_SOURCE_DIR}/../../VTK-6.1.0/Parallel/Core)
-ENDIF(VISIT_OSPRAY)
+# IF(VISIT_OSPRAY)
+#     # MESSAGE(STATUS "OSPRAY_TARGET_LINK_LIBRARIES: " ${OSPRAY_TARGET_LINK_LIBRARIES})
+#     # MESSAGE(STATUS "OSPRAY_LIBRARIES: " ${OSPRAY_LIBRARIES})
+#     # MESSAGE(STATUS "OSPRAY_INCLUDE_DIRS: " ${OSPRAY_INCLUDE_DIRS})
+#     # TARGET_LINK_LIBRARIES(avtplotter_ser ${OSPRAY_TARGET_LINK_LIBRARIES}
+#     #     ${OSPRAY_LIBRARIES} ${VTK_LIBRARIES})
+#     # INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS} ${VISIT_SOURCE_DIR}/../../VTK-6.1.0/Parallel/Core)
+#     TARGET_LINK_LIBRARIES(avtplotter_ser ${OSPRAY_LIBRARIES})
+#     INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIR})
+# ENDIF(VISIT_OSPRAY)
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
 #********************************* PARALLEL **********************************
@@ -262,10 +264,10 @@ IF(VISIT_PARALLEL)
       #  LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
       #ENDIF(ICET_FOUND)
     ENDIF(VISIT_MANTA)
-    IF(VISIT_OSPRAY)
-        TARGET_LINK_LIBRARIES(avtplotter_par ${OSPRAY_TARGET_LINK_LIBRARIES}
-            ${OSPRAY_LIBRARIES})
-    ENDIF(VISIT_OSPRAY)
+    # IF(VISIT_OSPRAY)
+    #     TARGET_LINK_LIBRARIES(avtplotter_par ${OSPRAY_LIBRARIES})
+    # 	INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIR})
+    # ENDIF(VISIT_OSPRAY)
 
     VISIT_INSTALL_TARGETS(avtplotter_par)
 ENDIF(VISIT_PARALLEL)

@@ -48,7 +48,9 @@
 
 static const char *Renderer_strings[] = {
 "Splatting", "Texture3D", "RayCasting", 
-"RayCastingIntegration", "SLIVR", "RayCastingSLIVR", 
+"RayCastingIntegration", "SLIVR", 
+"RayCastingSLIVR", 
+"RayCastingOSPRay", 
 "Tuvok"};
 
 std::string
@@ -2546,6 +2548,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
 
     if (rendererType == VolumeAttributes::RayCasting ||
         rendererType == VolumeAttributes::RayCastingSLIVR || 
+        rendererType == VolumeAttributes::RayCastingOSPRay || 
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
@@ -2574,6 +2577,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // modes does not require a reexecute.
         if(obj.rendererType == VolumeAttributes::RayCasting ||
            obj.rendererType == VolumeAttributes::RayCastingSLIVR || 
+           obj.rendererType == VolumeAttributes::RayCastingOSPRay || 
            obj.rendererType == VolumeAttributes::RayCastingIntegration)
         {
             return true;
