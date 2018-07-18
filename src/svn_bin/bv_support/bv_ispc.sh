@@ -45,13 +45,14 @@ function bv_ispc_info
     if [[ "$OPSYS" == "Darwin" ]] ; then
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-osx.tar.gz"}
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/osx/"}
+        export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-osx
     else
         export ISPC_FILE=${ISPC_FILE:-"ispc-v${ISPC_VERSION}-linux.tar.gz"}
         export ISPC_URL=${ISPC_URL:-"http://sdvis.org/ospray/download/dependencies/linux/"}
+        export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-linux
     fi
     export ISPC_COMPATIBILITY_VERSION=${ISPC_COMPATIBILITY_VERSION:-"${ISPC_VERSION}"}
     export ISPC_BUILD_DIR=${ISPC_BUILD_DIR:-"${ISPC_VERSION}"}
-    export ISPC_INSTALL_DIR_NAME=ispc-v$ISPC_VERSION-linux
     export ISPC_MD5_CHECKSUM=""
     export ISPC_SHA256_CHECKSUM=""
 }
@@ -115,10 +116,9 @@ function build_ispc
 {
     # Unzip the ISPC tarball and copy it to the VisIt installation.
     info "Installing prebuilt ISPC"    
-    tar zxvf $ISPC_FILE
-    mkdir -p $VISITDIR/ispc/$ISPC_VERSION/$VISITARCH
-    cp -R $ISPC_INSTALL_DIR_NAME/* "$VISITDIR/ispc/$ISPC_VERSION/$VISITARCH"
-    rm -rf $ISPC_INSTALL_DIR_NAME
+    tar zxvf $ISPC_FILE || error "Can't untar Embree."
+    mkdir -p $VISITDIR/ispc/$ISPC_VERSION/$VISITARCH || error "Can't make Embree install dir."
+    cp -R $ISPC_INSTALL_DIR_NAME/* $VISITDIR/ispc/$ISPC_VERSION/$VISITARCH || error "Can't copy to Embree install dir."
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/ispc/$ISPC_VERSION/$VISITARCH"
         chgrp -R ${GROUP} "$VISITDIR/ispc/$ISPC_VERSION/$VISITARCH"
@@ -164,4 +164,3 @@ function bv_ispc_build
         fi
     fi
 }
-

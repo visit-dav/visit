@@ -44,13 +44,14 @@ function bv_embree_info
     export EMBREE_VERSION=${EMBREE_VERSION:-"2.16.5"}
     if [[ "$OPSYS" == "Darwin" ]] ; then
         export EMBREE_FILE=${EMBREE_FILE:-"embree-${EMBREE_VERSION}.x86_64.macosx.tar.gz"}
+        export EMBREE_INSTALL_DIR_NAME=embree-$EMBREE_VERSION.x86_64.macosx
     else
         export EMBREE_FILE=${EMBREE_FILE:-"embree-${EMBREE_VERSION}.x86_64.linux.tar.gz"}
+        export EMBREE_INSTALL_DIR_NAME=embree-$EMBREE_VERSION.x86_64.linux
     fi
     export EMBREE_COMPATIBILITY_VERSION=${EMBREE_COMPATIBILITY_VERSION:-"${EMBREE_VERSION}"}
     export EMBREE_BUILD_DIR=${EMBREE_BUILD_DIR:-"${EMBREE_VERSION}"}
     export EMBREE_URL=${EMBREE_URL:-"https://github.com/embree/embree/releases/download/v${EMBREE_VERSION}/"}
-    export EMBREE_INSTALL_DIR_NAME=embree-$EMBREE_VERSION.x86_64.linux
     export EMBREE_MD5_CHECKSUM=""
     export EMBREE_SHA256_CHECKSUM=""
 }
@@ -118,12 +119,16 @@ function build_embree
 {
     # Unzip the EMBREE tarball and copy it to the VisIt installation.
     info "Installing prebuilt embree"    
-    tar zxvf $EMBREE_FILE
-    rm $EMBREE_INSTALL_DIR_NAME/lib/libtbbmalloc.so.2
-    rm $EMBREE_INSTALL_DIR_NAME/lib/libtbb.so.2
-    mkdir -p $VISITDIR/embree/$EMBREE_VERSION/$VISITARCH
-    cp -R $EMBREE_INSTALL_DIR_NAME/* "$VISITDIR/embree/$EMBREE_VERSION/$VISITARCH"
-    rm -rf $EMBREE_INSTALL_DIR_NAME
+    tar zxf $EMBREE_FILE || error "Can't untar Embree."
+
+    # Remove the tbb from the linux dir as it will be installed locally.
+    if [[ "$OPSYS" == "Linux" ]] ; then
+        rm $EMBREE_INSTALL_DIR_NAME/lib/libtbbmalloc.so.2
+        rm $EMBREE_INSTALL_DIR_NAME/lib/libtbb.so.2
+    fi
+    
+    mkdir -p $VISITDIR/embree/$EMBREE_VERSION/$VISITARCH || error "Can't make Embree install dir."
+    cp -R $EMBREE_INSTALL_DIR_NAME/* $VISITDIR/embree/$EMBREE_VERSION/$VISITARCH || error "Can't copy to Embree install dir."
     if [[ "$DO_GROUP" == "yes" ]] ; then
         chmod -R ug+w,a+rX "$VISITDIR/embree/$EMBREE_VERSION/$VISITARCH"
         chgrp -R ${GROUP} "$VISITDIR/embree/$EMBREE_VERSION/$VISITARCH"
@@ -169,4 +174,3 @@ function bv_embree_build
         fi
     fi
 }
-
