@@ -20,6 +20,7 @@
             <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="eavl"/>
+            <lib name="embree"/>
             <lib name="fastbit"/>
             <lib name="fastquery"/>
             <lib name="gdal"/>
@@ -28,6 +29,7 @@
             <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
+            <lib name="ispc"/>
             <lib name="llvm"/>
             <lib name="manta"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
@@ -42,10 +44,12 @@
             <lib name="pidx"/>
             <lib name="openssl"/>
             <lib name="openswr"/>
+            <lib name="ospray"/>
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
             <lib name="tcmalloc"/>
+            <lib name="tbb"/>
             <lib name="uintah"/>
             <lib name="visus"/>
             <lib name="vtkm"/>
