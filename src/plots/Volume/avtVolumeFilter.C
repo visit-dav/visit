@@ -79,6 +79,13 @@
 #include <avtSLIVRRayTracer.h>
 #endif
 
+#ifdef VISIT_OSPRAY
+# define VISIT_OSPRAY_CONTEXT_ONLY /*dont have to include helper funcitons*/
+# include <avtOSPRayCommon.h>
+# undef VISIT_OSPRAY_CONTEXT_ONLY
+# include <avtOSPRayRayTracer.h>
+#endif
+
 //
 // Function Prototypes
 //
@@ -103,6 +110,9 @@ static void CreateViewInfoFromViewAttributes(avtViewInfo &,
 avtVolumeFilter::avtVolumeFilter()
 {
     primaryVariable = NULL;
+#ifdef VISIT_OSPRAY
+    ospray = NULL;
+#endif
 }
 
 
@@ -126,6 +136,11 @@ avtVolumeFilter::~avtVolumeFilter()
         delete [] primaryVariable;
         primaryVariable = NULL;
     }
+#ifdef VISIT_OSPRAY
+    if (ospray != NULL) {
+      delete (OSPVisItContext*)ospray;
+    }
+#endif
 }
 
 
@@ -225,10 +240,14 @@ avtVolumeFilter::Execute(void)
     int t1 = visitTimer->StartTimer();
 
     // Get the local histogram for this rank.
+    // const std::string variableName_ =
+    //  (atts.GetScaling() == VolumeAttributes::Linear) ?
+    //  primaryVariable : "_expr_" + std::string(primaryVariable);
+    // std::cout << "primaryVariable = " << primaryVariable << std::endl;
     std::vector<VISIT_LONG_LONG> numvals_in(numValsInHist, 0);
-    if( avtDatasetExaminer::CalculateHistogram(ds, primaryVariable,
-                                               minmax[0], minmax[1],
-                                               numvals_in) )
+    if(avtDatasetExaminer::CalculateHistogram(ds, primaryVariable,
+                                              minmax[0], minmax[1],
+                                              numvals_in))
         
     {
       debug1 << "CalculateHistogram failed for "
@@ -237,8 +256,8 @@ avtVolumeFilter::Execute(void)
 
     // Get the global histograms acrosss all ranks.
     std::vector<VISIT_LONG_LONG> numvals_out(numValsInHist, 0);
-    SumLongLongArrayAcrossAllProcessors( &(numvals_in[0]),
-                                         &(numvals_out[0]), numValsInHist);
+    SumLongLongArrayAcrossAllProcessors(&(numvals_in[0]),
+                                        &(numvals_out[0]), numValsInHist);
     
     VISIT_LONG_LONG maxVal = 0;
     for (i = 0 ; i < numValsInHist ; i++)
@@ -292,19 +311,35 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
     if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR)
     {
         // Set the opacity map. This modifies the opacities though.
-        om.SetTable(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
-        om.SetTableFloat(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
+        om.SetTable(vtf, 256, atts.GetOpacityAttenuation() * 2.0 - 1.0,
+                    atts.GetRendererSamples());
+        om.SetTableFloat(vtf, 256, atts.GetOpacityAttenuation() * 2.0 - 1.0,
+                         atts.GetRendererSamples());
     }
     else
 #endif
     {
-        if ((atts.GetRendererType() == VolumeAttributes::RayCasting) && (atts.GetSampling() == VolumeAttributes::Trilinear))
-            om.SetTable(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0, atts.GetRendererSamples());
+#ifdef VISIT_OSPRAY
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay)
+    {
+        om.SetTable(vtf, 256, atts.GetOpacityAttenuation() * 2.0 - 1.0, 
+                    atts.GetRendererSamples());
+        om.SetTableFloatNOC(vtf, 256,
+                            atts.GetOpacityAttenuation() * 2.0 - 1.0); 
+    }
+    else
+#endif
+    {
+        if ((atts.GetRendererType() == VolumeAttributes::RayCasting) && 
+            (atts.GetSampling() == VolumeAttributes::Trilinear))
+            om.SetTable(vtf, 256, atts.GetOpacityAttenuation()*2.0 - 1.0,
+                        atts.GetRendererSamples());
         else
         {
             // Set the opacity map just using the transfer function.
             om.SetTable(vtf, 256, atts.GetOpacityAttenuation());
         }
+    }
     }
 
     double actualRange[2];
@@ -345,7 +380,7 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
     }
     om.SetMin(range[0]);
     om.SetMax(range[1]);
-    om.computeVisibleRange();
+    om.ComputeVisibleRange();
 
     if (atts.GetRendererType() == VolumeAttributes::RayCastingIntegration)
     {
@@ -370,11 +405,13 @@ avtVolumeFilter::CreateOpacityMap(double range[2])
     return om;
 }
 
-extern bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &depth);
+extern bool GetLogicalBounds(avtDataObject_p input,
+                             int &width,int &height, int &depth);
 
-#ifdef VISIT_SLIVR
+#if defined(VISIT_SLIVR) || defined(VISIT_OSPRAY)
+
 // ****************************************************************************
-//  Method: avtVolumeFilter::RenderImageRaycastingSLIVR
+//  Method: avtVolumeFilter::RenderImageRayCasting
 //
 //  Purpose:
 //      Do SW rendering with SLIVR.
@@ -389,8 +426,8 @@ extern bool GetLogicalBounds(avtDataObject_p input,int &width,int &height, int &
 // ****************************************************************************
 
 avtImage_p
-avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
-                             const WindowAttributes &window)
+avtVolumeFilter::RenderImageRayCasting(avtImage_p opaque_image,
+                                 const WindowAttributes &window)
 {
     //
     // We need to create a dummy pipeline with the volume renderer that we
@@ -401,7 +438,23 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     //
     // Set up the volume renderer.
     //
-    avtSLIVRRayTracer *software = new avtSLIVRRayTracer;
+    avtRayTracerBase *software = nullptr;
+#ifdef VISIT_SLIVR
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR) {        
+        software = new avtSLIVRRayTracer;
+    }
+    else
+#endif
+    {
+#ifdef VISIT_OSPRAY
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay) {
+        software = new avtOSPRayRayTracer;
+        if (ospray == NULL) { ospray = new OSPVisItContext; }
+        ((avtOSPRayRayTracer*)software)->SetOSPRay
+                                           ((OSPVisItContext*)ospray);
+    }
+#endif
+    }
     software->SetInput(termsrc.GetOutput());
     software->InsertOpaqueImage(opaque_image);
 
@@ -410,7 +463,7 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     //
     double range[2] = {0., 0.};
     avtOpacityMap om(CreateOpacityMap(range));
-    om.computeVisibleRange();
+    om.ComputeVisibleRange();
 
     avtFlatLighting fl;
     avtLightingModel *lm = &fl;
@@ -418,9 +471,9 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     avtCompositeRF *compositeRF = new avtCompositeRF(lm, &om, &om);
     software->SetTransferFn(&om);
 
-    debug5 << "Min visible scalar range:" << om.GetMinVisibleScalar() << "  Max visible scalar range: "  <<  om.GetMaxVisibleScalar() << std::endl;
-
-
+    debug5 << "Min visible scalar range: " << om.GetMinVisibleScalar() << " "
+           << "Max visible scalar range: " << om.GetMaxVisibleScalar()
+           << std::endl;
 
     //
     // Determine which variables to use and tell the ray function.
@@ -437,7 +490,8 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     const char *gradvar = atts.GetOpacityVariable().c_str();
     if (strcmp(gradvar, "default") == 0)
         gradvar = primaryVariable;
-    // This name is explicitly sent to the avtGradientExpression in avtVolumePlot.
+    // This name is explicitly sent to the avtGradientExpression in
+    // avtVolumePlot.
     SNPRINTF(gradName, 128, "_%s_gradient", gradvar);
 
     for (int i = 0 ; i < vl.nvars ; i++)
@@ -454,10 +508,10 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
         {
             opacIndex = count;
         }
-       // if (vl.varnames[i] == gradName)
-       // {
-       //     gradIndex = count;
-       // }
+        // if (vl.varnames[i] == gradName)
+        // {
+        //     gradIndex = count;
+        // }
         count += vl.varsizes[i];
     }
 
@@ -494,16 +548,12 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
         }
     }
 
-
     //
     // Unsure about this one??? RayFunction seems important
     //
     software->SetRayFunction(compositeRF);
     software->SetSamplesPerRay(atts.GetSamplesPerRay());
-
-    debug5 << "Sampling rate: "  << atts.GetRendererSamples() << std::endl;
-
-
+    debug5 << "Sampling rate: " << atts.GetRendererSamples() << std::endl;
 
     //
     // Set camera parameters
@@ -521,65 +571,89 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     {
         double viewDirection[3];
         int numSlices;
-
-        viewDirection[0] = (view.GetViewNormal()[0] > 0)? view.GetViewNormal()[0]: -view.GetViewNormal()[0];
-        viewDirection[1] = (view.GetViewNormal()[1] > 0)? view.GetViewNormal()[1]: -view.GetViewNormal()[1];
-        viewDirection[2] = (view.GetViewNormal()[2] > 0)? view.GetViewNormal()[2]: -view.GetViewNormal()[2];
-
-        numSlices = (width_*viewDirection[0] + height_*viewDirection[1] + depth_*viewDirection[2]) * atts.GetRendererSamples();
-
+        viewDirection[0] = (view.GetViewNormal()[0] > 0)?
+            view.GetViewNormal()[0]:
+            -view.GetViewNormal()[0];
+        viewDirection[1] = (view.GetViewNormal()[1] > 0)?
+            view.GetViewNormal()[1]:
+            -view.GetViewNormal()[1];
+        viewDirection[2] = (view.GetViewNormal()[2] > 0)?
+            view.GetViewNormal()[2]: 
+            -view.GetViewNormal()[2];
+        numSlices = (width_ * viewDirection[0] +
+                     height_* viewDirection[1] + 
+                     depth_ * viewDirection[2]) * atts.GetRendererSamples();
         software->SetSamplesPerRay(numSlices);
-        debug5 << "RayCastingSLIVR - slices: "<< numSlices << " : " << width_ << " ,  " << height_  << " , " << depth_ << endl;
     }
-
     software->SetView(vi);
 
-    double view_dir[3];
-    view_dir[0] = vi.focus[0] - vi.camera[0];
-    view_dir[1] = vi.focus[1] - vi.camera[1];
-    view_dir[2] = vi.focus[2] - vi.camera[2];
-    double mag = sqrt(view_dir[0]*view_dir[0] + view_dir[1]*view_dir[1]
-                      + view_dir[2]*view_dir[2]);
+    double viewDirection[3];
+    viewDirection[0] = vi.focus[0] - vi.camera[0];
+    viewDirection[1] = vi.focus[1] - vi.camera[1];
+    viewDirection[2] = vi.focus[2] - vi.camera[2];
+    double mag = sqrt(viewDirection[0]*viewDirection[0] + viewDirection[1]*viewDirection[1]
+                      + viewDirection[2]*viewDirection[2]);
     if (mag != 0.) // only 0 if focus and camera are the same
     {
-        view_dir[0] /= mag;
-        view_dir[1] /= mag;
-        view_dir[2] /= mag;
+        viewDirection[0] /= mag;
+        viewDirection[1] /= mag;
+        viewDirection[2] /= mag;
     }
-    software->SetViewDirection(view_dir);
 
     //
     // Set up lighting and material properties
     //
-    if (atts.GetLightingFlag())
-        software->SetLighting(true);
-    else
-        software->SetLighting(false);
-
-    double tempLightDir[3];
-    tempLightDir[0] = ((window.GetLights()).GetLight(0)).GetDirection()[0];
-    tempLightDir[1] = ((window.GetLights()).GetLight(0)).GetDirection()[1];
-    tempLightDir[2] = ((window.GetLights()).GetLight(0)).GetDirection()[2];
-    software->SetLightDirection(tempLightDir);
-
     double *matProp = atts.GetMaterialProperties();
     double materialPropArray[4];
     materialPropArray[0] = matProp[0];
     materialPropArray[1] = matProp[1];
     materialPropArray[2] = matProp[2];
     materialPropArray[3] = matProp[3];
-    software->SetMatProperties(materialPropArray);
-
-
+    
+#ifdef VISIT_SLIVR
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR) {
+      double tempLightDir[3];
+      tempLightDir[0] = ((window.GetLights()).GetLight(0)).GetDirection()[0];
+      tempLightDir[1] = ((window.GetLights()).GetLight(0)).GetDirection()[1];
+      tempLightDir[2] = ((window.GetLights()).GetLight(0)).GetDirection()[2];      
+      avtSLIVRRayTracer* s = (avtSLIVRRayTracer*)software;
+      s->SetViewDirection(viewDirection);
+      s->SetLighting(atts.GetLightingFlag());
+      s->SetLightDirection(tempLightDir);
+      s->SetMatProperties(materialPropArray);
+    } else
+#endif
+    {
+#ifdef VISIT_OSPRAY
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay) {
+      avtOSPRayRayTracer* s = (avtOSPRayRayTracer*)software;
+      s->SetActiveVariable(primaryVariable);
+      s->SetLightInfo(window.GetLights());
+      s->SetMatProperties(materialPropArray);
+      s->SetViewDirection(viewDirection);
+      s->SetLighting(atts.GetLightingFlag());
+      s->SetSamplingRate(atts.GetRendererSamples());
+      s->SetShadowsEnabled(atts.GetOsprayShadowsEnabledFlag());
+      s->SetUseGridAccelerator(atts.GetOsprayUseGridAcceleratorFlag());
+      s->SetPreIntegration(atts.GetOsprayPreIntegrationFlag());
+      s->SetSingleShade(atts.GetOspraySingleShadeFlag());
+      s->SetOneSidedLighting(atts.GetOsprayOneSidedLightingFlag());
+      s->SetAoTransparencyEnabled(atts.GetOsprayAoTransparencyEnabledFlag());
+      s->SetSpp(atts.GetOspraySpp());
+      s->SetAoSamples(atts.GetOsprayAoSamples());
+      s->SetAoDistance(atts.GetOsprayAoDistance());
+      s->SetMinContribution(atts.GetOsprayMinContribution());
+    }
+#endif
+    }
 
     //
     // Set the volume renderer's background color and mode from the
     // window attributes.
     //
-    //software->SetBackgroundMode(window.GetBackgroundMode());
     software->SetBackgroundColor(window.GetBackground());
+    //software->SetBackgroundMode(window.GetBackgroundMode());
     //software->SetGradientBackgroundColors(window.GetGradBG1(), window.GetGradBG2());
-
 
     //
     // Do the funny business to force an update. ... and called avtDataObject
@@ -592,7 +666,6 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     //
     delete software;
     avtRay::SetArbitrator(NULL);
-
     delete compositeRF;
 
     //
@@ -715,9 +788,10 @@ avtImage_p
 avtVolumeFilter::RenderImage(avtImage_p opaque_image,
                              const WindowAttributes &window)
 {
-#ifdef VISIT_SLIVR
-    if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR){
-        return RenderImageRaycastingSLIVR(opaque_image,window);
+#if defined(VISIT_SLIVR) || defined(VISIT_SLIVR)
+    if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
+        atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay){
+        return RenderImageRayCasting(opaque_image,window);
     }
 #endif
 
@@ -1247,7 +1321,8 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
     {
         if (((atts.GetRendererType() == VolumeAttributes::RayCasting) &&
             (atts.GetSampling() == VolumeAttributes::Trilinear)) ||
-            (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR))
+            (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR) ||
+            (atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay))
             ds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
         newcontract = new avtContract(contract, ds);
         primaryVariable = new char[strlen(var)+1];
@@ -1272,7 +1347,8 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
 
         if (((atts.GetRendererType() == VolumeAttributes::RayCasting) &&
             (atts.GetSampling() == VolumeAttributes::Trilinear)) ||
-            (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR))
+            (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR) ||
+            (atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay))
             nds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
         newcontract = new avtContract(contract, nds);
         primaryVariable = new char[exprName.size()+1];
@@ -1289,7 +1365,8 @@ avtVolumeFilter::ModifyContract(avtContract_p contract)
         nds->AddSecondaryVariable(var);
         if (((atts.GetRendererType() == VolumeAttributes::RayCasting) &&
             (atts.GetSampling() == VolumeAttributes::Trilinear)) ||
-            (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR))
+            (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR) ||
+            (atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay))
             nds->SetDesiredGhostDataType(GHOST_ZONE_DATA);
         newcontract = new avtContract(contract, nds);
         primaryVariable = new char[strlen(exprName.c_str())+1];

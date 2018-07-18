@@ -46,7 +46,7 @@
 #include <filters_exports.h>
 
 #include <avtVoxelExtractor.h>
-
+#include <avtSLIVRCommon.h>
 #include <avtOpacityMap.h>
 
 #include <DebugStream.h>
@@ -59,7 +59,7 @@ class     vtkMatrix4x4;
 #include <stdlib.h>
 #include <stdio.h>
 #include <algorithm>
-#include "imgMetaData.h"
+
 
 // ****************************************************************************
 //  Class: avtSLIVRVoxelExtractor

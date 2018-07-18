@@ -67,7 +67,8 @@ public:
         Default,
         RayCasting,
         RayCastingIntegration,
-        RayCastingSLIVR
+        RayCastingSLIVR,
+        RayCastingOSPRay
     };
     enum GradientType
     {
@@ -142,6 +143,16 @@ public:
     void SelectMaterialProperties();
 
     // Property setting methods
+    void SetOsprayShadowsEnabledFlag(bool osprayShadowsEnabledFlag_);
+    void SetOsprayUseGridAcceleratorFlag(bool osprayUseGridAcceleratorFlag_);
+    void SetOsprayPreIntegrationFlag(bool osprayPreIntegrationFlag_);
+    void SetOspraySingleShadeFlag(bool ospraySingleShadeFlag_);
+    void SetOsprayOneSidedLightingFlag(bool osprayOneSidedLightingFlag_);
+    void SetOsprayAoTransparencyEnabledFlag(bool osprayAoTransparencyEnabledFlag_);
+    void SetOspraySpp(int ospraySpp_);
+    void SetOsprayAoSamples(int osprayAoSamples_);
+    void SetOsprayAoDistance(double osprayAoDistance_);
+    void SetOsprayMinContribution(double osprayMinContribution_);
     void SetLegendFlag(bool legendFlag_);
     void SetLightingFlag(bool lightingFlag_);
     void SetColorControlPoints(const ColorControlPointList &colorControlPoints_);
@@ -176,6 +187,16 @@ public:
     void SetMaterialProperties(const double *materialProperties_);
 
     // Property getting methods
+    bool                           GetOsprayShadowsEnabledFlag() const;
+    bool                           GetOsprayUseGridAcceleratorFlag() const;
+    bool                           GetOsprayPreIntegrationFlag() const;
+    bool                           GetOspraySingleShadeFlag() const;
+    bool                           GetOsprayOneSidedLightingFlag() const;
+    bool                           GetOsprayAoTransparencyEnabledFlag() const;
+    int                            GetOspraySpp() const;
+    int                            GetOsprayAoSamples() const;
+    double                         GetOsprayAoDistance() const;
+    double                         GetOsprayMinContribution() const;
     bool                           GetLegendFlag() const;
     bool                           GetLightingFlag() const;
     const ColorControlPointList    &GetColorControlPoints() const;
@@ -276,7 +297,17 @@ public:
 
     // IDs that can be used to identify fields in case statements
     enum {
-        ID_legendFlag = 0,
+        ID_osprayShadowsEnabledFlag = 0,
+        ID_osprayUseGridAcceleratorFlag,
+        ID_osprayPreIntegrationFlag,
+        ID_ospraySingleShadeFlag,
+        ID_osprayOneSidedLightingFlag,
+        ID_osprayAoTransparencyEnabledFlag,
+        ID_ospraySpp,
+        ID_osprayAoSamples,
+        ID_osprayAoDistance,
+        ID_osprayMinContribution,
+        ID_legendFlag,
         ID_lightingFlag,
         ID_colorControlPoints,
         ID_opacityAttenuation,
@@ -312,6 +343,16 @@ public:
     };
 
 private:
+    bool                     osprayShadowsEnabledFlag;
+    bool                     osprayUseGridAcceleratorFlag;
+    bool                     osprayPreIntegrationFlag;
+    bool                     ospraySingleShadeFlag;
+    bool                     osprayOneSidedLightingFlag;
+    bool                     osprayAoTransparencyEnabledFlag;
+    int                      ospraySpp;
+    int                      osprayAoSamples;
+    double                   osprayAoDistance;
+    double                   osprayMinContribution;
     bool                     legendFlag;
     bool                     lightingFlag;
     ColorControlPointList    colorControlPoints;
@@ -349,6 +390,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VOLUMEATTRIBUTES_TMFS "bbafiabissUbfbfbfbfbiiiidiifibdD"
+#define VOLUMEATTRIBUTES_TMFS "bbbbbbiiddbbafiabissUbfbfbfbfbiiiidiifibdD"
 
 #endif

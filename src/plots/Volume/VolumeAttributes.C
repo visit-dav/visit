@@ -47,20 +47,20 @@
 
 static const char *Renderer_strings[] = {
 "Default", "RayCasting", "RayCastingIntegration", 
-"RayCastingSLIVR"};
+"RayCastingSLIVR", "RayCastingOSPRay"};
 
 std::string
 VolumeAttributes::Renderer_ToString(VolumeAttributes::Renderer t)
 {
     int index = int(t);
-    if(index < 0 || index >= 4) index = 0;
+    if(index < 0 || index >= 5) index = 0;
     return Renderer_strings[index];
 }
 
 std::string
 VolumeAttributes::Renderer_ToString(int t)
 {
-    int index = (t < 0 || t >= 4) ? 0 : t;
+    int index = (t < 0 || t >= 5) ? 0 : t;
     return Renderer_strings[index];
 }
 
@@ -68,7 +68,7 @@ bool
 VolumeAttributes::Renderer_FromString(const std::string &s, VolumeAttributes::Renderer &val)
 {
     val = VolumeAttributes::Default;
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 5; ++i)
     {
         if(s == Renderer_strings[i])
         {
@@ -323,6 +323,16 @@ VolumeAttributes::LowGradientLightingReduction_FromString(const std::string &s, 
 
 void VolumeAttributes::Init()
 {
+    osprayShadowsEnabledFlag = false;
+    osprayUseGridAcceleratorFlag = false;
+    osprayPreIntegrationFlag = false;
+    ospraySingleShadeFlag = false;
+    osprayOneSidedLightingFlag = false;
+    osprayAoTransparencyEnabledFlag = false;
+    ospraySpp = 1;
+    osprayAoSamples = 0;
+    osprayAoDistance = 100000;
+    osprayMinContribution = 0.001;
     legendFlag = true;
     lightingFlag = true;
     SetDefaultColorControlPoints();
@@ -378,6 +388,16 @@ void VolumeAttributes::Init()
 void VolumeAttributes::Copy(const VolumeAttributes &obj)
 {
 
+    osprayShadowsEnabledFlag = obj.osprayShadowsEnabledFlag;
+    osprayUseGridAcceleratorFlag = obj.osprayUseGridAcceleratorFlag;
+    osprayPreIntegrationFlag = obj.osprayPreIntegrationFlag;
+    ospraySingleShadeFlag = obj.ospraySingleShadeFlag;
+    osprayOneSidedLightingFlag = obj.osprayOneSidedLightingFlag;
+    osprayAoTransparencyEnabledFlag = obj.osprayAoTransparencyEnabledFlag;
+    ospraySpp = obj.ospraySpp;
+    osprayAoSamples = obj.osprayAoSamples;
+    osprayAoDistance = obj.osprayAoDistance;
+    osprayMinContribution = obj.osprayMinContribution;
     legendFlag = obj.legendFlag;
     lightingFlag = obj.lightingFlag;
     colorControlPoints = obj.colorControlPoints;
@@ -583,7 +603,17 @@ VolumeAttributes::operator == (const VolumeAttributes &obj) const
         materialProperties_equal = (materialProperties[i] == obj.materialProperties[i]);
 
     // Create the return value
-    return ((legendFlag == obj.legendFlag) &&
+    return ((osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag) &&
+            (osprayUseGridAcceleratorFlag == obj.osprayUseGridAcceleratorFlag) &&
+            (osprayPreIntegrationFlag == obj.osprayPreIntegrationFlag) &&
+            (ospraySingleShadeFlag == obj.ospraySingleShadeFlag) &&
+            (osprayOneSidedLightingFlag == obj.osprayOneSidedLightingFlag) &&
+            (osprayAoTransparencyEnabledFlag == obj.osprayAoTransparencyEnabledFlag) &&
+            (ospraySpp == obj.ospraySpp) &&
+            (osprayAoSamples == obj.osprayAoSamples) &&
+            (osprayAoDistance == obj.osprayAoDistance) &&
+            (osprayMinContribution == obj.osprayMinContribution) &&
+            (legendFlag == obj.legendFlag) &&
             (lightingFlag == obj.lightingFlag) &&
             (colorControlPoints == obj.colorControlPoints) &&
             (opacityAttenuation == obj.opacityAttenuation) &&
@@ -758,38 +788,48 @@ VolumeAttributes::NewInstance(bool copy) const
 void
 VolumeAttributes::SelectAll()
 {
-    Select(ID_legendFlag,                    (void *)&legendFlag);
-    Select(ID_lightingFlag,                  (void *)&lightingFlag);
-    Select(ID_colorControlPoints,            (void *)&colorControlPoints);
-    Select(ID_opacityAttenuation,            (void *)&opacityAttenuation);
-    Select(ID_opacityMode,                   (void *)&opacityMode);
-    Select(ID_opacityControlPoints,          (void *)&opacityControlPoints);
-    Select(ID_resampleFlag,                  (void *)&resampleFlag);
-    Select(ID_resampleTarget,                (void *)&resampleTarget);
-    Select(ID_opacityVariable,               (void *)&opacityVariable);
-    Select(ID_compactVariable,               (void *)&compactVariable);
-    Select(ID_freeformOpacity,               (void *)freeformOpacity, 256);
-    Select(ID_useColorVarMin,                (void *)&useColorVarMin);
-    Select(ID_colorVarMin,                   (void *)&colorVarMin);
-    Select(ID_useColorVarMax,                (void *)&useColorVarMax);
-    Select(ID_colorVarMax,                   (void *)&colorVarMax);
-    Select(ID_useOpacityVarMin,              (void *)&useOpacityVarMin);
-    Select(ID_opacityVarMin,                 (void *)&opacityVarMin);
-    Select(ID_useOpacityVarMax,              (void *)&useOpacityVarMax);
-    Select(ID_opacityVarMax,                 (void *)&opacityVarMax);
-    Select(ID_smoothData,                    (void *)&smoothData);
-    Select(ID_samplesPerRay,                 (void *)&samplesPerRay);
-    Select(ID_rendererType,                  (void *)&rendererType);
-    Select(ID_gradientType,                  (void *)&gradientType);
-    Select(ID_scaling,                       (void *)&scaling);
-    Select(ID_skewFactor,                    (void *)&skewFactor);
-    Select(ID_limitsMode,                    (void *)&limitsMode);
-    Select(ID_sampling,                      (void *)&sampling);
-    Select(ID_rendererSamples,               (void *)&rendererSamples);
-    Select(ID_lowGradientLightingReduction,  (void *)&lowGradientLightingReduction);
-    Select(ID_lowGradientLightingClampFlag,  (void *)&lowGradientLightingClampFlag);
-    Select(ID_lowGradientLightingClampValue, (void *)&lowGradientLightingClampValue);
-    Select(ID_materialProperties,            (void *)materialProperties, 4);
+    Select(ID_osprayShadowsEnabledFlag,        (void *)&osprayShadowsEnabledFlag);
+    Select(ID_osprayUseGridAcceleratorFlag,    (void *)&osprayUseGridAcceleratorFlag);
+    Select(ID_osprayPreIntegrationFlag,        (void *)&osprayPreIntegrationFlag);
+    Select(ID_ospraySingleShadeFlag,           (void *)&ospraySingleShadeFlag);
+    Select(ID_osprayOneSidedLightingFlag,      (void *)&osprayOneSidedLightingFlag);
+    Select(ID_osprayAoTransparencyEnabledFlag, (void *)&osprayAoTransparencyEnabledFlag);
+    Select(ID_ospraySpp,                       (void *)&ospraySpp);
+    Select(ID_osprayAoSamples,                 (void *)&osprayAoSamples);
+    Select(ID_osprayAoDistance,                (void *)&osprayAoDistance);
+    Select(ID_osprayMinContribution,           (void *)&osprayMinContribution);
+    Select(ID_legendFlag,                      (void *)&legendFlag);
+    Select(ID_lightingFlag,                    (void *)&lightingFlag);
+    Select(ID_colorControlPoints,              (void *)&colorControlPoints);
+    Select(ID_opacityAttenuation,              (void *)&opacityAttenuation);
+    Select(ID_opacityMode,                     (void *)&opacityMode);
+    Select(ID_opacityControlPoints,            (void *)&opacityControlPoints);
+    Select(ID_resampleFlag,                    (void *)&resampleFlag);
+    Select(ID_resampleTarget,                  (void *)&resampleTarget);
+    Select(ID_opacityVariable,                 (void *)&opacityVariable);
+    Select(ID_compactVariable,                 (void *)&compactVariable);
+    Select(ID_freeformOpacity,                 (void *)freeformOpacity, 256);
+    Select(ID_useColorVarMin,                  (void *)&useColorVarMin);
+    Select(ID_colorVarMin,                     (void *)&colorVarMin);
+    Select(ID_useColorVarMax,                  (void *)&useColorVarMax);
+    Select(ID_colorVarMax,                     (void *)&colorVarMax);
+    Select(ID_useOpacityVarMin,                (void *)&useOpacityVarMin);
+    Select(ID_opacityVarMin,                   (void *)&opacityVarMin);
+    Select(ID_useOpacityVarMax,                (void *)&useOpacityVarMax);
+    Select(ID_opacityVarMax,                   (void *)&opacityVarMax);
+    Select(ID_smoothData,                      (void *)&smoothData);
+    Select(ID_samplesPerRay,                   (void *)&samplesPerRay);
+    Select(ID_rendererType,                    (void *)&rendererType);
+    Select(ID_gradientType,                    (void *)&gradientType);
+    Select(ID_scaling,                         (void *)&scaling);
+    Select(ID_skewFactor,                      (void *)&skewFactor);
+    Select(ID_limitsMode,                      (void *)&limitsMode);
+    Select(ID_sampling,                        (void *)&sampling);
+    Select(ID_rendererSamples,                 (void *)&rendererSamples);
+    Select(ID_lowGradientLightingReduction,    (void *)&lowGradientLightingReduction);
+    Select(ID_lowGradientLightingClampFlag,    (void *)&lowGradientLightingClampFlag);
+    Select(ID_lowGradientLightingClampValue,   (void *)&lowGradientLightingClampValue);
+    Select(ID_materialProperties,              (void *)materialProperties, 4);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -821,6 +861,66 @@ VolumeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool force
     bool addToParent = false;
     // Create a node for VolumeAttributes.
     DataNode *node = new DataNode("VolumeAttributes");
+
+    if(completeSave || !FieldsEqual(ID_osprayShadowsEnabledFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayShadowsEnabledFlag", osprayShadowsEnabledFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayUseGridAcceleratorFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayUseGridAcceleratorFlag", osprayUseGridAcceleratorFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayPreIntegrationFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayPreIntegrationFlag", osprayPreIntegrationFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_ospraySingleShadeFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("ospraySingleShadeFlag", ospraySingleShadeFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayOneSidedLightingFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayOneSidedLightingFlag", osprayOneSidedLightingFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayAoTransparencyEnabledFlag, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayAoTransparencyEnabledFlag", osprayAoTransparencyEnabledFlag));
+    }
+
+    if(completeSave || !FieldsEqual(ID_ospraySpp, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("ospraySpp", ospraySpp));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayAoSamples, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayAoSamples", osprayAoSamples));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayAoDistance, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayAoDistance", osprayAoDistance));
+    }
+
+    if(completeSave || !FieldsEqual(ID_osprayMinContribution, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("osprayMinContribution", osprayMinContribution));
+    }
 
     if(completeSave || !FieldsEqual(ID_legendFlag, &defaultObject))
     {
@@ -1062,6 +1162,26 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         return;
 
     DataNode *node;
+    if((node = searchNode->GetNode("osprayShadowsEnabledFlag")) != 0)
+        SetOsprayShadowsEnabledFlag(node->AsBool());
+    if((node = searchNode->GetNode("osprayUseGridAcceleratorFlag")) != 0)
+        SetOsprayUseGridAcceleratorFlag(node->AsBool());
+    if((node = searchNode->GetNode("osprayPreIntegrationFlag")) != 0)
+        SetOsprayPreIntegrationFlag(node->AsBool());
+    if((node = searchNode->GetNode("ospraySingleShadeFlag")) != 0)
+        SetOspraySingleShadeFlag(node->AsBool());
+    if((node = searchNode->GetNode("osprayOneSidedLightingFlag")) != 0)
+        SetOsprayOneSidedLightingFlag(node->AsBool());
+    if((node = searchNode->GetNode("osprayAoTransparencyEnabledFlag")) != 0)
+        SetOsprayAoTransparencyEnabledFlag(node->AsBool());
+    if((node = searchNode->GetNode("ospraySpp")) != 0)
+        SetOspraySpp(node->AsInt());
+    if((node = searchNode->GetNode("osprayAoSamples")) != 0)
+        SetOsprayAoSamples(node->AsInt());
+    if((node = searchNode->GetNode("osprayAoDistance")) != 0)
+        SetOsprayAoDistance(node->AsDouble());
+    if((node = searchNode->GetNode("osprayMinContribution")) != 0)
+        SetOsprayMinContribution(node->AsDouble());
     if((node = searchNode->GetNode("legendFlag")) != 0)
         SetLegendFlag(node->AsBool());
     if((node = searchNode->GetNode("lightingFlag")) != 0)
@@ -1124,7 +1244,7 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
         if(node->GetNodeType() == INT_NODE)
         {
             int ival = node->AsInt();
-            if(ival >= 0 && ival < 4)
+            if(ival >= 0 && ival < 5)
                 SetRendererType(Renderer(ival));
         }
         else if(node->GetNodeType() == STRING_NODE)
@@ -1232,6 +1352,76 @@ VolumeAttributes::SetFromNode(DataNode *parentNode)
 ///////////////////////////////////////////////////////////////////////////////
 // Set property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+void
+VolumeAttributes::SetOsprayShadowsEnabledFlag(bool osprayShadowsEnabledFlag_)
+{
+    osprayShadowsEnabledFlag = osprayShadowsEnabledFlag_;
+    Select(ID_osprayShadowsEnabledFlag, (void *)&osprayShadowsEnabledFlag);
+}
+
+void
+VolumeAttributes::SetOsprayUseGridAcceleratorFlag(bool osprayUseGridAcceleratorFlag_)
+{
+    osprayUseGridAcceleratorFlag = osprayUseGridAcceleratorFlag_;
+    Select(ID_osprayUseGridAcceleratorFlag, (void *)&osprayUseGridAcceleratorFlag);
+}
+
+void
+VolumeAttributes::SetOsprayPreIntegrationFlag(bool osprayPreIntegrationFlag_)
+{
+    osprayPreIntegrationFlag = osprayPreIntegrationFlag_;
+    Select(ID_osprayPreIntegrationFlag, (void *)&osprayPreIntegrationFlag);
+}
+
+void
+VolumeAttributes::SetOspraySingleShadeFlag(bool ospraySingleShadeFlag_)
+{
+    ospraySingleShadeFlag = ospraySingleShadeFlag_;
+    Select(ID_ospraySingleShadeFlag, (void *)&ospraySingleShadeFlag);
+}
+
+void
+VolumeAttributes::SetOsprayOneSidedLightingFlag(bool osprayOneSidedLightingFlag_)
+{
+    osprayOneSidedLightingFlag = osprayOneSidedLightingFlag_;
+    Select(ID_osprayOneSidedLightingFlag, (void *)&osprayOneSidedLightingFlag);
+}
+
+void
+VolumeAttributes::SetOsprayAoTransparencyEnabledFlag(bool osprayAoTransparencyEnabledFlag_)
+{
+    osprayAoTransparencyEnabledFlag = osprayAoTransparencyEnabledFlag_;
+    Select(ID_osprayAoTransparencyEnabledFlag, (void *)&osprayAoTransparencyEnabledFlag);
+}
+
+void
+VolumeAttributes::SetOspraySpp(int ospraySpp_)
+{
+    ospraySpp = ospraySpp_;
+    Select(ID_ospraySpp, (void *)&ospraySpp);
+}
+
+void
+VolumeAttributes::SetOsprayAoSamples(int osprayAoSamples_)
+{
+    osprayAoSamples = osprayAoSamples_;
+    Select(ID_osprayAoSamples, (void *)&osprayAoSamples);
+}
+
+void
+VolumeAttributes::SetOsprayAoDistance(double osprayAoDistance_)
+{
+    osprayAoDistance = osprayAoDistance_;
+    Select(ID_osprayAoDistance, (void *)&osprayAoDistance);
+}
+
+void
+VolumeAttributes::SetOsprayMinContribution(double osprayMinContribution_)
+{
+    osprayMinContribution = osprayMinContribution_;
+    Select(ID_osprayMinContribution, (void *)&osprayMinContribution);
+}
 
 void
 VolumeAttributes::SetLegendFlag(bool legendFlag_)
@@ -1464,6 +1654,66 @@ VolumeAttributes::SetMaterialProperties(const double *materialProperties_)
 ///////////////////////////////////////////////////////////////////////////////
 // Get property methods
 ///////////////////////////////////////////////////////////////////////////////
+
+bool
+VolumeAttributes::GetOsprayShadowsEnabledFlag() const
+{
+    return osprayShadowsEnabledFlag;
+}
+
+bool
+VolumeAttributes::GetOsprayUseGridAcceleratorFlag() const
+{
+    return osprayUseGridAcceleratorFlag;
+}
+
+bool
+VolumeAttributes::GetOsprayPreIntegrationFlag() const
+{
+    return osprayPreIntegrationFlag;
+}
+
+bool
+VolumeAttributes::GetOspraySingleShadeFlag() const
+{
+    return ospraySingleShadeFlag;
+}
+
+bool
+VolumeAttributes::GetOsprayOneSidedLightingFlag() const
+{
+    return osprayOneSidedLightingFlag;
+}
+
+bool
+VolumeAttributes::GetOsprayAoTransparencyEnabledFlag() const
+{
+    return osprayAoTransparencyEnabledFlag;
+}
+
+int
+VolumeAttributes::GetOspraySpp() const
+{
+    return ospraySpp;
+}
+
+int
+VolumeAttributes::GetOsprayAoSamples() const
+{
+    return osprayAoSamples;
+}
+
+double
+VolumeAttributes::GetOsprayAoDistance() const
+{
+    return osprayAoDistance;
+}
+
+double
+VolumeAttributes::GetOsprayMinContribution() const
+{
+    return osprayMinContribution;
+}
 
 bool
 VolumeAttributes::GetLegendFlag() const
@@ -1757,38 +2007,48 @@ VolumeAttributes::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:                    return "legendFlag";
-    case ID_lightingFlag:                  return "lightingFlag";
-    case ID_colorControlPoints:            return "colorControlPoints";
-    case ID_opacityAttenuation:            return "opacityAttenuation";
-    case ID_opacityMode:                   return "opacityMode";
-    case ID_opacityControlPoints:          return "opacityControlPoints";
-    case ID_resampleFlag:                  return "resampleFlag";
-    case ID_resampleTarget:                return "resampleTarget";
-    case ID_opacityVariable:               return "opacityVariable";
-    case ID_compactVariable:               return "compactVariable";
-    case ID_freeformOpacity:               return "freeformOpacity";
-    case ID_useColorVarMin:                return "useColorVarMin";
-    case ID_colorVarMin:                   return "colorVarMin";
-    case ID_useColorVarMax:                return "useColorVarMax";
-    case ID_colorVarMax:                   return "colorVarMax";
-    case ID_useOpacityVarMin:              return "useOpacityVarMin";
-    case ID_opacityVarMin:                 return "opacityVarMin";
-    case ID_useOpacityVarMax:              return "useOpacityVarMax";
-    case ID_opacityVarMax:                 return "opacityVarMax";
-    case ID_smoothData:                    return "smoothData";
-    case ID_samplesPerRay:                 return "samplesPerRay";
-    case ID_rendererType:                  return "rendererType";
-    case ID_gradientType:                  return "gradientType";
-    case ID_scaling:                       return "scaling";
-    case ID_skewFactor:                    return "skewFactor";
-    case ID_limitsMode:                    return "limitsMode";
-    case ID_sampling:                      return "sampling";
-    case ID_rendererSamples:               return "rendererSamples";
-    case ID_lowGradientLightingReduction:  return "lowGradientLightingReduction";
-    case ID_lowGradientLightingClampFlag:  return "lowGradientLightingClampFlag";
-    case ID_lowGradientLightingClampValue: return "lowGradientLightingClampValue";
-    case ID_materialProperties:            return "materialProperties";
+    case ID_osprayShadowsEnabledFlag:        return "osprayShadowsEnabledFlag";
+    case ID_osprayUseGridAcceleratorFlag:    return "osprayUseGridAcceleratorFlag";
+    case ID_osprayPreIntegrationFlag:        return "osprayPreIntegrationFlag";
+    case ID_ospraySingleShadeFlag:           return "ospraySingleShadeFlag";
+    case ID_osprayOneSidedLightingFlag:      return "osprayOneSidedLightingFlag";
+    case ID_osprayAoTransparencyEnabledFlag: return "osprayAoTransparencyEnabledFlag";
+    case ID_ospraySpp:                       return "ospraySpp";
+    case ID_osprayAoSamples:                 return "osprayAoSamples";
+    case ID_osprayAoDistance:                return "osprayAoDistance";
+    case ID_osprayMinContribution:           return "osprayMinContribution";
+    case ID_legendFlag:                      return "legendFlag";
+    case ID_lightingFlag:                    return "lightingFlag";
+    case ID_colorControlPoints:              return "colorControlPoints";
+    case ID_opacityAttenuation:              return "opacityAttenuation";
+    case ID_opacityMode:                     return "opacityMode";
+    case ID_opacityControlPoints:            return "opacityControlPoints";
+    case ID_resampleFlag:                    return "resampleFlag";
+    case ID_resampleTarget:                  return "resampleTarget";
+    case ID_opacityVariable:                 return "opacityVariable";
+    case ID_compactVariable:                 return "compactVariable";
+    case ID_freeformOpacity:                 return "freeformOpacity";
+    case ID_useColorVarMin:                  return "useColorVarMin";
+    case ID_colorVarMin:                     return "colorVarMin";
+    case ID_useColorVarMax:                  return "useColorVarMax";
+    case ID_colorVarMax:                     return "colorVarMax";
+    case ID_useOpacityVarMin:                return "useOpacityVarMin";
+    case ID_opacityVarMin:                   return "opacityVarMin";
+    case ID_useOpacityVarMax:                return "useOpacityVarMax";
+    case ID_opacityVarMax:                   return "opacityVarMax";
+    case ID_smoothData:                      return "smoothData";
+    case ID_samplesPerRay:                   return "samplesPerRay";
+    case ID_rendererType:                    return "rendererType";
+    case ID_gradientType:                    return "gradientType";
+    case ID_scaling:                         return "scaling";
+    case ID_skewFactor:                      return "skewFactor";
+    case ID_limitsMode:                      return "limitsMode";
+    case ID_sampling:                        return "sampling";
+    case ID_rendererSamples:                 return "rendererSamples";
+    case ID_lowGradientLightingReduction:    return "lowGradientLightingReduction";
+    case ID_lowGradientLightingClampFlag:    return "lowGradientLightingClampFlag";
+    case ID_lowGradientLightingClampValue:   return "lowGradientLightingClampValue";
+    case ID_materialProperties:              return "materialProperties";
     default:  return "invalid index";
     }
 }
@@ -1813,38 +2073,48 @@ VolumeAttributes::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:                    return FieldType_bool;
-    case ID_lightingFlag:                  return FieldType_bool;
-    case ID_colorControlPoints:            return FieldType_att;
-    case ID_opacityAttenuation:            return FieldType_float;
-    case ID_opacityMode:                   return FieldType_enum;
-    case ID_opacityControlPoints:          return FieldType_att;
-    case ID_resampleFlag:                  return FieldType_bool;
-    case ID_resampleTarget:                return FieldType_int;
-    case ID_opacityVariable:               return FieldType_variablename;
-    case ID_compactVariable:               return FieldType_variablename;
-    case ID_freeformOpacity:               return FieldType_ucharArray;
-    case ID_useColorVarMin:                return FieldType_bool;
-    case ID_colorVarMin:                   return FieldType_float;
-    case ID_useColorVarMax:                return FieldType_bool;
-    case ID_colorVarMax:                   return FieldType_float;
-    case ID_useOpacityVarMin:              return FieldType_bool;
-    case ID_opacityVarMin:                 return FieldType_float;
-    case ID_useOpacityVarMax:              return FieldType_bool;
-    case ID_opacityVarMax:                 return FieldType_float;
-    case ID_smoothData:                    return FieldType_bool;
-    case ID_samplesPerRay:                 return FieldType_int;
-    case ID_rendererType:                  return FieldType_enum;
-    case ID_gradientType:                  return FieldType_enum;
-    case ID_scaling:                       return FieldType_enum;
-    case ID_skewFactor:                    return FieldType_double;
-    case ID_limitsMode:                    return FieldType_enum;
-    case ID_sampling:                      return FieldType_enum;
-    case ID_rendererSamples:               return FieldType_float;
-    case ID_lowGradientLightingReduction:  return FieldType_enum;
-    case ID_lowGradientLightingClampFlag:  return FieldType_bool;
-    case ID_lowGradientLightingClampValue: return FieldType_double;
-    case ID_materialProperties:            return FieldType_doubleArray;
+    case ID_osprayShadowsEnabledFlag:        return FieldType_bool;
+    case ID_osprayUseGridAcceleratorFlag:    return FieldType_bool;
+    case ID_osprayPreIntegrationFlag:        return FieldType_bool;
+    case ID_ospraySingleShadeFlag:           return FieldType_bool;
+    case ID_osprayOneSidedLightingFlag:      return FieldType_bool;
+    case ID_osprayAoTransparencyEnabledFlag: return FieldType_bool;
+    case ID_ospraySpp:                       return FieldType_int;
+    case ID_osprayAoSamples:                 return FieldType_int;
+    case ID_osprayAoDistance:                return FieldType_double;
+    case ID_osprayMinContribution:           return FieldType_double;
+    case ID_legendFlag:                      return FieldType_bool;
+    case ID_lightingFlag:                    return FieldType_bool;
+    case ID_colorControlPoints:              return FieldType_att;
+    case ID_opacityAttenuation:              return FieldType_float;
+    case ID_opacityMode:                     return FieldType_enum;
+    case ID_opacityControlPoints:            return FieldType_att;
+    case ID_resampleFlag:                    return FieldType_bool;
+    case ID_resampleTarget:                  return FieldType_int;
+    case ID_opacityVariable:                 return FieldType_variablename;
+    case ID_compactVariable:                 return FieldType_variablename;
+    case ID_freeformOpacity:                 return FieldType_ucharArray;
+    case ID_useColorVarMin:                  return FieldType_bool;
+    case ID_colorVarMin:                     return FieldType_float;
+    case ID_useColorVarMax:                  return FieldType_bool;
+    case ID_colorVarMax:                     return FieldType_float;
+    case ID_useOpacityVarMin:                return FieldType_bool;
+    case ID_opacityVarMin:                   return FieldType_float;
+    case ID_useOpacityVarMax:                return FieldType_bool;
+    case ID_opacityVarMax:                   return FieldType_float;
+    case ID_smoothData:                      return FieldType_bool;
+    case ID_samplesPerRay:                   return FieldType_int;
+    case ID_rendererType:                    return FieldType_enum;
+    case ID_gradientType:                    return FieldType_enum;
+    case ID_scaling:                         return FieldType_enum;
+    case ID_skewFactor:                      return FieldType_double;
+    case ID_limitsMode:                      return FieldType_enum;
+    case ID_sampling:                        return FieldType_enum;
+    case ID_rendererSamples:                 return FieldType_float;
+    case ID_lowGradientLightingReduction:    return FieldType_enum;
+    case ID_lowGradientLightingClampFlag:    return FieldType_bool;
+    case ID_lowGradientLightingClampValue:   return FieldType_double;
+    case ID_materialProperties:              return FieldType_doubleArray;
     default:  return FieldType_unknown;
     }
 }
@@ -1869,38 +2139,48 @@ VolumeAttributes::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_legendFlag:                    return "bool";
-    case ID_lightingFlag:                  return "bool";
-    case ID_colorControlPoints:            return "att";
-    case ID_opacityAttenuation:            return "float";
-    case ID_opacityMode:                   return "enum";
-    case ID_opacityControlPoints:          return "att";
-    case ID_resampleFlag:                  return "bool";
-    case ID_resampleTarget:                return "int";
-    case ID_opacityVariable:               return "variablename";
-    case ID_compactVariable:               return "variablename";
-    case ID_freeformOpacity:               return "ucharArray";
-    case ID_useColorVarMin:                return "bool";
-    case ID_colorVarMin:                   return "float";
-    case ID_useColorVarMax:                return "bool";
-    case ID_colorVarMax:                   return "float";
-    case ID_useOpacityVarMin:              return "bool";
-    case ID_opacityVarMin:                 return "float";
-    case ID_useOpacityVarMax:              return "bool";
-    case ID_opacityVarMax:                 return "float";
-    case ID_smoothData:                    return "bool";
-    case ID_samplesPerRay:                 return "int";
-    case ID_rendererType:                  return "enum";
-    case ID_gradientType:                  return "enum";
-    case ID_scaling:                       return "enum";
-    case ID_skewFactor:                    return "double";
-    case ID_limitsMode:                    return "enum";
-    case ID_sampling:                      return "enum";
-    case ID_rendererSamples:               return "float";
-    case ID_lowGradientLightingReduction:  return "enum";
-    case ID_lowGradientLightingClampFlag:  return "bool";
-    case ID_lowGradientLightingClampValue: return "double";
-    case ID_materialProperties:            return "doubleArray";
+    case ID_osprayShadowsEnabledFlag:        return "bool";
+    case ID_osprayUseGridAcceleratorFlag:    return "bool";
+    case ID_osprayPreIntegrationFlag:        return "bool";
+    case ID_ospraySingleShadeFlag:           return "bool";
+    case ID_osprayOneSidedLightingFlag:      return "bool";
+    case ID_osprayAoTransparencyEnabledFlag: return "bool";
+    case ID_ospraySpp:                       return "int";
+    case ID_osprayAoSamples:                 return "int";
+    case ID_osprayAoDistance:                return "double";
+    case ID_osprayMinContribution:           return "double";
+    case ID_legendFlag:                      return "bool";
+    case ID_lightingFlag:                    return "bool";
+    case ID_colorControlPoints:              return "att";
+    case ID_opacityAttenuation:              return "float";
+    case ID_opacityMode:                     return "enum";
+    case ID_opacityControlPoints:            return "att";
+    case ID_resampleFlag:                    return "bool";
+    case ID_resampleTarget:                  return "int";
+    case ID_opacityVariable:                 return "variablename";
+    case ID_compactVariable:                 return "variablename";
+    case ID_freeformOpacity:                 return "ucharArray";
+    case ID_useColorVarMin:                  return "bool";
+    case ID_colorVarMin:                     return "float";
+    case ID_useColorVarMax:                  return "bool";
+    case ID_colorVarMax:                     return "float";
+    case ID_useOpacityVarMin:                return "bool";
+    case ID_opacityVarMin:                   return "float";
+    case ID_useOpacityVarMax:                return "bool";
+    case ID_opacityVarMax:                   return "float";
+    case ID_smoothData:                      return "bool";
+    case ID_samplesPerRay:                   return "int";
+    case ID_rendererType:                    return "enum";
+    case ID_gradientType:                    return "enum";
+    case ID_scaling:                         return "enum";
+    case ID_skewFactor:                      return "double";
+    case ID_limitsMode:                      return "enum";
+    case ID_sampling:                        return "enum";
+    case ID_rendererSamples:                 return "float";
+    case ID_lowGradientLightingReduction:    return "enum";
+    case ID_lowGradientLightingClampFlag:    return "bool";
+    case ID_lowGradientLightingClampValue:   return "double";
+    case ID_materialProperties:              return "doubleArray";
     default:  return "invalid index";
     }
 }
@@ -1927,6 +2207,56 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     bool retval = false;
     switch (index_)
     {
+    case ID_osprayShadowsEnabledFlag:
+        {  // new scope
+        retval = (osprayShadowsEnabledFlag == obj.osprayShadowsEnabledFlag);
+        }
+        break;
+    case ID_osprayUseGridAcceleratorFlag:
+        {  // new scope
+        retval = (osprayUseGridAcceleratorFlag == obj.osprayUseGridAcceleratorFlag);
+        }
+        break;
+    case ID_osprayPreIntegrationFlag:
+        {  // new scope
+        retval = (osprayPreIntegrationFlag == obj.osprayPreIntegrationFlag);
+        }
+        break;
+    case ID_ospraySingleShadeFlag:
+        {  // new scope
+        retval = (ospraySingleShadeFlag == obj.ospraySingleShadeFlag);
+        }
+        break;
+    case ID_osprayOneSidedLightingFlag:
+        {  // new scope
+        retval = (osprayOneSidedLightingFlag == obj.osprayOneSidedLightingFlag);
+        }
+        break;
+    case ID_osprayAoTransparencyEnabledFlag:
+        {  // new scope
+        retval = (osprayAoTransparencyEnabledFlag == obj.osprayAoTransparencyEnabledFlag);
+        }
+        break;
+    case ID_ospraySpp:
+        {  // new scope
+        retval = (ospraySpp == obj.ospraySpp);
+        }
+        break;
+    case ID_osprayAoSamples:
+        {  // new scope
+        retval = (osprayAoSamples == obj.osprayAoSamples);
+        }
+        break;
+    case ID_osprayAoDistance:
+        {  // new scope
+        retval = (osprayAoDistance == obj.osprayAoDistance);
+        }
+        break;
+    case ID_osprayMinContribution:
+        {  // new scope
+        retval = (osprayMinContribution == obj.osprayMinContribution);
+        }
+        break;
     case ID_legendFlag:
         {  // new scope
         retval = (legendFlag == obj.legendFlag);
@@ -2138,6 +2468,9 @@ VolumeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
 //    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
 //    Added checks for not doing resampling
 //
+//    Qi WU, Sat Jun 10 22:21:27 MST 2018
+//    Added RayCastingOSPRay option for volume rendering
+//
 // ****************************************************************************
 
 bool
@@ -2157,6 +2490,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
 
     if (rendererType == VolumeAttributes::RayCasting ||
         rendererType == VolumeAttributes::RayCastingSLIVR ||
+        rendererType == VolumeAttributes::RayCastingOSPRay ||
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
@@ -2185,6 +2519,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // modes does not require a reexecute.
         if(obj.rendererType == VolumeAttributes::RayCasting ||
            obj.rendererType == VolumeAttributes::RayCastingSLIVR ||
+           obj.rendererType == VolumeAttributes::RayCastingOSPRay ||
            obj.rendererType == VolumeAttributes::RayCastingIntegration)
         {
             return true;

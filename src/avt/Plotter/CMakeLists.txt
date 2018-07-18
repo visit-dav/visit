@@ -77,6 +77,12 @@
 #   Remove vtkRenderingVolumeOpenGL2 from link line. Moved module init back
 #   into volume plot.
 #
+#   Qi WU, Sat Jun 10 22:21:27 MST 2018
+#   Remove the old VISIT_OSPRAY configurations because they are too old. 
+#   Additional Note: The FindOSPRay.cmake file is broken for a recent version
+#                    of OSPRay. We should use the built-inosprayConfig.cmake
+#                    file to find OSPRay instead.
+#
 #****************************************************************************/
 
 #if(VISIT_OSPRAY)
@@ -217,14 +223,9 @@ TARGET_LINK_LIBRARIES(avtplotter_ser
     visitcommon avtmath avtview avtfilters_ser avtpipeline_ser visit_vtk 
     lightweight_visit_vtk vtkFiltersHybrid vtkRenderingOpenGL2 
     vtkRenderingFreeType ${OPENGL_LIBRARIES})
-
 IF(VISIT_OSPRAY)
-    MESSAGE(STATUS "OSPRAY_TARGET_LINK_LIBRARIES: " ${OSPRAY_TARGET_LINK_LIBRARIES})
-    MESSAGE(STATUS "OSPRAY_LIBRARIES: " ${OSPRAY_LIBRARIES})
-    MESSAGE(STATUS "OSPRAY_INCLUDE_DIRS: " ${OSPRAY_INCLUDE_DIRS})
-    TARGET_LINK_LIBRARIES(avtplotter_ser ${OSPRAY_TARGET_LINK_LIBRARIES}
-        ${OSPRAY_LIBRARIES} ${VTK_LIBRARIES})
-    INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS} ${VISIT_SOURCE_DIR}/../../VTK-6.1.0/Parallel/Core)
+    TARGET_LINK_LIBRARIES(avtplotter_ser ${OSPRAY_LIBRARIES} ${VTK_LIBRARIES})
+    INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS})
 ENDIF(VISIT_OSPRAY)
 VISIT_INSTALL_TARGETS(avtplotter_ser)
 
@@ -233,12 +234,9 @@ IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtplotter_par ${AVTPLOTTER_SOURCES})
     TARGET_LINK_LIBRARIES(avtplotter_par visitcommon avtmath avtview avtfilters_par avtpipeline_par visit_vtk lightweight_visit_vtk vtkFiltersHybrid vtkRenderingOpenGL2 vtkRenderingFreeType ${OPENGL_LIBRARIES})
     IF(VISIT_OSPRAY)
-        TARGET_LINK_LIBRARIES(avtplotter_par ${OSPRAY_TARGET_LINK_LIBRARIES}
-            ${OSPRAY_LIBRARIES} ${VTK_LIBRARIES})
-        INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS})
+      TARGET_LINK_LIBRARIES(avtplotter_par ${OSPRAY_LIBRARIES})
+      INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIRS})
     ENDIF(VISIT_OSPRAY)
-
     VISIT_INSTALL_TARGETS(avtplotter_par)
 ENDIF(VISIT_PARALLEL)
-
 

@@ -926,7 +926,6 @@ QvisVolumePlotWindow::CreateOpacityGroup(QWidget *parent, QVBoxLayout *pLayout,
 //   Removed tuvok.
 //
 // ****************************************************************************
-
 void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayout)
 {
     //resample group
@@ -968,6 +967,9 @@ void QvisVolumePlotWindow::CreateSamplingGroups(QWidget *parent, QLayout *pLayou
         pLayout->addWidget(defaultGroup);
     }
 
+    //ospray group
+    CreateOSPRayGroups(parent, pLayout);
+        
     //raycasting group
     {
         raycastingGroup = new QGroupBox(parent);
@@ -1057,17 +1059,19 @@ void QvisVolumePlotWindow::EnableDefaultGroup()
 void QvisVolumePlotWindow::UpdateSamplingGroup()
 {
     //hide all groups
+    osprayGroup->setVisible(false);
     resampleGroup->setVisible(false);
     defaultGroup->setVisible(false);
     raycastingGroup->setVisible(false);
-
+    methodsGroup->setVisible(true);
+        
     tfTabs->setTabEnabled(1, true);
 
     //lighting and material properties group, enabled for all but RayCastingIntegration
     lightMaterialPropGroup->setEnabled(true);
     lightingToggle->setEnabled(true);
 
-    //disable material properties (only enabled with lighting for SLIVR, RayCasting w/ Trilinear Sampling)
+    //disable material properties (only enabled with lighting for RayCasting w/ Trilinear Sampling)
     materialProperties->setEnabled(false);
 
     //enable/disable resampleTarget
@@ -1125,7 +1129,7 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
     case VolumeAttributes::RayCastingSLIVR:
         raycastingGroup->setVisible(true);
         UpdateLowGradientGroup(false);
-        materialProperties->setEnabled(volumeAtts->GetLightingFlag());
+        materialProperties->setEnabled(true);
         EnableSamplingMethods(false);
         samplesPerRayWidget->setEnabled(true);
         rendererSamplesWidget->setEnabled(true);
@@ -1134,6 +1138,28 @@ void QvisVolumePlotWindow::UpdateSamplingGroup()
         centeredDiffButton->setEnabled(true);
         centeredDiffButton->setChecked(true);
         sobelButton->setEnabled(false);
+        break;
+#endif
+
+#ifdef VISIT_OSPRAY
+    case VolumeAttributes::RayCastingOSPRay:
+        osprayGroup->setVisible(true);
+        osprayGroup->setEnabled(true);
+        raycastingGroup->setVisible(true);
+        EnableSamplingMethods(false);   
+        samplesPerRayWidget->setEnabled(true);
+        samplesPerRay->setEnabled(true);
+        samplesPerRayLabel->setEnabled(true);   
+        rendererSamplesWidget->setEnabled(true);
+        rendererSamples->setEnabled(true);
+        rendererSamplesLabel->setEnabled(true);
+        methodsGroup->setVisible(false);
+        centeredDiffButton->setEnabled(false);
+        sobelButton->setEnabled(false);
+        lightingToggle->setEnabled(true);
+        materialProperties->setEnabled(true);
+        lowGradientGroup->setVisible(false);
+        UpdateLowGradientGroup(false);
         break;
 #endif
 
@@ -1176,6 +1202,9 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
 #ifdef VISIT_SLIVR
     rendererTypesComboBox->addItem(tr("Ray casting: SLIVR"));
 #endif
+#ifdef VISIT_OSPRAY
+    rendererTypesComboBox->addItem(tr("Ray casting: OSPRay"));
+#endif
     connect(rendererTypesComboBox, SIGNAL(activated(int)),
             this, SLOT(rendererTypeChanged(int)));
 
@@ -1190,7 +1219,7 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     //
     // Create the methods stuff
     //
-    QGroupBox *methodsGroup = new QGroupBox(parent);
+    methodsGroup = new QGroupBox(parent);
     methodsGroup->setTitle(tr("Methods"));
     rendererOptionsLayout->addWidget(methodsGroup);
 
@@ -1277,6 +1306,174 @@ QvisVolumePlotWindow::CreateRendererOptionsGroup(int maxWidth)
     miscLayout->addWidget(legendToggle);
 
     return parent;
+}
+
+void QvisVolumePlotWindow::CreateOSPRayGroups(QWidget *parent, QLayout *pLayout)
+{
+    osprayGroup = new QGroupBox(parent);
+    osprayGroup->setTitle(tr("OSPRay Options"));
+    osprayGroupLayout = new QGridLayout(osprayGroup);
+    pLayout->addWidget(osprayGroup);    
+    // flag: shadow enabled
+    osprayShadowToggle = new QCheckBox(tr("Shadow"), osprayGroup);
+    connect(osprayShadowToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayShadowToggled(bool)));
+    // flag: use grid accelerator
+    osprayUseGridAcceleratorToggle = new QCheckBox(tr("Grid Accelerator"),
+                                                   osprayGroup);
+    connect(osprayUseGridAcceleratorToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayUseGridAcceleratorToggled(bool)));
+    // flag: enable pre integration
+    osprayPreIntegrationToggle =
+        new QCheckBox(tr("Transfer Function Pre-Integration"),
+                      osprayGroup);
+    connect(osprayPreIntegrationToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayPreIntegrationToggled(bool)));
+    // flag: enable single shade
+    ospraySingleShadeToggle = new QCheckBox(tr("Single Shade"), osprayGroup);
+    connect(ospraySingleShadeToggle, SIGNAL(toggled(bool)),
+            this, SLOT(ospraySingleShadeToggled(bool)));
+    // flag: enable one sided shading
+    osprayOneSidedLightingToggle = new QCheckBox(tr("One-Sided Lighting"),
+                                                 osprayGroup);
+    connect(osprayOneSidedLightingToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayOneSidedLightingToggled(bool)));
+    // flag: enable ao transparency
+    osprayAoTransparencyToggle = new QCheckBox(tr("Ambient Occlusion (AO) Transparency"),
+                                               osprayGroup);
+    connect(osprayAoTransparencyToggle, SIGNAL(toggled(bool)),
+            this, SLOT(osprayAoTransparencyToggled(bool)));
+    // value: spp
+    ospraySppWidget         = new QWidget(osprayGroup);
+    QHBoxLayout *sppLayout  = new QHBoxLayout(ospraySppWidget);
+    ospraySppLabel          = new QLabel(tr("Samples Per Pixel"), ospraySppWidget);
+    ospraySpp               = new QSpinBox(ospraySppWidget);
+    ospraySpp->setKeyboardTracking(false);
+    ospraySpp->setMinimum(1);
+    ospraySpp->setMaximum(25000);
+    ospraySpp->setSingleStep(1);
+    ospraySpp->setValue(1);
+    ospraySppLabel->setBuddy(ospraySpp);
+    connect(ospraySpp, SIGNAL(valueChanged(int)),
+            this, SLOT(ospraySppChanged(int)));
+    sppLayout->addWidget(ospraySppLabel);
+    sppLayout->addWidget(ospraySpp, Qt::AlignLeft);
+    sppLayout->addStretch(QSizePolicy::Maximum);
+    // value: aoSamples
+    osprayAoSamplesWidget        = new QWidget(osprayGroup);
+    QHBoxLayout *aosamplesLayout = new QHBoxLayout(osprayAoSamplesWidget);
+    osprayAoSamplesLabel         = new QLabel(tr("AO Samples"),
+                                              osprayAoSamplesWidget);
+    osprayAoSamples              = new QSpinBox(osprayAoSamplesWidget);
+    osprayAoSamples->setKeyboardTracking(false);
+    osprayAoSamples->setMinimum(0);
+    osprayAoSamples->setMaximum(25000);
+    osprayAoSamples->setSingleStep(1);
+    osprayAoSamples->setValue(0);
+    osprayAoSamplesLabel->setBuddy(osprayAoSamples);
+    connect(osprayAoSamples, SIGNAL(valueChanged(int)),
+            this, SLOT(osprayAoSamplesChanged(int)));
+    aosamplesLayout->addWidget(osprayAoSamplesLabel);
+    aosamplesLayout->addWidget(osprayAoSamples, Qt::AlignLeft);
+    aosamplesLayout->addStretch(QSizePolicy::Maximum);
+    // value: aoDistance
+    osprayAoDistanceWidget        = new QWidget(osprayGroup);
+    QHBoxLayout *aodistanceLayout = new QHBoxLayout(osprayAoDistanceWidget);
+    osprayAoDistanceLabel         = new QLabel(tr("AO Distance"),
+                                              osprayAoDistanceWidget);
+    osprayAoDistance              = new QDoubleSpinBox(osprayAoDistanceWidget);
+    osprayAoDistance->setKeyboardTracking(false);
+    osprayAoDistance->setMinimum(100.0);
+    osprayAoDistance->setMaximum(1000000.0);
+    osprayAoDistance->setSingleStep(1.0);
+    osprayAoDistance->setValue(100000.0);
+    osprayAoDistance->setDecimals(1);
+    osprayAoDistanceLabel->setBuddy(osprayAoDistance);
+    connect(osprayAoDistance, SIGNAL(valueChanged(double)),
+            this, SLOT(osprayAoDistanceChanged(double)));
+    aodistanceLayout->addWidget(osprayAoDistanceLabel);
+    aodistanceLayout->addWidget(osprayAoDistance, Qt::AlignLeft);
+    aodistanceLayout->addStretch(QSizePolicy::Maximum);
+    // value: min contribution
+    osprayMinContributionWidget        = new QWidget(osprayGroup);
+    QHBoxLayout *mincontributionLayout = new QHBoxLayout(osprayMinContributionWidget);
+    osprayMinContributionLabel         = new QLabel(tr("Minimum Contrinution"),
+                                                    osprayMinContributionWidget);
+    osprayMinContribution              = new QDoubleSpinBox(osprayMinContributionWidget);
+    osprayMinContribution->setKeyboardTracking(false);
+    osprayMinContribution->setMinimum(0.001);
+    osprayMinContribution->setMaximum(10000);
+    osprayMinContribution->setSingleStep(0.001);
+    osprayMinContribution->setValue(0.001);
+    osprayMinContribution->setDecimals(3);
+    osprayMinContributionLabel->setBuddy(osprayMinContribution);
+    connect(osprayMinContribution, SIGNAL(valueChanged(double)),
+            this, SLOT(osprayMinContributionChanged(double)));
+    mincontributionLayout->addWidget(osprayMinContributionLabel);
+    mincontributionLayout->addWidget(osprayMinContribution, Qt::AlignLeft);
+    mincontributionLayout->addStretch(QSizePolicy::Maximum);
+    // layout
+    osprayGroupLayout->addWidget(osprayShadowToggle,      0,0);
+    osprayGroupLayout->addWidget(ospraySingleShadeToggle, 1,0);
+    osprayGroupLayout->addWidget(osprayUseGridAcceleratorToggle, 0,2);
+    osprayGroupLayout->addWidget(osprayOneSidedLightingToggle,   1,2);
+    osprayGroupLayout->addWidget(osprayPreIntegrationToggle,     0,5,1,5);
+    osprayGroupLayout->addWidget(osprayAoTransparencyToggle,     1,5,1,5);
+    osprayGroupLayout->addWidget(ospraySppWidget,             2,1,1,2,Qt::AlignRight);
+    osprayGroupLayout->addWidget(osprayAoSamplesWidget,       3,1,1,2,Qt::AlignRight);
+    osprayGroupLayout->addWidget(osprayMinContributionWidget, 2,4,1,4,Qt::AlignRight);
+    osprayGroupLayout->addWidget(osprayAoDistanceWidget,      3,4,1,4,Qt::AlignRight);
+}
+
+void QvisVolumePlotWindow::osprayShadowToggled(bool val)
+{
+    volumeAtts->SetOsprayShadowsEnabledFlag(val);
+    Apply();
+}
+void QvisVolumePlotWindow::osprayUseGridAcceleratorToggled(bool val)
+{
+    volumeAtts->SetOsprayUseGridAcceleratorFlag(val);
+    Apply();
+}
+void QvisVolumePlotWindow::osprayPreIntegrationToggled(bool val)
+{
+    volumeAtts->SetOsprayPreIntegrationFlag(val);
+    Apply();
+}
+void QvisVolumePlotWindow::ospraySingleShadeToggled(bool val)
+{
+    volumeAtts->SetOspraySingleShadeFlag(val);
+    Apply();
+}
+void QvisVolumePlotWindow::osprayOneSidedLightingToggled(bool val)
+{
+    volumeAtts->SetOsprayOneSidedLightingFlag(val);
+    Apply();
+};
+void QvisVolumePlotWindow::osprayAoTransparencyToggled(bool val)
+{
+    volumeAtts->SetOsprayAoTransparencyEnabledFlag(val);
+    Apply();
+};
+void QvisVolumePlotWindow::ospraySppChanged(int val)
+{
+    volumeAtts->SetOspraySpp(val);
+    Apply();
+}
+void QvisVolumePlotWindow::osprayAoSamplesChanged(int val)
+{
+    volumeAtts->SetOsprayAoSamples(val);
+    Apply();
+}
+void QvisVolumePlotWindow::osprayAoDistanceChanged(double val)
+{
+    volumeAtts->SetOsprayAoDistance(val);
+    Apply();
+}
+void QvisVolumePlotWindow::osprayMinContributionChanged(double val)
+{
+    volumeAtts->SetOsprayMinContribution(val);
+    Apply();
 }
 
 // ****************************************************************************
@@ -1687,6 +1884,12 @@ QvisVolumePlotWindow::UpdateWindow(bool doAll)
             else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingSLIVR)
             {
                 rendererTypesComboBox->setCurrentIndex(3);
+            }
+#endif
+#ifdef VISIT_OSPRAY
+            else if (volumeAtts->GetRendererType() == VolumeAttributes::RayCastingOSPRay)
+            {
+                rendererTypesComboBox->setCurrentIndex(4);
             }
 #endif
 
@@ -3403,6 +3606,11 @@ QvisVolumePlotWindow::rendererTypeChanged(int val)
 #ifdef VISIT_SLIVR
       case 3:
         volumeAtts->SetRendererType(VolumeAttributes::RayCastingSLIVR);
+        break;
+#endif
+#ifdef VISIT_OSPRAY
+      case 4:
+        volumeAtts->SetRendererType(VolumeAttributes::RayCastingOSPRay);
         break;
 #endif
       default:

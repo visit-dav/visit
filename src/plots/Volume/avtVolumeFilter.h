@@ -44,11 +44,11 @@
 #define AVT_VOLUME_FILTER_H
 
 #include <avtDatasetToDatasetFilter.h>
-#include <avtOpacityMap.h>
 
 #include <VolumeAttributes.h>
 
 #include <avtImage.h>
+#include <avtOpacityMap.h>
 
 class     WindowAttributes;
 
@@ -75,6 +75,9 @@ class     WindowAttributes;
 //    Jeremy Meredith, Thu Feb 15 11:44:28 EST 2007
 //    Added support for rectilinear grids with an inherent transform.
 //
+//    Qi WU, Wed Jun 20 2018
+//    Added support for ospray volume rendering filter
+//
 // ****************************************************************************
 
 class avtVolumeFilter : public avtDatasetToDatasetFilter
@@ -89,14 +92,21 @@ class avtVolumeFilter : public avtDatasetToDatasetFilter
                                   { return "Volume rendering"; };
 
     avtImage_p               RenderImage(avtImage_p, const WindowAttributes &);
-#ifdef VISIT_SLIVR
-    avtImage_p               RenderImageRaycastingSLIVR(avtImage_p opaque_image, const WindowAttributes &);
+    
+#if defined(VISIT_SLIVR) || defined(VISIT_OSPRAY)
+    avtImage_p               RenderImageRayCasting(avtImage_p,
+                                                   const WindowAttributes &);
 #endif
+
     int                      GetNumberOfStages(const WindowAttributes &);
 
   protected:
     VolumeAttributes         atts;
     char                    *primaryVariable;
+
+#ifdef VISIT_OSPRAY /* handler for ospray volume rendering filter*/
+    void                    *ospray;
+#endif
 
     avtOpacityMap            CreateOpacityMap(double range[2]);
 

@@ -37,21 +37,23 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            avtSLIVRRayTracer.h                            //
+//                           avtOSPRayRayTracer.h                            //
 // ************************************************************************* //
 
-#ifndef AVT_SLIVR_RAY_TRACER_H
-#define AVT_SLIVR_RAY_TRACER_H
+#ifndef AVT_OSPRAY_RAY_TRACER_H
+#define AVT_OSPRAY_RAY_TRACER_H
 
 #include <filters_exports.h>
 
 #include <avtRayTracerBase.h>
-#include <avtSLIVRImageCompositor.h>
+#include <avtOSPRayCommon.h>
+#include <avtOSPRayImageCompositor.h>
+#include <LightList.h>
 
 class   vtkMatrix4x4;
 
 // ****************************************************************************
-//  Class: avtSLIVRRayTracer
+//  Class: avtOSPRayRayTracer
 //
 //  Purpose:
 //      Performs ray tracing, taking in a dataset as a source and has an
@@ -93,51 +95,68 @@ class   vtkMatrix4x4;
 //    Pascal Grosset, Fri Sep 20 2013
 //    Added ray casting slivr & trilinear interpolation
 //
+//    Qi Wu, Sun Jul 1 2018
+//    Added support for ospray volume rendering.
+//
 // ****************************************************************************
 
-class AVTFILTERS_API avtSLIVRRayTracer : public avtRayTracerBase
+class AVTFILTERS_API avtOSPRayRayTracer : public avtRayTracerBase
 {
-  public:
-                          avtSLIVRRayTracer();
-    virtual              ~avtSLIVRRayTracer();
+public:
+    avtOSPRayRayTracer();
+    virtual              ~avtOSPRayRayTracer();
 
-    virtual const char   *GetType(void) { return "avtSLIVRRayTracer"; };
-    virtual const char   *GetDescription(void) { return "SLIVR Ray tracing"; };
+    virtual const char   *GetType(void)      { return "avtOSPRayRayTracer"; };
+    virtual const char   *GetDescription(void) 
+                                             { return "OSPRay Ray tracing"; };
 
+    void SetActiveVariable(const char* s)             { activeVariable = s; };
+    void SetLightInfo(const LightList& l)                  { lightList = l; };
+    void SetOSPRay(OSPVisItContext *ptr)               { ospray_core = ptr; };
 
-    void                  blendImages(float *src, int dimsSrc[2], int posSrc[2], float *dst, int dimsDst[2], int posDst[2]);
-    void                  SetLighting(bool l) {lighting = l; };
-    void                  SetLightPosition(double _lightPos[4]) { for (int i=0;i<4;i++) lightPosition[i]=_lightPos[i]; }
-    void                  SetLightDirection(double _lightDir[3]) { for (int i=0;i<3;i++) lightDirection[i]=_lightDir[i]; }
-    void                  SetMatProperties(double _matProp[4]) { for (int i=0;i<4;i++) materialProperties[i]=_matProp[i]; }
-    void                  SetViewDirection(double *vd){ for (int i=0; i<3; i++) view_direction[i] = vd[i]; }
+    void SetLighting(bool l)                  { gradientShadingEnabled = l; };
+    void SetShadowsEnabled(bool l)                    { shadowsEnabled = l; };
+    void SetUseGridAccelerator(bool l)            { useGridAccelerator = l; };
+    void SetPreIntegration(bool l)                    { preIntegration = l; };
+    void SetSingleShade(bool l)                          { singleShade = l; };
+    void SetOneSidedLighting(bool l)                { oneSidedLighting = l; };
+    void SetAoTransparencyEnabled(bool l)      { aoTransparencyEnabled = l; };
 
-  protected:
+    void SetAoSamples(int v)                               { aoSamples = v; };
+    void SetSpp(int v)                                           { spp = v; };
+    
+    void SetAoDistance(double v)                          { aoDistance = v; };
+    void SetSamplingRate(double v)                      { samplingRate = v; };
+    void SetMinContribution(double v)                { minContribution = v; };
+    
+    void SetMatProperties(double v[4]) 
+                    { for (int i=0; i<4; i++) materialProperties[i] = v[i]; };
+    void SetViewDirection(double v[3])
+                         { for (int i=0; i<3; i++) viewDirection[i] = v[i]; };
+protected:
+    virtual void             Execute(void);
 
-    virtual void          Execute(void);
+    const char*              activeVariable;
+    LightList                lightList;
+    OSPVisItContext         *ospray_core;
 
-    avtSLIVRImageCompositor    imgComm;
-    bool                  lighting;
-    double                lightPosition[4];
-    double                lightDirection[3];
-    double                materialProperties[4];
-    double                view_direction[3];
-    double                panPercentage[2];
+    bool                     gradientShadingEnabled;
+    bool                     shadowsEnabled;
+    bool                     useGridAccelerator;
+    bool                     preIntegration;
+    bool                     singleShade;
+    bool                     oneSidedLighting;
+    bool                     aoTransparencyEnabled;
+    int                      spp;
+    int                      aoSamples;
+    double                   aoDistance;
+    double                   samplingRate;
+    double                   minContribution;
+    
+    double                   materialProperties[4];
+    double                   viewDirection[3];
 
-    void project3Dto2D(double _3Dextents[6], int width, int height,
-                       vtkMatrix4x4 *_mvp, int _2DExtents[4],
-                       double depthExtents[2]);
-    double project(double _worldCoordinates[3], int pos2D[2], 
-                   int _width, int _height, vtkMatrix4x4 *_mvp);
-    void unProject(int _x, int _y, float _z, double _worldCoordinates[3],
-                   int _width, int _height, vtkMatrix4x4 *invModelViewProj);
-    bool checkInBounds(double volBounds[6], double coord[3]);
-    void computeRay(double camera[3], double position[3], double ray[3]);
-    bool intersect(double bounds[6], double ray[3], double cameraPos[3],
-                   double &tMin, double &tMax);
+    avtOSPRayImageCompositor imgComm;
 };
 
-
 #endif
-
-

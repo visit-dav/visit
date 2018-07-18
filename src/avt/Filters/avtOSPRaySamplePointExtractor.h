@@ -37,35 +37,26 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                       avtSamplePointExtractorBase.h                       //
+//                      avtOSPRaySamplePointExtractor.h                      //
 // ************************************************************************* //
 
-#ifndef AVT_SAMPLE_POINT_EXTRACTOR_BASE_H
-#define AVT_SAMPLE_POINT_EXTRACTOR_BASE_H
+#ifndef AVT_OSPRAY_SAMPLE_POINT_EXTRACTOR_H
+#define AVT_OSPRAY_SAMPLE_POINT_EXTRACTOR_H
 
 #include <filters_exports.h>
 
-#include <avtDatasetToSamplePointsFilter.h>
-#include <avtVolume.h>
+#include <avtSamplePointExtractorBase.h>
+#include <avtOSPRayCommon.h> // this ensures VISIT_OSPRAY is defined
 
-#include <avtViewInfo.h>
+class     avtOSPRayVoxelExtractor;
 
-#include <avtOpacityMap.h>
+#include <vtkMatrix4x4.h>
+
 #include <vector>
 #include <map>
 
-#include <vtkCamera.h>
-#include <vtkMatrix4x4.h>
-
-
-class  vtkDataArray;
-class  vtkDataSet;
-
-class  avtRayFunction;
-
-
 // ****************************************************************************
-//  Class: avtSamplePointExtractorBase
+//  Class: avtOSPRaySamplePointExtractor
 //
 //  Purpose:
 //      This is a component that will take an avtDataset as an input and find
@@ -123,81 +114,67 @@ class  avtRayFunction;
 //    Kevin Griffin, Fri Apr 22 16:31:57 PDT 2016
 //    Added support for polygons.
 //
+//    Qi Wu, Sun Jul 1 2018
+//    Added support for ospray volume rendering.
+//
 // ****************************************************************************
 
-class AVTFILTERS_API avtSamplePointExtractorBase 
-    : public avtDatasetToSamplePointsFilter
+class AVTFILTERS_API avtOSPRaySamplePointExtractor 
+    : public avtSamplePointExtractorBase
 {
   public:
-                              avtSamplePointExtractorBase(int, int, int);
-    virtual                  ~avtSamplePointExtractorBase();
+                          avtOSPRaySamplePointExtractor(int, int, int);
+    virtual              ~avtOSPRaySamplePointExtractor();
 
-    virtual const char       *GetType(void)
-                                  { return "avtSamplePointExtractorBase"; }
-    virtual const char       *GetDescription(void)
-                                  { return "Extracting sample points";}
+    virtual const char   *GetType(void)
+                                   { return "avtOSPRaySamplePointExtractor"; };
+    virtual const char   *GetDescription(void)
+                                         { return "Extracting sample points";};
 
-    void                      SetRectilinearGridsAreInWorldSpace(bool, 
-                                                   const avtViewInfo &,double);
-    void                      RestrictToTile(int, int, int, int);
-    void                      StopTiling(void) { shouldDoTiling = false; }
+    void                  SetOSPRay(OSPVisItContext* o)   { ospray_core = o; };
+    void                  SetViewInfo(const avtViewInfo & v) { viewInfo = v; };
+    void                  SetSamplingRate(double r)      { samplingRate = r; };
+    void                  SetRenderingExtents(int extents[4]) 
+    {
+        renderingExtents[0] = extents[0];
+        renderingExtents[1] = extents[1];
+        renderingExtents[2] = extents[2];
+        renderingExtents[3] = extents[3];
+    }
+    void                  SetMVPMatrix(vtkMatrix4x4 *mvp)
+    {
+        modelViewProj->DeepCopy(mvp);
+    };
 
-
-    void                      SetUpArbitrator(std::string &name, bool min);
-
-    void                      SetTransferFn(avtOpacityMap *_transferFn1D)
-                                  { transferFn1D = _transferFn1D; }
-
-    void                      SetJittering(bool);
+    int                   GetImgPatchSize() { return patchCount; };
+    void                  GetAndDelImgData(int patchId,
+                                           ospray::ImgData &tempImgData);
+    ospray::ImgMetaData   GetImgMetaPatch(int patchId)
+                                  { return imageMetaPatchVector.at(patchId); };
+    void                  DelImgPatches();
+    
+    std::vector<ospray::ImgMetaData>    imageMetaPatchVector;
+    std::multimap<int, ospray::ImgData> imgDataHashMap;
+    typedef std::multimap<int, ospray::ImgData>::iterator iter_t;
 
   protected:
-    int                       width, height, depth;
-    int                       currentNode, totalNodes;
+    
+    virtual void              InitSampling(avtDataTree_p dt);
+    virtual void              DoSampling(vtkDataSet *, int);
+    virtual void              SetUpExtractors(void);
+    virtual void              SendJittering(void);
+    virtual bool              FilterUnderstandsTransformedRectMesh(void);
+    void                      RasterBasedSample(vtkDataSet *, int num = 0);
+    ospray::ImgMetaData       InitMetaPatch(int id);
 
-    bool                      shouldDoTiling;
-    int                       width_min, width_max;
-    int                       height_min, height_max;
-
-    bool                      shouldSetUpArbitrator;
-    std::string               arbitratorVarName;
-    bool                      arbitratorPrefersMinimum;
-    avtSamplePointArbitrator *arbitrator;
-
-    bool                      jitter;
-
-    bool                      rectilinearGridsAreInWorldSpace;
-    avtViewInfo               view; // controlled by SetRectilinearGridsAreInWorldSpace
-    double                    aspect;
-
-    avtOpacityMap             *transferFn1D;
-    virtual void              Execute(void);
-    virtual void              ExecuteTree(avtDataTree_p);
-    virtual void              PreExecute(void);
-    virtual void              PostExecute(void);
-
-    typedef struct 
-    {
-      std::vector<int>                  cellDataIndex;
-      std::vector<int>                  pointDataIndex;
-      std::vector<int>                  cellDataSize;
-      std::vector<int>                  pointDataSize;
-      std::vector<vtkDataArray *>       cellArrays;
-      std::vector<vtkDataArray *>       pointArrays;
-      int                               nVars;
-    } LoadingInfo;
-
-    void                      GetLoadingInfoForArrays(vtkDataSet *,
-                                                      LoadingInfo &);
-
-    virtual bool              FilterUnderstandsTransformedRectMesh() = 0;
-    virtual void              SetUpExtractors(void) = 0;
-    virtual void              SendJittering(void) = 0;
-    virtual void              DoSampling(vtkDataSet *ds, int idx) = 0;
-    virtual void              InitSampling(avtDataTree_p dt) {};
-
+    OSPVisItContext          *ospray_core;
+    avtOSPRayVoxelExtractor  *osprayVoxelExtractor;
+    avtViewInfo               viewInfo;
+    vtkMatrix4x4             *modelViewProj;
+    double                    samplingRate;
+    int                       renderingExtents[4];
+    int                       patchCount;
 };
 
 
 #endif
-
-

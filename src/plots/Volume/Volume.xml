@@ -37,6 +37,7 @@
         RayCasting
         RayCastingIntegration
         RayCastingSLIVR
+        RayCastingOSPRay
       </Enum>
       <Enum name="GradientType">
         CenteredDifferences
@@ -71,6 +72,38 @@
         Higher
         Highest
       </Enum>
+      
+      <Field name="osprayShadowsEnabledFlag" label="osprayShadowsEnabledFlag" type="bool">
+        false
+      </Field>
+      <Field name="osprayUseGridAcceleratorFlag" label="osprayUseGridAcceleratorFlag" type="bool">
+        false
+      </Field>
+      <Field name="osprayPreIntegrationFlag" label="osprayPreIntegrationFlag" type="bool">
+        false
+      </Field>
+      <Field name="ospraySingleShadeFlag" label="ospraySingleShadeFlag" type="bool">
+        false
+      </Field>
+      <Field name="osprayOneSidedLightingFlag" label="osprayOneSidedLightingFlag" type="bool">
+        false
+      </Field>
+      <Field name="osprayAoTransparencyEnabledFlag" label="osprayAoTransparencyEnabledFlag" type="bool">
+        false
+      </Field>
+      <Field name="ospraySpp" label="ospraySpp" type="int">
+        1
+      </Field>
+      <Field name="osprayAoSamples" label="osprayAoSamples" type="int">
+        0
+      </Field>
+      <Field name="osprayAoDistance" label="osprayAoDistance" type="double">
+        100000.0
+      </Field>
+      <Field name="osprayMinContribution" label="osprayMinContribution" type="double">
+        0.001
+      </Field>
+      
       <Field name="legendFlag" label="legendFlag" type="bool">
         true
       </Field>

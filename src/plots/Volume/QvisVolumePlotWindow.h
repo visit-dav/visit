@@ -54,6 +54,7 @@ class QRadioButton;
 class QSpinBox;
 class QDoubleSpinBox;
 class QVBoxLayout;
+class QGridLayout;
 class QvisColorTableButton;
 class QvisColorSelectionWidget;
 class QvisGaussianOpacityBar;
@@ -241,9 +242,17 @@ private slots:
     void clearAllGuassians();
     void setGuassians();
     void setManyGuassians();
-
-
-
+    // ospray options
+    void osprayShadowToggled(bool val);
+    void osprayUseGridAcceleratorToggled(bool val);
+    void osprayPreIntegrationToggled(bool val);
+    void ospraySingleShadeToggled(bool val);
+    void osprayOneSidedLightingToggled(bool val);
+    void osprayAoTransparencyToggled(bool val);
+    void ospraySppChanged(int val);
+    void osprayAoSamplesChanged(int val);
+    void osprayAoDistanceChanged(double val);
+    void osprayMinContributionChanged(double val);
 
 private:
     int                      plotType;
@@ -298,6 +307,7 @@ private:
     QCheckBox                *legendToggle;
     QCheckBox                *lightingToggle;
     QCheckBox                *resampleToggle;
+    QGroupBox                *methodsGroup;
     QGroupBox                *lowGradientGroup;
     QLabel                   *lowGradientLightingReductionLabel;
     QComboBox                *lowGradientLightingReductionCombo;
@@ -351,6 +361,28 @@ private:
     QPushButton              *setGaussButton;
     QPushButton              *setManyGaussButton;
 
+    //OSPRay group
+    QGroupBox               *osprayGroup;
+    QGridLayout             *osprayGroupLayout;
+    QCheckBox               *osprayShadowToggle;
+    QCheckBox               *osprayUseGridAcceleratorToggle;
+    QCheckBox               *osprayPreIntegrationToggle;
+    QCheckBox               *ospraySingleShadeToggle;
+    QCheckBox               *osprayOneSidedLightingToggle;
+    QCheckBox               *osprayAoTransparencyToggle;
+    QWidget                 *ospraySppWidget;
+    QLabel                  *ospraySppLabel;
+    QSpinBox                *ospraySpp;
+    QWidget                 *osprayAoSamplesWidget;
+    QLabel                  *osprayAoSamplesLabel;
+    QSpinBox                *osprayAoSamples;
+    QWidget                 *osprayAoDistanceWidget;
+    QLabel                  *osprayAoDistanceLabel;
+    QDoubleSpinBox          *osprayAoDistance;
+    QWidget                 *osprayMinContributionWidget;
+    QLabel                  *osprayMinContributionLabel;
+    QDoubleSpinBox          *osprayMinContribution;
+    
     //Sampling group
     QGroupBox               *resampleGroup;
     QWidget                 *defaultOptions;
@@ -358,6 +390,7 @@ private:
     QGroupBox               *defaultGroup;
     QGroupBox               *raycastingGroup;
     void                    CreateSamplingGroups(QWidget *parent, QLayout *pLayout);
+    void                    CreateOSPRayGroups(QWidget *parent, QLayout *pLayout);
     void                    UpdateSamplingGroup();
     void                    EnableSamplingMethods(bool enable);
     void                    EnableDefaultGroup();

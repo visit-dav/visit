@@ -52,6 +52,9 @@ Definition:
 //    Allen Harvey, Thurs Nov 3 7:21:13 EST 2011
 //    Added checks for not doing resampling
 //
+//    Qi WU, Sat Jun 10 22:21:27 MST 2018
+//    Added RayCastingOSPRay option for volume rendering
+//
 // ****************************************************************************
 
 bool
@@ -71,6 +74,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
 
     if (rendererType == VolumeAttributes::RayCasting ||
         rendererType == VolumeAttributes::RayCastingSLIVR ||
+        rendererType == VolumeAttributes::RayCastingOSPRay ||
         rendererType == VolumeAttributes::RayCastingIntegration)
     {
         // Trilinear requires ghost zone while Rasterization and KernelBased do not
@@ -99,6 +103,7 @@ VolumeAttributes::ChangesRequireRecalculation(const VolumeAttributes &obj) const
         // modes does not require a reexecute.
         if(obj.rendererType == VolumeAttributes::RayCasting ||
            obj.rendererType == VolumeAttributes::RayCastingSLIVR ||
+           obj.rendererType == VolumeAttributes::RayCastingOSPRay ||
            obj.rendererType == VolumeAttributes::RayCastingIntegration)
         {
             return true;
@@ -663,4 +668,8 @@ VolumeAttributes_SetMaterialProperties(PyObject *self, PyObject *args)
 Target: xml2cmake
 Condition: VISIT_SLIVR
 Definitions: -DVISIT_SLIVR
+
+Target: xml2cmake
+Condition: VISIT_OSPRAY
+Definitions: -DVISIT_OSPRAY
 

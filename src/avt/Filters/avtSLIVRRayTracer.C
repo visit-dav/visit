@@ -85,7 +85,6 @@ bool SLIVRsortImgMetaDataByEyeSpaceDepth(imgMetaData const& before, imgMetaData 
 
 avtSLIVRRayTracer::avtSLIVRRayTracer() : avtRayTracerBase()
 {
-
     panPercentage[0] = 0;
     panPercentage[1] = 0;
     lighting = false;
@@ -250,7 +249,6 @@ avtSLIVRRayTracer::Execute()
     extractor.SetTransferFn(transferFn1D);
     extractor.SetInput(trans.GetOutput());
 
-
     //
     // Ray casting: SLIVR ~ Before Rendering
     //
@@ -271,6 +269,7 @@ avtSLIVRRayTracer::Execute()
 
     //
     // Camera Settings
+    //
     vtkCamera *sceneCam = vtkCamera::New();
     sceneCam->SetPosition(view.camera[0],view.camera[1],view.camera[2]);
     sceneCam->SetFocalPoint(view.focus[0],view.focus[1],view.focus[2]);

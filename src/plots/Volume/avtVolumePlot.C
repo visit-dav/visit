@@ -233,7 +233,8 @@ avtVolumePlot::PlotIsImageBased(void)
 {
     return (atts.GetRendererType() == VolumeAttributes::RayCasting ||
             atts.GetRendererType() == VolumeAttributes::RayCastingIntegration ||
-            atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR);
+            atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
+            atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay);
 }
 
 
@@ -689,7 +690,8 @@ avtVolumePlot::ApplyRenderingTransformation(avtDataObject_p input)
 
     if (atts.GetRendererType() == VolumeAttributes::RayCasting ||
         atts.GetRendererType() == VolumeAttributes::RayCastingIntegration ||
-        atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR)
+        atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
+        atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay)
     {
 #ifdef ENGINE
         // gradient calc for raycasting integration not needed, but

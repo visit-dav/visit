@@ -426,6 +426,9 @@
 #    icons. Previously, this resulted in a couple of invalid symbolic links
 #    ending up in the distribution file.
 #
+#    Qi WU, Sat Jun 10 22:21:27 MST 2018
+#    I added support to find OSPRay
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -694,8 +697,8 @@ SET(CXX_TEST_PATH ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 # configure options
 #-----------------------------------------------------------------------------
 OPTION(VISIT_PARALLEL "Build VisIt's parallel compute engine." OFF)
-
 OPTION(VISIT_SLIVR    "Build VisIt with support for the SLIVR volume rendering library." ON)
+OPTION(VISIT_OSPRAY   "Build VisIt with support for the OSPRay volume rendering library." OFF)
 OPTION(VISIT_STATIC   "Build VisIt statically." OFF)
 IF(VISIT_STATIC)
     ADD_DEFINITIONS(-DVISIT_STATIC)
@@ -870,6 +873,11 @@ VISIT_3RDPARTY_VAR(MDSPLUS_DIR   "Path containing the MDSplus library's include 
 VISIT_3RDPARTY_VAR(ZLIB_DIR      "Path containing the zlib library's include and lib")
 VISIT_3RDPARTY_VAR(MOAB_DIR      "Path containing the MOAB library's include and lib")
 VISIT_3RDPARTY_VAR(MOAB_MPI_DIR  "Path containing the parallel MOAB library's include and lib")
+
+VISIT_3RDPARTY_VAR(OSPRAY_DIR    "Path containing the OSPRay library's include and lib")
+VISIT_3RDPARTY_VAR(EMBREE_ROOT   "Path containing the embree library's include and lib")
+VISIT_3RDPARTY_VAR(ISPC_ROOT     "Path containing the ISPC library's include and lib")
+VISIT_3RDPARTY_VAR(TBB_ROOT      "Path containing the TBB library's include and lib")
 
 #-----------------------------------------------------------------------------
 # Read the version
@@ -1154,11 +1162,83 @@ ELSE(VISIT_THREAD)
     MESSAGE(STATUS "Threading for VisIt: OFF")
 ENDIF(VISIT_THREAD)
 
+# Enable OSPRay for VisIt
 IF(VISIT_OSPRAY)
+    # setup variables 
+    SET(OSPRAY_USE_EXTERNAL_EMBREE ON)
+    SET(ospray_DIR ${OSPRAY_DIR})
+    SET(embree_DIR ${EMBREE_ROOT})
+    SET(ISPC_EXECUTABLE ${ISPC_ROOT})
+    IF(NOT DEFINED TBB_ROOT)
+      SET(TBB_ROOT ${VISIT_TBB_ROOT})
+    ENDIF(NOT DEFINED TBB_ROOT)     
+    FIND_PACKAGE(ospray REQUIRED)
+    # setup ospray
     ADD_DEFINITIONS(-DVISIT_OSPRAY)
-    MESSAGE(STATUS "OSPRAY for VisIt: ON")
+    INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIR})
+    LINK_DIRECTORIES(${VISIT_OSPRAY_DIR}/../..)
+    # additional module library
+    SET(OSPRAY_LIBRARIES
+      ${OSPRAY_LIBRARIES}
+      ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
+      ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
+      ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX})
+    # install
+    # on linux ospray have libraries in a form of: 
+    #      libospray[xxx].so
+    #      libospray[xxx].so.0
+    #      libospray[xxx].so.[version]
+    #
+    # on mac ospray have libraries in a form of: 
+    #      libospray[xxx].dylib
+    #      libospray[xxx].0.dylib
+    #      libospray[xxx].[version].dylib
+    #
+    # on windows
+    #      libospray[xxx].lib
+    #      libospray[xxx].dll
+    #
+    IF(NOT VISIT_HEADERS_SKIP_INSTALL)
+      INSTALL(DIRECTORY ${OSPRAY_INCLUDE_DIR}
+        DESTINATION 
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/ospray
+        FILE_PERMISSIONS OWNER_WRITE OWNER_READ
+                         GROUP_WRITE GROUP_READ
+                         WORLD_READ
+        DIRECTORY_PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE
+                              GROUP_WRITE GROUP_READ GROUP_EXECUTE
+                                          WORLD_READ WORLD_EXECUTE
+        PATTERN ".svn" EXCLUDE)
+    ENDIF(NOT VISIT_HEADERS_SKIP_INSTALL)
+    IF(VISIT_OSPRAY_SKIP_INSTALL)
+      FOREACH(l ${OSPRAY_LIBRARIES})
+        # GET_FILENAME_COMPONENT(_ext_ ${l} EXT)
+        # GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
+        # GET_FILENAME_COMPONENT(_path_ ${l} DIRECTORY)
+        # MESSAGE(STATUS ${l})
+        # MESSAGE(STATUS ${_ext_})
+        # MESSAGE(STATUS ${_name_})
+        # MESSAGE(STATUS ${_path_})
+        IF( (NOT "${l}" STREQUAL "optimized") AND 
+            (NOT "${l}" STREQUAL "debug"))
+          GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
+          IF( (NOT "${_name_}" STREQUAL "libtbb_debug") AND
+              (NOT "${_name_}" STREQUAL "libtbbmalloc_debug") AND
+              (NOT "${_name_}" STREQUAL "libtbb") AND
+              (NOT "${_name_}" STREQUAL "libtbbmalloc") AND
+              (NOT "${_name_}" STREQUAL "libembree3") )
+            THIRD_PARTY_INSTALL_LIBRARY(${l}.0)  
+          ENDIF()
+          THIRD_PARTY_INSTALL_LIBRARY(${l})
+        ENDIF()
+      ENDFOREACH()
+    ENDIF(VISIT_OSPRAY_SKIP_INSTALL)
+    # debug
+    MESSAGE(STATUS "OSPRAY_INCLUDE_DIR: " ${OSPRAY_INCLUDE_DIR})
+    MESSAGE(STATUS "OSPRAY_LIBRARIES: " ${OSPRAY_LIBRARIES})
+    MESSAGE(STATUS "OSPRay for VisIt: ON")
 ELSE(VISIT_OSPRAY)
-    MESSAGE(STATUS "OSPRAY for VisIt: OFF")
+    MESSAGE(STATUS "OSPRay for VisIt: OFF")
 ENDIF(VISIT_OSPRAY)
 
 #-----------------------------------------------------------------------------

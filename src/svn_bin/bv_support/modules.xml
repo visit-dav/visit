@@ -20,6 +20,7 @@
             <lib name="conduit"/>
             <lib name="cgns"/>
             <lib name="eavl"/>
+            <lib name="embree"/>
             <lib name="fastbit"/>
             <lib name="fastquery"/>
             <lib name="gdal"/>
@@ -28,6 +29,7 @@
             <lib name="hdf4"/>
             <lib name="hdf5"/>
             <lib name="icet"/>
+            <lib name="ispc"/>
             <lib name="llvm"/>
 <!--        <lib name="mdsplus"/>    Removed for now by Allen Sanderson-->
             <lib name="mesagl"/>
@@ -39,10 +41,10 @@
             <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
-            <lib name="pidx"/>
             <lib name="openssl"/>
             <lib name="osmesa"/>
             <lib name="ospray"/>
+            <lib name="pidx"/>
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
@@ -73,11 +75,13 @@
             <lib name="cfitsio"/>
             <lib name="conduit"/>
             <lib name="cgns"/>
+            <lib name="embree"/>
             <lib name="gdal"/>
             <lib name="fastbit"/>
             <lib name="fastquery"/>
             <lib name="hdf5"/>
             <lib name="h5part"/>
+            <lib name="ispc"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
@@ -89,6 +93,7 @@
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>
+            <lib name="tbb"/>
             <lib name="uintah"/>
             <lib name="visus"/>
             <lib name="xdmf"/>
@@ -169,6 +174,9 @@
         -->
         <group name="nonio" comment="Build non I/O libraries" enabled="no">
             <lib name="icet"/>
+            <lib name="embree"/>
+            <lib name="ispc"/>
+            <lib name="tbb"/>
             <lib name="ospray"/>
         </group>
 

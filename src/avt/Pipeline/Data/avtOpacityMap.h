@@ -54,13 +54,15 @@ struct RGBA
     float         A;
 };
 
-struct _RGBA
+struct RGBAF
 {
     float R;
     float G;
     float B;
     float A;
 };
+
+// added by Qi, for using RGBAF nicely outside the function
 
 // ****************************************************************************
 //  Class: avtOpacityMap
@@ -87,6 +89,11 @@ struct _RGBA
 //    Define private copy constructor and assignment operator to prevent
 //    accidental use of default, bitwise copy implementations.
 //
+//    Qi WU, Sat Jun 10 22:21:27 MST 2018
+//    Add function 'SetTableFloatNOC' to generate a transfer function without
+//    the opacity correction term. This function will be used for OSPRay 
+//    volume rendering
+//
 // ****************************************************************************
 
 class PIPELINE_API avtOpacityMap
@@ -99,9 +106,14 @@ class PIPELINE_API avtOpacityMap
     void operator = (const avtOpacityMap &obj);
 
     const RGBA                  *GetTable(void) { return table; };
+    const RGBAF                 *GetTableFloat(void) { return transferFn1D; };
     void                         SetTable(unsigned char *, int, double = 1.);
-    void                         SetTable(unsigned char *arr, int te, double attenuation, float over);
-    void                         SetTableFloat(unsigned char *arr, int te, double attenuation, float over);
+    void                         SetTable(unsigned char *arr, int te, 
+                                               double attenuation, float over);
+    void                         SetTableFloat(unsigned char *arr, int te,
+                                               double attenuation, float over);
+    void                         SetTableFloatNOC(unsigned char *arr, int te,
+                                                           double attenuation);
     void                         SetTable(RGBA *, int, double = 1.);
     const RGBA                  &GetOpacity(double);
 
@@ -114,20 +126,21 @@ class PIPELINE_API avtOpacityMap
     double                       GetMinVisibleScalar();
     double                       GetMaxVisibleScalar();
     
-    void                         computeVisibleRange();
+    void                         ComputeVisibleRange();
 
     inline int                   Quantize(const double &);
     int                          GetNumberOfTableEntries(void)
                                                       { return tableEntries; };
 
     float                        QuantizeValF(const double &val);
-    int                          QueryTF(double scalarValue, double color[4]) const;
+    int                          QueryTF(double scalarValue, 
+                                         double color[4]) const;
     float                        QueryAlpha(double scalarValue) const;
 
-    friend PIPELINE_API ostream &operator << (ostream &, const avtOpacityMap &);
+    friend PIPELINE_API ostream &operator <<(ostream &, const avtOpacityMap &);
   protected:
     RGBA                        *table;
-    _RGBA                       *transferFn1D;
+    RGBAF                       *transferFn1D;
     int                          tableEntries;
 
     double                       max, min;
@@ -214,11 +227,13 @@ avtOpacityMap::QuantizeValF(const double &val){
 //  Method: avtOpacityMap::QueryTF
 //
 //  Purpose:
-//      Queries a Transfer function for the color based on the scalr value passed in 
+//      Queries a Transfer function for the color based on the scalr value
+//      passed in 
 //
 //  Arguments:
 //      scalarValue     scalar value
-//      color           the color queried from the transfer function based on the scalar value
+//      color           the color queried from the transfer function based on
+//                      the scalar value
 //
 //  Returns: 
 //
@@ -230,6 +245,9 @@ avtOpacityMap::QuantizeValF(const double &val){
 //    Qi Wu, Tue Aug 8 12:47:52 MT 2017
 //    Fixed index overflow problem when the scalar value reaches its maximum
 //
+//    Qi WU, Sat Jun 10 22:21:27 MST 2018
+//    Fix bad coding formats
+//
 // ****************************************************************************
 inline int
 avtOpacityMap::QueryTF(double scalarValue, double color[4]) const
@@ -237,7 +255,7 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4]) const
     if (scalarValue <= min){
         int index = 0;
 
-        _RGBA colorRGBA = transferFn1D[index];
+        RGBAF colorRGBA = transferFn1D[index];
         color[0] = colorRGBA.R;
         color[1] = colorRGBA.G;
         color[2] = colorRGBA.B;
@@ -248,7 +266,7 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4]) const
 
     if (scalarValue >= max){
         int index = tableEntries-1;
-        _RGBA colorRGBA = transferFn1D[index];
+        RGBAF colorRGBA = transferFn1D[index];
         color[0] = colorRGBA.R;
         color[1] = colorRGBA.G;
         color[2] = colorRGBA.B;
@@ -258,11 +276,12 @@ avtOpacityMap::QueryTF(double scalarValue, double color[4]) const
     }
 
     int indexLow, indexHigh;
-    _RGBA colorRGBALow, colorRGBAHigh;
+    RGBAF colorRGBALow, colorRGBAHigh;
     double colorLow[4], colorHigh[4];
     float indexPos, indexDiff;
 
-    indexPos  = (scalarValue-min)/(max-min) * (tableEntries-1);    // multiplier = 1.0/(max-min) * tableEntries
+    indexPos  = (scalarValue-min)/(max-min) * (tableEntries-1); 
+    // ^^^^ multiplier = 1.0/(max-min) * tableEntries
     indexLow  = (int)indexPos;
     indexHigh = (int)(indexPos+1.0);
 

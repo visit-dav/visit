@@ -52,7 +52,7 @@
 
 #include <vtkMatrix4x4.h>
 
-#include <imgMetaData.h>
+#include <avtSLIVRCommon.h>
 
 class  avtSLIVRVoxelExtractor;
 
@@ -163,10 +163,13 @@ class AVTFILTERS_API avtSLIVRSamplePointExtractor
     typedef std::multimap<int, imgData>::iterator iter_t;
 
   protected:
+    virtual void              InitSampling(avtDataTree_p dt);
     virtual void              DoSampling(vtkDataSet *, int);
     virtual void              SetUpExtractors(void);
     virtual void              SendJittering(void);
-    virtual bool              FilterUnderstandsTransformedRectMesh(void);
+    virtual bool              FilterUnderstandsTransformedRectMesh(void);   
+    void                      RasterBasedSample(vtkDataSet *, int num=0);
+    imgMetaData               initMetaPatch(int id);    // initialize a patch
 
     double                    minMaxSpatialBounds[6];
     double                    avgPatchExtents[3];
@@ -192,9 +195,6 @@ class AVTFILTERS_API avtSLIVRSamplePointExtractor
     double                    lightDirection[3];
     double                    materialProperties[4];
 
-    imgMetaData               initMetaPatch(int id);    // initialize a patch
-
-    void                      RasterBasedSample(vtkDataSet *, int num=0);
 };
 
 

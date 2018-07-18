@@ -628,7 +628,7 @@ avtSamplePointExtractor::RasterBasedSample(vtkDataSet *ds, int num)
         }
 
         massVoxelExtractor->SetGridsAreInWorldSpace(
-            rectilinearGridsAreInWorldSpace, viewInfo, aspect, xform);
+            rectilinearGridsAreInWorldSpace, view, aspect, xform);
         massVoxelExtractor->SetTransferFn(transferFn1D);
         massVoxelExtractor->Extract((vtkRectilinearGrid *) ds, varnames, varsizes);
         return;

@@ -131,14 +131,42 @@ avtWorldSpaceToImageSpaceTransform.C
 avtXRayFilter.C
 )
 
-if (VISIT_SLIVR)
-    list(APPEND AVTFILTERS_SOURCES
-         avtImgCommunicator.C
+IF(VISIT_SLIVR)
+    LIST(APPEND AVTFILTERS_SOURCES
+         avtSLIVRCommon.C
+         avtSLIVRImageCompositor.C
          avtSLIVRRayTracer.C
          avtSLIVRSamplePointExtractor.C
          avtSLIVRVoxelExtractor.C)
-    add_definitions(-DVISIT_SLIVR)
-endif()
+    ADD_DEFINITIONS(-DVISIT_SLIVR)
+ENDIF()
+
+IF(VISIT_OSPRAY)
+    LIST(APPEND AVTFILTERS_SOURCES
+         avtOSPRayCommon.C
+         avtOSPRayImageCompositor.C
+         avtOSPRayRayTracer.C
+         avtOSPRaySamplePointExtractor.C
+         avtOSPRayVoxelExtractor.C
+         )
+    ADD_DEFINITIONS(-DVISIT_OSPRAY)
+    IF(ICET_FOUND)
+        # If we have Ice-T then add -DHAVE_ICET to the compilation flags.
+        # We need to link with OpenGL on Mac when we have IceT.
+        IF(APPLE)
+            SET(ICET_OPENGL ${OPENGL_gl_LIBRARY})
+        ENDIF(APPLE)
+        # Link icet libraries using absolute pathes
+        SET(ICET_FULLPATH_LIB ${ICET_OPENGL})
+        FOREACH(X ${ICET_LIB})
+            LIST(APPEND ICET_FULLPATH_LIB "${ICET_LIBRARY_DIR}/${X}")
+        ENDFOREACH()
+        # Other setups
+        INCLUDE_DIRECTORIES(${ICET_INCLUDE_DIR})
+        LINK_DIRECTORIES(${ICET_LIBRARY_DIR})
+        ADD_DEFINITIONS(-DVISIT_OSPRAY_ICET)
+    ENDIF()
+ENDIF()
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
@@ -178,11 +206,23 @@ ENDIF()
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})
 TARGET_LINK_LIBRARIES(avtfilters_ser visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_ser avtdatabase_ser avtdbatts ${EAVL_LIB} ${VISIT_VTKM_LIB} vtkFiltersModeling)
+IF(VISIT_OSPRAY) 
+    TARGET_LINK_LIBRARIES(avtfilters_ser ${OSPRAY_LIBRARIES})
+    IF(ICET_FOUND)
+        TARGET_LINK_LIBRARIES(avtfilters_ser ${ICET_FULLPATH_LIB})
+    ENDIF()
+ENDIF() 
 VISIT_INSTALL_TARGETS(avtfilters_ser)
 
 #********************************* PARALLEL **********************************
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(avtfilters_par ${AVTFILTERS_SOURCES})
     TARGET_LINK_LIBRARIES(avtfilters_par visitcommon lightweight_visit_vtk visit_vtk avtmath avtview avtpipeline_par avtdatabase_par avtdbatts ${EAVL_LIB} ${VISIT_VTKM_LIB} vtkFiltersModeling)
+    IF(VISIT_OSPRAY) 
+        TARGET_LINK_LIBRARIES(avtfilters_par ${OSPRAY_LIBRARIES})
+        IF(ICET_FOUND)
+            TARGET_LINK_LIBRARIES(avtfilters_par ${ICET_FULLPATH_LIB})
+        ENDIF()
+    ENDIF()
     VISIT_INSTALL_TARGETS(avtfilters_par)
 ENDIF(VISIT_PARALLEL)

@@ -803,6 +803,7 @@ function build_vtk
     if [[ "$DO_OSPRAY" == "yes" ]] ; then
         vopts="${vopts} -DModule_vtkRenderingOSPRay:BOOL=ON"
         vopts="${vopts} -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR}"
+        vopts="${vopts} -Dembree_DIR=${EMBREE_INSTALL_DIR}"
     fi
 
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"

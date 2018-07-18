@@ -190,7 +190,7 @@ avtSamplePointExtractorBase::SetRectilinearGridsAreInWorldSpace(bool val,
                  const avtViewInfo &v, double a)
 {
     rectilinearGridsAreInWorldSpace = val;
-    viewInfo = v;
+    view = v;
     aspect = a;
 }
 
@@ -207,7 +207,8 @@ avtSamplePointExtractorBase::SetRectilinearGridsAreInWorldSpace(bool val,
 // ****************************************************************************
 
 void
-avtSamplePointExtractorBase::RestrictToTile(int wmin, int wmax, int hmin, int hmax)
+avtSamplePointExtractorBase::RestrictToTile(int wmin, int wmax,
+                                                                                        int hmin, int hmax)
 {
     shouldDoTiling = true;
     width_min  = wmin;
@@ -338,28 +339,38 @@ struct datatree_childindex
 void
 avtSamplePointExtractorBase::ExecuteTree(avtDataTree_p dt)
 {
+    /////////////////////////
+    // Check memory before //
+    /////////////////////////
+    if (DebugStream::Level5())
+    { 
+        unsigned long m_size, m_rss;
+        avtMemory::GetMemorySize(m_size, m_rss);
+        debug5 << "RAR_Rank: " << PAR_Rank() << " "
+               << GetType() << "::ExecuteTree " 
+               << " Initial Memory Usage: "
+               << m_size << " rss (MB): "
+               << m_rss/(1024*1024) << endl;
+    }
+
+    //
+    // Start timing
+    //
     StackTimer t0(std::string(GetType()) + std::string("::ExecuteTree"));
 
-    //check memory
-    unsigned long m_size, m_rss;
-    avtMemory::GetMemorySize(m_size, m_rss);
-    debug5 << PAR_Rank() << " ~ " << GetType() << "::ExecuteTree  .. .  " 
-           << "    Memory use before: " << m_size << "  rss (MB): "
-           << m_rss/(1024*1024) << endl;
-
+    //
+    // Call this function for initialization if necessary by children classes
+    //
+    InitSampling(dt);   
 
     if (*dt == NULL || (dt->GetNChildren() <= 0 && (!(dt->HasData()))))
         return;
 
-    debug5 << " ~ " << GetType() << "::dt->GetNChildren()  "
-           << dt->GetNChildren() << endl;
-
     //
     // Process tree
-    std::stack<datatree_childindex*> nodes;
-
-    //iterative depth-first sampling
-    nodes.push(new datatree_childindex(dt,0));
+    //
+    std::stack<datatree_childindex*> nodes;    
+    nodes.push(new datatree_childindex(dt,0)); //iterative depth-first sampling
     while (!nodes.empty())
     {
         datatree_childindex *ci=nodes.top();
@@ -372,7 +383,8 @@ avtSamplePointExtractorBase::ExecuteTree(avtDataTree_p dt)
             {
                 if (ch->ChildIsPresent(i))
                 {
-                    if (*ch == NULL || (ch->GetNChildren() <= 0 && (!(ch->HasData()))))
+                    if (*ch == NULL || (ch->GetNChildren() <= 0 &&
+                                        (!(ch->HasData()))))
                         continue;
                     nodes.push(new datatree_childindex(ch->GetChild(i),i));
                 }
@@ -381,15 +393,12 @@ avtSamplePointExtractorBase::ExecuteTree(avtDataTree_p dt)
             continue;
         }
 
-        //do the work
         nodes.pop();
 
         if (*ch == NULL || (ch->GetNChildren() <= 0 && (!(ch->HasData()))))
             continue;
 
-        //
         // Get the dataset for this leaf in the tree.
-        //
         vtkDataSet *ds = ch->GetDataRepresentation().GetDataVTK();
 
         // Performed by derived classes
@@ -399,12 +408,19 @@ avtSamplePointExtractorBase::ExecuteTree(avtDataTree_p dt)
         currentNode++;
     }
 
-
-    //check memory after
-    avtMemory::GetMemorySize(m_size, m_rss);
-    debug5 << PAR_Rank() << " ~ Memory use after: " << m_size
-           << "  rss (MB): " << m_rss/(1024*1024)
-           <<  "   ... " << GetType() << "::ExecuteTree done@!!!" << endl;
+    /////////////////////////
+    // Check memory before //
+    /////////////////////////
+    if (DebugStream::Level5())
+    { 
+        unsigned long m_size, m_rss;
+        avtMemory::GetMemorySize(m_size, m_rss);
+        debug5 << "RAR_Rank: " << PAR_Rank() << " "
+               << GetType() << "::ExecuteTree " 
+               << " Final Memory Usage: "
+               << m_size << " rss (MB): "
+               << m_rss/(1024*1024) << endl;
+    }
 }
 
 
