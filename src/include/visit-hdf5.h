@@ -155,7 +155,7 @@ static herr_t VisIt_H5Fclose(hid_t fid)
         {
             char name[256], tmp[256];
             H5Iget_name(ooids[i], name, sizeof(name));
-            SNPRINTF(tmp, sizeof(tmp), "\n    \"%.230s\" (id=%d)", name, ooids[i]);
+            SNPRINTF(tmp, sizeof(tmp), "\n    \"%.230s\" (id=%d)", name, (int) ooids[i]);
             if ((strlen(msg) + strlen(tmp) + 1) >= sizeof(msg))
                 break;
             strcat(msg, tmp);
