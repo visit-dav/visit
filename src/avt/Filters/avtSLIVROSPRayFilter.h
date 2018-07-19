@@ -606,6 +606,8 @@ public:
 
 class OSPVisItContext
 {
+public:
+    std::string var;
 #ifdef VISIT_OSPRAY
 private:
     friend class OSPVisItVolume;

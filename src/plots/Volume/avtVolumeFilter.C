@@ -408,6 +408,7 @@ avtVolumeFilter::RenderImageRaycastingSLIVR(avtImage_p opaque_image,
     if (avtCallback::UseOSPRay()) 
     {
         if (ospray == NULL) { ospray = new OSPVisItContext(); }
+        ospray->var = primaryVariable;
         software->SetOSPRay(ospray);
     }
     //
