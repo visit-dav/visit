@@ -875,8 +875,10 @@ VISIT_3RDPARTY_VAR(MOAB_DIR      "Path containing the MOAB library's include and
 VISIT_3RDPARTY_VAR(MOAB_MPI_DIR  "Path containing the parallel MOAB library's include and lib")
 
 VISIT_3RDPARTY_VAR(OSPRAY_DIR    "Path containing the OSPRay library's include and lib")
-VISIT_3RDPARTY_VAR(EMBREE_ROOT   "Path containing the embree library's include and lib")
-VISIT_3RDPARTY_VAR(ISPC_ROOT     "Path containing the ISPC library's include and lib")
+VISIT_3RDPARTY_VAR(EMBREE_DIR    "Path containing the embree library's include and lib")
+VISIT_3RDPARTY_VAR(ISPC_DIR      "Path containing the ISPC library's include and lib")
+# Note by Qi
+# should we change TBB_ROOT to TBB_DIR ?
 VISIT_3RDPARTY_VAR(TBB_ROOT      "Path containing the TBB library's include and lib")
 
 #-----------------------------------------------------------------------------
@@ -1163,27 +1165,47 @@ ELSE(VISIT_THREAD)
 ENDIF(VISIT_THREAD)
 
 # Enable OSPRay for VisIt
+#
+# Note by Qi: maybe we should put this section into a .cmake file ?
+#
 IF(VISIT_OSPRAY)
-    # setup variables 
-    SET(OSPRAY_USE_EXTERNAL_EMBREE ON)
-    SET(ospray_DIR ${OSPRAY_DIR})
-    SET(embree_DIR ${EMBREE_ROOT})
-    SET(ISPC_EXECUTABLE ${ISPC_ROOT})
+
+    # -- this is a hack for TBB_ROOT
     IF(NOT DEFINED TBB_ROOT)
       SET(TBB_ROOT ${VISIT_TBB_ROOT})
-    ENDIF(NOT DEFINED TBB_ROOT)     
-    FIND_PACKAGE(ospray REQUIRED)
+    ENDIF()
+    # we have to search for the osprayConfig.cmake file in the ospray install 
+    # folder. Because ospray sometimes install its library in <...>/lib64 folder
+    # instead of the <...>/lib folder, we have to check both possibilities
+    IF(EXISTS ${OSPRAY_DIR}/lib)
+      SET(ospray_DIR ${OSPRAY_DIR}/lib/cmake/ospray-${OSPRAY_VERSION})
+    ELSEIF(EXISTS ${OSPRAY_DIR}/lib64)
+      SET(ospray_DIR ${OSPRAY_DIR}/lib64/cmake/ospray-${OSPRAY_VERSION})
+    ELSE()
+      MESSAGE(ERROR "Cannot determine ospray_DIR, given OSPRAY_DIR=${OSPRAY_DIR}")
+    ENDIF()
+    SET(embree_DIR ${EMBREE_DIR})
+    MARK_AS_ADVANCED(ospray_DIR)
+    MARK_AS_ADVANCED(embree_DIR)
+
     # setup ospray
+    FIND_PACKAGE(ospray REQUIRED)
     ADD_DEFINITIONS(-DVISIT_OSPRAY)
     INCLUDE_DIRECTORIES(${OSPRAY_INCLUDE_DIR})
     LINK_DIRECTORIES(${VISIT_OSPRAY_DIR}/../..)
-    # additional module library
-    SET(OSPRAY_LIBRARIES
+    SET(OSPRAY_LIBRARIES # additional module library
       ${OSPRAY_LIBRARIES}
       ${LIBRARY_PATH_PREFIX}ospray_module_ispc${LIBRARY_SUFFIX}
       ${LIBRARY_PATH_PREFIX}ospray_module_visit${LIBRARY_SUFFIX}
       ${LIBRARY_PATH_PREFIX}ospray_module_visit_common${LIBRARY_SUFFIX})
-    # install
+
+    # install ospray libs follow visit's standard
+    #
+    # -- OSPRAY_LIBRARIES contains also libtbb and libembree, so we dont 
+    #    have to handle embree and tbb seperately. As for ISPC, since ISPC
+    #    is only a compiler and will only be needed when we are compiling
+    #    ospray source, we dont have to install ISPC at all here for VisIt.
+    # 
     # on linux ospray have libraries in a form of: 
     #      libospray[xxx].so
     #      libospray[xxx].so.0
@@ -1198,6 +1220,7 @@ IF(VISIT_OSPRAY)
     #      libospray[xxx].lib
     #      libospray[xxx].dll
     #
+    # -- installing headers
     IF(NOT VISIT_HEADERS_SKIP_INSTALL)
       INSTALL(DIRECTORY ${OSPRAY_INCLUDE_DIR}
         DESTINATION 
@@ -1210,15 +1233,11 @@ IF(VISIT_OSPRAY)
                                           WORLD_READ WORLD_EXECUTE
         PATTERN ".svn" EXCLUDE)
     ENDIF(NOT VISIT_HEADERS_SKIP_INSTALL)
-    IF(VISIT_OSPRAY_SKIP_INSTALL)
+    # -- installing libs
+    IF(NOT VISIT_OSPRAY_SKIP_INSTALL)
       FOREACH(l ${OSPRAY_LIBRARIES})
-        # GET_FILENAME_COMPONENT(_ext_ ${l} EXT)
-        # GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
-        # GET_FILENAME_COMPONENT(_path_ ${l} DIRECTORY)
-        # MESSAGE(STATUS ${l})
-        # MESSAGE(STATUS ${_ext_})
-        # MESSAGE(STATUS ${_name_})
-        # MESSAGE(STATUS ${_path_})
+        # here because the CMake variable OSPRAY_LIBRARIES contains words 
+        # like 'optimized' and 'debug', we should skip them
         IF( (NOT "${l}" STREQUAL "optimized") AND 
             (NOT "${l}" STREQUAL "debug"))
           GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
@@ -1227,16 +1246,18 @@ IF(VISIT_OSPRAY)
               (NOT "${_name_}" STREQUAL "libtbb") AND
               (NOT "${_name_}" STREQUAL "libtbbmalloc") AND
               (NOT "${_name_}" STREQUAL "libembree3") )
-            THIRD_PARTY_INSTALL_LIBRARY(${l}.0)  
+            THIRD_PARTY_INSTALL_LIBRARY(${l}.0)
           ENDIF()
           THIRD_PARTY_INSTALL_LIBRARY(${l})
         ENDIF()
       ENDFOREACH()
     ENDIF(VISIT_OSPRAY_SKIP_INSTALL)
+
     # debug
     MESSAGE(STATUS "OSPRAY_INCLUDE_DIR: " ${OSPRAY_INCLUDE_DIR})
     MESSAGE(STATUS "OSPRAY_LIBRARIES: " ${OSPRAY_LIBRARIES})
     MESSAGE(STATUS "OSPRay for VisIt: ON")
+
 ELSE(VISIT_OSPRAY)
     MESSAGE(STATUS "OSPRay for VisIt: OFF")
 ENDIF(VISIT_OSPRAY)

@@ -72,9 +72,9 @@ function bv_embree_host_profile
         echo "## EMBREE" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         if [[ "$USE_SYSTEM_EMBREE" == "no" ]]; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_EMBREE_ROOT \${VISITHOME}/embree/$EMBREE_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_EMBREE_DIR \${VISITHOME}/embree/$EMBREE_VERSION/\${VISITARCH})" >> $HOSTCONF
         else
-            echo "VISIT_OPTION_DEFAULT(VISIT_EMBREE_ROOT ${EMBREE_INSTALL_DIR})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_EMBREE_DIR ${EMBREE_INSTALL_DIR})" >> $HOSTCONF
         fi
     fi
 }
