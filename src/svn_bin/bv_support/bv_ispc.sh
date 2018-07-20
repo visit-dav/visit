@@ -73,9 +73,9 @@ function bv_ispc_host_profile
         echo "## ISPC" >> $HOSTCONF
         echo "##" >> $HOSTCONF
         if [[ "$USE_SYSTEM_ISPC" == "no" ]]; then
-            echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_ROOT \${VISITHOME}/ispc/$ISPC_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR \${VISITHOME}/ispc/$ISPC_VERSION/\${VISITARCH})" >> $HOSTCONF
         else
-            echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_ROOT ${ISPC_INSTALL_DIR})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_ISPC_DIR ${ISPC_INSTALL_DIR})" >> $HOSTCONF
         fi
     fi
 }

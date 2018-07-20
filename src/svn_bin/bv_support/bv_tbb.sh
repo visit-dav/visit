@@ -75,8 +75,10 @@ function bv_tbb_host_profile
         echo "##" >> $HOSTCONF
         if [[ "$USE_SYSTEM_TBB" == "no" ]]; then
             echo "VISIT_OPTION_DEFAULT(TBB_ROOT \${VISITHOME}/tbb/$TBB_VERSION/\${VISITARCH})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR \${VISITHOME}/tbb/$TBB_VERSION/\${VISITARCH})" >> $HOSTCONF
         else
             echo "VISIT_OPTION_DEFAULT(TBB_ROOT ${TBB_INSTALL_DIR})" >> $HOSTCONF
+            echo "VISIT_OPTION_DEFAULT(VISIT_TBB_DIR ${TBB_INSTALL_DIR})" >> $HOSTCONF
         fi
     fi
 }
