@@ -46,7 +46,6 @@
 
 #include <avtPluginFilter.h>
 #include <avtDatasetToDatasetFilter.h>
-#include <avtDeferExpressionBaseFilter.h>
 #include <CracksClipperAttributes.h>
 
 
@@ -66,7 +65,7 @@ class vtkDataSet;
 //    Kathleen Bonnell, Fri Oct 13 11:05:01 PDT 2006
 //    Removed int arg from RemoveCracks method.
 //
-//    Kathleen Bonnell, Thu May  3 07:51:38 PDT 2007 
+//    Kathleen Bonnell, Thu May  3 07:51:38 PDT 2007
 //    Changed inheritance for this filter, so that it can create a pipeline
 //    with multiple filters.  Moved bulk of code to new avtRemoveCracksFilter.
 //
@@ -79,7 +78,7 @@ class vtkDataSet;
 // ****************************************************************************
 
 class avtCracksClipperFilter : virtual public avtPluginFilter,
-                               virtual public avtDatasetToDatasetFilter 
+                               virtual public avtDatasetToDatasetFilter
 {
   public:
                          avtCracksClipperFilter();
