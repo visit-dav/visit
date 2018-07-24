@@ -512,6 +512,11 @@ avtExpressionFilter::UpdateDataObjectInfo(void)
 //    If our output type is an array, initialize its subnames with valid
 //    values.
 //
+//    Eric Brugger, Tue Jul 24 12:00:50 PDT 2018
+//    I modified the code for the case of 9 components to use the type
+//    of the output variable name to decide between tensor and symmetric
+//    tensor.
+//
 // ****************************************************************************
 
 void
@@ -554,7 +559,14 @@ avtExpressionFilter::SetExpressionAttributes(const avtDataAttributes &inputAtts,
         else if (dim == 2 || dim == 3)
             outAtts.SetVariableType(AVT_VECTOR_VAR);
         else if (dim == 9)
-            outAtts.SetVariableType(AVT_TENSOR_VAR);
+        {
+            std::string tmpVariableName = std::string(outputVariableName);
+            if (DetermineVariableType(tmpVariableName) ==
+                AVT_SYMMETRIC_TENSOR_VAR)
+                outAtts.SetVariableType(AVT_SYMMETRIC_TENSOR_VAR);
+            else
+                outAtts.SetVariableType(AVT_TENSOR_VAR);
+        }
         else
             outAtts.SetVariableType(AVT_ARRAY_VAR);
     }
