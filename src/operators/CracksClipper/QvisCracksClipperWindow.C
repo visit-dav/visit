@@ -49,14 +49,14 @@
 // ****************************************************************************
 // Method: QvisCracksClipperWindow::QvisCracksClipperWindow
 //
-// Purpose: 
+// Purpose:
 //   Constructor
 //
 // Programmer: xml2window
 // Creation:   Mon Aug 22 09:10:02 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisCracksClipperWindow::QvisCracksClipperWindow(const int type,
@@ -73,14 +73,14 @@ QvisCracksClipperWindow::QvisCracksClipperWindow(const int type,
 // ****************************************************************************
 // Method: QvisCracksClipperWindow::~QvisCracksClipperWindow
 //
-// Purpose: 
+// Purpose:
 //   Destructor
 //
 // Programmer: xml2window
 // Creation:   Mon Aug 22 09:10:02 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisCracksClipperWindow::~QvisCracksClipperWindow()
@@ -91,7 +91,7 @@ QvisCracksClipperWindow::~QvisCracksClipperWindow()
 // ****************************************************************************
 //  Method: QvisCracksClipperWindow::CreateWindowContents
 //
-//  Purpose: 
+//  Purpose:
 //    Creates the widgets for the window.
 //
 //  Programmer: xml2window
@@ -103,6 +103,9 @@ QvisCracksClipperWindow::~QvisCracksClipperWindow()
 //
 //    Kathleen Bonnell, Wed Sep 29 08:59:10 PDT 2010
 //    Remove 'Density variable' and 'calculate density' toggle.
+//
+//    Kathleen Biagas, Tue Jul 24 10:05:56 MST 2018
+//    Allow Tensor as well as Symmetric Tensor for strain var.
 //
 // ****************************************************************************
 
@@ -157,12 +160,12 @@ QvisCracksClipperWindow::CreateWindowContents()
     // Strain Variable
     mainLayout->addWidget(new QLabel(tr("Strain Variable"), central), 6, 0);
     strainVar = new QvisVariableButton(true, true, true,
-                              QvisVariableButton::SymmetricTensors, central);
+      QvisVariableButton::SymmetricTensors | QvisVariableButton::Tensors, central);
     connect(strainVar, SIGNAL(activated(const QString &)),
         this, SLOT(strainVarChanged(const QString &)));
     mainLayout->addWidget(strainVar, 6, 1, 1, 3);
 
-    // Input Mass Variable 
+    // Input Mass Variable
     inMassVarLabel = new QLabel(tr("Input Mass Variable"), central);
     mainLayout->addWidget(inMassVarLabel, 8, 0);
     inMassVar = new QvisVariableButton(true, true, true,
@@ -177,7 +180,7 @@ QvisCracksClipperWindow::CreateWindowContents()
 // ****************************************************************************
 //  Method: QvisCracksClipperWindow::UpdateWindow
 //
-//  Purpose: 
+//  Purpose:
 //    Updates the widgets in the window when the subject changes.
 //
 //  Programmer: xml2window
@@ -186,10 +189,10 @@ QvisCracksClipperWindow::CreateWindowContents()
 //  Modifications:
 //    Kathleen Bonnell, Mon May  7 15:48:42 PDT 2007
 //    Added calculateDensity, inMarVar, outDenVar.
-//   
-//    Kathleen Bonnell, Tue Jul 1 15:10:55 PDT 2008 
+//
+//    Kathleen Bonnell, Tue Jul 1 15:10:55 PDT 2008
 //    Removed unreferenced variable.
-//   
+//
 //    Kathleen Bonnell, Wed Sep 29 08:59:10 PDT 2010
 //    Remove 'Density variable' and 'calculate density' toggle.
 //
@@ -248,16 +251,16 @@ QvisCracksClipperWindow::UpdateWindow(bool doAll)
 // ****************************************************************************
 // Method: QvisCracksClipperWindow::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets values from certain widgets and stores them in the subject.
 //
 // Programmer: xml2window
 // Creation:   Mon Aug 22 09:10:02 PDT 2005
 //
 // Modifications:
-//   Kathleen Bonnell, Tue Jul 1 15:10:55 PDT 2008 
+//   Kathleen Bonnell, Tue Jul 1 15:10:55 PDT 2008
 //   Removed unreferenced variables.
-//   
+//
 // ****************************************************************************
 
 void
