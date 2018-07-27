@@ -549,7 +549,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 #define INDEX_FIELD_WIDTH 8
             // CHEXA requires more point indices so read another line.
             ifile.getline(line + 72, 1024-72);
-
+            
             char *valstart = line + 88;
             char *valend = valstart;
             verts[7] = Geti(valstart)-1;
@@ -590,7 +590,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             valstart -= INDEX_FIELD_WIDTH;
             valend -= INDEX_FIELD_WIDTH;
             *valend = '\0';
-            verts[0] = Geti(valstart)-1;
+            verts[0] = Geti(valstart)-1;            
 
             if (matCountOpt)
             {
@@ -803,6 +803,78 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 
 #if !defined(MDSERVER)
             ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+            if (matCountOpt) matList.push_back(matid);
+#endif
+        }
+        else if(strncmp(line, "CQUAD8", 6) == 0)
+        {
+            // CQUAD8 requires more point indices so read another line.
+            ifile.getline(line + 72, 1024-72);
+
+            char *valstart = line + 88;
+            char *valend = valstart;
+            verts[7] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[6] = Geti(valstart)-1;
+
+            // Skip the blank
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[5] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[4] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[3] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[2] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[1] = Geti(valstart)-1;
+
+            valstart -= INDEX_FIELD_WIDTH;
+            valend -= INDEX_FIELD_WIDTH;
+            *valend = '\0';
+            verts[0] = Geti(valstart)-1;
+
+            if (matCountOpt)
+            {
+                valstart -= INDEX_FIELD_WIDTH;
+                valend -= INDEX_FIELD_WIDTH;
+                *valend = '\0';
+                matid = Geti(valstart);
+            }
+
+#if 0
+            debug4 << verts[0]
+                   << ", " << verts[1]
+                   << ", " << verts[2]
+                   << ", " << verts[3]
+                   << ", " << verts[4]
+                   << ", " << verts[5]
+                   << ", " << verts[6]
+                   << ", " << verts[7]
+                   << endl;
+#endif
+
+#if !defined(MDSERVER)
+            ugrid->InsertNextCell(VTK_QUADRATIC_QUAD, 8, verts);
             if (matCountOpt) matList.push_back(matid);
 #endif
         }
