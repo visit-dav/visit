@@ -98,6 +98,9 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   Cyrus Harrison, Wed Jun 27 12:41:03 PDT 2018
 #   I added catalyst to the list of toss3 machines.
 #
+#   Eric Brugger, Thu Jul 26 13:48:28 PDT 2018
+#   I added surface to the list of toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -163,14 +166,15 @@ class LLNLLauncher(MainLauncher):
         #
         if self.sectorname() == "borax" or \
             self.sectorname() == "catalyst" or \
+            self.sectorname() == "jade" or \
+            self.sectorname() == "mica" or \
             self.sectorname() == "pascal" or \
             self.sectorname() == "quartz" or \
             self.sectorname() == "rzgenie" or \
             self.sectorname() == "rzhasgpu" or \
             self.sectorname() == "rztopaz" or \
             self.sectorname() == "rztrona" or \
-            self.sectorname() == "jade" or \
-            self.sectorname() == "mica" or \
+            self.sectorname() == "surface" or \
             self.sectorname() == "agate":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
