@@ -340,6 +340,17 @@ def test7(datapath):
 
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
+    
+def test8(datapath):
+    db = "simpleCQUAD8.nas"
+    TestSection(db)
+    OpenDatabase(pjoin(datapath,db))
+    AddMeshPlot()
+    DrawPlots()
+    Test("nastran8_0")
+    
+    DeleteActivePlots()
+    CloseDatabase(pjoin(datapath,db))
 
 def main():
     # Set the window background color
@@ -359,6 +370,7 @@ def main():
     test5(datapath)
     test6(datapath)
     test7(datapath)
+    test8(datapath)
 
 main()
 Exit()
