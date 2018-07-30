@@ -55,19 +55,22 @@
 // ****************************************************************************
 // Method: QvisLine3DInterface::QvisLine3DInterface
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the QvisLine3DInterface class.
 //
 // Arguments:
 //   parent : This widget's parent widget.
 //   name   : The name of this widget.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
 //   Kathleen Biagas, Tue Jul 14 16:39:07 PDT 2015
 //   Add support for arrow and tube style lines.
+//
+//   Kathleen Biagas, Mon Jul 30 16:43:01 MST 2018
+//   Change layout for arrows, to allow more room for radius.
 //
 // ****************************************************************************
 
@@ -91,7 +94,7 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     cLayout->addWidget(startLabel, row, 0);
     ++row;
 
-    // Add controls for point2 
+    // Add controls for point2
     point2Edit = new QLineEdit(this);
     connect(point2Edit, SIGNAL(returnPressed()),
             this, SLOT(point2Changed()));
@@ -99,7 +102,7 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     cLayout->addWidget(point2Edit, row, 1, 1, 3);
     cLayout->addWidget(endLabel, row, 0);
     ++row;
-  
+
     // Add controls for line type.
     lineType = new QComboBox(this);
     lineType->addItem(tr("Line"));
@@ -173,10 +176,12 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     cLayout->addWidget(opacitySlider, row, 2, 1, 3);
     ++row;
 
+    // Add controls for arrow 1 (Begin arrow)
     beginArrow = new QCheckBox(tr("Begin Arrow"), this);
     connect(beginArrow, SIGNAL(toggled(bool)),
             this, SLOT(beginArrowToggled(bool)));
     cLayout->addWidget(beginArrow, row, 0, Qt::AlignLeft);
+    ++row;
 
     arrow1Resolution = new QSpinBox(this);
     arrow1Resolution->setMinimum(1);
@@ -184,22 +189,24 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     arrow1Resolution->setButtonSymbols(QSpinBox::PlusMinus);
     connect(arrow1Resolution, SIGNAL(valueChanged(int)),
             this, SLOT(arrow1ResolutionChanged(int)));
-    cLayout->addWidget(arrow1Resolution, row, 2);
+    cLayout->addWidget(arrow1Resolution, row, 1);
     res1Label = new QLabel(tr("Resolution"), this);
-    cLayout->addWidget(res1Label, row, 1, Qt::AlignRight);
-   
+    cLayout->addWidget(res1Label, row, 0, Qt::AlignRight);
+
     arrow1Radius = new QLineEdit(this);
     connect(arrow1Radius, SIGNAL(returnPressed()),
             this, SLOT(arrow1RadiusChanged()));
-    cLayout->addWidget(arrow1Radius, row, 4);
+    cLayout->addWidget(arrow1Radius, row, 3);
     rad1Label = new QLabel(tr("Radius"), this);
-    cLayout->addWidget(rad1Label, row, 3, Qt::AlignRight);
+    cLayout->addWidget(rad1Label, row, 2, Qt::AlignRight);
     ++row;
 
+    // Add controls for arrow 2 (End arrow)
     endArrow = new QCheckBox(tr("End Arrow"), this);
     connect(endArrow, SIGNAL(toggled(bool)),
             this, SLOT(endArrowToggled(bool)));
     cLayout->addWidget(endArrow, row, 0, Qt::AlignLeft);
+    ++row;
 
     arrow2Resolution = new QSpinBox(this);
     arrow2Resolution->setMinimum(1);
@@ -207,18 +214,18 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     arrow2Resolution->setButtonSymbols(QSpinBox::PlusMinus);
     connect(arrow2Resolution, SIGNAL(valueChanged(int)),
             this, SLOT(arrow2ResolutionChanged(int)));
-    cLayout->addWidget(arrow2Resolution, row, 2);
+    cLayout->addWidget(arrow2Resolution, row, 1);
     res2Label = new QLabel(tr("Resolution"), this);
-    cLayout->addWidget(res2Label, row, 1, Qt::AlignRight);
+    cLayout->addWidget(res2Label, row, 0, Qt::AlignRight);
 
     arrow2Radius = new QLineEdit(this);
     connect(arrow2Radius, SIGNAL(returnPressed()),
             this, SLOT(arrow2RadiusChanged()));
-    cLayout->addWidget(arrow2Radius, row, 4);
+    cLayout->addWidget(arrow2Radius, row, 3);
     rad2Label = new QLabel(tr("Radius"), this);
-    cLayout->addWidget(rad2Label, row, 3, Qt::AlignRight);
+    cLayout->addWidget(rad2Label, row, 2, Qt::AlignRight);
     ++row;
-    
+
 
     // Added a visibility toggle
     visibleCheckBox = new QCheckBox(tr("Visible"), this);
@@ -231,14 +238,14 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
 // ****************************************************************************
 // Method: QvisLine3DInterface::~QvisLine3DInterface
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisLine3DInterface class.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisLine3DInterface::~QvisLine3DInterface()
@@ -249,7 +256,7 @@ QvisLine3DInterface::~QvisLine3DInterface()
 // ****************************************************************************
 // Method: QvisLine3DInterface::GetMenuText
 //
-// Purpose: 
+// Purpose:
 //   Returns the text to use in the annotation list box.
 //
 // Arguments:
@@ -257,7 +264,7 @@ QvisLine3DInterface::~QvisLine3DInterface()
 //
 // Returns:    The text to use in the annotation list box.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
@@ -280,11 +287,11 @@ QvisLine3DInterface::GetMenuText(const AnnotationObject &annot) const
 // ****************************************************************************
 // Method: QvisLine3DInterface::UpdateControls
 //
-// Purpose: 
+// Purpose:
 //   Updates the controls in the interface using the data in the Annotation
 //   object pointed to by the annot pointer.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
@@ -303,7 +310,7 @@ QvisLine3DInterface::UpdateControls()
         annot->GetPosition()[1],
         annot->GetPosition()[2]);
     point1Edit->setText(pos);
-    
+
     // Set the end position.
     pos.sprintf("%lg %lg %lg",
         annot->GetPosition2()[0],
@@ -315,7 +322,7 @@ QvisLine3DInterface::UpdateControls()
     lineType->setCurrentIndex(annot->GetIntAttribute3());
     lineType->blockSignals(false);
 
-    // Set the values for the width and style 
+    // Set the values for the width and style
     widthWidget->blockSignals(true);
     widthWidget->SetLineWidth(annot->GetIntAttribute1());
     widthWidget->setEnabled(lineType->currentIndex() == 0);
@@ -352,7 +359,7 @@ QvisLine3DInterface::UpdateControls()
     opacitySlider->blockSignals(true);
 
     if (annot->GetUseForegroundForTextColor())
-    {    
+    {
         QColor tmp(255,255,255);
         colorButton->setButtonColor(tmp);
         colorLabel->setEnabled(false);
@@ -385,14 +392,14 @@ QvisLine3DInterface::UpdateControls()
     res1Label->setEnabled(beginArrow->isChecked());
     arrow1Resolution->blockSignals(false);
 
-  
+
     arrow1Radius->blockSignals(true);
     pos.sprintf("%lg", dv[0]);
     arrow1Radius->setText(pos);
     arrow1Radius->setEnabled(beginArrow->isChecked());
     rad1Label->setEnabled(beginArrow->isChecked());
     arrow1Radius->blockSignals(false);
-  
+
     endArrow->blockSignals(true);
     endArrow->setChecked((bool)(ca.Green()));
     endArrow->blockSignals(false);
@@ -420,13 +427,13 @@ QvisLine3DInterface::UpdateControls()
 // ****************************************************************************
 // Method: QvisLine3DInterface::GetCurrentValues
 //
-// Purpose: 
+// Purpose:
 //   Gets the current values for the text fields.
 //
 // Arguments:
 //   which_widget : The widget for which we're getting the values. -1 for all.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
@@ -439,7 +446,7 @@ void
 QvisLine3DInterface::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
-    
+
     if (doAll || which_widget == 0)
     {
         double v[3];
@@ -452,8 +459,8 @@ QvisLine3DInterface::GetCurrentValues(int which_widget)
             arg(DoublesToQString(annot->GetPosition(), 3));
             Error(msg);
             annot->SetPosition(annot->GetPosition());
-        }  
-    }  
+        }
+    }
     if (doAll || which_widget == 1)
     {
         double v[3];
@@ -467,7 +474,7 @@ QvisLine3DInterface::GetCurrentValues(int which_widget)
             Error(msg);
             annot->SetPosition2(annot->GetPosition2());
         }
-    }  
+    }
     if (doAll || which_widget == 2)
     {
         double v;
@@ -532,15 +539,15 @@ QvisLine3DInterface::GetCurrentValues(int which_widget)
 // ****************************************************************************
 // Method: QvisLine3DInterface::point1Changed
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   point1 line edit.
 //
 // Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -554,15 +561,15 @@ QvisLine3DInterface::point1Changed()
 // ****************************************************************************
 // Method: QvisLine3DInterface::point2Changed
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   point2 line edit.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -576,7 +583,7 @@ QvisLine3DInterface::point2Changed()
 // ****************************************************************************
 // Method: QvisLine3DInterface::widthChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the value of the width
 //   widget changes.
 //
@@ -587,7 +594,7 @@ QvisLine3DInterface::point2Changed()
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -601,7 +608,7 @@ QvisLine3DInterface::widthChanged(int w)
 // ****************************************************************************
 // Method: QvisLine3DInterface::styleChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the value of the style
 //   widget changes.
 //
@@ -612,7 +619,7 @@ QvisLine3DInterface::widthChanged(int w)
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -626,18 +633,18 @@ QvisLine3DInterface::styleChanged(int s)
 // ****************************************************************************
 // Method: QvisLine3DInterface::colorChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new color is
 //   selected.
 //
 // Arguments:
 //   c : The new start color.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -653,18 +660,18 @@ QvisLine3DInterface::colorChanged(const QColor &c)
 // ****************************************************************************
 // Method: QvisLine3DInterface::opacityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when a new opacity is
 //   selected.
 //
 // Arguments:
 //   opacity : The new start opacity.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -681,18 +688,18 @@ QvisLine3DInterface::opacityChanged(int opacity)
 // ****************************************************************************
 // Method: QvisLine3DInterface::visibilityToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the visibility toggle is
 //   changed.
 //
 // Arguments:
 //   val : The visibility flag.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -707,18 +714,18 @@ QvisLine3DInterface::visibilityToggled(bool val)
 // ****************************************************************************
 // Method: QvisLine3DInterface::useForegroundColorToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the useForegroundColor
 //   check box is clicked.
 //
 // Arguments:
 //   val : The new setting for useForegroundColor
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -732,18 +739,18 @@ QvisLine3DInterface::useForegroundColorToggled(bool val)
 // ****************************************************************************
 // Method: QvisLine3DInterface::beginArrowToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the beginArrow
 //   check box is clicked.
 //
 // Arguments:
 //   val : The new setting for beginArrow
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -758,7 +765,7 @@ QvisLine3DInterface::beginArrowToggled(bool val)
 // ****************************************************************************
 // Method: QvisLine3DInterface::arrow1ResolutionChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the value in the
 //   arrow1Resolution spin box changes.
 //
@@ -769,7 +776,7 @@ QvisLine3DInterface::beginArrowToggled(bool val)
 // Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -785,15 +792,15 @@ QvisLine3DInterface::arrow1ResolutionChanged(int r)
 // ****************************************************************************
 // Method: QvisLine3DInterface::arrow1RadiusChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   arrow1Radius line edit.
 //
 // Programmer: Kathleen Biagas
 // Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -807,18 +814,18 @@ QvisLine3DInterface::arrow1RadiusChanged()
 // ****************************************************************************
 // Method: QvisLine3DInterface::endArrowToggled
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the endArrow
 //   check box is clicked.
 //
 // Arguments:
 //   val : The new setting for endArrow
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -833,7 +840,7 @@ QvisLine3DInterface::endArrowToggled(bool val)
 // ****************************************************************************
 // Method: QvisLine3DInterface::arrow2ResolutionChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the value in the
 //   arrow2Resolution spin box changes.
 //
@@ -844,7 +851,7 @@ QvisLine3DInterface::endArrowToggled(bool val)
 // Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -860,15 +867,15 @@ QvisLine3DInterface::arrow2ResolutionChanged(int r)
 // ****************************************************************************
 // Method: QvisLine3DInterface::arrow2RadiusChanged
 //
-// Purpose: 
-//   This is a Qt slot function that is called when return is pressed in the 
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
 //   arrow2Radius line edit.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 14, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -882,15 +889,15 @@ QvisLine3DInterface::arrow2RadiusChanged()
 // ****************************************************************************
 // Method: QvisLine3DInterface::lineTypeChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when value in lineType combo
 //   box changes
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 14, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -904,15 +911,15 @@ QvisLine3DInterface::lineTypeChanged(int val)
 // ****************************************************************************
 // Method: QvisLine3DInterface::tubeQualityChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when value in tubeQuality
 //   combo box changes
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 14, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -920,7 +927,7 @@ QvisLine3DInterface::tubeQualityChanged(int val)
 {
     doubleVector dv = annot->GetDoubleVector1();
     dv[2] = (double) val;
-    annot->SetDoubleVector1(dv); 
+    annot->SetDoubleVector1(dv);
     Apply();
 }
 
@@ -928,15 +935,15 @@ QvisLine3DInterface::tubeQualityChanged(int val)
 // ****************************************************************************
 // Method: QvisLine3DInterface::tubeRadiusChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when value in tubeRadius
 //   line edit changes
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 14, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 14, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void

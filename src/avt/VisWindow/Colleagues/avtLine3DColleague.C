@@ -63,18 +63,21 @@
 // ****************************************************************************
 // Method: avtLine3DColleague::avtLine3DColleague
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the avtLine3DColleague class.
 //
 // Arguments:
 //   m : The vis window proxy.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   Kathleen Biagas, Tue Jul 14 16:35:47 PDT 2015
 //   Add support for arrows and tube.
+//
+//   Kathleen Biagas, Mon Jul 30 16:44:27 PDT 2018
+//   Set initial position/size of arrows based on current extents.
 //
 // ****************************************************************************
 
@@ -103,34 +106,56 @@ avtLine3DColleague::avtLine3DColleague(VisWindowColleagueProxy &m):
     lineMapper->SetInputConnection(lineSource->GetOutputPort());
 
     lineActor   = vtkActor::New();
-    lineActor->SetMapper(lineMapper); 
-    lineActor->PickableOff(); 
+    lineActor->SetMapper(lineMapper);
+    lineActor->PickableOff();
+
+
+    // retrieve the bounds to use for calculating  default arrow radius/height.
+    double bounds[6];
+    mediator.GetBounds(bounds);
+    double dX = bounds[1] - bounds[0];
+    double dY = bounds[3] - bounds[2];
+    double dZ = bounds[5] - bounds[4];
+    double diagonal = sqrt(dX*dX + dY*dY + dZ*dZ);
+    double h = 0.03*diagonal;
+    double r = h/2.8;
+
+    // Arrow resolution:
+    //     1 => triangle,
+    //     2 => 2 triangles,
+    //    >2 => 3d cone
 
     // set up arrow #1
     arrow1Source = vtkConeSource::New();
-    // resolution: 1 => triangle, 2 => 2 triangles, >2 => 3d cone
-    arrow1Source->SetResolution(1);
+    arrow1Source->SetResolution(16);
     arrow1Source->CappingOn();
+    arrow1Source->SetDirection(-1, -1, 0);
+    arrow1Source->SetCenter(0, 0, 0);
+    arrow1Source->SetRadius(r);
+    arrow1Source->SetHeight(h);
 
     arrow1Mapper  = vtkPolyDataMapper::New();
     arrow1Mapper->SetInputConnection(arrow1Source->GetOutputPort());
 
     arrow1Actor  = vtkActor::New();
-    arrow1Actor->SetMapper(arrow1Mapper); 
+    arrow1Actor->SetMapper(arrow1Mapper);
     arrow1Actor->PickableOff();
 
 
     // set up arrow #2
     arrow2Source = vtkConeSource::New();
-    // resolution: 1 => triangle, 2 => 2 triangles, >2 => 3d cone
-    arrow2Source->SetResolution(1);
+    arrow2Source->SetResolution(16);
     arrow2Source->CappingOn();
+    arrow2Source->SetDirection(1, 1, 0);
+    arrow2Source->SetCenter(1, 1, 0);
+    arrow2Source->SetRadius(r);
+    arrow2Source->SetHeight(h);
 
     arrow2Mapper  = vtkPolyDataMapper::New();
     arrow2Mapper->SetInputConnection(arrow2Source->GetOutputPort());
 
     arrow2Actor  = vtkActor::New();
-    arrow2Actor->SetMapper(arrow2Mapper); 
+    arrow2Actor->SetMapper(arrow2Mapper);
     arrow2Actor->PickableOff();
 
     // Set a default color.
@@ -150,16 +175,16 @@ avtLine3DColleague::avtLine3DColleague(VisWindowColleagueProxy &m):
 // ****************************************************************************
 // Method: avtLine3DColleague::~avtLine3DColleague
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the avtLine3DColleague class.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
 //   Kathleen Biagas, Tue Jul 14 16:35:47 PDT 2015
 //   Add support for arrows and tube.
-//   
+//
 // ****************************************************************************
 
 avtLine3DColleague::~avtLine3DColleague()
@@ -228,19 +253,19 @@ avtLine3DColleague::~avtLine3DColleague()
 // ****************************************************************************
 // Method: avtLine3DColleague::AddToRenderer
 //
-// Purpose: 
+// Purpose:
 //   This method adds the lineActor to the renderer.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   Kathleen Biagas, Tue Jul 14 16:35:47 PDT 2015
 //   Add support for arrows and tube.
-//   
+//
 // ****************************************************************************
 
-void 
+void
 avtLine3DColleague::AddToRenderer()
 {
     if(!addedToRenderer && ShouldBeAddedToRenderer())
@@ -264,16 +289,16 @@ avtLine3DColleague::AddToRenderer()
 // ****************************************************************************
 // Method: avtLine3DColleague::RemoveFromRenderer
 //
-// Purpose: 
+// Purpose:
 //   This method removes the lineActor from the renderer.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   Kathleen Biagas, Tue Jul 14 16:35:47 PDT 2015
 //   Add support for arrows and tube.
-//   
+//
 // ****************************************************************************
 
 void
@@ -300,15 +325,15 @@ avtLine3DColleague::RemoveFromRenderer()
 // ****************************************************************************
 // Method: avtLine3DColleague::Hide
 //
-// Purpose: 
+// Purpose:
 //   This method toggles the visible flag and either adds or removes the
 //   lineActor to/from the renderer.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -326,15 +351,15 @@ avtLine3DColleague::Hide()
 // ****************************************************************************
 // Method: avtLine3DColleague::ShouldBeAddedToRenderer
 //
-// Purpose: 
+// Purpose:
 //   This method returns whether or not the lineActor should be added to the
 //   renderer.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -347,16 +372,19 @@ avtLine3DColleague::ShouldBeAddedToRenderer() const
 // ****************************************************************************
 // Method: avtLine3DColleague::SetOptions
 //
-// Purpose: 
+// Purpose:
 //   This method sets the lineActor's properties from the values in the
 //   annotation object.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   Kathleen Biagas, Tue Jul 14 16:35:47 PDT 2015
 //   Add support for arrows and tube.
+//
+//   Kathleen Biagas, Mon Jul 30 16:46:56 PDT 2018
+//   Modify height when radius changes.
 //
 // ****************************************************************************
 
@@ -414,7 +442,7 @@ avtLine3DColleague::SetOptions(const AnnotationObject &annot)
             tubeFilter->SetInputConnection(lineSource->GetOutputPort());
             lineMapper->SetInputConnection(tubeFilter->GetOutputPort());
         }
-        else 
+        else
         {
             lineMapper->SetInputConnection(lineSource->GetOutputPort());
         }
@@ -433,6 +461,9 @@ avtLine3DColleague::SetOptions(const AnnotationObject &annot)
         doubleVector dv = annot.GetDoubleVector1();
         arrow1Source->SetRadius(dv[0]);
         arrow2Source->SetRadius(dv[1]);
+        // since there is no user-settable height option, base it off the radius
+        arrow1Source->SetHeight(dv[0]*2.8);
+        arrow2Source->SetHeight(dv[1]*2.8);
 
         int qual = (int) dv[2];
         if (qual == 0)
@@ -503,20 +534,20 @@ avtLine3DColleague::SetOptions(const AnnotationObject &annot)
 // ****************************************************************************
 // Method: avtLine3DColleague::GetOptions
 //
-// Purpose: 
+// Purpose:
 //   This method stores the attributes in an object that can
 //   be passed back to the client.
 //
 // Arguments:
 //   annot : The AnnotationObject to populate.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
 //   Kathleen Biagas, Tue Jul 14 16:35:47 PDT 2015
 //   Add support for arrows and tube.
-//   
+//
 // ****************************************************************************
 
 void
@@ -561,15 +592,15 @@ avtLine3DColleague::GetOptions(AnnotationObject &annot)
 // ****************************************************************************
 // Method: avtLine3DColleague::HasPlots
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the vis window gets some plots. We use this
 //   signal to add the lineActor to the renderer.
 //
-// Programmer: Kathleen Biagas 
+// Programmer: Kathleen Biagas
 // Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -582,15 +613,15 @@ avtLine3DColleague::HasPlots(void)
 // ****************************************************************************
 // Method: avtLine3DColleague::NoPlots
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the vis window has no plots. We use this signal
 //   to remove the lineActor from the renderer.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -603,14 +634,14 @@ avtLine3DColleague::NoPlots(void)
 // ****************************************************************************
 // Method: avtLine3DColleague::SetForegroundColor
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the vis window's foreground color changes.
 //
 // Arguments:
 //   r,g,b : The new foreground color.
 //
-// Programmer: Kathleen Biagas 
-// Creation:   July 13, 2015 
+// Programmer: Kathleen Biagas
+// Creation:   July 13, 2015
 //
 // Modifications:
 //   Kathleen Biagas, Tue Jul 14 16:35:47 PDT 2015
