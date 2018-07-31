@@ -50,9 +50,11 @@ line.useForegroundForLineColor = 0
 line.color = (255, 0, 255, 255)
 Test("line3d06")
 
-# Test arrow at start
-line.arrow1Radius = 5
-line.arrow2Radius = 5
+# Test arrow at start (flat)
+line.arrow1Resolution = 1
+line.arrow2Resolution = 1
+line.arrow1Radius = 2
+line.arrow2Radius = 2
 line.arrow1 = 1
 Test("line3d07")
 # Test arrow at end
@@ -68,6 +70,7 @@ Test("line3d09")
 line.arrow1 = 0
 line.lineType = line.TUBE
 line.tubeRadius = 0.3
+# make the arrow a cone
 line.arrow2Resolution = 15
 line.arrow2Radius = 1
 Test("line3d10")
@@ -86,7 +89,7 @@ nextLine.arrow2Resolution = 15
 nextLine.arrow2Radius = 1
 Test("line3d11")
 
-# Start Removing text
+# Start Removing lines
 line.Delete()
 Test("line3d12")
 nextLine.Delete()
