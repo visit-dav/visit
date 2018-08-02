@@ -77,6 +77,9 @@
 //    Eric Brugger, Tue Dec  9 14:26:32 PST 2008
 //    Added the ParallelAxes window mode.
 //
+//    Kathleen Biagas, Thu Aug  2 13:03:41 MST 2018
+//    Removed ResetView, an ancient code path.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinView : public VisWinColleague
@@ -87,8 +90,6 @@ class VISWINDOW_API VisWinView : public VisWinColleague
 
     const avtViewInfo   &GetViewInfo(void);
     void                 SetViewInfo(const avtViewInfo &);
-
-    void                 ResetView(void);
 
     virtual void         Start2DMode(void);
     virtual void         Stop2DMode(void);

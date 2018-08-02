@@ -2792,37 +2792,6 @@ VisWindow::GetSpinModeSuspended() const
 
 
 // ****************************************************************************
-//  Method: VisWindow::ResetView
-//
-//  Purpose:
-//      Resets the camera to be the canonical view.  This is done by one of the
-//      VisWindow's colleagues.
-//
-//  Programmer: Hank Childs
-//  Creation:   November 8, 2000
-//
-//  Modifications:
-//    Eric Brugger, Wed Aug 22 13:26:10 PDT 2001
-//    Temporarily disable until VisWinView is fixed.
-//
-//    Kathleen Bonnell, Thu Aug 29 10:30:59 PDT 2002 
-//    Added call to UpdateLightPositions, so that lights get updated properly
-//    to new camera postions. (In case this method ever gets enabled again.) 
-//
-// ****************************************************************************
-
-void
-VisWindow::ResetView(void)
-{
-#if 0
-    // Disable until done properly (Eric).
-    view->ResetView();
-    UpdateLightPositions();
-#endif
-}
-
-
-// ****************************************************************************
 //  Method: VisWindow::SetView2D
 //
 //  Purpose:

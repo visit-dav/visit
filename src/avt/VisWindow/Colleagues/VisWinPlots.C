@@ -279,6 +279,11 @@ VisWinPlots::~VisWinPlots()
 //    Jeremy Meredith, Wed May 19 14:15:58 EDT 2010
 //    Account for 3D axis scaling (3D equivalent of full-frame mode).
 //
+//    Kathleen Biagas, Thu Aug  2 13:03:41 MST 2018
+//    Removed call to AdjustCamera, as its calls to VisWindow::ResetView
+//    had no effect (an ancient code path).  Replaced with setting the
+//    currentBounds, which used to be done at the end of AdjustCamera.
+//
 // ****************************************************************************
 
 void
@@ -333,9 +338,7 @@ VisWinPlots::AddPlot(avtActor_p &p)
     plots.push_back(p);
     OrderPlots();
 
-    double newbounds[6];
-    GetBounds(newbounds);
-    AdjustCamera(oldbounds, newbounds);
+    GetBounds(currentBounds);
 
     avtLegend_p l = p->GetLegend();
     if (*l != NULL)
@@ -1256,69 +1259,6 @@ VisWinPlots::GetDataRange(double &dmin, double &dmax)
     if (! setRange)
     {
         dmin = dmax = 0.;
-    }
-}
-
-// ****************************************************************************
-//  Method: VisWinPlots::AdjustCamera
-//
-//  Purpose:
-//      Determines if the camera needs to be adjusted for the new actor.
-//
-//  Arguments:
-//      oldbounds   The old bounds of the actors as 
-//                  <xmin, xmax, ymin, ymax, zmin, zmax>.
-//      newbounds   The new bounds of the actors as 
-//                  <xmin, xmax, ymin, ymax, zmin, zmax>.
-//
-//  Programmer: Hank Childs
-//  Creation:   August 4, 2000
-//
-//  Modifications:
-//    Kathleen Bonnell, Tue Aug 13 15:15:37 PDT 2002 
-//    Added calls to have light positions updated if the camera is updated.
-//    vtkRenderers handle this fine for rotations and zooms, but if the bounds 
-//    have increased, the base position for the lights must be updated 
-//    manually.
-//
-//    Kathleen Bonnell, Thu Aug 29 09:49:36 PDT 2002  
-//    Removed call to  UpateLightPositions as vw->ResetView currently has
-//    no effect.  It should be handled by VisWindow anyway. 
-//    
-// ****************************************************************************
-
-void
-VisWinPlots::AdjustCamera(const double oldbounds[6], const double newbounds[6])
-{
-    VisWindow *vw = mediator;
-    if (userSetBounds)
-    {
-        if (currentBounds[0] != setBounds[0] || 
-            currentBounds[1] != setBounds[1] ||
-            currentBounds[2] != setBounds[2] ||
-            currentBounds[3] != setBounds[3] ||
-            currentBounds[4] != setBounds[4] ||
-            currentBounds[5] != setBounds[5])
-        {
-            vw->ResetView();
-        }
-    }
-    else
-    {
-        //
-        // If the new actor is outside the original bounds, reset the camera.
-        //
-        if (newbounds[0] < oldbounds[0] || newbounds[1] > oldbounds[1] ||
-            newbounds[2] < oldbounds[2] || newbounds[3] > oldbounds[3] ||
-            newbounds[4] < oldbounds[4] || newbounds[5] > oldbounds[5])
-        {
-            vw->ResetView();
-        }
-    }
-
-    for (int i = 0 ; i < 6 ; i++)
-    {
-        currentBounds[i] = newbounds[i];
     }
 }
 

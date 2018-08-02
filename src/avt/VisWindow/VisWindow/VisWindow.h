@@ -468,6 +468,9 @@ class VisitInteractor;
 //    Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
 //    Added RemovePicks.
 //
+//    Kathleen Biagas, Thu Aug  2 13:03:41 MST 2018
+//    Removed ResetView, an ancient code path.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWindow
@@ -599,7 +602,6 @@ public:
     void                 SetViewExtentsType(avtExtentType, 
                              const double *const bnds = 0);
 
-    void                 ResetView(void);
     void                 SetView2D(const avtView2D &);
     const avtView2D     &GetView2D() const;
     void                 SetView3D(const avtView3D &);

@@ -201,6 +201,9 @@ class avtTransparencyActor;
 //    Burlen Loring, Tue Aug 18 11:25:24 PDT 2015
 //    Added api to retreive the camera.
 //
+//    Kathleen Biagas, Thu Aug  2 13:03:41 MST 2018
+//    Removed AdjustCamera, an ancient code path.
+//
 // ****************************************************************************
 
 class VISWINDOW_API VisWinPlots : public VisWinColleague
@@ -296,7 +299,6 @@ class VISWINDOW_API VisWinPlots : public VisWinColleague
 
     bool                          sceneHasChanged;
 
-    void                          AdjustCamera(const double[6], const double[6]);
     void                          CheckPlot(avtActor_p &);
     void                          GetRealBounds(double [6]);
     void                          SetBoundingBox(double *);
