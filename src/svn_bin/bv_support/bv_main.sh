@@ -363,7 +363,6 @@ function initialize_build_visit()
         export CXXFLAGS=${CXXFLAGS:-"-fno-common -fexceptions"}
         export FCFLAGS=${FCFLAGS:-$CFLAGS}
         export MESA_TARGET=${MESA_TARGET:-"darwin"}
-        export QT_PLATFORM=${QT_PLATFORM:-"macx-g++"}
 	
     elif [[ "$OPSYS" == "Linux" ]]; then
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
@@ -386,7 +385,6 @@ function initialize_build_visit()
             fi
             ###   export MESA_TARGET=${MESA_TARGET:-"linux-x86-64"} # Mesa-6.x
             export MESA_TARGET=${MESA_TARGET:-"linux"}
-            QT_PLATFORM="linux-g++-64"
         elif [[ "$(uname -m)" == "ppc64" ]] ; then
             if [[ "$C_COMPILER" == "xlc" ]] ; then
                 CFLAGS="$CFLAGS -qpic"
@@ -394,7 +392,6 @@ function initialize_build_visit()
                 CXXFLAGS="$CXXFLAGS -qpic"
                 export CXX_COMPILER=${CXX_COMPILER-"xlC"}
                 export MESA_TARGET=${MESA_TARGET-"linux"}
-                QT_PLATFORM="linux-xlc" #aix-xlc"
             elif [[ "$C_COMPILER" == "bgxlc" ]] ; then
                 export CXX_COMPILER=${CXX_COMPILER-"bgxlC"}
             else
@@ -408,7 +405,6 @@ function initialize_build_visit()
                     CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
                 fi
                 export MESA_TARGET=${MESA_TARGET-"linux"}
-                QT_PLATFORM="linux-g++"
             fi
         elif [[ "$(uname -m)" == "ia64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
@@ -420,7 +416,6 @@ function initialize_build_visit()
             if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                 CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
-            QT_PLATFORM="linux-g++"
         fi
         export C_COMPILER=${C_COMPILER:-"gcc"}
         export CXX_COMPILER=${CXX_COMPILER:-"g++"}
@@ -428,7 +423,6 @@ function initialize_build_visit()
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MESA_TARGET=${MESA_TARGET:-"linux"}
-        export QT_PLATFORM=${QT_PLATFORM:-"linux-g++"}
     elif [[ "$OPSYS" == "AIX" ]]; then
         export ARCH="aix" # You can change this to say RHEL, SuSE, Fedora, etc.
         export SO_EXT="a"
@@ -439,11 +433,6 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"gmake"}
         export MESA_TARGET=${MESA_TARGET:-"aix"}
-        if [[ "$OBJECT_MODE" == 32 ]]; then
-            export QT_PLATFORM=${QT_PLATFORM:-"aix-xlc"}
-        else
-            export QT_PLATFORM=${QT_PLATFORM:-"aix-xlc-64"}
-        fi
     elif [[ "$OPSYS" == "IRIX64" ]]; then
         export ARCH="irix64" # You can change this to say RHEL, SuSE, Fedora, etc.
         export SO_EXT="so"
@@ -464,7 +453,6 @@ function initialize_build_visit()
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
         export MAKE=${MAKE:-"make"}
         export MESA_TARGET=${MESA_TARGET:-"sunos5-gcc"}
-        export QT_PLATFORM="solaris-g++"
     else
         export ARCH=${ARCH:-"linux-$(uname -m)"} # You can change this to say RHEL, SuSE, Fedora.
         export SO_EXT="so"
@@ -478,7 +466,6 @@ function initialize_build_visit()
             if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                 CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
-            QT_PLATFORM="linux-g++-64"
         fi
         if [[ "$(uname -m)" == "ia64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
@@ -490,14 +477,12 @@ function initialize_build_visit()
             if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
                 CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
             fi
-            QT_PLATFORM="linux-g++-64"
         fi
         export C_COMPILER=${C_COMPILER:-"gcc"}
         export FC_COMPILER=${FC_COMPILER:-$GFORTRAN}
         export CXX_COMPILER=${CXX_COMPILER:-"g++"}
         export C_OPT_FLAGS=${C_OPT_FLAGS:-"-O2"}
         export CXX_OPT_FLAGS=${CXX_OPT_FLAGS:-"-O2"}
-        export QT_PLATFORM=${QT_PLATFORM:-"linux-g++"}
     fi
 
     export MAKE=${MAKE:-"make"}

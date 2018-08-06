@@ -348,40 +348,41 @@ function build_qt
     #
     # Platform specific configuration
     #
-    if [[ "$OPSYS" == "Darwin" ]] ; then
-       
+
+    #
+    # Select the proper value for QT_PLATFORM 
+    #
+    # Question: Could qt auto detect this via the CC and CXX env vars?
+    #
+    # We should try to see if we can avoid setting the platform, set
+    # CC and CXX and see if that is enough to trigger qt's detection logic.
+    #
+    #   
+    if [[ "$OPSYS" == "Darwin" ]]; then       
         QT_PLATFORM="macx-clang"
 
-    elif [[ "$OPSYS" == "Linux" ]] ; then
-        
-        # For OLD versions of linux, disable openssl
-        VER=$(uname -r)
-        if [[ "${VER:0:3}" == "2.4" ]] ; then
-            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
-        # For Fedora, disable openssl
-        elif [[ -n "$(cat /proc/version 2>/dev/null | grep -i fedora)" ]] ; then
-            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
+    elif [[ "$OPSYS" == "AIX" ]]; then
+        if [[ "$OBJECT_MODE" == 32 ]]; then
+            QT_PLATFORM="aix-g++"
+        else
+            QT_PLATFORM="aix-g++-64"
         fi
+    elif [[ "$OPSYS" == "SunOS" ]]; then
+        if [[ "$OBJECT_MODE" == 32 ]]; then
+            QT_PLATFORM="aix-solaris"
+        else
+            QT_PLATFORM="aix-solaris-64"
+        fi
+    elif [[ "$OPSYS" == "Linux" ]] ; then
+	if [[ "$C_COMPILER" == "clang" ]]; then
+            QT_PLATFORM="linux-clang"
+	elif [[ "$C_COMPILER" == "llvm" ]]; then
+            QT_PLATFORM="linux-llvm"
 
-        #
-        # select the proper value for QT_PLATFORM 
-        #
-        # Most of the logic for QT_PLATFORM on various os flavors
-        # is still in bv_main.sh, and should be detangled and placed here.
-        #
-        # For now add support for icc on linux.
-        #
+        elif [[ "$(uname -m)" == "ia64" ]]; then
+                QT_PLATFORM="linux-g++-64"
 
-        # enable icc qt build on linux
-        #
-        # Question: could qt auto detect this via the CC and CXX env vars?
-        #
-        # For osx, and linux - we may also need clang support in the future.
-        # We should try to see if we can avoid setting the platform, set
-        # CC and CXX and see if that is enough to trigger qt's detection logic.
-        #
-        #
-        if [[ "$(uname -m)" == "x86_64" ]] ; then
+        elif [[ "$(uname -m)" == "x86_64" ]] ; then
             if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
                 QT_PLATFORM="linux-icc-64"
             else
@@ -389,12 +390,23 @@ function build_qt
             fi
         else
             if [[ "$C_COMPILER" == "icc" || "$CXX_COMPILER" == "icpc" ]]; then
-                QT_PLATFORM="linux-icc"
+                QT_PLATFORM="linux-icc-32"
             else
-                QT_PLATFORM="linux-g++"
+                QT_PLATFORM="linux-g++-32"
             fi
         fi
+
+        # For OLD versions of linux, disable openssl
+        VER=$(uname -r)
+        if [[ "${VER:0:3}" == "2.4" ]] ; then
+            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
+        # For Fedora, disable openssl
+        elif [[ -n "$(cat /proc/version 2>/dev/null | grep -i fedora)" ]]; then
+            EXTRA_QT_FLAGS="$EXTRA_QT_FLAGS -no-openssl"
+        fi
     fi
+
+    QT_PLATFORM=${QT_PLATFORM:-"linux-g++"}
 
     # We may be building statically.
     if [[ "$DO_STATIC_BUILD" == "yes" ]]; then
