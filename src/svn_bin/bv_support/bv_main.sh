@@ -227,6 +227,8 @@ function check_opengl_context()
     $CXX_COMPILER checkogl.cpp -Wl,-lGL -lSM -lICE -lX11 -lXext
     if [[ $? != 0 ]]; then
         echo "failed to compile checkogl.cpp"
+        rm -f checkogl.cpp
+        rm -f a.out
         exit 1
     fi
     ./a.out 
