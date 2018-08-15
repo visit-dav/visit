@@ -37,7 +37,7 @@
         <Field name="active" type="bool">false</Field>
         <Field name="arguments" type="stringVector"></Field>
         <Field name="parallel" type="bool">true</Field>
-        <Field name="launchArgsSet" type="bool">false</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
         <Field name="launchArgs" type="string">"-C haswell"</Field>
         <Field name="sublaunchArgsSet" type="bool">false</Field>
         <Field name="sublaunchArgs" type="string"></Field>
@@ -157,7 +157,7 @@
         <Field name="active" type="bool">false</Field>
         <Field name="arguments" type="stringVector"></Field>
         <Field name="parallel" type="bool">true</Field>
-        <Field name="launchArgsSet" type="bool">false</Field>
+        <Field name="launchArgsSet" type="bool">true</Field>
         <Field name="launchArgs" type="string">"-C knl"</Field>
         <Field name="sublaunchArgsSet" type="bool">false</Field>
         <Field name="sublaunchArgs" type="string"></Field>
