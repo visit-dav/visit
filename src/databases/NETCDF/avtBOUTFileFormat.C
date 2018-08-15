@@ -67,6 +67,8 @@
 static int oneXGridDomainToSubgrid[4] = {0, 1, 0, 1};
 static int twoXGridDomainToSubgrid[6] = {0, 1, 0, 2, 1, 2};
 
+#define NZ_OUT 180
+
 #define READSCALARINTO(VARNAME, VAR) \
     {\
         TypeEnum t = NO_TYPE;\
@@ -135,6 +137,10 @@ avtBOUTFileFormat::Identify(NETCDFFileObject *fileObject)
     if (fileObject->InqVariable("gridname", &t, &ndims, &dims))
     {
         delete [] dims;
+        //
+        // FIX_ME: Hack to handle a data set from Xu that was missing zperiod.
+        //
+#if 0
         t = NO_TYPE;
         ndims = 0; dims = 0;
         if (fileObject->InqVariable("zperiod", &t, &ndims, &dims))
@@ -142,6 +148,9 @@ avtBOUTFileFormat::Identify(NETCDFFileObject *fileObject)
             delete [] dims;
             isBOUT = true;
         }
+#else
+        isBOUT = true;
+#endif
     }
 
     return isBOUT;
@@ -208,6 +217,14 @@ avtBOUTFileFormat::CreateInterface(NETCDFFileObject *f,
 //   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
 //   I added the ability to handle circular grids.
 //   
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//   
 // ****************************************************************************
 
 avtBOUTFileFormat::avtBOUTFileFormat(const char *filename) :
@@ -226,7 +243,6 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename) :
     Rxy = 0;
     Zxy = 0;
     zShift = 0;
-    zShiftZero = 0;
 
     nxRaw = 0;
     nyRaw = 0;
@@ -263,7 +279,6 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename,
     Rxy = 0;
     Zxy = 0;
     zShift = 0;
-    zShiftZero = 0;
 
     nxRaw = 0;
     nyRaw = 0;
@@ -297,6 +312,14 @@ avtBOUTFileFormat::avtBOUTFileFormat(const char *filename,
 //   Eric Brugger, Mon Dec  2 15:44:28 PST 2013
 //   I added the ability to handle circular grids.
 //   
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//   
 // ****************************************************************************
 
 avtBOUTFileFormat::~avtBOUTFileFormat()
@@ -311,7 +334,6 @@ avtBOUTFileFormat::~avtBOUTFileFormat()
     if (Rxy != 0) delete [] Rxy;
     if (Zxy != 0) delete [] Zxy;
     if (zShift != 0) delete [] zShift;
-    if (zShiftZero != 0) delete [] zShiftZero;
 
     for (int i = 0; i < MAX_SUB_MESHES; ++i)
     {
@@ -508,6 +530,14 @@ avtBOUTFileFormat::GetTimes(doubleVector &t)
 //   I modified the routine to handle zperiod being a char, short, int, long,
 //   float or double. I also added a check to make sure zperiod was valid.
 //
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//
 // ****************************************************************************
 
 void
@@ -583,6 +613,10 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     else
     {
         debug4 << mName << "Error reading zperiod." << endl;
+        //
+        // FIX_ME: Hack to handle a data set from Xu that was missing zperiod.
+        //
+        zperiod = 5;
     }
 
     //
@@ -624,7 +658,6 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     //
     std::string zShiftName("zShift");
     std::string meshName("mesh");
-    std::string meshNameZShift("mesh_zshift");
     std::string meshName2D("mesh_2d");
     std::string meshNameDiverter("mesh_diverter");
 
@@ -648,11 +681,6 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 std::string varName(varname);
                 avtScalarMetaData *smd = new avtScalarMetaData(varName,
                     meshName, AVT_NODECENT);
-                md->Add(smd);
-
-                std::string varNameZShift = varName + "_zshift";
-                smd = new avtScalarMetaData(varNameZShift,
-                    meshNameZShift, AVT_NODECENT);
                 md->Add(smd);
 
                 if (gridType != circularGrid)
@@ -681,11 +709,7 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 meshName2D, AVT_NODECENT);
     md->Add(smd);
 
-    avtMeshMetaData *mmd = new avtMeshMetaData(meshName, nSubMeshes * zperiod,
-        1, 1, 0, 3, 3, AVT_CURVILINEAR_MESH);
-    md->Add(mmd);
-
-    mmd = new avtMeshMetaData(meshNameZShift, nSubMeshes * zperiod,
+    avtMeshMetaData *mmd = new avtMeshMetaData(meshName, nSubMeshes,
         1, 1, 0, 3, 3, AVT_CURVILINEAR_MESH);
     md->Add(mmd);
 
@@ -696,14 +720,14 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
     if (gridType == oneXGrid)
     {
         mmd = new avtMeshMetaData(meshNameDiverter,
-            N_DIVERTER_ONEX_SUB_MESHES * zperiod, 1, 1, 0, 3, 3,
+            N_DIVERTER_ONEX_SUB_MESHES, 1, 1, 0, 3, 3,
             AVT_CURVILINEAR_MESH);
         md->Add(mmd);
     }
     else if (gridType == twoXGrid)
     {
         mmd = new avtMeshMetaData(meshNameDiverter,
-            N_DIVERTER_TWOX_SUB_MESHES * zperiod, 1, 1, 0, 3, 3,
+            N_DIVERTER_TWOX_SUB_MESHES, 1, 1, 0, 3, 3,
             AVT_CURVILINEAR_MESH);
         md->Add(mmd);
     }
@@ -725,6 +749,14 @@ avtBOUTFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //   Eric Brugger, Fri Feb 17 14:22:58 PST 2017
 //   I added logic so that inrep is at least 1.
 //   
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//
 // ****************************************************************************
 
 void
@@ -818,7 +850,7 @@ avtBOUTFileFormat::DetermineMeshReplication(Subgrid &grid)
             double delta  = fabs(theta2 - theta);
             maxDeltaAngle = std::max(maxDeltaAngle, delta);
         }
-        jnrep[j] = std::max(std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.), 6.);
+        jnrep[j] = std::max(std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 12.), 6.);
     }
 
     for (int i = istart; i < iend - 1; ++i)
@@ -833,7 +865,7 @@ avtBOUTFileFormat::DetermineMeshReplication(Subgrid &grid)
             double delta  = fabs(theta2 - theta);
             maxDeltaAngle = std::max(maxDeltaAngle, delta);
         }
-        inrep[i-istart] = std::max(std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 240.), 1.);
+        inrep[i-istart] = std::max(std::min(ceil(maxDeltaAngle / (3.141592653589793 / 24.)), 12.), 1.);
     }
 
 #if 0
@@ -989,6 +1021,14 @@ avtBOUTFileFormat::ReadMeshMetaData()
 //   Eric Brugger, Mon Sep 22 16:45:10 PDT 2014
 //   I added more error checks on the data.
 //
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//   
 // ****************************************************************************
 
 bool
@@ -1059,9 +1099,6 @@ avtBOUTFileFormat::ReadMesh()
     meshFile->ReadVariableInto("Rxy", FLOATARRAY_TYPE, Rxy);
     meshFile->ReadVariableInto("Zxy", FLOATARRAY_TYPE, Zxy);
     meshFile->ReadVariableInto("zShift", FLOATARRAY_TYPE, zShift);
-
-    zShiftZero = new float[zshiftdims[0]*zshiftdims[1]];
-    memset(zShiftZero, 0, zshiftdims[0]*zshiftdims[1]*sizeof(float));
 
     nx2d = rdims[0];
     ny2d = rdims[1];
@@ -1271,7 +1308,6 @@ avtBOUTFileFormat::ReadMesh()
 // Arguments:
 //   grid   : The grid description.
 //   domain : The domain number.
-//   zShift : The z shift to apply to the points.
 //   pts    : The points of the mesh.
 //
 // Programmer: Eric Brugger
@@ -1282,11 +1318,18 @@ avtBOUTFileFormat::ReadMesh()
 //   I modified the creation of the diverter to include all of the lower
 //   diverter as well as create the upper diverter with a two X point grid.
 //   
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//   
 // ****************************************************************************
 
 void
-avtBOUTFileFormat::CreateDiverterMesh(Subgrid &grid, int domain,
-    float *zShift, float *pts)
+avtBOUTFileFormat::CreateDiverterMesh(Subgrid &grid, int domain, float *pts)
 {
     //
     // Calculate the block and subgrid indexes.
@@ -1319,41 +1362,41 @@ avtBOUTFileFormat::CreateDiverterMesh(Subgrid &grid, int domain,
     nyIn    = grid.nyIn;
     nxOut   = grid.nxOut;
 
+    int kend = NZ_OUT + 1;
+
     int jj;
     if (isubgrid == 0 || isubgrid == 1 || isubgrid == 5)
         jj = 0;
     else
         jj = nyIn - 1;
 
-    for (int k = 0; k < nzOut; ++k)
+    for (int k = 0; k < kend; ++k)
     {
         int isum = 0;
         for (int i = 0; i < nxIn - 1; ++i)
         {
             int ipt1 = ijindex[i*nyIn+jj];
             int ipt2 = ijindex[(i+1)*nyIn+jj];
-            double r = Rxy[ipt1];
+            double r1 = Rxy[ipt1];
             double r2 = Rxy[ipt2];
-            double z = Zxy[ipt1];
+            double z1 = Zxy[ipt1];
             double z2 = Zxy[ipt2];
-            double theta = zShift[ipt1] + float(k + nz * iblock) *
-                6.283185307179586 / (nz * zperiod);
-            double theta2 = zShift[ipt2] + float(k + nz * iblock) *
-                6.283185307179586 / (nz * zperiod);
+            double theta1 = double(k) * 6.283185307179586 / double(NZ_OUT);
+            double theta2 = double(k) * 6.283185307179586 / double(NZ_OUT);
 
-            double dr = (r2 - r) / double(inrep[i]);
-            double dz = (z2 - z) / double(inrep[i]);
-            double dtheta = (theta2 - theta) / double(inrep[i]);
+            double dr = (r2 - r1) / double(inrep[i]);
+            double dz = (z2 - z1) / double(inrep[i]);
+            double dtheta = (theta2 - theta1) / double(inrep[i]);
             for (int ii = 0; ii < inrep[i] + 1; ++ii)
             {
-                double r2 = r + double(ii) * dr;
-                double z2 = z + double(ii) * dz;
-                double theta2 = theta + double(ii) * dtheta;
+                double r = r1 + double(ii) * dr;
+                double z = z1 + double(ii) * dz;
+                double theta = theta1 + double(ii) * dtheta;
             
                 int ipts = (k * nxOut + ii + isum) * 3;
-                pts[ipts+0] = r2 * cos(theta2);
-                pts[ipts+1] = z2;
-                pts[ipts+2] = r2 * sin(theta2);
+                pts[ipts+0] = r * cos(theta);
+                pts[ipts+1] = z;
+                pts[ipts+2] = r * sin(theta);
             }
             isum += inrep[i];
         }
@@ -1370,19 +1413,25 @@ avtBOUTFileFormat::CreateDiverterMesh(Subgrid &grid, int domain,
 //   grid   : The grid description.
 //   iblock : The block number.
 //   ndims  : The number of dimensions to create the mesh.
-//   zShift : The z shift to apply to the points.
 //   pts    : The points of the mesh.
 //
 // Programmer: Eric Brugger
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
 //   
 // ****************************************************************************
 
 void
 avtBOUTFileFormat::CreateMesh(Subgrid &grid, int iblock, int ndims,
-    float *zShift, float *pts)
+    float *pts)
 {
     //
     // Set the dimensions
@@ -1402,7 +1451,7 @@ avtBOUTFileFormat::CreateMesh(Subgrid &grid, int iblock, int ndims,
     nxOut     = grid.nxOut;
     nyOut     = grid.nyOut;
 
-    int kend = nzOut;
+    int kend = NZ_OUT + 1;
     if (ndims == 2)
         kend = 1;
 
@@ -1422,14 +1471,10 @@ avtBOUTFileFormat::CreateMesh(Subgrid &grid, int iblock, int ndims,
             double z12 = Zxy[ipt12];
             double z21 = Zxy[ipt21];
             double z22 = Zxy[ipt22];
-            double theta11 = zShift[ipt11] + float(k + nz * iblock) *
-                6.283185307179586 / (nz * zperiod);
-            double theta12 = zShift[ipt12] + float(k + nz * iblock) *
-                6.283185307179586 / (nz * zperiod);
-            double theta21 = zShift[ipt21] + float(k + nz * iblock) *
-                6.283185307179586 / (nz * zperiod);
-            double theta22 = zShift[ipt22] + float(k + nz * iblock) *
-                6.283185307179586 / (nz * zperiod);
+            double theta11 = double(k) * 6.283185307179586 / double(NZ_OUT);
+            double theta12 = double(k) * 6.283185307179586 / double(NZ_OUT);
+            double theta21 = double(k) * 6.283185307179586 / double(NZ_OUT);
+            double theta22 = double(k) * 6.283185307179586 / double(NZ_OUT);
             for (int ii = 0; ii < nxOut; ++ii)
             {
                 for (int jj = 0; jj < nyOut; ++jj)
@@ -1473,14 +1518,10 @@ avtBOUTFileFormat::CreateMesh(Subgrid &grid, int iblock, int ndims,
                     double z12 = Zxy[ipt12];
                     double z21 = Zxy[ipt21];
                     double z22 = Zxy[ipt22];
-                    double theta11 = zShift[ipt11] + float(k + nz * iblock) *
-                        6.283185307179586 / (nz * zperiod);
-                    double theta12 = zShift[ipt12] + float(k + nz * iblock) *
-                        6.283185307179586 / (nz * zperiod);
-                    double theta21 = zShift[ipt21] + float(k + nz * iblock) *
-                        6.283185307179586 / (nz * zperiod);
-                    double theta22 = zShift[ipt22] + float(k + nz * iblock) *
-                        6.283185307179586 / (nz * zperiod);
+                    double theta11 = double(k) * 6.283185307179586 / double(NZ_OUT);
+                    double theta12 = double(k) * 6.283185307179586 / double(NZ_OUT);
+                    double theta21 = double(k) * 6.283185307179586 / double(NZ_OUT);
+                    double theta22 = double(k) * 6.283185307179586 / double(NZ_OUT);
                     for (int ii = 0; ii < inrep[i] + 1; ++ii)
                     {
                         double dr1 = r11 + (r21 - r11) * (double(ii) / (inrep[i]));
@@ -1534,6 +1575,14 @@ avtBOUTFileFormat::CreateMesh(Subgrid &grid, int iblock, int ndims,
 //   I modified the creation of the diverter to include all of the lower
 //   diverter as well as create the upper diverter with a two X point grid.
 //   
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//   
 // ****************************************************************************
 
 void
@@ -1560,16 +1609,19 @@ avtBOUTFileFormat::CreateDiverterVar(Subgrid &grid, int domain, float *data,
     //
     int istart;
     int *jindex;
+    int *ijindex;
     int *inrep;
     int nxIn, nyIn;
     int nxOut;
     istart  = grid.istart;
     jindex  = grid.jindex;
+    ijindex = grid.ijindex;
     inrep   = grid.inrep;
     nxIn    = grid.nxIn;
     nyIn    = grid.nyIn;
     nxOut   = grid.nxOut;
 
+    int kend = NZ_OUT + 1;
     int nZ = nz;
     int nyz = nyIn * nz;
 
@@ -1579,21 +1631,52 @@ avtBOUTFileFormat::CreateDiverterVar(Subgrid &grid, int domain, float *data,
     else
         jj = nyIn - 1;
 
-    for (int k = 0; k < nzOut; ++k)
+    double dzperiod = 6.283185307179586 / zperiod;
+    double ddzperiod = dzperiod / double(nz);
+    for (int k = 0; k < kend; ++k)
     {
-        int k2 = k % nz;
         int isum = 0;
         for (int i = 0; i < nxIn - 1; ++i)
         {
-            int ipt1 = (i+istart)   * nyz + jindex[jj] * nZ + k2;
-            int ipt2 = (i+istart+1) * nyz + jindex[jj] * nZ + k2;
-            double v = data[ipt1];
-            double v2 = data[ipt2];
-            double dv = (v2 - v) / double(inrep[i]);
+            int ipt1 = ijindex[i*nyIn+jj];
+            int ipt2 = ijindex[(i+1)*nyIn+jj];
+            double zAngle = double(k) * 6.283185307179586 / double(NZ_OUT);
+            double angle1 = zAngle - zShift[ipt1];
+            double angle2 = zAngle - zShift[ipt2];
             for (int ii = 0; ii < inrep[i] + 1; ++ii)
             {
+                double angle = angle1 + (angle2 - angle1) *
+                    (double(ii) / (inrep[i]));
+                angle = angle - dzperiod * floor(angle / dzperiod);
+                int k1 = int(floor(angle / ddzperiod)) % nZ;
+                int k2 = int(ceil(angle / ddzperiod)) % nZ;
+
+                //
+                // Interpolate the first edge.
+                //
+                int ipt11 = (i+istart)   * nyz + jindex[jj] * nZ + k1;
+                int ipt12 = (i+istart+1) * nyz + jindex[jj] * nZ + k1;
+                double v11 = data[ipt11];
+                double v12 = data[ipt12];
+                double de1 = v11 + (v12 - v11) * (double(ii) / double(inrep[i]));
+
+                //
+                // Interpolate the second edge.
+                //
+                int ipt21 = (i+istart)   * nyz + jindex[jj] * nZ + k2;
+                int ipt22 = (i+istart+1) * nyz + jindex[jj] * nZ + k2;
+                double v21 = data[ipt21];
+                double v22 = data[ipt22];
+                double de2 = v21 + (v22 - v21) * (double(ii) / double(inrep[i]));
+
+                //
+                // Interpolate between the 2 edge values.
+                //
+                double val = de1 + (de2 - de1) *
+                    ((angle - double(k1) * ddzperiod)) / ddzperiod;
+
                 int ivals = k * nxOut + ii + isum;
-                vals[ivals] = std::abs(v + double(ii) * dv);
+                vals[ivals] = std::abs(val);
             }
             isum += inrep[i];
         }
@@ -1617,6 +1700,13 @@ avtBOUTFileFormat::CreateDiverterVar(Subgrid &grid, int domain, float *data,
 // Creation:   Thu Aug  1 16:42:56 PDT 2013
 //
 // Modifications:
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
 //   
 // ****************************************************************************
 
@@ -1631,7 +1721,7 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
     int istart/*, iend*/;
     int jstart[2], jend[2];
     int *jindex;
-    //int *ijindex;
+    int *ijindex;
     int *inrep;
     int *jnrep;
     int nxIn, nyIn;
@@ -1643,7 +1733,7 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
     jend[0]   = grid.jend[0];
     jend[1]   = grid.jend[1];
     jindex    = grid.jindex;
-    //ijindex   = grid.ijindex;
+    ijindex   = grid.ijindex;
     inrep     = grid.inrep;
     jnrep     = grid.jnrep;
     nxIn      = grid.nxIn;
@@ -1651,7 +1741,7 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
     nxOut     = grid.nxOut;
     nyOut     = grid.nyOut;
 
-    int kend = nzOut;
+    int kend = NZ_OUT + 1;
     int nZ = nz;
     int nyz = nyRaw * nz;
     if (ndims == 2)
@@ -1661,29 +1751,77 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
         nyz = ny2d;
     }
 
+    double dzperiod = 6.283185307179586 / zperiod;
+    double ddzperiod = dzperiod / double(nz);
     if (nxIn == 2 && nyIn == 2)
     {
         for (int k = 0; k < kend; ++k)
         {
-            int k2 = k % nZ;
-            int ipt11 = istart * nyz + jstart[0] * nZ + k2;
-            int ipt12 = istart * nyz + (jend[0] - 1) * nZ + k2;
-            int ipt21 = istart * nyz + jstart[1] * nZ + k2;
-            int ipt22 = istart * nyz + (jend[1] + 1) * nZ + k2;
-            double v11 = data[ipt11];
-            double v12 = data[ipt12];
-            double v21 = data[ipt21];
-            double v22 = data[ipt22];
+            int ipt11 = ijindex[0];
+            int ipt12 = ijindex[1];
+            int ipt21 = ijindex[nxIn];
+            int ipt22 = ijindex[nxIn+1];
+            double zAngle = double(k) * 6.283185307179586 / double(NZ_OUT);
+            double angle11 = zAngle - zShift[ipt11];
+            double angle12 = zAngle - zShift[ipt12];
+            double angle21 = zAngle - zShift[ipt21];
+            double angle22 = zAngle - zShift[ipt22];
+
             int jsum = 0;
             for (int i = 0; i < nxOut; ++i)
             {
+                double angle1 = angle11 + (angle21 - angle11) *
+                    (double(i) / (nxOut - 1));
+                double angle2 = angle12 + (angle22 - angle12) *
+                    (double(i) / (nxOut - 1));
                 for (int j = 0; j < nyOut; ++j)
                 {
-                    double dv1 = v11 + (v21 - v11) * (double(j) / (nyOut-1));
-                    double dv2 = v12 + (v22 - v12) * (double(j) / (nyOut-1));
-                    double dv = dv1 + (dv2 - dv1) * (double(i) / (nxOut-1));
+                    double angle = angle1 + (angle2 - angle1) *
+                        (double(j) / (nyOut - 1));
+                    angle = angle - dzperiod * floor(angle / dzperiod);
+                    int k1 = int(floor(angle / ddzperiod)) % nZ;
+                    int k2 = int(ceil(angle / ddzperiod)) % nZ;
+
+                    //
+                    // Interpolate on the first face.
+                    //
+                    int ipt111 = istart * nyz + jstart[0] * nZ + k1;
+                    int ipt112 = istart * nyz + (jend[0] - 1) * nZ + k1;
+                    int ipt121 = istart * nyz + jstart[1] * nZ + k1;
+                    int ipt122 = istart * nyz + (jend[1] + 1) * nZ + k1;
+                    double v111 = data[ipt111];
+                    double v112 = data[ipt112];
+                    double v121 = data[ipt121];
+                    double v122 = data[ipt122];
+                    double de11 = v111 + (v112 - v111) * (double(i) / (nxOut - 1));
+                    double de12 = v121 + (v122 - v121) * (double(i) / (nxOut - 1));
+                    double df1= de11 + (de12 - de11) * (double(j) / (nyOut - 1));
+
+                    //
+                    // Interpolate on the second face.
+                    //
+                    int ipt211 = istart * nyz + jstart[0] * nZ + k2;
+                    int ipt212 = istart * nyz + (jend[0] - 1) * nZ + k2;
+                    int ipt221 = istart * nyz + jstart[1] * nZ + k2;
+                    int ipt222 = istart * nyz + (jend[1] + 1) * nZ + k2;
+                    double v211 = data[ipt211];
+                    double v212 = data[ipt212];
+                    double v221 = data[ipt221];
+                    double v222 = data[ipt222];
+                    double de21 = v211 + (v212 - v211) * (double(i) / (nxOut - 1));
+                    double de22 = v221 + (v222 - v221) * (double(i) / (nxOut - 1));
+                    double df2= de21 + (de22 - de21) * (double(j) / (nyOut - 1));
+
+                    //
+                    // Interpolate between the 2 face values.
+                    //
+                    double val = df1 + (df2 - df1) *
+                        ((angle - double(k1) * ddzperiod)) / ddzperiod;
+
                     int ivals = k * nxOut * nyOut + i * nyOut + j;
-                    vals[ivals] = dv;
+
+                    vals[ivals] = val;
+
                     jsum++;
                 }
             }
@@ -1693,31 +1831,73 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
     {
         for (int k = 0; k < kend; ++k)
         {
-            int k2 = k % nZ;
             int isum = 0;
             for (int i = 0; i < nxIn - 1; ++i)
             {
                 int jsum = 0;
                 for (int j = 0; j < nyIn - 1; ++j)
                 {
-                    int ipt11 = (i+istart) * nyz + jindex[j] * nZ + k2;
-                    int ipt12 = (i+istart) * nyz + jindex[j+1] * nZ + k2;
-                    int ipt21 = (i+istart+1) * nyz + jindex[j] * nZ + k2;
-                    int ipt22 = (i+istart+1) * nyz + jindex[j+1] * nZ + k2;
-                    double v11 = data[ipt11];
-                    double v12 = data[ipt12];
-                    double v21 = data[ipt21];
-                    double v22 = data[ipt22];
+                    int ipt11 = ijindex[i*nyIn+j];
+                    int ipt12 = ijindex[i*nyIn+j+1];
+                    int ipt21 = ijindex[(i+1)*nyIn+j];
+                    int ipt22 = ijindex[(i+1)*nyIn+j+1];
+                    double zAngle = double(k) * 6.283185307179586 / double(NZ_OUT);
+                    double angle11 = zAngle - zShift[ipt11];
+                    double angle12 = zAngle - zShift[ipt12];
+                    double angle21 = zAngle - zShift[ipt21];
+                    double angle22 = zAngle - zShift[ipt22];
                     for (int ii = 0; ii < inrep[i] + 1; ++ii)
                     {
-                        double dv1 = v11 + (v21 - v11) * (double(ii) / (inrep[i]));
-                        double dv2 = v12 + (v22 - v12) * (double(ii) / (inrep[i]));
+                        double angle1 = angle11 + (angle21 - angle11) *
+                            (double(ii) / (inrep[i]));
+                        double angle2 = angle12 + (angle22 - angle12) *
+                            (double(ii) / (inrep[i]));
                         for (int jj = 0; jj < jnrep[j] + 1; ++jj)
                         {
-                            double dv = dv1 + (dv2 - dv1) * (double(jj) / (jnrep[j]));
+                            double angle = angle1 + (angle2 - angle1) * (double(jj) / (jnrep[j]));
+                            angle = angle - dzperiod * floor(angle / dzperiod);
+                            int k1 = int(floor(angle / ddzperiod)) % nZ;
+                            int k2 = int(ceil(angle / ddzperiod)) % nZ;
+
+                            //
+                            // Interpolate on the first face.
+                            //
+                            int ipt111 = (i+istart) * nyz + jindex[j] * nZ + k1;
+                            int ipt112 = (i+istart) * nyz + jindex[j+1] * nZ + k1;
+                            int ipt121 = (i+istart+1) * nyz + jindex[j] * nZ + k1;
+                            int ipt122 = (i+istart+1) * nyz + jindex[j+1] * nZ + k1;
+                            double v111 = data[ipt111];
+                            double v112 = data[ipt112];
+                            double v121 = data[ipt121];
+                            double v122 = data[ipt122];
+                            double de11 = v111 + (v121 - v111) * (double(ii) / (inrep[i]));
+                            double de12 = v112 + (v122 - v112) * (double(ii) / (inrep[i]));
+                            double df1= de11 + (de12 - de11) * (double(jj) / (jnrep[j]));
+
+                            //
+                            // Interpolate on the second face.
+                            //
+                            int ipt211 = (i+istart) * nyz + jindex[j] * nZ + k2;
+                            int ipt212 = (i+istart) * nyz + jindex[j+1] * nZ + k2;
+                            int ipt221 = (i+istart+1) * nyz + jindex[j] * nZ + k2;
+                            int ipt222 = (i+istart+1) * nyz + jindex[j+1] * nZ + k2;
+                            double v211 = data[ipt211];
+                            double v212 = data[ipt212];
+                            double v221 = data[ipt221];
+                            double v222 = data[ipt222];
+
+                            double de21 = v211 + (v221 - v211) * (double(ii) / (inrep[i]));
+                            double de22 = v212 + (v222 - v212) * (double(ii) / (inrep[i]));
+                            double df2= de21 + (de22 - de21) * (double(jj) / (jnrep[j]));
+
+                            //
+                            // Interpolate between the 2 face values.
+                            //
+                            double val = df1 + (df2 - df1) *
+                                ((angle - double(k1) * ddzperiod)) / ddzperiod;
 
                             int ivals = k * nxOut * nyOut + (ii + isum) * nyOut + jj + jsum;
-                            vals[ivals] = dv;
+                            vals[ivals] = val;
                         }
                     }
                     jsum += jnrep[j];
@@ -1754,6 +1934,14 @@ avtBOUTFileFormat::CreateVar(Subgrid &grid, int iblock, int ndims,
 //   Eric Brugger, Fri Apr 11 10:33:08 PDT 2014
 //   I modified the creation of the diverter to include all of the lower
 //   diverter as well as create the upper diverter with a two X point grid.
+//   
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
 //   
 // ****************************************************************************
 
@@ -1819,12 +2007,12 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
     // Calculate the dimensions of the mesh.
     //
     int dims[3];
-    if (strcmp(var, "mesh") == 0 || strcmp(var, "mesh_zshift") == 0)
+    if (strcmp(var, "mesh") == 0)
     {
         int isubgrid = domain % nSubMeshes;
         dims[0] = subgrid[isubgrid].nyOut;
         dims[1] = subgrid[isubgrid].nxOut;
-        dims[2] = nzOut;
+        dims[2] = NZ_OUT + 1;
     }
     else if (strcmp(var, "mesh_2d") == 0)
     {
@@ -1841,7 +2029,7 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
         else
             isubgrid = twoXGridDomainToSubgrid[domain % N_DIVERTER_TWOX_SUB_MESHES];
         dims[0] = subgrid[isubgrid].nxOut;
-        dims[1] = nzOut;
+        dims[1] = NZ_OUT + 1;
         dims[2] = 1;
     }
     sgrid->SetDimensions(dims);
@@ -1857,19 +2045,13 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
     {
         int iblock = domain / nSubMeshes;
         int isubgrid = domain % nSubMeshes;
-        CreateMesh(subgrid[isubgrid], iblock, 3, zShiftZero, pts);
-    }
-    else if (strcmp(var, "mesh_zshift") == 0)
-    {
-        int iblock = domain / nSubMeshes;
-        int isubgrid = domain % nSubMeshes;
-        CreateMesh(subgrid[isubgrid], iblock, 3, zShift, pts);
+        CreateMesh(subgrid[isubgrid], iblock, 3, pts);
     }
     else if (strcmp(var, "mesh_2d") == 0)
     {
         int iblock = domain / nSubMeshes;
         int isubgrid = domain % nSubMeshes;
-        CreateMesh(subgrid[isubgrid], iblock, 2, zShiftZero, pts);
+        CreateMesh(subgrid[isubgrid], iblock, 2, pts);
     }
     else
     {
@@ -1878,8 +2060,7 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
             isubgrid = oneXGridDomainToSubgrid[domain % N_DIVERTER_ONEX_SUB_MESHES];
         else
             isubgrid = twoXGridDomainToSubgrid[domain % N_DIVERTER_TWOX_SUB_MESHES];
-        CreateDiverterMesh(subgrid[isubgrid],
-                           domain, zShift, pts);
+        CreateDiverterMesh(subgrid[isubgrid], domain, pts);
     }
 
     retval = sgrid;
@@ -1920,6 +2101,14 @@ avtBOUTFileFormat::GetMesh(int ts, int domain, const char *var)
 //   I modified the routine to handle ghost zones in the y direction for
 //   3d variables. I also added more error checks on the data.
 //
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//
 // ****************************************************************************
 
 vtkDataArray *
@@ -1935,20 +2124,13 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
 
     //
     // Calculate the variable to read from the user name. This means removing
-    // either "_zshift" or "_diverter" if present.
+    // "_diverter" if present.
     //
     bool diverter_var = false;
     char *var2 = 0;
     int lvar = strlen(var);
-    int lzshift = strlen("_zshift");
     int ldiverter = strlen("_diverter");
-    if (lvar > lzshift && strcmp(&(var[lvar-lzshift]), "_zshift") == 0)
-    {
-        var2 = new char[lvar-lzshift+1];
-        strncpy(var2, var, lvar-lzshift);
-        var2[lvar-lzshift] = '\0';
-    }
-    else if (lvar > ldiverter && strcmp(&(var[lvar-ldiverter]), "_diverter") == 0)
+    if (lvar > ldiverter && strcmp(&(var[lvar-ldiverter]), "_diverter") == 0)
     {
         var2 = new char[lvar-ldiverter+1];
         strncpy(var2, var, lvar-ldiverter);
@@ -2112,7 +2294,7 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
             isubgrid = oneXGridDomainToSubgrid[domain % N_DIVERTER_ONEX_SUB_MESHES];
         else
             isubgrid = twoXGridDomainToSubgrid[domain % N_DIVERTER_TWOX_SUB_MESHES];
-        nValues2 = subgrid[isubgrid].nxOut * nzOut;
+        nValues2 = subgrid[isubgrid].nxOut * (NZ_OUT + 1);
     }
     else
     {
@@ -2122,7 +2304,7 @@ avtBOUTFileFormat::GetVar(int ts, int domain, const char *var)
         }
         else
         {
-            nValues2 = subgrid[isubgrid].nxOut * subgrid[isubgrid].nyOut * nzOut;
+            nValues2 = subgrid[isubgrid].nxOut * subgrid[isubgrid].nyOut * (NZ_OUT + 1);
         }
     }
 

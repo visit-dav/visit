@@ -66,6 +66,14 @@ class avtFileFormatInterface;
 //   I modified the display of the diverter to display all of the lower
 //   diverter and also display the upper diverter with a two X point grid.
 //
+//   Eric Brugger, Tue Aug 14 11:29:38 PDT 2018
+//   I modified the reader to create a single regular block in the rotational
+//   direction, interpolating the field values onto it based on zshift instead
+//   of distorting the zones by zshift and using unmodified field values.
+//   This reduces the size of the mesh and also eliminates the rendering
+//   artifacts caused by the large aspect zones created by distorting the
+//   zones.
+//
 // ****************************************************************************
 
 #define MAX_SUB_MESHES 7
@@ -118,8 +126,8 @@ public:
     void                   DetermineMeshReplication(Subgrid &);
     void                   ReadMeshMetaData();
     bool                   ReadMesh();
-    void                   CreateDiverterMesh(Subgrid &, int, float *, float *);
-    void                   CreateMesh(Subgrid &, int, int, float *, float *);
+    void                   CreateDiverterMesh(Subgrid &, int, float *);
+    void                   CreateMesh(Subgrid &, int, int, float *);
     void                   CreateDiverterVar(Subgrid &, int, float *, float *);
     void                   CreateVar(Subgrid &, int, int, float *, float *);
 
@@ -138,7 +146,7 @@ public:
     int                    nSubMeshes;
     Subgrid                subgrid[MAX_SUB_MESHES];
 
-    float                 *Rxy, *Zxy, *zShift, *zShiftZero;
+    float                 *Rxy, *Zxy, *zShift;
     int                    nx2d, ny2d;
     int                    zperiod;
     bool                   meshRead;

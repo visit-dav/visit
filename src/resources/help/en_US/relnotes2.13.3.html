@@ -39,6 +39,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>When re-interpreting 1D meshes as curves, add support for those meshes being multi-block meshes thereby enabling support for multi-block curves.</li>
   <li>Added support for CQUAD8 to NASTRAN Database reader.</li>
   <li>Host profiles were added for the Lawrence Livermore National Laboratories' Pascal system.</li>
+  <li>Modified the BOUT reader to create a single regular block in the rotational direction, interpolating the field values onto it based on zshift instead of distorting the zones by zshift and using unmodified field values. This reduces the size of the mesh and also eliminates the rendering artifacts caused by the large aspect zones created by distorting the zones.</li>
 </ul>
 
 <a name="Dev_changes"></a>
