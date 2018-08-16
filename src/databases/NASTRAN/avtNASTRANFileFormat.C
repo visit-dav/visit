@@ -47,7 +47,6 @@ using namespace NASTRANDBOptions;
 
 #include <vtkCellType.h>
 #include <vtkFloatArray.h>
-#include <vtkUnstructuredGrid.h>
 
 #include <avtCallback.h>
 #include <avtDatabaseMetaData.h>
@@ -87,6 +86,7 @@ using namespace NASTRANDBOptions;
 #include <map>
 #include <string>
 #include <vector>
+#include <iostream>
 
 using std::map;
 using std::string;
@@ -350,6 +350,11 @@ static int Geti(const char *s)
 //    to zero -- and put it into the list of unique material ids. Now, it
 //    keeps track of whether a 'valid' material id has been seen before
 //    updating the list of unique material ids.
+//
+//    Edward Rusu, Tue Aug 14 09:48:24 PDT 2018
+//    Updated the file reader to handle the new NASTRAN capabilities.
+//    Specifically, many of the of the NASTRAN types now support more nodes to
+//    make quadratic elements, so I've updated the reader to handle this.
 // ****************************************************************************
 
 bool
@@ -400,18 +405,18 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 
     char  line[1024];
     float pt[3]; (void) pt;
-    vtkIdType verts[8]; (void) verts;
+    vtkIdType verts[20]; (void) verts; // QuadraticHexahedron supports up to 20 vertices
     bool recognized = false;
     bool titleRead = false;
-    for(int lineIndex = 0; !ifile.eof(); ++lineIndex)
+    
+#define INDEX_FIELD_WIDTH 8 
+
+    for(int lineIndex = 0; ReadLine(ifile, line); ++lineIndex)
     {
         int matid = INVALID_MAT_ID;
 
         if(nLines != ALL_LINES && lineIndex >= nLines)
             break;
-
-        // Get the line
-        ifile.getline(line, 1024);
 
         // Determine what the line is for.
         if(line[0] == '$' && !recognized)
@@ -422,10 +427,6 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         else if(strncmp(line, "GRID*", 5) == 0)
         {
             recognized = true;
-
-            // These GRID* lines need a second line of data. Read it into
-            // the same buffer at the end.
-            ifile.getline(line + 72, 1024-72);
 
 #define LONG_FIELD_WIDTH 16
             char *valstart = line + 81 - 1;
@@ -541,405 +542,429 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 #endif // if !defined(MDSERVER)
 
 #endif
-
-
         }
-        else if(strncmp(line, "CHEXA", 5) == 0)
+        else if(strncmp(line, "CBAR", 4) == 0 ||
+                strncmp(line, "CBEAM", 5) == 0 ||
+                strncmp(line, "CBUSH", 5) == 0 ||
+                strncmp(line, "CBUSH1D", 7) == 0 ||
+                strncmp(line, "CCABLE", 6) == 0 ||
+                strncmp(line, "CDAMP3", 6) == 0 ||
+                strncmp(line, "CDAMP4", 6) == 0 || // rusu1 - uses a scalar value B for the damper instead of a property identification number
+                strncmp(line, "CELAS3", 6) == 0 ||
+                strncmp(line, "CELAS4", 6) == 0 || // rusu1 - uses a scalar value K for the stiffness instead of a property identification number
+                strncmp(line, "CGAP", 4) == 0 ||
+                strncmp(line, "CMASS3", 6) == 0 ||
+                strncmp(line, "CMASS4", 6) == 0 || // rusu1 - uses a scalar value M for the stiffness instead of a property identification number
+                strncmp(line, "CPIPE", 5) == 0 ||
+                strncmp(line, "CROD", 4) == 0 ||
+                strncmp(line, "CTUBE", 5) == 0 ||
+                strncmp(line, "CVISC", 5) == 0)
         {
-#define INDEX_FIELD_WIDTH 8
-            // CHEXA requires more point indices so read another line.
-            ifile.getline(line + 72, 1024-72);
+            // These cell types are like:
+            // CELL_TYPE | EID | PID (or scalar) | GA | GB |
+            // The differences in cell types are in the information stored after GB,
+            // but we don't care about that for our purposes.
+            // We want PID, GA, and GB.
+    
+            // Parse the line into verts
+            ParseLine(verts, line, 3, 2);
             
-            char *valstart = line + 88;
-            char *valend = valstart;
-            verts[7] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[6] = Geti(valstart)-1;
-
-            // Skip the blank
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[5] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[4] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[3] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[2] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[0] = Geti(valstart)-1;            
-
-            if (matCountOpt)
-            {
-                valstart -= INDEX_FIELD_WIDTH;
-                valend -= INDEX_FIELD_WIDTH;
-                *valend = '\0';
-                matid = Geti(valstart);
+            // Check if element is buildable
+            int buildable = CheckBuildable(verts, 2);
+            
+            // Set the material property id
+            if (matCountOpt) {
+                matid = ParseField(line, 2);
             }
 
-#if !defined(MDSERVER)
-            ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
-            if (matCountOpt) matList.push_back(matid);
-#endif
 
 #if 0
             debug4 << verts[0]
                    << ", " << verts[1]
-                   << ", " << verts[2]
-                   << ", " << verts[3]
-                   << ", " << verts[4]
-                   << ", " << verts[5]
-                   << ", " << verts[6]
-                   << ", " << verts[7]
                    << endl;
+#endif
+
+#if !defined(MDSERVER)
+            if (buildable == 1) {
+                ugrid->InsertNextCell(VTK_LINE, 2, verts);
+            }
+            else {
+                debug4 << "ERROR: Could not build element EID: " << ParseField(line, 1) << endl;
+            }
+            if (matCountOpt) matList.push_back(matid);
+#endif
+        }
+        else if(strncmp(line, "CDAMP1", 6) == 0 ||
+                strncmp(line, "CDAMP2", 6) == 0 ||
+                strncmp(line, "CELAS1", 6) == 0 ||
+                strncmp(line, "CELAS2", 6) == 0 ||
+                strncmp(line, "CMASS1", 6) == 0 ||
+                strncmp(line, "CMASS2", 6) == 0)
+        {
+            // These cell types are like:
+            // CELL_TYPE | EID | PID (or scalar) | G1 | C1 | G2 | C2 |
+            // We want PID, G1, and G2
+            
+            // Parse the line into verts array
+            ParseLine(verts, line, 3, 3);
+            
+            // Swap C1 and G2
+            int swap_t = verts[1];
+            verts[1] = verts[2];
+            verts[2] = swap_t;
+            
+            // Check if element is buildable
+            int buildable = CheckBuildable(verts, 2);
+            
+            // Set material property id
+            if (matCountOpt) {
+                matid = ParseField(line, 2);
+            }
+#if !defined(MDSERVER)
+            if (buildable == 1) {
+                ugrid->InsertNextCell(VTK_LINE, 2, verts);
+            }
+            else {
+                debug4 << "ERROR: Could not build element EID: " << ParseField(line, 1) << endl;
+            }
+            if (matCountOpt) matList.push_back(matid);
+#endif
+            
+        }
+        else if(strncmp(line, "CONROD", 6) == 0)
+        {
+            // These cell types are like:
+            // CELL_TYPE | EID | GA | GB
+            // We want GA and GB
+            
+            // Parse the line into verts array
+            ParseLine(verts, line, 2, 2);
+            
+            // Check if element is buildable
+            int buildable = CheckBuildable(verts, 2);
+            
+            // Set material property id
+            if (matCountOpt) {
+                matid = ParseField(line, 2);
+            }
+#if !defined(MDSERVER)
+            if (buildable == 1) {
+                ugrid->InsertNextCell(VTK_LINE, 2, verts);
+            }
+            else {
+                debug4 << "ERROR: Could not build CONROD EID: " << ParseField(line, 1) << endl;
+            }
+            if (matCountOpt) matList.push_back(matid);
+#endif
+        }
+        else if(strncmp(line, "CTRIA2", 6) == 0 ||
+                strncmp(line, "CTRIA3", 6) == 0 ||
+                strncmp(line, "CTRIAR", 6) == 0)
+        {
+            // These cell types are like:
+            // CELL_TYPE | EID | PID | G1 | G2 | G3 |
+            // Looks like NASTRAN no longer supports CTRIA2, but we have them in our tests
+            // suite, so I've included them here in case a user wants to run with older
+            // files.
+    
+            // Parse line into verts array
+            ParseLine(verts, line, 3, 3);
+            
+            // Check if the element is buildable
+            int buildable = CheckBuildable(verts, 3);
+            
+            // Set the material property id
+            if (matCountOpt) {
+                matid = ParseField(line, 2);
+            }
+#if !defined(MDSERVER)
+            if (buildable == 1) {
+                ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
+            }
+            else {
+                debug4 << "ERROR: Could not build element EID: " << ParseField(line, 1) << endl;
+            }
+            if (matCountOpt) matList.push_back(matid);
+#endif
+        }
+        else if(strncmp(line, "CTRIA6", 6) == 0)
+        {
+            // These cell types are like:
+            // CELL_TYPE | EID | PID | G1 | G2 | G3 | G4 | G5 | G6
+            
+            // Parse line into verts array
+            ParseLine(verts, line, 3, 6);
+            
+            // Check if element is buildable
+            int buildable = CheckBuildable(verts, 6, 3);
+            
+            // Set the material property id
+            if (matCountOpt) {
+                matid = ParseField(line, 2);
+            }
+#if !defined(MDSERVER)
+            if(buildable == 2) { // High order build passed
+                ugrid->InsertNextCell(VTK_QUADRATIC_TRIANGLE, 6, verts);
+            }
+            else if(buildable == 1) { // First order build passed
+                debug4 << "WARNING: Could not build QUADRATIC_TRIANGLE "
+                       << "at CTRIA6 EID: " << ParseField(line, 1) << ". "
+                       << "Building TRIANGLE instead." << endl;
+                ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+            } else {
+                debug4 << "ERROR: Could not build element CTRIA6 EID: " << ParseField(line, 1)
+                       << endl;
+            }
+            if (matCountOpt) matList.push_back(matid);
+#endif
+        }
+        else if(strncmp(line, "CQUAD4", 6) == 0 ||
+                strncmp(line, "CSHEAR", 6) == 0 ||
+                strncmp(line, "CQUADR", 6) == 0)
+        {    
+            // These cell types are like:
+            // CELL_TYPE | EID | PID | G1 | G2 | G3 | G4 |
+            
+            // Parse line into verts array
+            ParseLine(verts, line, 3, 4);
+            
+            // Check if the element is buildable
+            int buildable = CheckBuildable(verts, 4);
+            
+            // Set the material property id
+            if (matCountOpt)
+            {
+                matid = ParseField(line, 2);
+            }
+#if !defined(MDSERVER)
+            if (buildable == 1) {
+                ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+            }
+            else {
+                debug4 << "ERROR: Could not build element EID: " << ParseField(line, 1) << endl;
+            }
+            if (matCountOpt) matList.push_back(matid);
+#endif
+        }
+        else if(strncmp(line, "CQUAD8", 6) == 0)
+        {    
+            // These cell types are like:
+            // CELL_TYPE | EID | PID | G1 | G2 | G3 | G4 | G5 | G6 |
+            //           | G7  | G8  |
+            
+            // Parse line into verts array
+            ParseLine(verts, line, 3, 8);
+            
+            // Check if the element is buildable
+            int buildable = CheckBuildable(verts, 8, 4);
+            
+            // Set the material property id
+            if (matCountOpt)
+            {
+                matid = ParseField(line, 2);
+            }
+#if !defined(MDSERVER)
+            if(buildable == 2) { // High order build passed
+                ugrid->InsertNextCell(VTK_QUADRATIC_QUAD, 8, verts);
+            }
+            else if(buildable == 1) { // First order build passed
+                debug4 << "WARNING: Could not build QUADRATIC_QUAD "
+                       << "at CQUAD8 EID: " << ParseField(line, 1) << ". "
+                       << "Building QUAD instead." << endl;
+                ugrid->InsertNextCell(VTK_QUAD, 4, verts);
+            } else {
+                debug4 << "ERROR: Could not build element CQUAD8 EID: " << ParseField(line, 1)
+                       << endl;
+            }
+            if (matCountOpt) matList.push_back(matid);
 #endif
         }
         else if(strncmp(line, "CTETRA", 6) == 0)
-        {
-            char *valstart = line + 48;
-            char *valend = valstart;
-            verts[3] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[2] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[0] = Geti(valstart)-1;
-
+        {    
+            // These cell types are like:
+            // CELL_TYPE | EID | PID | G1 | G2  | G3 | G4 | G5 | G6 |
+            //           | G7  | G8  | G9 | G10 |
+            // where G5-10 are only needed for QUADRATIC.
+            
+            // Parse line into verts array
+            ParseLine(verts, line, 3, 10);
+            
+            // Check if the element is buildable
+            int buildable = CheckBuildable(verts, 10, 4);
+                        
+            // Set the material property id
             if (matCountOpt)
             {
-                valstart -= INDEX_FIELD_WIDTH;
-                valend -= INDEX_FIELD_WIDTH;
-                *valend = '\0';
-                matid = Geti(valstart);
+                matid = ParseField(line, 2);
             }
-
-#if 0
-            debug4 << verts[0]
-                   << ", " << verts[1]
-                   << ", " << verts[2]
-                   << ", " << verts[3]
-                   << endl;
-#endif
-
 #if !defined(MDSERVER)
-            ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+            if(buildable == 2) {
+                ugrid->InsertNextCell(VTK_QUADRATIC_TETRA, 10, verts);
+            }
+            else if(buildable == 1) {
+                debug5 << "Could not build QUADRATIC_TETRA "
+                       << "at CTETRA EID: " << ParseField(line, 1) << ". "
+                       << "Building TETRA element." << endl;
+                ugrid->InsertNextCell(VTK_TETRA, 4, verts);
+            }
+            else { 
+                debug4 << "ERROR: Could not build element CTETRA EID: " << ParseField(line, 1)
+                       << endl;
+            }
             if (matCountOpt) matList.push_back(matid);
 #endif
         }
-        else if(strncmp(line, "CPYRAM", 6) == 0)
-        {
-            char *valstart = line + 56;
-            char *valend = valstart;
-            verts[4] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[3] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[2] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[0] = Geti(valstart)-1;
-
+        else if(strncmp(line, "CPYRAM", 6) == 0 ||
+                strncmp(line, "CPYRA", 5) == 0)
+        {    
+            // These cell types are like:
+            // CELL_TYPE | EID | PID | G1 | G2  | G3  | G4  | G5  | G6 |
+            //           | G7  | G8  | G9 | G10 | G11 | G12 | G13 |
+            // where G6-13 are only needed for QUADRATIC.
+            // Looks like NASTRAN no longer supporst CPYRAM, but we have that in our test
+            // suite so I've included it here in case the user wants to run an older file.
+            
+            // Parse line into verts array
+            ParseLine(verts, line, 3, 13);
+            
+            // Check if the element is buildable
+            int buildable = CheckBuildable(verts, 13, 5);
+                        
+            // Set the material property id
             if (matCountOpt)
             {
-                valstart -= INDEX_FIELD_WIDTH;
-                valend -= INDEX_FIELD_WIDTH;
-                *valend = '\0';
-                matid = Geti(valstart);
+                matid = ParseField(line, 2);
             }
-
-#if 0
-            debug4 << verts[0]
-                   << ", " << verts[1]
-                   << ", " << verts[2]
-                   << ", " << verts[3]
-                   << ", " << verts[4]
-                   << endl;
-#endif
-
 #if !defined(MDSERVER)
-            ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+            if(buildable == 2) { // High order build passed
+                ugrid->InsertNextCell(VTK_QUADRATIC_PYRAMID, 13, verts);
+            }
+            else if(buildable == 1) { // First order build passed
+                debug5 << "Could not build QUADRATIC_PYRAMID "
+                       << "at CPYRA EID: " << ParseField(line, 1) << ". "
+                       << "Building PYRAMID element." << endl;
+                ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+            } else {
+                debug4 << "ERROR: Could not build element CPYRA EID: " << ParseField(line, 1)
+                       << std::endl;
+            }
             if (matCountOpt) matList.push_back(matid);
 #endif
         }
         else if(strncmp(line, "CPENTA", 6) == 0)
         {
-            char *valstart = line + 64;
-            char *valend = valstart;
-            verts[5] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[4] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[3] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[2] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[0] = Geti(valstart)-1;
-
+            // These cell types are like:
+            // CELL_TYPE | EID | PID | G1  | G2  | G3  | G4  | G5  | G6  |
+            //           | G7  | G8  | G9  | G10 | G11 | G12 | G13 | G14 |
+            //           | G15 |
+            // where G7-15. are only needed for QUADRATIC.
+            
+            // Parse line into verts array
+            ParseLine(verts, line, 3, 15);
+            
+            // Check if the element is buildable
+            int buildable = CheckBuildable(verts, 15, 6);
+            
+            
+            // PENTA's (Wedges) have mismatched indices between NATRAN and VTK,
+            // so we fix that here.
+            if (buildable > 0) { // First order element fix
+                int swap_t = verts[1];
+                verts[1] = verts[2];
+                verts[2] = swap_t;
+                
+                swap_t = verts[4];
+                verts[4] = verts[5];
+                verts[5] = swap_t;
+            }
+            if (buildable > 1) { // Quadratic element fix
+                int swap_t = verts[6];
+                verts[6] = verts[8];
+                verts[8] = swap_t;
+                
+                swap_t = verts[9];
+                verts[9] = verts[14];
+                verts[14] = verts[10];
+                verts[10] = verts[13];
+                verts[13] = verts[11];
+                verts[11] = verts[12];
+                verts[12] = swap_t;
+            }
+                 
+            // Set the material property id
             if (matCountOpt)
             {
-                valstart -= INDEX_FIELD_WIDTH;
-                valend -= INDEX_FIELD_WIDTH;
-                *valend = '\0';
-                matid = Geti(valstart);
+                matid = ParseField(line, 2);
             }
-
-#if 0
-            debug4 << verts[0]
-                   << ", " << verts[1]
-                   << ", " << verts[2]
-                   << ", " << verts[3]
-                   << ", " << verts[4]
-                   << ", " << verts[5]
-                   << endl;
-#endif
-            //
-            // http://www.simcenter.msstate.edu/docs/ug_io/3d_grid_file_type_nastran.html
-            // says that if 5th and 6th nodes are identical, then its really a 5 noded
-            // pyramid.
-            //
 #if !defined(MDSERVER)
-            if (verts[4] == verts[5])
-                ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
-            else
-                ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+            if(buildable == 2) { // High order build passed
+                ugrid->InsertNextCell(VTK_QUADRATIC_WEDGE, 15, verts);
+            }
+            else if(buildable == 1) { // First order build passed
+                debug5 << "Could not build QUADRATIC_WEDGE "
+                       << "at CPENTA EID: " << ParseField(line, 1) << ". " << endl;
+                if (verts[4] == verts[5])
+                {
+                    debug5 << "Could not build WEDGE at CPENTA EID: "
+                           << ParseField(line, 1) << ". "
+                           << "Building PYRAMID element." << endl;
+                    ugrid->InsertNextCell(VTK_PYRAMID, 5, verts);
+                }
+                else {
+                    debug5 << "Building WEDGE element." << endl;
+                    ugrid->InsertNextCell(VTK_WEDGE, 6, verts);
+                }
+            } else {
+                debug4 << "ERROR: Could not build element CPENTA EID: " << ParseField(line, 1)
+                       << std::endl;
+            }
             if (matCountOpt) matList.push_back(matid);
 #endif
         }
-        else if(strncmp(line, "CQUAD4", 6) == 0)
+        else if(strncmp(line, "CHEXA", 5) == 0)
         {
-            char *valstart = line + 48;
-            char *valend = valstart;
-            verts[3] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[2] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[0] = Geti(valstart)-1;
-
+            // These cell types are like:
+            // CELL_TYPE | EID | PID | G1  | G2  | G3  | G4  | G5  | G6  |
+            //           | G7  | G8  | G9  | G10 | G11 | G12 | G13 | G14 |
+            //           | G15 | G16 | G17 | G18 | G19 | G20 |
+            // where G9-20. are only needed for QUADRATIC.
+            
+            // Parse line into verts array
+            ParseLine(verts, line, 3, 20);
+            
+            // Check if the element is buildable
+            int buildable = CheckBuildable(verts, 20, 8);
+            
+            // Quadratic Hexahedrons are mismatched between NASTRAN and VTK.
+            if(buildable == 2)
+            {
+                int swap_t = -1;
+                for (int i = 12, j = 16; i < 16; i++, j++)
+                {
+                    swap_t = verts[i];
+                    verts[i] = verts[j];
+                    verts[j] = swap_t;
+                }
+            }            
+                        
+            // Set the material property id
             if (matCountOpt)
             {
-                valstart -= INDEX_FIELD_WIDTH;
-                valend -= INDEX_FIELD_WIDTH;
-                *valend = '\0';
-                matid = Geti(valstart);
+                matid = ParseField(line, 2);
             }
-
-#if 0
-            debug4 << verts[0]
-                   << ", " << verts[1]
-                   << ", " << verts[2]
-                   << ", " << verts[3]
-                   << endl;
-#endif
-
 #if !defined(MDSERVER)
-            ugrid->InsertNextCell(VTK_QUAD, 4, verts);
-            if (matCountOpt) matList.push_back(matid);
-#endif
-        }
-        else if(strncmp(line, "CQUAD8", 6) == 0)
-        {
-            // CQUAD8 requires more point indices so read another line.
-            ifile.getline(line + 72, 1024-72);
-
-            char *valstart = line + 88;
-            char *valend = valstart;
-            verts[7] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[6] = Geti(valstart)-1;
-
-            // Skip the blank
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[5] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[4] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[3] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[2] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[0] = Geti(valstart)-1;
-
-            if (matCountOpt)
-            {
-                valstart -= INDEX_FIELD_WIDTH;
-                valend -= INDEX_FIELD_WIDTH;
-                *valend = '\0';
-                matid = Geti(valstart);
+            if(buildable == 2) { // High order build passed
+                ugrid->InsertNextCell(VTK_QUADRATIC_HEXAHEDRON, 20, verts);
             }
-
-#if 0
-            debug4 << verts[0]
-                   << ", " << verts[1]
-                   << ", " << verts[2]
-                   << ", " << verts[3]
-                   << ", " << verts[4]
-                   << ", " << verts[5]
-                   << ", " << verts[6]
-                   << ", " << verts[7]
-                   << endl;
-#endif
-
-#if !defined(MDSERVER)
-            ugrid->InsertNextCell(VTK_QUADRATIC_QUAD, 8, verts);
-            if (matCountOpt) matList.push_back(matid);
-#endif
-        }
-        else if(strncmp(line, "CTRIA2", 6) == 0 ||
-                strncmp(line, "CTRIA3", 6) == 0)
-        {
-            char *valstart = line + 40;
-            char *valend = valstart;
-            verts[2] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[1] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            valend -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[0] = Geti(valstart)-1;
-
-            if (matCountOpt)
-            {
-                valstart -= INDEX_FIELD_WIDTH;
-                valend -= INDEX_FIELD_WIDTH;
-                *valend = '\0';
-                matid = Geti(valstart);
+            else if(buildable == 1) { // First order build passed
+                debug5 << "Could not build QUADRATIC_HEXAHEDRON "
+                       << "at CHEXA EID: " << ParseField(line, 1) << ". "
+                       << "Building HEXAHEDRON." << endl;
+                ugrid->InsertNextCell(VTK_HEXAHEDRON, 8, verts);
+            } else {
+                debug4 << "ERROR: Could not build element CHEXA EID: " << ParseField(line, 1)
+                       << endl;
             }
-
-#if 0
-            debug4 << verts[0]
-                   << ", " << verts[1]
-                   << ", " << verts[2]
-                   << endl;
-#endif
-
-#if !defined(MDSERVER)
-            ugrid->InsertNextCell(VTK_TRIANGLE, 3, verts);
-            if (matCountOpt) matList.push_back(matid);
-#endif
-        }
-        else if(strncmp(line, "CBAR", 4) == 0)
-        {
-            char *valstart = line + 32;
-            char *valend = valstart;
-            verts[1] = Geti(valstart)-1;
-
-            valstart -= INDEX_FIELD_WIDTH;
-            *valend = '\0';
-            verts[0] = Geti(valstart)-1;
-
-            if (matCountOpt)
-            {
-                valstart -= INDEX_FIELD_WIDTH;
-                valend -= INDEX_FIELD_WIDTH;
-                *valend = '\0';
-                matid = Geti(valstart);
-            }
-
-#if 0
-            debug4 << verts[0]
-                   << ", " << verts[1]
-                   << endl;
-#endif
-
-#if !defined(MDSERVER)
-            ugrid->InsertNextCell(VTK_LINE, 2, verts);
             if (matCountOpt) matList.push_back(matid);
 #endif
         }
@@ -958,11 +983,16 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             recognized = true;
         }
-
+        else if(strncmp(line, "ENDDATA", 7) == 0)
+        {
+            break;
+        } // end line if
+        
         if (matid != INVALID_MAT_ID)
             uniqMatIds[matid] = 1;
-    }
-
+    } // end ReadLine loop
+    
+    
     visitTimer->StopTimer(readingFile, "Interpreting NASTRAN file");
 
     if(recognized && nLines == ALL_LINES)
@@ -998,6 +1028,187 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
     return recognized;
 }
 
+// ****************************************************************************
+//  Method: avtNASTRANFileFormat::ReadLine
+//
+//  Purpose:
+//      This is a helper function for ReadFile that builds the line variable.
+//      If the line ends in "+CONT", "*CONT", "+", or "*", then read the next
+//      line as well. Return true if the file reader is still good and false if
+//      the file reader has failed.
+//
+//  Programmer: Edward Rusu
+//  Creation:   Tue Jul 31 9:26:18 PST 2018
+// ****************************************************************************
+bool
+avtNASTRANFileFormat::ReadLine(ifstream& ifile, char *line)
+{
+    // Wipe out the line to ensure clear read
+    for (int i = 0; i < 1024; i++) {
+        line[i] = ' ';
+    }
+
+    // Initial line read
+    ifile.getline(line, 1024);
+    
+    // Check for continuation line
+    char* contCheck;
+    for (int i = 0; i < 1024/72; i++)
+    {
+        int ndx = 72*(i+1);
+        contCheck = line + ndx;
+
+        if(strncmp(contCheck, "+CONT", 5) == 0 || 
+           strncmp(contCheck, "*CONT", 5) == 0 ||
+           *contCheck == '+' ||
+           *contCheck == '*')
+        {
+            // If continuation line, add in the next line
+            ifile.getline(line + ndx, 1024-ndx);
+        }
+        else break;
+    }
+
+    // Determine if the reader has reached the end of the file
+    // or if there is some kind of error.
+    if(ifile.fail())
+    {
+        if (ifile.eof())
+        {
+            std::cout << "File successfuly read!" << std::endl;
+            return false;
+        }
+        else {
+            std::cout << "ERROR: File reader has failed!" << std::endl;
+            return false;
+        }
+    }
+    else if(!ifile.good())
+    {
+        std::cout << "ERROR: File reader is not good!" << std::endl;
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtNASTRANFileFormat::ParseLine
+//
+//  Purpose:
+//      This is a helper function for ReadFile that parses the line into
+//      the vertices array based on the spacing defined in INDEX_FIELD_WIDTH.
+//      Takes as input the verts array as input, the line to parse, an index
+//      for where to start parsing, and the number of elements to parse.
+//
+//  Programmer: Edward Rusu
+//  Creation:   Mon Aug 13 14:31:24 PST 2018
+// ****************************************************************************
+void
+avtNASTRANFileFormat::ParseLine(vtkIdType *verts, char *line, int start,
+                                int count) 
+{  
+    char *valstart = line + INDEX_FIELD_WIDTH * start;
+    char *valend = valstart + INDEX_FIELD_WIDTH;
+    char val_t;
+    for (int i = 0; (i < count) && (*valstart != '\0'); i++) {
+        if(*valstart == '+' || *valstart == '*')
+        { // At blank continuation element
+            valstart += INDEX_FIELD_WIDTH;
+            valend += INDEX_FIELD_WIDTH;
+        }
+    
+        val_t = *valend;
+        *valend = '\0';
+        
+        verts[i] = Geti(valstart)-1;
+        
+        *valend = val_t;
+        valstart += INDEX_FIELD_WIDTH;
+        valend += INDEX_FIELD_WIDTH;
+    }
+}
+
+// ****************************************************************************
+//  Method: avtNASTRANFileFormat::CheckBuildable
+//
+//  Purpose:
+//      This is a helper function for ReadFile that checks the verts array
+//      to ensure that the cell is buildable to specification. Takes in the
+//      verts array and the number of expected elements. Returns 1 if base
+//      element can be built, and 0 if the element cannot be built.
+//      The overload also takes in the number of needed elements. It returns
+//      2 if a quadratic element can be built.
+//
+//  Programmer: Edward Rusu
+//  Creation:   Mon Aug 13 10:42:24 PST 2018
+// ****************************************************************************
+int
+avtNASTRANFileFormat::CheckBuildable(const vtkIdType *verts, int numExpected)
+{  
+    int buildable = 1;
+    for (int i = 0; i < numExpected; i++) {
+        if (verts[i] == -1)
+        {
+            buildable == 0;
+            break;
+        }
+    }
+    return buildable;
+}
+
+int
+avtNASTRANFileFormat::CheckBuildable(const vtkIdType *verts, int numExpected,
+                                     int numNeeded)
+{  
+    int buildable = 2;
+    for (int i = numNeeded; i < numExpected; i++) {
+        if (verts[i] == -1)
+        {
+            buildable = 1;
+            break;
+        }
+    }
+    for (int i = 0; i < numNeeded; i++) {
+        if (verts[i] == -1)
+        {
+            buildable = 0;
+            break;
+        }
+    }
+    return buildable;
+}
+
+// ****************************************************************************
+//  Method: avtNASTRANFileFormat::ParseField
+//
+//  Purpose:
+//      This is a helper function for ReadFile that parses a single field out
+//      of line. Takes the line as input as well as starting point for parsing.
+//      Assumes spacing defined in INDEX_FIELD_WIDTH. Returns the parsed
+//      integer.
+//
+//  Programmer: Edward Rusu
+//  Creation:   Mon Aug 14 13:06:24 PST 2018
+// ****************************************************************************
+int
+avtNASTRANFileFormat::ParseField(char *line, int start)
+{  
+    char *valstart = line + INDEX_FIELD_WIDTH * start;
+    char *valend = valstart + INDEX_FIELD_WIDTH;
+    char val_t = *valend;
+
+    *valend = '\0';
+    
+    int out = Geti(valstart);
+    
+    *valend = val_t;
+    
+    return out;
+}
+    
 // ****************************************************************************
 //  Method: avtNASTRANFileFormat::PopulateDatabaseMetaData
 //

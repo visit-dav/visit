@@ -46,6 +46,8 @@
 
 #include <vector>
 #include <map>
+#include <fstream>
+#include <vtkUnstructuredGrid.h>
 
 #include <avtSTSDFileFormat.h>
 
@@ -97,6 +99,14 @@ protected:
     std::map<int,int>      uniqMatIds;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *);
+    
+private:
+    bool ReadLine(ifstream&, char *);
+    void ParseLine(vtkIdType *, char *, int, int);
+    int CheckBuildable(const vtkIdType *, int);
+    int CheckBuildable(const vtkIdType *, int, int);
+    int ParseField(char *, int);
+
 };
 
 
