@@ -216,6 +216,9 @@
 #    Matt Larsen, Wed Feb 28 08:24:31 PDT 2018
 #    Turning off all anotations for pick highlight tests 
 #
+#    Alister Maguire, Thu Aug 16 10:18:56 PDT 2018
+#    Added a test for swivel highlight. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("Boxlib2D","SAMRAI","Mili"))
 
@@ -3004,6 +3007,35 @@ def TestRemoveLabeledPicks():
     DeleteAllPlots()
     ResetPickLetter()
 
+def TestSwivelHighlight():
+    ResetPickAttributes()
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+    ResetView()
+
+    OpenDatabase(silo_data_path("globe.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "v")
+    DrawPlots()
+    orig_atts = GetPickAttributes()
+    fh_atts   = GetPickAttributes()
+    fh_atts.overridePickLabel = 1
+    fh_atts.forcedPickLabel   = "fhpick"
+    fh_atts.showPickHighlight = 1
+    fh_atts.swivelFocusToPick = 1
+    fh_atts.showPickLetter    = 0
+    SetPickAttributes(fh_atts)
+
+    PickByZone(element=580)     
+    Test("SwivelHighlight_00")
+    
+    SetPickAttributes(orig_atts)
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+
+
 def PickMain():
     Pick3DTo2D()
     Pick2D()
@@ -3043,6 +3075,7 @@ def PickMain():
     PickZoneLabel()
     PickNodeLabel()
     PickRangeLabel()
+    TestSwivelHighlight()
 
 # Call the main function
 TurnOnAllAnnotations()
