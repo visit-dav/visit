@@ -192,6 +192,9 @@ public:
 //   Added 'setHighlightColorButton' as private member
 //   so that it can be hid from view when not needed. 
 //
+//   Alister Maguire, Thu Aug 16 10:40:13 PDT 2018
+//   Added an option to set swivel focus to pick. 
+//
 // ****************************************************************************
 
 class GUI_API QvisPickWindow : public QvisPostableWindowObserver
@@ -249,6 +252,7 @@ private slots:
     void conciseOutputToggled(bool);
     void showMeshNameToggled(bool);
     void showTimestepToggled(bool);
+    void swivelFocusToPickToggled(bool val);
     void addPickVariable(const QString &);
     void savePickText();
     void preserveCoordActivated(int);
@@ -298,6 +302,7 @@ private:
     QCheckBox          *conciseOutputCheckBox;
     QCheckBox          *showMeshNameCheckBox;
     QCheckBox          *showTimestepCheckBox;
+    QCheckBox          *swivelFocusToPick;
 
     QCheckBox          *displayIncEls;
     QCheckBox          *displayGlobalIds;

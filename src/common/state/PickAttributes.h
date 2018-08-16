@@ -145,6 +145,7 @@ public:
     void SelectPlotRequested();
     void SelectPickHighlightColor();
     void SelectRemovedPicks();
+    void SelectForcedPickLabel();
 
     // Property setting methods
     void SetVariables(const stringVector &variables_);
@@ -225,6 +226,10 @@ public:
     void SetPlotRequested(const MapNode &plotRequested_);
     void SetPickHighlightColor(const int *pickHighlightColor_);
     void SetRemovedPicks(const std::string &removedPicks_);
+    void SetSwivelFocusToPick(bool swivelFocusToPick_);
+    void SetOverridePickLabel(bool overridePickLabel_);
+    void SetForcedPickLabel(const std::string &forcedPickLabel_);
+    void SetRemoveLabelTwins(int removeLabelTwins_);
 
     // Property getting methods
     const stringVector &GetVariables() const;
@@ -340,6 +345,11 @@ public:
           int          *GetPickHighlightColor();
     const std::string  &GetRemovedPicks() const;
           std::string  &GetRemovedPicks();
+    bool               GetSwivelFocusToPick() const;
+    bool               GetOverridePickLabel() const;
+    const std::string  &GetForcedPickLabel() const;
+          std::string  &GetForcedPickLabel();
+    int                GetRemoveLabelTwins() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -474,11 +484,19 @@ public:
         ID_plotRequested,
         ID_pickHighlightColor,
         ID_removedPicks,
+        ID_swivelFocusToPick,
+        ID_overridePickLabel,
+        ID_forcedPickLabel,
+        ID_removeLabelTwins,
         ID__LAST
     };
 
 protected:
     AttributeGroup *CreateSubAttributeGroup(int index);
+protected:
+    bool                 swivelFocusToPick;
+    bool                 overridePickLabel;
+    std::string          forcedPickLabel;
 private:
     stringVector         variables;
     bool                 showIncidentElements;
@@ -559,11 +577,12 @@ private:
     MapNode              plotRequested;
     int                  pickHighlightColor[3];
     std::string          removedPicks;
+    int                  removeLabelTwins;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimmIs"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimmIsbbsi"
 
 #endif

@@ -466,6 +466,9 @@ QvisPickWindow::CreateWindowContents()
 //   Kathleen Biagas, Wed Jan 25 16:01:18 MST 2012
 //   Removed 'Options' from tab title so more tabs can be visible.
 //
+//   Alister Maguire, Wed Aug  8 15:33:21 PDT 2018
+//   Added option to update the swivel focus. 
+//
 // ****************************************************************************
 
 void
@@ -481,6 +484,11 @@ QvisPickWindow::CreateDisplayOptionsTab()
             this, SLOT(conciseOutputToggled(bool)));
     dLayout->addWidget(conciseOutputCheckBox, 0, 0);
 
+    swivelFocusToPick = new QCheckBox(tr("Swivel Focus"), 
+                                      pageDisplay);
+    connect(swivelFocusToPick, SIGNAL(toggled(bool)),
+            this, SLOT(swivelFocusToPickToggled(bool)));
+    dLayout->addWidget(swivelFocusToPick, 0, 2, 1, 2);
 
     showMeshNameCheckBox = new QCheckBox(tr("Mesh Name"), pageDisplay);
     connect(showMeshNameCheckBox, SIGNAL(toggled(bool)),
@@ -1866,6 +1874,28 @@ void
 QvisPickWindow::showTimestepToggled(bool val)
 {
     pickAtts->SetShowTimeStep(val);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPickWindow::swivelFocusToPickToggled
+//
+// Purpose:
+//   This is a Qt slot function that sets the flag indicating whether
+//   or not the camera focus should swivel to the pick point. 
+//
+// Arguments:
+//   val : The state of the toggle button.
+//
+// Programmer: Alister Maguire
+// Creation:   Wed Aug  8 15:33:21 PDT 2018
+//
+// ****************************************************************************
+ 
+void
+QvisPickWindow::swivelFocusToPickToggled(bool val)
+{   
+    pickAtts->SetSwivelFocusToPick(val);
     Apply();
 }
 

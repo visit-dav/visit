@@ -6101,6 +6101,35 @@ ViewerWindow::ChooseCenterOfRotation(double sx, double sy)
     }
 }
 
+// ****************************************************************************
+// Method: ViewerWindow::SwivelFocus3D
+//
+// Purpose: 
+//     Swivel the view3d focus to x, y, z.
+//
+// Arguments:
+//     x    The x value to focus on. 
+//     y    The y value to focus on. 
+//     z    The z value to focus on. 
+//
+// Programmer: Alister Maguire
+// Creation:   Wed Aug  8 15:06:17 PDT 2018 
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+ViewerWindow::SwivelFocus3D(double x, double y, double z)
+{
+    avtView3D view(GetView3D());
+
+    view.focus[0] = x;
+    view.focus[1] = y;
+    view.focus[2] = z;
+
+    SetView3D(view);
+}
 
 // ****************************************************************************
 //  Method: ViewerWindow::ConvertFromLeftEyeToRightEye
@@ -6926,6 +6955,9 @@ ViewerWindow::ClearPickPoints()
 //
 //  Modifications:
 //
+//      Alister Maguire, Thu Aug  9 09:38:04 PDT 2018
+//      Changed ClearPickPoints() to ClearRemovedPickPoints.  
+//
 // ****************************************************************************
 
 void
@@ -6947,7 +6979,7 @@ ViewerWindow::RemovePicks(const std::string sLabels)
     std::string removedPicks = visWindow->RemovePicks(vLabels);
     visWindow->RemovePicks(vLabels);
     GetViewerState()->GetPickAttributes()->SetRemovedPicks(removedPicks);
-    ViewerQueryManager::Instance()->ClearPickPoints();
+    ViewerQueryManager::Instance()->ClearRemovedPickPoints();
 
     // Tell each plot in the window that the pick points have been cleared.
     // This is important for the spreadsheet plot.

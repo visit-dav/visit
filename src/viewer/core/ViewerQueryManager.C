@@ -1727,6 +1727,35 @@ ViewerQueryManager::ClearPickPoints()
    GetViewerState()->GetPickAttributes()->Notify();
 }
 
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::ClearRemovedPickPoints
+//
+//  Purpose:
+//    Notifies observers of the PickAttributes that the pick points
+//    have changed. This is useful when we remove a subset of pick
+//    points. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Thu Aug  9 09:33:12 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void
+ViewerQueryManager::ClearRemovedPickPoints()
+{
+    //
+    // We don't need to clear the whole window. We just need
+    // to notify of an update. 
+    //
+    GetViewerState()->GetPickAttributes()->SetClearWindow(false);
+    GetViewerState()->GetPickAttributes()->SetFulfilled(false);
+    GetViewerState()->GetPickAttributes()->Notify();
+}
+
+
 // ****************************************************************************
 //  Method: ViewerQueryManager::ComputePick
 //
@@ -1945,6 +1974,9 @@ ViewerQueryManager::ClearPickPoints()
 //    After preparing for new pick, call UpdatePickAtts. Otherwise,
 //    old attributes will carry on to new picks. 
 //
+//    Alister Maguire, Wed Aug  8 15:06:17 PDT 2018
+//    Set the pick letter to the value from GetNextPickLabel().
+//
 // ****************************************************************************
 
 bool
@@ -2097,13 +2129,8 @@ ViewerQueryManager::ComputePick(PICK_POINT_INFO *ppi, const int dom,
         pickAtts->SetMatSelected(!usesAllMaterials ||
                                  plot->GetRealVarType() == AVT_MATERIAL);
         
-        if (!pickAtts->GetReusePickLetter())
-        {
-            if (pickAtts->GetElementLabel() != "") 
-                pickAtts->SetPickLetter(pickAtts->GetElementLabel()); 
-            else 
-                pickAtts->SetPickLetter(designator);
-        }
+        pickAtts->SetPickLetter(GetNextPickLabel());
+
         if (overrideTimeStep)
             pickAtts->SetTimeStep(pickAtts->GetTimeStep());
         else
@@ -2748,6 +2775,11 @@ ViewerQueryManager::SetDDTPickCallback(void (*cb)(PickAttributes *, void*), void
 //   Added extra condition to create a pick actor if either
 //   showPickLetter or showPickHighlight is enabled.
 //
+//   Alister Maguire, Wed Aug  8 14:58:54 PDT 2018
+//   Added the ability to swivel the camera focus to the 
+//   retrieved pick point. Also, don't update the designator 
+//   if we are overriding the pick label. 
+//
 // ****************************************************************************
 
 void
@@ -2779,6 +2811,12 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
         return;
     }
     PickAttributes::PickType oldPickType = pickAtts->GetPickType();
+
+    if (pickAtts->GetRemoveLabelTwins())
+    {
+        win->RemovePicks(GetNextPickLabel());
+    }
+
     if(ComputePick(ppi, dom, el))
     {
         // See if we are suppose to make DDT focus on the picked domain,
@@ -2832,7 +2870,9 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
                 }
                 else
                     GetViewerMessaging()->Message(msg);
+
             }
+            //
             // Send pick attributes to the client.
             //
             UpdatePickAtts();
@@ -2841,7 +2881,16 @@ ViewerQueryManager::Pick(PICK_POINT_INFO *ppi, const int dom, const int el)
             // If we are not reusing a pick letter, make the pick label ready for
             // the next pick point.
             //
-            if (!pickAtts->GetReusePickLetter()) UpdateDesignator();
+            if (!pickAtts->GetReusePickLetter() && !pickAtts->GetOverridePickLabel()) 
+                UpdateDesignator();
+
+            //
+            // If we need a camera swivel, now is the time to do it. 
+            //
+            if (pickAtts->GetSwivelFocusToPick())
+            {
+                SwivelFocusToPickPoint(win);
+            }
         }
     }
 
@@ -4665,6 +4714,37 @@ bool ViewerQueryManager::RetrieveTimeSteps(int &startT,
 
 
 // ****************************************************************************
+//  Method: ViewerQueryManager::GetNextPickLabel
+//
+//  Purpose:
+//      Retrieve the next pick label/letter to use. 
+//
+//  Returns:
+//      The next pick label to use as an std::string. 
+//
+//  Programmer: Alister Maguire 
+//  Creation:   Wed Aug  8 16:47:27 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+std::string ViewerQueryManager::GetNextPickLabel()
+{
+    if (!pickAtts->GetReusePickLetter())
+    {
+        if (pickAtts->GetOverridePickLabel())
+            return std::string(pickAtts->GetForcedPickLabel());
+        else if (pickAtts->GetElementLabel() != "") 
+            return std::string(pickAtts->GetElementLabel()); 
+        else 
+            return std::string(designator);
+    }
+    else
+        return std::string(pickAtts->GetPickLetter());
+}
+
+
+// ****************************************************************************
 //  Method: CreateExtentsString
 //
 //  Purpose:
@@ -5763,6 +5843,38 @@ ViewerQueryManager::VerifyMultipleInputQuery(ViewerPlotList *plist,
         CATCH_RETURN2(1, false);
     }
     ENDTRY
+}
+
+
+// ****************************************************************************
+//  Method: ViewerQueryManager::SwivelFocusToPickPoint
+//
+//  Purpose:
+//      Swivel the camera focus to the current pick point. 
+//
+//  Arguments:
+//    win    The current VisWindow being used. 
+//
+//  Returns:
+//      true if the swivel was successful, false otherwise. 
+//
+//  Programmer: Alister Maguire
+//  Creation:   Wed Aug  8 14:58:54 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool ViewerQueryManager::SwivelFocusToPickPoint(ViewerWindow *win)
+{
+    if (pickAtts->GetPickPoint()[0] != FLT_MAX)
+    {
+        win->SwivelFocus3D(pickAtts->GetPickPoint()[0],
+                           pickAtts->GetPickPoint()[1], 
+                           pickAtts->GetPickPoint()[2]);
+        return true;
+    }
+    return false;
 }
 
 

@@ -253,6 +253,20 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     }
     SNPRINTF(tmpStr, 1000, "%sremovedPicks = \"%s\"\n", prefix, atts->GetRemovedPicks().c_str());
     str += tmpStr;
+    if(atts->GetSwivelFocusToPick())
+        SNPRINTF(tmpStr, 1000, "%sswivelFocusToPick = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sswivelFocusToPick = 0\n", prefix);
+    str += tmpStr;
+    if(atts->GetOverridePickLabel())
+        SNPRINTF(tmpStr, 1000, "%soverridePickLabel = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%soverridePickLabel = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sforcedPickLabel = \"%s\"\n", prefix, atts->GetForcedPickLabel().c_str());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sremoveLabelTwins = %d\n", prefix, atts->GetRemoveLabelTwins());
+    str += tmpStr;
     return str;
 }
 
@@ -1034,6 +1048,102 @@ PickAttributes_GetRemovedPicks(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+PickAttributes_SetSwivelFocusToPick(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the swivelFocusToPick in the object.
+    obj->data->SetSwivelFocusToPick(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetSwivelFocusToPick(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetSwivelFocusToPick()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PickAttributes_SetOverridePickLabel(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the overridePickLabel in the object.
+    obj->data->SetOverridePickLabel(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetOverridePickLabel(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetOverridePickLabel()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PickAttributes_SetForcedPickLabel(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the forcedPickLabel in the object.
+    obj->data->SetForcedPickLabel(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetForcedPickLabel(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetForcedPickLabel().c_str());
+    return retval;
+}
+
+/*static*/ PyObject *
+PickAttributes_SetRemoveLabelTwins(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the removeLabelTwins in the object.
+    obj->data->SetRemoveLabelTwins((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PickAttributes_GetRemoveLabelTwins(PyObject *self, PyObject *args)
+{
+    PickAttributesObject *obj = (PickAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetRemoveLabelTwins()));
+    return retval;
+}
+
 
 
 PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
@@ -1096,6 +1206,14 @@ PyMethodDef PyPickAttributes_methods[PICKATTRIBUTES_NMETH] = {
     {"GetPickHighlightColor", PickAttributes_GetPickHighlightColor, METH_VARARGS},
     {"SetRemovedPicks", PickAttributes_SetRemovedPicks, METH_VARARGS},
     {"GetRemovedPicks", PickAttributes_GetRemovedPicks, METH_VARARGS},
+    {"SetSwivelFocusToPick", PickAttributes_SetSwivelFocusToPick, METH_VARARGS},
+    {"GetSwivelFocusToPick", PickAttributes_GetSwivelFocusToPick, METH_VARARGS},
+    {"SetOverridePickLabel", PickAttributes_SetOverridePickLabel, METH_VARARGS},
+    {"GetOverridePickLabel", PickAttributes_GetOverridePickLabel, METH_VARARGS},
+    {"SetForcedPickLabel", PickAttributes_SetForcedPickLabel, METH_VARARGS},
+    {"GetForcedPickLabel", PickAttributes_GetForcedPickLabel, METH_VARARGS},
+    {"SetRemoveLabelTwins", PickAttributes_SetRemoveLabelTwins, METH_VARARGS},
+    {"GetRemoveLabelTwins", PickAttributes_GetRemoveLabelTwins, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -1194,6 +1312,14 @@ PyPickAttributes_getattr(PyObject *self, char *name)
         return PickAttributes_GetPickHighlightColor(self, NULL);
     if(strcmp(name, "removedPicks") == 0)
         return PickAttributes_GetRemovedPicks(self, NULL);
+    if(strcmp(name, "swivelFocusToPick") == 0)
+        return PickAttributes_GetSwivelFocusToPick(self, NULL);
+    if(strcmp(name, "overridePickLabel") == 0)
+        return PickAttributes_GetOverridePickLabel(self, NULL);
+    if(strcmp(name, "forcedPickLabel") == 0)
+        return PickAttributes_GetForcedPickLabel(self, NULL);
+    if(strcmp(name, "removeLabelTwins") == 0)
+        return PickAttributes_GetRemoveLabelTwins(self, NULL);
 
     return Py_FindMethod(PyPickAttributes_methods, self, name);
 }
@@ -1266,6 +1392,14 @@ PyPickAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PickAttributes_SetPickHighlightColor(self, tuple);
     else if(strcmp(name, "removedPicks") == 0)
         obj = PickAttributes_SetRemovedPicks(self, tuple);
+    else if(strcmp(name, "swivelFocusToPick") == 0)
+        obj = PickAttributes_SetSwivelFocusToPick(self, tuple);
+    else if(strcmp(name, "overridePickLabel") == 0)
+        obj = PickAttributes_SetOverridePickLabel(self, tuple);
+    else if(strcmp(name, "forcedPickLabel") == 0)
+        obj = PickAttributes_SetForcedPickLabel(self, tuple);
+    else if(strcmp(name, "removeLabelTwins") == 0)
+        obj = PickAttributes_SetRemoveLabelTwins(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

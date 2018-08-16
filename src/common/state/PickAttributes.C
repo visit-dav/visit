@@ -239,6 +239,8 @@ void PickAttributes::Init()
     pickHighlightColor[0] = 255;
     pickHighlightColor[1] = 0;
     pickHighlightColor[2] = 0;
+    swivelFocusToPick = false;
+    overridePickLabel = false;
 
     PickAttributes::SelectAll();
 }
@@ -373,6 +375,10 @@ void PickAttributes::Copy(const PickAttributes &obj)
     pickHighlightColor[2] = obj.pickHighlightColor[2];
 
     removedPicks = obj.removedPicks;
+    swivelFocusToPick = obj.swivelFocusToPick;
+    overridePickLabel = obj.overridePickLabel;
+    forcedPickLabel = obj.forcedPickLabel;
+    removeLabelTwins = obj.removeLabelTwins;
 
     PickAttributes::SelectAll();
 }
@@ -651,7 +657,11 @@ PickAttributes::operator == (const PickAttributes &obj) const
             (timeOptions == obj.timeOptions) &&
             (plotRequested == obj.plotRequested) &&
             pickHighlightColor_equal &&
-            (removedPicks == obj.removedPicks));
+            (removedPicks == obj.removedPicks) &&
+            (swivelFocusToPick == obj.swivelFocusToPick) &&
+            (overridePickLabel == obj.overridePickLabel) &&
+            (forcedPickLabel == obj.forcedPickLabel) &&
+            (removeLabelTwins == obj.removeLabelTwins));
 }
 
 // ****************************************************************************
@@ -874,6 +884,10 @@ PickAttributes::SelectAll()
     Select(ID_plotRequested,               (void *)&plotRequested);
     Select(ID_pickHighlightColor,          (void *)pickHighlightColor, 3);
     Select(ID_removedPicks,                (void *)&removedPicks);
+    Select(ID_swivelFocusToPick,           (void *)&swivelFocusToPick);
+    Select(ID_overridePickLabel,           (void *)&overridePickLabel);
+    Select(ID_forcedPickLabel,             (void *)&forcedPickLabel);
+    Select(ID_removeLabelTwins,            (void *)&removeLabelTwins);
 }
 
 // ****************************************************************************
@@ -1116,6 +1130,30 @@ PickAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceAd
         node->AddNode(new DataNode("removedPicks", removedPicks));
     }
 
+    if(completeSave || !FieldsEqual(ID_swivelFocusToPick, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("swivelFocusToPick", swivelFocusToPick));
+    }
+
+    if(completeSave || !FieldsEqual(ID_overridePickLabel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("overridePickLabel", overridePickLabel));
+    }
+
+    if(completeSave || !FieldsEqual(ID_forcedPickLabel, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("forcedPickLabel", forcedPickLabel));
+    }
+
+    if(completeSave || !FieldsEqual(ID_removeLabelTwins, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("removeLabelTwins", removeLabelTwins));
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -1253,6 +1291,14 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     // pickHighlightColor is not persistent and was not saved.
     if((node = searchNode->GetNode("removedPicks")) != 0)
         SetRemovedPicks(node->AsString());
+    if((node = searchNode->GetNode("swivelFocusToPick")) != 0)
+        SetSwivelFocusToPick(node->AsBool());
+    if((node = searchNode->GetNode("overridePickLabel")) != 0)
+        SetOverridePickLabel(node->AsBool());
+    if((node = searchNode->GetNode("forcedPickLabel")) != 0)
+        SetForcedPickLabel(node->AsString());
+    if((node = searchNode->GetNode("removeLabelTwins")) != 0)
+        SetRemoveLabelTwins(node->AsInt());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1815,6 +1861,34 @@ PickAttributes::SetRemovedPicks(const std::string &removedPicks_)
 {
     removedPicks = removedPicks_;
     Select(ID_removedPicks, (void *)&removedPicks);
+}
+
+void
+PickAttributes::SetSwivelFocusToPick(bool swivelFocusToPick_)
+{
+    swivelFocusToPick = swivelFocusToPick_;
+    Select(ID_swivelFocusToPick, (void *)&swivelFocusToPick);
+}
+
+void
+PickAttributes::SetOverridePickLabel(bool overridePickLabel_)
+{
+    overridePickLabel = overridePickLabel_;
+    Select(ID_overridePickLabel, (void *)&overridePickLabel);
+}
+
+void
+PickAttributes::SetForcedPickLabel(const std::string &forcedPickLabel_)
+{
+    forcedPickLabel = forcedPickLabel_;
+    Select(ID_forcedPickLabel, (void *)&forcedPickLabel);
+}
+
+void
+PickAttributes::SetRemoveLabelTwins(int removeLabelTwins_)
+{
+    removeLabelTwins = removeLabelTwins_;
+    Select(ID_removeLabelTwins, (void *)&removeLabelTwins);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2499,6 +2573,36 @@ PickAttributes::GetRemovedPicks()
     return removedPicks;
 }
 
+bool
+PickAttributes::GetSwivelFocusToPick() const
+{
+    return swivelFocusToPick;
+}
+
+bool
+PickAttributes::GetOverridePickLabel() const
+{
+    return overridePickLabel;
+}
+
+const std::string &
+PickAttributes::GetForcedPickLabel() const
+{
+    return forcedPickLabel;
+}
+
+std::string &
+PickAttributes::GetForcedPickLabel()
+{
+    return forcedPickLabel;
+}
+
+int
+PickAttributes::GetRemoveLabelTwins() const
+{
+    return removeLabelTwins;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -2705,6 +2809,12 @@ void
 PickAttributes::SelectRemovedPicks()
 {
     Select(ID_removedPicks, (void *)&removedPicks);
+}
+
+void
+PickAttributes::SelectForcedPickLabel()
+{
+    Select(ID_forcedPickLabel, (void *)&forcedPickLabel);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3007,6 +3117,10 @@ PickAttributes::GetFieldName(int index) const
     case ID_plotRequested:               return "plotRequested";
     case ID_pickHighlightColor:          return "pickHighlightColor";
     case ID_removedPicks:                return "removedPicks";
+    case ID_swivelFocusToPick:           return "swivelFocusToPick";
+    case ID_overridePickLabel:           return "overridePickLabel";
+    case ID_forcedPickLabel:             return "forcedPickLabel";
+    case ID_removeLabelTwins:            return "removeLabelTwins";
     default:  return "invalid index";
     }
 }
@@ -3110,6 +3224,10 @@ PickAttributes::GetFieldType(int index) const
     case ID_plotRequested:               return FieldType_MapNode;
     case ID_pickHighlightColor:          return FieldType_intArray;
     case ID_removedPicks:                return FieldType_string;
+    case ID_swivelFocusToPick:           return FieldType_bool;
+    case ID_overridePickLabel:           return FieldType_bool;
+    case ID_forcedPickLabel:             return FieldType_string;
+    case ID_removeLabelTwins:            return FieldType_int;
     default:  return FieldType_unknown;
     }
 }
@@ -3213,6 +3331,10 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_plotRequested:               return "MapNode";
     case ID_pickHighlightColor:          return "intArray";
     case ID_removedPicks:                return "string";
+    case ID_swivelFocusToPick:           return "bool";
+    case ID_overridePickLabel:           return "bool";
+    case ID_forcedPickLabel:             return "string";
+    case ID_removeLabelTwins:            return "int";
     default:  return "invalid index";
     }
 }
@@ -3671,6 +3793,26 @@ PickAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_removedPicks:
         {  // new scope
         retval = (removedPicks == obj.removedPicks);
+        }
+        break;
+    case ID_swivelFocusToPick:
+        {  // new scope
+        retval = (swivelFocusToPick == obj.swivelFocusToPick);
+        }
+        break;
+    case ID_overridePickLabel:
+        {  // new scope
+        retval = (overridePickLabel == obj.overridePickLabel);
+        }
+        break;
+    case ID_forcedPickLabel:
+        {  // new scope
+        retval = (forcedPickLabel == obj.forcedPickLabel);
+        }
+        break;
+    case ID_removeLabelTwins:
+        {  // new scope
+        retval = (removeLabelTwins == obj.removeLabelTwins);
         }
         break;
     default: retval = false;

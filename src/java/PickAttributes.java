@@ -59,7 +59,7 @@ import java.lang.Double;
 
 public class PickAttributes extends AttributeSubject
 {
-    private static int PickAttributes_numAdditionalAtts = 79;
+    private static int PickAttributes_numAdditionalAtts = 83;
 
     // Enum values
     public final static int PICKTYPE_ZONE = 0;
@@ -181,6 +181,10 @@ public class PickAttributes extends AttributeSubject
         pickHighlightColor[1] = 0;
         pickHighlightColor[2] = 0;
         removedPicks = new String("");
+        swivelFocusToPick = false;
+        overridePickLabel = false;
+        forcedPickLabel = new String("");
+        removeLabelTwins = 0;
     }
 
     public PickAttributes(int nMoreFields)
@@ -285,6 +289,10 @@ public class PickAttributes extends AttributeSubject
         pickHighlightColor[1] = 0;
         pickHighlightColor[2] = 0;
         removedPicks = new String("");
+        swivelFocusToPick = false;
+        overridePickLabel = false;
+        forcedPickLabel = new String("");
+        removeLabelTwins = 0;
     }
 
     public PickAttributes(PickAttributes obj)
@@ -456,6 +464,10 @@ public class PickAttributes extends AttributeSubject
         pickHighlightColor[2] = obj.pickHighlightColor[2];
 
         removedPicks = new String(obj.removedPicks);
+        swivelFocusToPick = obj.swivelFocusToPick;
+        overridePickLabel = obj.overridePickLabel;
+        forcedPickLabel = new String(obj.forcedPickLabel);
+        removeLabelTwins = obj.removeLabelTwins;
 
         SelectAll();
     }
@@ -709,7 +721,11 @@ public class PickAttributes extends AttributeSubject
                 (timeOptions.equals(obj.timeOptions)) &&
                 (plotRequested.equals(obj.plotRequested)) &&
                 pickHighlightColor_equal &&
-                (removedPicks.equals(obj.removedPicks)));
+                (removedPicks.equals(obj.removedPicks)) &&
+                (swivelFocusToPick == obj.swivelFocusToPick) &&
+                (overridePickLabel == obj.overridePickLabel) &&
+                (forcedPickLabel.equals(obj.forcedPickLabel)) &&
+                (removeLabelTwins == obj.removeLabelTwins));
     }
 
     // Property setting methods
@@ -1241,6 +1257,30 @@ public class PickAttributes extends AttributeSubject
         Select(78);
     }
 
+    public void SetSwivelFocusToPick(boolean swivelFocusToPick_)
+    {
+        swivelFocusToPick = swivelFocusToPick_;
+        Select(79);
+    }
+
+    public void SetOverridePickLabel(boolean overridePickLabel_)
+    {
+        overridePickLabel = overridePickLabel_;
+        Select(80);
+    }
+
+    public void SetForcedPickLabel(String forcedPickLabel_)
+    {
+        forcedPickLabel = forcedPickLabel_;
+        Select(81);
+    }
+
+    public void SetRemoveLabelTwins(int removeLabelTwins_)
+    {
+        removeLabelTwins = removeLabelTwins_;
+        Select(82);
+    }
+
     // Property getting methods
     public Vector   GetVariables() { return variables; }
     public boolean  GetShowIncidentElements() { return showIncidentElements; }
@@ -1321,6 +1361,10 @@ public class PickAttributes extends AttributeSubject
     public MapNode  GetPlotRequested() { return plotRequested; }
     public int[]    GetPickHighlightColor() { return pickHighlightColor; }
     public String   GetRemovedPicks() { return removedPicks; }
+    public boolean  GetSwivelFocusToPick() { return swivelFocusToPick; }
+    public boolean  GetOverridePickLabel() { return overridePickLabel; }
+    public String   GetForcedPickLabel() { return forcedPickLabel; }
+    public int      GetRemoveLabelTwins() { return removeLabelTwins; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1490,6 +1534,14 @@ public class PickAttributes extends AttributeSubject
             buf.WriteIntArray(pickHighlightColor);
         if(WriteSelect(78, buf))
             buf.WriteString(removedPicks);
+        if(WriteSelect(79, buf))
+            buf.WriteBool(swivelFocusToPick);
+        if(WriteSelect(80, buf))
+            buf.WriteBool(overridePickLabel);
+        if(WriteSelect(81, buf))
+            buf.WriteString(forcedPickLabel);
+        if(WriteSelect(82, buf))
+            buf.WriteInt(removeLabelTwins);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1743,6 +1795,18 @@ public class PickAttributes extends AttributeSubject
         case 78:
             SetRemovedPicks(buf.ReadString());
             break;
+        case 79:
+            SetSwivelFocusToPick(buf.ReadBool());
+            break;
+        case 80:
+            SetOverridePickLabel(buf.ReadBool());
+            break;
+        case 81:
+            SetForcedPickLabel(buf.ReadString());
+            break;
+        case 82:
+            SetRemoveLabelTwins(buf.ReadInt());
+            break;
         }
     }
 
@@ -1866,6 +1930,10 @@ public class PickAttributes extends AttributeSubject
         str = str + indent + "plotRequested = " + plotRequested.toString(indent);
         str = str + intArrayToString("pickHighlightColor", pickHighlightColor, indent) + "\n";
         str = str + stringToString("removedPicks", removedPicks, indent) + "\n";
+        str = str + boolToString("swivelFocusToPick", swivelFocusToPick, indent) + "\n";
+        str = str + boolToString("overridePickLabel", overridePickLabel, indent) + "\n";
+        str = str + stringToString("forcedPickLabel", forcedPickLabel, indent) + "\n";
+        str = str + intToString("removeLabelTwins", removeLabelTwins, indent) + "\n";
         return str;
     }
 
@@ -1983,5 +2051,9 @@ public class PickAttributes extends AttributeSubject
     private MapNode  plotRequested;
     private int[]    pickHighlightColor;
     private String   removedPicks;
+    private boolean  swivelFocusToPick;
+    private boolean  overridePickLabel;
+    private String   forcedPickLabel;
+    private int      removeLabelTwins;
 }
 

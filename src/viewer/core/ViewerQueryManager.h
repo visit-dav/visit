@@ -261,6 +261,10 @@ typedef struct {
 //    Alister Maguire, Wed May 23 09:46:54 PDT 2018
 //    Added RetrieveTimeSteps to simplify and reduce repetition. 
 //
+//    Alister Maguire, Wed Aug  8 15:21:46 PDT 2018
+//    Added SwivelFocusToPickPoint, ClearRemovedPickPoints, 
+//    and GetNextPickLabel. 
+//
 // ****************************************************************************
     
 class VIEWERCORE_API ViewerQueryManager : public ViewerBase
@@ -291,6 +295,7 @@ class VIEWERCORE_API ViewerQueryManager : public ViewerBase
     void            SetDefaultPickAttsFromClient();
     void            SetClientPickAttsFromDefault();
     void            ClearPickPoints(void);
+    void            ClearRemovedPickPoints(void);
     void            ResetPickLetter(void);
     void            ResetDesignator(void);
 
@@ -366,6 +371,8 @@ class VIEWERCORE_API ViewerQueryManager : public ViewerBase
                                       int     nStates,
                                       MapNode timeParams);
 
+    std::string     GetNextPickLabel();
+
     bool            ComputePick(PICK_POINT_INFO *pd, const int dom = -1,
                                 const int el = -1);
     void            PickThroughTime(PICK_POINT_INFO *pd, 
@@ -393,6 +400,8 @@ class VIEWERCORE_API ViewerQueryManager : public ViewerBase
                             const std::string &,
                             const std::vector<std::string> &,
                             QueryAttributes &); 
+
+    bool            SwivelFocusToPickPoint(ViewerWindow *);
 
     bool            initialPick;
     bool            preparingPick;

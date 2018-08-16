@@ -492,6 +492,9 @@ class ViewerPlotList;
 //    Alister Maguire, Mon Oct 16 15:41:23 PDT 2017
 //    Added RemovePicks.
 //
+//    Alister Maguire, Wed Aug  8 15:06:17 PDT 2018
+//    Added SwivelFocus3D.
+//
 // ****************************************************************************
 
 class VIEWERCORE_API ViewerWindow : public ViewerBase
@@ -541,6 +544,7 @@ public:
     void ResetView();
     void SetCenterOfRotation(double x, double y, double z);
     void ChooseCenterOfRotation(double sx, double sy);
+    void SwivelFocus3D(double x, double y, double z);
     void SetViewExtentsType(const avtExtentType);
     avtExtentType GetViewExtentsType() const;
     void GetExtents(int nDimensions, double *extents) const;
