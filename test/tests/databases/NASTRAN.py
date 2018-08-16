@@ -10,7 +10,8 @@
 #  Date:       Thu Jul 7 17:46:51 PST 2005
 #
 #  Modifications:
-#
+#    Edward Rusu, Tue Aug 14 13:45:25 PST 2018
+#    Added tests for quadratic elements.
 # ----------------------------------------------------------------------------
 
 def AddMeshPlot():
@@ -351,6 +352,130 @@ def test8(datapath):
     
     DeleteActivePlots()
     CloseDatabase(pjoin(datapath,db))
+    
+def test9(datapath):
+    db = "simpleQuadSphere.nas"
+    TestSection(db)
+    OpenDatabase(pjoin(datapath,db))
+    AddMeshPlot()
+    DrawPlots()
+    
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0, 0, 1)
+    View3DAtts.focus = (2.88777, -1.45671, -0.629586)
+    View3DAtts.viewUp = (0, 1, 0)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 6.98115
+    View3DAtts.nearPlane = -13.9623
+    View3DAtts.farPlane = 13.9623
+    View3DAtts.imagePan = (0.204513, -0.111237)
+    View3DAtts.imageZoom = 5.50207
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (2.88777, -1.45671, -0.629586)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+    Test("nastran9_0")
+    
+    DeleteActivePlots()
+    CloseDatabase(pjoin(datapath,db))
+    
+def test10(datapath):
+    db = "simpleQuadSphereBlock.nas"
+    TestSection(db)
+    OpenDatabase(pjoin(datapath,db))
+    AddMeshPlot()
+    DrawPlots()
+    
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0, 0, 1)
+    View3DAtts.focus = (0, -1.38778, -3.66334)
+    View3DAtts.viewUp = (0, 1, 0)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 12.6655
+    View3DAtts.nearPlane = -25.3309
+    View3DAtts.farPlane = 25.3309
+    View3DAtts.imagePan = (-0.00429799, -0.061086)
+    View3DAtts.imageZoom = 9.89552
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (0, -1.38778, -3.66334)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+    Test("nastran10_0")
+    
+    DeleteActivePlots()
+    CloseDatabase(pjoin(datapath,db))
+    
+def test11(datapath):
+    db = "simpleQuadTet.nas"
+    TestSection(db)
+    OpenDatabase(pjoin(datapath,db))
+    AddMeshPlot()
+    DrawPlots()
+    
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (0.585895, 0.392177, 0.709172)
+    View3DAtts.focus = (0.5, 0.5, 0.5)
+    View3DAtts.viewUp = (-0.133518, 0.909858, -0.39285)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 0.866025
+    View3DAtts.nearPlane = -1.73205
+    View3DAtts.farPlane = 1.73205
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 1
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (0.5, 0.5, 0.5)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+    Test("nastran11_0")
+    
+    DeleteActivePlots()
+    CloseDatabase(pjoin(datapath,db))
+    
+def test12(datapath):
+    db = "simpleQuadWedge.nas"
+    TestSection(db)
+    OpenDatabase(pjoin(datapath,db))
+    AddMeshPlot()
+    DrawPlots()
+    
+    View3DAtts = View3DAttributes()
+    View3DAtts.viewNormal = (-0.468638, 0.237166, 0.850959)
+    View3DAtts.focus = (0.5, 0.5, 0.5)
+    View3DAtts.viewUp = (0.128356, 0.971346, -0.20003)
+    View3DAtts.viewAngle = 30
+    View3DAtts.parallelScale = 0.866025
+    View3DAtts.nearPlane = -1.73205
+    View3DAtts.farPlane = 1.73205
+    View3DAtts.imagePan = (0, 0)
+    View3DAtts.imageZoom = 1
+    View3DAtts.perspective = 1
+    View3DAtts.eyeAngle = 2
+    View3DAtts.centerOfRotationSet = 0
+    View3DAtts.centerOfRotation = (0.5, 0.5, 0.5)
+    View3DAtts.axis3DScaleFlag = 0
+    View3DAtts.axis3DScales = (1, 1, 1)
+    View3DAtts.shear = (0, 0, 1)
+    View3DAtts.windowValid = 1
+    SetView3D(View3DAtts)
+    Test("nastran12_0")
+    
+    DeleteActivePlots()
+    CloseDatabase(pjoin(datapath,db))
 
 def main():
     # Set the window background color
@@ -371,6 +496,10 @@ def main():
     test6(datapath)
     test7(datapath)
     test8(datapath)
+    test9(datapath)
+    test10(datapath)
+    test11(datapath)
+    test12(datapath)
 
 main()
 Exit()
