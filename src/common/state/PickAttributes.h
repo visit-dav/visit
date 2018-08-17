@@ -229,7 +229,7 @@ public:
     void SetSwivelFocusToPick(bool swivelFocusToPick_);
     void SetOverridePickLabel(bool overridePickLabel_);
     void SetForcedPickLabel(const std::string &forcedPickLabel_);
-    void SetRemoveLabelTwins(int removeLabelTwins_);
+    void SetRemoveLabelTwins(bool removeLabelTwins_);
 
     // Property getting methods
     const stringVector &GetVariables() const;
@@ -349,7 +349,7 @@ public:
     bool               GetOverridePickLabel() const;
     const std::string  &GetForcedPickLabel() const;
           std::string  &GetForcedPickLabel();
-    int                GetRemoveLabelTwins() const;
+    bool               GetRemoveLabelTwins() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -497,6 +497,7 @@ protected:
     bool                 swivelFocusToPick;
     bool                 overridePickLabel;
     std::string          forcedPickLabel;
+    bool                 removeLabelTwins;
 private:
     stringVector         variables;
     bool                 showIncidentElements;
@@ -577,12 +578,11 @@ private:
     MapNode              plotRequested;
     int                  pickHighlightColor[3];
     std::string          removedPicks;
-    int                  removeLabelTwins;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimmIsbbsi"
+#define PICKATTRIBUTES_TMFS "s*bbbbbbbbbsbiiii*d*iissDDDd*DDsii*s*s*s*s*s*ba*s*bsbbbbbbssi*bbbbbbii*bbbmsbiibbbiibssbimmIsbbsb"
 
 #endif

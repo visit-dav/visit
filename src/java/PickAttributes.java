@@ -184,7 +184,7 @@ public class PickAttributes extends AttributeSubject
         swivelFocusToPick = false;
         overridePickLabel = false;
         forcedPickLabel = new String("");
-        removeLabelTwins = 0;
+        removeLabelTwins = false;
     }
 
     public PickAttributes(int nMoreFields)
@@ -292,7 +292,7 @@ public class PickAttributes extends AttributeSubject
         swivelFocusToPick = false;
         overridePickLabel = false;
         forcedPickLabel = new String("");
-        removeLabelTwins = 0;
+        removeLabelTwins = false;
     }
 
     public PickAttributes(PickAttributes obj)
@@ -1275,7 +1275,7 @@ public class PickAttributes extends AttributeSubject
         Select(81);
     }
 
-    public void SetRemoveLabelTwins(int removeLabelTwins_)
+    public void SetRemoveLabelTwins(boolean removeLabelTwins_)
     {
         removeLabelTwins = removeLabelTwins_;
         Select(82);
@@ -1364,7 +1364,7 @@ public class PickAttributes extends AttributeSubject
     public boolean  GetSwivelFocusToPick() { return swivelFocusToPick; }
     public boolean  GetOverridePickLabel() { return overridePickLabel; }
     public String   GetForcedPickLabel() { return forcedPickLabel; }
-    public int      GetRemoveLabelTwins() { return removeLabelTwins; }
+    public boolean  GetRemoveLabelTwins() { return removeLabelTwins; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -1541,7 +1541,7 @@ public class PickAttributes extends AttributeSubject
         if(WriteSelect(81, buf))
             buf.WriteString(forcedPickLabel);
         if(WriteSelect(82, buf))
-            buf.WriteInt(removeLabelTwins);
+            buf.WriteBool(removeLabelTwins);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -1805,7 +1805,7 @@ public class PickAttributes extends AttributeSubject
             SetForcedPickLabel(buf.ReadString());
             break;
         case 82:
-            SetRemoveLabelTwins(buf.ReadInt());
+            SetRemoveLabelTwins(buf.ReadBool());
             break;
         }
     }
@@ -1933,7 +1933,7 @@ public class PickAttributes extends AttributeSubject
         str = str + boolToString("swivelFocusToPick", swivelFocusToPick, indent) + "\n";
         str = str + boolToString("overridePickLabel", overridePickLabel, indent) + "\n";
         str = str + stringToString("forcedPickLabel", forcedPickLabel, indent) + "\n";
-        str = str + intToString("removeLabelTwins", removeLabelTwins, indent) + "\n";
+        str = str + boolToString("removeLabelTwins", removeLabelTwins, indent) + "\n";
         return str;
     }
 
@@ -2054,6 +2054,6 @@ public class PickAttributes extends AttributeSubject
     private boolean  swivelFocusToPick;
     private boolean  overridePickLabel;
     private String   forcedPickLabel;
-    private int      removeLabelTwins;
+    private boolean  removeLabelTwins;
 }
 

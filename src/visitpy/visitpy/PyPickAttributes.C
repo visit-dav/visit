@@ -265,7 +265,10 @@ PyPickAttributes_ToString(const PickAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sforcedPickLabel = \"%s\"\n", prefix, atts->GetForcedPickLabel().c_str());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "%sremoveLabelTwins = %d\n", prefix, atts->GetRemoveLabelTwins());
+    if(atts->GetRemoveLabelTwins())
+        SNPRINTF(tmpStr, 1000, "%sremoveLabelTwins = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sremoveLabelTwins = 0\n", prefix);
     str += tmpStr;
     return str;
 }
@@ -1130,7 +1133,7 @@ PickAttributes_SetRemoveLabelTwins(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the removeLabelTwins in the object.
-    obj->data->SetRemoveLabelTwins((int)ival);
+    obj->data->SetRemoveLabelTwins(ival != 0);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -1140,7 +1143,7 @@ PickAttributes_SetRemoveLabelTwins(PyObject *self, PyObject *args)
 PickAttributes_GetRemoveLabelTwins(PyObject *self, PyObject *args)
 {
     PickAttributesObject *obj = (PickAttributesObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetRemoveLabelTwins()));
+    PyObject *retval = PyInt_FromLong(obj->data->GetRemoveLabelTwins()?1L:0L);
     return retval;
 }
 

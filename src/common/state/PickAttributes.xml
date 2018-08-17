@@ -250,7 +250,8 @@
     </Field>
     <Field name="forcedPickLabel" label="forcedPickLabel" type="string" access="protected">
     </Field>
-    <Field name="removeLabelTwins" label="removeLabelTwins" type="int">
+    <Field name="removeLabelTwins" label="removeLabelTwins" type="bool" access="protected">
+      false
     </Field>
     <Function name="PrintSelf" user="true" member="true">
     </Function>

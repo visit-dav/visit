@@ -241,6 +241,7 @@ void PickAttributes::Init()
     pickHighlightColor[2] = 0;
     swivelFocusToPick = false;
     overridePickLabel = false;
+    removeLabelTwins = false;
 
     PickAttributes::SelectAll();
 }
@@ -1298,7 +1299,7 @@ PickAttributes::SetFromNode(DataNode *parentNode)
     if((node = searchNode->GetNode("forcedPickLabel")) != 0)
         SetForcedPickLabel(node->AsString());
     if((node = searchNode->GetNode("removeLabelTwins")) != 0)
-        SetRemoveLabelTwins(node->AsInt());
+        SetRemoveLabelTwins(node->AsBool());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1885,7 +1886,7 @@ PickAttributes::SetForcedPickLabel(const std::string &forcedPickLabel_)
 }
 
 void
-PickAttributes::SetRemoveLabelTwins(int removeLabelTwins_)
+PickAttributes::SetRemoveLabelTwins(bool removeLabelTwins_)
 {
     removeLabelTwins = removeLabelTwins_;
     Select(ID_removeLabelTwins, (void *)&removeLabelTwins);
@@ -2597,7 +2598,7 @@ PickAttributes::GetForcedPickLabel()
     return forcedPickLabel;
 }
 
-int
+bool
 PickAttributes::GetRemoveLabelTwins() const
 {
     return removeLabelTwins;
@@ -3227,7 +3228,7 @@ PickAttributes::GetFieldType(int index) const
     case ID_swivelFocusToPick:           return FieldType_bool;
     case ID_overridePickLabel:           return FieldType_bool;
     case ID_forcedPickLabel:             return FieldType_string;
-    case ID_removeLabelTwins:            return FieldType_int;
+    case ID_removeLabelTwins:            return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -3334,7 +3335,7 @@ PickAttributes::GetFieldTypeName(int index) const
     case ID_swivelFocusToPick:           return "bool";
     case ID_overridePickLabel:           return "bool";
     case ID_forcedPickLabel:             return "string";
-    case ID_removeLabelTwins:            return "int";
+    case ID_removeLabelTwins:            return "bool";
     default:  return "invalid index";
     }
 }
