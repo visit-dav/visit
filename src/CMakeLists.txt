@@ -1423,7 +1423,7 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindMDSplus.cmake)
 
     # Configure Uintah support.
-    #INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindUintah.cmake)
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindUintah.cmake)
 
     # Configure PIDX support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindPIDX.cmake)
