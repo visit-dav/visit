@@ -44,6 +44,7 @@
 #include <vtkFollower.h>
 #include <vtkLineSource.h>
 #include <vtkMultiLineSource.h>
+#include <vtkSphereSource.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkProperty.h>
@@ -81,12 +82,21 @@
 //
 //    Matt Larsen, Wed September 6 09:10:01 PDT 2017
 //    Changed highlights to overlay to show internal zones 
+//
+//    Alister Maguire, Mon Aug 20 09:51:26 PDT 2018
+//    Updated to include generalized highlights and the ability
+//    to highlight a picked node. 
+//
 // ****************************************************************************
 avtPickActor:: avtPickActor()
 {
     mode3D  = true;
     useGlyph  = false;
     showPickLetter = true;
+    showHighlight = false;
+    highlightColor[0] = 1.0;
+    highlightColor[1] = 0.0;
+    highlightColor[2] = 0.0;
     
     attach[0] = attach[1] = attach[2] = 0.;
     designator = "";
@@ -131,9 +141,13 @@ avtPickActor:: avtPickActor()
         glyphActor->GetProperty()->SetDiffuse(0.);
     
     // Only create highlights if they exist
-    highlightSource = NULL;
-    highlightMapper = NULL;
-    highlightActor = NULL;
+    lineHighlightSource = NULL;
+    lineHighlightMapper = NULL;
+    lineHighlightActor = NULL;
+
+    pointHighlightSource = NULL;
+    pointHighlightMapper = NULL;
+    pointHighlightActor  = NULL;
 
     renderer = NULL; 
 }
@@ -154,6 +168,9 @@ avtPickActor:: avtPickActor()
 //
 //    Matt Larsen, Wed September 6 09:10:01 PDT 2017
 //    Changed highlights to overlay to show internal zones 
+//
+//    Alister Maguire, Tue Aug 21 14:15:08 PDT 2018
+//    Delete point highlight actor, source, and mapper. 
 //
 // ****************************************************************************
 
@@ -195,23 +212,37 @@ avtPickActor::~avtPickActor()
         lineSource->Delete();
         lineSource = NULL;
     }
-    if (highlightSource != NULL)
+    if (lineHighlightSource != NULL)
     {
-        highlightSource->Delete();
-        highlightSource = NULL;
+        lineHighlightSource->Delete();
+        lineHighlightSource = NULL;
     }
-    if (highlightMapper != NULL)
+    if (lineHighlightMapper != NULL)
     {
-        highlightMapper->Delete();
-        highlightMapper = NULL;
+        lineHighlightMapper->Delete();
+        lineHighlightMapper = NULL;
     }
-    if (highlightActor != NULL)
+    if (lineHighlightActor != NULL)
     {
-        highlightActor->Delete();
-        highlightActor = NULL;
+        lineHighlightActor->Delete();
+        lineHighlightActor = NULL;
+    }
+    if (pointHighlightSource != NULL) 
+    {
+        pointHighlightSource->Delete();
+        pointHighlightSource = NULL;
+    }
+    if (pointHighlightMapper != NULL) 
+    {
+        pointHighlightMapper->Delete();
+        pointHighlightMapper = NULL;
+    }
+    if (pointHighlightActor != NULL) 
+    {
+        pointHighlightActor->Delete();
+        pointHighlightActor = NULL;
     }
 }
-
 
 
 // ****************************************************************************
@@ -232,6 +263,10 @@ avtPickActor::~avtPickActor()
 //    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
 //    Add highlightActor to renderer.
 //
+//    Alister Maguire, Mon Aug 20 11:05:30 PDT 2018
+//    Added cases for node vs zone pick, and added option
+//    to highlight a node. 
+//
 // ****************************************************************************
 
 void 
@@ -242,11 +277,24 @@ avtPickActor::Add(vtkRenderer *ren)
     renderer->AddActor(letterActor);
     renderer->AddActor(lineActor);
 
-    if(highlightSource != NULL) renderer->AddActor(highlightActor);
-    if (useGlyph) 
+    switch(pType)
     {
-        glyphActor->SetCamera(renderer->GetActiveCamera());
-        renderer->AddActor(glyphActor);
+        case NODE:
+            if (showHighlight)
+            {
+                InitializePointHighlight();
+                renderer->AddActor(pointHighlightActor);
+            }
+            else if (useGlyph)
+            {
+                glyphActor->SetCamera(renderer->GetActiveCamera());
+                renderer->AddActor(glyphActor);
+            }
+            break;
+        case ZONE:
+            if (showHighlight)
+                renderer->AddActor(lineHighlightActor);
+            break;
     }
 }
 
@@ -266,6 +314,10 @@ avtPickActor::Add(vtkRenderer *ren)
 //    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
 //    Remove highlightActor
 //
+//    Alister Maguire, Tue Aug 21 14:15:08 PDT 2018
+//    Make sure that highlights are enabled before removing
+//    highlight actors. 
+//
 // ****************************************************************************
 
 void 
@@ -277,7 +329,10 @@ avtPickActor::Remove()
             renderer->RemoveActor(glyphActor);
         renderer->RemoveActor(lineActor);
         renderer->RemoveActor(letterActor);
-        if(highlightSource != NULL) renderer->RemoveActor(highlightActor);
+        if(lineHighlightSource != NULL && showHighlight) 
+            renderer->RemoveActor(lineHighlightActor);
+        if (pointHighlightSource != NULL && showHighlight)
+            renderer->RemoveActor(pointHighlightActor);
         renderer = NULL;
     }
 }
@@ -409,13 +464,25 @@ avtPickActor::SetAttachmentPoint(double x, double y, double z)
 //    Kathleen Bonnell, Fri Jun 27 16:57:45 PDT 2003 
 //    Set scale for glyphActor.
 //
+//    Alister Maguire, Tue Aug 21 15:44:24 PDT 2018
+//    If we are using a point highlight, update its radius. 
+//    Only update the glyphActor if we are using it. 
+//
 // ****************************************************************************
 
 void
 avtPickActor::SetScale(double s)
 {
     letterActor->SetScale(s);
-    glyphActor->SetScale(s);
+    if (useGlyph)
+    {
+        glyphActor->SetScale(s);
+    }
+    if (pointHighlightSource != NULL && showHighlight)
+    {
+        pointHighlightSource->SetRadius(s*.3);
+        pointHighlightSource->Modified();
+    }
 }
 
 
@@ -539,6 +606,11 @@ avtPickActor::SetForegroundColor(double r, double g, double b)
 //
 //    Matt Larsen, Fri July 1 09:41:01 PDT 2016 
 //    hide highlightActor.
+//
+//    Alister Maguire, Tue Aug 21 14:15:08 PDT 2018
+//    Only hide the glyph if we are using it. Hide
+//    the pointHighlightActor if neccessary. 
+//
 // ****************************************************************************
 
 void 
@@ -546,8 +618,12 @@ avtPickActor::Hide()
 {
     letterActor->VisibilityOff();
     lineActor->VisibilityOff();
-    glyphActor->VisibilityOff();
-    if(highlightSource != NULL) highlightActor->VisibilityOff();
+    if (useGlyph)
+        glyphActor->VisibilityOff();
+    if (lineHighlightSource != NULL) 
+        lineHighlightActor->VisibilityOff();
+    if (pointHighlightSource != NULL)
+        pointHighlightActor->VisibilityOff();
 }
 
 
@@ -569,6 +645,10 @@ avtPickActor::Hide()
 //    Matt Larsen, Tues July 18 09:08:01 PDT 2016 
 //    set visibility on only if pick letter is to be shown
 //
+//    Alister Maguire, Tue Aug 21 14:15:08 PDT 2018
+//    Only un-hide the glyph if we are using it. Un-hide the 
+//    pointHighlightActor if neccessary. 
+//
 // ****************************************************************************
 
 void 
@@ -580,8 +660,12 @@ avtPickActor::UnHide()
         lineActor->VisibilityOn();
     }
     
-    glyphActor->VisibilityOn();
-    if(highlightSource != NULL) highlightActor->VisibilityOn();
+    if (useGlyph)
+        glyphActor->VisibilityOn();
+    if (lineHighlightSource != NULL) 
+        lineHighlightActor->VisibilityOn();
+    if (pointHighlightSource != NULL)
+        pointHighlightActor->VisibilityOn();
 }
 
 
@@ -720,6 +804,49 @@ avtPickActor::GetLetterPosition()
     return letterActor->GetPosition();
 }
 
+
+// ****************************************************************************
+//  Method:  avtPickActor::InitializePointHighlight
+//
+//  Purpose:  
+//      Initialize the point highlight, and set its attributes. 
+//
+//  Programmer:  Alister Maguire
+//  Creation:    Fri Aug 17 16:30:22 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void avtPickActor::InitializePointHighlight()
+{
+    //
+    // We can just use the glyphActor's position as our center. 
+    //
+    double *position = glyphActor->GetPosition();
+
+    pointHighlightSource = vtkSphereSource::New();
+    pointHighlightSource->SetRadius(.1);
+    pointHighlightSource->SetCenter(position);
+
+    pointHighlightMapper = vtkPolyDataMapper2D::New();
+    pointHighlightMapper->SetInputConnection(
+        pointHighlightSource->GetOutputPort());
+    vtkCoordinate *coordinate = vtkCoordinate::New(); 
+    coordinate->SetCoordinateSystemToWorld();
+    pointHighlightMapper->SetTransformCoordinate(coordinate);
+    pointHighlightMapper->ScalarVisibilityOn();
+    pointHighlightMapper->SetScalarModeToUsePointData();
+
+    pointHighlightActor = vtkActor2D::New();
+    pointHighlightActor->SetMapper(pointHighlightMapper);
+    pointHighlightActor->PickableOff();
+    pointHighlightActor->GetProperty()->SetColor(highlightColor[0],
+                                                 highlightColor[1],
+                                                 highlightColor[2]);
+}
+
+
 // ****************************************************************************
 //  Method:  avtPickActor::AddLine
 //
@@ -738,42 +865,38 @@ avtPickActor::GetLetterPosition()
 //    Added an rgb argument for users to set the color of the 
 //    pick highlight. 
 //
+//    Alister Maguire, Mon Aug 20 09:51:26 PDT 2018
+//    Removed rgb argument. The highlight color now comes from 
+//    the class variable. 
+//
 // ****************************************************************************
 
 void
-avtPickActor::AddLine(double p0[3], double p1[3], const float *rgb)
+avtPickActor::AddLine(double p0[3], double p1[3])
 {
-    if(highlightSource == NULL)
+    if(lineHighlightSource == NULL)
     {
-        highlightSource = vtkMultiLineSource::New();
+        lineHighlightSource = vtkMultiLineSource::New();
 
-        highlightMapper  = vtkPolyDataMapper2D::New();
-            highlightMapper->SetInputConnection(highlightSource->GetOutputPort());
+        lineHighlightMapper  = vtkPolyDataMapper2D::New();
+            lineHighlightMapper->SetInputConnection(
+                lineHighlightSource->GetOutputPort());
             vtkCoordinate *coordinate = vtkCoordinate::New(); 
             coordinate->SetCoordinateSystemToWorld();
-            highlightMapper->SetTransformCoordinate(coordinate);
-            highlightMapper->ScalarVisibilityOn();
-            highlightMapper->SetScalarModeToUsePointData();
+            lineHighlightMapper->SetTransformCoordinate(coordinate);
+            lineHighlightMapper->ScalarVisibilityOn();
+            lineHighlightMapper->SetScalarModeToUsePointData();
        
-        //If the rgb values exceed the 0 -> 1 range, 
-        //clamp them to the endpoints. 
-        float clampedRGB[3];
-        for (int i = 0; i < 3; ++i)
-        {
-            clampedRGB[i] = (rgb[i] > 1.0) ? 1.0 : rgb[i]; 
-            clampedRGB[i] = (rgb[i] < 0.0) ? 0.0 : clampedRGB[i]; 
-        }
-
-        highlightActor = vtkActor2D::New();
-        highlightActor->SetMapper(highlightMapper);
-            highlightActor->PickableOff(); 
-            highlightActor->GetProperty()->SetColor(clampedRGB[0], 
-                                                    clampedRGB[1], 
-                                                    clampedRGB[2]);
-            highlightActor->GetProperty()->SetLineWidth(3.);
+        lineHighlightActor = vtkActor2D::New();
+        lineHighlightActor->SetMapper(lineHighlightMapper);
+            lineHighlightActor->PickableOff(); 
+            lineHighlightActor->GetProperty()->SetColor(highlightColor[0], 
+                                                        highlightColor[1], 
+                                                        highlightColor[2]);
+            lineHighlightActor->GetProperty()->SetLineWidth(3.);
     }
    
-    highlightSource->AddLine(p0,p1);
+    lineHighlightSource->AddLine(p0,p1);
 }
 
 // ****************************************************************************
@@ -820,4 +943,145 @@ avtPickActor::SetShowPickLetter(const bool val)
         lineActor->VisibilityOff();
    }
     
+}
+
+
+// ****************************************************************************
+//  Method:  avtPickActor::GetShowHighlight
+//
+//  Purpose: 
+//      Get the showHighlight value. 
+//            
+//  Programmer: Alister Maguire
+//  Creation:   Mon Aug 20 09:51:26 PDT 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+bool
+avtPickActor::GetShowHighlight() const
+{
+   return showHighlight;
+}
+
+
+// ****************************************************************************
+//  Method:  avtPickActor::SetShowHighlight
+//
+//  Purpose: 
+//      Set the show highlight value. When enabled, highlights 
+//      are assumed to be in use. 
+//            
+//  Programmer: Alister Maguire
+//  Creation:   Mon Aug 20 09:51:26 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtPickActor::SetShowHighlight(const bool showH) 
+{
+   showHighlight = showH;
+}
+
+
+// ****************************************************************************
+//  Method:  avtPickActor::GetHighlightColor
+//
+//  Purpose: 
+//      Get the current highlight color in use. 
+//            
+//  Programmer: Alister Maguire
+//  Creation:   Mon Aug 20 09:51:26 PDT 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+float *
+avtPickActor::GetHighlightColor() 
+{
+   return highlightColor;
+}
+
+
+// ****************************************************************************
+//  Method:  avtPickActor::SetHighlightColor
+//
+//  Purpose: 
+//      Set the highlight color. Clamp endpoints if neccessary. 
+//            
+//  Programmer: Alister Maguire
+//  Creation:   Mon Aug 20 09:51:26 PDT 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtPickActor::SetHighlightColor(const float *rgb)
+{
+    //
+    // If the rgb values exceed the 0 -> 1 range, 
+    // clamp them to the endpoints. 
+    //
+    for (int i = 0; i < 3; ++i)
+    {
+        highlightColor[i] = (rgb[i] > 1.0) ? 1.0 : rgb[i]; 
+        highlightColor[i] = (rgb[i] < 0.0) ? 0.0 : highlightColor[i]; 
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtPickActor::SetPickType
+//
+//  Purpose: 
+//      Set the pick type. Available types are node and zone.  
+//            
+//  Programmer: Alister Maguire
+//  Creation:   Mon Aug 20 09:51:26 PDT 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+void 
+avtPickActor::SetPickType(PICK_TYPE pt)
+{
+    switch(pt)
+    {
+        case NODE:
+            pType = pt;
+            break;
+        case ZONE:
+            pType = pt;
+            break;
+        default:
+            debug1 << "Attempted to set and invalid pick type in ";
+            debug1 << "avtPickActor" << endl;
+            break;
+    }
+}
+
+
+// ****************************************************************************
+//  Method:  avtPickActor::GetPickType
+//
+//  Purpose: 
+//      Get the pick type. Available types are node and zone.  
+//            
+//  Programmer: Alister Maguire
+//  Creation:   Mon Aug 20 09:51:26 PDT 2018 
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+int
+avtPickActor::GetPickType()
+{
+    return pType;
 }

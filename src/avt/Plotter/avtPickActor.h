@@ -47,6 +47,7 @@ class vtkActor2D;
 class vtkFollower;
 class vtkLineSource;
 class vtkMultiLineSource;
+class vtkSphereSource;
 class vtkPolyDataMapper;
 class vtkPolyDataMapper2D;
 class vtkRenderer;
@@ -96,6 +97,12 @@ class vtkGlyphSource2D;
 //    Alister Maguire, Tue Sep 26 14:23:09 PDT 2017
 //    Changed AddLine to include an rgb argument. 
 //
+//    Alister Maguire, Mon Aug 20 11:05:30 PDT 2018
+//    Added PICK_TYPE for distinction between node and zone. 
+//    Added ability to highlight a node. Added showHighlight and
+//    highlightColor to generalized highlight abilities. Removed
+//    rgb argument from AddLine. 
+//
 // ****************************************************************************
 
 class PLOTTER_API avtPickActor
@@ -103,6 +110,11 @@ class PLOTTER_API avtPickActor
   public:
                        avtPickActor();
     virtual           ~avtPickActor();
+
+    enum               PICK_TYPE {
+                           NODE,
+                           ZONE 
+                       };
 
     void               Add(vtkRenderer *ren);
     void               Remove();
@@ -125,14 +137,24 @@ class PLOTTER_API avtPickActor
     void               Translate(const double vec[3]);
     void               ResetPosition(const double vec[3]);
     void               UseGlyph(const bool v) { useGlyph = v; } ;
-    void               AddLine(double p0[3], double p1[3], const float *rgb);
+    void               InitializePointHighlight();
+    void               AddLine(double p0[3], double p1[3]);
     bool               GetShowPickLetter() const;
     void               SetShowPickLetter(const bool);
+    void               SetShowHighlight(const bool);
+    bool               GetShowHighlight() const;
+    void               SetHighlightColor(const float *);
+    float             *GetHighlightColor();
+    void               SetPickType(PICK_TYPE);
+    int                GetPickType();
   protected:
     bool               mode3D;
     bool               useGlyph;
     bool               showPickLetter;
+    bool               showHighlight;
+    float              highlightColor[3];
     double             attach[3];
+    PICK_TYPE          pType;
     std::string        designator;
     vtkFollower       *letterActor;
 
@@ -144,9 +166,20 @@ class PLOTTER_API avtPickActor
     vtkGlyphSource2D  *glyphSource;
     vtkPolyDataMapper *glyphMapper;
 
-    vtkMultiLineSource   *highlightSource;
-    vtkPolyDataMapper2D  *highlightMapper;
-    vtkActor2D           *highlightActor;
+    //vtkActor2D       *hGlyphActor;
+    //vtkGlyphSource2D  *hGlyphSource;
+    //vtkPolyDataMapper2D *hGlyphMapper;
+
+    vtkSphereSource      *pointHighlightSource;
+    vtkPolyDataMapper2D  *pointHighlightMapper;
+    vtkActor2D           *pointHighlightActor;
+    //vtkGlyphSource2D     *pointHighlightSource;
+    //vtkPolyDataMapper2D  *pointHighlightMapper;
+    //vtkActor2D           *pointHighlightActor;
+
+    vtkMultiLineSource   *lineHighlightSource;
+    vtkPolyDataMapper2D  *lineHighlightMapper;
+    vtkActor2D           *lineHighlightActor;
     
     vtkRenderer        *renderer;
   private:

@@ -72,6 +72,7 @@ VisualCueInfo::SetFromP(const PickAttributes *pa)
     float hColor[3];
     for (int i = 0; i < 3; ++i)
         hColor[i] = pa->GetPickHighlightColor()[i] / 255.0;
+    showHighlight = pa->GetShowPickHighlight();
     SetHighlightColor(hColor);
     if ((pa->GetPickType() != PickAttributes::Zone) &&
         (pa->GetPickType() != PickAttributes::DomainZone))

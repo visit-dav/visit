@@ -2239,21 +2239,27 @@ QvisPickWindow::resetPickLetter()
 //
 // Modifications:
 //
-//     Alister Maguire, Thu Apr 26 10:59:22 PDT 2018
-//     Removed conversion to float. Range is now 0 - 255 int. 
+//    Alister Maguire, Thu Apr 26 10:59:22 PDT 2018
+//    Removed conversion to float. Range is now 0 - 255 int. 
+//
+//    Alister Maguire, Mon Aug 20 09:51:26 PDT 2018
+//    Show the currently selected color in the color picker. 
 //
 // ****************************************************************************
 
 void
 QvisPickWindow::setHighlightColor()
 {
-    QColor color = QColorDialog::getColor(Qt::red, this);
-    int RGB[3];
-    RGB[0] = color.red();
-    RGB[1] = color.green();
-    RGB[2] = color.blue();
+    int  *cRGB = pickAtts->GetPickHighlightColor(); 
+    QColor cColor(cRGB[0], cRGB[1], cRGB[2]);
 
-    pickAtts->SetPickHighlightColor(RGB);
+    QColor nColor = QColorDialog::getColor(cColor, this);
+    int nRGB[3];
+    nRGB[0] = nColor.red();
+    nRGB[1] = nColor.green();
+    nRGB[2] = nColor.blue();
+
+    pickAtts->SetPickHighlightColor(nRGB);
 }
 
 

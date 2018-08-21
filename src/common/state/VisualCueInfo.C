@@ -101,6 +101,7 @@ void VisualCueInfo::Init()
     highlightColor[0] = 0;
     highlightColor[1] = 1;
     highlightColor[2] = 0;
+    showHighlight = false;
 
     VisualCueInfo::SelectAll();
 }
@@ -134,6 +135,7 @@ void VisualCueInfo::Copy(const VisualCueInfo &obj)
     highlightColor[1] = obj.highlightColor[1];
     highlightColor[2] = obj.highlightColor[2];
 
+    showHighlight = obj.showHighlight;
 
     VisualCueInfo::SelectAll();
 }
@@ -306,7 +308,8 @@ VisualCueInfo::operator == (const VisualCueInfo &obj) const
             (showLabel == obj.showLabel) &&
             (lineWidth == obj.lineWidth) &&
             (opacity == obj.opacity) &&
-            highlightColor_equal);
+            highlightColor_equal &&
+            (showHighlight == obj.showHighlight));
 }
 
 // ****************************************************************************
@@ -459,6 +462,7 @@ VisualCueInfo::SelectAll()
     Select(ID_lineWidth,      (void *)&lineWidth);
     Select(ID_opacity,        (void *)&opacity);
     Select(ID_highlightColor, (void *)highlightColor, 3);
+    Select(ID_showHighlight,  (void *)&showHighlight);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -528,6 +532,13 @@ VisualCueInfo::SetHighlightColor(const float *highlightColor_)
     highlightColor[1] = highlightColor_[1];
     highlightColor[2] = highlightColor_[2];
     Select(ID_highlightColor, (void *)highlightColor, 3);
+}
+
+void
+VisualCueInfo::SetShowHighlight(bool showHighlight_)
+{
+    showHighlight = showHighlight_;
+    Select(ID_showHighlight, (void *)&showHighlight);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -618,6 +629,12 @@ VisualCueInfo::GetHighlightColor()
     return highlightColor;
 }
 
+bool
+VisualCueInfo::GetShowHighlight() const
+{
+    return showHighlight;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -685,6 +702,7 @@ VisualCueInfo::GetFieldName(int index) const
     case ID_lineWidth:      return "lineWidth";
     case ID_opacity:        return "opacity";
     case ID_highlightColor: return "highlightColor";
+    case ID_showHighlight:  return "showHighlight";
     default:  return "invalid index";
     }
 }
@@ -718,6 +736,7 @@ VisualCueInfo::GetFieldType(int index) const
     case ID_lineWidth:      return FieldType_linewidth;
     case ID_opacity:        return FieldType_opacity;
     case ID_highlightColor: return FieldType_floatArray;
+    case ID_showHighlight:  return FieldType_bool;
     default:  return FieldType_unknown;
     }
 }
@@ -751,6 +770,7 @@ VisualCueInfo::GetFieldTypeName(int index) const
     case ID_lineWidth:      return "linewidth";
     case ID_opacity:        return "opacity";
     case ID_highlightColor: return "floatArray";
+    case ID_showHighlight:  return "bool";
     default:  return "invalid index";
     }
 }
@@ -825,6 +845,11 @@ VisualCueInfo::FieldsEqual(int index_, const AttributeGroup *rhs) const
             highlightColor_equal = (highlightColor[i] == obj.highlightColor[i]);
 
         retval = highlightColor_equal;
+        }
+        break;
+    case ID_showHighlight:
+        {  // new scope
+        retval = (showHighlight == obj.showHighlight);
         }
         break;
     default: retval = false;
@@ -902,6 +927,7 @@ VisualCueInfo::SetFromP(const PickAttributes *pa)
     float hColor[3];
     for (int i = 0; i < 3; ++i)
         hColor[i] = pa->GetPickHighlightColor()[i] / 255.0;
+    showHighlight = pa->GetShowPickHighlight();
     SetHighlightColor(hColor);
     if ((pa->GetPickType() != PickAttributes::Zone) &&
         (pa->GetPickType() != PickAttributes::DomainZone))

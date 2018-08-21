@@ -443,6 +443,11 @@ VisWinQuery::QueryIsValid(const VisualCueInfo *vqPoint, const VisualCueInfo *vqL
 //    Correcting error where zone pick highlighing information
 //    leaked over to the next node pick
 //
+//    Alister Maguire, Mon Aug 20 09:51:26 PDT 2018
+//    Now adding generalized highlight options through the pick
+//    actor instead of through AddLine. Also, determine and
+//    set the pick type in avtPickActor. 
+//
 // ****************************************************************************
 
 void 
@@ -467,13 +472,32 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
         pp->SetAttachmentPoint(pt[0], pt[1], distance);
     }
 
-    bool useGlyph = vq->GetGlyphType() != "";
+    //
+    // If a glyph is set, the pick should be by node. 
+    //
+    bool glyphFound = vq->GetGlyphType() != "";
+    if (glyphFound)
+        pp->SetPickType(avtPickActor::NODE);
+    else
+        pp->SetPickType(avtPickActor::ZONE);
+
+    //
+    // Only use the glyph if we have one and highlight is not
+    // enabled. 
+    //
+    bool useGlyph = glyphFound && !vq->GetShowHighlight();
     pp->UseGlyph(useGlyph);
     pp->SetDesignator(vq->GetLabel());
 
     double fg[3];
     mediator.GetForegroundColor(fg);
     pp->SetForegroundColor(fg);
+
+    //
+    // Set the highlight options of the pick actor. 
+    //
+    pp->SetShowHighlight(vq->GetShowHighlight());
+    pp->SetHighlightColor(vq->GetHighlightColor());
 
     // Get PickHighlihgt lines if they exist
     // first point is the attatchment point
@@ -490,7 +514,7 @@ VisWinQuery::Pick(const VisualCueInfo *vq)
             // First point is the attactment
             vq->GetPointD(i*2+1, p1);
             vq->GetPointD(i*2+2, p2);
-            pp->AddLine(p1, p2, vq->GetHighlightColor());
+            pp->AddLine(p1, p2);
         }
     }
     //

@@ -112,6 +112,7 @@ public:
     void SetLineWidth(int lineWidth_);
     void SetOpacity(double opacity_);
     void SetHighlightColor(const float *highlightColor_);
+    void SetShowHighlight(bool showHighlight_);
 
     // Property getting methods
     const doubleVector   &GetPoints() const;
@@ -128,6 +129,7 @@ public:
     double               GetOpacity() const;
     const float          *GetHighlightColor() const;
           float          *GetHighlightColor();
+    bool                 GetShowHighlight() const;
 
     // Enum conversion functions
     static std::string CueType_ToString(CueType);
@@ -161,9 +163,12 @@ public:
         ID_lineWidth,
         ID_opacity,
         ID_highlightColor,
+        ID_showHighlight,
         ID__LAST
     };
 
+protected:
+    bool           showHighlight;
 private:
     doubleVector   points;
     int            cueType;
@@ -179,6 +184,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define VISUALCUEINFO_TMFS "d*iassbidF"
+#define VISUALCUEINFO_TMFS "d*iassbidFb"
 
 #endif

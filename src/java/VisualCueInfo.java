@@ -58,7 +58,7 @@ import java.util.Vector;
 
 public class VisualCueInfo extends AttributeSubject
 {
-    private static int VisualCueInfo_numAdditionalAtts = 9;
+    private static int VisualCueInfo_numAdditionalAtts = 10;
 
     // Enum values
     public final static int CUETYPE_PICKPOINT = 0;
@@ -82,6 +82,7 @@ public class VisualCueInfo extends AttributeSubject
         highlightColor[0] = 0f;
         highlightColor[1] = 1f;
         highlightColor[2] = 0f;
+        showHighlight = false;
     }
 
     public VisualCueInfo(int nMoreFields)
@@ -100,6 +101,7 @@ public class VisualCueInfo extends AttributeSubject
         highlightColor[0] = 0f;
         highlightColor[1] = 1f;
         highlightColor[2] = 0f;
+        showHighlight = false;
     }
 
     public VisualCueInfo(VisualCueInfo obj)
@@ -127,6 +129,7 @@ public class VisualCueInfo extends AttributeSubject
         highlightColor[1] = obj.highlightColor[1];
         highlightColor[2] = obj.highlightColor[2];
 
+        showHighlight = obj.showHighlight;
 
         SelectAll();
     }
@@ -168,7 +171,8 @@ public class VisualCueInfo extends AttributeSubject
                 (showLabel == obj.showLabel) &&
                 (lineWidth == obj.lineWidth) &&
                 (opacity == obj.opacity) &&
-                highlightColor_equal);
+                highlightColor_equal &&
+                (showHighlight == obj.showHighlight));
     }
 
     // Property setting methods
@@ -236,6 +240,12 @@ public class VisualCueInfo extends AttributeSubject
         Select(8);
     }
 
+    public void SetShowHighlight(boolean showHighlight_)
+    {
+        showHighlight = showHighlight_;
+        Select(9);
+    }
+
     // Property getting methods
     public Vector         GetPoints() { return points; }
     public int            GetCueType() { return cueType; }
@@ -246,6 +256,7 @@ public class VisualCueInfo extends AttributeSubject
     public int            GetLineWidth() { return lineWidth; }
     public double         GetOpacity() { return opacity; }
     public float[]        GetHighlightColor() { return highlightColor; }
+    public boolean        GetShowHighlight() { return showHighlight; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -268,6 +279,8 @@ public class VisualCueInfo extends AttributeSubject
             buf.WriteDouble(opacity);
         if(WriteSelect(8, buf))
             buf.WriteFloatArray(highlightColor);
+        if(WriteSelect(9, buf))
+            buf.WriteBool(showHighlight);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -302,6 +315,9 @@ public class VisualCueInfo extends AttributeSubject
         case 8:
             SetHighlightColor(buf.ReadFloatArray());
             break;
+        case 9:
+            SetShowHighlight(buf.ReadBool());
+            break;
         }
     }
 
@@ -324,6 +340,7 @@ public class VisualCueInfo extends AttributeSubject
         str = str + intToString("lineWidth", lineWidth, indent) + "\n";
         str = str + doubleToString("opacity", opacity, indent) + "\n";
         str = str + floatArrayToString("highlightColor", highlightColor, indent) + "\n";
+        str = str + boolToString("showHighlight", showHighlight, indent) + "\n";
         return str;
     }
 
@@ -338,5 +355,6 @@ public class VisualCueInfo extends AttributeSubject
     private int            lineWidth;
     private double         opacity;
     private float[]        highlightColor;
+    private boolean        showHighlight;
 }
 
