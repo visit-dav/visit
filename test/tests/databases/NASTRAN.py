@@ -10,8 +10,9 @@
 #  Date:       Thu Jul 7 17:46:51 PST 2005
 #
 #  Modifications:
-#    Edward Rusu, Tue Aug 14 13:45:25 PST 2018
+#    Edward Rusu, Tue Aug 21 10:06:24 PST 2018
 #    Added tests for quadratic elements.
+#
 # ----------------------------------------------------------------------------
 
 def AddMeshPlot():
