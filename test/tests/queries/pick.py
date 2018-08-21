@@ -219,6 +219,9 @@
 #    Alister Maguire, Thu Aug 16 10:18:56 PDT 2018
 #    Added a test for swivel highlight. 
 #
+#    Alister Maguire, Mon Aug 20 12:45:25 PDT 2018
+#    Added a test for node highlight. 
+#
 # ----------------------------------------------------------------------------
 RequiredDatabasePlugin(("Boxlib2D","SAMRAI","Mili"))
 
@@ -3035,6 +3038,37 @@ def TestSwivelHighlight():
     DeleteAllPlots()
     ResetPickLetter()
 
+def TestNodeHighlight():
+    ResetPickAttributes()
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+    ResetView()
+
+    OpenDatabase(silo_data_path("globe.silo"))
+    TurnOffAllAnnotations()
+    AddPlot("Pseudocolor", "v")
+    DrawPlots()
+
+    pAtts = GetPickAttributes()
+    pAtts.showPickHighlight = 1
+    pAtts.pickHighlightColor = (230, 100, 0)
+    SetPickAttributes(pAtts)
+    PickByNode(800)
+    pAtts.pickHighlightColor = (0, 0, 255)
+    SetPickAttributes(pAtts)
+    PickByNode(600)
+    pAtts.pickHighlightColor = (255, 0, 0)
+    SetPickAttributes(pAtts)
+    PickByNode(1000)
+    Test("NodeHighlight_00")
+
+    ResetPickAttributes()
+    ClearPickPoints() 
+    DeleteAllPlots()
+    ResetPickLetter()
+
+
 
 def PickMain():
     Pick3DTo2D()
@@ -3076,6 +3110,7 @@ def PickMain():
     PickNodeLabel()
     PickRangeLabel()
     TestSwivelHighlight()
+    TestNodeHighlight()
 
 # Call the main function
 TurnOnAllAnnotations()
