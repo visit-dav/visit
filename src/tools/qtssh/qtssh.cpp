@@ -114,6 +114,22 @@ qtssh_strdup(const std::string &s)
     return s2;
 }
 
+static char *
+qtssh_strdup_with_quotes(const std::string &s)
+{
+
+    if (std::count(s.begin(), s.end(), '\\') > 0)
+    {
+        char *s2 = new char[s.size() + 3];
+        s2[0] = '\"';
+        strcpy(&s2[1], s.c_str());
+        s2[s.size()+1] = '\"';
+        s2[s.size()+2] = NULL;
+        return s2;
+    }
+    return qtssh_strdup(s);
+}
+
 // ****************************************************************************
 // Function: qtssh_handle_new_username
 //
@@ -133,11 +149,17 @@ qtssh_strdup(const std::string &s)
 // Creation:   Wed Jun 13 14:02:02 PDT 2012
 //
 // Modifications:
-//     Kevin Griffin, Thu Jan 12 14:29:26 PST 2017
-//     Used strcmp instead of ==, set CONF_username to the new username
+//   Kevin Griffin, Thu Jan 12 14:29:26 PST 2017
+//   Used strcmp instead of ==, set CONF_username to the new username
 //
-//     Kathleen Biagas, Tue May 22, 2018
-//     Removed WIN32 code that Freed and Alloc'd new console.
+//   Kathleen Biagas, Tue May 22, 2018
+//   Removed WIN32 code that Freed and Alloc'd new console.
+//
+//   Kathleen Biagas, Tue Aug 21, 2018
+//   Re-added WIN32 code that Freed and Alloc'd new console.  Also, surround
+//   new_argv[0] with quotes on Windows, required when qtssh command is full
+//   path.  But 'cmd' arg to _spanwvp requires no quotes, so use
+//   qtssh_commandline[0].
 //
 // ****************************************************************************
 
@@ -164,11 +186,16 @@ qtssh_handle_new_username(const char *host)
                 break;
         }
 
-        // We need to restart this program with extra arguments to set the new username
-        // on the command line.
+        // We need to restart this program with extra arguments to set the
+        // new username on the command line.
         const char **new_argv = new const char*[qtssh_commandline.size() + (dashL ? 1 : 3)];
         int index = 0;
+#ifdef _WIN32
+        // surround the qtssh command with quotes if necessary
+        new_argv[index++] = qtssh_strdup_with_quotes(qtssh_commandline[0]);
+#else
         new_argv[index++] = qtssh_strdup(qtssh_commandline[0]);
+#endif
         // There was no -l so add one.
         if(!dashL)
         {
@@ -187,11 +214,23 @@ qtssh_handle_new_username(const char *host)
         }
         new_argv[index] = NULL;
 
+
 #if 0
         printf("Starting: ");
         for(int i = 0; i < index; ++i)
             printf(" %s", new_argv[i]);
         printf("\n");
+#endif
+
+#if defined(_WIN32)
+        // make a new console and minimize it.
+        FreeConsole();
+        AllocConsole();
+        ShowWindow(GetConsoleWindow(), SW_MINIMIZE);
+        // Start the new qtssh.exe, using the non-quoted qtssh command
+        _spawnvp(_P_NOWAIT, qtssh_commandline[0].c_str(), new_argv);
+        // Exit this one.
+        cleanup_exit(0);
 #endif
     }
 }
