@@ -1935,6 +1935,7 @@ RemoteProcess::CreateSSHCommandLine(stringVector &args, const MachineProfile &pr
     {
         std::string q("\"");
         sshcmd = (q + sshcmd + q);
+        ssh[0] = sshcmd;
     }
 #endif
 
