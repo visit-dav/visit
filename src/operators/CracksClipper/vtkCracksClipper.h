@@ -50,10 +50,10 @@ public:
   vtkTypeMacro(AlwaysNegative, vtkImplicitFunction);
   static AlwaysNegative *New();
 
-  virtual double EvaluateFunction(double x[3])
+  double EvaluateFunction(double x[3]) override
       { return -1.; }
- virtual void EvaluateGradient(double x[3], double g[3]) 
-      {g[0] = g[1] = g[2] = 1.; }; 
+  void EvaluateGradient(double x[3], double g[3]) override
+      { g[0] = g[1] = g[2] = 1.; } 
 
   void SetReturnNeg(bool val) { returnNeg = val; }
 
@@ -94,7 +94,7 @@ class vtkCracksClipper : public vtkVisItClipper
 {
   public:
     vtkTypeMacro(vtkCracksClipper,vtkVisItClipper);
-    void PrintSelf(ostream& os, vtkIndent indent);
+    void PrintSelf(ostream& os, vtkIndent indent) override;
 
     static vtkCracksClipper *New();
     void SetUseOppositePlane(bool val) { useOppositePlane = val;};
@@ -103,7 +103,7 @@ class vtkCracksClipper : public vtkVisItClipper
     vtkSetStringMacro(CrackWidth);
     vtkSetStringMacro(CellCenters);
 
-    virtual void ModifyClip(vtkDataSet *, vtkIdType);
+    void ModifyClip(vtkDataSet *, vtkIdType) override;
 
   protected:
     vtkCracksClipper();

@@ -34,7 +34,7 @@ class vtkVisItXMLPDataReader : public vtkXMLReader
 {
 public:
   vtkTypeMacro(vtkVisItXMLPDataReader,vtkXMLReader);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
   static vtkVisItXMLPDataReader *New();
   
   // Description:
@@ -71,27 +71,27 @@ public:
 
   // For the specified port, copy the information this reader sets up in
   // SetupOutputInformation to outInfo
-  virtual void CopyOutputInformation(vtkInformation *outInfo, int port);
+  void CopyOutputInformation(vtkInformation *outInfo, int port) override;
 
-  int ReadXMLInformation();
+  int ReadXMLInformation() override;
 
 protected:
   vtkVisItXMLPDataReader();
   ~vtkVisItXMLPDataReader();
   
-  void SetupEmptyOutput();
+  void SetupEmptyOutput() override;
 
-  const char* GetDataSetName();
+  const char* GetDataSetName() override;
 
   // Pipeline execute information driver.  Called by vtkXMLReader.
-  virtual void SetupOutputInformation(vtkInformation *outInfo);
+  void SetupOutputInformation(vtkInformation *outInfo) override;
 
-  int ReadPrimaryElement(vtkXMLDataElement* ePrimary);
+  int ReadPrimaryElement(vtkXMLDataElement* ePrimary) override;
   
-  void SetupOutputData();
+  void SetupOutputData() override;
   
-  virtual void SetupPieces(int numPieces);
-  virtual void DestroyPieces();
+  void SetupPieces(int numPieces);
+  void DestroyPieces();
   int ReadPiece(vtkXMLDataElement* ePiece, int index);
   
   char* CreatePieceFileName(const char* fileName);
@@ -100,7 +100,7 @@ protected:
   // Callback registered with the PieceProgressObserver.
   static void PieceProgressCallbackFunction(vtkObject*, unsigned long, void*,
                                            void*);
-  virtual void PieceProgressCallback();
+  void PieceProgressCallback();
   
   // Pieces from the input summary file.
   int NumberOfPieces;

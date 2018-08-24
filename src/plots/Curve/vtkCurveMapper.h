@@ -80,10 +80,10 @@ class vtkCurveMapper : public vtkPolyDataMapper
 public:
   static vtkCurveMapper *New();
   vtkTypeMacro(vtkCurveMapper,vtkPolyDataMapper);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
-  virtual void Render(vtkRenderer *, vtkActor *);
-  virtual void ReleaseGraphicsResources(vtkWindow *);
+  void Render(vtkRenderer *, vtkActor *) override;
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
   // Toggle for drawing the curve lines
   vtkGetMacro(DrawCurve, bool);
@@ -131,7 +131,7 @@ protected:
   vtkCurveMapper();
   ~vtkCurveMapper();
 
-  virtual void RenderPiece(vtkRenderer *, vtkActor *);
+  void RenderPiece(vtkRenderer *, vtkActor *) override;
  
 
   bool        DrawCurve;

@@ -73,7 +73,7 @@ public:
     static vtkLabelMapper *New();
     vtkTypeMacro(vtkLabelMapper, vtkLabelMapperBase);
 
-    virtual void ReleaseGraphicsResources(vtkWindow *);
+    void ReleaseGraphicsResources(vtkWindow *) override;
 
 protected:
     vtkLabelMapper();
@@ -81,7 +81,7 @@ protected:
 
     vtkTimeStamp BuildTime;
 
-    void BuildLabelsInternal(vtkDataSet*, vtkRenderer*);
+    void BuildLabelsInternal(vtkDataSet*, vtkRenderer*) override;
 
     // from openglrenderer
     void DrawLabels2D(vtkDataSet *, vtkRenderer *);

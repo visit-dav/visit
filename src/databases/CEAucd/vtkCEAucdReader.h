@@ -49,7 +49,7 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
    public:
       static vtkCEAucdReader *New();
       vtkTypeMacro(vtkCEAucdReader,vtkUnstructuredGridAlgorithm);
-      void PrintSelf(ostream& os, vtkIndent indent);
+      void PrintSelf(ostream& os, vtkIndent indent) override;
       
      // Description:
      // Specify file name of CEA UCD datafile to read
@@ -151,8 +151,8 @@ class vtkCEAucdReader : public vtkUnstructuredGridAlgorithm
    protected:
       vtkCEAucdReader();
       ~vtkCEAucdReader();
-      int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
-      int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+      int RequestInformation(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+      int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
       
       char *FileName;
       bool BinaryFile;

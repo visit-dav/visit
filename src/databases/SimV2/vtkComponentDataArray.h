@@ -13,7 +13,7 @@
 // vtkTypeTemplate, otherwise, use vtkComponentDataArrayTypeMacro.
 #define vtkComponentDataArrayNewInstanceMacro(thisClass) \
   protected: \
-  vtkObjectBase *NewInstanceInternal() const \
+  vtkObjectBase *NewInstanceInternal() const override \
   { \
     if (vtkDataArray *da = \
         vtkDataArray::CreateDataArray(thisClass::VTK_DATA_TYPE)) \
@@ -87,7 +87,7 @@ public:
         }
     }
 
-    virtual void Initialize()
+    void Initialize() override
     {
         voidPtrValues = 0;
         voidPtrNumValues = 0;
@@ -95,15 +95,15 @@ public:
         temporaryTuple = NULL;
     }
 
-    virtual bool HasStandardMemoryLayout() { return false; }
+    bool HasStandardMemoryLayout() override { return false; }
 
-    virtual void SetNumberOfTuples(vtkIdType nt)
+    void SetNumberOfTuples(vtkIdType nt) override
     {
         InvalidateVoidPointerArray();
         this->MaxId = nt * this->GetNumberOfComponents() - 1;
     }
 
-    virtual void GetTuples(vtkIdList *ptIds, vtkAbstractArray *out)
+    void GetTuples(vtkIdList *ptIds, vtkAbstractArray *out) override
     {
         vtkDataArray *da = vtkDataArray::SafeDownCast(out);
         if (!da)
@@ -124,7 +124,7 @@ public:
         }
     }
 
-    virtual void GetTuples(vtkIdType p1, vtkIdType p2, vtkAbstractArray *out)
+    void GetTuples(vtkIdType p1, vtkIdType p2, vtkAbstractArray *out) override
     {
         vtkDataArray *da = vtkDataArray::SafeDownCast(out);
         if (!da)
@@ -145,24 +145,24 @@ public:
         }
     }
 
-    virtual double *GetTuple(vtkIdType id)
+    double *GetTuple(vtkIdType id) override
     {
         GetTuple(id, temporaryTuple);
         return temporaryTuple;
     }
 
-    virtual void GetTuple(vtkIdType id, double *out)
+    void GetTuple(vtkIdType id, double *out) override
     {
         GatherValues(id, this->GetNumberOfComponents(), out);
     }
 
-    virtual void GetTypedTuple(vtkIdType id, Scalar *out) const
+    void GetTypedTuple(vtkIdType id, Scalar *out) const override
     {
         ThisClass *tmp = const_cast<vtkComponentDataArray*>(this);
         tmp->GatherValues(id, tmp->GetNumberOfComponents(), out);
     }
 
-    virtual Scalar &GetValueReference(vtkIdType arrayIndex)
+    Scalar &GetValueReference(vtkIdType arrayIndex) override
     {
         // The array index assumes (t0c0, t0c1, t0c2) (t1c0, t1c1, t1c2), ...
         vtkIdType id = arrayIndex / this->GetNumberOfComponents();
@@ -172,18 +172,18 @@ public:
         return tempReference;
     }
 
-    virtual Scalar GetValue(vtkIdType arrayIndex) const
+    Scalar GetValue(vtkIdType arrayIndex) const override
     {
         ThisClass *tmp = const_cast<vtkComponentDataArray*>(this);
         return tmp->GetValueReference(arrayIndex);
     }
 
-    vtkVariant GetVariantValue(vtkIdType arrayIndex)
+    vtkVariant GetVariantValue(vtkIdType arrayIndex) override
     {
         return vtkVariant(this->GetValue(arrayIndex));
     }
 
-    virtual void *GetVoidPointer(vtkIdType id)
+    void *GetVoidPointer(vtkIdType id) override
     {
 #if 1
         // Call this function for an easy to find breakpoint when you want
@@ -212,19 +212,19 @@ public:
 public:
     // Methods that don't matter since this class is a read-only view.
 
-    virtual int Allocate(vtkIdType, vtkIdType)
+    int Allocate(vtkIdType, vtkIdType) override
     { vtkWarningMacro( << "Allocate: read only do nothing"); return 1; }
-    virtual void SetTuple(vtkIdType, vtkIdType, vtkAbstractArray*)
+    void SetTuple(vtkIdType, vtkIdType, vtkAbstractArray*) override
     { vtkWarningMacro( << "SetTuple: read only do nothing"); }
-    virtual void InsertTuple(vtkIdType, vtkIdType, vtkAbstractArray*)
+    void InsertTuple(vtkIdType, vtkIdType, vtkAbstractArray*) override
     { vtkWarningMacro( << "InsertTuple: read only do nothing"); }
-    virtual void InsertTuples(vtkIdList*, vtkIdList*, vtkAbstractArray*)
+    void InsertTuples(vtkIdList*, vtkIdList*, vtkAbstractArray*) override
     { vtkWarningMacro( << "InsertTuples: read only do nothing"); }
-    virtual void InsertTuples(vtkIdType, vtkIdType, vtkIdType, vtkAbstractArray*)
+    void InsertTuples(vtkIdType, vtkIdType, vtkIdType, vtkAbstractArray*) override
     { vtkWarningMacro( << "InsertTuples: read only do nothing"); }
-    virtual vtkIdType InsertNextTuple(vtkIdType, vtkAbstractArray*)
+    vtkIdType InsertNextTuple(vtkIdType, vtkAbstractArray*) override
     { vtkWarningMacro( << "InsertNextTuple: read only do nothing"); return 0; }
-    virtual void DeepCopy(vtkAbstractArray *arr)
+    void DeepCopy(vtkAbstractArray *arr) override
     {
 #if 1
         vtkComponentDataArray<Scalar,ComponentData> *da = SafeDownCast(arr);
@@ -244,7 +244,7 @@ public:
         }
 #endif
     }
-    virtual void DeepCopy(vtkDataArray *arr)
+    void DeepCopy(vtkDataArray *arr) override
     {
 #if 1
         vtkComponentDataArray<Scalar,ComponentData> *da = SafeDownCast(arr);
@@ -264,94 +264,94 @@ public:
         }
 #endif
     }
-    virtual void InterpolateTuple(vtkIdType i, vtkIdList *ptIndices,
-                                  vtkAbstractArray* source,  double* weights)
+    void InterpolateTuple(vtkIdType i, vtkIdList *ptIndices,
+                          vtkAbstractArray* source,  double* weights) override
     { vtkWarningMacro( << "InterpolateTuple: read only do nothing"); }
-    virtual void Squeeze()
+    void Squeeze() override
     { vtkWarningMacro( << "Squeeze: read only do nothing"); }
-    virtual int Resize(vtkIdType)
+    int Resize(vtkIdType) override
     { vtkWarningMacro( << "Resize: read only do nothing"); return 0; }
-    virtual void SetTuple(vtkIdType, const float*)
+    void SetTuple(vtkIdType, const float*) override
     { vtkWarningMacro( << "SetTuple: read only do nothing"); }
-    virtual void SetTuple(vtkIdType, const double*)
+    void SetTuple(vtkIdType, const double*) override
     { vtkWarningMacro( << "SetTuple: read only do nothing"); }
     virtual void SetTuple(vtkIdType &, double*)
     { vtkWarningMacro( << "SetTuple: read only do nothing"); }
-    virtual void InsertTuple(vtkIdType, const float*)
+    void InsertTuple(vtkIdType, const float*) override
     { vtkWarningMacro( << "InsertTuple: read only do nothing"); }
-    virtual void InsertTuple(vtkIdType, const double*)
+    void InsertTuple(vtkIdType, const double*) override
     { vtkWarningMacro( << "InsertTuple: read only do nothing"); }
-    virtual vtkIdType InsertNextTuple(const float*)
+    vtkIdType InsertNextTuple(const float*) override
     { vtkWarningMacro( << "InsertNextTuple: read only do nothing"); return 0; }
-    virtual vtkIdType InsertNextTuple(const double*)
+    vtkIdType InsertNextTuple(const double*) override
     { vtkWarningMacro( << "InsertNextTuple: read only do nothing"); return 0; }
-    virtual void RemoveTuple(vtkIdType)
+    void RemoveTuple(vtkIdType) override
     { vtkWarningMacro( << "RemoveTuple: read only do nothing"); }
-    virtual void RemoveFirstTuple()
+    void RemoveFirstTuple() override
     { vtkWarningMacro( << "RemoveFirstTuple: read only do nothing"); }
-    virtual void RemoveLastTuple()
+    void RemoveLastTuple() override
     { vtkWarningMacro( << "RemoveLastTuple: read only do nothing");/* read only; do nothing. */ }
 
-    virtual void SetValue(vtkIdType, Scalar)
+    void SetValue(vtkIdType, Scalar) override
     { vtkWarningMacro( << "SetValue: read only do nothing");/* read only; do nothing. */ }
-    virtual vtkIdType InsertNextValue(Scalar)
+    vtkIdType InsertNextValue(Scalar) override
     { vtkWarningMacro( << "InsertNextValue: read only do nothing");/* read only; do nothing. */ return 0; }
-    virtual void InsertValue(vtkIdType, Scalar)
+    void InsertValue(vtkIdType, Scalar) override
     { vtkWarningMacro( << "InsertValue: read only do nothing");/* read only; do nothing. */ }
 
-    void InterpolateTuple(vtkIdType, vtkIdType, vtkAbstractArray*, vtkIdType, vtkAbstractArray*, double)
+    void InterpolateTuple(vtkIdType, vtkIdType, vtkAbstractArray*, vtkIdType, vtkAbstractArray*, double) override
     { vtkWarningMacro( << "InterpolateTuple: read only do nothing");/* read only; do nothing. */ }
-    void SetVariantValue(vtkIdType, vtkVariant)
+    void SetVariantValue(vtkIdType, vtkVariant) override
     { vtkWarningMacro( << "SetVariantValue: read only do nothing");/* read only; do nothing. */ }
-    virtual void ClearLookup()
+    void ClearLookup() override
     { vtkWarningMacro( << "ClearLookup: read only do nothing");/* read only; do nothing. */ }
-    void SetTypedTuple(vtkIdType, const Scalar*)
+    void SetTypedTuple(vtkIdType, const Scalar*) override
     { vtkWarningMacro( << "SetTypedTuple: read only do nothing");/* read only; do nothing. */ }
-    void InsertTypedTuple(vtkIdType, const Scalar*)
+    void InsertTypedTuple(vtkIdType, const Scalar*) override
     { vtkWarningMacro( << "InsertTypedTuple: read only do nothing");/* read only; do nothing. */ }
-    vtkIdType InsertNextTypedTuple(const Scalar*)
+    vtkIdType InsertNextTypedTuple(const Scalar*) override
     { vtkWarningMacro( << "InsertNextTypedTuple: read only do nothing"); return 0; /* read only; do nothing. */ }
 
-    vtkIdType LookupTypedValue(Scalar)
+    vtkIdType LookupTypedValue(Scalar) override
     {
         vtkErrorMacro(<< "LookupTypedValue not implemented.");
         return 0;
     }
 
-    void LookupTypedValue(Scalar, vtkIdList*)
+    void LookupTypedValue(Scalar, vtkIdList*) override
     {
         vtkErrorMacro(<< "LookupTypedValue not implemented.");
     }
 
-    virtual vtkArrayIterator* NewIterator()
+    vtkArrayIterator* NewIterator() override
     {
         vtkErrorMacro(<< "NewIterator not implemented.");
         return NULL;
     }
 
-    virtual vtkIdType LookupValue(vtkVariant)
+    vtkIdType LookupValue(vtkVariant) override
     {
         vtkErrorMacro(<< "LookupValue not implemented.");
         return 0;
     }
 
-    virtual void LookupValue(vtkVariant, vtkIdList*)
+    void LookupValue(vtkVariant, vtkIdList*) override
     {
         vtkErrorMacro(<< "LookupValue not implemented.");
     }
 
-    virtual void SetVoidArray(void*, vtkIdType, int)
+    void SetVoidArray(void*, vtkIdType, int) override
     {
         vtkErrorMacro(<< "SetVoidArray not implemented.");
     }
 
-    virtual void *WriteVoidPointer(vtkIdType, vtkIdType)
+    void *WriteVoidPointer(vtkIdType, vtkIdType) override
     {
         vtkErrorMacro(<< "WriteVoidPointer not implemented.");
         return NULL;
     }
 
-    virtual void DataChanged()
+    void DataChanged() override
     {
         InvalidateVoidPointerArray();
     }
@@ -362,7 +362,7 @@ protected:
         Initialize();
     }
 
-    virtual ~vtkComponentDataArray()
+    ~vtkComponentDataArray() override
     {
         InvalidateVoidPointerArray();
 

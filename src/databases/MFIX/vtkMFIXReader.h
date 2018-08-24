@@ -53,7 +53,7 @@ class vtkMFIXReader : public vtkUnstructuredGridAlgorithm
 public:
   static vtkMFIXReader *New();
   vtkTypeMacro(vtkMFIXReader,vtkUnstructuredGridAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Specify the file name of the MFIX Restart data file to read.
@@ -127,11 +127,11 @@ public:
 protected:
   vtkMFIXReader();
   ~vtkMFIXReader();
-  virtual int RequestInformation(vtkInformation *,
-    vtkInformationVector **, vtkInformationVector *);
-  virtual int RequestData(vtkInformation *,
-    vtkInformationVector **, vtkInformationVector *);
-  virtual int FillOutputPortInformation(int, vtkInformation *);
+  int RequestInformation(vtkInformation *,
+    vtkInformationVector **, vtkInformationVector *) override;
+  int RequestData(vtkInformation *,
+    vtkInformationVector **, vtkInformationVector *) override;
+  int FillOutputPortInformation(int, vtkInformation *) override;
 
   bool SwapByteOrder;
 

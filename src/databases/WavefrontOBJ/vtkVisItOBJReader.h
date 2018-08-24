@@ -29,7 +29,7 @@ class vtkVisItOBJReader : public vtkPolyDataAlgorithm
 public:
   static vtkVisItOBJReader *New();
   vtkTypeMacro(vtkVisItOBJReader,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Specify file name of Wavefront .obj file.
@@ -40,7 +40,7 @@ protected:
   vtkVisItOBJReader();
   ~vtkVisItOBJReader();
   
-  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
   char *FileName;
 private:

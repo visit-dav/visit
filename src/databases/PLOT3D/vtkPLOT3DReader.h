@@ -67,7 +67,7 @@ class vtkPLOT3DReader : public vtkObject
 public:
   static vtkPLOT3DReader *New();
   vtkTypeMacro(vtkPLOT3DReader,vtkObject);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Set/Get the PLOT3D geometry filename.

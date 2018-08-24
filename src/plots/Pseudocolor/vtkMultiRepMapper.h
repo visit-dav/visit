@@ -50,9 +50,9 @@ class vtkMultiRepMapper : public vtkDataSetMapper
 public:
   static vtkMultiRepMapper *New();
   vtkTypeMacro(vtkMultiRepMapper, vtkDataSetMapper)
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
-  void Render(vtkRenderer *ren, vtkActor *act);
+  void Render(vtkRenderer *ren, vtkActor *act) override;
 
   vtkSetMacro(DrawSurface, bool);
   vtkGetMacro(DrawSurface, bool);

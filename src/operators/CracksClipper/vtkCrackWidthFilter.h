@@ -95,9 +95,9 @@ class vtkCrackWidthFilter : public vtkDataSetAlgorithm
     vtkCrackWidthFilter();
     ~vtkCrackWidthFilter();
 
-    virtual int RequestData(vtkInformation *,
-                            vtkInformationVector **,
-                            vtkInformationVector *);
+    int RequestData(vtkInformation *,
+                    vtkInformationVector **,
+                    vtkInformationVector *) override;
 
   private:
     double MaxCrack1Width;

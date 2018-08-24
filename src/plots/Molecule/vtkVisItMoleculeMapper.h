@@ -88,15 +88,15 @@ class vtkVisItMoleculeMapper : public vtkDataSetMapper
 public:
   static vtkVisItMoleculeMapper *New();
   vtkTypeMacro(vtkVisItMoleculeMapper,vtkDataSetMapper);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Reimplemented from base class
-  virtual void Render(vtkRenderer *, vtkActor *);
-  virtual void ReleaseGraphicsResources(vtkWindow *);
-  double * GetBounds();
-  void GetBounds(double bounds[6]) { vtkAbstractMapper3D::GetBounds(bounds); }
-  virtual bool GetSupportsSelection() {return false;}
+  void Render(vtkRenderer *, vtkActor *) override;
+  void ReleaseGraphicsResources(vtkWindow *) override;
+  double * GetBounds() override;
+  void GetBounds(double bounds[6]) override { vtkAbstractMapper3D::GetBounds(bounds); }
+  bool GetSupportsSelection() override {return false;}
 
 
   enum AtomicRadiusType {

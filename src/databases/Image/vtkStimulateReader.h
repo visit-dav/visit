@@ -68,13 +68,13 @@ public:
   static vtkStimulateReader *New();
   vtkTypeMacro(vtkStimulateReader,vtkImageReader2);
 
-  int CanReadFile(const char* fname); 
-  virtual const char* GetFileExtensions()
+  int CanReadFile(const char* fname) override;
+  const char* GetFileExtensions() override
     {
       return ".sdt .spr .SDT .SPR";
     }
 
-  virtual const char* GetDescriptiveName()
+  const char* GetDescriptiveName() override
     {
       return "Stimulate";
     }
@@ -88,9 +88,9 @@ protected:
   enum dtype {UCHAR, SHORT, INT, FLOAT};
   int RequestInformation(vtkInformation* request,
                          vtkInformationVector** inputVector,
-                         vtkInformationVector* outputVector);
-  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation* outInfo);
-  virtual int OpenFile(void);
+                         vtkInformationVector* outputVector) override;
+  void ExecuteDataWithInformation(vtkDataObject *, vtkInformation* outInfo) override;
+  int OpenFile(void) override;
   vtkStimulateReader();
   ~vtkStimulateReader();
 private:

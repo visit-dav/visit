@@ -56,7 +56,7 @@ class visit_vtkOpenFOAMReader : public vtkMultiBlockDataSetAlgorithm
 public:
   static visit_vtkOpenFOAMReader *New();
   vtkTypeMacro(visit_vtkOpenFOAMReader, vtkMultiBlockDataSetAlgorithm);
-  void PrintSelf(ostream &, vtkIndent);
+  void PrintSelf(ostream &, vtkIndent) override;
 
   // Description:
   // Determine if the file can be readed with this reader.
@@ -330,9 +330,9 @@ protected:
   visit_vtkOpenFOAMReader();
   ~visit_vtkOpenFOAMReader();
   int RequestInformation(vtkInformation *, vtkInformationVector **,
-    vtkInformationVector *);
+    vtkInformationVector *) override;
   int RequestData(vtkInformation *, vtkInformationVector **,
-    vtkInformationVector *);
+    vtkInformationVector *) override;
 
   void CreateCasePath(vtkStdString &, vtkStdString &);
   void SetTimeInformation(vtkInformationVector *, vtkDoubleArray *);

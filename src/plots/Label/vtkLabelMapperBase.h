@@ -74,19 +74,19 @@ class vtkLabelMapperBase : public vtkMapper2D
 {
 public:
     vtkTypeMacro(vtkLabelMapperBase, vtkMapper2D);
-    void PrintSelf(ostream &os, vtkIndent indent);
+    void PrintSelf(ostream &os, vtkIndent indent) override;
 
 
     // VTK Pipeline methods
     virtual void SetInputData(vtkDataObject*);
     vtkDataSet *GetInput();
 
-    void RenderOpaqueGeometry(vtkViewport* viewport, vtkActor2D* actor);
-    void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor);
+    void RenderOpaqueGeometry(vtkViewport* viewport, vtkActor2D* actor) override;
+    void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor) override;
  
-    virtual void ReleaseGraphicsResources(vtkWindow *);
+    void ReleaseGraphicsResources(vtkWindow *) override;
 
-    virtual vtkMTimeType GetMTime();
+    vtkMTimeType GetMTime() override;
 
 
     // this Class specific methods
@@ -116,7 +116,7 @@ protected:
 
     vtkTimeStamp BuildTime;
 
-    virtual int FillInputPortInformation(int, vtkInformation *);
+    int FillInputPortInformation(int, vtkInformation *) override;
 
 
 
