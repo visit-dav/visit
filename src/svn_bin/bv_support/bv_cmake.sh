@@ -96,10 +96,10 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.8.1.tar.gz"}
-    export CMAKE_VERSION=${CMAKE_VERSION:-"3.8.1"}
-    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.8.1"}
-    export CMAKE_MD5_CHECKSUM="e8ef820ddf7a650845252bca846696e7"
+    export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.9.3.tar.gz"}
+    export CMAKE_VERSION=${CMAKE_VERSION:-"3.9.3"}
+    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.9.3"}
+    export CMAKE_MD5_CHECKSUM="cb0f19828461904c72ed6a1e55459d03"
     export CMAKE_SHA256_CHECKSUM=""
 }
 

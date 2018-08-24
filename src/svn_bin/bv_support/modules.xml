@@ -53,6 +53,7 @@
             <lib name="uintah"/>
             <lib name="visus"/>
             <lib name="vtkm"/>
+            <lib name="vtkh"/>
             <lib name="xdmf"/>
             <lib name="zlib"/>
         </optional>
