@@ -40,14 +40,14 @@ through the **Explode attributes window** shown below.
 Explode origin
 """"""""""""""""""""""""""""
 
-As mentioned ealier, there are three different choices for an explode **Origin**. 
+As mentioned earlier, there are three different choices for an explode **Origin**. 
 To explode from a **Point**, click the tab labeled Point in the **Origin** section of
-the **Explode attributes window**. You will then have the oportunity to enter a 
+the **Explode attributes window**. You will then have the opportunity to enter a 
 3D coordinate defining your point. Similarly, to explode from a **Plane**, 
 you must click on the Plane tab. You will then have the option to define a plane
 by a point located on that plane and the plane's normal. Lastly, to explode from
 a **Cylinder**, first click on the Cylinder tab, and then enter two points that 
-lie on a line travelling through the center (lengthwise) of your cylinder. By
+lie on a line traveling through the center (lengthwise) of your cylinder. By
 default, the cylinder has a radius of zero and is treated as a *line* to explode from. 
 If you do define a positive radius, any data that is located within that radius 
 will *not* be exploded when executing this explosion. 

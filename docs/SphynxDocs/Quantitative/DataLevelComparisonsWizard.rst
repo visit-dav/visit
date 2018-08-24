@@ -65,7 +65,7 @@ target mesh and donor variables to be used in the expression.
 The target mesh
 selection will present the user with a pull-down list of currently opened
 databases with the currently *active* database in the list selected. If another
-database is desired, the user may either select it from among the pulldown list
+database is desired, the user may either select it from among the pull-down list
 of currently open databases or, if the database is not yet open, press the
 ellipsis (3 dots) button next to the database selection list to open a file
 browser and navigate to the desired database in the file system as shown in

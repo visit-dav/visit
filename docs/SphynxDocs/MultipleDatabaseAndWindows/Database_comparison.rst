@@ -28,7 +28,7 @@ The name "conn_cmfe" means
 implies, the expression takes fields from one mesh and maps the field onto
 another mesh by taking the cell or node-centered values on the donor mesh
 and mapping them onto the cells or nodes having the same indices in the
-new mesh. For valid results, conn_cmfe requires the donar and target meshes
+new mesh. For valid results, conn_cmfe requires the donor and target meshes
 be topologically congruent (e.g. size, connectivity, decomposition, etc.).
 If this is not the case, then one should use the position-based, pos_cmfe
 expression. The CMFE expressions can be used to map fields from a mesh in
@@ -147,6 +147,7 @@ plot of a time derivative.
 
     cmfe
     ireg
+    dbA
     dbB
     pdb
-    dbA
+    pos
