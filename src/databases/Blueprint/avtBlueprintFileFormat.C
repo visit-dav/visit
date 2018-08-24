@@ -693,14 +693,65 @@ avtBlueprintFileFormat::AddBlueprintMeshAndFieldMetadata(avtDatabaseMetaData *md
     }
 }
 
+// ****************************************************************************
+//  Method: is_hdf5_file()
+// 
+//  Purpose:  Check if passed path is an HDF5 file.
+//
+//  Note: This is a helper that will be moved into conduit in the future. 
+//
+//  Programmer: Cyrus Harrison,
+//  Creation:  Fri Aug 24 14:01:50 PDT 2018
+// ****************************************************************************
+bool
+is_hdf5_file(const std::string &file_path)
+{
+    // callback used for hdf5 error interface
+    H5E_auto2_t  herr_func;
+    // data container for hdf5 error interface callback
+    void         *herr_func_client_data;
+
+    // mute hdf5 error stack handlers
+    H5Eget_auto(H5E_DEFAULT,
+                &herr_func, 
+                &herr_func_client_data);
+    
+    H5Eset_auto(H5E_DEFAULT,
+                NULL,
+                NULL);
+    
+    bool res = false;
+    // open the hdf5 file for read + write
+    hid_t h5_file_id = H5Fopen(file_path.c_str(),
+                               H5F_ACC_RDWR,
+                               H5P_DEFAULT);
+    
+    if( h5_file_id >= 0)
+    {
+        res = true;
+        H5Fclose(h5_file_id);
+    }
+
+    // restore hdf5 error stack handlers
+    H5Eset_auto(H5E_DEFAULT,
+                herr_func,
+                herr_func_client_data);
+
+    return res;
+}
 
 // ****************************************************************************
-//  Method: avtBlueprintFileFormat::DetectRootProtocol
+//  Method: avtBlueprintFileFormat::ReadRootFile
 //
-//  Purpose: check the root protocol
+//  Purpose: Read contents of the root file
 //
 //  Programmer: cyrush
 //  Creation:   Fri Dec  8 14:55:23 PST 2017
+//
+//  Modifications:
+//    Cyrus Harrison, Fri Aug 24 14:01:50 PDT 2018
+//    Add extra check for valid HDF5 file and allow plugin to be used if
+//    any valid mesh index is found.
 //
 // ****************************************************************************
 void
@@ -744,23 +795,41 @@ avtBlueprintFileFormat::ReadRootFile()
             {
                root_protocol = "json";
             }
-
-            // fast fail check for if this is a valid blueprint root file
-            // (if this path doesn't exist, relay will throw an exception)
+            
+            // note: ".root" may be associated with with binary files 
+            // that are not hdf5
+            
+            // if we are using the hdf5 protocol, first check if this 
+            // is an hdf5 file, and if so -- fast fail if we don't see 
+            // the "file_pattern" entry
 
             if(root_protocol.find("hdf5") != std::string::npos)
             {
-               try
+               //if(relay::io::is_hdf5_file(root_fname))
+               if(is_hdf5_file(root_fname))
                {
-                  Node n_read_check;
-                  relay::io::load(root_fname + ":file_pattern",
-                                  root_protocol,
-                                  n_read_check);
+
+                   // fast fail check for if this is a valid blueprint root file
+                   // (if this path doesn't exist, relay will throw an exception)
+
+                   try
+                   {
+                      Node n_read_check;
+                      relay::io::load(root_fname + ":file_pattern",
+                                      root_protocol,
+                                      n_read_check);
+                   }
+                   catch(conduit::Error &e)
+                   {
+                       error_msg = e.message();
+                       error = 1;
+                   }
                }
-               catch(conduit::Error &e)
+               else
                {
-                   error_msg = e.message();
-                   error = 1;
+                  error_msg = root_fname + " is not a valid HDF5 file.\n" + 
+                              " Cannot open with 'hdf5' protocol.";
+                  error = 1;
                }
             }
         }
@@ -808,22 +877,27 @@ avtBlueprintFileFormat::ReadRootFile()
         
         NodeConstIterator itr = m_root_node["blueprint_index"].children();
         Node n_verify_info;
-        bool index_ok = true;
+        
+        bool any_index_ok = false;
         
         while(itr.has_next())
         {
             const Node &curr = itr.next();
-            if( !blueprint::mesh::index::verify(curr,
-                                                n_verify_info[itr.name()]))
+            std::string mesh_name = itr.name();
+            if( blueprint::mesh::index::verify(curr,
+                                               n_verify_info[mesh_name]))
             {
-                index_ok = false;
+                any_index_ok = true;
+                
+                debug5 << "Success: Mesh Blueprint Index verify for "
+                      << mesh_name << std::endl;
             }
         }
         
-        if(!index_ok)
+        if(!any_index_ok)
         {
             BP_PLUGIN_EXCEPTION1(InvalidFilesException, 
-                                 "Mesh index verify failed\n" 
+                                 "Failed to find a valid Mesh Blueprint Index\n" 
                                  << n_verify_info.to_json());
         }
         
