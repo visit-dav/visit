@@ -118,6 +118,31 @@ function bv_netcdf_dry_run
     fi
 }
 
+function apply_netcdf_411_OSX10_13_patch
+{
+    patch -p0 << \EOF
+diff -c netcdf-4.1.1/ncgen3/orig/genlib.h netcdf-4.1.1/ncgen3/genlib.h 
+*** netcdf-4.1.1/ncgen3/orig/genlib.h	Thu Aug 23 21:46:38 2018
+--- netcdf-4.1.1/ncgen3/genlib.h	Thu Aug 23 21:07:33 2018
+***************
+*** 5,10 ****
+--- 5,11 ----
+   *   See netcdf/COPYRIGHT file for copying and redistribution conditions.
+   *   $Header: /upc/share/CVS/netcdf-3/ncgen3/genlib.h,v 1.15 2009/12/29 18:42:35 dmh Exp $
+   *********************************************************************/
++ #include <config.h>
+  #include <stdlib.h>
+  #include <limits.h>
+  
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "netcdf 4.1.1 OSX 10.13 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_netcdf_411_darwin_patch
 {
     patch -p0 << \EOF
@@ -264,6 +289,11 @@ function apply_netcdf_patch
                   `sw_vers -productVersion` == 10.12.[0-9]* ]] ; then
                 info "Applying OS X 10.9 and up patch . . ."
                 apply_netcdf_411_darwin_patch
+            fi
+            
+            if [[ `sw_vers -productVersion` == 10.13.[0-9]* ]] ; then
+                info "Applying OS X 10.13 patch . . ."
+                apply_netcdf_411_OSX10_13_patch
             fi
         fi
     fi
