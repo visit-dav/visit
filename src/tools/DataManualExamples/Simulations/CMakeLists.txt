@@ -290,6 +290,8 @@ ADD_SIMV2_SIMULATION(scalar scalar.c)
 ADD_FORTRAN_SIMV2_SIMULATION(fscalar fscalar.f)
 ADD_PARALLEL_FORTRAN_SIMV2_SIMULATION(fscalarp fscalarp.f)
 
+ADD_SIMV2_SIMULATION(surface surface.c)
+
 ADD_SIMV2_SIMULATION(sim1 sim1.c)
 
 ADD_SIMV2_SIMULATION(sim2 sim2.c)
