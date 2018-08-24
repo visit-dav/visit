@@ -117,6 +117,68 @@ EOF
 
 }
 
+function apply_xdmf_osx_patch
+{
+    info "Patching Xdmf 2.1.1 for Xcode 9 . . ."
+    patch -p0 << \EOF
+diff -c Xdmf/libsrc/orig/XdmfDsmComm.cxx Xdmf/libsrc/XdmfDsmComm.cxx 
+*** Xdmf/libsrc/orig/XdmfDsmComm.cxx	Thu Aug 23 22:05:42 2018
+--- Xdmf/libsrc/XdmfDsmComm.cxx	Thu Aug 23 21:27:43 2018
+***************
+*** 50,56 ****
+          XdmfErrorMessage("Cannot Receive Message of Length = " << Msg->Length);
+          return(XDMF_FAIL);
+      }
+!     if(Msg->Data <= 0 ){
+          XdmfErrorMessage("Cannot Receive Message into Data Buffer = " << Msg->Length);
+          return(XDMF_FAIL);
+      }
+--- 50,56 ----
+          XdmfErrorMessage("Cannot Receive Message of Length = " << Msg->Length);
+          return(XDMF_FAIL);
+      }
+!     if(Msg->Data == (void *) NULL ){
+          XdmfErrorMessage("Cannot Receive Message into Data Buffer = " << Msg->Length);
+          return(XDMF_FAIL);
+      }
+***************
+*** 64,70 ****
+          XdmfErrorMessage("Cannot Send Message of Length = " << Msg->Length);
+          return(XDMF_FAIL);
+      }
+!     if(Msg->Data <= 0 ){
+          XdmfErrorMessage("Cannot Send Message from Data Buffer = " << Msg->Length);
+          return(XDMF_FAIL);
+      }
+--- 64,70 ----
+          XdmfErrorMessage("Cannot Send Message of Length = " << Msg->Length);
+          return(XDMF_FAIL);
+      }
+!     if(Msg->Data == (void *) NULL ){
+          XdmfErrorMessage("Cannot Send Message from Data Buffer = " << Msg->Length);
+          return(XDMF_FAIL);
+      }
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "Xdmf 2.1.1 Xcode 9 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
+function apply_xdmf1_patch
+{
+    if [[ ${XDMF_VERSION} == 2.1.1 ]] ; then
+        if [[ "$OPSYS" == "Darwin" ]] ; then
+                XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
+                if [[ "$XCODE_VERSION" == "Xcode 9"* ]] ; then
+                    apply_xdmf_osx_patch
+                fi
+        fi
+    fi
+}
+
 function build_xdmf
 {
     CMAKE_BIN="${CMAKE_COMMAND}"
@@ -136,6 +198,7 @@ function build_xdmf
     #
     info "Patching Xdmf . . ."
     apply_xdmf_patch
+    apply_xdmf1_patch
     if [[ $? != 0 ]] ; then
         if [[ $untarred_xdmf == 1 ]] ; then
             warn "Giving up on Xdmf build because the patch failed."

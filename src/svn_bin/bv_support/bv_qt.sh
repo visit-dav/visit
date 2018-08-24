@@ -266,8 +266,15 @@ function apply_qt_patch
 
             XCODE_VERSION="$(/usr/bin/xcodebuild -version)"
 #           info ${XCODE_VERSION}
-            if [[ "$XCODE_VERSION" == "Xcode 8"* ]]; then
+            if [[ "$XCODE_VERSION" == "Xcode 8"* ||
+                  "$XCODE_VERSION" == "Xcode 9"* ]]; then
                 apply_qt_561_osx_xcode_8_patch
+            fi
+
+            if [[ "${MACOSX_DEPLOYMENT_TARGET}" == "10.13" ]]; then 
+                    if [[ "$XCODE_VERSION" == "Xcode 9"* ]]; then
+                            apply_qt_561_osx10_13_patch
+                    fi
             fi
         fi
     elif [[ ${QT_VERSION} == 5.8.0 ]] ; then
@@ -321,10 +328,86 @@ EOF
     return 0;
 }
 
+function apply_qt_561_osx10_13_patch
+{
+    info "Patching qt 5.6.1 for OS X 10.13 and Xcode 9"
+    patch -p0 << \EOF
+diff -c qtbase/src/plugins/platforms/cocoa/orig/qcocoahelpers.h qtbase/src/plugins/platforms/cocoa/qcocoahelpers.h
+*** qtbase/src/plugins/platforms/cocoa/orig/qcocoahelpers.h	Thu Aug 23 20:59:43 2018
+--- qtbase/src/plugins/platforms/cocoa/qcocoahelpers.h	Thu Aug 23 19:50:04 2018
+***************
+*** 78,84 ****
+  // Creates a mutable shape, it's the caller's responsibility to release.
+  HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
+
+! OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
+
+  NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
+  NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
+--- 78,84 ----
+  // Creates a mutable shape, it's the caller's responsibility to release.
+  HIMutableShapeRef qt_mac_QRegionToHIMutableShape(const QRegion &region);
+
+! void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage);
+
+  NSDragOperation qt_mac_mapDropAction(Qt::DropAction action);
+  NSDragOperation qt_mac_mapDropActions(Qt::DropActions actions);
+
+diff -c qtbase/src/plugins/platforms/cocoa/orig/qcocoahelpers.mm qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm
+*** qtbase/src/plugins/platforms/cocoa/orig/qcocoahelpers.mm	Thu Aug 23 20:59:43 2018
+--- qtbase/src/plugins/platforms/cocoa/qcocoahelpers.mm	Thu Aug 23 19:52:25 2018
+***************
+*** 539,553 ****
+      return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
+  }
+
+! OSStatus qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
+  {
+-     // Verbatim copy if HIViewDrawCGImage (as shown on Carbon-Dev)
+-     OSStatus err = noErr;
+-
+-     require_action(inContext != NULL, InvalidContext, err = paramErr);
+-     require_action(inBounds != NULL, InvalidBounds, err = paramErr);
+-     require_action(inImage != NULL, InvalidImage, err = paramErr);
+-
+      CGContextSaveGState( inContext );
+      CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
+      CGContextScaleCTM(inContext, 1, -1);
+--- 539,546 ----
+      return NSMakeRect(rect.x(), flippedY, rect.width(), rect.height());
+  }
+
+! void qt_mac_drawCGImage(CGContextRef inContext, const CGRect *inBounds, CGImageRef inImage)
+  {
+      CGContextSaveGState( inContext );
+      CGContextTranslateCTM (inContext, 0, inBounds->origin.y + CGRectGetMaxY(*inBounds));
+      CGContextScaleCTM(inContext, 1, -1);
+***************
+*** 555,564 ****
+      CGContextDrawImage(inContext, *inBounds, inImage);
+
+      CGContextRestoreGState(inContext);
+- InvalidImage:
+- InvalidBounds:
+- InvalidContext:
+-         return err;
+  }
+
+  Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
+--- 548,553 ----
+EOF
+    if [[ $? != 0 ]] ; then
+        warn "qt 5.6.1 OSX 10.13 patch failed."
+        return 1
+    fi
+
+    return 0;
+}
+
 function apply_qt_561_osx_xcode_8_patch
 {
     # fix for OS X 10.11 or 10.12 with Xcode 8
-    info "Patching qt 5.6.1 for OS X and Xcode 8"
+    info "Patching qt 5.6.1 for OS X and Xcode 8 or Xcode 9"
     patch -p0 << \EOF
 diff -c  qtbase/configure.orig qtbase/configure
 *** qtbase/configure.orig       2017-10-16 15:48:39.000000000 -0600
