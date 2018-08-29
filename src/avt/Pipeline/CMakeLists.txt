@@ -64,6 +64,9 @@
 #   Removed vtkRendering* from link libs, moved avtLookupTable to avt/Plotter
 #   due to its dependence on vtkRendering.  Removed VTK_DEFINITIONS.
 #
+#   Eric Brugger, Tue Aug 28 14:35:30 PDT 2018
+#   I replaced support for vtkm with vtkh.
+#
 #****************************************************************************/
 
 SET(DATA_SOURCES
@@ -248,9 +251,10 @@ ${VISIT_SOURCE_DIR}/avt/Pipeline/Sinks
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Sources
 ${VISIT_SOURCE_DIR}/visit_vtk/full
 ${VISIT_SOURCE_DIR}/visit_vtk/lightweight
-${VISIT_SOURCE_DIR}/vtkm
 ${EAVL_INCLUDE_DIR}
-${VTKM_INCLUDE_DIR}
+${VTKh_INCLUDE_DIRS}
+${VTKM_DIR}/include/vtkm-1.2
+${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple
 ${VTK_INCLUDE_DIRS}
 ${ZLIB_INCLUDE_DIR}
 )
@@ -263,17 +267,13 @@ IF(NOT VISIT_DBIO_ONLY)
     SET(AVTMATH avtmath)
 ENDIF(NOT VISIT_DBIO_ONLY)
 
-IF(VTKM_FOUND)
-    SET(VISIT_VTKM_LIB visit_vtkm)
-ENDIF()
-
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtpipeline_ser ${ALL_SOURCES})
 TARGET_LINK_LIBRARIES(avtpipeline_ser
                       visitcommon ${AVTMATH} avtdbatts
                       visit_vtk lightweight_visit_vtk vtkCommonCore
                       vtkCommonDataModel vtkFiltersGeometry
-                      ${ZLIB_LIB} ${EAVL_LIB} ${VISIT_VTKM_LIB} ${VTKM_LIB})
+                      ${ZLIB_LIB} ${EAVL_LIB} vtkh)
 
 VISIT_INSTALL_TARGETS(avtpipeline_ser)
 
@@ -285,6 +285,6 @@ IF(VISIT_PARALLEL)
                           visitcommon ${AVTMATH} avtdbatts
                           visit_vtk lightweight_visit_vtk vtkCommonCore
                           vtkCommonDataModel vtkFiltersGeometry
-                          ${ZLIB_LIB} ${EAVL_LIB} ${VISIT_VTKM_LIB} ${VTKM_LIB})
+                          ${ZLIB_LIB} ${EAVL_LIB} vtkh)
     VISIT_INSTALL_TARGETS(avtpipeline_par)
 ENDIF(VISIT_PARALLEL)

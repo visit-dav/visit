@@ -20,6 +20,11 @@ function bv_vtkh_depends_on
     echo ${depends_on}
 }
 
+function bv_vtkh_initialize_vars
+{
+    VTKH_INSTALL_DIR="\${VISITHOME}/vtkh/$VTKH_VERSION/\${VISITARCH}"
+}
+
 function bv_vtkh_info
 {
     export VTKH_VERSION=${VTKH_VERSION:-"2ce3fa"}

@@ -285,7 +285,7 @@ QvisPreferencesWindow::CreateWindowContents()
     precisionType->addButton(inc,2);
     precLayout->addWidget(inc);
 
-#if defined(HAVE_LIBEAVL) || defined(HAVE_LIBVTKM)
+#if defined(HAVE_LIBEAVL) || defined(HAVE_LIBVTKH)
     //
     // Create radio button controls to change the backend.
     //
@@ -306,7 +306,7 @@ QvisPreferencesWindow::CreateWindowContents()
     backendType->addButton(b1,1);
     backendLayout->addWidget(b1);
 #endif
-#if defined(HAVE_LIBVTKM)
+#if defined(HAVE_LIBVTKH)
     QRadioButton *b2 = new QRadioButton(tr("VTKm"), backendGroup);
     backendType->addButton(b2,2);
     backendLayout->addWidget(b2);

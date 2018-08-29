@@ -1,4 +1,4 @@
-#/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.0/toss3/cmake/3.8.1/linux-x86_64_gcc-4.9/bin/cmake
+#/usr/workspace/wsa/visit/visit/thirdparty_shared/3.0.0/toss3/cmake/3.9.3/linux-x86_64_gcc-4.9/bin/cmake
 ##
 ## ./build_visit2_13_1 generated host.cmake
 ## created: Wed Mar 21 11:58:02 PDT 2018
@@ -72,6 +72,16 @@ VISIT_OPTION_DEFAULT(VISIT_QWT_DIR ${VISITHOME}/qwt/${QWT_VERSION}/${VISITARCH})
 ##
 SETUP_APP_VERSION(VTK 8.1.0)
 VISIT_OPTION_DEFAULT(VISIT_VTK_DIR ${VISITHOME}/vtk/${VTK_VERSION}/${VISITARCH})
+
+##
+## VTKM
+##
+VISIT_OPTION_DEFAULT(VISIT_VTKM_DIR ${VISITHOME}/vtkm/0d141c/${VISITARCH})
+
+##
+## VTKH
+##
+VISIT_OPTION_DEFAULT(VISIT_VTKH_DIR ${VISITHOME}/vtkh/2ce3fa/${VISITARCH})
 
 ##
 ## Adios
@@ -209,8 +219,8 @@ VISIT_OPTION_DEFAULT(VISIT_SILO_LIBDEP HDF5_LIBRARY_DIR hdf5 ${VISIT_HDF5_LIBDEP
 ##
 ## Uintah
 ##
-SETUP_APP_VERSION(UINTAH 2.5.0)
-VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
+#SETUP_APP_VERSION(UINTAH 2.5.0)
+#VISIT_OPTION_DEFAULT(VISIT_UINTAH_DIR ${VISITHOME}/uintah/${UINTAH_VERSION}/${VISITARCH})
 
 ##
 ## VISUS 

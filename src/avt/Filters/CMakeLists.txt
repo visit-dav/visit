@@ -70,6 +70,9 @@
 #   Cyrus Harrison, Mon Nov  7 10:03:35 PST 2016
 #   Add avtPolylineCleanupFilter
 #
+#   Eric Brugger, Tue Aug 28 14:35:30 PDT 2018
+#   I replaced support for vtkm with vtkh.
+#
 #****************************************************************************/
 
 SET(AVTFILTERS_SOURCES
@@ -190,18 +193,12 @@ ${VISIT_SOURCE_DIR}/avt/VisWindow/Proxies
 ${VISIT_SOURCE_DIR}/avt/VisWindow/Tools
 ${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/engine/main
-${VISIT_SOURCE_DIR}/vtkm
 ${EAVL_INCLUDE_DIR}
-${VTKM_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
 # Add link directories
 LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY} ${EAVL_LIBRARY_DIR} )
-
-IF(VTKM_FOUND)
-    SET(VISIT_VTKM_LIB visit_vtkm)
-ENDIF()
 
 #********************************* SERIAL ************************************
 ADD_LIBRARY(avtfilters_ser ${AVTFILTERS_SOURCES})

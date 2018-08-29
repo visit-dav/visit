@@ -429,6 +429,9 @@
 #    Qi WU, Sat Jun 10 22:21:27 MST 2018
 #    I added support to find OSPRay
 #
+#    Eric Brugger, Tue Aug 28 14:35:30 PDT 2018
+#    I replaced support for vtkm with vtkh.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -1066,7 +1069,7 @@ endif()
 IF(VISIT_HEADERS_SKIP_INSTALL)
     MESSAGE(STATUS "Skipping VisIt headers installation")
 ELSE(VISIT_HEADERS_SKIP_INSTALL)
-    INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin tools/writer viewer visit_vtk visitpy vtkm vtkqt winutil
+    INSTALL(DIRECTORY avt common engine gui launcher mdserver third_party_builtin tools/writer viewer visit_vtk visitpy vtkqt winutil
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE
                          GROUP_READ GROUP_WRITE
@@ -1431,8 +1434,8 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     # Configure Visus support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisus.cmake)
 
-    # Configure VTKm support.
-    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKm.cmake)
+    # Configure VTKh support.
+    INCLUDE(${VISIT_VTKH_DIR}/lib/VTKhConfig.cmake)
 
     # Configure GFortran support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
@@ -2244,7 +2247,6 @@ ENDFUNCTION(CREATE_PLUGIN_DEPENDENCIES)
 ADD_SUBDIRECTORY(third_party_builtin)
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(visit_vtk)
-ADD_SUBDIRECTORY(vtkm)
 ADD_SUBDIRECTORY(avt)
 
 IF(NOT VISIT_DBIO_ONLY)

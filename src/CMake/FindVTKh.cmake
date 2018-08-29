@@ -38,55 +38,24 @@
 #
 #****************************************************************************/
 
-# Use the VTKM_DIR hint from the config-site .cmake file 
+IF ("${VISIT_VTKH_DIR}")
+   INCLUDE(${VISIT_VTKH_DIR}/lib/VTKhConfig.cmake)
 
-INCLUDE(${VISIT_SOURCE_DIR}/CMake/SetUpThirdParty.cmake)
+   SET("VTKH_FOUND" true CACHE BOOL "VTKH library found" FORCE)
+   SET("HAVE_LIBVTKH" true CACHE BOOL "Have VTKH library" FORCE)
 
-SET_UP_THIRD_PARTY(VTKM lib include NO_LIBS)
+   MESSAGE(STATUS "  VTKh_INCLUDE_DIRS = ${VTKh_INCLUDE_DIRS}")
+   MESSAGE(STATUS "  VTKh_VERSION_MAJOR = ${VTKh_VERSION_MAJOR}")
+   MESSAGE(STATUS "  VTKh_VERSION_MINOR = ${VTKh_VERSION_MINOR}")
+   MESSAGE(STATUS "  VTKh_VERSION_PATCH = ${VTKh_VERSION_PATCH}")
+   MESSAGE(STATUS "  VTKh_VERSION_FULL = ${VTKh_VERSION_FULL}")
+   MESSAGE(STATUS "  VTKh_VERSION = ${VTKh_VERSION}")
 
-IF ("${VTKM_FOUND}")
-   set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VISIT_VTKM_DIR}/lib/cmake/vtkm-1.1)
-   #set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${VTKM_INCLUDE_DIR})
-   set(BOOST_INCLUDEDIR ${VISIT_BOOST_DIR}/include)
-   find_package(VTKm REQUIRED COMPONENTS Serial OPTIONAL_COMPONENTS CUDA TBB)
-
-   SET(VTKM_INCLUDE_DIR ${VTKm_INCLUDE_DIRS})
-   SET(VTKM_LIBRARY_DIR ${VISIT_VTKM_DIR}/lib)
-   SET(VTKM_LIB ${VTKm_LIBRARIES})
-
-   # Add cuda.
-   IF (VTKm_CUDA_FOUND)
-     SET(VTKM_INCLUDE_DIR "${VTKM_INCLUDE_DIR};${CUDA_INCLUDE_DIRS}"     CACHE STRING "VTKm include" FORCE)
-     SET(VTKM_LIB "${VTKm_LIBRARIES};${CUDA_CUDART_LIBRARY}"             CACHE STRING "VTKm library" FORCE)
-   ENDIF()
-
-   # Make sure we install the libraries. This is a bit of a hack.
-   FOREACH(X ${VTKM_LIB})
-       IF(NOT ${X} STREQUAL "vtkm")
-           IF(EXISTS ${X})
-               MESSAGE(STATUS "Installing ${X}")
-               THIRD_PARTY_INSTALL_LIBRARY(${X})
-           ELSE()
-               FOREACH(EXT .a;.so;.dylib;.dll;-1.1.a;-1.1.so;-1.1.dylib;-1.1.dll)
-                   SET(curlib ${VISIT_VTKM_DIR}/lib/lib${X}${EXT})
-                   IF(EXISTS ${curlib})
-                       MESSAGE(STATUS "Installing ${curlib}")
-                       THIRD_PARTY_INSTALL_LIBRARY(${curlib})
-                  ENDIF()
-               ENDFOREACH(EXT)
-           ENDIF()
-       ENDIF()
-   ENDFOREACH(X)
-
-   MESSAGE(STATUS "  VTKm_LIBRARIES = ${VTKm_LIBRARIES}")
-   MESSAGE(STATUS "  VTKm_INCLUDE_DIRS = ${VTKm_INCLUDE_DIRS}")
-   MESSAGE(STATUS "  VTKm_LIBRARIES = ${VTKm_LIBRARIES}")
+   MESSAGE(STATUS "  VTKM_DIR = {VTKM_DIR}")
    MESSAGE(STATUS "  VTKM_FOUND = ${VTKM_FOUND}")
-   MESSAGE(STATUS "  VTKM_INCLUDE_DIR = ${VTKM_INCLUDE_DIR}")
-   MESSAGE(STATUS "  VTKM_LIBRARY_DIR = ${VTKM_LIBRARY_DIR}")
-   MESSAGE(STATUS "  VTKM_LIB = ${VTKM_LIB}")
-   MESSAGE(STATUS "  VTKm_CUDA_FOUND = ${VTKm_CUDA_FOUND}")
-   MESSAGE(STATUS "  CUDA_INCLUDE_DIRS = ${CUDA_INCLUDE_DIRS}")
-   MESSAGE(STATUS "  CUDA_CUDART_LIBRARY = ${CUDA_CUDART_LIBRARY}")
+   MESSAGE(STATUS "  VTKm_VERSION_MAJOR = ${VTKm_VERSION_MAJOR}")
+   MESSAGE(STATUS "  VTKm_VERSION_MINOR = ${VTKm_VERSION_MINOR}")
+   MESSAGE(STATUS "  VTKm_VERSION_PATCH = ${VTKm_VERSION_PATCH}")
+   MESSAGE(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
+   MESSAGE(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
 ENDIF()
-
