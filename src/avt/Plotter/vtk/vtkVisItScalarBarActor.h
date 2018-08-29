@@ -6,7 +6,7 @@
   Date:      $Date: 2000/11/03 14:10:27 $
   Version:   $Revision: 1.28 $
 
-Copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen 
+Copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,15 +38,15 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
-// .NAME vtkVisItScalarBarActor - Create a scalar bar with labels, title and 
+// .NAME vtkVisItScalarBarActor - Create a scalar bar with labels, title and
 // range
 // .SECTION Description
 // vtkVisItScalarBarActor creates a scalar bar with annotation text. A scalar
 // bar is a legend that indicates to the viewer the correspondence between
-// color value and data value. The legend consists of a rectangular bar 
-// made of rectangular pieces each colored a constant value. Since 
-// vtkVisItScalarBarActor is a subclass of vtkActor2D, it is drawn in the 
-// image plane (i.e., in the renderer's viewport) on top of the 3D graphics 
+// color value and data value. The legend consists of a rectangular bar
+// made of rectangular pieces each colored a constant value. Since
+// vtkVisItScalarBarActor is a subclass of vtkActor2D, it is drawn in the
+// image plane (i.e., in the renderer's viewport) on top of the 3D graphics
 // window.
 //
 // To use vtkVisItScalarBarActor you must associate a vtkLookupTable (or
@@ -54,7 +54,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // range of scalar values used to map scalar data.  Typically, the
 // number of colors shown in the scalar bar is not equal to the number
 // of colors in the lookup table, in which case sampling of
-// the lookup table is performed. 
+// the lookup table is performed.
 //
 // Other optional capabilities include specifying the fraction of the
 // viewport size (both x and y directions) which will control the size
@@ -62,11 +62,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // attributes of the annotation text. The actual position of the
 // scalar bar on the screen is controlled by using the
 // vtkActor2D::SetPosition() method (by default the scalar bar is
-// position on the right side of the viewport).  Other features include 
-// the ability control the format (print style) with which to print the 
-// labels on the scalar bar. Also, the vtkVisItScalarBarActor's property 
+// position on the right side of the viewport).  Other features include
+// the ability control the format (print style) with which to print the
+// labels on the scalar bar. Also, the vtkVisItScalarBarActor's property
 // is applied to the scalar bar and annotation (including color, layer, and
-// compositing operator).  
+// compositing operator).
 
 // .SECTION See Also
 // vtkActor2D vtkTextMapper vtkPolyDataMapper2D
@@ -92,16 +92,16 @@ typedef std::vector<double> doubleVector;
 // ****************************************************************************
 //  Modifications:
 //    Kathleen Bonnell, Wed Sep 11 09:01:37 PDT 2002
-//    Change LookupTable from type vtkScalarsToColors to type vtkLookupTable, 
+//    Change LookupTable from type vtkScalarsToColors to type vtkLookupTable,
 //    in order to have access to methods defined only in vtkLookupTable.
 //    Add labelColorMap, which translates a label to its corresponding color
-//    index (into LookupTable). 
+//    index (into LookupTable).
 //
-//    Kathleen Bonnell, Wed Mar 19 14:44:13 PST 2003  
-//    Added method AdjustRangeFormat. 
+//    Kathleen Bonnell, Wed Mar 19 14:44:13 PST 2003
+//    Added method AdjustRangeFormat.
 //
-//    Kathleen Bonnell, Mon May 19 13:42:19 PDT 2003   
-//    Added member ReverseOrder and Set/Get methods. 
+//    Kathleen Bonnell, Mon May 19 13:42:19 PDT 2003
+//    Added member ReverseOrder and Set/Get methods.
 //
 //    Eric Brugger, Mon Jul 14 11:55:19 PDT 2003
 //    I changed the way the scalar bar is built.  I removed TitleFraction,
@@ -136,41 +136,41 @@ class PLOTTER_API vtkVisItScalarBarActor : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkVisItScalarBarActor,vtkActor2D);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
-  // Instantiate object. 
+  // Instantiate object.
   static vtkVisItScalarBarActor *New();
-  
+
   // Description:
   // Access the Position instance variable. Reimplemented from base
   // class to ensure normalized viewport coordinates
-  // This variable controls the lower left corner of the scalarbar. 
-  void SetPosition(double,double);
-  void SetPosition(double x[2]);
+  // This variable controls the lower left corner of the scalarbar.
+  void SetPosition(double,double) override;
+  void SetPosition(double x[2]) override;
 
   // Description:
   // Access the Position2 instance variable. This variable controls
   // the upper right corner of the scalarbar. It is by default
   // relative to Position1 and in Normalized Viewport coordinates.
-  void SetPosition2(double,double);
-  void SetPosition2(double x[2]);
-  vtkCoordinate *GetPosition2Coordinate();
-  double *GetPosition2();
-  
+  void SetPosition2(double,double) override;
+  void SetPosition2(double x[2]) override;
+  vtkCoordinate *GetPosition2Coordinate() override;
+  double *GetPosition2() override;
+
   // Description:
   // Draw the scalar bar and annotation text to the screen.
-  int RenderOpaqueGeometry(vtkViewport* viewport);
-  int RenderTranslucentPolygonalGeometry(vtkViewport*) { return 0; }
-  int HasTranslucentPolygonalGeometry() { return 0; }
-  virtual int RenderOverlay(vtkViewport* viewport);
+  int RenderOpaqueGeometry(vtkViewport* viewport) override;
+  int RenderTranslucentPolygonalGeometry(vtkViewport*) override { return 0; }
+  int HasTranslucentPolygonalGeometry() override { return 0; }
+  int RenderOverlay(vtkViewport* viewport) override;
 
 
   // Description:
   // Release any graphics resources that are being consumed by this actor.
   // The parameter window could be used to determine which graphic
   // resources to release.
-  virtual void ReleaseGraphicsResources(vtkWindow *);
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
   // Description:
   // Set/Get the scalar bar width.
@@ -190,15 +190,15 @@ public:
   // the colors are samples from the lookup table.
   vtkSetClampMacro(MaximumNumberOfColors, int, 2, VTK_INT_MAX);
   vtkGetMacro(MaximumNumberOfColors, int);
-  
+
   // Description:
   // Set/Get the number of annotation labels to show.
   vtkSetClampMacro(NumberOfLabels, int, 0, VTK_MAX_NUMLABELS);
   vtkGetMacro(NumberOfLabels, int);
   void SetNumberOfLabelsToDefault(void);
-  
+
   // Description:
-  // Set/Get user defined labels; 
+  // Set/Get user defined labels;
   void SetDefinedLabels(const stringVector &);
   void SetDefinedLabels(const doubleVector &);
   stringVector &GetDefinedLabels(void) { return definedLabels; } ;
@@ -216,15 +216,15 @@ public:
   vtkBooleanMacro(Italic, bool);
 
   // Description:
-  // Enable/Disable creating shadows on the annotation text. Shadows make 
+  // Enable/Disable creating shadows on the annotation text. Shadows make
   // the text easier to read.
   vtkSetMacro(Shadow, bool);
   vtkGetMacro(Shadow, bool);
   vtkBooleanMacro(Shadow, bool);
 
   // Description:
-  // Set/Get the font family for the annotation text. Three font types 
-  // are available: Arial (VTK_ARIAL), Courier (VTK_COURIER), and 
+  // Set/Get the font family for the annotation text. Three font types
+  // are available: Arial (VTK_ARIAL), Courier (VTK_COURIER), and
   // Times (VTK_TIMES).
   vtkSetMacro(FontFamily, int);
   vtkGetMacro(FontFamily, int);
@@ -245,7 +245,7 @@ public:
   vtkGetStringMacro(LabelFormat);
 
   // Description:
-  // Set/Get the format with which to print the range. 
+  // Set/Get the format with which to print the range.
   vtkSetStringMacro(RangeFormat);
   vtkGetStringMacro(RangeFormat);
 
@@ -255,31 +255,31 @@ public:
   vtkGetStringMacro(Title);
 
   // Description:
-  // Set/Get the range for annotation text. 
+  // Set/Get the range for annotation text.
   void SetRange(double *);
   void SetRange(double, double);
   double *GetRange(void) { return this->range; } ;
 
   // Description:
-  // Set/Get the range for limits text. 
+  // Set/Get the range for limits text.
   void SetVarRange(double *);
   void SetVarRange(double, double);
   double *GetVarRange(void) { return this->varRange; } ;
 
   // Description:
-  // Set/Get the visibility of the range annotation text. 
+  // Set/Get the visibility of the range annotation text.
   vtkSetMacro(RangeVisibility, bool);
   vtkGetMacro(RangeVisibility, bool);
   vtkBooleanMacro(RangeVisibility, bool);
 
   // Description:
-  // Set/Get the visibility of the color bar. 
+  // Set/Get the visibility of the color bar.
   vtkSetMacro(ColorBarVisibility, bool);
   vtkGetMacro(ColorBarVisibility, bool);
   vtkBooleanMacro(ColorBarVisibility, bool);
 
   // Description:
-  // Set/Get the visibility of the title annotation text. 
+  // Set/Get the visibility of the title annotation text.
   vtkSetMacro(TitleVisibility, bool);
   vtkGetMacro(TitleVisibility, bool);
   vtkBooleanMacro(TitleVisibility, bool);
@@ -296,7 +296,7 @@ public:
 
   // Description:
   // Shallow copy of a scalar bar actor. Overloads the virtual vtkProp method.
-  void ShallowCopy(vtkProp *prop);
+  void ShallowCopy(vtkProp *prop) override;
 
   // Description:
   // Set/Get the SkewFactor.
@@ -316,7 +316,7 @@ public:
   void SetLabelColorMap(const LevelColorMap &);
 
   // Description:
-  // Set/Get the order in which the color bar should be drawn. 
+  // Set/Get the order in which the color bar should be drawn.
   // Default is bottom-to-top, (min on bottom, max on top).
   // Reverse is top-to-bottom.
   // Has effect only if user-defined labels are set.
@@ -324,7 +324,7 @@ public:
   vtkGetMacro(ReverseOrder, bool);
   vtkBooleanMacro(ReverseOrder, bool);
 
-  typedef enum { VERTICAL_TEXT_ON_RIGHT, 
+  typedef enum { VERTICAL_TEXT_ON_RIGHT,
                  VERTICAL_TEXT_ON_LEFT,
                  HORIZONTAL_TEXT_ON_TOP,
                  HORIZONTAL_TEXT_ON_BOTTOM
@@ -346,14 +346,14 @@ public:
   vtkBooleanMacro(UseSuppliedLabels, bool);
 
   // Description:
-  // Set/Get user defined labels; 
+  // Set/Get user defined labels;
   void SetSuppliedLabels(const stringVector &);
   stringVector &GetSuppliedLabels(void) { return suppliedLabels; }
   void SetSuppliedValues(const doubleVector &);
   doubleVector &GetSuppliedValues(void) { return suppliedValues; }
 
-  void GetCalculatedValues(doubleVector &); 
-  void GetCalculatedLabels(stringVector &); 
+  void GetCalculatedValues(doubleVector &);
+  void GetCalculatedLabels(stringVector &);
 
   typedef enum { DRAW_NO_LABELS,
                  DRAW_VALUES_ONLY,
@@ -365,7 +365,7 @@ public:
   vtkGetMacro(DrawMode, TickLabelDrawMode);
 
 
-  typedef enum { VTK_DISCRETE, 
+  typedef enum { VTK_DISCRETE,
                  VTK_CONTINUOUS
                } LegendType;
 
@@ -406,14 +406,14 @@ protected:
   bool ColorBarVisibility;
   bool ReverseOrder;
   bool BoundingBoxVisibility;
-  BarOrientation Orientation;    
+  BarOrientation Orientation;
 
   double BarWidth;
 
   vtkPolyData         *ColorBar;
   vtkPolyDataMapper2D *ColorBarMapper;
   vtkActor2D          *ColorBarActor;
-  
+
   vtkTextActor  *TitleActor;
 
   vtkTextActor  *RangeActor;
@@ -444,7 +444,7 @@ protected:
   double *range;
   double *varRange;
 
-  LevelColorMap labelColorMap; 
+  LevelColorMap labelColorMap;
 
   bool MinMaxInclusive;
   bool UseSuppliedLabels;

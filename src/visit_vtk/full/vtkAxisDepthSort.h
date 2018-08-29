@@ -80,9 +80,9 @@ class VISIT_VTK_API vtkAxisDepthSort : public vtkPolyDataAlgorithm
                                   vtkAxisDepthSort();
     virtual                      ~vtkAxisDepthSort() {;};
 
-    virtual int                   RequestData(vtkInformation *,
+    int                           RequestData(vtkInformation *,
                                       vtkInformationVector **,
-                                      vtkInformationVector *);
+                                      vtkInformationVector *) override;
 
   private:
                                   vtkAxisDepthSort(const vtkAxisDepthSort &);

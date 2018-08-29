@@ -6,7 +6,7 @@
   Date:      $Date: 2000/02/04 17:09:14 $
   Version:   $Revision: 1.11 $
 
-Copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen 
+Copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =========================================================================*/
-// .NAME vtkDashedXorGridMapper2D 
+// .NAME vtkDashedXorGridMapper2D
 // .SECTION Description
 // Based upon vtkRubberBandMapper2D. Draws horizontal and vertical dashed
 // lines. For a given line, pixels are placed on a 1D grid to determine
@@ -71,22 +71,22 @@ public:
 
   // Description:
   // Actually draw the poly data.
-  void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor);
+  void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor) override;
 
   // Description:
   // Release graphics resources.
-  virtual void ReleaseGraphicsResources(vtkWindow *);
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
   // Description:
   // Sets length of dashes and spaces. Call before first use.
   void SetDots(int drawn, int spaced);
- 
+
   // Description:
   // In the case of drawing a point, it will use the horizontal grid
   // if the hb is set, otherwise it will use the vertical grid.
   void SetHorizontalBias(bool hb)
-  { horizontalBias = hb;    }
-  
+  { horizontalBias = hb; }
+
 protected:
   void RenderOverlay_X11(vtkViewport* viewport, vtkActor2D* actor);
   void RenderOverlay_Qt(vtkViewport* viewport, vtkActor2D* actor);
@@ -109,18 +109,18 @@ protected:
   {
     return (x % (pixelDrawn + pixelSpaced) == 0);
   }
-  
+
   // Moves forward to the next dash from a given point. Point does not
   // have to be on a dash.
   int NextDash(int x)
   {
     return (x + pixelDrawn + pixelSpaced - (x % (pixelDrawn + pixelSpaced)));
   }
-  
+
 private:
   vtkDashedXorGridMapper2D(const vtkDashedXorGridMapper2D&);
   void operator=(const vtkDashedXorGridMapper2D&);
-  
+
 };
 
 

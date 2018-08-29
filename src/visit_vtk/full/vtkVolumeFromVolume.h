@@ -73,11 +73,11 @@ class vtkUnstructuredGrid;
 //
 //  Modifications:
 //    Jeremy Meredith, Mon Feb 16 18:01:29 PST 2004
-//    Added 2D shape support.  This might seem weird, but there may be 
+//    Added 2D shape support.  This might seem weird, but there may be
 //    some 2D shapes in a volumetric setting.
 //
 //    Hank Childs, Thu Oct 21 07:23:55 PDT 2004
-//    Added new data members shapes and nshapes.  Also added 
+//    Added new data members shapes and nshapes.  Also added
 //    GetNumberOfPointsPerShape method to ShapeList.
 //
 //    Jeremy Meredith, Tue Aug 29 14:33:30 EDT 2006
@@ -113,15 +113,15 @@ class VISIT_VTK_API CentroidPointList
   public:
                    CentroidPointList();
     virtual       ~CentroidPointList();
- 
+
     void           Clear();
 
     vtkIdType            AddPoint(vtkIdType, const vtkIdType*);
- 
+
     vtkIdType            GetTotalNumberOfPoints(void) const;
     vtkIdType            GetNumberOfLists(void) const;
     vtkIdType            GetList(vtkIdType, const CentroidPointEntry *&) const;
- 
+
   protected:
     CentroidPointEntry   **list;
     vtkIdType              currentList;
@@ -155,7 +155,7 @@ class VISIT_VTK_API  HexList : public ShapeList
   public:
                    HexList();
     virtual       ~HexList();
-    virtual int    GetVTKType(void) const { return VTK_HEXAHEDRON; };
+    virtual int    GetVTKType(void) const override { return VTK_HEXAHEDRON; };
     void           AddHex(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
@@ -164,7 +164,7 @@ class VISIT_VTK_API WedgeList : public ShapeList
   public:
                    WedgeList();
     virtual       ~WedgeList();
-    virtual int    GetVTKType(void) const { return VTK_WEDGE; };
+    virtual int    GetVTKType(void) const override { return VTK_WEDGE; };
     void           AddWedge(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
@@ -173,7 +173,7 @@ class VISIT_VTK_API PyramidList : public ShapeList
   public:
                    PyramidList();
     virtual       ~PyramidList();
-    virtual int    GetVTKType(void) const { return VTK_PYRAMID; };
+    virtual int    GetVTKType(void) const override { return VTK_PYRAMID; };
     void           AddPyramid(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
@@ -182,7 +182,7 @@ class VISIT_VTK_API TetList : public ShapeList
   public:
                    TetList();
     virtual       ~TetList();
-    virtual int    GetVTKType(void) const { return VTK_TETRA; };
+    virtual int    GetVTKType(void) const override { return VTK_TETRA; };
     void           AddTet(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
@@ -191,7 +191,7 @@ class VISIT_VTK_API QuadList : public ShapeList
   public:
                    QuadList();
     virtual       ~QuadList();
-    virtual int    GetVTKType(void) const { return VTK_QUAD; };
+    virtual int    GetVTKType(void) const override { return VTK_QUAD; };
     void           AddQuad(vtkIdType, vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
@@ -200,7 +200,7 @@ class VISIT_VTK_API TriList : public ShapeList
   public:
                    TriList();
     virtual       ~TriList();
-    virtual int    GetVTKType(void) const { return VTK_TRIANGLE; };
+    virtual int    GetVTKType(void) const override { return VTK_TRIANGLE; };
     void           AddTri(vtkIdType, vtkIdType, vtkIdType, vtkIdType);
 };
 
@@ -209,7 +209,7 @@ class VISIT_VTK_API LineList : public ShapeList
   public:
                    LineList();
     virtual       ~LineList();
-    virtual int    GetVTKType(void) const { return VTK_LINE; };
+    virtual int    GetVTKType(void) const override { return VTK_LINE; };
     void           AddLine(vtkIdType, vtkIdType, vtkIdType);
 };
 
@@ -218,7 +218,7 @@ class VISIT_VTK_API VertexList : public ShapeList
   public:
                    VertexList();
     virtual       ~VertexList();
-    virtual int    GetVTKType(void) const { return VTK_VERTEX; };
+    virtual int    GetVTKType(void) const override { return VTK_VERTEX; };
     void           AddVertex(vtkIdType, vtkIdType);
 };
 
@@ -238,7 +238,7 @@ class VISIT_VTK_API VertexList : public ShapeList
     void           AddHex(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3,
                           vtkIdType v4, vtkIdType v5, vtkIdType v6, vtkIdType v7)
                         { hexes.AddHex(z, v0, v1, v2, v3, v4, v5, v6, v7); }
-        
+
     void           AddWedge(vtkIdType z,vtkIdType v0,vtkIdType v1,vtkIdType v2,vtkIdType v3,vtkIdType v4,vtkIdType v5)
                         { wedges.AddWedge(z, v0, v1, v2, v3, v4, v5); }
     void           AddPyramid(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3, vtkIdType v4)

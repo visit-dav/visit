@@ -46,13 +46,13 @@
 // Purpose:
 //   Subclass of vtkTextActor that scales only as a percentage of viewport height .
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Mon Sep 19 15:20:50 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkVisItTextActor : public vtkTextActor
@@ -67,7 +67,7 @@ public:
   void SetTextHeight(float val);
   vtkGetMacro(TextHeight, float);
 
-  virtual void ComputeScaledFont(vtkViewport *viewport);
+  void ComputeScaledFont(vtkViewport *viewport) override;
 protected:
   float TextHeight;
 

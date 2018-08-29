@@ -48,13 +48,13 @@ class vtkRenderer;
 // Purpose:
 //   OpenGL mapper class for internal use with vtkTexturedBackgroundActor.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 16 10:19:58 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 // Not exposed in DLL on purpose
@@ -64,9 +64,9 @@ public:
   static vtkOpenGLTexturedBackgroundMapper *New();
 
   vtkTypeMacro(vtkOpenGLTexturedBackgroundMapper, vtkMapper2D);
-  virtual void PrintSelf(ostream &os, vtkIndent indent);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
-  virtual void RenderOpaqueGeometry(vtkViewport *, vtkActor2D *);
+  void RenderOpaqueGeometry(vtkViewport *, vtkActor2D *) override;
 
   void SetTextureAndRenderers(vtkTexture *t, vtkRenderer *bg, vtkRenderer *canvas);
   void SetSphereMode(bool);

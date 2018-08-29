@@ -59,9 +59,9 @@ class vtkVisItObjectFactory : public vtkObjectFactory
 {
   public:
     vtkVisItObjectFactory();
-    static vtkVisItObjectFactory* New() { return new vtkVisItObjectFactory;};
-    virtual const char* GetVTKSourceVersion();
-    const char* GetDescription() { return "vtkVisItObjectFactory"; };
+    static vtkVisItObjectFactory* New() { return new vtkVisItObjectFactory; }
+    const char* GetVTKSourceVersion() override;
+    const char* GetDescription() override { return "vtkVisItObjectFactory"; }
 
   protected:
     vtkVisItObjectFactory(const vtkVisItObjectFactory&);
@@ -89,7 +89,7 @@ vtkVisItObjectFactory::GetVTKSourceVersion()
 //  Modifications:
 //    Dave Bremer, Fri May 25 11:48:48 PDT 2007
 //    Added override for vtkVisItStructuredGrid and vtkVisItRectilinearGrid
-//    (our versions are much more memory friendly).  Note: since 
+//    (our versions are much more memory friendly).  Note: since
 //    vtkVisItCellDataToPointData is in this module, this isn't really a
 //    "graphics" factory any more.  Maybe it should be renamed.  I decided
 //    to pile on instead.
@@ -132,10 +132,10 @@ vtkVisItObjectFactory::vtkVisItObjectFactory()
 //
 //  Modifications:
 //
-//    Kathleen Bonnell, Thu Apr 10 18:27:54 PDT 2003   
+//    Kathleen Bonnell, Thu Apr 10 18:27:54 PDT 2003
 //    Register the factory that will allow VisIt to override vtkObjects.
 //
-//    Kathleen Bonnell, Wed Nov 12 16:51:56 PST 2003 
+//    Kathleen Bonnell, Wed Nov 12 16:51:56 PST 2003
 //    Comment out the VisItFactory until it is actually needed again.
 //
 //    Hank Childs, Thu Jan 22 17:31:23 PST 2004

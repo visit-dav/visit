@@ -53,40 +53,40 @@ class PLOTTER_API vtkLineLegend : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkLineLegend,vtkActor2D);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
-  // Instantiate object. 
+  // Instantiate object.
   static vtkLineLegend *New();
-  
+
   // Description:
   // Access the Position instance variable. Reimplemented from base
   // class to ensure normalized viewport coordinates
-  // This variable controls the lower left corner of the legend. 
-  void SetPosition(double,double);
-  void SetPosition(double x[2]);
+  // This variable controls the lower left corner of the legend.
+  void SetPosition(double,double) override;
+  void SetPosition(double x[2]) override;
 
   // Description:
   // Access the Position2 instance variable. This variable controls
   // the upper right corner of the legend. It is by default
   // relative to Position1 and in Normalized Viewport coordinates.
-  void SetPosition2(double,double);
-  void SetPosition2(double x[2]);
-  vtkCoordinate *GetPosition2Coordinate();
-  double *GetPosition2();
- 
+  void SetPosition2(double,double) override;
+  void SetPosition2(double x[2]) override;
+  vtkCoordinate *GetPosition2Coordinate() override;
+  double *GetPosition2() override;
+
   // Description:
   // Draw the legend and annotation text to the screen.
-  int RenderOpaqueGeometry(vtkViewport* viewport);
-  int RenderTranslucentPolygonalGeometry(vtkViewport*) { return 0; }
-  int HasTranslucentPolygonalGeometry() { return 0; }
-  virtual int RenderOverlay(vtkViewport* viewport);
+  int RenderOpaqueGeometry(vtkViewport* viewport) override;
+  int RenderTranslucentPolygonalGeometry(vtkViewport*) override { return 0; }
+  int HasTranslucentPolygonalGeometry() override { return 0; }
+  int RenderOverlay(vtkViewport* viewport) override;
 
   // Description:
   // Release any graphics resources that are being consumed by this actor.
   // The parameter window could be used to determine which graphic
   // resources to release.
-  virtual void ReleaseGraphicsResources(vtkWindow *);
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
   // Description:
   // Enable/Disable bolding annotation text.
@@ -101,15 +101,15 @@ public:
   vtkBooleanMacro(Italic, bool);
 
   // Description:
-  // Enable/Disable creating shadows on the annotation text. Shadows make 
+  // Enable/Disable creating shadows on the annotation text. Shadows make
   // the text easier to read.
   vtkSetMacro(Shadow, bool);
   vtkGetMacro(Shadow, bool);
   vtkBooleanMacro(Shadow, bool);
 
   // Description:
-  // Set/Get the font family for the annotation text. Three font types 
-  // are available: Arial (VTK_ARIAL), Courier (VTK_COURIER), and 
+  // Set/Get the font family for the annotation text. Three font types
+  // are available: Arial (VTK_ARIAL), Courier (VTK_COURIER), and
   // Times (VTK_TIMES).
   vtkSetMacro(FontFamily, int);
   vtkGetMacro(FontFamily, int);
@@ -128,15 +128,15 @@ public:
   vtkGetStringMacro(Title);
 
   // Description:
-  // Set/Get the visibility of the title annotation text. 
+  // Set/Get the visibility of the title annotation text.
   vtkSetMacro(TitleVisibility, bool);
   vtkGetMacro(TitleVisibility, bool);
   vtkBooleanMacro(TitleVisibility, bool);
 
-  vtkTextProperty * GetTitleProperty() 
+  vtkTextProperty * GetTitleProperty()
      { return this->TitleMapper->GetTextProperty();};
 
-  vtkProperty2D * GetLineProperty() 
+  vtkProperty2D * GetLineProperty()
      { return this->LineActor->GetProperty();};
 
   // Description:
@@ -155,7 +155,7 @@ public:
   vtkSetVector4Macro(BoundingBoxColor, double);
 
   // Shallow copy of a scalar bar actor. Overloads the virtual vtkProp method.
-  void ShallowCopy(vtkProp *prop);
+  void ShallowCopy(vtkProp *prop) override;
 
 protected:
   vtkLineLegend();
@@ -174,7 +174,7 @@ protected:
   vtkCoordinate *Position2Coordinate;
 
   double BarWidth;
-  
+
   char          *Title;
   vtkTextMapper *TitleMapper;
   vtkActor2D    *TitleActor;

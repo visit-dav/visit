@@ -107,14 +107,14 @@ class PLOTTER_API vtkParallelImageSpaceRedistributor :
     virtual         ~vtkParallelImageSpaceRedistributor();
 
 
-    virtual int      RequestData(vtkInformation *, vtkInformationVector **,
-                         vtkInformationVector *);
+    int              RequestData(vtkInformation *, vtkInformationVector **,
+                                 vtkInformationVector *) override;
 
   private:
                      vtkParallelImageSpaceRedistributor(
                          const vtkParallelImageSpaceRedistributor &);
     void             operator=(const vtkParallelImageSpaceRedistributor &);
-    
+
     vtkRenderer     *ren;
 
     int             *x1,*y1,*x2,*y2;
@@ -130,7 +130,7 @@ class PLOTTER_API vtkParallelImageSpaceRedistributor :
     int              WhichProcessorsForCell(double *pts, vtkIdType npts,
                                      vtkIdType *cellPts, std::vector<int>&);
     void             IncrementOutgoingCellCounts(double *pts, vtkIdType npts,
-                                     vtkIdType *cellPts, std::vector<int>&, 
+                                     vtkIdType *cellPts, std::vector<int>&,
                                      std::vector<int>&);
     vtkMatrix4x4    *CreateWorldToDisplayMatrix();
 };

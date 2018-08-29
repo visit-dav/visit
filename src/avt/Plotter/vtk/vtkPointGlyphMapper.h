@@ -67,12 +67,12 @@ class vtkVisItPolyDataNormals;
 //   Subclass of vtkPolyDataMapper that can draw points as glyphs, points,
 //   or sphere imposters.
 //
-//  Programmer: Kathleen Biagas 
+//  Programmer: Kathleen Biagas
 //  Creation:   August 17, 2016
 //
 //  Modifications:
 //
-// **************************************************************************** 
+// ****************************************************************************
 
 class PLOTTER_API vtkPointGlyphMapper : public vtkPolyDataMapper
 {
@@ -81,8 +81,8 @@ public:
   vtkTypeMacro(vtkPointGlyphMapper,vtkPolyDataMapper);
   void PrintSelf(ostream& os, vtkIndent indent) override;
 
-  virtual void Render(vtkRenderer *, vtkActor *) override;
-  virtual void ReleaseGraphicsResources(vtkWindow *) override;
+  void Render(vtkRenderer *, vtkActor *) override;
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
   // To pass on to underlying mappers
   void SetScalarRange(double, double) override;
@@ -104,7 +104,7 @@ protected:
   vtkPointGlyphMapper();
   ~vtkPointGlyphMapper();
 
-  virtual void RenderPiece(vtkRenderer *, vtkActor *) override;
+  void RenderPiece(vtkRenderer *, vtkActor *) override;
 
   // Description:
   bool        UseImposters;
@@ -113,17 +113,17 @@ protected:
 
 
   // Cached variables
-  vtkNew<vtkPolyData> PointPolyData; 
+  vtkNew<vtkPolyData> PointPolyData;
   vtkNew<vtkTrivialProducer> PointOutput;
   vtkNew<vtkVisItGlyph3D>         GlyphFilter;
   vtkNew<vtkVisItPolyDataNormals> NormalsFilter;
   vtkNew<vtkPolyDataMapper>       GlyphMapper;
   vtkNew<vtkPointMapper>          PointMapper;
 
-  virtual void UpdatePointData();
+  void UpdatePointData();
 
 private:
-  vtkPointGlyphMapper(const vtkPointGlyphMapper&); 
+  vtkPointGlyphMapper(const vtkPointGlyphMapper&);
   void operator=(const vtkPointGlyphMapper&);
 
   vtkPointGlyphMapperHelper *Helper;

@@ -5,42 +5,42 @@
   Language:  C++
   Date:      $Date: 2001/08/03 20:08:22 $
   Version:   $Revision: 1.22 $
-  Thanks:    Kathleen Bonnell, B Division, Lawrence Livermore Nat'l Laboratory 
+  Thanks:    Kathleen Bonnell, B Division, Lawrence Livermore Nat'l Laboratory
 
-Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen 
-All rights reserve  
+Copyright (c) 1993-2001 Ken Martin, Will Schroeder, Bill Lorensen
+All rights reserve
   See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
 
-     This software is distributed WITHOUT ANY WARRANTY; without even 
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     This software is distributed WITHOUT ANY WARRANTY; without even
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
      PURPOSE.  See the above copyright notice for more information.
 =========================================================================*/
-// .NAME vtkVisItCubeAxesActor - create a  plot of a bounding box edges - 
+// .NAME vtkVisItCubeAxesActor - create a  plot of a bounding box edges -
 // used for navigation
 // .SECTION Description
-// vtkVisItCubeAxesActor is a composite actor that draws axes of the 
+// vtkVisItCubeAxesActor is a composite actor that draws axes of the
 // bounding box of an input dataset. The axes include labels and titles
 // for the x-y-z axes. The algorithm selects which axes to draw based
 // on the user-defined 'fly' mode.  (STATIC is default).
 // 'STATIC' constructs axes from all edges of the bounding box.
-// 'CLOSEST_TRIAD' consists of the three axes x-y-z forming a triad that 
-// lies closest to the specified camera. 
-// 'FURTHEST_TRIAD' consists of the three axes x-y-z forming a triad that 
-// lies furthest from the specified camera. 
-// 'OUTER_EDGES' is constructed from edges that are on the "exterior" of the 
-// bounding box, exterior as determined from examining outer edges of the 
-// bounding box in projection (display) space. 
-// 
+// 'CLOSEST_TRIAD' consists of the three axes x-y-z forming a triad that
+// lies closest to the specified camera.
+// 'FURTHEST_TRIAD' consists of the three axes x-y-z forming a triad that
+// lies furthest from the specified camera.
+// 'OUTER_EDGES' is constructed from edges that are on the "exterior" of the
+// bounding box, exterior as determined from examining outer edges of the
+// bounding box in projection (display) space.
+//
 // To use this object you must define a bounding box and the camera used
 // to render the vtkVisItCubeAxesActor. You can optionally turn on/off labels,
 // ticks, gridlines, and set tick location, number of labels, and text to
-// use for axis-titles.  A 'corner offset' can also be set.  This allows 
+// use for axis-titles.  A 'corner offset' can also be set.  This allows
 // the axes to be set partially away from the actual bounding box to perhaps
 // prevent overlap of labels between the various axes.
 //
 // The Bounds instance variable (an array of six doubles) is used to determine
 // the bounding box.
-// 
+//
 // .SECTION See Also
 // vtkActor vtkAxisActor vtkCubeAxesActor2D
 //
@@ -87,17 +87,18 @@ class PLOTTER_API vtkVisItCubeAxesActor : public vtkActor
 {
 public:
   vtkTypeMacro(vtkVisItCubeAxesActor,vtkActor);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
-  // Instantiate object with label format "6.3g" and the number of labels 
+  // Instantiate object with label format "6.3g" and the number of labels
   // per axis set to 3.
   static vtkVisItCubeAxesActor *New();
-  
+
   // Description:
   // Draw the axes as per the vtkProp superclass' API.
-  virtual int RenderOpaqueGeometry(vtkViewport*);
-  virtual int RenderTranslucentGeometry(vtkViewport *) {return 0;}
+  int RenderOpaqueGeometry(vtkViewport*) override;
+  int RenderTranslucentPolygonalGeometry(vtkViewport *) override {return 0;}
+  int HasTranslucentPolygonalGeometry() override {return 0;}
 
   // Descrition
   // Build the axes that can be used with VTK's scenegraph API
@@ -109,8 +110,8 @@ public:
   // are specified according to (xmin,xmax, ymin,ymax, zmin,zmax), making
   // sure that the min's are less than the max's.
   vtkSetVector6Macro(Bounds,double);
-  double *GetBounds();
-  void GetBounds(double& xmin, double& xmax, double& ymin, double& ymax, 
+  double *GetBounds() override;
+  void GetBounds(double& xmin, double& xmax, double& ymin, double& ymax,
                  double& zmin, double& zmax);
   void GetBounds(double bounds[6]);
 
@@ -123,14 +124,14 @@ public:
   double *GetRanges();
 
   // Description:
-  // Set/Get the camera to perform scaling and translation of the 
+  // Set/Get the camera to perform scaling and translation of the
   // vtkVisItCubeAxesActor.
   virtual void SetCamera(vtkCamera*);
   vtkGetObjectMacro(Camera,vtkCamera);
 
   // Description:
-  // Specify a mode to control how the axes are drawn: either static, 
-  // closest triad, furthest triad or outer edges in relation to the 
+  // Specify a mode to control how the axes are drawn: either static,
+  // closest triad, furthest triad or outer edges in relation to the
   // camera position.
   vtkSetClampMacro(FlyMode, int, VTK_FLY_OUTER_EDGES, VTK_FLY_STATIC_EDGES);
   vtkGetMacro(FlyMode, int);
@@ -146,7 +147,7 @@ public:
     {this->SetFlyMode(VTK_FLY_STATIC_EDGES);};
 
   // Description:
-  // Set/Get the labels for the x, y, and z axes. By default, 
+  // Set/Get the labels for the x, y, and z axes. By default,
   // use "X-Axis", "Y-Axis" and "Z-Axis".
   vtkSetStringMacro(XTitle);
   vtkGetStringMacro(XTitle);
@@ -170,10 +171,10 @@ public:
   vtkGetStringMacro(YLabelFormat);
   vtkSetStringMacro(ZLabelFormat);
   vtkGetStringMacro(ZLabelFormat);
-  
+
   // Description:
   // Set/Get the inertial factor that controls how often (i.e, how
-  // many renders) the axes can switch position (jump from one axes 
+  // many renders) the axes can switch position (jump from one axes
   // to another).
   vtkSetClampMacro(Inertia, int, 1, VTK_INT_MAX);
   vtkGetMacro(Inertia, int);
@@ -182,7 +183,7 @@ public:
   // Release any graphics resources that are being consumed by this actor.
   // The parameter window could be used to determine which graphic
   // resources to release.
-  void ReleaseGraphicsResources(vtkWindow *);
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
   // Description:
   // Turn on and off the visibility of each axis.
@@ -267,18 +268,18 @@ public:
   vtkBooleanMacro(DrawZGridlines,bool);
 
   // Description:
-  // Set/Get the location of ticks marks. 
+  // Set/Get the location of ticks marks.
   vtkSetClampMacro(TickLocation, int, VTK_TICKS_INSIDE, VTK_TICKS_BOTH);
   vtkGetMacro(TickLocation, int);
 
-  void SetTickLocationToInside(void) 
+  void SetTickLocationToInside(void)
     { this->SetTickLocation(VTK_TICKS_INSIDE); };
-  void SetTickLocationToOutside(void) 
+  void SetTickLocationToOutside(void)
     { this->SetTickLocation(VTK_TICKS_OUTSIDE); };
-  void SetTickLocationToBoth(void) 
+  void SetTickLocationToBoth(void)
     { this->SetTickLocation(VTK_TICKS_BOTH); };
 
-  void SetLabelScaling(bool, int, int, int);  
+  void SetLabelScaling(bool, int, int, int);
 
   // Description:
   // Returns the text property for the title on an axis.
@@ -339,8 +340,8 @@ protected:
 
   vtkCamera *Camera;
   int FlyMode;
- 
-  // to control all axes  
+
+  // to control all axes
   // [0] always for 'Major' axis during non-static fly modes.
   vtkVisItAxisActor *XAxes[4];
   vtkVisItAxisActor *YAxes[4];
@@ -390,9 +391,9 @@ protected:
   int   Inertia;
   int   RenderCount;
   int   InertiaLocs[3];
-  
+
   bool  RenderSomething;
-  
+
   vtkTextProperty *TitleTextProperty[3];
   vtkTextProperty *LabelTextProperty[3];
   double           TitleScale[3];
@@ -466,7 +467,7 @@ private:
   bool scalingChanged;
 
   // various helper methods
-  void  TransformBounds(vtkViewport *viewport, const double bounds[6], 
+  void  TransformBounds(vtkViewport *viewport, const double bounds[6],
                         double pts[8][3]);
   bool  ComputeTickSize(double bounds[6]);
   void  ComputeLabelExponent(const double bounds[6]);
@@ -477,10 +478,10 @@ private:
   void  BuildLabels(vtkVisItAxisActor *axes[4]);
   void  AdjustTicksComputeRange(vtkVisItAxisActor *axes[4]);
 
-  
+
 
   // hide the superclass' ShallowCopy() from the user and the compiler.
-  void ShallowCopy(vtkProp *prop) { this->vtkProp::ShallowCopy( prop ); };
+  void ShallowCopy(vtkProp *prop) override { this->vtkProp::ShallowCopy( prop ); }
 };
 
 

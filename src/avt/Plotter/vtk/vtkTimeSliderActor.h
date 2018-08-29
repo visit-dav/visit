@@ -51,31 +51,31 @@ class vtkPolyDataMapper2D;
 // Purpose:
 //   This class is a time slider actor that can be added to a VTK renderer.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 28 11:37:07 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkTimeSliderActor : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkTimeSliderActor, vtkActor2D);
-  void PrintSelf(ostream &os, vtkIndent indent);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
   // Description:
-  // Instantiate a time slider actor. 
+  // Instantiate a time slider actor.
   static vtkTimeSliderActor *New();
 
   // Description:
   // Draw the actor as per the vtkProp superclass' API.
-  virtual int RenderOverlay(vtkViewport *);
-  virtual int RenderOpaqueGeometry(vtkViewport *);
-  virtual int RenderTranslucentPolygonalGeometry(vtkViewport *);
-  virtual int HasTranslucentPolygonalGeometry();
+  int RenderOverlay(vtkViewport *) override;
+  int RenderOpaqueGeometry(vtkViewport *) override;
+  int RenderTranslucentPolygonalGeometry(vtkViewport *) override;
+  int HasTranslucentPolygonalGeometry() override;
 
   vtkSetVector4Macro(StartColor, double);
   vtkGetVector4Macro(StartColor, double);

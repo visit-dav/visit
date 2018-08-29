@@ -6,7 +6,7 @@
   Date:      $Date: 2000/02/04 17:09:14 $
   Version:   $Revision: 1.11 $
 
-Copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen 
+Copyright (c) 1993-2000 Ken Martin, Will Schroeder, Bill Lorensen
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -40,8 +40,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =========================================================================*/
 // .NAME vtkXPolyDataMapper2D - 2D PolyData support for windows
 // .SECTION Description
-// vtkXPolyDataMapper2D provides 2D PolyData annotation support for 
-// vtk under windows.  Normally the user should use vtkPolyDataMapper2D 
+// vtkXPolyDataMapper2D provides 2D PolyData annotation support for
+// vtk under windows.  Normally the user should use vtkPolyDataMapper2D
 // which in turn will use this class.
 
 // .SECTION See Also
@@ -68,11 +68,11 @@ public:
 
   // Description:
   // Actually draw the poly data.
-  void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor);
+  void RenderOverlay(vtkViewport* viewport, vtkActor2D* actor) override;
 
   // Description:
   // Release graphics resources.
-  virtual void ReleaseGraphicsResources(vtkWindow *);
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
 protected:
   vtkRubberBandMapper2D();
@@ -86,7 +86,7 @@ protected:
 private:
   vtkRubberBandMapper2D(const vtkRubberBandMapper2D&);
   void operator=(const vtkRubberBandMapper2D&);
-  
+
 };
 
 

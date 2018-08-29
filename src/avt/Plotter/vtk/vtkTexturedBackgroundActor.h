@@ -57,18 +57,18 @@ class vtkRenderer;
 // Creation:   Fri Nov 16 10:21:51 PST 2007
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 class PLOTTER_API vtkTexturedBackgroundActor : public vtkActor2D
 {
 public:
   static vtkTexturedBackgroundActor *New();
- 
-  vtkTypeMacro(vtkTexturedBackgroundActor, vtkActor2D); 
-  virtual void PrintSelf(ostream &os, vtkIndent indent);
- 
-  virtual void ReleaseGraphicsResources(vtkWindow *);
+
+  vtkTypeMacro(vtkTexturedBackgroundActor, vtkActor2D);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
+
+  void ReleaseGraphicsResources(vtkWindow *) override;
 
   int SetTextureAndRenderers(const char *filename, vtkRenderer *bg, vtkRenderer *canvas);
 
@@ -76,7 +76,7 @@ public:
   void SetImageRepetitions(int,int);
 protected:
    vtkTexturedBackgroundActor();
-  ~vtkTexturedBackgroundActor(); 
+  ~vtkTexturedBackgroundActor();
 
    vtkMapper2D *GetInitializedMapper();
    vtkTexture  *GetTexture(const char *);

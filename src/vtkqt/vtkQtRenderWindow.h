@@ -53,10 +53,10 @@ public:
     void SetShowCallback(void (*callback)(void *), void*);
 
 protected:
-    virtual void resizeEvent(QResizeEvent *);
-    virtual void closeEvent(QCloseEvent *);
-    virtual void hideEvent(QHideEvent *);
-    virtual void showEvent(QShowEvent *);
+    void resizeEvent(QResizeEvent *) override;
+    void closeEvent(QCloseEvent *) override;
+    void hideEvent(QHideEvent *) override;
+    void showEvent(QShowEvent *) override;
 private:
     vtkQtRenderWindowPrivate *d;
 };

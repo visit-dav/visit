@@ -65,18 +65,18 @@ class PLOTTER_API vtkBackgroundActor : public vtkActor2D
 {
 public:
   vtkTypeMacro(vtkBackgroundActor, vtkActor2D);
-  void PrintSelf(ostream &os, vtkIndent indent);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
   // Description:
-  // Instantiate a background actor. 
+  // Instantiate a background actor.
   static vtkBackgroundActor *New();
 
   // Description:
   // Draw the actor as per the vtkProp superclass' API.
-  int RenderOverlay(vtkViewport *);
-  int RenderOpaqueGeometry(vtkViewport *);
-  int RenderTranslucentPolygonalGeometry(vtkViewport *) { return 0;}
-  int HasTranslucentPolygonalGeometry() { return 0;}
+  int RenderOverlay(vtkViewport *) override;
+  int RenderOpaqueGeometry(vtkViewport *) override;
+  int RenderTranslucentPolygonalGeometry(vtkViewport *) override { return 0;}
+  int HasTranslucentPolygonalGeometry() override { return 0;}
 
   // Description:
   // Sets the corner colors.
@@ -115,7 +115,7 @@ protected:
   vtkPolyDataMapper2D *GradientMapper;
 
 private:
-  vtkBackgroundActor(const vtkBackgroundActor&); 
+  vtkBackgroundActor(const vtkBackgroundActor&);
   void operator=(const vtkBackgroundActor&);
 };
 

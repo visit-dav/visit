@@ -2,7 +2,7 @@
 #define VTK_MULTI_FONT_VECTOR_TEXT_H
 #include <vtkPolyDataAlgorithm.h>
 
-class vtkMultiFontVectorText : public vtkPolyDataAlgorithm 
+class vtkMultiFontVectorText : public vtkPolyDataAlgorithm
 {
 public:
   static vtkMultiFontVectorText *New();
@@ -12,7 +12,7 @@ public:
   // with g++ for reasons I don't understand. That's the vtable for the object.
   vtkTypeMacro(vtkMultiFontVectorText,vtkPolyDataAlgorithm);
 #endif
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   // Description:
   // Set/Get the text to be drawn.
@@ -41,7 +41,9 @@ protected:
   vtkMultiFontVectorText();
   ~vtkMultiFontVectorText();
 
-  virtual int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *);
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
 
   char *Text;
   int   FontFamily;

@@ -37,7 +37,7 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                            vtkVolumeFromVolume.h                          //
+//                     vtkBinaryPartitionVolumeFromVolume.h                  //
 // ************************************************************************* //
 
 #ifndef VTK_BINARY_PARTITION_VOLUME_FROM_VOLUME_H
@@ -123,7 +123,7 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
         vtkVolumeFromVolume::AddHex(z, v0, v1, v2, v3, v4, v5, v6, v7);
         hexTags.push_back(inOut ? 1 : 0);
     }
-        
+
     void           AddWedge(vtkIdType z,vtkIdType v0,vtkIdType v1,vtkIdType v2,vtkIdType v3,vtkIdType v4,vtkIdType v5,
                             bool inOut)
     {
@@ -133,7 +133,7 @@ class VISIT_VTK_API vtkBinaryPartitionVolumeFromVolume : private vtkVolumeFromVo
     void           AddPyramid(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3, vtkIdType v4,
                               bool inOut)
     {
-        vtkVolumeFromVolume::AddPyramid(z, v0, v1, v2, v3, v4); 
+        vtkVolumeFromVolume::AddPyramid(z, v0, v1, v2, v3, v4);
         pyramidTags.push_back(inOut ? 1 : 0);
     }
     void           AddTet(vtkIdType z, vtkIdType v0, vtkIdType v1, vtkIdType v2, vtkIdType v3,

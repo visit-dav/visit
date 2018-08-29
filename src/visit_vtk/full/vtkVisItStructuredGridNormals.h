@@ -73,7 +73,7 @@ class VISIT_VTK_API vtkVisItStructuredGridNormals : public vtkStructuredGridAlgo
 
     // Usual data generation method
     int RequestData(vtkInformation*, vtkInformationVector**,
-                     vtkInformationVector*);
+                     vtkInformationVector*) override;
     void ExecutePoint(vtkStructuredGrid*, vtkStructuredGrid*);
     void ExecuteCell(vtkStructuredGrid *, vtkStructuredGrid*);
 
