@@ -101,6 +101,12 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   Eric Brugger, Thu Jul 26 13:48:28 PDT 2018
 #   I added surface to the list of toss3 machines.
 #
+#   Eric Brugger, Fri Aug 17 16:04:16 PDT 2018
+#   I added syrah to the list of toss3 machines.
+#
+#   Eric Brugger, Thu Aug 30 12:27:37 PDT 2018
+#   I added max to the list of toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -161,12 +167,13 @@ class LLNLLauncher(MainLauncher):
 
         #
         # Set the LD_LIBRARY_PATH to include the path to MPI on borax,
-        # pascal, quartz, rzgenie, rzhasgpu, rztopaz, rztrona, jade, mica,
-        # and agate.
+        # catalyst, jade, mica, pascal, quartz, rzgenie, rzhasgpu, rztopaz,
+        # rztrona, surface, syrah and agate.
         #
         if self.sectorname() == "borax" or \
             self.sectorname() == "catalyst" or \
             self.sectorname() == "jade" or \
+            self.sectorname() == "max" or \
             self.sectorname() == "mica" or \
             self.sectorname() == "pascal" or \
             self.sectorname() == "quartz" or \
@@ -175,6 +182,7 @@ class LLNLLauncher(MainLauncher):
             self.sectorname() == "rztopaz" or \
             self.sectorname() == "rztrona" or \
             self.sectorname() == "surface" or \
+            self.sectorname() == "syrah" or \
             self.sectorname() == "agate":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
