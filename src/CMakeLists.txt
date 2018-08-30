@@ -1435,7 +1435,9 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVisus.cmake)
 
     # Configure VTKh support.
-    INCLUDE(${VISIT_VTKH_DIR}/lib/VTKhConfig.cmake)
+    if(VISIT_VTKH_DIR)
+        INCLUDE(${VISIT_VTKH_DIR}/lib/VTKhConfig.cmake)
+    endif()
 
     # Configure GFortran support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindGFortran.cmake)
