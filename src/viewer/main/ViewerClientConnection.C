@@ -238,6 +238,11 @@ ViewerClientConnection::~ViewerClientConnection()
 //   Brad Whitlock, Tue Jun  5 16:35:01 PDT 2012
 //   Pass MachineProfile::Default output to RemoteProcess.
 //
+//   Kathleen Biagas, Thu Aug 30 2018
+//   Reworked logic for sending State objects on Windows.  The 1 by 1 method
+//   when launching cli from command window is a problem, so limit that path
+//   to launch of gui.
+//
 // ****************************************************************************
 
 void
@@ -328,26 +333,36 @@ ViewerClientConnection::LaunchClient(const std::string &program,
 //            connect(s, SIGNAL(aboutToClose()), SLOT(ForceDisconnectClient()));
         }
     }
-
+    bool sendOnlyInitialState = false;
 #ifdef _WIN32
-    // Initiate sending state objects to the client.
-    initialStateStage = allState ? 0 : viewerState->FreelyExchangedState();
-    QTimer::singleShot(50, this, SLOT(sendInitialState()));
-#else
-    // Send all of the state except for the first 7 state objects, which
-    // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
-    // metaData, silAtts.
-    debug1 << mName << "Sending state objects to client." << endl;
-    for(int i = allState ? 0 : viewerState->FreelyExchangedState();
-        i < viewerState->GetNumStateObjects(); ++i)
-    {
-        viewerState->GetStateObject(i)->SelectAll();
-        SetUpdate(false);
-        if(allState) viewerState->GetStateObject(i)->SetSendMetaInformation(true);
-        viewerState->GetStateObject(i)->Notify();
-        if(allState) viewerState->GetStateObject(i)->SetSendMetaInformation(false);
-    }
+    // Sending only initial state is a problem if launching cli via Command
+    // windows, so limit it to only gui.  Not sure if this is truly still
+    // necessary for the gui, but will leave it in nevertheless.
+    if (std::find(args.begin(), args.end(), "-gui") != args.end())
+        sendOnlyInitialState = true;
 #endif
+    if (sendOnlyInitialState)
+    {
+        // Initiate sending state objects to the client.
+        initialStateStage = allState ? 0 : viewerState->FreelyExchangedState();
+        QTimer::singleShot(50, this, SLOT(sendInitialState()));
+    }
+    else
+    {
+        // Send all of the state except for the first 7 state objects, which
+        // are: ViewerRPC, PostponedRPC, syncAtts, messageAtts, statusAtts,
+        // metaData, silAtts.
+        debug1 << mName << "Sending state objects to client." << endl;
+        for(int i = allState ? 0 : viewerState->FreelyExchangedState();
+            i < viewerState->GetNumStateObjects(); ++i)
+        {
+            viewerState->GetStateObject(i)->SelectAll();
+            SetUpdate(false);
+            if(allState) viewerState->GetStateObject(i)->SetSendMetaInformation(true);
+            viewerState->GetStateObject(i)->Notify();
+            if(allState) viewerState->GetStateObject(i)->SetSendMetaInformation(false);
+        }
+    }
 
     debug1 << mName << "Done" << endl;
 }
