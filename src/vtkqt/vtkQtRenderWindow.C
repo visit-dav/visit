@@ -61,6 +61,12 @@
 //   problems with the viewer window in OSX 10.13 and Qt 5.10.0 appears to
 //   have fixed the underlying issue. This fixes Bug #3020.
 //
+//   Kevin Griffin, Thu Aug 30 18:55:01 PDT 2018
+//   Removed the setting of the Qt::AA_ImmediateWidgetCreation attribute
+//   for OSX since it was creating a black screen during zooming and lineouts
+//   on OSX. Eliminated the call to setWindowFlags for OSX since it causes
+//   the toolbar window to not render correctly.
+//
 // ****************************************************************************
 
 class VTKQT_API vtkQtRenderWindowPrivate
@@ -138,17 +144,16 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
 {
     d = new vtkQtRenderWindowPrivate(this, false);
     setIconSize(QSize(20,20));
-
-#if defined Q_OS_OSX && (QT_VERSION < QT_VERSION_CHECK(5, 10, 0))
-    // Fixes the issue with the left corner of the toolbar being
-    // rendered over.
-    QCoreApplication::setAttribute(Qt::AA_ImmediateWidgetCreation);
-#endif
-
     setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     setWindowFlags(f);
+#else
+    #ifndef Q_OS_OSX
+        setWindowFlags(f);
+    #endif
+#endif
     // With the call to setCentralWidget() vtkQtRenderWindow takes
     // ownership of the gl widget pointer and deletes it at the
     // appropriate time.
@@ -159,17 +164,16 @@ vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFla
 {
     d = new vtkQtRenderWindowPrivate(this, stereo);
     setIconSize(QSize(20,20));
-
-#ifdef Q_OS_OSX
-    // Fixes the issue with the left corner of the toolbar being
-    // rendered over.
-    QCoreApplication::setAttribute(Qt::AA_ImmediateWidgetCreation);
-#endif
-
     setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
 
+#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     setWindowFlags(f);
+#else
+    #ifndef Q_OS_OSX
+        setWindowFlags(f);
+    #endif
+#endif
     // With the call to setCentralWidget() vtkQtRenderWindow takes
     // ownership of the gl widget pointer and deletes it at the
     // appropriate time.
