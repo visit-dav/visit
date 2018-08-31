@@ -43,6 +43,7 @@
 #include <AttributeSubject.h>
 
 #include <SaveSubWindowsAttributes.h>
+#include <DBOptionsAttributes.h>
 
 // ****************************************************************************
 // Class: SaveWindowAttributes
@@ -132,6 +133,7 @@ public:
     void SelectFileName();
     void SelectLastRealFilename();
     void SelectSubWindowAtts();
+    void SelectOpts();
 
     // Property setting methods
     void SetOutputToCurrentDirectory(bool outputToCurrentDirectory_);
@@ -154,6 +156,7 @@ public:
     void SetPixelData(int pixelData_);
     void SetAdvancedMultiWindowSave(bool advancedMultiWindowSave_);
     void SetSubWindowAtts(const SaveSubWindowsAttributes &subWindowAtts_);
+    void SetOpts(const DBOptionsAttributes &opts_);
 
     // Property getting methods
     bool                           GetOutputToCurrentDirectory() const;
@@ -180,6 +183,8 @@ public:
     bool                           GetAdvancedMultiWindowSave() const;
     const SaveSubWindowsAttributes &GetSubWindowAtts() const;
           SaveSubWindowsAttributes &GetSubWindowAtts();
+    const DBOptionsAttributes      &GetOpts() const;
+          DBOptionsAttributes      &GetOpts();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -239,6 +244,7 @@ public:
         ID_pixelData,
         ID_advancedMultiWindowSave,
         ID_subWindowAtts,
+        ID_opts,
         ID__LAST
     };
 
@@ -263,11 +269,12 @@ private:
     int                      pixelData;
     bool                     advancedMultiWindowSave;
     SaveSubWindowsAttributes subWindowAtts;
+    DBOptionsAttributes      opts;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define SAVEWINDOWATTRIBUTES_TMFS "bssbiiibbibbsbibiiba"
+#define SAVEWINDOWATTRIBUTES_TMFS "bssbiiibbibbsbibiibaa"
 
 #endif

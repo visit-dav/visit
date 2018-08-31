@@ -158,6 +158,24 @@ avtDatasetFileWriter::~avtDatasetFileWriter()
 
 
 // ****************************************************************************
+//  Method: avtDatasetFileWriter::SetOptions
+//
+//  Purpose:
+//    Saves DBOptionsAttibutes for file formats that use them.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   August 31, 2018 
+//
+// ****************************************************************************
+
+void
+avtDatasetFileWriter::SetOptions(const DBOptionsAttributes &opts_)
+{
+    opts = opts_;
+}
+
+
+// ****************************************************************************
 //  Method: avtDatasetFileWriter::Write
 //
 //  Purpose:
@@ -760,6 +778,9 @@ avtDatasetFileWriter::WritePLYFile(const char *filename, bool binary)
 //    Brad Whitlock, Fri Jul 24 11:16:02 PDT 2009
 //    Output the numbers with more precision.
 //
+//    Kathleen Biagas, Fri Aug 31 13:23:19 PDT 2018
+//    Use DBOptionsAttributes to determine comment style.
+//
 // ****************************************************************************
 
 void
@@ -790,13 +811,22 @@ avtDatasetFileWriter::WriteCurveFile(const char *filename, int quality, int comp
     SortLineSegments(pd, line_segments);
 
     SETUP_OFSTREAM(ofile, filename, quality, compression);
+
+    std::string varTag("#");
+
+    if  (opts.FindIndex("CommentStyle") >= 0)
+    {
+        if (opts.GetEnum("CommentStyle") == 1)
+            varTag = "%";
+    }
+
     vtkPoints *pts = pd->GetPoints();
     for (size_t i = 0 ; i < line_segments.size() ; i++)
     {
         if (line_segments.size() <= 1)
-            ofile() << "# curve" << endl;
+            ofile() << varTag << " curve" << endl;
         else
-            ofile() << "# curve" << i << endl;
+            ofile() << varTag << " curve" << i << endl;
 
         ofile() << std::setprecision(16);
         for (size_t j = 0 ; j < line_segments[i].size() ; j++)

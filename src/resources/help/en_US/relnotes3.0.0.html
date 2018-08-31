@@ -48,6 +48,7 @@ enhancements and bug-fixes that were added to this release.</p>
       </ul>
   </li>
   <li>Libsim's <i>VisItRestoreSession()</i> function will now attempt to broadcast the session file contents to other MPI ranks rather than having all ranks read the file.</li>
+  <li>Whether exporting to <i>Curve2D</i> or saving the Window in <i>curve</i> format, a comment style can be selected, with choices being Ultra <i>("#")</i>, and Matlab <i>("%")</i>. Ultra style is the default.</li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -66,7 +67,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The Image reader plug-in was extended to expose a <i>depth</i> variable. The depth variable serves up data from the <i>filename.depth.Z</i> file if it exists, enabling depth data to be plotted in addition to color data. A depth file is a zlib-compressed file of 32-bit floating point numbers storing the Z-buffer for the image. The depth file can be requested by selecting depth pixel data in the <b>Set save options</b> window.</li>
   <li>VisIt has been enhanced with an OpenEXR plugin that can </li>
   <li>The ffp database plugin was added to VisIt (courtesy Olivier Cessenat).</li>
-  <li></li>
+  <li>The Curve2D reader can now read curve files with Matlab-style comments.</li>
   <li></li>
 </ul>
 

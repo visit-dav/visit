@@ -3426,6 +3426,9 @@ QvisGUIApplication::SetupWindows()
 //   Kathleen Biagas, Wed Apr 23 14:45:49 MST 2014
 //   Add PlotList to connected subjects for Export DB window.
 //
+//   Kathleen Biagas, Fri Aug 31 14:13:17 PDT 2018
+//   Connect Save Window with DBPluginInfoAtts.
+//
 // ****************************************************************************
 
 QvisWindowBase *
@@ -3463,8 +3466,13 @@ QvisGUIApplication::WindowFactory(int i)
         break;
     case WINDOW_SAVE:
         // Create the save window.
-        win = new QvisSaveWindow(GetViewerState()->GetSaveWindowAttributes(),
-           windowNames[i], tr("Save options"), mainWin->GetNotepad());
+        {
+        QvisSaveWindow *sWin = new QvisSaveWindow(
+            GetViewerState()->GetSaveWindowAttributes(),
+            windowNames[i], tr("Save options"), mainWin->GetNotepad());
+        sWin->ConnectSubjects(GetViewerState()->GetDBPluginInfoAttributes());
+        win = sWin;
+        }
         break;
     case WINDOW_ENGINE:
         // Create the engine window.

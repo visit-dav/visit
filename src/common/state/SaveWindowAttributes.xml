@@ -94,6 +94,8 @@
     </Field>
     <Field name="subWindowAtts" label="Attributes for sub-windows" type="att" subtype="SaveSubWindowsAttributes" enabler="advancedMultiWindowSave:true">
     </Field>
+    <Field name="opts" label="opts" type="att" subtype="DBOptionsAttributes">
+    </Field>
     <Function name="CurrentFormatIsImageFormat" user="true" member="true">
     </Function>
     <Function name="CurrentFormatSupportsAlpha" user="true" member="true">

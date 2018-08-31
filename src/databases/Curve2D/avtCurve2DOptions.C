@@ -37,69 +37,60 @@
 *****************************************************************************/
 
 // ************************************************************************* //
-//                               avtFileWriter.h                             //
+//                          avtCurve2DOptions.C                              //
 // ************************************************************************* //
 
-#ifndef AVT_FILE_WRITER_H
-#define AVT_FILE_WRITER_H
+#include <avtCurve2DOptions.h>
 
-#include <file_writer_exports.h>
-
-#include <avtDatasetFileWriter.h>
-#include <avtImageFileWriter.h>
 #include <DBOptionsAttributes.h>
 
+#include <string>
+#include <vector>
+
+using std::string;
+using std::vector;
 
 // ****************************************************************************
-//  Class: avtFileWriter
+//  Function: GetCurve2DReadOptions
 //
 //  Purpose:
-//      This serves as a front end to writers for datasets and data objects.
+//      Creates the options for Curve2D readers. (currently none)
 //
-//  Programmer: Hank Childs
-//  Creation:   May 24, 2002
-//
-//  Modifications:
-//    Kathleen Bonnell, Thu Nov  6 07:44:38 PST 2003
-//    Add compression arg to Write method.
-//
-//    Brad Whitlock, Tue Mar 22 19:35:40 PDT 2016
-//    Add check permissions flag to CreateFilename.
-//
-//    Kathleen Biagas, Fri Aug 31 13:17:20 PDT 2018
-//    Add SetOtions (goes straight to dsWriter).
+//  Programmer: Kathleen Biagas
+//  Creation:   August 31, 2018
 //
 // ****************************************************************************
 
-class AVTFILEWRITER_API avtFileWriter
+DBOptionsAttributes *
+GetCurve2DReadOptions(void)
 {
-  public:
-                           avtFileWriter();
-    virtual               ~avtFileWriter();
-
-    void                   SetFormat(int);
-    bool                   IsImageFormat(void);
-
-    std::vector<std::string> Write(const char *, avtDataObject_p, int, bool,
-                                   int, bool);
-    void                   WriteImageDirectly(vtkImageWriter *, const char *,
-                                            avtDataObject_p);
-  
-    char                  *CreateFilename(const char *base, bool family,
-                                          bool fileChecks = true);
-
-    void                   SetOptions(const DBOptionsAttributes &);
-
-  protected:
-    int                    format;
-    ImageFileFormat        imgFormat;
-    DatasetFileFormat      dsFormat;
-    bool                   isImage;
-    avtImageFileWriter    *imgWriter;
-    avtDatasetFileWriter  *dsWriter;
-};
+    DBOptionsAttributes *rv = new DBOptionsAttributes;
+    return rv;
+}
 
 
-#endif
+// ****************************************************************************
+//  Function: GetCurve2DWriteOptions
+//
+//  Purpose:
+//      Creates the options for Curve2D writers.
+//
+//  Programmer: Kathleen Biagas 
+//  Creation:   August 31, 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
 
+DBOptionsAttributes *
+GetCurve2DWriteOptions(void)
+{
+    DBOptionsAttributes *rv = new DBOptionsAttributes;
+    vector<string> commentStyle;
+    commentStyle.push_back("# (Ultra)");
+    commentStyle.push_back("% (MatLab)");
+    rv->SetEnum("CommentStyle", 0);
+    rv->SetEnumStrings("CommentStyle", commentStyle);
 
+    return rv;
+}

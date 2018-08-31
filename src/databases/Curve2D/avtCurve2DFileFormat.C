@@ -56,6 +56,7 @@
 #include <avtDatabaseMetaData.h>
 
 #include <DebugStream.h>
+#include <DBOptionsAttributes.h>
 #include <StringHelpers.h>
 #include <InvalidFilesException.h>
 #include <InvalidVariableException.h>
@@ -87,9 +88,12 @@ using std::string;
 //    Kathleen Bonnell, Fri Oct 28 13:02:51 PDT 2005
 //    Added curveTime, curveCycle.
 //
+//    Kathleen Biagas, Fri Aug 31 14:22:49 PDT 2018
+//    Added read options (currently unused).
+//
 // ****************************************************************************
 
-avtCurve2DFileFormat::avtCurve2DFileFormat(const char *fname)
+avtCurve2DFileFormat::avtCurve2DFileFormat(const char *fname, DBOptionsAttributes *)
     : avtSTSDFileFormat(fname)
 {
     filename = fname;
@@ -320,6 +324,9 @@ avtCurve2DFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
 //    Kathleen Biagas, Tue Jul 15 14:16:46 MST 2014
 //    Change from using float to double.
 //
+//    Kathleen Biagas, Fri Aug 31 14:23:59 PDT 2018
+//    Support matlab-sytle comments ("%").
+//
 // ****************************************************************************
 
 #define INVALID_POINT_WARNING(X)                                        \
@@ -391,10 +398,10 @@ avtCurve2DFileFormat::ReadFile(void)
         {
           case VALID_POINT:
           {
-            if (headerName.find_first_not_of("#") != string::npos)
+            if (headerName.find_first_not_of("#%") != string::npos)
             {
                 string str1 = 
-                          headerName.substr(headerName.find_first_not_of("#"));
+                          headerName.substr(headerName.find_first_not_of("#%"));
                 string str2 = str1.substr(str1.find_first_not_of(" \t"));
                 curveNames.push_back(str2);
                 headerName = "";
@@ -448,7 +455,7 @@ avtCurve2DFileFormat::ReadFile(void)
                 }
             }
   
-            if (lineName.find_first_not_of("#") != string::npos)
+            if (lineName.find_first_not_of("#%") != string::npos)
             {
                 headerName = lineName;
             }
@@ -669,6 +676,9 @@ avtCurve2DFileFormat::ReadFile(void)
 //    Kathleen Biagas, Tue Jul 15 14:16:46 MST 2014
 //    Change from using float to double.
 //
+//    Kathleen Biagas, Fri Aug 31 14:23:59 PDT 2018
+//    Support matlab-sytle comments ("%").
+//
 // ****************************************************************************
 
 CurveToken
@@ -699,6 +709,10 @@ avtCurve2DFileFormat::GetPoint(istream &ifile, double &x, double &y, string &ln)
     // Pick out some of the harder to parse cases.
     //
     if (strstr(line, "#") != NULL)
+    {
+        return HEADER;
+    }
+    if (strstr(line, "%") != NULL)
     {
         return HEADER;
     }

@@ -240,6 +240,25 @@ avtFileWriter::IsImageFormat(void)
 
 
 // ****************************************************************************
+//  Method: avtFileWriter::SetOptions
+//
+//  Purpose:
+//    Sends DBOptionsAttributes to dsWriter.
+//
+//  Programmer: Kathleen Biagas
+//  Creation:   August 31, 2018
+//
+// ****************************************************************************
+
+void
+avtFileWriter::SetOptions(const DBOptionsAttributes &opts)
+{
+   if (dsWriter)
+        dsWriter->SetOptions(opts);
+}
+
+
+// ****************************************************************************
 //  Method: avtFileWriter::Write
 //
 //  Purpose:

@@ -54,7 +54,9 @@
 #include <QStandardItemModel>
 
 #include <QvisSaveWindow.h>
+#include <QvisDBOptionsDialog.h>
 #include <QvisOpacitySlider.h>
+#include <DBPluginInfoAttributes.h>
 #include <SaveWindowAttributes.h>
 #include <StringHelpers.h>
 #include <ViewerProxy.h>
@@ -126,6 +128,9 @@ int FileFormatToMenuIndex(const std::string &ext)
 //   Eric Brugger, Mon Aug 31 10:38:12 PDT 2015
 //   I overhauled the window.
 //
+//   Kathleen Biagas, Fri Aug 31 13:57:11 PDT 2018
+//   Added dbPluginInfoAtts.
+//
 // ****************************************************************************
 
 QvisSaveWindow::QvisSaveWindow(
@@ -135,6 +140,8 @@ QvisSaveWindow::QvisSaveWindow(
                                QvisPostableWindowObserver::ApplyButton)
 {
     saveWindowAtts = subj;
+    dbPluginInfoAtts = NULL;
+
     currentWindow = 0;
     dismissOnSave = true;
     multiWindowSaveMode = Tiled;
@@ -167,6 +174,52 @@ QvisSaveWindow::QvisSaveWindow(
 QvisSaveWindow::~QvisSaveWindow()
 {
 }
+
+
+// ****************************************************************************
+// Method: QvisSaveWindow::ConnectSubjects
+//
+// Purpose: 
+//   This function connects subjects so that the window observes them.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 31, 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::ConnectSubjects(DBPluginInfoAttributes *dbp)
+{
+    dbPluginInfoAtts = dbp;
+    dbPluginInfoAtts->Attach(this);
+}
+
+
+// ****************************************************************************
+// Method: QvisSaveWindow::SubjectRemoved
+//
+// Purpose: 
+//   This function is called when a subject is removed.
+//
+// Arguments:
+//   TheRemovedSubject : The subject being removed.
+//
+// Programmer: Kathleen Biagas
+// Creation:   August 31, 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisSaveWindow::SubjectRemoved(Subject *TheRemovedSubject)
+{
+    if (TheRemovedSubject == dbPluginInfoAtts)
+        dbPluginInfoAtts = 0;
+}
+
 
 // ****************************************************************************
 // Method: QvisSaveWindow::CreateWindowContents
@@ -1491,6 +1544,9 @@ QvisSaveWindow::selectOutputDirectory()
 //   Changes so the menu names can have a different order than the 
 //   FileFormat enum.
 //
+//   Kathleen Biagas, Fri Aug 31 13:58:34 PDT 2018
+//   Set Curve2D Database options into SaveWindowAtts for curve formats.
+//
 // ****************************************************************************
 
 void
@@ -1502,6 +1558,30 @@ QvisSaveWindow::fileFormatChanged(int index)
     SaveWindowAttributes::FileFormat_FromString(
         StringHelpers::UpperCase(fileFormats[index]), val);
     saveWindowAtts->SetFormat(val);
+
+    bool setOpts = false;
+    if (dbPluginInfoAtts)
+    {
+        std::string tmp = fileFormatComboBox->currentText().toStdString();
+        if (tmp == "curve")
+        {
+            int ntypes = dbPluginInfoAtts->GetTypes().size(); 
+            for (int i = 0; i < ntypes; ++i)
+            {
+                if (dbPluginInfoAtts->GetTypes()[i] == "Curve2D")
+                {
+                    DBOptionsAttributes &atts = dbPluginInfoAtts->GetDbWriteOptions(i);
+                    saveWindowAtts->SetOpts(atts);
+                    setOpts = true;
+                }
+            }
+        }
+    }
+    if (!setOpts)
+    {
+        DBOptionsAttributes dummy;
+        saveWindowAtts->SetOpts(dummy);
+    }
     Apply();
 }
 
@@ -2113,16 +2193,38 @@ void QvisSaveWindow::imageTransparencyChanged(int val)
 // Modifications:
 //   Kathleen Biagas, Wed Jan  7 12:39:12 PST 2015
 //   Added dismissOnSave flag.
-//   
+//
+//   Kathleen Biagas, Fri Aug 31 13:59:43 PDT 2018
+//   Use QvisDBOptionsDialog if DBOptionsAtts available for format.
+//
 // ****************************************************************************
 
 void
 QvisSaveWindow::saveWindow()
 {
-    Apply();
-    if(isVisible() && !posted() && dismissOnSave)
-        hide();
-    GetViewerMethods()->SaveWindow();
+    int result = QDialog::Accepted;
+    if (saveWindowAtts->GetOpts().GetNumberOfOptions() > 0)
+    {
+        QvisDBOptionsDialog *optsdlg =
+            new QvisDBOptionsDialog(&(saveWindowAtts->GetOpts()), NULL);
+        QString caption = tr("Save options for %1").
+                          arg(fileFormatComboBox->currentText());
+        optsdlg->setWindowTitle(caption);
+        result = optsdlg->exec();
+        delete optsdlg;
+    }
+    if (result == QDialog::Accepted)
+    {
+        // Make sure the new write options get sent to the viewer.
+        saveWindowAtts->Notify();
+        if(isVisible() && !posted() && dismissOnSave)
+            hide();
+        GetViewerMethods()->SaveWindow();
+    }
+    else
+    {
+        // rejected
+    }
 }
 
 // ****************************************************************************

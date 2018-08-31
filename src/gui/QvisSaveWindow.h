@@ -54,6 +54,7 @@ class SaveWindowAttributes;
 class QRadioButton;
 class QButtonGroup;
 class QvisOpacitySlider;
+class DBPluginInfoAttributes;
 
 // ****************************************************************************
 // Class: QvisSaveWindow
@@ -108,6 +109,9 @@ class QvisOpacitySlider;
 //   Brad Whitlock, Wed Sep 20 18:07:45 PDT 2017
 //   Added pixel options.
 //
+//   Kathleen Biagas, Fri Aug 31 13:56:10 PDT 2018
+//   Add dbPluginInfoAtts so DBOptionsAttributes can be passed to the writer.
+//
 // ****************************************************************************
 
 class GUI_API QvisSaveWindow : public QvisPostableWindowObserver
@@ -119,6 +123,10 @@ public:
                    const QString &shortName = QString::null,
                    QvisNotepadArea *notepad = 0);
     virtual ~QvisSaveWindow();
+
+    virtual void SubjectRemoved(Subject *TheRemovedSubject);
+    virtual void ConnectSubjects(DBPluginInfoAttributes *dbp);
+
 public slots:
     virtual void apply();
 protected:
@@ -225,7 +233,8 @@ private:
     QLabel              *imageTransparencyLabel;
     QvisOpacitySlider   *imageTransparency;
 
-    SaveWindowAttributes  *saveWindowAtts;
+    SaveWindowAttributes   *saveWindowAtts;
+    DBPluginInfoAttributes *dbPluginInfoAtts;
 };
 
 #endif

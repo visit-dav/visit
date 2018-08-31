@@ -52,6 +52,8 @@
 #include <avtDatabaseMetaData.h>
 #include <StringHelpers.h>
 
+#include <DBOptionsAttributes.h>
+
 using     std::string;
 using     std::vector;
 
@@ -61,11 +63,17 @@ using     std::vector;
 //  Programmer: Brad Whitlock
 //  Creation:   Thu Jul 26 16:32:43 PST 2012
 //
+//  Modifications:
+//    Kathleen Biagas, Fri Aug 31 14:18:46 PDT 2018
+//    Read comment style from write options.
+//
 // ****************************************************************************
 
-avtCurve2DWriter::avtCurve2DWriter(void)
+avtCurve2DWriter::avtCurve2DWriter(DBOptionsAttributes *atts) : commentStyle("#")
 {
     nBlocks = 0;
+    if (atts->GetEnum("CommentStyle") == 1)
+        commentStyle = "%";
 }
 
 // ****************************************************************************
@@ -166,9 +174,9 @@ avtCurve2DWriter::WriteChunk(vtkDataSet *ds, int chunk)
 
     avtDataAttributes &atts = GetInput()->GetInfo().GetAttributes();
     if(atts.CycleIsAccurate())
-        ofile << "# CYCLE " << atts.GetCycle() << endl;
+        ofile << commentStyle << " CYCLE " << atts.GetCycle() << endl;
     if(atts.TimeIsAccurate())
-        ofile << "# TIME " << atts.GetTime() << endl;
+        ofile << commentStyle << " TIME " << atts.GetTime() << endl;
 
     bool isCurve = false;
     vtkRectilinearGrid *rgrid = vtkRectilinearGrid::SafeDownCast(ds);
@@ -184,14 +192,14 @@ avtCurve2DWriter::WriteChunk(vtkDataSet *ds, int chunk)
         for(int i = 0; i < rgrid->GetPointData()->GetNumberOfArrays(); ++i)
         {
             vtkDataArray *arr = rgrid->GetPointData()->GetArray(i);
-            ofile << "# " << SanitizeName(arr->GetName()) << endl;
+            ofile << commentStyle << " " << SanitizeName(arr->GetName()) << endl;
             for(vtkIdType j = 0; j < arr->GetNumberOfTuples(); ++j)
                 ofile << xc->GetTuple1(j) << " " << arr->GetTuple1(j) << endl;
         }
         for(int i = 0; i < rgrid->GetCellData()->GetNumberOfArrays(); ++i)
         {
             vtkDataArray *arr = rgrid->GetCellData()->GetArray(i);
-            ofile << "# " << SanitizeName(arr->GetName()) << endl;
+            ofile << commentStyle << " " << SanitizeName(arr->GetName()) << endl;
             for(vtkIdType j = 0; j < arr->GetNumberOfTuples(); ++j)
                 ofile << j << " " << arr->GetTuple1(j) << endl;
         }
@@ -201,14 +209,14 @@ avtCurve2DWriter::WriteChunk(vtkDataSet *ds, int chunk)
         for(int i = 0; i < ds->GetPointData()->GetNumberOfArrays(); ++i)
         {
             vtkDataArray *arr = ds->GetPointData()->GetArray(i);
-            ofile << "# " << SanitizeName(arr->GetName()) << endl;
+            ofile << commentStyle << " " << SanitizeName(arr->GetName()) << endl;
             for(vtkIdType j = 0; j < arr->GetNumberOfTuples(); ++j)
                 ofile << j << " " << arr->GetTuple1(j) << endl;
         }
         for(int i = 0; i < ds->GetCellData()->GetNumberOfArrays(); ++i)
         {
             vtkDataArray *arr = ds->GetCellData()->GetArray(i);
-            ofile << "# " << SanitizeName(arr->GetName()) << endl;
+            ofile << commentStyle << " " << SanitizeName(arr->GetName()) << endl;
             for(vtkIdType j = 0; j < arr->GetNumberOfTuples(); ++j)
                 ofile << j << " " << arr->GetTuple1(j) << endl;
         }

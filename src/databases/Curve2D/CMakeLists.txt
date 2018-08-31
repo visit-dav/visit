@@ -16,6 +16,7 @@ SET(LIBM_SOURCES
 Curve2DMDServerPluginInfo.C
 ${COMMON_SOURCES}
 avtCurve2DFileFormat.C
+avtCurve2DOptions.C
 )
 
 SET(LIBE_SOURCES
@@ -23,6 +24,7 @@ Curve2DEnginePluginInfo.C
 ${COMMON_SOURCES}
 avtCurve2DFileFormat.C
 avtCurve2DWriter.C
+avtCurve2DOptions.C
 )
 
 INCLUDE_DIRECTORIES(

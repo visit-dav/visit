@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <snprintf.h>
 #include <PySaveSubWindowsAttributes.h>
+#include <PyDBOptionsAttributes.h>
 
 // ****************************************************************************
 // Module: PySaveWindowAttributes
@@ -254,6 +255,11 @@ PySaveWindowAttributes_ToString(const SaveWindowAttributes *atts, const char *pr
         std::string objPrefix(prefix);
         objPrefix += "subWindowAtts.";
         str += PySaveSubWindowsAttributes_ToString(&atts->GetSubWindowAtts(), objPrefix.c_str());
+    }
+    { // new scope
+        std::string objPrefix(prefix);
+        objPrefix += "opts.";
+        str += PyDBOptionsAttributes_ToString(&atts->GetOpts(), objPrefix.c_str());
     }
     return str;
 }
@@ -766,6 +772,42 @@ SaveWindowAttributes_GetSubWindowAtts(PyObject *self, PyObject *args)
     return retval;
 }
 
+/*static*/ PyObject *
+SaveWindowAttributes_SetOpts(PyObject *self, PyObject *args)
+{
+    SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
+
+    PyObject *newValue = NULL;
+    if(!PyArg_ParseTuple(args, "O", &newValue))
+        return NULL;
+    if(!PyDBOptionsAttributes_Check(newValue))
+    {
+        fprintf(stderr, "The opts field can only be set with DBOptionsAttributes objects.\n");
+        return NULL;
+    }
+
+    obj->data->SetOpts(*PyDBOptionsAttributes_FromPyObject(newValue));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+SaveWindowAttributes_GetOpts(PyObject *self, PyObject *args)
+{
+    SaveWindowAttributesObject *obj = (SaveWindowAttributesObject *)self;
+    // Since the new object will point to data owned by this object,
+    // we need to increment the reference count.
+    Py_INCREF(self);
+
+    PyObject *retval = PyDBOptionsAttributes_Wrap(&obj->data->GetOpts());
+    // Set the object's parent so the reference to the parent can be decref'd
+    // when the child goes out of scope.
+    PyDBOptionsAttributes_SetParent(retval, self);
+
+    return retval;
+}
+
 
 
 PyMethodDef PySaveWindowAttributes_methods[SAVEWINDOWATTRIBUTES_NMETH] = {
@@ -808,6 +850,8 @@ PyMethodDef PySaveWindowAttributes_methods[SAVEWINDOWATTRIBUTES_NMETH] = {
     {"GetAdvancedMultiWindowSave", SaveWindowAttributes_GetAdvancedMultiWindowSave, METH_VARARGS},
     {"SetSubWindowAtts", SaveWindowAttributes_SetSubWindowAtts, METH_VARARGS},
     {"GetSubWindowAtts", SaveWindowAttributes_GetSubWindowAtts, METH_VARARGS},
+    {"SetOpts", SaveWindowAttributes_SetOpts, METH_VARARGS},
+    {"GetOpts", SaveWindowAttributes_GetOpts, METH_VARARGS},
     {NULL, NULL}
 };
 
@@ -923,6 +967,8 @@ PySaveWindowAttributes_getattr(PyObject *self, char *name)
         return SaveWindowAttributes_GetAdvancedMultiWindowSave(self, NULL);
     if(strcmp(name, "subWindowAtts") == 0)
         return SaveWindowAttributes_GetSubWindowAtts(self, NULL);
+    if(strcmp(name, "opts") == 0)
+        return SaveWindowAttributes_GetOpts(self, NULL);
 
     return Py_FindMethod(PySaveWindowAttributes_methods, self, name);
 }
@@ -975,6 +1021,8 @@ PySaveWindowAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = SaveWindowAttributes_SetAdvancedMultiWindowSave(self, tuple);
     else if(strcmp(name, "subWindowAtts") == 0)
         obj = SaveWindowAttributes_SetSubWindowAtts(self, tuple);
+    else if(strcmp(name, "opts") == 0)
+        obj = SaveWindowAttributes_SetOpts(self, tuple);
 
     if(obj != NULL)
         Py_DECREF(obj);

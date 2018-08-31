@@ -56,6 +56,6 @@ VISIT_DATABASE_PLUGIN_ENTRY(Curve2D,Engine)
 avtDatabaseWriter *
 Curve2DEnginePluginInfo::GetWriter(void)
 {
-    return new avtCurve2DWriter;
+    return new avtCurve2DWriter(writeOptions);
 }
 

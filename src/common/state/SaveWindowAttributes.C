@@ -295,6 +295,7 @@ void SaveWindowAttributes::Copy(const SaveWindowAttributes &obj)
     pixelData = obj.pixelData;
     advancedMultiWindowSave = obj.advancedMultiWindowSave;
     subWindowAtts = obj.subWindowAtts;
+    opts = obj.opts;
 
     SaveWindowAttributes::SelectAll();
 }
@@ -471,7 +472,8 @@ SaveWindowAttributes::operator == (const SaveWindowAttributes &obj) const
             (resConstraint == obj.resConstraint) &&
             (pixelData == obj.pixelData) &&
             (advancedMultiWindowSave == obj.advancedMultiWindowSave) &&
-            (subWindowAtts == obj.subWindowAtts));
+            (subWindowAtts == obj.subWindowAtts) &&
+            (opts == obj.opts));
 }
 
 // ****************************************************************************
@@ -635,6 +637,7 @@ SaveWindowAttributes::SelectAll()
     Select(ID_pixelData,                (void *)&pixelData);
     Select(ID_advancedMultiWindowSave,  (void *)&advancedMultiWindowSave);
     Select(ID_subWindowAtts,            (void *)&subWindowAtts);
+    Select(ID_opts,                     (void *)&opts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -793,6 +796,18 @@ SaveWindowAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool f
             delete subWindowAttsNode;
     }
 
+    if(completeSave || !FieldsEqual(ID_opts, &defaultObject))
+    {
+        DataNode *optsNode = new DataNode("opts");
+        if(opts.CreateNode(optsNode, completeSave, false))
+        {
+            addToParent = true;
+            node->AddNode(optsNode);
+        }
+        else
+            delete optsNode;
+    }
+
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -911,6 +926,8 @@ SaveWindowAttributes::SetFromNode(DataNode *parentNode)
         SetAdvancedMultiWindowSave(node->AsBool());
     if((node = searchNode->GetNode("subWindowAtts")) != 0)
         subWindowAtts.SetFromNode(node);
+    if((node = searchNode->GetNode("opts")) != 0)
+        opts.SetFromNode(node);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1055,6 +1072,13 @@ SaveWindowAttributes::SetSubWindowAtts(const SaveSubWindowsAttributes &subWindow
 {
     subWindowAtts = subWindowAtts_;
     Select(ID_subWindowAtts, (void *)&subWindowAtts);
+}
+
+void
+SaveWindowAttributes::SetOpts(const DBOptionsAttributes &opts_)
+{
+    opts = opts_;
+    Select(ID_opts, (void *)&opts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1205,6 +1229,18 @@ SaveWindowAttributes::GetSubWindowAtts()
     return subWindowAtts;
 }
 
+const DBOptionsAttributes &
+SaveWindowAttributes::GetOpts() const
+{
+    return opts;
+}
+
+DBOptionsAttributes &
+SaveWindowAttributes::GetOpts()
+{
+    return opts;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Select property methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -1231,6 +1267,12 @@ void
 SaveWindowAttributes::SelectSubWindowAtts()
 {
     Select(ID_subWindowAtts, (void *)&subWindowAtts);
+}
+
+void
+SaveWindowAttributes::SelectOpts()
+{
+    Select(ID_opts, (void *)&opts);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1277,6 +1319,7 @@ SaveWindowAttributes::GetFieldName(int index) const
     case ID_pixelData:                return "pixelData";
     case ID_advancedMultiWindowSave:  return "advancedMultiWindowSave";
     case ID_subWindowAtts:            return "subWindowAtts";
+    case ID_opts:                     return "opts";
     default:  return "invalid index";
     }
 }
@@ -1321,6 +1364,7 @@ SaveWindowAttributes::GetFieldType(int index) const
     case ID_pixelData:                return FieldType_int;
     case ID_advancedMultiWindowSave:  return FieldType_bool;
     case ID_subWindowAtts:            return FieldType_att;
+    case ID_opts:                     return FieldType_att;
     default:  return FieldType_unknown;
     }
 }
@@ -1365,6 +1409,7 @@ SaveWindowAttributes::GetFieldTypeName(int index) const
     case ID_pixelData:                return "int";
     case ID_advancedMultiWindowSave:  return "bool";
     case ID_subWindowAtts:            return "att";
+    case ID_opts:                     return "att";
     default:  return "invalid index";
     }
 }
@@ -1489,6 +1534,11 @@ SaveWindowAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_subWindowAtts:
         {  // new scope
         retval = (subWindowAtts == obj.subWindowAtts);
+        }
+        break;
+    case ID_opts:
+        {  // new scope
+        retval = (opts == obj.opts);
         }
         break;
     default: retval = false;

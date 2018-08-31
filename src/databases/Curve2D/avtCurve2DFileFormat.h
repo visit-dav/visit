@@ -50,6 +50,7 @@
 #include <visitstream.h>
 
 
+class     DBOptionsAttributes;
 class     vtkRectilinearGrid;
 
 
@@ -85,6 +86,9 @@ class     vtkRectilinearGrid;
 //    Kathleen Biagas, Tue Jul 15 14:16:07 MST 2014
 //    Change 'GetPoint' args from float to double.
 //
+//    Kathleen Biagas, Fri Aug 31 14:22:11 PDT 2018
+//    Added DBOptionsAttributes (currently unused).
+//
 // ****************************************************************************
 
 typedef enum
@@ -100,7 +104,7 @@ typedef enum
 class avtCurve2DFileFormat : public avtSTSDFileFormat
 {
   public:
-                          avtCurve2DFileFormat(const char *);
+                          avtCurve2DFileFormat(const char *, DBOptionsAttributes *);
     virtual              ~avtCurve2DFileFormat();
     
     virtual const char   *GetType(void) { return "Curve File Format"; };

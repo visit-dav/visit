@@ -1676,6 +1676,9 @@ ViewerWindowManager::ChooseCenterOfRotation(int windowIndex,
 //    Brad Whitlock, Wed Sep 20 17:50:45 PDT 2017
 //    I added support for saving images with the z buffer and alpha.
 //
+//    Kathleen Biagas, Fri Aug 31 13:15:56 PDT 2018
+//    Send Options from SaveWindowAttributes to fileWriter if non-image.
+//
 // ****************************************************************************
 
 void
@@ -1838,6 +1841,7 @@ ViewerWindowManager::SaveWindow(int windowIndex)
         filename = fileWriter->CreateFilename(fileBase.c_str(),
                               GetViewerState()->GetSaveWindowAttributes()->GetFamily(),
                               !GetViewerProperties()->GetInSitu());
+        fileWriter->SetOptions(GetViewerState()->GetSaveWindowAttributes()->GetOpts());
     }
 
     //

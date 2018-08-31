@@ -50,6 +50,7 @@
 #include <vector>
 
 #include <avtTerminatingDatasetSink.h>
+#include <DBOptionsAttributes.h>
 
 class vtkRectilinearGrid;
 
@@ -98,6 +99,9 @@ typedef enum
 //    Dave Pugmire, Thu Jul  8 08:30:11 EDT 2010
 //    Added PLY writer.
 //
+//    Kathleen Biagas, Fri Aug 31 13:21:14 PDT 2018
+//    Added DBOptionsAttributes.
+//
 // ****************************************************************************
 
 class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
@@ -110,6 +114,8 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
 
     char              *CreateFilename(const char *base, bool family,
                                       DatasetFileFormat);
+
+    void               SetOptions(const DBOptionsAttributes &);
 
   protected:
     static const char *extensions[];
@@ -141,6 +147,9 @@ class AVTFILEWRITER_API avtDatasetFileWriter : public avtTerminatingDatasetSink
     vtkDataSet        *GetSingleDataset(void);
     char              *GenerateName(const char *, const char *,
                                     std::vector<std::string> &);
+
+  private:
+    DBOptionsAttributes opts;
 };
 
 

@@ -56,7 +56,7 @@ package llnl.visit;
 
 public class SaveWindowAttributes extends AttributeSubject
 {
-    private static int SaveWindowAttributes_numAdditionalAtts = 20;
+    private static int SaveWindowAttributes_numAdditionalAtts = 21;
 
     // Enum values
     public final static int FILEFORMAT_BMP = 0;
@@ -116,6 +116,7 @@ public class SaveWindowAttributes extends AttributeSubject
         pixelData = 1;
         advancedMultiWindowSave = false;
         subWindowAtts = new SaveSubWindowsAttributes();
+        opts = new DBOptionsAttributes();
     }
 
     public SaveWindowAttributes(int nMoreFields)
@@ -142,6 +143,7 @@ public class SaveWindowAttributes extends AttributeSubject
         pixelData = 1;
         advancedMultiWindowSave = false;
         subWindowAtts = new SaveSubWindowsAttributes();
+        opts = new DBOptionsAttributes();
     }
 
     public SaveWindowAttributes(SaveWindowAttributes obj)
@@ -168,6 +170,7 @@ public class SaveWindowAttributes extends AttributeSubject
         pixelData = obj.pixelData;
         advancedMultiWindowSave = obj.advancedMultiWindowSave;
         subWindowAtts = new SaveSubWindowsAttributes(obj.subWindowAtts);
+        opts = new DBOptionsAttributes(obj.opts);
 
         SelectAll();
     }
@@ -204,7 +207,8 @@ public class SaveWindowAttributes extends AttributeSubject
                 (resConstraint == obj.resConstraint) &&
                 (pixelData == obj.pixelData) &&
                 (advancedMultiWindowSave == obj.advancedMultiWindowSave) &&
-                (subWindowAtts.equals(obj.subWindowAtts)));
+                (subWindowAtts.equals(obj.subWindowAtts)) &&
+                (opts.equals(obj.opts)));
     }
 
     // Property setting methods
@@ -328,6 +332,12 @@ public class SaveWindowAttributes extends AttributeSubject
         Select(19);
     }
 
+    public void SetOpts(DBOptionsAttributes opts_)
+    {
+        opts = opts_;
+        Select(20);
+    }
+
     // Property getting methods
     public boolean                  GetOutputToCurrentDirectory() { return outputToCurrentDirectory; }
     public String                   GetOutputDirectory() { return outputDirectory; }
@@ -349,6 +359,7 @@ public class SaveWindowAttributes extends AttributeSubject
     public int                      GetPixelData() { return pixelData; }
     public boolean                  GetAdvancedMultiWindowSave() { return advancedMultiWindowSave; }
     public SaveSubWindowsAttributes GetSubWindowAtts() { return subWindowAtts; }
+    public DBOptionsAttributes      GetOpts() { return opts; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -393,6 +404,8 @@ public class SaveWindowAttributes extends AttributeSubject
             buf.WriteBool(advancedMultiWindowSave);
         if(WriteSelect(19, buf))
             subWindowAtts.Write(buf);
+        if(WriteSelect(20, buf))
+            opts.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -459,6 +472,10 @@ public class SaveWindowAttributes extends AttributeSubject
         case 19:
             subWindowAtts.Read(buf);
             Select(19);
+            break;
+        case 20:
+            opts.Read(buf);
+            Select(20);
             break;
         }
     }
@@ -535,6 +552,7 @@ public class SaveWindowAttributes extends AttributeSubject
         str = str + intToString("pixelData", pixelData, indent) + "\n";
         str = str + boolToString("advancedMultiWindowSave", advancedMultiWindowSave, indent) + "\n";
         str = str + indent + "subWindowAtts = {\n" + subWindowAtts.toString(indent + "    ") + indent + "}\n";
+        str = str + indent + "opts = {\n" + opts.toString(indent + "    ") + indent + "}\n";
         return str;
     }
 
@@ -560,5 +578,6 @@ public class SaveWindowAttributes extends AttributeSubject
     private int                      pixelData;
     private boolean                  advancedMultiWindowSave;
     private SaveSubWindowsAttributes subWindowAtts;
+    private DBOptionsAttributes      opts;
 }
 
