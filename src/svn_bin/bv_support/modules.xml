@@ -3,7 +3,7 @@
         <!-- required libraries -->
         <required>
             <lib name="cmake"/> <!-- cmake is here -->
-            <lib name="python"/> 
+            <lib name="python"/>
             <lib name="vtk"/> <!-- <lib name="vtk" reqdeps="cmake vtk" optdeps="qt mesagl"/> -->
             <lib name="qt"/>
             <lib name="qwt"/>
@@ -12,6 +12,7 @@
         <!-- optional libraries -->
         <optional>
             <lib name="adios"/>
+            <lib name="adios2"/>
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
@@ -69,6 +70,7 @@
 
         <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="adios"/>
+            <lib name="adios2"/>
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
@@ -113,6 +115,7 @@
         <!-- all io libraries -->
         <group name="all-io" comment="Build all available I/O libraries" enabled="no">
             <lib name="adios"/>
+            <lib name="adios2"/>
 <!--        <lib name="advio"/>    Removed by Allen Sanderson-->
             <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
@@ -142,6 +145,7 @@
         <!-- dbio-only-->
         <group name="dbio-only" comment="Disables EVERYTHING but I/O." enabled="no">
             <lib name="adios"/>
+            <lib name="adios2"/>
             <lib name="advio"/>
             <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>

@@ -37,7 +37,7 @@
 # To create your own modular file these 7 functions need to be implemented..
 #filename: bv_<module>.sh
 #bv_<module>_initialize : Initialize any variables you may want to export
-#bv_<module>_enable : Enables the module 
+#bv_<module>_enable : Enables the module
 #bv_<module>_disable : Disables the module
 #bv_<module>_info : Where to get the module, the version, etc...
 #bv_<module>_ensure : Ensure the module has been downloaded and extracted properly. Set and check variables here..
@@ -130,7 +130,7 @@ function check_for_versioning
 }
 
 # This function is not used, it is meant to be injected into older versions of VisIt..
-# This code is a duplicate of the one in helperfuncs.sh because build_visit needs to be 
+# This code is a duplicate of the one in helperfuncs.sh because build_visit needs to be
 # stand alone..
 function download_file
 {
@@ -141,9 +141,9 @@ function download_file
 # some third party libs - we can't skip svn mode just b/c this info is given.
 #
     typeset dfile=$1
-    info "Downloading $dfile . . ." 
+    info "Downloading $dfile . . ."
     shift
-    
+
     SVN_ROOT_PREFIX="${SVN_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
     SVN_ANON_ROOT_PREFIX="${SVN_ANON_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
     # If SVN is requested, try that first before anything else
@@ -153,7 +153,7 @@ function download_file
             info "SVN download succeeded: $SVN_ROOT_PREFIX/$dfile"
             return 0
         else
-            warn "Normal svn failed. Trying anonymous svn." 
+            warn "Normal svn failed. Trying anonymous svn."
             svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
             if [[ $? == 0 && -e $dfile ]] ; then
                 info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
@@ -213,11 +213,11 @@ function download_file
 
 function configure_support_files
 {
-    if [ ! -d $bv_PREFIX ]; then 
+    if [ ! -d $bv_PREFIX ]; then
         #check current directory
         bv_PREFIX=$PWD/bv_support/
 
-        if [ ! -d $bv_PREFIX ]; then 
+        if [ ! -d $bv_PREFIX ]; then
 
             for choice in `echo "curl wget svn"`
             do
@@ -230,7 +230,7 @@ function configure_support_files
                 fi
                 if [[ $choice == "curl" ]]; then
                     tmp_curl=`curl -s ${webaddr}/ | grep 'sh\|xml' | grep li|sed s/.*bv_/bv_/g | sed -e s/\.sh.*/\.sh/g | sed -e s/.*href\=\"//g | sed -e s/\".*//g;`
-                    if [ $? != 0 ]; then 
+                    if [ $? != 0 ]; then
                         continue
                     fi
 
@@ -238,8 +238,8 @@ function configure_support_files
                     is_successful=1
                     #fetch each file..
                     for curl_files in `echo $tmp_curl`
-                    do 
-                        curl -s ${webaddr}/${curl_files} -o bv_support_tmp/$curl_files 
+                    do
+                        curl -s ${webaddr}/${curl_files} -o bv_support_tmp/$curl_files
                         if [ $? != 0 ]; then
                             echo "failed to download ${curl_files}"
                             is_successful=0
@@ -248,7 +248,7 @@ function configure_support_files
                     done
 
                     #if not successful cleanup and try next option..
-                    if [ $is_successful == 0 ]; then 
+                    if [ $is_successful == 0 ]; then
                         rm -fR bv_support_tmp
                     else
                         mv bv_support_tmp bv_support
@@ -332,17 +332,17 @@ function call_build_visit
 
         SVN_SOURCE_PATH="tags/${VISIT_VERSION}/src"
         SVN_THIRDPARTY_PATH="tags/${VISIT_VERSION}/third_party"
-        
+
         # have to inject a hack for versions older than 2.6.3
         bv_PREFIX=$PWD/bv_support
         webaddr="$webroot/tags/$build_version/src/svn_bin/bv_support/"
         echo "rerouting support from $webaddr"
         configure_support_files
-        
+
         echo "SVN_SOURCE_PATH=$SVN_SOURCE_PATH" >> bv_support/helper_funcs.sh
         echo "SVN_THIRDPARTY_PATH=$SVN_THIRDPARTY_PATH" >> bv_support/helper_funcs.sh
         declare -f download_file >> bv_support/helper_funcs.sh
-        
+
         # execute build_visit (exec should terminate current
         # script for new one)
         echo "Executing $build_visit_ver"
@@ -421,10 +421,11 @@ do
     done
 done
 
+
 #import functions that that install required visit libraries
 for (( i = 0; i < ${#reqlibs[*]}; ++i ))
 do
-    . "${bv_PREFIX}/bv_${reqlibs[$i]}.sh" 
+    . "${bv_PREFIX}/bv_${reqlibs[$i]}.sh"
     verify_required_module_exists ${reqlibs[$i]}
 done
 
@@ -435,6 +436,7 @@ do
     . "${bv_PREFIX}/bv_${optlibs[$i]}.sh"
     verify_optional_module_exists ${optlibs[$i]}
 done
+
 
 ###################### Grouping libraries
 # The arrays listed below help group VisIt's set of libraries.
@@ -465,7 +467,7 @@ do
 
 done
 
-function check_default_args 
+function check_default_args
 {
     #handle -h or --help arg early to avoid delays
     for arg in "$@";
@@ -604,8 +606,8 @@ function bv_write_unified_file
     cd $OLDPWD
 }
 
-# This code is meant to exercise support for building 
-# older VisIt versions.. 
+# This code is meant to exercise support for building
+# older VisIt versions..
 check_for_versioning "$@"
 
 #jump to older version of build_visit if needed
@@ -621,6 +623,5 @@ check_default_args "$@"
 #initialize all build visit variables
 initialize_build_visit
 
-#run all build visit 
+#run all build visit
 run_build_visit "$@"
-

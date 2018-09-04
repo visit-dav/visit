@@ -39,7 +39,7 @@ function bv_adios_depends_on
         echo ""
     else
         depends_on=""
-        
+
         if [[ "$DO_MPICH" == "yes" ]] ; then
             depends_on="$depends_on mpich"
         fi
@@ -104,12 +104,12 @@ function bv_adios_host_profile
         if [[ "$USE_SYSTEM_ADIOS" == "yes" ]]; then
             warn "Assuming version 1.11.0 for Adios"
             echo "SETUP_APP_VERSION(ADIOS 1.11.0)" >> $HOSTCONF
-            echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR $ADIOS_INSTALL_DIR)" >> $HOSTCONF 
+            echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR $ADIOS_INSTALL_DIR)" >> $HOSTCONF
         else
             echo "SETUP_APP_VERSION(ADIOS $ADIOS_VERSION)" >> $HOSTCONF
             echo \
                 "VISIT_OPTION_DEFAULT(VISIT_ADIOS_DIR \${VISITHOME}/adios/\${ADIOS_VERSION}/\${VISITARCH})" \
-                >> $HOSTCONF 
+                >> $HOSTCONF
         fi
     fi
 }
@@ -290,7 +290,7 @@ function build_adios
     #
     info "Configuring ADIOS . . ."
     cd $ADIOS_BUILD_DIR || error "Can't cd to ADIOS build dir."
-    
+
     info "Invoking command to configure ADIOS"
 
     # MPI support
@@ -312,7 +312,7 @@ function build_adios
         WITH_HDF5_ARGS="--without-hdf5"
         #HDF5_DYLIB=""
     fi
-    
+
     info   ./configure ${OPTIONAL} CXX="$CXX_COMPILER" CC="$C_COMPILER" \
            CFLAGS=\"$CFLAGS $C_OPT_FLAGS $WITH_MPI_INC\" \
            CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $WITH_MPI_INC\" \
@@ -320,7 +320,7 @@ function build_adios
            --disable-fortran \
            --without-netcdf --without-nc4par --without-phdf5 --without-mxml \
            --prefix="$VISITDIR/adios/$ADIOS_VERSION/$VISITARCH"
-    
+
     sh -c "./configure ${OPTIONAL} CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
            CFLAGS=\"$CFLAGS $C_OPT_FLAGS $WITH_MPI_INC\" \
            CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS $WITH_MPI_INC\" \
@@ -380,7 +380,7 @@ function build_adios
 function bv_adios_is_enabled
 {
     if [[ $DO_ADIOS == "yes" ]]; then
-        return 1    
+        return 1
     fi
     return 0
 }

@@ -67,12 +67,12 @@
 #    Added back paraDIS after build issue was resolved.
 #
 #    Brad Whitlock, Mon Apr 26 13:35:37 PST 2010
-#    I made Xdmf use the Xdmf library. I renamed our old XDMF reader to 
+#    I made Xdmf use the Xdmf library. I renamed our old XDMF reader to
 #    VisItXdmf and I made it get used when the Xdmf reader that uses the
 #    Xdmf library is not available.
 #
-#    Kathleen Bonnell, Wed May 5 12:04:22 PST 2010 
-#    Enable VASP reader on windows. 
+#    Kathleen Bonnell, Wed May 5 12:04:22 PST 2010
+#    Enable VASP reader on windows.
 #
 #    Tom Fogal, Wed Aug  4 15:14:56 MDT 2010
 #    Build STAR database.
@@ -141,8 +141,8 @@
 #
 #    Brad Whitlock, Fri Apr 19 11:31:21 PDT 2013
 #    Reorder HDF5-related libraries so static linking will work. For example,
-#    since Silo depends on HDF5, Silo comes before HDF5 since the 
-#    THIRDPARTY_DEPENDENT_PLUGINS macro appends libraries to long list of 
+#    since Silo depends on HDF5, Silo comes before HDF5 since the
+#    THIRDPARTY_DEPENDENT_PLUGINS macro appends libraries to long list of
 #    3rd party libraries needed for static linking.
 #
 #    Kathleen Biagas, Fri May 3 16:57:29 MST 2013
@@ -180,13 +180,13 @@
 #    Removed TCGA from Windows builds.
 #
 #    Cyrus Harrison, Tue Feb 10 19:54:31 PST 2015
-#    Changed BOOST logic and added CHECK_THIRDPARTY_SATISFIED, 
+#    Changed BOOST logic and added CHECK_THIRDPARTY_SATISFIED,
 #    which is used for explicitly check 3rd party deps for each db plugin.
 #
-#    Kathleen Biagas, Wed Sep 23 09:38:22 MST 2015 
+#    Kathleen Biagas, Wed Sep 23 09:38:22 MST 2015
 #    Don't attempt to build HDFS on Windows.
 #
-#    Kathleen Biagas, Fri Jan 6 12:43:32 MST 2017 
+#    Kathleen Biagas, Fri Jan 6 12:43:32 MST 2017
 #    Enable Claw on Windows.
 #
 #    Kathleen Biagas, Fri Mar 31 08:57:41 PDT 2017
@@ -246,9 +246,9 @@ MACRO(CHECK_THIRDPARTY_SATISFIED dbplugin dep_libs)
         MESSAGE(STATUS "Enabling ${dbplugin}")
         LIST(FIND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin} findVar)
         IF(findVar EQUAL -1)
-            LIST(APPEND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin})            
+            LIST(APPEND THIRDPARTY_DEPENDENT_PLUGINS ${dbplugin})
         ELSE()
-            # sanity check when we enable a plugin, we could keep a list 
+            # sanity check when we enable a plugin, we could keep a list
             # of all of the plugins and make sure we don't try to add them
             # twice, but checking at enable seems like a good enough check
             MESSAGE(FATAL_ERROR "CHECK_THIRDPARTY_SATISFIED should be called once per database plugin with all dependencies")
@@ -279,7 +279,7 @@ MACRO(CHECK_THIRDPARTY_SATISFIED dbplugin dep_libs)
         ENDIF(VISIT_STATIC)
     ELSE()
         MESSAGE(STATUS "Disabling ${dbplugin}")
-        VISIT_SELECTED_PLUGIN_ERROR(DATABASE ${dbplugin} 
+        VISIT_SELECTED_PLUGIN_ERROR(DATABASE ${dbplugin}
             " third party dependencies not found: ${deps_not_found}")
     ENDIF()
 ENDMACRO()
@@ -347,6 +347,7 @@ ENDIF(NOT XDMF_FOUND)
 
 
 CHECK_THIRDPARTY_SATISFIED(ADIOS ADIOS)
+CHECK_THIRDPARTY_SATISFIED(ADIOS2 ADIOS2)
 CHECK_THIRDPARTY_SATISFIED(Adventure ADVIO)
 
 CHECK_THIRDPARTY_SATISFIED(Boxlib2D BOXLIB)
@@ -363,7 +364,7 @@ CHECK_THIRDPARTY_SATISFIED(ZeusMP HDF4)
 CHECK_THIRDPARTY_SATISFIED(MDSplus MDSPLUS)
 CHECK_THIRDPARTY_SATISFIED(Mili    MILI)
 CHECK_THIRDPARTY_SATISFIED(Uintah  UINTAH)
-CHECK_THIRDPARTY_SATISFIED(IDX     PIDX)
+#CHECK_THIRDPARTY_SATISFIED(IDX     PIDX)
 CHECK_THIRDPARTY_SATISFIED(MFEM    MFEM)
 
 CHECK_THIRDPARTY_SATISFIED(OpenEXR OPENEXR)
@@ -478,7 +479,7 @@ ELSE()
 ENDIF(TARGET vtkIOEnSight)
 
 IF (NOT WIN32)
-    LIST(APPEND REQUIRED_DATABASE_PLUGINS 
+    LIST(APPEND REQUIRED_DATABASE_PLUGINS
         HDFS
         STAR
         TCGA

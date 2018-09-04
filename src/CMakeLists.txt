@@ -360,7 +360,7 @@
 #   Handle reorganization of windowsbuild directory.
 #
 #    Cyrus Harrison, on Oct 28 14:39:05 PDT 2013
-#    Fix exported VTK targets for VTK-6. Fix VTK-6 include dirs 
+#    Fix exported VTK targets for VTK-6. Fix VTK-6 include dirs
 #    for make install / package.
 #
 #    Kathleen Biagas, Wed Nov  6 17:42:32 PST 2013
@@ -526,7 +526,7 @@ FUNCTION(VISIT_OPTION_DEFAULT var)
     ENDIF(${opt_ARG_PREV} STREQUAL "TYPE")
     SET(opt_ARG_PREV ${opt_ARG})
   ENDFOREACH(opt_ARG in ${ARGN})
-  ## 
+  ##
   SET(default_base "${var}_DEFAULT")
   SET(default_base_val  "${${default_base}}")
   IF(NOT "${default_base_val}" STREQUAL "${opt_ARGS}")
@@ -576,7 +576,7 @@ ENDIF (NOT WIN32)
 
 #-----------------------------------------------------------------------------
 # If the config-site file above has not set a VTK version set a
-# default VTK version of 8.1.0.  
+# default VTK version of 8.1.0.
 #-----------------------------------------------------------------------------
 IF(NOT VTK_VERSION)
   IF(VISIT_VTK_VERSION)
@@ -593,7 +593,7 @@ ENDIF()
 
 #-----------------------------------------------------------------------------
 # If the config-site file above has not set a NEKTAR++ version set a
-# default NEKTAR++ version of 4.0.0.  
+# default NEKTAR++ version of 4.0.0.
 #-----------------------------------------------------------------------------
 IF(EXISTS ${VISIT_NEKTAR++_DIR})
   IF(NOT NEKTAR++_VERSION)
@@ -826,6 +826,7 @@ ENDIF(WIN32)
 # only and not require separate varibles for both serial and MPI parallel variants.
 #
 VISIT_3RDPARTY_VAR(ADIOS_DIR     "Path containing the ADIOS library's include and lib")
+VISIT_3RDPARTY_VAR(ADIOS2_DIR     "Path containing the ADIOS library's include and lib")
 VISIT_3RDPARTY_VAR(ADVIO_DIR     "Path containing the AdvIO library's include and lib")
 VISIT_3RDPARTY_VAR(BOOST_DIR     "Path containing the BOOST library's include and lib")
 VISIT_3RDPARTY_VAR(BOXLIB_DIR    "Path containing the Boxlib library's include and lib")
@@ -1113,7 +1114,7 @@ ELSE(VISIT_USE_X)
 ENDIF(VISIT_USE_X)
 INCLUDE(${CMAKE_ROOT}/Modules/TestBigEndian.cmake)
 
-# Configure Nektar++ support. 
+# Configure Nektar++ support.
 # Do it before the other libraries like boost because many can depend on it.
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindNektar++.cmake)
 
@@ -1177,7 +1178,7 @@ IF(VISIT_OSPRAY)
     IF(NOT DEFINED TBB_ROOT)
       SET(TBB_ROOT ${VISIT_TBB_ROOT})
     ENDIF()
-    # we have to search for the osprayConfig.cmake file in the ospray install 
+    # we have to search for the osprayConfig.cmake file in the ospray install
     # folder. Because ospray sometimes install its library in <...>/lib64 folder
     # instead of the <...>/lib folder, we have to check both possibilities
     IF(EXISTS ${OSPRAY_DIR}/lib)
@@ -1204,17 +1205,17 @@ IF(VISIT_OSPRAY)
 
     # install ospray libs follow visit's standard
     #
-    # -- OSPRAY_LIBRARIES contains also libtbb and libembree, so we dont 
+    # -- OSPRAY_LIBRARIES contains also libtbb and libembree, so we dont
     #    have to handle embree and tbb seperately. As for ISPC, since ISPC
     #    is only a compiler and will only be needed when we are compiling
     #    ospray source, we dont have to install ISPC at all here for VisIt.
-    # 
-    # on linux ospray have libraries in a form of: 
+    #
+    # on linux ospray have libraries in a form of:
     #      libospray[xxx].so
     #      libospray[xxx].so.0
     #      libospray[xxx].so.[version]
     #
-    # on mac ospray have libraries in a form of: 
+    # on mac ospray have libraries in a form of:
     #      libospray[xxx].dylib
     #      libospray[xxx].0.dylib
     #      libospray[xxx].[version].dylib
@@ -1226,7 +1227,7 @@ IF(VISIT_OSPRAY)
     # -- installing headers
     IF(NOT VISIT_HEADERS_SKIP_INSTALL)
       INSTALL(DIRECTORY ${OSPRAY_INCLUDE_DIR}
-        DESTINATION 
+        DESTINATION
         DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/ospray
         FILE_PERMISSIONS OWNER_WRITE OWNER_READ
                          GROUP_WRITE GROUP_READ
@@ -1239,9 +1240,9 @@ IF(VISIT_OSPRAY)
     # -- installing libs
     IF(NOT VISIT_OSPRAY_SKIP_INSTALL)
       FOREACH(l ${OSPRAY_LIBRARIES})
-        # here because the CMake variable OSPRAY_LIBRARIES contains words 
+        # here because the CMake variable OSPRAY_LIBRARIES contains words
         # like 'optimized' and 'debug', we should skip them
-        IF( (NOT "${l}" STREQUAL "optimized") AND 
+        IF( (NOT "${l}" STREQUAL "optimized") AND
             (NOT "${l}" STREQUAL "debug"))
           GET_FILENAME_COMPONENT(_name_ ${l} NAME_WE)
           IF( (NOT "${_name_}" STREQUAL "libtbb_debug") AND
@@ -1352,12 +1353,15 @@ IF(CMAKE_HOST_UNIX)
 ENDIF(CMAKE_HOST_UNIX)
 
 IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
-    # Configure HDF5 support. 
+    # Configure HDF5 support.
     # Do it before the other libraries since many can depend on it.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindHDF5.cmake)
 
     # Configure adios support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS.cmake)
+
+    # Configure adios2 support.
+    INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADIOS2.cmake)
 
     # Configure advio support.
     INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindADVIO.cmake)
@@ -2327,7 +2331,7 @@ IF(VISIT_STATIC)
     ADD_SUBDIRECTORY(engine/main)
     ADD_SUBDIRECTORY(sim/V2/static)
 
-    # Make it possible to build some sim examples since we've created the 
+    # Make it possible to build some sim examples since we've created the
     # static sim library.
     IF(NOT WIN32)
         IF(VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
@@ -2406,20 +2410,20 @@ EXPORT_LIBRARY_DEPENDENCIES(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies
 FOREACH(VTK_TARGET ${VTK_LIBRARIES})
     IF(TARGET ${VTK_TARGET})
         # this lets us know if this is a real VTK lib, not a depend lib (such as python)
-        GET_PROPERTY(VTK_TARGET_IMPORT_LOC_EXISTS TARGET ${VTK_TARGET} 
+        GET_PROPERTY(VTK_TARGET_IMPORT_LOC_EXISTS TARGET ${VTK_TARGET}
                                                   PROPERTY IMPORT_LOCATION SET)
         IF(${VTK_TARGET_IMPORT_LOC_EXISTS})
-            # We can follow the import loc property  to get the actual filename, but we 
+            # We can follow the import loc property  to get the actual filename, but we
             # will want to link with -lvkt , not libvtk ...
             #
             # So for now, we create the suffix manually. Keeping this code in case
-            # we need it to create something more sophisticated in the future. 
-            # 
-            # GET_PROPERTY(VTK_LIB_TARGET_LOC TARGET ${VTK_TARGET} 
+            # we need it to create something more sophisticated in the future.
+            #
+            # GET_PROPERTY(VTK_LIB_TARGET_LOC TARGET ${VTK_TARGET}
             #                                 PROPERTY IMPORT_LOCATION)
             # get_filename_component(VTK_TRUE_TARGET ${VTK_LIB_TARGET_LOC} NAME_WE)
             #
-            SET(VTK_TRUE_TARGET "${VTK_TARGET}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}") 
+            SET(VTK_TRUE_TARGET "${VTK_TARGET}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
             MESSAGE(STATUS "${VTK_TARGET} vs ${VTK_TRUE_TARGET}")
             LIST(APPEND VTK_VALID_TARGETS  ${VTK_TARGET})
             LIST(APPEND VTK_TRUE_TARGETS  ${VTK_TRUE_TARGET})
@@ -2436,7 +2440,7 @@ INSTALL(CODE "
 FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
     FILE(STRINGS \${filename}.in lines)
     FILE(WRITE \${filename} \"# Filtered version\\n\")
-    # we need to steal the lists from the parent scope so they can 
+    # we need to steal the lists from the parent scope so they can
     # be used in our install code
     SET(FVTK_VALID_TARGETS ${VTK_VALID_TARGETS})
     SET(FVTK_TRUE_TARGETS ${VTK_TRUE_TARGETS})
@@ -2523,11 +2527,11 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
                        filteredline4
                        \"\${filteredline3b}\")
             ENDIF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
-            
+
             #
             # fix the names of any vtk dep targets
             #
-            
+
             LIST(LENGTH FVTK_TRUE_TARGETS  L_FVTK_TRUE_TARGETS)
             MESSAGE(STATUS \"${L_FVTK_TRUE_TARGETS}\")
             SET(filtered_line \"\${filteredline4}\")
@@ -2537,9 +2541,9 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
             FOREACH(i RANGE \${t_max_index})
                 LIST(GET FVTK_VALID_TARGETS \${i} A)
                 LIST(GET FVTK_TRUE_TARGETS  \${i} B)
-                STRING(REPLACE \"\${A};\" 
+                STRING(REPLACE \"\${A};\"
                                \"\${B};\"
-                               fl_temp 
+                               fl_temp
                                \"\${filtered_line}\")
 
                 SET(filtered_line \"\${fl_temp}\")
@@ -2566,9 +2570,9 @@ FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
                        filteredline8 \"\${filteredline7}\")
                 FILE(APPEND \${filename} \"\${filteredline8}\\n\")
             ENDIF(NOT WIN32)
-            
 
-            
+
+
         ENDIF(\${outputLine} STREQUAL \"TRUE\")
     ENDFOREACH(line)
 ENDFUNCTION(FILTER_LIBRARY_DEPENDENCIES)
@@ -2656,8 +2660,8 @@ ELSE (NOT WIN32)
                 COMMAND ${CMAKE_COMMAND} -DBUILD_TYPE=${CMAKE_CFG_INTDIR} -P ${VISIT_BINARY_DIR}/data/cmake_install.cmake)
         ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
 
-        SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES 
-                              EXCLUDE_FROM_DEFAULT_BUILD 1 
+        SET_TARGET_PROPERTIES(_PACKAGE PROPERTIES
+                              EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1 )
 
         # source installer
@@ -2670,7 +2674,7 @@ ELSE (NOT WIN32)
             DEPENDS ${VISIT_WINDOWS_DIR}/distribution/installation/sourceinstallation.nsi
         )
         ADD_CUSTOM_TARGET(_SRC_PACKAGE ALL DEPENDS visitdev${VISIT_VERSION}.exe)
-        SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES 
+        SET_TARGET_PROPERTIES(_SRC_PACKAGE PROPERTIES
                               EXCLUDE_FROM_DEFAULT_BUILD 1
                               EXCLUDE_FROM_ALL 1)
         UNSET(VSD_NATIVE)
@@ -2685,7 +2689,7 @@ ENDIF (NOT WIN32)
 #CMake add subdirectory forces this action to go last
 #todo: find way for this function to execute as last
 #step of make install process
-#ADD_CUSTOM_TARGET(osxfixup ALL 
+#ADD_CUSTOM_TARGET(osxfixup ALL
 #     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/osxfixup/osxfixup.py \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} @executable_path/.. 3)
 #ADD_DEPENDENCIES(osxfixup install)
 
@@ -2706,4 +2710,3 @@ INSTALL(FILES ${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake
                     GROUP_READ GROUP_WRITE
                     WORLD_READ
         )
-

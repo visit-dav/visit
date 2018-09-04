@@ -48,7 +48,7 @@ function warn
     else
         echo -e "$@"
     fi
-    
+
     if [[ "${LOG_FILE}" != "/dev/tty" ]] ; then
         # write message to log as well
         log "$@"
@@ -118,7 +118,7 @@ function issue_command
 declare -a extra_commandline_args
 export EXTRA_COMMANDLINE_ARG_CALL=""
 
-function add_extra_commandline_args 
+function add_extra_commandline_args
 {
 
     if [[ $# != 4 ]]; then
@@ -241,7 +241,7 @@ function uncompress_untar
             zip) unzip $1;;
             xz) $TAR xf $1;;
         esac
-        
+
         if [[ $? != 0 ]]; then
             warn "error decompressing $1"
             return 1
@@ -249,11 +249,11 @@ function uncompress_untar
 
     else
         case $COMPRESSTYPE in
-            gzip) 
+            gzip)
                 gunzip $1
                 $TAR xf ${1%.gz}
                 ;;
-            targzip) 
+            targzip)
                 gunzip $1
                 $TAR xf "${1%.tgz}.tar"
                 ;;
@@ -265,7 +265,7 @@ function uncompress_untar
                 unzip $1
                 ;;
         esac
-        
+
         if [[ $? != 0 ]]; then
             warn "error decompressing $1"
             return 1
@@ -373,10 +373,10 @@ function verify_checksum
 #   Hank Childs, Mon Oct 15 15:55:22 PDT 2007                                 #
 #   Fail gracefully if wget is not available.                                 #
 #                                                                             #
-#   Thomas R. Treadway, Tue Nov 27 16:37:21 PST 2007                          # 
+#   Thomas R. Treadway, Tue Nov 27 16:37:21 PST 2007                          #
 #   Deal with LLNL's invalid certificates                                     #
 #                                                                             #
-#   Cyrus Harrison, Mon Nov 17 16:22:54 PST 2008                              # 
+#   Cyrus Harrison, Mon Nov 17 16:22:54 PST 2008                              #
 #   Check return value of svn cat or download for errors. Clean up a          #
 #   partially downloaded file.                                                #
 #                                                                             #
@@ -416,9 +416,11 @@ function download_file
     # some third party libs - we can't skip svn mode just b/c this info is given.
     #
     typeset dfile=$1
-    info "Downloading $dfile . . ." 
+    info "Downloading $dfile . . ."
+    info "meow . . . . . . . $2"
+    info "extra args= $2"
     shift
-    
+
     SVN_ROOT_PREFIX="${SVN_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
     SVN_ANON_ROOT_PREFIX="${SVN_ANON_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
     # If SVN is requested, try that first before anything else
@@ -428,7 +430,7 @@ function download_file
             info "SVN download succeeded: $SVN_ROOT_PREFIX/$dfile"
             return 0
         else
-            warn "Normal svn failed. Trying anonymous svn." 
+            warn "Normal svn failed. Trying anonymous svn."
             svn cat $SVN_ANON_ROOT_PREFIX/$dfile > $dfile
             if [[ $? == 0 && -e $dfile ]] ; then
                 info "Anonymous SVN download succeeded: $SVN_ANON_ROOT_PREFIX/$dfile"
@@ -495,19 +497,19 @@ function download_file
     return 1
 }
 
-# *************************************************************************** 
+# ***************************************************************************
 # Function: try_download_file
 #
 # Purpose: DONT USE THIS FUNCTION. USE download_file.
-# Downloads a file using wget or curl. 
+# Downloads a file using wget or curl.
 #
 # Programmer: Refactored from other sources (Mark C. Miller)
 # Creation: February 19, 2009
 #
-#   Cyrus Harrison, Tue 24 Mar 13:44:31 PST 2009 
-#   As an extra guard, check that the downloaded file actually exisits. 
+#   Cyrus Harrison, Tue 24 Mar 13:44:31 PST 2009
+#   As an extra guard, check that the downloaded file actually exisits.
 #   (Firewalls can cause strange files to be created.)
-# 
+#
 #   Cyrus Harrison, Thu Apr  9 19:21:13 PDT 2009
 #   Applied patch from Rick Wagner to fix curl downloads on OSX.
 #
@@ -518,7 +520,7 @@ function download_file
 #   Specify explicit path to system curl so that we do not use another
 #   version without SSL support
 #
-# *************************************************************************** 
+# ***************************************************************************
 
 function try_download_file
 {
@@ -537,25 +539,25 @@ function try_download_file
     if [[ $? == 0 && -e `basename $1` ]] ; then
         info "Download succeeded: $1"
         return 0
-    else    
+    else
         warn "Download attempt failed: $1"
         rm -f `basename $1`
         return 1
     fi
 }
 
-# *************************************************************************** 
+# ***************************************************************************
 # Function: try_download_file_from_shortened_url
 #
 # Purpose: DONT USE THIS FUNCTION. USE download_file.
 #
 # New variant of try_download_file, downloads a file using wget or curl
-# using an explicit file name. This is necessary for shortened urls. 
+# using an explicit file name. This is necessary for shortened urls.
 #
-# Programmer: Cyrus Harrison 
+# Programmer: Cyrus Harrison
 # Creation: June 1, 2016
 #
-# *************************************************************************** 
+# ***************************************************************************
 
 function try_download_file_from_shortened_url
 {
@@ -574,7 +576,7 @@ function try_download_file_from_shortened_url
     if [[ $? == 0 && -e $2 ]] ; then
         info "Download succeeded: $1"
         return 0
-    else    
+    else
         warn "Download attempt failed: $1"
         rm -f $2
         return 1
@@ -640,7 +642,7 @@ function check_if_installed
     if [[ $# == 2 ]]; then
         BUILD_VERSION=$2
     fi
-    
+
     if [[ $BUILD_VERSION != "" ]]; then
         INSTALL_DIR=$VISITDIR/$BUILD_NAME/$BUILD_VERSION/$VISITARCH
     else
@@ -674,10 +676,10 @@ function ensure_built_or_ready
     DOWNLOAD_PATH=$5
 
     info "Checking for ${BUILD_NAME}-${BUILD_VERSION}"
-    
+
     ALREADY_INSTALLED="NO"
     HAVE_TARBALL="NO"
-    
+
     check_if_installed $BUILD_NAME $BUILD_VERSION
     if [[ $? == 0 || -d $BUILD_DIR ]] ; then
         ALREADY_INSTALLED="YES"
@@ -685,8 +687,9 @@ function ensure_built_or_ready
     if [[ -e ${SRC_FILE%.gz} || -e ${SRC_FILE} ]] ; then
         HAVE_TARBALL="YES"
     fi
-    
+
     if [[ "$ALREADY_INSTALLED" == "NO" && "$HAVE_TARBALL" == "NO" ]] ; then
+        info "ensure meow $1 $2 $3 $4 $5"
         download_file ${SRC_FILE} ${DOWNLOAD_PATH}
         if [[ $? != 0 ]] ; then
             warn "Error: Cannot obtain source for $BUILD_NAME."
@@ -718,9 +721,10 @@ function ensure_built_or_ready
 # *************************************************************************** #
 function prepare_build_dir
 {
+    echo "prepare_build_dir:" $1 $2
     BUILD_DIR=$1
     SRC_FILE=$2
-    
+
     #optional
     CHECKSUM_TYPE=$3
     CHECKSUM_VALUE=$4
@@ -754,7 +758,7 @@ function prepare_build_dir
             return -1
         fi
     fi
-    
+
     return $untarred_src
 }
 
@@ -918,7 +922,7 @@ function check_parallel
             export PAR_COMPILER="$MPICH_COMPILER"
             export PAR_COMPILER_CXX="$MPICH_COMPILER_CXX"
             info  "Configuring parallel with mpich build: "
-            info  "  PAR_COMPILER: $MPICH_COMPILER " 
+            info  "  PAR_COMPILER: $MPICH_COMPILER "
             info  "  PAR_COMPILER_CXX: $MPICH_COMPILER_CXX"
             return 0
         fi
@@ -974,12 +978,12 @@ function check_parallel
         # Try and use the Cray wrapper compiler to get MPI options.
         #
         if [[ "$CRAY_MPICH_DIR" != "" ]] ; then
-             # NOTE: Unload darshan and cray-libsci. Otherwise keep the 
+             # NOTE: Unload darshan and cray-libsci. Otherwise keep the
              #       programming environment that is in effect.
              CCOUT=$(module unload darshan; module unload cray-libsci; CC --cray-print-opts=all)
              ingroup="no"
              arg_rpath=""
-             for arg in $CCOUT ; 
+             for arg in $CCOUT ;
              do
                  # NOTE: adding the -Wl,-Bstatic/-Wl,-Bdynamic around the group is
                  # a workaround to linking with the "darshan" libraries that come
@@ -1020,10 +1024,10 @@ function check_parallel
              fi
         fi
 
-        # The script pretty much assumes that you *must* have some flags 
-        # and libs to do a parallel build.  If that is *not* true, 
-        # i.e. mpi.h is in your include path, then, congratulations, 
-        # you are working on a better configured system than I have 
+        # The script pretty much assumes that you *must* have some flags
+        # and libs to do a parallel build.  If that is *not* true,
+        # i.e. mpi.h is in your include path, then, congratulations,
+        # you are working on a better configured system than I have
         # ever encountered.
         if [[ "$PAR_INCLUDE" == "" || "$PAR_LIBRARY_NAMES" == "" || "$PAR_LINKER_FLAGS" == "" ]] ; then
             warn \
@@ -1340,7 +1344,7 @@ function build_hostconf
  return 0
 }
 
-function printvariables  
+function printvariables
 {
     printf "The following is a list of user settable environment variables\n"
     printf "\n"
@@ -1367,7 +1371,7 @@ function printvariables
     printf "%s%s\n" "LOG_FILE=" "${LOG_FILE}"
     printf "%s%s\n" "WGET_OPTS=" "${WGET_OPTS}"
     printf "%s%s\n" "SVNREVISION=" "${SVNREVISION}"
-    
+
     bv_visit_print
     for (( bv_i=0; bv_i<${#reqlibs[*]}; ++bv_i ))
     do
@@ -1382,15 +1386,15 @@ function printvariables
     done
 }
 
-function usage  
+function usage
 {
     initialize_build_visit
-    
+
     printf "Usage: %s [options]\n" $0
     printf "%-15s %s [%s]\n" "--skip-opengl-context-check" "Skip check for minimum OpenGL context." "false"
 
     printf "\n"
-    printf "BUILD OPTIONS\n" 
+    printf "BUILD OPTIONS\n"
     printf "\n"
 
     printf "%-20s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
@@ -1408,11 +1412,11 @@ function usage
     printf "%-20s %s [%s]\n" "--no-qt-silent" "Disable make silent operation for QT." "no"
     printf "%-20s %s [%s]\n" "--parallel" "Enable parallel build, display MPI prompt" "$parallel"
     printf "%-20s %s [%s]\n" "--static" "Build using static linking" "$DO_STATIC_BUILD"
-    printf "%-20s <%s> %s\n" "--installation-build-dir" "path" 
+    printf "%-20s <%s> %s\n" "--installation-build-dir" "path"
     printf "%-20s %s [%s]\n" "" "Specify the directory visit will use for building" "$VISIT_INSTALLATION_BUILD_DIR"
 
     printf "\n"
-    printf "INSTALLATION OPTIONS\n" 
+    printf "INSTALLATION OPTIONS\n"
     printf "\n"
 
     printf "%s <%s> %s [%s]\n" "--arch" "architecture" "Set architecture" "$VISITARCHTMP"
@@ -1427,7 +1431,7 @@ function usage
              somewhere like /usr/gapps/visit." "${THIRD_PARTY_PATH}"
 
     printf "\n"
-    printf "GROUPING\n" 
+    printf "GROUPING\n"
     printf "\n"
 
     for (( bv_i=0; bv_i<${#grouplibs_name[*]}; ++bv_i ))
@@ -1440,7 +1444,7 @@ function usage
     printf "\n"
 
     printf "\n"
-    printf "VISIT-SPECIFIC OPTIONS\n" 
+    printf "VISIT-SPECIFIC OPTIONS\n"
     printf "\n"
     printf "%-20s %s [%s]\n" "--install-network" "Install specific network config files." "${VISIT_INSTALL_NETWORK}"
     printf "%s <%s>    %s [%s]\n" "--prefix" "prefix" "The directory to which VisIt should be installed once it is built" "$VISIT_INSTALL_PREFIX"
@@ -1454,7 +1458,7 @@ function usage
     bv_visit_print_usage
 
     printf "\n"
-    printf "THIRD-PARTY LIBRARIES\n" 
+    printf "THIRD-PARTY LIBRARIES\n"
     printf "  A download attempt will be made for all files which do not exist.\n"
     printf "\n"
     printf "  REQUIRED -- These are built by default unless --no-thirdparty flag is used.\n"
@@ -1469,7 +1473,7 @@ function usage
     done
 
     printf "\n"
-    printf "  OPTIONAL\n" 
+    printf "  OPTIONAL\n"
     printf "\n"
 
     for (( bv_i=0; bv_i<${#optlibs[*]}; ++bv_i ))
@@ -1481,7 +1485,7 @@ function usage
     done
 
     printf "\n"
-    printf "SVN OPTIONS\n" 
+    printf "SVN OPTIONS\n"
     printf "\n"
 
     printf "%-26s %s\n"      "--svn" "Obtain VisIt source code and third party libraries"
@@ -1493,7 +1497,7 @@ function usage
     printf "%-26s %s\n"     "" "Used in conjunction with --svn or --svn-anonymous."
 
     printf "\n"
-    printf "MISC OPTIONS\n" 
+    printf "MISC OPTIONS\n"
     printf "\n"
 
     printf "%-20s %s [%s]\n" "--bv-debug"   "Enable debugging for this script" "no"
@@ -1506,7 +1510,7 @@ function usage
     printf "%-20s %s\n" "" "Only build VisIt's server components"
     printf "%-20s %s [%s]\n" "" "(mdserver,vcl,engine)." "$DO_SERVER_COMPONENTS_ONLY"
     printf "%-20s %s [%s]\n" "--stdout" "Write build log to stdout" "no"
-    printf "%-20s <%s>\n" "--write-unified-file"  "filename" 
+    printf "%-20s <%s>\n" "--write-unified-file"  "filename"
     printf "%-20s %s [%s]\n" ""  "Write single unified build_visit file using the provided filename" "$WRITE_UNIFIED_FILE"
 }
 
@@ -1525,7 +1529,7 @@ function mangle_file
     local output_file="$2"
 
     cat "$input_file" | sed -e s/${lc_mangled_src}/${lc_mangled_dest}/g -e s/${uc_mangled_src}/${uc_mangled_dest}/g > "$output_file"
-    
+
     #chmod --reference=$input_file $output_file
     if [[ -r "$input_file" ]]; then
         chmod u+r "$output_file"
@@ -1571,12 +1575,12 @@ function mangle_libraries
         newpath=${newpath//${lc_mangled_src}/${lc_mangled_dest}}
         mangled_path="${mangled_dir}/${newpath}"
         newdir=`dirname "${mangled_path}"`
-        
+
         #create new dir
         mkdir -p "$newdir"
         #cat old file replace ${mangled_src} with ${mangled_dest}
         if [[ ! -d $i ]]; then
-            mangle_file "$i" "${mangled_path}" 
+            mangle_file "$i" "${mangled_path}"
         else
             #chmod --reference=$i $newdir
             if [[ -r "$i" ]]; then
