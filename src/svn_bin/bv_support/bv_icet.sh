@@ -15,7 +15,12 @@ function bv_icet_disable
 
 function bv_icet_depends_on
 {
-    echo "cmake"
+    depends_on="cmake"
+    if [[ "$DO_MPICH" == "yes" ]] ; then
+        depends_on="$depends_on mpich"
+    fi
+
+    echo $depends_on
 }
 
 function bv_icet_info
