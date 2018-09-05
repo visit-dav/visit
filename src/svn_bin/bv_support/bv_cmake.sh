@@ -96,9 +96,10 @@ function bv_cmake_bin_cmake_dir
 
 function bv_cmake_info
 {
-    export CMAKE_FILE=${CMAKE_FILE:-"cmake-3.9.3.tar.gz"}
+    export CMAKE_URL=${CMAKE_URL:-"https://cmake.org/files/v3.9/"}
     export CMAKE_VERSION=${CMAKE_VERSION:-"3.9.3"}
-    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-3.9.3"}
+    export CMAKE_FILE=${CMAKE_FILE:-"cmake-${CMAKE_VERSION}.tar.gz"}
+    export CMAKE_BUILD_DIR=${CMAKE_BUILD_DIR:-"cmake-${CMAKE_VERSION}"}
     export CMAKE_MD5_CHECKSUM="cb0f19828461904c72ed6a1e55459d03"
     export CMAKE_SHA256_CHECKSUM=""
 }
@@ -141,7 +142,7 @@ function bv_cmake_ensure
 {
     if [[ "$USE_SYSTEM_CMAKE" != "yes" ]]; then 
         if [[ "$DO_CMAKE" == "yes" || "$DO_VTK" == "yes" ]] ; then
-            ensure_built_or_ready "cmake"  $CMAKE_VERSION  $CMAKE_BUILD_DIR  $CMAKE_FILE
+            ensure_built_or_ready "cmake"  $CMAKE_VERSION  $CMAKE_BUILD_DIR  $CMAKE_FILE $CMAKE_URL
             if [[ $? != 0 ]] ; then
                 return 1
             fi
