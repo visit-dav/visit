@@ -529,8 +529,18 @@ function build_pil
          "  ${PYHOME}/bin/python ./setup.py build "
     CC=${C_COMPILER} CXX=${CXX_COMPILER} CFLAGS=${PYEXT_CFLAGS} CXXFLAGS=${PYEXT_CXXFLAGS} \
       ${PYHOME}/bin/python ./setup.py build 
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not build PIL"
+        return 1
+    fi
     info "Installing PIL ..."
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install PIL"
+        return 1
+    fi
     popd > /dev/null
 
     # PIL installs into site-packages dir of Visit's Python.
@@ -569,6 +579,11 @@ function build_pyparsing
     pushd $PYPARSING_BUILD_DIR > /dev/null
     info "Installing pyparsing ..."
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install pyparsing"
+        return 1
+    fi
     popd > /dev/null
 
     # pyparsing installs into site-packages dir of Visit's Python.
@@ -607,6 +622,11 @@ function build_requests
     pushd $PYREQUESTS_BUILD_DIR > /dev/null
     info "Installing python requests module ..."
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install requests module"
+        return 1
+    fi
     popd > /dev/null
 
     # installs into site-packages dir of VisIt's Python.
@@ -645,6 +665,11 @@ function build_seedme
     pushd $SEEDME_BUILD_DIR > /dev/null
     info "Installing seedme python module ..."
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install seedme module"
+        return 1
+    fi
     popd > /dev/null
 
     # installs into site-packages dir of VisIt's Python.
@@ -686,6 +711,11 @@ function build_mpi4py
     pushd $MPI4PY_BUILD_DIR > /dev/null
     info "Installing mpi4py (~ 2 min) ..."
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install mpi4py"
+        return 1
+    fi
     popd > /dev/null
 
     # fix the perms
@@ -760,17 +790,32 @@ function build_numpy
     pushd $SETUPTOOLS_BUILD_DIR > /dev/null
     info "Installing setuptools (~1 min) ..."
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install setuptools"
+        return 1
+    fi
     popd > /dev/null
 
     pushd $CYTHON_BUILD_DIR > /dev/null
     info "Installing cython (~ 2 min) ..."
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install cython"
+        return 1
+    fi
     popd > /dev/null
 
     pushd $NUMPY_BUILD_DIR > /dev/null
     info "Installing numpy (~ 2 min) ..."
     sed -i 's#\\\\\"%s\\\\\"#%s#' numpy/distutils/system_info.py
     ${PYHOME}/bin/python ./setup.py install --prefix="${PYHOME}"
+    if test $? -ne 0 ; then
+        popd > /dev/null
+        warn "Could not install numpy"
+        return 1
+    fi
     popd > /dev/null
 
     # fix the perms
@@ -823,14 +868,14 @@ function bv_python_build
             info "Building the Python Imaging Library"
             build_pil
             if [[ $? != 0 ]] ; then
-                warn "PIL build failed."
+                error "PIL build failed. Bailing out."
             fi
             info "Done building the Python Imaging Library"
 
             info "Building the numpy module"
             build_numpy
             if [[ $? != 0 ]] ; then
-                warn "numpy build failed."
+                error "numpy build failed. Bailing out."
             fi
             info "Done building the numpy module."
 
@@ -838,7 +883,7 @@ function bv_python_build
                 info "Building the mpi4py module"
                 build_mpi4py
                 if [[ $? != 0 ]] ; then
-                    warn "mpi4py build failed."
+                    error "mpi4py build failed. Bailing out."
                 fi
                 info "Done building the mpi4py module"
             fi
@@ -846,19 +891,19 @@ function bv_python_build
             info "Building the pyparsing module"
             build_pyparsing
             if [[ $? != 0 ]] ; then
-                warn "pyparsing build failed."
+                error "pyparsing build failed. Bailing out."
             fi
             info "Done building the pyparsing module."
 
             build_requests
             if [[ $? != 0 ]] ; then
-                warn "requests python module build failed."
+                error "requests python module build failed. Bailing out."
             fi
             info "Done building the requests python module."
 
             build_seedme
             if [[ $? != 0 ]] ; then
-                warn "seedme python module build failed."
+                error "seedme python module build failed. Bailing out."
             fi
             info "Done building the seedme python module."
 
