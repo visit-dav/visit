@@ -199,6 +199,7 @@ function build_adios2
     else
         cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
     fi
+    cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"
     cfg_opts="${cfg_opts} -DENABLE_TESTS:BOOL=false"
     cfg_opts="${cfg_opts} -DENABLE_DOCS:BOOL=false"
     cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
@@ -211,9 +212,6 @@ function build_adios2
     if test -e bv_run_cmake.sh ; then
         rm -f bv_run_cmake.sh
     fi
-
-    info "***************** builddir= " $ADIOS2_BUILD_DIR
-    info "***************** srcdir= " $ADIOS2_SRC_DIR
 
     echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
     cat bv_run_cmake.sh

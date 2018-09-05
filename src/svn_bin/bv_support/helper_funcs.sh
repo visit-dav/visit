@@ -417,8 +417,6 @@ function download_file
     #
     typeset dfile=$1
     info "Downloading $dfile . . ."
-    info "meow . . . . . . . $2"
-    info "extra args= $2"
     shift
 
     SVN_ROOT_PREFIX="${SVN_ROOT_PATH}/${SVN_THIRDPARTY_PATH}"
@@ -689,7 +687,6 @@ function ensure_built_or_ready
     fi
 
     if [[ "$ALREADY_INSTALLED" == "NO" && "$HAVE_TARBALL" == "NO" ]] ; then
-        info "ensure meow $1 $2 $3 $4 $5"
         download_file ${SRC_FILE} ${DOWNLOAD_PATH}
         if [[ $? != 0 ]] ; then
             warn "Error: Cannot obtain source for $BUILD_NAME."

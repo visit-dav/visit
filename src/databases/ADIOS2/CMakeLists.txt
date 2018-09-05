@@ -32,7 +32,7 @@ avtADIOS2SSTFileFormat.C
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_CURRENT_SOURCE_DIR}
-/apps/adios2/install_serial/include
+${ADIOS2_INCLUDE_DIR}
 ${VISIT_COMMON_INCLUDES}
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/MetaData
 ${VISIT_INCLUDE_DIR}/avt/DBAtts/SIL
@@ -58,8 +58,7 @@ ${VTKM_INCLUDE_DIR}
 ${VTK_INCLUDE_DIRS}
 )
 
-ADD_DEFINITIONS(-std=c++11)
-LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} )
+LINK_DIRECTORIES(${VISIT_LIBRARY_DIR} ${EAVL_LIBRARY_DIR} ${VTKM_LIBRARY_DIR} ${ADIOS2_LIBRARY_DIR} )
 
 ADD_LIBRARY(IADIOS2Database ${LIBI_SOURCES})
 TARGET_LINK_LIBRARIES(IADIOS2Database visitcommon)
@@ -67,19 +66,19 @@ SET(INSTALLTARGETS IADIOS2Database)
 
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
     ADD_LIBRARY(MADIOS2Database ${LIBM_SOURCES})
-    TARGET_LINK_LIBRARIES(MADIOS2Database visitcommon avtdbatts avtdatabase_ser /apps/adios2/install_serial/lib/libadios2.so )
+    TARGET_LINK_LIBRARIES(MADIOS2Database visitcommon avtdbatts avtdatabase_ser -ladios2 )
     ADD_TARGET_DEFINITIONS(MADIOS2Database MDSERVER)
     SET(INSTALLTARGETS ${INSTALLTARGETS} MADIOS2Database)
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_DBIO_ONLY)
 
 ADD_LIBRARY(EADIOS2Database_ser ${LIBE_SOURCES})
-TARGET_LINK_LIBRARIES(EADIOS2Database_ser visitcommon avtdatabase_ser avtpipeline_ser /apps/adios2/install_serial/lib/libadios2.so )
+TARGET_LINK_LIBRARIES(EADIOS2Database_ser visitcommon avtdatabase_ser avtpipeline_ser -ladios2 )
 ADD_TARGET_DEFINITIONS(EADIOS2Database_ser ENGINE)
 SET(INSTALLTARGETS ${INSTALLTARGETS} EADIOS2Database_ser)
 
 IF(VISIT_PARALLEL)
     ADD_PARALLEL_LIBRARY(EADIOS2Database_par ${LIBE_SOURCES})
-    TARGET_LINK_LIBRARIES(EADIOS2Database_par visitcommon avtdatabase_par avtpipeline_par /apps/adios2/install_parallel/lib/libadios2.so )
+    TARGET_LINK_LIBRARIES(EADIOS2Database_par visitcommon avtdatabase_par avtpipeline_par -ladios2 )
     ADD_TARGET_DEFINITIONS(EADIOS2Database_par ENGINE)
     SET(INSTALLTARGETS ${INSTALLTARGETS} EADIOS2Database_par)
 ENDIF(VISIT_PARALLEL)
