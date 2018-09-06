@@ -1010,14 +1010,14 @@ cylindrical Function: ``cylindrical()`` : ``cylindrical(expr0)``
 .. _Cylindrical_Radius_Expression_Function:
 
 Cylindrical Radius : ``cylindrical_radius(<Mesh>)``
-     Converts the coordinates of the input mesh from Cartesian
-     coordinates to cylindrical coordinates and returns the radius component of
-     the cylindrical coordinates.
+    Creates a new variable on the mesh which is the cylindrical coordinate radius
+    (from the Z axis) of each mesh node.
 
 .. _Cylindrical_Theta_Expression_Function:
 
 cylindrical theta Function: ``cylindrical_theta()`` : ``cylindrical_theta(expr0)``
-    No description available.
+    Creates a new variable on the mesh which is the cylindrical coordinate angle.
+    (around the Z axis from the +X axis) of each mesh node.
 
 .. _Polar_Radius_Expression_Function:
 
@@ -1499,36 +1499,43 @@ Curve CMFE Function: ``curve_cmfe()`` : ``curve_cmfe(<Donor Curve>,<Target Curve
 
 .. _Symm_Point_Expression_Function:
 
-Symmetric Difference By Point Function: ``symm_point()`` : ``symm_point(<Scalar>,[Px,Py,Pz])``
+Symmetric Difference By Point Function: ``symm_point()`` : ``symm_point(<Scalar>,<Fill>,[Px,Py,Pz])``
     Return a new *scalar* variable which is the symmetric difference of
     ``<Scalar>`` reflected about the point ``[Px, Py, Pz]``. In 2D, ``Pz``
-    is still required but ignored. This operation involves **both** the 
-    reflection about the point **and** taking the difference. If the input
-    ``<Scalar>`` is indeed symmetric about the point, the result will be a
-    constant valued variable of zero.
+    is still required but ignored. The ``<Fill>`` argument is a numerical
+    constant that VisIt_ will use to determine the value of the result in
+    places symmetry about the point doesn't overlap with the donor mesh.
+    This operation involves **both** the reflection about the point **and**
+    taking the difference. If the input ``<Scalar>`` is indeed symmetric
+    about the point, the result will be a constant valued variable of zero.
 
 .. _Symm_Plane_Expression_Function:
 
-Symmetric Difference By Plane Function: ``symm_plane()`` : ``symm_plane(<Scalar>,[Nx,Ny,Nz,Px,Py,Pz])``
+Symmetric Difference By Plane Function: ``symm_plane()`` : ``symm_plane(<Scalar>,<Fill>,[Nx,Ny,Nz,Px,Py,Pz])``
     Return a new *scalar* variable which is the symmetric difference of
     ``<Scalar>`` reflected about the plane defined by the point ``[Px, Py, Pz]``
     and normal ``[Nx, Ny, Nz]``. In 2D, the ``Nz`` and ``Pz`` arguments are
-    still required but ignored. This operation involves **both** the reflection
-    about the plane **and** taking the difference. If the input ``<Scalar>`` is
-    indeed symmetric about the plane, the result will be a constant valued
-    variable of zero.  
+    still required but ignored. The ``<Fill>`` argument is a numerical
+    constant that VisIt_ will use to determine the value of the result in
+    places symmetry about the plane doesn't overlap with the donor mesh.
+    This operation involves **both** the reflection about the plane **and**
+    taking the difference. If the input ``<Scalar>`` is indeed symmetric about
+    the plane, the result will be a constant valued variable of zero.  
 
 .. _Symm_Transform_Expression_Function:
 
-Symmetric Difference By Transform Function: ``symm_transform()`` : ``symm_transform(<Scalar>,[T00,T01,T02,...,T22])``
+Symmetric Difference By Transform Function: ``symm_transform()`` : ``symm_transform(<Scalar>,<Fill>,[T00,T01,T02,...,T22])``
     Return a new *scalar* variable which is the symmetric difference of
     ``<Scalar>`` reflected through the 3x3 transformation where each point,
     ``[Px,Py,Pz]``, in the mesh supporting ``<Scalar>`` is transformed by the
     transform coefficients, ``[T00, T01,...,T22]`` as shown below. In 2D, all
-    9 transform coefficients are still required by the last row and column are
-    ignored. This operation involves **both** the transform **and** taking the
-    difference. If the input ``<Scalar>`` is indeed symmetric through the
-    transform, the result will be a constant valued variable of zero.
+    9 transform coefficients are still required but the last row and column are
+    ignored. The ``<Fill>`` argument is a numerical constant that VisIt_ will
+    use to determine the value of the result in places symmetry through the
+    transform doesn't overlap with the donor mesh. This operation involves
+    **both** the transform **and** taking the difference. If the input
+    ``<Scalar>`` is indeed symmetric through the transform, the result will
+    be a constant valued variable of zero.
 
 .. math::
 
@@ -1552,7 +1559,7 @@ Symmetric Difference By Transform Function: ``symm_transform()`` : ``symm_transf
 
 .. _Eval_Point_Expression_Function:
 
-Evaluate Point Function: ``eval_point()`` : ``eval_point(expr0)``
+Evaluate Point Function: ``eval_point()`` : ``eval_point(<Scalar>,<Fill>,[Px,Py,Pz])``
     Performs only the reflection half of the
     :ref:`symm_point() <Symm_Point_Expression_Function>` operation. That is, it
     computes a new *scalar* variable which is the input ``<Scalar>`` reflected
@@ -1562,7 +1569,7 @@ Evaluate Point Function: ``eval_point()`` : ``eval_point(expr0)``
 
 .. _Eval_Plane_Expression_Function:
 
-Evaluate Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Px,Py,Pz])``
+Evaluate Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Nx,Ny,Nz,Px,Py,Pz])``
     Performs only the reflection half of the
     :ref:`symm_plane() <Symm_Plane_Expression_Function>` operation. That is, it
     computes a new *scalar* variable which is the input ``<Scalar>`` reflected
@@ -1572,7 +1579,7 @@ Evaluate Plane Function: ``eval_plane()`` : ``eval_plane(<Scalar>,<Fill>,[Px,Py,
 
 .. _Eval_Transform_Expression_Function:
 
-Evaluate Transform Function: ``eval_transform()`` : ``eval_transform(expr0)``
+Evaluate Transform Function: ``eval_transform()`` : ``eval_transform(expr0,<Fill>,[T00,T01,T02...T22])``
     Performs only the transform half of the
     :ref:`symm_transform() <Symm_Transform_Expression_Function>` operation.
     That is, it computes a new *scalar* variable which is the input
