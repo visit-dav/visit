@@ -28,8 +28,9 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Adjust logic in Tecplot plugin to only do all-to-all curve definition if the first variable listed does not appear to be a coordinate variable.</li>
   <li>Applied patch for MFEM plugin that reads "lod" tag to set proper LOD.</li>
   <li>Fixed viewer crash that could occur when deleting windows containing lineout curves.</li>
-  <li>Corrected a bug in CracksClipper gui restricting Strain var to Symmetric Tensors. It will now also accept Tensor vars.</li>
-  <li>Corrected a bug with defining symmetric tensors, where it was impossible to set the expression <i>Type</i> to <i>Symmetric Tensor Mesh Variable</i> and define an expression that could successfully be used elsewhere in VisIt. Symmetric tensors can now be defined using either all 4 components or all 9 components of the tensor, repeating variables as so that the expression is actually a symmetric tensor. For example, a 2D Symmetric Tensor would be defined as "{{a,b},{b,c}}" and a 3D Symmetric Tensor would be defined as "{{a,b,c},{b,d,e},{c,e,f}}".</li>
+  <li>Corrected a bug in the CracksClipper operator attributes window that was restricting the Strain variable to Symmetric Tensors. It will now also accept normal Tensor variables.</li>
+  <li>Corrected a bug in the CracksClipper operator in the calculation of the crack width for the third crack direction.</li>
+  <li>Corrected a bug with defining symmetric tensors, where it was impossible to set the expression <i>Type</i> to <i>Symmetric Tensor Mesh Variable</i> and define an expression that could successfully be used elsewhere in VisIt. Symmetric tensors can now be defined using either all 4 components or all 9 components of the tensor, repeating variables so that the expression is actually a symmetric tensor. For example, a 2D Symmetric Tensor would be defined as "{{a,b},{b,c}}" and a 3D Symmetric Tensor would be defined as "{{a,b,c},{b,d,e},{c,e,f}}".</li>
   <li>The Line3D annotation object's default arrow is now cone shaped instead of flat, and its initial size is in relation to the current extents of the data being drawn.</li>
   <li>Corrected an error in the host profiles for Cori.</li>
   <li>Fixed bug on Windows OS where executing a command from the Command window could yield the wrong results.</li>
