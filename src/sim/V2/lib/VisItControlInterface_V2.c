@@ -5523,6 +5523,6 @@ VisItEndCinema(visit_handle h)
     LIBSIM_API_ENTER(VisItEndCinema);
     /* We can remove a cinema object. */
     ret = cinema_destroy(h) ? VISIT_OKAY : VISIT_ERROR;
-    LIBSIM_API_LEAVE1(VisItSaveCinema, "return %s", ErrorToString(ret));
+    LIBSIM_API_LEAVE1(VisItEndCinema, "return %s", ErrorToString(ret));
     return ret;
 }
