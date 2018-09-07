@@ -71,6 +71,9 @@ class vtkSlicer;
 //    Eric Brugger, Wed Jan  9 16:20:40 PST 2013
 //    Modified to inherit from vtkDataSetAlgorithm.
 //
+//    Eric Brugger, Thu Sep  6 16:40:01 PDT 2018
+//    Changed CrackWidthForCell to LengthForCell.
+//
 // ****************************************************************************
 
 class vtkCrackWidthFilter : public vtkDataSetAlgorithm
@@ -112,10 +115,9 @@ class vtkCrackWidthFilter : public vtkDataSetAlgorithm
     vtkSlicer *Slicer;
     vtkMassProperties *MassProp;
 
-    double CrackWidthForCell(vtkCell *cell, vtkIdType cellId,
-                             const double *center,
-                             const double delta, const double *dir,
-                             const double zvol, const double L1L2);
+    double LengthForCell(vtkCell *cell, vtkIdType cellId,
+                         const double *center, const double *dir,
+                         const double zvol, const double L1L2);
 
     vtkCrackWidthFilter(const vtkCrackWidthFilter&);  // Not implemented.
     void operator=(const vtkCrackWidthFilter&);  // Not implemented.

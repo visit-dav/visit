@@ -184,6 +184,10 @@ vtkCrackWidthFilter_OrderThem(double delta1, double delta2, double delta3,
 //    Eric Brugger, Wed Jan  9 16:25:38 PST 2013
 //    Modified to inherit from vtkDataSetAlgorithm.
 //
+//    Eric Brugger, Thu Sep  6 16:40:01 PDT 2018
+//    Modified the filter to calculate the proper crack width for the third
+//    crack direction.
+//
 // ***************************************************************************
 
 int
@@ -276,7 +280,7 @@ vtkCrackWidthFilter::RequestData(
   // each crack direction.  Terminate early when possible.
   // 
   vtkDoubleArray *crackWidth = NULL;
-  double delta = 0, cw, zVol, *dir = NULL, *maxCW = NULL;
+  double delta = 0, L, cw, zVol, *dir = NULL, *maxCW = NULL;
   int crackOrder[3]; 
 
   for (vtkIdType cellId = 0; cellId < numCells; cellId++)
@@ -306,7 +310,7 @@ vtkCrackWidthFilter::RequestData(
     else
       EXCEPTION0(ImproperUseException); 
 
-    double cwsum = 0.; 
+    double L1L2 = 1.; 
     for (int crack = 0; crack < 3; crack++)
       {
       switch(crackOrder[crack])
@@ -335,13 +339,14 @@ vtkCrackWidthFilter::RequestData(
 
         if (crack < 2)
           {
-          cw = CrackWidthForCell(cell, cellId, center, delta, dir, zVol, 0);
-          cwsum += cw;
+          L = LengthForCell(cell, cellId, center, dir, zVol, 0);
+          L1L2 *= L;
           }
         else 
           {
-          cw = CrackWidthForCell(cell, cellId, center, delta, dir, zVol,cwsum);
+          L = LengthForCell(cell, cellId, center, dir, zVol, cwprod);
           }
+        cw = L*(1.0-exp(-delta));
         crackWidth->SetValue(cellId, cw);
         if (cw > *maxCW)
           *maxCW = cw;
@@ -368,17 +373,20 @@ vtkCrackWidthFilter::RequestData(
 }
 
 // ***************************************************************************
-//  Method: vtkCrackWidthFilter::CrackWidthForCell
+//  Method: vtkCrackWidthFilter::LengthForCell
 //
-//  Purpose: Determines the crack width for a given cell
+//  Purpose: Determines the effective length in the crack direction for a
+//           given cell
 //  
 //  Arguments:
 //    cell      The cell.
 //    cellId    The id of the cell.
 //    center    The coordinates of the cell center.
-//    delta     A component of strain_tensor 
-//    dir       A vector representing the diretion of the crack. 
-//    zoneVol   A volume of this cell.
+//    dir       A vector representing the direction of the crack. 
+//    zVol      The volume of this cell.
+//    L1L2      Zero for the first 2 cracks. L1 * L2 for the third crack,
+//              where L1 is effective length in the crack direction for the
+//              first crack and L2 is the same for the second crack.
 //
 //  Returns:    The width of the crack.
 //
@@ -393,14 +401,18 @@ vtkCrackWidthFilter::RequestData(
 //    Removed use of vtkCellIntersetions. Use area of plane that slices
 //    the cell.
 //
+//    Eric Brugger, Thu Sep  6 16:40:01 PDT 2018
+//    I modified the function to return the effective length in the crack
+//    direction instead of the crack width and changed the name to match.
+//
 // ***************************************************************************
 
 double
-vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, vtkIdType cellId, 
-  const double *center, const double delta, const double *dir, 
-  const double zVol, const double L1L2)
+vtkCrackWidthFilter::LengthForCell(vtkCell *cell, vtkIdType cellId, 
+  const double *center, const double *dir, const double zVol,
+  const double L1L2)
 {
-  double L = L1L2;
+  double L = 0;
   if (L1L2 == 0)
     {
     this->Slicer->SetCellList(&cellId, 1);
@@ -410,7 +422,11 @@ vtkCrackWidthFilter::CrackWidthForCell(vtkCell *cell, vtkIdType cellId,
     this->MassProp->Update();
     L =  zVol / this->MassProp->GetSurfaceArea();
     }
-  return L*(1.0-exp(-delta));
+  else
+    {
+    L = zVol / L1L2;
+    }
+  return L;
 }
 
 // ***************************************************************************
