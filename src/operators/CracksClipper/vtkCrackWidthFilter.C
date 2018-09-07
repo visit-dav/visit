@@ -344,7 +344,7 @@ vtkCrackWidthFilter::RequestData(
           }
         else 
           {
-          L = LengthForCell(cell, cellId, center, dir, zVol, cwprod);
+          L = LengthForCell(cell, cellId, center, dir, zVol, L1L2);
           }
         cw = L*(1.0-exp(-delta));
         crackWidth->SetValue(cellId, cw);
