@@ -1004,35 +1004,39 @@ Area Function: ``area()`` : ``area(<Mesh>)``
 
 .. _Cylindrical_Expression_Function:
 
-cylindrical Function: ``cylindrical()`` : ``cylindrical(expr0)``
-    No description available.
+cylindrical Function: ``cylindrical()`` : ``cylindrical(<Mesh>)``
+    Creates a new vector variable on the mesh which is the cylindrical coordinate
+    tuple (R,theta,Z) of each mesh node.
 
 .. _Cylindrical_Radius_Expression_Function:
 
 Cylindrical Radius : ``cylindrical_radius(<Mesh>)``
-    Creates a new variable on the mesh which is the cylindrical coordinate radius
-    (from the Z axis) of each mesh node.
+    Creates a scalar new variable on the mesh which is the radius component of the
+    cylindrical coordinate (from the Z axis) of each mesh node.
 
 .. _Cylindrical_Theta_Expression_Function:
 
-cylindrical theta Function: ``cylindrical_theta()`` : ``cylindrical_theta(expr0)``
-    Creates a new variable on the mesh which is the cylindrical coordinate angle.
-    (around the Z axis from the +X axis) of each mesh node.
+cylindrical theta Function: ``cylindrical_theta()`` : ``cylindrical_theta(<Mesh>)``
+    Creates a new scalar variable on the mesh which is the angle component of the
+    cylindrical coordinate (around the Z axis from the +X axis) of each mesh node.
 
 .. _Polar_Radius_Expression_Function:
 
-polar radius Function: ``polar_radius()`` : ``polar_radius(expr0)``
-    No description available.
+polar radius Function: ``polar_radius()`` : ``polar_radius(<Mesh>)``
+    Creates a new scalar variable on the mesh which is the radius component of
+    the polar coordinate of each mesh node.
 
 .. _Polar_Theta_Expression_Function:
 
-polar theta Function: ``polar_theta()`` : ``polar_theta(expr0)``
-    No description available.
+polar theta Function: ``polar_theta()`` : ``polar_theta(<Mesh>)``
+    Creates a new scalar variable on the mesh which is the theta component of
+    the polar coordinate of each mesh node.
 
 .. _Polar_Phi_Expression_Function:
 
-polar phi Function: ``polar_phi()`` : ``polar_phi(expr0)``
-    No description available.
+polar phi Function: ``polar_phi()`` : ``polar_phi(<Mesh>)``
+    Creates a new scalar variable on the mesh which is the phi component of
+    the polar coordinate of each mesh node.
 
 .. _Min_Coord_Expression_Function:
 
