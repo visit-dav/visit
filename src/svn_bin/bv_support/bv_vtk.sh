@@ -735,7 +735,6 @@ function build_vtk
     vopts="${vopts} -DVTK_Group_Web:BOOL=false"
 
     # Turn on individual modules. dependent modules are turned on automatically
-    vopts="${vopts} -DModule_vtkAcceleratorsVTKm:BOOL=true"
     vopts="${vopts} -DModule_vtkCommonCore:BOOL=true"
     vopts="${vopts} -DModule_vtkFiltersFlowPaths:BOOL=true"
     vopts="${vopts} -DModule_vtkFiltersHybrid:BOOL=true"

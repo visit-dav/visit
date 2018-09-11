@@ -1440,7 +1440,7 @@ IF(NOT VISIT_BUILD_MINIMAL_PLUGINS OR VISIT_SELECTED_DATABASE_PLUGINS)
 
     # Configure VTKh support.
     if(VISIT_VTKH_DIR)
-        INCLUDE(${VISIT_VTKH_DIR}/lib/VTKhConfig.cmake)
+        INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindVTKh.cmake)
     endif()
 
     # Configure GFortran support.

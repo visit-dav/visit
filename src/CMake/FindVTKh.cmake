@@ -38,7 +38,7 @@
 #
 #****************************************************************************/
 
-IF ("${VISIT_VTKH_DIR}")
+IF (DEFINED VISIT_VTKH_DIR)
    INCLUDE(${VISIT_VTKH_DIR}/lib/VTKhConfig.cmake)
 
    SET("VTKH_FOUND" true CACHE BOOL "VTKH library found" FORCE)
