@@ -96,9 +96,6 @@ function bv_adios2_host_profile
         echo >> $HOSTCONF
         echo "##" >> $HOSTCONF
         echo "## ADIOS2" >> $HOSTCONF
-        if [[ "$VISIT_MPI_COMPILER" != "" ]] ; then
-            echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
-        fi
         echo "##" >> $HOSTCONF
 
         if [[ "$USE_SYSTEM_ADIOS2" == "yes" ]]; then
@@ -107,8 +104,14 @@ function bv_adios2_host_profile
         else
             echo "SETUP_APP_VERSION(ADIOS2 $ADIOS2_VERSION)" >> $HOSTCONF
             echo \
-                "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR \${VISITHOME}/adios2/\${ADIOS2_VERSION}/\${VISITARCH})" \
+                "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_DIR \${VISITHOME}/adios2-ser/\${ADIOS2_VERSION}/\${VISITARCH})" \
                 >> $HOSTCONF
+
+            if [[ "$parallel" == "yes" ]] ; then
+                echo "## (configured w/ mpi compiler wrapper)" >> $HOSTCONF
+                echo "VISIT_OPTION_DEFAULT(VISIT_ADIOS2_PAR_DIR \${VISITHOME}/adios2-par/\${ADIOS2_VERSION}/\${VISITARCH})" \
+                >> $HOSTCONF
+            fi
         fi
     fi
 }
@@ -129,15 +132,6 @@ function bv_adios2_dry_run
 {
     if [[ "$DO_ADIOS2" == "yes" ]] ; then
         echo "Dry run option not set for adios2."
-    fi
-}
-
-function build_adios2_ser_par
-{
-    if [ "$1" = "serial" ] ; then
-        x = serial
-    else
-        x = parallel
     fi
 }
 
@@ -166,86 +160,108 @@ function build_adios2
         warn "Unable to prepare ADIOS2 Build Directory. Giving Up"
         return 1
     fi
+    #### begin parallel
 
-    #
-    # Call configure
-    #
-    info "Configuring ADIOS2 . . ."
-    cd $ADIOS2_BUILD_DIR || error "Can't cd to ADIOS2 build dir."
+    par_build_types="ser"
+    if [[ "$parallel" == "yes" ]]; then
+        par_build_types="$par_build_types par"
+    fi
 
-    # Make a build directory for an out-of-source build.. Change the
-    # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
     ADIOS2_SRC_DIR=$ADIOS2_BUILD_DIR
-    ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-build"
-    if [[ ! -d $ADIOS2_BUILD_DIR ]] ; then
-        echo "Making build directory $ADIOS2_BUILD_DIR"
-        mkdir $ADIOS2_BUILD_DIR
-    fi
 
-    #
-    # Remove the CMakeCache.txt files ... existing files sometimes prevent
-    # fields from getting overwritten properly.
-    #
-    rm -Rf $ADIOS2_BUILD_DIR/CMakeCache.txt $ADIOS2_BUILD_DIR/*/CMakeCache.txt
+    for bt in $par_build_types; do
 
-    adios2_build_mode="${VISIT_BUILD_MODE}"
-    adios2_install_path="${VISITDIR}/adios2/${ADIOS2_VERSION}/${VISITARCH}"
+        # Configure.
+        cd $ADIOS2_SRC_DIR || error "Can't cd to $ADIOS2_SRC_DIR"
+        info "Configuring ADIOS2-$bt (~1 minute)"
 
-    cfg_opts=""
-    cfg_opts="${cfg_opts} -DCMAKE_BUILD_TYPE:STRING=${adios2_build_mode}"
-    cfg_opts="${cfg_opts} -DCMAKE_INSTALL_PREFIX:PATH=${adios2_install_path}"
-    if test "x${DO_STATIC_BUILD}" = "xyes" ; then
-        cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
-    else
-        cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
-    fi
-    cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"
-    cfg_opts="${cfg_opts} -DENABLE_TESTS:BOOL=false"
-    cfg_opts="${cfg_opts} -DENABLE_DOCS:BOOL=false"
-    cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
-    cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
-    cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
-    cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
+        # Make a build directory for an out-of-source build.. Change the
+        # VISIT_BUILD_DIR variable to represent the out-of-source build directory.
+        ADIOS2_BUILD_DIR="${ADIOS2_SRC_DIR}-$bt-build"
 
-    CMAKE_BIN="${CMAKE_INSTALL}/cmake"
-    cd ${ADIOS2_BUILD_DIR}
-    if test -e bv_run_cmake.sh ; then
-        rm -f bv_run_cmake.sh
-    fi
+        if [[ ! -d $ADIOS2_BUILD_DIR ]] ; then
+            echo "Making build directory $ADIOS2_BUILD_DIR"
+            mkdir $ADIOS2_BUILD_DIR
+        fi
 
-    echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
-    cat bv_run_cmake.sh
-    issue_command bash bv_run_cmake.sh
+        cd $ADIOS2_BUILD_DIR || error "Can't cd to $ADIOS2_BUILD_DIR"
 
-    if [[ $? != 0 ]] ; then
-        warn "ADIOS2 configure failed.  Giving up"
-        return 1
-    fi
+        #
+        # Remove the CMakeCache.txt files ... existing files sometimes prevent
+        # fields from getting overwritten properly.
+        #
+        rm -Rf $ADIOS2_BUILD_DIR/CMakeCache.txt $ADIOS2_BUILD_DIR/*/CMakeCache.txt
 
-    #
-    # Build ADIOS2
-    #
-    info "Building ADIOS2 . . . (~5 minutes)"
-    $MAKE # don't use -j b/c gfortran can has issues with intermediate files
-    if [[ $? != 0 ]] ; then
-        warn "ADIOS2 build failed.  Giving up"
-        return 1
-    fi
+        adios2_build_mode="${VISIT_BUILD_MODE}"
+        adios2_install_path="${VISITDIR}/adios2-$bt/${ADIOS2_VERSION}/${VISITARCH}"
 
-    #
-    # Install into the VisIt third party location.
-    #
-    info "Installing ADIOS2"
-    $MAKE install
-    if [[ $? != 0 ]] ; then
-        warn "ADIOS2 install failed.  Giving up"
-        return 1
-    fi
+        cfg_opts=""
+        cfg_opts="${cfg_opts} -DADIOS2_BUILD_EXAMPLES:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_BUILD_TESTING:BOOL=OFF"
+        cfg_opts="${cfg_opts} -DADIOS2_USE_ZeroMQ:BOOL=OFF"
 
-    if [[ "$DO_GROUP" == "yes" ]] ; then
-        chmod -R ug+w,a+rX "$VISITDIR/adios2"
-        chgrp -R ${GROUP} "$VISITDIR/adios2"
-    fi
+        if test "x${DO_STATIC_BUILD}" = "xyes" ; then
+            cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=OFF"
+        else
+            cfg_opts="${cfg_opts} -DBUILD_SHARED_LIBS:BOOL=ON"
+        fi
+        cfg_opts="${cfg_opts} -DCMAKE_BUILD_TYPE:STRING=${adios2_build_mode}"
+        cfg_opts="${cfg_opts} -DCMAKE_INSTALL_PREFIX:PATH=${adios2_install_path}"
+        cfg_opts="${cfg_opts} -DCMAKE_C_FLAGS:STRING=\"${C_OPT_FLAGS}\""
+        cfg_opts="${cfg_opts} -DCMAKE_CXX_FLAGS:STRING=\"${CXX_OPT_FLAGS}\""
+        cfg_opts="${cfg_opts} -DADIOS2_USE_SST:BOOL=OFF"
+
+        if [[ "$bt" == "ser" ]]; then
+            cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=OFF"
+            cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${C_COMPILER}"
+            cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${CXX_COMPILER}"
+        elif [[ "$bt" == "par" ]]; then
+            cfg_opts="${cfg_opts} -DADIOS2_USE_MPI:BOOL=ON"
+            cfg_opts="${cfg_opts} -DCMAKE_C_COMPILER:STRING=${PAR_COMPILER}"
+            cfg_opts="${cfg_opts} -DCMAKE_CXX_COMPILER:STRING=${PAR_COMPILER_CXX}"
+        fi
+
+        # call configure.
+        CMAKE_BIN="${CMAKE_INSTALL}/cmake"
+        if test -e bv_run_cmake.sh ; then
+            rm -f bv_run_cmake.sh
+        fi
+
+        echo "\"${CMAKE_BIN}\"" ${cfg_opts} ../ > bv_run_cmake.sh
+        cat bv_run_cmake.sh
+        issue_command bash bv_run_cmake.sh
+
+        if [[ $? != 0 ]] ; then
+            warn "ADIOS2 configure failed.  Giving up"
+            return 1
+        fi
+
+        #
+        # Build ADIOS2
+        #
+        info "Building ADIOS2-$bt . . . (~5 minutes)"
+        $MAKE $MAKE_OPT_FLAGS
+        if [[ $? != 0 ]] ; then
+            warn "ADIOS2 build failed.  Giving up"
+            return 1
+        fi
+
+        #
+        # Install into the VisIt third party location.
+        #
+        info "Installing ADIOS2-$bt"
+        $MAKE install
+        if [[ $? != 0 ]] ; then
+            warn "ADIOS2 install failed.  Giving up"
+            return 1
+        fi
+
+        if [[ "$DO_GROUP" == "yes" ]] ; then
+            chmod -R ug+w,a+rX "$VISITDIR/adios2"
+            chgrp -R ${GROUP} "$VISITDIR/adios2"
+        fi
+        cd "$START_DIR"
+    done
 
     cd "$START_DIR"
     info "Done with ADIOS2"
@@ -278,11 +294,18 @@ function bv_adios2_build
     cd "$START_DIR"
 
     if [[ "$DO_ADIOS2" == "yes" && "$USE_SYSTEM_ADIOS2" == "no" ]] ; then
-        check_if_installed "adios2" $ADIOS2_VERSION
-        if [[ $? == 0 ]] ; then
-            info "Skipping ADIOS2 build.  ADIOS2 is already installed."
+        ser_installed="no"
+        par_installed="no"
+        check_if_installed "adios2-ser" $ADIOS2_VERSION
+        if [[ $? == 0 ]] ; then ser_installed="yes"; fi
+        if [[ "$parallel" == "yes" ]]; then
+            check_if_installed "adios2-par" $ADIOS2_VERSION
+            if [[ $? == 0 ]] ; then par_installed="yes"; fi
+        fi
+
+        if [ "$ser_installed" == "yes" ] && ([ "$parallel" == "no" ] || [ "$par_installed" == "yes" ]) ; then
+            info "ADIOS2 already installed, skipping"
         else
-            info "Configuring ADIOS2 (~1 minutes)"
             build_adios2
             if [[ $? != 0 ]] ; then
                 error "Unable to build or install ADIOS2.  Bailing out."
