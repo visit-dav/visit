@@ -2409,12 +2409,24 @@ EXPORT_LIBRARY_DEPENDENCIES(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies
 
 FOREACH(VTK_TARGET ${VTK_LIBRARIES})
     IF(TARGET ${VTK_TARGET})
-        # this lets us know if this is a real VTK lib, not a depend lib (such as python)
-        GET_PROPERTY(VTK_TARGET_IMPORT_LOC_EXISTS TARGET ${VTK_TARGET}
-                                                  PROPERTY IMPORT_LOCATION SET)
+        # this lets us know if this is a real VTK lib, not a depend lib
+        # (such as python)
+
+        # Attempting to get 'IMPORT_LOCATION' or 'LOCATION' is not allowed for
+        # an INTERFACE_LIBRARY target type.  So, at very least should check
+        # target type and not perform the get_property call.
+        get_target_property(VTK_TARGET_TYPE ${VTK_TARGET} TYPE)
+        if (${VTK_TARGET_TYPE} STREQUAL "INTERFACE_LIBRARY")
+            set(VTK_TARGET_IMPORT_LOC_EXISTS true)
+        else()
+            # Why do we call this? None of the vtk targets seem to have
+            # it NOT set (perhaps for non build-visit installs of VTK ??)
+            GET_PROPERTY(VTK_TARGET_IMPORT_LOC_EXISTS TARGET ${VTK_TARGET}
+                         PROPERTY IMPORT_LOCATION SET)
+        endif()
         IF(${VTK_TARGET_IMPORT_LOC_EXISTS})
-            # We can follow the import loc property  to get the actual filename, but we
-            # will want to link with -lvkt , not libvtk ...
+            # We can follow the import loc property to get the actual filename,
+            # but we will want to link with -lvkt , not libvtk ...
             #
             # So for now, we create the suffix manually. Keeping this code in case
             # we need it to create something more sophisticated in the future.
