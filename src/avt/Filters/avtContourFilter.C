@@ -64,9 +64,10 @@
 
 #endif
 
-#ifdef HAVE_LIBVTKM
-#include <vtkmContourFilter.h>
-#include <vtkmDataSet.h>
+#ifdef HAVE_LIBVTKH
+#include <vtkh/vtkh.hpp>
+#include <vtkh/DataSet.hpp>
+#include <vtkh/filters/MarchingCubes.hpp>
 #endif
 
 #include <vtkCellData.h>
@@ -1098,19 +1099,21 @@ avtContourFilter::ExecuteDataTree_VTK(avtDataRepresentation *in_dr)
 //  Creation:   Thu Jan 14 08:48:41 PST 2016
 //
 //  Modifications:
+//    Eric Brugger, Wed Sep 12 16:37:23 PDT 2018
+//    I replaced support for vtkm with vtkh.
 //
 // ****************************************************************************
 
 avtDataTree_p
 avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 {
-#ifndef HAVE_LIBVTKM
+#ifndef HAVE_LIBVTKH
     return NULL;
 #else
     //
     // Get the VTKM data set, the domain number, and the label.
     //
-    vtkmDataSet *in_ds = in_dr->GetDataVTKm();
+    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
     int domain = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
 
@@ -1133,11 +1136,20 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
 
     //execute once per isovalue
     avtDataRepresentation **output = new avtDataRepresentation*[isoValues.size()];
-    for (int i=0; i<isoValues.size(); i++)
-    {
-        vtkmDataSet *isoOut = new vtkmDataSet;
 
-        vtkmContourFilter(in_ds->ds, isoOut->ds, contourVar, isoValues[i]);
+    vtkh::MarchingCubes marcher;
+
+    marcher.SetInput(in_ds);
+    marcher.SetField(contourVar);
+
+    for (int i = 0; i < isoValues.size(); i++)
+    {
+        double isoValue = isoValues[i];
+
+        marcher.SetIsoValues(&isoValue, 1);
+        marcher.Update();
+
+        vtkh::DataSet *isoOut = marcher.GetOutput();
 
         if (shouldCreateLabels)
         {   
