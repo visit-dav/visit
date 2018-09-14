@@ -61,7 +61,7 @@ void ExtrudeAttributes::Init()
     axis[2] = 1;
     byVariable = false;
     length = 1;
-    steps = 30;
+    steps = 1;
     preserveOriginalCellNumbers = true;
 
     ExtrudeAttributes::SelectAll();

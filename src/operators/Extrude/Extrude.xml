@@ -16,7 +16,7 @@
         1.
       </Field>
       <Field name="steps" label="Number of steps" type="int">
-        30
+        1
       </Field>
       <Field name="preserveOriginalCellNumbers" label="Preserve original cell numbers" type="bool">
         true

@@ -129,6 +129,7 @@ QvisExtrudeWindow::CreateWindowContents()
     int variableMask = QvisVariableButton::Scalars;
     variable = new QvisVariableButton(true, true, true, variableMask, central);
     variable->setDefaultVariable("default");
+    variable->setEnabled( atts->GetByVariable() );
     connect(variable, SIGNAL(activated(const QString&)),
             this, SLOT(variableChanged(const QString&)));
     mainLayout->addWidget(variable, 1,1);

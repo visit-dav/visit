@@ -72,7 +72,7 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         byVariable = false;
         variable = new String("default");
         length = 1;
-        steps = 30;
+        steps = 1;
         preserveOriginalCellNumbers = true;
     }
 
@@ -87,7 +87,7 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         byVariable = false;
         variable = new String("default");
         length = 1;
-        steps = 30;
+        steps = 1;
         preserveOriginalCellNumbers = true;
     }
 
