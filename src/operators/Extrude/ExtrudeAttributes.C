@@ -59,6 +59,7 @@ void ExtrudeAttributes::Init()
     axis[0] = 0;
     axis[1] = 0;
     axis[2] = 1;
+    byVariable = false;
     length = 1;
     steps = 30;
     preserveOriginalCellNumbers = true;
@@ -87,6 +88,8 @@ void ExtrudeAttributes::Copy(const ExtrudeAttributes &obj)
     axis[1] = obj.axis[1];
     axis[2] = obj.axis[2];
 
+    byVariable = obj.byVariable;
+    variable = obj.variable;
     length = obj.length;
     steps = obj.steps;
     preserveOriginalCellNumbers = obj.preserveOriginalCellNumbers;
@@ -115,7 +118,8 @@ const AttributeGroup::private_tmfs_t ExtrudeAttributes::TmfsStruct = {EXTRUDEATT
 // ****************************************************************************
 
 ExtrudeAttributes::ExtrudeAttributes() : 
-    AttributeSubject(ExtrudeAttributes::TypeMapFormatString)
+    AttributeSubject(ExtrudeAttributes::TypeMapFormatString),
+    variable("default")
 {
     ExtrudeAttributes::Init();
 }
@@ -136,7 +140,8 @@ ExtrudeAttributes::ExtrudeAttributes() :
 // ****************************************************************************
 
 ExtrudeAttributes::ExtrudeAttributes(private_tmfs_t tmfs) : 
-    AttributeSubject(tmfs.tmfs)
+    AttributeSubject(tmfs.tmfs),
+    variable("default")
 {
     ExtrudeAttributes::Init();
 }
@@ -253,6 +258,8 @@ ExtrudeAttributes::operator == (const ExtrudeAttributes &obj) const
 
     // Create the return value
     return (axis_equal &&
+            (byVariable == obj.byVariable) &&
+            (variable == obj.variable) &&
             (length == obj.length) &&
             (steps == obj.steps) &&
             (preserveOriginalCellNumbers == obj.preserveOriginalCellNumbers));
@@ -400,6 +407,8 @@ void
 ExtrudeAttributes::SelectAll()
 {
     Select(ID_axis,                        (void *)axis, 3);
+    Select(ID_byVariable,                  (void *)&byVariable);
+    Select(ID_variable,                    (void *)&variable);
     Select(ID_length,                      (void *)&length);
     Select(ID_steps,                       (void *)&steps);
     Select(ID_preserveOriginalCellNumbers, (void *)&preserveOriginalCellNumbers);
@@ -439,6 +448,18 @@ ExtrudeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
     {
         addToParent = true;
         node->AddNode(new DataNode("axis", axis, 3));
+    }
+
+    if(completeSave || !FieldsEqual(ID_byVariable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("byVariable", byVariable));
+    }
+
+    if(completeSave || !FieldsEqual(ID_variable, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("variable", variable));
     }
 
     if(completeSave || !FieldsEqual(ID_length, &defaultObject))
@@ -497,6 +518,10 @@ ExtrudeAttributes::SetFromNode(DataNode *parentNode)
     DataNode *node;
     if((node = searchNode->GetNode("axis")) != 0)
         SetAxis(node->AsDoubleArray());
+    if((node = searchNode->GetNode("byVariable")) != 0)
+        SetByVariable(node->AsBool());
+    if((node = searchNode->GetNode("variable")) != 0)
+        SetVariable(node->AsString());
     if((node = searchNode->GetNode("length")) != 0)
         SetLength(node->AsDouble());
     if((node = searchNode->GetNode("steps")) != 0)
@@ -516,6 +541,20 @@ ExtrudeAttributes::SetAxis(const double *axis_)
     axis[1] = axis_[1];
     axis[2] = axis_[2];
     Select(ID_axis, (void *)axis, 3);
+}
+
+void
+ExtrudeAttributes::SetByVariable(bool byVariable_)
+{
+    byVariable = byVariable_;
+    Select(ID_byVariable, (void *)&byVariable);
+}
+
+void
+ExtrudeAttributes::SetVariable(const std::string &variable_)
+{
+    variable = variable_;
+    Select(ID_variable, (void *)&variable);
 }
 
 void
@@ -555,6 +594,24 @@ ExtrudeAttributes::GetAxis()
     return axis;
 }
 
+bool
+ExtrudeAttributes::GetByVariable() const
+{
+    return byVariable;
+}
+
+const std::string &
+ExtrudeAttributes::GetVariable() const
+{
+    return variable;
+}
+
+std::string &
+ExtrudeAttributes::GetVariable()
+{
+    return variable;
+}
+
 double
 ExtrudeAttributes::GetLength() const
 {
@@ -583,6 +640,12 @@ ExtrudeAttributes::SelectAxis()
     Select(ID_axis, (void *)axis, 3);
 }
 
+void
+ExtrudeAttributes::SelectVariable()
+{
+    Select(ID_variable, (void *)&variable);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Keyframing methods
 ///////////////////////////////////////////////////////////////////////////////
@@ -608,6 +671,8 @@ ExtrudeAttributes::GetFieldName(int index) const
     switch (index)
     {
     case ID_axis:                        return "axis";
+    case ID_byVariable:                  return "byVariable";
+    case ID_variable:                    return "variable";
     case ID_length:                      return "length";
     case ID_steps:                       return "steps";
     case ID_preserveOriginalCellNumbers: return "preserveOriginalCellNumbers";
@@ -636,6 +701,8 @@ ExtrudeAttributes::GetFieldType(int index) const
     switch (index)
     {
     case ID_axis:                        return FieldType_doubleArray;
+    case ID_byVariable:                  return FieldType_bool;
+    case ID_variable:                    return FieldType_variablename;
     case ID_length:                      return FieldType_double;
     case ID_steps:                       return FieldType_int;
     case ID_preserveOriginalCellNumbers: return FieldType_bool;
@@ -664,6 +731,8 @@ ExtrudeAttributes::GetFieldTypeName(int index) const
     switch (index)
     {
     case ID_axis:                        return "doubleArray";
+    case ID_byVariable:                  return "bool";
+    case ID_variable:                    return "variablename";
     case ID_length:                      return "double";
     case ID_steps:                       return "int";
     case ID_preserveOriginalCellNumbers: return "bool";
@@ -701,6 +770,16 @@ ExtrudeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
             axis_equal = (axis[i] == obj.axis[i]);
 
         retval = axis_equal;
+        }
+        break;
+    case ID_byVariable:
+        {  // new scope
+        retval = (byVariable == obj.byVariable);
+        }
+        break;
+    case ID_variable:
+        {  // new scope
+        retval = (variable == obj.variable);
         }
         break;
     case ID_length:

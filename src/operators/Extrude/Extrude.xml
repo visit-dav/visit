@@ -6,6 +6,12 @@
         0.000000
         1.000000
       </Field>
+      <Field name="byVariable" label="By variable" type="bool">
+        false
+      </Field>
+      <Field name="variable" label="Variable" type="variablename" enabler="byVariable:true" vartypes="01000000000">
+        default
+      </Field>
       <Field name="length" label="Length" type="double">
         1.
       </Field>

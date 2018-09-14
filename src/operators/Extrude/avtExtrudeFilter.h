@@ -47,10 +47,11 @@
 
 #include <ExtrudeAttributes.h>
 
+class vtkDataArray;
 class vtkDataSet;
 class vtkPoints;
 class vtkPointSet;
-
+class vtkRectilinearGrid;
 
 // ****************************************************************************
 //  Class: avtExtrudeFilter
@@ -85,19 +86,31 @@ class avtExtrudeFilter : public avtPluginDataTreeIterator
   protected:
     ExtrudeAttributes    atts;
 
+    std::string mainVariable;  
+
+    virtual avtContract_p ModifyContract(avtContract_p in_contract);
+
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
 
     virtual void         UpdateDataObjectInfo(void);
 
     void                 CopyVariables(vtkDataSet *in_ds, vtkDataSet *out_ds, 
-                                       int nSteps, const int *cellReplication = NULL) const;
-    vtkPoints           *CreateExtrudedPoints(vtkPoints *oldPoints, 
-                                              int nSteps) const;
+                                       int nLevels, const int *cellReplication = NULL) const;
+    vtkPoints           *CreateExtrudedPoints(vtkPoints *inPoints, int nLevels);
     void                 ExtrudeExtents(double *dbounds) const;
     vtkDataSet          *ExtrudeToRectilinearGrid(vtkDataSet *in_ds) const;
-    vtkDataSet          *ExtrudeToStructuredGrid(vtkDataSet *in_ds) const;
-    vtkDataSet          *ExtrudeToUnStructuredGrid(vtkPointSet *in_ds) const;
-};
+    vtkDataSet          *ExtrudeToStructuredGrid(vtkDataSet *in_ds);
+    vtkDataSet          *ExtrudeToUnstructuredGrid(vtkPointSet *in_ds);
 
+    vtkDataSet  *ExtrudeCellVariableToUnstructuredGrid(vtkRectilinearGrid *in_ds);
+    vtkDataSet  *ExtrudeCellVariableToUnstructuredGrid(vtkPointSet *in_ds);
+
+    bool cellData{false};
+    bool nodeData{false};
+    vtkDataArray *varArray{nullptr};
+
+    double minScalar{0};
+    double maxScalar{0};
+};
 
 #endif

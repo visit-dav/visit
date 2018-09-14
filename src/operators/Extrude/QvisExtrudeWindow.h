@@ -46,6 +46,7 @@ class ExtrudeAttributes;
 class QLabel;
 class QCheckBox;
 class QLineEdit;
+class QvisVariableButton;
 
 // ****************************************************************************
 // Class: QvisExtrudeWindow
@@ -78,12 +79,16 @@ class QvisExtrudeWindow : public QvisOperatorWindow
     virtual void GetCurrentValues(int which_widget);
   private slots:
     void axisProcessText();
+    void byVariableChanged(bool val);
+    void variableChanged(const QString &varName);
     void lengthProcessText();
     void stepsProcessText();
     void preserveOriginalCellNumbersChanged(bool val);
   private:
     QLineEdit *axis;
     QLineEdit *length;
+    QCheckBox *byVariable;
+    QvisVariableButton *variable;
     QLineEdit *steps;
     QCheckBox *preserveOriginalCellNumbers;
     QLabel *axisLabel;
@@ -92,7 +97,5 @@ class QvisExtrudeWindow : public QvisOperatorWindow
 
     ExtrudeAttributes *atts;
 };
-
-
 
 #endif

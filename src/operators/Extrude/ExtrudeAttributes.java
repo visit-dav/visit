@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class ExtrudeAttributes extends AttributeSubject implements Plugin
 {
-    private static int ExtrudeAttributes_numAdditionalAtts = 4;
+    private static int ExtrudeAttributes_numAdditionalAtts = 6;
 
     public ExtrudeAttributes()
     {
@@ -69,6 +69,8 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         axis[0] = 0;
         axis[1] = 0;
         axis[2] = 1;
+        byVariable = false;
+        variable = new String("default");
         length = 1;
         steps = 30;
         preserveOriginalCellNumbers = true;
@@ -82,6 +84,8 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         axis[0] = 0;
         axis[1] = 0;
         axis[2] = 1;
+        byVariable = false;
+        variable = new String("default");
         length = 1;
         steps = 30;
         preserveOriginalCellNumbers = true;
@@ -98,6 +102,8 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         axis[1] = obj.axis[1];
         axis[2] = obj.axis[2];
 
+        byVariable = obj.byVariable;
+        variable = new String(obj.variable);
         length = obj.length;
         steps = obj.steps;
         preserveOriginalCellNumbers = obj.preserveOriginalCellNumbers;
@@ -126,6 +132,8 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
 
         // Create the return value
         return (axis_equal &&
+                (byVariable == obj.byVariable) &&
+                (variable.equals(obj.variable)) &&
                 (length == obj.length) &&
                 (steps == obj.steps) &&
                 (preserveOriginalCellNumbers == obj.preserveOriginalCellNumbers));
@@ -151,26 +159,40 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         Select(0);
     }
 
+    public void SetByVariable(boolean byVariable_)
+    {
+        byVariable = byVariable_;
+        Select(1);
+    }
+
+    public void SetVariable(String variable_)
+    {
+        variable = variable_;
+        Select(2);
+    }
+
     public void SetLength(double length_)
     {
         length = length_;
-        Select(1);
+        Select(3);
     }
 
     public void SetSteps(int steps_)
     {
         steps = steps_;
-        Select(2);
+        Select(4);
     }
 
     public void SetPreserveOriginalCellNumbers(boolean preserveOriginalCellNumbers_)
     {
         preserveOriginalCellNumbers = preserveOriginalCellNumbers_;
-        Select(3);
+        Select(5);
     }
 
     // Property getting methods
     public double[] GetAxis() { return axis; }
+    public boolean  GetByVariable() { return byVariable; }
+    public String   GetVariable() { return variable; }
     public double   GetLength() { return length; }
     public int      GetSteps() { return steps; }
     public boolean  GetPreserveOriginalCellNumbers() { return preserveOriginalCellNumbers; }
@@ -181,10 +203,14 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(0, buf))
             buf.WriteDoubleArray(axis);
         if(WriteSelect(1, buf))
-            buf.WriteDouble(length);
+            buf.WriteBool(byVariable);
         if(WriteSelect(2, buf))
-            buf.WriteInt(steps);
+            buf.WriteString(variable);
         if(WriteSelect(3, buf))
+            buf.WriteDouble(length);
+        if(WriteSelect(4, buf))
+            buf.WriteInt(steps);
+        if(WriteSelect(5, buf))
             buf.WriteBool(preserveOriginalCellNumbers);
     }
 
@@ -196,12 +222,18 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
             SetAxis(buf.ReadDoubleArray());
             break;
         case 1:
-            SetLength(buf.ReadDouble());
+            SetByVariable(buf.ReadBool());
             break;
         case 2:
-            SetSteps(buf.ReadInt());
+            SetVariable(buf.ReadString());
             break;
         case 3:
+            SetLength(buf.ReadDouble());
+            break;
+        case 4:
+            SetSteps(buf.ReadInt());
+            break;
+        case 5:
             SetPreserveOriginalCellNumbers(buf.ReadBool());
             break;
         }
@@ -211,6 +243,8 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
     {
         String str = new String();
         str = str + doubleArrayToString("axis", axis, indent) + "\n";
+        str = str + boolToString("byVariable", byVariable, indent) + "\n";
+        str = str + stringToString("variable", variable, indent) + "\n";
         str = str + doubleToString("length", length, indent) + "\n";
         str = str + intToString("steps", steps, indent) + "\n";
         str = str + boolToString("preserveOriginalCellNumbers", preserveOriginalCellNumbers, indent) + "\n";
@@ -220,6 +254,8 @@ public class ExtrudeAttributes extends AttributeSubject implements Plugin
 
     // Attributes
     private double[] axis;
+    private boolean  byVariable;
+    private String   variable;
     private double   length;
     private int      steps;
     private boolean  preserveOriginalCellNumbers;

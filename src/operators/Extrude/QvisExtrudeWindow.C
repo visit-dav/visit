@@ -44,6 +44,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QvisVariableButton.h>
 
 
 // ****************************************************************************
@@ -62,10 +63,10 @@
 // ****************************************************************************
 
 QvisExtrudeWindow::QvisExtrudeWindow(const int type,
-                         ExtrudeAttributes *subj,
-                         const QString &caption,
-                         const QString &shortName,
-                         QvisNotepadArea *notepad)
+                                     ExtrudeAttributes *subj,
+                                     const QString &caption,
+                                     const QString &shortName,
+                                     QvisNotepadArea *notepad)
     : QvisOperatorWindow(type,subj, caption, shortName, notepad)
 {
     atts = subj;
@@ -119,25 +120,37 @@ QvisExtrudeWindow::CreateWindowContents()
     connect(axis, SIGNAL(returnPressed()),
             this, SLOT(axisProcessText()));
     mainLayout->addWidget(axis, 0,1);
+    
+    byVariable = new QCheckBox(tr("Extrude by variable"), central);
+    connect(byVariable, SIGNAL(toggled(bool)),
+            this, SLOT(byVariableChanged(bool)));
+    mainLayout->addWidget(byVariable, 1,0);
+
+    int variableMask = QvisVariableButton::Scalars;
+    variable = new QvisVariableButton(true, true, true, variableMask, central);
+    variable->setDefaultVariable("default");
+    connect(variable, SIGNAL(activated(const QString&)),
+            this, SLOT(variableChanged(const QString&)));
+    mainLayout->addWidget(variable, 1,1);
 
     lengthLabel = new QLabel(tr("Length"), central);
-    mainLayout->addWidget(lengthLabel,1,0);
+    mainLayout->addWidget(lengthLabel,2,0);
     length = new QLineEdit(central);
     connect(length, SIGNAL(returnPressed()),
             this, SLOT(lengthProcessText()));
-    mainLayout->addWidget(length, 1,1);
+    mainLayout->addWidget(length, 2,1);
 
     stepsLabel = new QLabel(tr("Number of steps"), central);
-    mainLayout->addWidget(stepsLabel,2,0);
+    mainLayout->addWidget(stepsLabel,3,0);
     steps = new QLineEdit(central);
     connect(steps, SIGNAL(returnPressed()),
             this, SLOT(stepsProcessText()));
-    mainLayout->addWidget(steps, 2,1);
+    mainLayout->addWidget(steps, 3,1);
 
     preserveOriginalCellNumbers = new QCheckBox(tr("Preserve original cell numbers"), central);
     connect(preserveOriginalCellNumbers, SIGNAL(toggled(bool)),
             this, SLOT(preserveOriginalCellNumbersChanged(bool)));
-    mainLayout->addWidget(preserveOriginalCellNumbers, 3,0);
+    mainLayout->addWidget(preserveOriginalCellNumbers, 4,0);
 
 }
 
@@ -175,6 +188,21 @@ QvisExtrudeWindow::UpdateWindow(bool doAll)
         {
           case ExtrudeAttributes::ID_axis:
             axis->setText(DoublesToQString(atts->GetAxis(), 3));
+            break;
+          case ExtrudeAttributes::ID_byVariable:
+            byVariable->blockSignals(true);
+            byVariable->setChecked(atts->GetByVariable());
+            byVariable->blockSignals(false);
+
+            if(atts->GetByVariable())
+              lengthLabel->setText("Scale Factor");
+            else
+              lengthLabel->setText("Length");
+            break;
+          case ExtrudeAttributes::ID_variable:
+            variable->blockSignals(true);
+            variable->setText(QString(atts->GetVariable().c_str()));
+            variable->blockSignals(false);
             break;
           case ExtrudeAttributes::ID_length:
             length->setText(DoubleToQString(atts->GetLength()));
@@ -253,7 +281,6 @@ QvisExtrudeWindow::GetCurrentValues(int which_widget)
             atts->SetSteps(atts->GetSteps());
         }
     }
-
 }
 
 
@@ -269,6 +296,28 @@ QvisExtrudeWindow::axisProcessText()
     Apply();
 }
 
+
+void
+QvisExtrudeWindow::byVariableChanged(bool val)
+{
+    atts->SetByVariable(val);
+    
+    if(atts->GetByVariable())
+      lengthLabel->setText("Scale Factor");
+    else
+      lengthLabel->setText("Length");
+
+    SetUpdate(false);
+    Apply();
+}
+
+void
+QvisExtrudeWindow::variableChanged(const QString &varName)
+{
+    atts->SetVariable(varName.toStdString());
+    SetUpdate(false);
+    Apply();
+}
 
 void
 QvisExtrudeWindow::lengthProcessText()
@@ -293,5 +342,3 @@ QvisExtrudeWindow::preserveOriginalCellNumbersChanged(bool val)
     SetUpdate(false);
     Apply();
 }
-
-

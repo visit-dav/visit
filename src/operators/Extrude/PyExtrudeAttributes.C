@@ -92,6 +92,13 @@ PyExtrudeAttributes_ToString(const ExtrudeAttributes *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    if(atts->GetByVariable())
+        SNPRINTF(tmpStr, 1000, "%sbyVariable = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sbyVariable = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%svariable = \"%s\"\n", prefix, atts->GetVariable().c_str());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%slength = %g\n", prefix, atts->GetLength());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%ssteps = %d\n", prefix, atts->GetSteps());
@@ -164,6 +171,54 @@ ExtrudeAttributes_GetAxis(PyObject *self, PyObject *args)
     const double *axis = obj->data->GetAxis();
     for(int i = 0; i < 3; ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(axis[i]));
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_SetByVariable(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the byVariable in the object.
+    obj->data->SetByVariable(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_GetByVariable(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetByVariable()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_SetVariable(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+
+    char *str;
+    if(!PyArg_ParseTuple(args, "s", &str))
+        return NULL;
+
+    // Set the variable in the object.
+    obj->data->SetVariable(std::string(str));
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+ExtrudeAttributes_GetVariable(PyObject *self, PyObject *args)
+{
+    ExtrudeAttributesObject *obj = (ExtrudeAttributesObject *)self;
+    PyObject *retval = PyString_FromString(obj->data->GetVariable().c_str());
     return retval;
 }
 
@@ -245,6 +300,10 @@ PyMethodDef PyExtrudeAttributes_methods[EXTRUDEATTRIBUTES_NMETH] = {
     {"Notify", ExtrudeAttributes_Notify, METH_VARARGS},
     {"SetAxis", ExtrudeAttributes_SetAxis, METH_VARARGS},
     {"GetAxis", ExtrudeAttributes_GetAxis, METH_VARARGS},
+    {"SetByVariable", ExtrudeAttributes_SetByVariable, METH_VARARGS},
+    {"GetByVariable", ExtrudeAttributes_GetByVariable, METH_VARARGS},
+    {"SetVariable", ExtrudeAttributes_SetVariable, METH_VARARGS},
+    {"GetVariable", ExtrudeAttributes_GetVariable, METH_VARARGS},
     {"SetLength", ExtrudeAttributes_SetLength, METH_VARARGS},
     {"GetLength", ExtrudeAttributes_GetLength, METH_VARARGS},
     {"SetSteps", ExtrudeAttributes_SetSteps, METH_VARARGS},
@@ -281,6 +340,10 @@ PyExtrudeAttributes_getattr(PyObject *self, char *name)
 {
     if(strcmp(name, "axis") == 0)
         return ExtrudeAttributes_GetAxis(self, NULL);
+    if(strcmp(name, "byVariable") == 0)
+        return ExtrudeAttributes_GetByVariable(self, NULL);
+    if(strcmp(name, "variable") == 0)
+        return ExtrudeAttributes_GetVariable(self, NULL);
     if(strcmp(name, "length") == 0)
         return ExtrudeAttributes_GetLength(self, NULL);
     if(strcmp(name, "steps") == 0)
@@ -303,6 +366,10 @@ PyExtrudeAttributes_setattr(PyObject *self, char *name, PyObject *args)
 
     if(strcmp(name, "axis") == 0)
         obj = ExtrudeAttributes_SetAxis(self, tuple);
+    else if(strcmp(name, "byVariable") == 0)
+        obj = ExtrudeAttributes_SetByVariable(self, tuple);
+    else if(strcmp(name, "variable") == 0)
+        obj = ExtrudeAttributes_SetVariable(self, tuple);
     else if(strcmp(name, "length") == 0)
         obj = ExtrudeAttributes_SetLength(self, tuple);
     else if(strcmp(name, "steps") == 0)

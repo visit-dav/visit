@@ -38,6 +38,7 @@
 
 #ifndef EXTRUDEATTRIBUTES_H
 #define EXTRUDEATTRIBUTES_H
+#include <string>
 #include <AttributeSubject.h>
 
 
@@ -85,19 +86,25 @@ public:
     // Property selection methods
     virtual void SelectAll();
     void SelectAxis();
+    void SelectVariable();
 
     // Property setting methods
     void SetAxis(const double *axis_);
+    void SetByVariable(bool byVariable_);
+    void SetVariable(const std::string &variable_);
     void SetLength(double length_);
     void SetSteps(int steps_);
     void SetPreserveOriginalCellNumbers(bool preserveOriginalCellNumbers_);
 
     // Property getting methods
-    const double *GetAxis() const;
-          double *GetAxis();
-    double       GetLength() const;
-    int          GetSteps() const;
-    bool         GetPreserveOriginalCellNumbers() const;
+    const double      *GetAxis() const;
+          double      *GetAxis();
+    bool              GetByVariable() const;
+    const std::string &GetVariable() const;
+          std::string &GetVariable();
+    double            GetLength() const;
+    int               GetSteps() const;
+    bool              GetPreserveOriginalCellNumbers() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -114,6 +121,8 @@ public:
     // IDs that can be used to identify fields in case statements
     enum {
         ID_axis = 0,
+        ID_byVariable,
+        ID_variable,
         ID_length,
         ID_steps,
         ID_preserveOriginalCellNumbers,
@@ -121,15 +130,17 @@ public:
     };
 
 private:
-    double axis[3];
-    double length;
-    int    steps;
-    bool   preserveOriginalCellNumbers;
+    double      axis[3];
+    bool        byVariable;
+    std::string variable;
+    double      length;
+    int         steps;
+    bool        preserveOriginalCellNumbers;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXTRUDEATTRIBUTES_TMFS "Ddib"
+#define EXTRUDEATTRIBUTES_TMFS "Dbsdib"
 
 #endif
