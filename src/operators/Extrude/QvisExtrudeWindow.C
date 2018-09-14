@@ -301,12 +301,14 @@ void
 QvisExtrudeWindow::byVariableChanged(bool val)
 {
     atts->SetByVariable(val);
-    
+
+    variable->setEnabled( atts->GetByVariable() );
+
     if(atts->GetByVariable())
       lengthLabel->setText("Scale Factor");
     else
       lengthLabel->setText("Length");
-
+    
     SetUpdate(false);
     Apply();
 }
