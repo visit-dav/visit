@@ -1117,8 +1117,6 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
     int domain = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
 
-    int timerHandle = visitTimer->StartTimer();
-
     if (!in_ds)
     {
         return NULL;
@@ -1133,6 +1131,8 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         GetOutput()->GetInfo().GetValidity().InvalidateOperation();
         return NULL;
     }
+
+    int timerHandle = visitTimer->StartTimer();
 
     //execute once per isovalue
     avtDataRepresentation **output = new avtDataRepresentation*[isoValues.size()];

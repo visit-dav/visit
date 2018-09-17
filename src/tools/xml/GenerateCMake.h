@@ -172,6 +172,9 @@
 //    Remove Qt, Qwt, VTK from link_directories, their libraries contain
 //    full paths.
 //
+//    Eric Brugger, Mon Sep 17 10:14:49 PDT 2018
+//    I replaced support for vtkm with vtkh.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -488,7 +491,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
         out << "${EAVL_INCLUDE_DIR}" << endl;
-        out << "${VTKM_INCLUDE_DIR}" << endl;
+        out << "${VTKh_INCLUDE_DIRS}" << endl;
+        out << "${VTKM_DIR}/include/vtkm-1.2" << endl;
+        out << "${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple" << endl;
         out << "${VTK_INCLUDE_DIRS}" << endl;
         out << "${PYINCLUDES}" << endl;
         if(extraIncludes.size() > 0)
@@ -660,7 +665,6 @@ class CMakeGeneratorPlugin : public Plugin
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
-        linkDirs.push_back("${VTKM_LIBRARY_DIR}");
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         for (size_t i=0; i<ldflags.size(); i++)
         {
@@ -900,7 +904,6 @@ class CMakeGeneratorPlugin : public Plugin
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
-        linkDirs.push_back("${VTKM_LIBRARY_DIR}");
         for (size_t i=0; i<ldflags.size(); i++)
         {
             if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
@@ -1135,7 +1138,9 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
         out << "${EAVL_INCLUDE_DIR}" << endl;
-        out << "${VTKM_INCLUDE_DIR}" << endl;
+        out << "${VTKh_INCLUDE_DIRS}" << endl;
+        out << "${VTKM_DIR}/include/vtkm-1.2" << endl;
+        out << "${VTKM_DIR}/include/vtkm-1.2/vtkm/thirdparty/taotuple" << endl;
         out << "${VTK_INCLUDE_DIRS}" << endl;
         out << ")" << endl;
         out << endl;
@@ -1208,7 +1213,6 @@ class CMakeGeneratorPlugin : public Plugin
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
-        linkDirs.push_back("${VTKM_LIBRARY_DIR}");
         for (size_t i=0; i<ldflags.size(); i++)
         {
             if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))

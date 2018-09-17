@@ -44,6 +44,12 @@
 
 #include <float.h>
 
+#ifdef HAVE_LIBVTKH
+#include <vtkh/vtkh.hpp>
+#include <vtkh/DataSet.hpp>
+#include <vtkh/filters/Slice.hpp>
+#endif
+
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
@@ -1137,9 +1143,52 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 //
 //  Returns:       The output data representation.
 //
+//  Programmer: Eric Brugger
+//  Creation:   Mon Sep 17 14:13:41 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataRepresentation *
+avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
+{
+    if (!in_dr)
+    {
+        return NULL;
+    }
+
+    avtDataRepresentation *out_dr = NULL;
+    if ((in_dr->GetDataRepType() == DATA_REP_TYPE_VTKM ||
+         avtCallback::GetBackendType() == GlobalAttributes::VTKM) &&
+        !atts.GetProject2d())
+    {
+        out_dr = this->ExecuteData_VTKM(in_dr);
+    }
+    else
+    {
+        out_dr = this->ExecuteData_VTK(in_dr);
+    }
+
+    return out_dr;
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::ExecuteData_VTK
+//
+//  Purpose:
+//      Sends the specified input and output through the slicer.
+//
+//  Arguments:
+//      in_dr      The input data representation.
+//
+//  Returns:       The output data representation.
+//
 //  Programmer: Hank Childs
 //  Creation:   July 24, 2000
 //
+//  Modifications:
 //    Jeremy Meredith, Thu Sep 28 12:45:16 PDT 2000
 //    Made this create a new vtk dataset.
 //
@@ -1201,7 +1250,7 @@ avtSliceFilter::GetOrigin(double &ox, double &oy, double &oz)
 // ****************************************************************************
 
 avtDataRepresentation *
-avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
+avtSliceFilter::ExecuteData_VTK(avtDataRepresentation *in_dr)
 {
     //
     // Get the VTK data set and domain number.
@@ -1282,6 +1331,69 @@ avtSliceFilter::ExecuteData(avtDataRepresentation *in_dr)
     out_ds->Delete();
     
     return out_dr;
+}
+
+
+// ****************************************************************************
+//  Method: avtSliceFilter::ExecuteData_VTKM
+//
+//  Purpose:
+//      Sends the specified input and output through the slicer.
+//
+//  Arguments:
+//      in_dr      The input data representation.
+//
+//  Returns:       The output data representation.
+//
+//  Programmer: Eric Brugger
+//  Creation:   Mon Sep 17 14:13:41 PDT 2018
+//
+//  Modifications:
+//
+// ****************************************************************************
+
+avtDataRepresentation *
+avtSliceFilter::ExecuteData_VTKM(avtDataRepresentation *in_dr)
+{
+#ifndef HAVE_LIBVTKH
+    return NULL;
+#else
+    //
+    // Get the VTKM data set.
+    //
+    vtkh::DataSet *in_ds = in_dr->GetDataVTKm();
+
+    if (!in_ds)
+    {
+        return NULL;
+    }
+
+    int timerHandle = visitTimer->StartTimer();
+
+    vtkh::Slice slicer;
+
+    slicer.SetInput(in_ds);
+    vtkm::Vec<vtkm::Float32,3> origin((float)cachedOrigin[0],
+                                      (float)cachedOrigin[1],
+                                      (float)cachedOrigin[2]);
+    vtkm::Vec<vtkm::Float32,3> normal((float)cachedNormal[0],
+                                      (float)cachedNormal[1],
+                                      (float)cachedNormal[2]);
+    slicer.AddPlane(origin, normal);
+    slicer.Update();
+
+    vtkh::DataSet *out_ds = slicer.GetOutput();
+
+    visitTimer->StopTimer(timerHandle, "avtSliceFilter::ExecuteData_VTKM");
+
+    if (out_ds == NULL)
+        return NULL;
+
+    avtDataRepresentation *out_dr = new avtDataRepresentation(out_ds,
+        in_dr->GetDomain(), in_dr->GetLabel());
+
+    return out_dr;
+#endif
 }
 
 

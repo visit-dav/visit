@@ -307,7 +307,7 @@ ConvertVTKToVTKm(vtkDataSet *data)
     }
 
     //
-    // Add the fields.
+    // Add the nodal fields.
     //
     int nArrays = data->GetPointData()->GetNumberOfArrays();
     for (int i = 0; i < nArrays; ++i)
@@ -380,6 +380,84 @@ ConvertVTKToVTKm(vtkDataSet *data)
                 ds.AddField(
                     vtkm::cont::Field(array->GetName(), 
                     vtkm::cont::Field::Association::POINTS, fieldArray));
+            }
+        }
+    }
+
+    //
+    // Add the zonal fields.
+    //
+    nArrays = data->GetCellData()->GetNumberOfArrays();
+    for (int i = 0; i < nArrays; ++i)
+    {
+        vtkDataArray *array = data->GetCellData()->GetArray(i);
+
+        if (array->GetNumberOfComponents() == 1)
+        {
+            if (array->GetDataType() == VTK_FLOAT)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                float *vals =
+                    vtkFloatArray::SafeDownCast(array)->GetPointer(0);
+
+                vtkm::cont::ArrayHandle<vtkm::Float32> fieldArray;
+                fieldArray.Allocate(nVals);
+
+                for (vtkm::Id j = 0; j < nVals; ++j)
+                    fieldArray.GetPortalControl().Set(j, vals[j]);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+            }
+            else if (array->GetDataType() == VTK_DOUBLE)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                double *vals =
+                    vtkDoubleArray::SafeDownCast(array)->GetPointer(0);
+
+                vtkm::cont::ArrayHandle<vtkm::Float64> fieldArray;
+                fieldArray.Allocate(nVals);
+  
+                for (vtkm::Id j = 0; j < nVals; ++j)
+                    fieldArray.GetPortalControl().Set(j, vals[j]);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+            }
+        }
+        else if (array->GetNumberOfComponents() == 3)
+        {
+            if (array->GetDataType() == VTK_FLOAT)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                vtkm::Vec<vtkm::Float32,3> *vals = 
+                    reinterpret_cast<vtkm::Vec<vtkm::Float32,3> *>(array->GetVoidPointer(0));
+
+                // Wrap the vector data as an array handle.
+                // This is good as long as the VTK object is around. Is it safe?
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> > fieldArray = 
+                    vtkm::cont::make_ArrayHandle(vals, nVals);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(), 
+                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+            }
+            else if (array->GetDataType() == VTK_DOUBLE)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                vtkm::Vec<vtkm::Float64,3> *vals = 
+                    reinterpret_cast<vtkm::Vec<vtkm::Float64,3> *>(array->GetVoidPointer(0));
+
+                // Wrap the vector data as an array handle.
+                // This is good as long as the VTK object is around. Is it safe?
+                vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float64,3> > fieldArray = 
+                    vtkm::cont::make_ArrayHandle(vals, nVals);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(), 
+                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
             }
         }
     }
@@ -833,6 +911,14 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
         for (int i = 0; i < nFields; ++i)
         {
             const char *fieldName = vtkm_ds.GetField(i).GetName().c_str();
+
+            //
+            // We want to strip off potentially internally generated fields
+            // in vtkm worklets, so if the name matches one of the known
+            // internally generated fields, skip it.
+            //
+            if (strcmp(fieldName, "slice_field") == 0)
+                continue;
 
             //
             // Use the field's association to try and attach the data to

@@ -123,7 +123,7 @@ class vtkSlicer;
 //    some aspects are being put in their own method.
 //
 //    Dave Pugmire, Mon Oct 22 10:25:42 EDT 2007
-//    Added cachedNormal data memeber.
+//    Added cachedNormal data member.
 //
 //    Brad Whitlock, Wed Jan 23 15:55:37 PST 2008
 //    Added doTransformVectors.
@@ -133,6 +133,9 @@ class vtkSlicer;
 //
 //    Eric Brugger, Thu Aug 14 16:33:47 PDT 2014
 //    Modified the class to work with avtDataRepresentation.
+//
+//    Eric Brugger, Mon Sep 17 14:06:29 PDT 2018
+//    Modified the class to work with VTKM.
 //
 // ****************************************************************************
 
@@ -167,6 +170,8 @@ class avtSliceFilter : public avtPluginDataTreeIterator
 
     virtual avtContract_p   ModifyContract(avtContract_p);
     virtual avtDataRepresentation *ExecuteData(avtDataRepresentation *);
+    avtDataRepresentation  *ExecuteData_VTK(avtDataRepresentation *);
+    avtDataRepresentation  *ExecuteData_VTKM(avtDataRepresentation *);
     virtual void            PreExecute(void);
     virtual void            PostExecute(void);
 
