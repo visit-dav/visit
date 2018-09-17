@@ -115,6 +115,7 @@ vtkh::DataSet  *avtDataRepresentation::nullVTKmDataset         = NULL;
 
 #include <set>
 
+#ifdef HAVE_LIBVTKH
 static vtkh::DataSet *
 ConvertVTKToVTKm(vtkDataSet *data)
 {
@@ -928,6 +929,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
 
     return ret;
 }
+#endif
 
 // ****************************************************************************
 //  Method: avtDataRepresentation default constructor
