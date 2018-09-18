@@ -305,7 +305,7 @@ size_t VsVariable::getNumComps() const{
   VsLog::debugLog() << "For data, " << getFullName() << ", dataDims =";
   for (size_t i=0; i<dataDims.size(); ++i) VsLog::debugLog() << " " << dataDims[i];
   VsLog::debugLog() << "." << std::endl;;
-  VsLog::debugLog() << "VsVariable::getNumComps():";
+  VsLog::debugLog() << "VsVariable::getNumComps(): ";
   VsLog::debugLog() << "For mesh, " << getMeshName() << ", meshDims =";
   for (size_t i=0; i<meshDims.size(); ++i) VsLog::debugLog() << " " << meshDims[i];
   VsLog::debugLog() << "." << std::endl;
@@ -338,12 +338,8 @@ size_t VsVariable::getNumComps() const{
     }
     goto dimwarn;
   }
-  
+
   // Compare dims
-  if (meshMeta->isStructuredMesh()) {
-    // Structure mesh has an extra dimension for the coordinate index
-    if (meshDims.size() > 1) meshDims.resize(meshDims.size() - 1);
-  }
   if (meshDims.size() == dataDims.size()) {
     res = 1;
     goto dimwarn;
