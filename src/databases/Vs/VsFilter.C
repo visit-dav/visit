@@ -13,10 +13,12 @@
  */
 
 // vsh5
+#include <hdf5.h>
+#include <visit-hdf5.h>
+
 #include <VsFilter.h>
 #include <VsSchema.h>
 #include <VsUtils.h>
-#include <hdf5.h>
 #include <stdlib.h>
 #include "VsLog.h"
 #include "VsFile.h"
