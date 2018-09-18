@@ -154,7 +154,7 @@ bool VsStructuredMesh::initialize()
       VsLog::debugLog()
         << __CLASS__ << __FUNCTION__ << "  " << __LINE__ << "  "
         << "Failed to create mesh because the numSpatialDims, "
-        << numSpatialDims << "is less than 1 or greater than 3."
+        << numSpatialDims << " is less than 1 or greater than 3."
         << std::endl;
       
       return false;
