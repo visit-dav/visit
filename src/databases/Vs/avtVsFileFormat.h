@@ -12,20 +12,17 @@
  */
 
 // ************************************************************************* //
-//                            avtVsFileFormat.h                                 //
+//                            avtVsFileFormat.h                              //
 // ************************************************************************* //
 
 #ifndef VS_FILE_FORMAT_H
 #define VS_FILE_FORMAT_H
 
-#include <vtkUnsignedCharArray.h>
-#include <vtkPoints.h>
-#include <VsDataset.h>
-//#include <VsReader.h>
 #include <avtSTMDFileFormat.h>
+#include "HighOrderUnstructuredData.h"
+
 #include <hdf5.h>
 #include <visit-hdf5.h>
-#include "HighOrderUnstructuredData.h"
 
 #include <string>
 #include <vector>
