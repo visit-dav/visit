@@ -11,13 +11,13 @@ Explode operator
    
    Explode operator example: original plot; exploding cells of a material; exploding materials.
 
-The Explode operator has two primary functions. The first is to explode materials 
-from each other, and the second is to explode cells from each other. There are 
-three different origins of explosion—**point, plane, and cylinder**—all of 
-which have unique results and can be applied to either cells or materials. While 
-this operator is primarily meant to be used on datasets containing materials, the 
-capability of exploding all cells remains available for datasets that lack 
-materials. 
+
+The Explode operator has three primary targets, which are **materials, domains, and
+cells**. There are three different origins of explosion—**point, plane, and 
+cylinder**—all of which have unique results and can be applied to any of the 
+above mentioned targets. While this operator is primarily meant to be used on datasets 
+containing materials or domains, the capability of exploding all cells remains available for 
+datasets that lack either. 
 
 
 Using the Explode operator
@@ -64,6 +64,16 @@ window. If you refer to the far right image in :numref:`Figure %s<explode_operat
 you will find an example of two material explosions. In this example, we see 
 the materials Cord and Steel, shown in blue and green, being exploded 
 from the Tire dataset. 
+
+
+Exploding domains
+""""""""""""""""""""""""""""
+
+To explode the domains of a dataset, you must first make sure that your dataset has 
+domains that can be ploted using the Subset plot. If this condition is met, all you 
+need to do is apply the Explode operator to a Subset plot of your domains. The domains
+will then be substituted in for materials and treated as such. You can then refer to
+the section on exploding materials for usage tips. 
 
 
 Exploding cells
