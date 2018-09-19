@@ -1,4 +1,3 @@
-Target: xml2atts
 Function: AttributesMatch
 Declaration: bool AttributesMatch (const ExplodeAttributes &obj) const;
 Definition:
