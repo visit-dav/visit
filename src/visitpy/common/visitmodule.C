@@ -2091,7 +2091,7 @@ visit_SetBackendType(PyObject *self, PyObject *args)
     if(strcmp(name, "eavl") == 0 || strcmp(name, "EAVL") == 0)
         index = 1;
 #endif
-#if defined(HAVE_LIBVTKM)
+#if defined(HAVE_LIBVTKH)
     if(strcmp(name, "vtkm") == 0 || strcmp(name, "VTKM") == 0 || strcmp(name, "VTKm") == 0)
         index = 2;
 #endif
