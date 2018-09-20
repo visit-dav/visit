@@ -426,6 +426,53 @@ ConvertVTKToVTKm(vtkDataSet *data)
                     vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::CELL_SET, fieldArray));
             }
+            else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                unsigned char *vals =
+                    vtkUnsignedCharArray::SafeDownCast(array)->GetPointer(0);
+
+                vtkm::cont::ArrayHandle<vtkm::UInt8> fieldArray;
+                fieldArray.Allocate(nVals);
+  
+                for (vtkm::Id j = 0; j < nVals; ++j)
+                    fieldArray.GetPortalControl().Set(j, vals[j]);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+            }
+            else if (array->GetDataType() == VTK_UNSIGNED_INT)
+            {
+                vtkIdType nVals = array->GetNumberOfTuples();
+                unsigned char *vals =
+                    vtkUnsignedCharArray::SafeDownCast(array)->GetPointer(0);
+
+                vtkm::cont::ArrayHandle<vtkm::UInt8> fieldArray;
+                fieldArray.Allocate(nVals);
+  
+                for (vtkm::Id j = 0; j < nVals; ++j)
+                    fieldArray.GetPortalControl().Set(j, vals[j]);
+
+                ds.AddField(
+                    vtkm::cont::Field(array->GetName(),
+                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
+            }
+        }
+        else if (array->GetNumberOfComponents() == 2)
+        {
+            if (array->GetDataType() == VTK_FLOAT)
+            {
+            }
+            else if (array->GetDataType() == VTK_DOUBLE)
+            {
+            }
+            else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
+            {
+            }
+            else if (array->GetDataType() == VTK_UNSIGNED_INT)
+            {
+            }
         }
         else if (array->GetNumberOfComponents() == 3)
         {
