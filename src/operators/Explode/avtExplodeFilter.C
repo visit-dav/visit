@@ -1298,8 +1298,6 @@ avtExplodeFilter::Execute(void)
     materialTree->GetAllLabels(matLabels);
     vtkDataSet **matLeaves = materialTree->GetAllLeaves(nLeaves);
 
-    //TODO: if we can't find labels, should we try to use the
-    //      atts boundary names?
     if (matLabels.size() < nLeaves)
     {
         char expected[256];
@@ -1506,6 +1504,7 @@ avtExplodeFilter::UpdateDataObjectInfo(void)
     GetOutput()->GetInfo().GetValidity().InvalidateNodes();
     GetOutput()->GetInfo().GetValidity().ZonesSplit();
     
+
     avtDataAttributes &outAtts = GetOutput()->GetInfo().GetAttributes();
     outAtts.SetLabels(atts.GetBoundaryNames());
     outAtts.AddFilterMetaData("Explode");
@@ -1522,11 +1521,6 @@ avtExplodeFilter::UpdateDataObjectInfo(void)
 //  Programmer: Alister Maguire
 //  Creation:   Wed Nov  8 10:12:34 PST 2017
 //
-//  Modifications:
-//
-//      Alister Maguire, Mon Sep 17 13:31:13 PDT 2018
-//      Only force MIR if we are exploding materials. 
-//
 // ****************************************************************************
 
 avtContract_p   
@@ -1534,14 +1528,8 @@ avtExplodeFilter::ModifyContract(avtContract_p contract)
 {
     avtContract_p rv = new avtContract(contract);
 
-    //
-    // Only force MIR if we are exploding materials. 
-    //
-    if (atts.GetSubsetType() == ExplodeAttributes::Material)
-    {
-        rv->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
-        rv->GetDataRequest()->ForceMaterialLabelsConstructionOn();
-    }
+    rv->GetDataRequest()->ForceMaterialInterfaceReconstructionOn();
+    rv->GetDataRequest()->ForceMaterialLabelsConstructionOn();
     rv->SetCalculateMeshExtents(true); 
 
     if (contract->GetDataRequest()->MayRequireZones())
@@ -2145,8 +2133,6 @@ PlaneExplosion::CalcDisplacement(double *dataCenter, double expFactor,
         }
     }
 
-    //
-    // Project from our data point onto a plane. 
     //
     // Project from our data point onto a plane. 
     //

@@ -73,14 +73,6 @@ public:
         Impact,
         Scatter
     };
-    enum SubsetType
-    {
-        Material,
-        Domain,
-        Group,
-        EnumScalar,
-        Unknown
-    };
 
     // These constructors are for objects of this class
     ExplodeAttributes();
@@ -129,7 +121,6 @@ public:
     void SetExplosionPattern(ExplosionPattern explosionPattern_);
     void SetExplodeAllCells(bool explodeAllCells_);
     void SetBoundaryNames(const stringVector &boundaryNames_);
-    void SetSubsetType(SubsetType subsetType_);
     ExplodeType        GetExplosionType() const;
     const double       *GetExplosionPoint() const;
           double       *GetExplosionPoint();
@@ -153,7 +144,6 @@ public:
           stringVector &GetBoundaryNames();
     const AttributeGroupVector &GetExplosions() const;
           AttributeGroupVector &GetExplosions();
-    SubsetType         GetSubsetType() const;
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -182,11 +172,6 @@ public:
 protected:
     static std::string ExplosionPattern_ToString(int);
 public:
-    static std::string SubsetType_ToString(SubsetType);
-    static bool SubsetType_FromString(const std::string &, SubsetType &);
-protected:
-    static std::string SubsetType_ToString(int);
-public:
 
     // Keyframing methods
     virtual std::string               GetFieldName(int index) const;
@@ -214,7 +199,6 @@ public:
         ID_explodeAllCells,
         ID_boundaryNames,
         ID_explosions,
-        ID_subsetType,
         ID__LAST
     };
 
@@ -236,13 +220,12 @@ protected:
     bool                 explodeAllCells;
     stringVector         boundaryNames;
     AttributeGroupVector explosions;
-    int                  subsetType;
 
 private:
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define EXPLODEATTRIBUTES_TMFS "iDDDDDdsdbdibs*a*i"
+#define EXPLODEATTRIBUTES_TMFS "iDDDDDdsdbdibs*a*"
 
 #endif

@@ -10,13 +10,6 @@
         Impact
         Scatter
       </Enum>
-      <Enum name="SubsetType">
-        Material
-        Domain
-        Group
-        EnumScalar
-        Unknown
-      </Enum>
       <Field name="explosionType" label="explosionType" type="enum" subtype="ExplodeType" access="protected">
         Point
       </Field>
@@ -69,15 +62,12 @@
       </Field>
       <Field name="explosions" label="explosions" type="attVector" subtype="ExplodeAttributes" access="protected">
       </Field>
-      <Field name="subsetType" label="subsetType" type="enum" subtype="SubsetType" internal="true" access="protected">
-        Unknown
-      </Field>
+      <Include file="header" quoted="false">
+        MapNode.h
+      </Include>
       <Function name="AttributesMatch" user="true" member="true">
       </Function>
       <Function name="PyExplodeAttributes_SetDefaults" user="false" member="true">
       </Function>
-      <Include file="header" quoted="false">
-        MapNode.h
-      </Include>
     </Attribute>
   </Plugin>

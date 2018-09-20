@@ -115,44 +115,6 @@ ExplodeAttributes::ExplosionPattern_FromString(const std::string &s, ExplodeAttr
     return false;
 }
 
-//
-// Enum conversion methods for ExplodeAttributes::SubsetType
-//
-
-static const char *SubsetType_strings[] = {
-"Material", "Domain", "Group", 
-"EnumScalar", "Unknown"};
-
-std::string
-ExplodeAttributes::SubsetType_ToString(ExplodeAttributes::SubsetType t)
-{
-    int index = int(t);
-    if(index < 0 || index >= 5) index = 0;
-    return SubsetType_strings[index];
-}
-
-std::string
-ExplodeAttributes::SubsetType_ToString(int t)
-{
-    int index = (t < 0 || t >= 5) ? 0 : t;
-    return SubsetType_strings[index];
-}
-
-bool
-ExplodeAttributes::SubsetType_FromString(const std::string &s, ExplodeAttributes::SubsetType &val)
-{
-    val = ExplodeAttributes::Material;
-    for(int i = 0; i < 5; ++i)
-    {
-        if(s == SubsetType_strings[i])
-        {
-            val = (SubsetType)i;
-            return true;
-        }
-    }
-    return false;
-}
-
 // ****************************************************************************
 // Method: ExplodeAttributes::ExplodeAttributes
 //
@@ -192,7 +154,6 @@ void ExplodeAttributes::Init()
     cellExplosionFactor = 1;
     explosionPattern = Impact;
     explodeAllCells = false;
-    subsetType = Unknown;
 
     ExplodeAttributes::SelectAll();
 }
@@ -260,7 +221,6 @@ void ExplodeAttributes::Copy(const ExplodeAttributes &obj)
         explosions.push_back(newExplodeAttributes);
     }
 
-    subsetType = obj.subsetType;
 
     ExplodeAttributes::SelectAll();
 }
@@ -470,8 +430,7 @@ ExplodeAttributes::operator == (const ExplodeAttributes &obj) const
             (explosionPattern == obj.explosionPattern) &&
             (explodeAllCells == obj.explodeAllCells) &&
             (boundaryNames == obj.boundaryNames) &&
-            explosions_equal &&
-            (subsetType == obj.subsetType));
+            explosions_equal);
 }
 
 // ****************************************************************************
@@ -630,7 +589,6 @@ ExplodeAttributes::SelectAll()
     Select(ID_explodeAllCells,         (void *)&explodeAllCells);
     Select(ID_boundaryNames,           (void *)&boundaryNames);
     Select(ID_explosions,              (void *)&explosions);
-    Select(ID_subsetType,              (void *)&subsetType);
 }
 
 // ****************************************************************************
@@ -775,12 +733,6 @@ ExplodeAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forc
             explosions[i]->CreateNode(node, completeSave, true);
     }
 
-    if(completeSave || !FieldsEqual(ID_subsetType, &defaultObject))
-    {
-        addToParent = true;
-        node->AddNode(new DataNode("subsetType", SubsetType_ToString(subsetType)));
-    }
-
 
     // Add the node to the parent node.
     if(addToParent || forceAdd)
@@ -898,22 +850,6 @@ ExplodeAttributes::SetFromNode(DataNode *parentNode)
         }
     }
 
-    if((node = searchNode->GetNode("subsetType")) != 0)
-    {
-        // Allow enums to be int or string in the config file
-        if(node->GetNodeType() == INT_NODE)
-        {
-            int ival = node->AsInt();
-            if(ival >= 0 && ival < 5)
-                SetSubsetType(SubsetType(ival));
-        }
-        else if(node->GetNodeType() == STRING_NODE)
-        {
-            SubsetType value;
-            if(SubsetType_FromString(node->AsString(), value))
-                SetSubsetType(value);
-        }
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1026,13 +962,6 @@ ExplodeAttributes::SetBoundaryNames(const stringVector &boundaryNames_)
 {
     boundaryNames = boundaryNames_;
     Select(ID_boundaryNames, (void *)&boundaryNames);
-}
-
-void
-ExplodeAttributes::SetSubsetType(ExplodeAttributes::SubsetType subsetType_)
-{
-    subsetType = subsetType_;
-    Select(ID_subsetType, (void *)&subsetType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1175,12 +1104,6 @@ AttributeGroupVector &
 ExplodeAttributes::GetExplosions()
 {
     return explosions;
-}
-
-ExplodeAttributes::SubsetType
-ExplodeAttributes::GetSubsetType() const
-{
-    return SubsetType(subsetType);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1471,7 +1394,6 @@ ExplodeAttributes::GetFieldName(int index) const
     case ID_explodeAllCells:         return "explodeAllCells";
     case ID_boundaryNames:           return "boundaryNames";
     case ID_explosions:              return "explosions";
-    case ID_subsetType:              return "subsetType";
     default:  return "invalid index";
     }
 }
@@ -1511,7 +1433,6 @@ ExplodeAttributes::GetFieldType(int index) const
     case ID_explodeAllCells:         return FieldType_bool;
     case ID_boundaryNames:           return FieldType_stringVector;
     case ID_explosions:              return FieldType_attVector;
-    case ID_subsetType:              return FieldType_enum;
     default:  return FieldType_unknown;
     }
 }
@@ -1551,7 +1472,6 @@ ExplodeAttributes::GetFieldTypeName(int index) const
     case ID_explodeAllCells:         return "bool";
     case ID_boundaryNames:           return "stringVector";
     case ID_explosions:              return "attVector";
-    case ID_subsetType:              return "enum";
     default:  return "invalid index";
     }
 }
@@ -1685,11 +1605,6 @@ ExplodeAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         }
 
         retval = explosions_equal;
-        }
-        break;
-    case ID_subsetType:
-        {  // new scope
-        retval = (subsetType == obj.subsetType);
         }
         break;
     default: retval = false;

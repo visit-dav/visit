@@ -174,7 +174,8 @@ ExplodeViewerEnginePluginInfo::GetClientAtts(AttributeSubject *atts)
 
 void
 ExplodeViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
-    const avtPlotMetaData &plot, const bool fromDefault)
+                                              const avtPlotMetaData &plot,
+                                              const bool fromDefault)
 {
     if (fromDefault)
         *(ExplodeAttributes*)atts = *defaultAtts;
@@ -204,10 +205,8 @@ ExplodeViewerEnginePluginInfo::InitializeOperatorAtts(AttributeSubject *atts,
 // ****************************************************************************
 
 void
-ExplodeViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts, 
-    const avtPlotMetaData &plot)
+ExplodeViewerEnginePluginInfo::UpdateOperatorAtts(AttributeSubject *atts, const avtPlotMetaData &plot)
 {
-    cerr << "UPDATING OPERATOR ATTS" << endl;
     *(ExplodeAttributes*)atts = *defaultAtts;
 
     PrivateSetOperatorAtts(atts, plot);
@@ -243,17 +242,7 @@ ExplodeViewerEnginePluginInfo::GetMenuName() const
 //  Programmer: Alister Maguire
 //  Creation:   Wed Jan 17 15:28:46 PST 2018
 //
-//  Modifications:
-//
-//      Alister Maguire, Tue Sep 18 14:57:03 PDT 2018
-//      Added the ability to handle multiple types of subsets. 
-//
 // ****************************************************************************
-
-#include <set>
-
-#include <DebugStream.h>
-#include <InvalidVariableException.h>
 
 void
 ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts, 
@@ -268,141 +257,26 @@ ExplodeViewerEnginePluginInfo::PrivateSetOperatorAtts(AttributeSubject *atts,
         return;
     }
 
-    std::string  varName(plot.GetVariableName());
-    std::string  meshName = md->MeshForVar(varName);
-    avtMeshMetaData *mesh =
-        const_cast <avtMeshMetaData *> (md->GetMesh(meshName));
-    stringVector subsetNames;
-    stringVector::const_iterator pos;
-    char temp[512];
+    stringVector materialNames;
+    int numMaterials = md->GetNumMaterials();  
 
-    // 
-    // Create subset names, based on Subset Type 
-    // 
-    avtSubsetType subT = md->DetermineSubsetType(varName);
-    switch (subT)
+    for (int i = 0; i < numMaterials; ++i)
     {
-        case AVT_DOMAIN_SUBSET : 
+        mat = md->GetMaterial(i);
+        if (mat != NULL)
         {
-            debug5 << "Exploding a domain mesh subset." << endl; 
-            explodeAtts->SetSubsetType(ExplodeAttributes::Domain);
-            defaultAtts->SetSubsetType(ExplodeAttributes::Domain);
-            if (mesh->blockNames.empty())
+            for (stringVector::const_iterator pos = mat->materialNames.begin();
+                 pos != mat->materialNames.end(); ++pos)
             {
-                for (int i = 0; i < mesh->numBlocks; i++)
-                { 
-                    sprintf(temp, "%d", i+mesh->blockOrigin);
-                    subsetNames.push_back(temp);
-                }
-            }
-            else
-            {
-                for(pos = mesh->blockNames.begin();
-                    pos != mesh->blockNames.end(); ++pos)
+                if ( !(*pos).empty() )
                 {
-                    subsetNames.push_back(*pos);
+                    materialNames.push_back(*pos); 
                 }
             }
         }
-        break;
-
-        case AVT_GROUP_SUBSET :
-        {
-            debug5 << "Exploding a group mesh subset." << endl; 
-            explodeAtts->SetSubsetType(ExplodeAttributes::Group);
-            defaultAtts->SetSubsetType(ExplodeAttributes::Group);
-            
-            std::set<int>    groupSet;
-            std::vector<int> gIDS;
-
-            if (!mesh->groupNames.empty())
-            {
-                for (size_t i = 0; i < mesh->groupNames.size(); ++i)
-                {
-                    subsetNames.push_back(mesh->groupNames[i]);
-                }
-            }
-            else if (mesh->groupIds.size() > 0)
-            {
-                for (size_t i = 0; i < mesh->groupIds.size(); i++)
-                {
-                    if (groupSet.count(mesh->groupIds[i]) == 0)
-                    {
-                        groupSet.insert(mesh->groupIds[i]);
-                        gIDS.push_back(mesh->groupIds[i]);
-                    }
-                }
-                for (size_t i = 0; i < gIDS.size(); i++)
-                {
-                    sprintf(temp, "%d", gIDS[i]);
-                    subsetNames.push_back(temp);
-                }
-            }
-            else
-            {
-                int origin = mesh->groupOrigin;
-                int nGroups = (int)mesh->groupIdsBasedOnRange.size()-1;
-                for (int i = 0; i < nGroups; i++)
-                {
-                    groupSet.insert(origin+i);
-                    gIDS.push_back(origin+i);
-                    sprintf(temp, "%d", origin+i);
-                    subsetNames.push_back(temp);
-                }
-            }
-        }
-        break;
-
-        case AVT_ENUMSCALAR_SUBSET :
-        {
-            debug5 << "Exploding an enumerated scalar subset." << endl; 
-            explodeAtts->SetSubsetType(ExplodeAttributes::EnumScalar);
-            defaultAtts->SetSubsetType(ExplodeAttributes::EnumScalar);
-            const avtScalarMetaData *smd = md->GetScalar(varName);
-            if (smd != NULL)
-            {
-                for(pos = smd->enumNames.begin();
-                    pos != smd->enumNames.end(); ++pos)
-                {
-                    subsetNames.push_back(*pos);
-                }
-            }
-        }
-        break;
-
-        case AVT_MATERIAL_SUBSET: 
-        // Fall through to default
-
-        default:
-        {
-            //
-            // By default, we explode materials.
-            //
-            debug5 << "Exploding a materials." << endl; 
-            int numMaterials = md->GetNumMaterials();  
-            explodeAtts->SetSubsetType(ExplodeAttributes::Material);
-            defaultAtts->SetSubsetType(ExplodeAttributes::Material);
-
-            for (int i = 0; i < numMaterials; ++i)
-            {
-                mat = md->GetMaterial(i);
-                if (mat != NULL)
-                {
-                    for (pos = mat->materialNames.begin();
-                         pos != mat->materialNames.end(); ++pos)
-                    {
-                        if ( !(*pos).empty() )
-                        {
-                            subsetNames.push_back(*pos); 
-                        }
-                    }
-                }
-                mat = NULL;
-            }
-        }
-        break;
+        mat = NULL;
     }
 
-    explodeAtts->SetBoundaryNames(subsetNames);
-    defaultAtts->SetBoundaryNames(subsetNames);
+    explodeAtts->SetBoundaryNames(materialNames);
+    defaultAtts->SetBoundaryNames(materialNames);
 }
