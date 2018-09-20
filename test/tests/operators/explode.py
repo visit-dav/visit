@@ -32,6 +32,9 @@
 #      Alister Maguire, Wed May  2 12:54:43 PDT 2018
 #      Added tests for recentering. 
 #
+#      Alister Maguire, Tue Sep 18 14:57:03 PDT 2018
+#      Added tests for exploding domains. 
+#
 # ----------------------------------------------------------------------------
 
 
@@ -475,6 +478,52 @@ def TestRecenter():
     DeleteAllPlots()
 
 
+def TestDomainExplode():
+    OpenDatabase(silo_data_path("multi_ucd3d.silo"))
+    AddPlot("Subset", "domains(mesh1)")
+    
+    ResetView()
+    RecenterView()
+
+    #
+    # Test exploding full mesh domains. 
+    #
+    AddOperator("Explode")
+    expAtts = ExplodeAttributes()
+    expAtts.explosionType = expAtts.Point  
+    expAtts.explosionPoint = (0, 0, 0)
+    expAtts.materialExplosionFactor = 1.2
+    expAtts.material = "15"
+    expAtts.explodeMaterialCells = 0
+    expAtts.explosionPattern = expAtts.Impact 
+    SetOperatorOptions(expAtts, 1)
+    DrawPlots()
+    Test("explode_domains_00")
+    
+    ResetView()
+    DeleteAllPlots()
+
+    AddPlot("Subset", "domains(mesh1_front)")
+
+    #
+    # Test exploding a subset of mesh domains. 
+    #
+    AddOperator("Explode")
+    expAtts = ExplodeAttributes()
+    expAtts.explosionType = expAtts.Point  
+    expAtts.explosionPoint = (0, 0, 0)
+    expAtts.materialExplosionFactor = 1.2
+    expAtts.material = "8"
+    expAtts.explodeMaterialCells = 0
+    expAtts.explosionPattern = expAtts.Impact 
+    SetOperatorOptions(expAtts, 1)
+    DrawPlots()
+    Test("explode_domains_01")
+
+    ResetView()
+    DeleteAllPlots()
+
+
 def Main():
     unstructured_explosions()
     curvilinear_explosions()
@@ -483,6 +532,7 @@ def Main():
     multi_tire()
     TwoDimNoMat()
     TestRecenter()
+    TestDomainExplode()
     
 
 Main()
