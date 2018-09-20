@@ -32,8 +32,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <p><b><font size="4">General features added in version 3.0</font></b></p>
 <ul>
   <li>VisIt has been enhanced with support for Cinema. Cinema is an image-based database that offers low-cost interaction with simulation data. Images can consist of RGB pixel images and composite images that enable VisIt to bring together multiple plots independently in the Cinema viewer.</li>
-  <li></li>
-  <li></li>
   <li>The CLI now provides a <i>DatabasePlugins()</i> function that returns a dictionary containing a tuple of the available database plugins for a host. </li>
   <li>VisIt has been enhanced so plots can provide custom animation behaviors. These behaviors are plot-specific and are independent of the time slider animation controls. For example, the Vector plot can alter the length of its glyphs periodically lengthening and shortening them. Plot animation is enabled for the Curve and Vector plugins and can be activated by right-clicking on a plot in the Main window's plot list area and selecting <b>Animate</b> from the context menu. Note, this features work best for plots and data that can be rendered quickly.</li>
   <li>Some of VisIt's expressions can be built with support for OpenMP, letting them parallelize over multiple threads. This is available when passing <i>-fopenmp</i> to the C++ compiler when building VisIt. The observed speedups are between 2x and 10x when using the serial compute engine. These expressions are enhanced with OpenMP support:
@@ -49,6 +47,19 @@ enhancements and bug-fixes that were added to this release.</p>
   </li>
   <li>Libsim's <i>VisItRestoreSession()</i> function will now attempt to broadcast the session file contents to other MPI ranks rather than having all ranks read the file.</li>
   <li>Whether exporting to <i>Curve2D</i> or saving the Window in <i>curve</i> format, a comment style can be selected, with choices being Ultra <i>("#")</i>, and Matlab <i>("%")</i>. Ultra style is the default.</li>
+  <li>VisIt has been enhanced to leverage VTK-m for some operations. VTK-m is a version of VTK that has been rewritten to support multi-core architectures. It is based on a recent version of VTK-m. VTK-m support will only be available if it has been built with VTK-m support. VTK-m support can be enabled in one of two ways.
+  <p>When using the graphical user interface, bring up the <i>Preferences</i> window by selecting <i>Preferences...</i> from the <i>Options</i> menu and change the <i>Parallel Computation Library:</i> to <i>VTKm</i>. This setting will be directly below the <i>Floating point precision:</i> setting and will only be visible if VisIt has been built with VTK-m support.</p>
+  <p>When using the Python scripting interface, make the following call:</p>
+  <p><font color="#6666dd"><code><pre>
+SetBackendType("VTKm")
+</pre></code></font></p>
+  <p>When VTK-m support is enabled, VisIt will use VTK-m for all operations that support it. The following operators currently support VTK-m.</p>
+  <ul>
+    <li>Contour plot: Restrictions - Only supports node centered variables.</li>
+    <li>Slice operator: Restrictions - Only works when <i>Project to 2D</i> is disabled.</li>
+  </ul>
+  <p>VTK-m functionality is currently enabled for 3D rectilinear, curvilinear and unstructured grids with only hexahedral elements.</p>
+  </li>
 </ul>
 
 <a name="GUI_changes"></a>
@@ -56,9 +67,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>The <b>Set Save options</b> window has been enhanced with a section that lets the user select which pixel data will be saved when an image is saved. The usual RGB data can be selected as well as alpha, depth, luminance, and value data. When alpha data are requested, VisIt's images will feature a transparent background that simplifies compositing of VisIt-generated images in other tools. Depth information results in a <i>filename.depth.Z</i> file being saved. Luminance information saves a separate image file with gray-scale luminance values. Value images save a 32-bit floating point image with plot scalars; this works with Pseudocolor plots.</li>
   <li>VisIt can now save images into OpenEXR format via the <b>Set save options</b> window. OpenEXR files save additional precision and let images contain RGBA data and other image data such as depth, value, and luminance.</li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="File_format"></a>
@@ -68,7 +76,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>VisIt has been enhanced with an OpenEXR plugin that can </li>
   <li>The ffp database plugin was added to VisIt (courtesy Olivier Cessenat).</li>
   <li>The Curve2D reader can now read curve files with Matlab-style comments.</li>
-  <li></li>
 </ul>
 
 <a name="Plot_changes"></a>
@@ -77,19 +84,12 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The ray-casting volume renderer in VisIt's Volume plot was sped up in many instances. For rectilinear data, the speed increase can be over 2x, depending on the opacities in the transfer function.</li>
   <li>The Vector plot supports plot animation. The vector glyphs alternate between 50% and 100% of their glyph length while the plot animates, helping to see features in the vector field.</li>
   <li>The Curve plot supports plot animation. The line and time cue features in the plot can respond to plot animation and they advance from left to right while the plot animates.</li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Operator_changes"></a>
 <p><b><font size="4">Changes to VisIt's operators in version 3.0</font></b></p>
 <ul>
   <li>A new <i>Grid Information</i> query was added so the individual types, sizes, and extents of domains in a multidomain mesh can be obtained. This feature is useful for scripting.</li>
-  <li></li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Query_changes"></a>
@@ -98,8 +98,6 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>The <i>Pick Operator</i> now supports swivelling the camera focus to center on the current pick. This can be accessed through the gui by checking the "Swivel Focus" box. If you are using the python interface, you can turn this ability on and off by setting the boolean variable "swivelFocusToPick" within the pick attributes. </li>
   <li>Two related features have been added to the <i>Pick Operator</i>, and these are the ability to force a user-defined pick label and the ability to remove all previous picks that have the same label as the current pick. When used in conjunction, you can create a specialized pick operator that, with every new pick, removes all previous picks that contain the same user-defined label. As of now, these options are only accessible through the python interface pick attributes. To force a user-defined label, set the boolean variable "overridePickLabel" to True, and set "forcedPickLabel" to your chosen label. To remove all previous picks with the same label, set "removeLabelTwins" to True. </li>
   <li>The <i>Pick Operator</i> now supports highlighting node picks.</li>
-  <li></li>
-  <li></li>
 </ul>
 
 <a name="Bugs_fixed"></a>
@@ -137,9 +135,6 @@ enhancements and bug-fixes that were added to this release.</p>
 <ul>
   <li>VisIt's VTK-m infrastructure has been updated to work with VTK-m 1.1.0. In addition, the VisIt expression infrastructure was enhanced to allow VisIt expressions to be written using VTK-m.</li>
   <li>VisIt has been ported to use the git/master branch of the IceT compositing library.</li>
-  <li></li>
-  <li></li>
-  <li></li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
