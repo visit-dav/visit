@@ -42,6 +42,7 @@ import llnl.visit.AttributeSubject;
 import llnl.visit.CommunicationBuffer;
 import llnl.visit.Plugin;
 import java.util.Vector;
+import llnl.visit.ExplodeAttributes;
 
 // ****************************************************************************
 // Class: ExplodeAttributes
@@ -60,7 +61,7 @@ import java.util.Vector;
 
 public class ExplodeAttributes extends AttributeSubject implements Plugin
 {
-    private static int ExplodeAttributes_numAdditionalAtts = 15;
+    private static int ExplodeAttributes_numAdditionalAtts = 16;
 
     // Enum values
     public final static int EXPLODETYPE_POINT = 0;
@@ -69,6 +70,12 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
 
     public final static int EXPLOSIONPATTERN_IMPACT = 0;
     public final static int EXPLOSIONPATTERN_SCATTER = 1;
+
+    public final static int SUBSETTYPE_MATERIAL = 0;
+    public final static int SUBSETTYPE_DOMAIN = 1;
+    public final static int SUBSETTYPE_GROUP = 2;
+    public final static int SUBSETTYPE_ENUMSCALAR = 3;
+    public final static int SUBSETTYPE_UNKNOWN = 4;
 
 
     public ExplodeAttributes()
@@ -105,6 +112,7 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
         explodeAllCells = false;
         boundaryNames = new Vector();
         explosions = new Vector();
+        subsetType = SUBSETTYPE_UNKNOWN;
     }
 
     public ExplodeAttributes(int nMoreFields)
@@ -141,6 +149,7 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
         explodeAllCells = false;
         boundaryNames = new Vector();
         explosions = new Vector();
+        subsetType = SUBSETTYPE_UNKNOWN;
     }
 
     public ExplodeAttributes(ExplodeAttributes obj)
@@ -194,6 +203,7 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
             explosions.addElement(new ExplodeAttributes(oldObj));
         }
 
+        subsetType = obj.subsetType;
 
         SelectAll();
     }
@@ -270,7 +280,8 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
                 (explosionPattern == obj.explosionPattern) &&
                 (explodeAllCells == obj.explodeAllCells) &&
                 boundaryNames_equal &&
-                explosions_equal);
+                explosions_equal &&
+                (subsetType == obj.subsetType));
     }
 
     public String GetName() { return "Explode"; }
@@ -411,6 +422,12 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
         Select(13);
     }
 
+    public void SetSubsetType(int subsetType_)
+    {
+        subsetType = subsetType_;
+        Select(15);
+    }
+
     // Property getting methods
     public int      GetExplosionType() { return explosionType; }
     public double[] GetExplosionPoint() { return explosionPoint; }
@@ -427,6 +444,7 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
     public boolean  GetExplodeAllCells() { return explodeAllCells; }
     public Vector   GetBoundaryNames() { return boundaryNames; }
     public Vector   GetExplosions() { return explosions; }
+    public int      GetSubsetType() { return subsetType; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -468,6 +486,8 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
                 tmp.Write(buf);
             }
         }
+        if(WriteSelect(15, buf))
+            buf.WriteInt(subsetType);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -529,6 +549,9 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
             }
             Select(14);
             break;
+        case 15:
+            SetSubsetType(buf.ReadInt());
+            break;
         }
     }
 
@@ -571,6 +594,18 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
             str = str + "\n";
         }
         str = str + "}\n";
+        str = str + indent + "subsetType = ";
+        if(subsetType == SUBSETTYPE_MATERIAL)
+            str = str + "SUBSETTYPE_MATERIAL";
+        if(subsetType == SUBSETTYPE_DOMAIN)
+            str = str + "SUBSETTYPE_DOMAIN";
+        if(subsetType == SUBSETTYPE_GROUP)
+            str = str + "SUBSETTYPE_GROUP";
+        if(subsetType == SUBSETTYPE_ENUMSCALAR)
+            str = str + "SUBSETTYPE_ENUMSCALAR";
+        if(subsetType == SUBSETTYPE_UNKNOWN)
+            str = str + "SUBSETTYPE_UNKNOWN";
+        str = str + "\n";
         return str;
     }
 
@@ -624,5 +659,6 @@ public class ExplodeAttributes extends AttributeSubject implements Plugin
     private boolean  explodeAllCells;
     private Vector   boundaryNames; // vector of String objects
     private Vector   explosions; // vector of ExplodeAttributes objects
+    private int      subsetType;
 }
 
