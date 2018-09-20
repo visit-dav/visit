@@ -35,6 +35,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Corrected an error in the host profiles for Cori.</li>
   <li>Fixed bug on Windows OS where executing a command from the Command window could yield the wrong results.</li>
   <li>Fixed the issue on OSX where the screen turns black during zooming and lineouts.</li>
+  <li>Applying the Explode operator to a Subset plot no longer overwrites domain rendering with material rendering."</li>
 </ul>
 
 <a name="Enhancements"></a>
@@ -45,6 +46,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support for all elements that both NASTRAN and VTK support. Updated existing elements to support QUADRATIC types.</li>
   <li>Host profiles were added for the Lawrence Livermore National Laboratories' Pascal system.</li>
   <li>Modified the BOUT reader to create a single regular block in the rotational direction, interpolating the field values onto it based on zshift instead of distorting the zones by zshift and using unmodified field values. This reduces the size of the mesh and also eliminates the rendering artifacts caused by the large aspect zones created by distorting the zones.</li>
+  <li>The Explode operator will now treat domains as materials when it's applied to a Subset plot of domains. This allows users to explode domains as if they were materials.</li>
 </ul>
 
 <a name="Dev_changes"></a>
