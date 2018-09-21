@@ -69,6 +69,9 @@
 #include <VisWindowWithInteractions.h>
 #include <avtCallback.h>
 
+#include <ViewerState.h>
+#include <RenderingAttributes.h>
+
 // ****************************************************************************
 // Method: ViewerFactoryUI::ViewerFactoryUI
 //
@@ -118,6 +121,10 @@ ViewerFactoryUI::~ViewerFactoryUI()
 //
 // Modifications:
 //
+//    Kevin Griffin, Tue Sep 18 12:16:59 PDT 2018
+//    Get the antialiasing flag value since it must be set at context creation
+//    in vtkQtRenderWindow for QVTKWidget + QT5.
+//
 // ****************************************************************************
 
 VisWindow *
@@ -139,7 +146,8 @@ ViewerFactoryUI::CreateVisWindow()
     }
     else
     {
-        visWindow = new QtVisWindow(GetViewerProperties()->GetWindowFullScreen());
+        visWindow = new QtVisWindow(GetViewerProperties()->GetWindowFullScreen(),
+                                    GetViewerState()->GetRenderingAttributes()->GetAntialiasing());
     }
     return visWindow;
 }

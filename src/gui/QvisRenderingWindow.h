@@ -194,6 +194,7 @@ private:
 
     // Basic controls
     QCheckBox         *antialiasingToggle;
+    QLabel            *restartLabel;
     QCheckBox         *orderedComposite;
     QLabel            *compositeLabel;
     QLabel            *depthCompositeThreadsLabel;

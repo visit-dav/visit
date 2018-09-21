@@ -163,6 +163,10 @@ QvisRenderingWindow::~QvisRenderingWindow()
 //   Burlen Loring, Sun Sep  6 14:07:04 PDT 2015
 //   Added option for odered compositing
 //
+//   Kevin Griffin, Tue Sep 18 09:20:03 PDT 2018
+//   Added a label and tooltip indicating that a VisIt restart is required
+//   when changing anti-aliasing.
+//
 // ****************************************************************************
 
 QWidget *
@@ -178,7 +182,12 @@ QvisRenderingWindow::CreateBasicPage()
     antialiasingToggle = new QCheckBox(tr("Antialiasing"), basicOptions);
     connect(antialiasingToggle, SIGNAL(toggled(bool)),
             this, SLOT(antialiasingToggled(bool)));
-    basicLayout->addWidget(antialiasingToggle, row, 0, 1, 3);
+    basicLayout->addWidget(antialiasingToggle, row, 0);
+    restartLabel = new QLabel(tr(" (Requires restart)"), basicOptions);
+    restartLabel->setToolTip(tr("When changing antialiasing, a VisIt restart is required\n"
+                                "before the changes can take effect."));
+    restartLabel->setEnabled(false);
+    basicLayout->addWidget(restartLabel, row, 1, 1, 2);
     row++;
 
     // create the order compositing widgets

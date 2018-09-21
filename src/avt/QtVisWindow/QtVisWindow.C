@@ -64,9 +64,13 @@ bool                QtVisWindow::ownsAllWindows = false;
 //    Pass stereo flag to vtkQtRenderWindow constructor so we can create it
 //    with the right stereo flags set on the GL context.
 //
+//    Kevin Griffin, Tue Sep 18 12:16:59 PDT 2018
+//    Pass the antialiasing flag to vtkQtRenderWindow constructor since it
+//    must be set at context creation for QVTKWidget + QT5.
+//
 // ****************************************************************************
 
-QtVisWindow::QtVisWindow(bool fullScreenMode) : VisWindow(false)
+QtVisWindow::QtVisWindow(bool fullScreenMode, bool antialiasing) : VisWindow(false)
 {
     bool owns = true;
     vtkQtRenderWindow *renWin = 0;
@@ -76,7 +80,9 @@ QtVisWindow::QtVisWindow(bool fullScreenMode) : VisWindow(false)
         owns = ownsAllWindows; //false;
     }
     else
-        renWin = vtkQtRenderWindow::New(VisWinRendering::GetStereoEnabled());
+    {
+        renWin = vtkQtRenderWindow::New(antialiasing, VisWinRendering::GetStereoEnabled());
+    }
     VisWinRenderingWithWindow *ren =
         new VisWinRenderingWithWindow(renWin, owns, colleagueProxy);
     ren->SetFullScreenMode(fullScreenMode);

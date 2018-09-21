@@ -67,12 +67,16 @@ class vtkQtRenderWindow;
 //    Brad Whitlock, Mon Aug 18 16:23:28 PDT 2008
 //    Added a window creation callback.
 //
+//    Kevin Griffin, Tue Sep 18 12:16:59 PDT 2018
+//    Added the antialiasing boolean parameter to the constructor and set its
+//    default value to true.
+//
 // ****************************************************************************
 
 class QTVISWINDOW_API QtVisWindow : public VisWindow
 {
   public:
-    QtVisWindow(bool fullScreenMode = false);
+    QtVisWindow(bool fullScreenMode = false, bool antialiasing = true);
 
     static void SetWindowCreationCallback(vtkQtRenderWindow *(*wcc)(void*), void *wccdata);
     static void SetOwnerShipOfAllWindows(bool owner);

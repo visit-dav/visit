@@ -13,11 +13,11 @@ class VTKQT_API vtkQtRenderWindow : public QMainWindow
 {
 public:
     vtkQtRenderWindow(QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
-    vtkQtRenderWindow(bool stereo, QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
+    vtkQtRenderWindow(bool antialiasing, bool stereo, QWidget *parent = 0, Qt::WindowFlags f = Qt::Widget);
     virtual ~vtkQtRenderWindow();
 
     static vtkQtRenderWindow *New();
-    static vtkQtRenderWindow *New(bool stereo);
+    static vtkQtRenderWindow *New(bool antialiasing, bool stereo);
     void Delete();
 
     // Description:

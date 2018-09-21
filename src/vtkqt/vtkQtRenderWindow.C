@@ -72,7 +72,7 @@
 class VTKQT_API vtkQtRenderWindowPrivate
 {
 public:
-    vtkQtRenderWindowPrivate(vtkQtRenderWindow *w, bool stereo)
+    vtkQtRenderWindowPrivate(vtkQtRenderWindow *w, bool antialiasing, bool stereo)
     {
         resizeEventCallback = NULL;
         resizeEventData = NULL;
@@ -86,9 +86,11 @@ public:
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
         QGLFormat glFormat;
 
-        glFormat.setDepth(true);     // Enabled by default.
-        glFormat.setAlpha(true);     // Disabled by default.
-        glFormat.setStereo(stereo);  // Disabled by default.
+        glFormat.setDepth(true);            // Enabled by default.
+        glFormat.setAlpha(true);            // Disabled by default.
+        glFormat.setStereo(stereo);         // Disabled by default.
+        glFormat.setSampleBuffers(true);    // For antialiasing support
+        glFormat.setSamples(10);            // To enable antialiasing
 
         // Create the VTK widget and force our custom render window
         // into it.
@@ -108,6 +110,17 @@ public:
         gl = new QVTKWidget(w);
         gl->GetRenderWindow()->AlphaBitPlanesOn();
         gl->GetRenderWindow()->SetStereoRender( stereo );
+        
+        // Need to check the antialiasing flag since it can only be set during context
+        // creation.
+        if(antialiasing)
+        {
+            gl->GetRenderWindow()->SetMultiSamples(10);
+        }
+        else
+        {
+            gl->GetRenderWindow()->SetMultiSamples(0); // Setting to 0 turns anti-aliasing off
+        }
         
     #ifdef Q_OS_OSX
         if(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_10)
@@ -142,7 +155,7 @@ public:
 
 vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
 {
-    d = new vtkQtRenderWindowPrivate(this, false);
+    d = new vtkQtRenderWindowPrivate(this, true, false);
     setIconSize(QSize(20,20));
     setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
@@ -160,9 +173,9 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     setCentralWidget(d->gl);
 }
 
-vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
+vtkQtRenderWindow::vtkQtRenderWindow(bool antialiasing, bool stereo, QWidget *parent, Qt::WindowFlags f) : QMainWindow(parent, f)
 {
-    d = new vtkQtRenderWindowPrivate(this, stereo);
+    d = new vtkQtRenderWindowPrivate(this, antialiasing, stereo);
     setIconSize(QSize(20,20));
     setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
@@ -193,9 +206,9 @@ vtkQtRenderWindow::New()
 }
 
 vtkQtRenderWindow *
-vtkQtRenderWindow::New(bool stereo)
+vtkQtRenderWindow::New(bool antialiasing, bool stereo)
 {
-    return new vtkQtRenderWindow(stereo);
+    return new vtkQtRenderWindow(antialiasing, stereo);
 }
 
 void
