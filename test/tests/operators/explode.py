@@ -35,6 +35,9 @@
 #      Alister Maguire, Tue Sep 18 14:57:03 PDT 2018
 #      Added tests for exploding domains. 
 #
+#      Alister Maguire, Mon Sep 24 13:32:04 PDT 2018
+#      Added a test for handling repeat labels. 
+#
 # ----------------------------------------------------------------------------
 
 
