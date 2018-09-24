@@ -523,6 +523,42 @@ def TestDomainExplode():
     ResetView()
     DeleteAllPlots()
 
+def TestRepeatMatLabels():
+    #
+    # Under certain circumstances, the explode operator
+    # will recieve repeat labels that need to be condensed. 
+    # Make sure we can handle this. 
+    #
+    OpenDatabase(silo_data_path("tire.silo"))
+    AddPlot("FilledBoundary", "Materials")
+    
+    ResetView()
+    RecenterView()
+
+    #
+    # First, add a reflect operator, which will create
+    # repeat labels if used on multi domain data.  
+    #
+    AddOperator("Reflect") 
+
+    #
+    # Test exploding full mesh domains. 
+    #
+    AddOperator("Explode")
+    expAtts = ExplodeAttributes()
+    expAtts.explosionType = expAtts.Point  
+    expAtts.explosionPoint = (0, 0, 10)
+    expAtts.materialExplosionFactor = 1.2
+    expAtts.material = "1 Rubber"
+    expAtts.explodeMaterialCells = 1
+    expAtts.explosionPattern = expAtts.Impact 
+    SetOperatorOptions(expAtts, 1)
+    DrawPlots()
+    Test("explode_repeat_labels_00")
+
+    ResetView()
+    DeleteAllPlots()
+
 
 def Main():
     unstructured_explosions()
@@ -533,6 +569,7 @@ def Main():
     TwoDimNoMat()
     TestRecenter()
     TestDomainExplode()
+    TestRepeatMatLabels()
     
 
 Main()
