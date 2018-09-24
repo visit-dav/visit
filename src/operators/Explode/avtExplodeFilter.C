@@ -1509,8 +1509,7 @@ avtExplodeFilter::Execute(void)
         return;
     }
 
-    avtDataTree_p outTree = NULL;
-    outTree = CreateDomainTree(matLeaves, nLeaves, 
+    avtDataTree_p outTree = CreateDomainTree(matLeaves, nLeaves, 
         matDomains, inLabels);
 
     //
