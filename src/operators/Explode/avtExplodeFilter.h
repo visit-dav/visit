@@ -84,9 +84,9 @@ class Explosion;
 //      ResetMaterialExtents, ComputeScaleFactor,
 //      and changed globalMatExtents to materialExtents. 
 //
-//      Alister Maguire, Mon Sep 24 11:28:36 PDT 2018
-//      Added ComputeLabelOffset and labelOffset to handle 
-//      repeat labels. 
+//      Alister Maguire, Tue Sep 25 11:21:25 PDT 2018
+//      Added oneSubPerDomain to flag when we have one
+//      subset per domain. 
 //
 // ****************************************************************************
 
@@ -117,7 +117,6 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
     virtual avtContract_p          ModifyContract(avtContract_p);
     virtual void                   UpdateDataObjectInfo(void);
 
-    void                           ComputeLabelOffset(std::vector<int>);
     void                           UpdateExtentsAcrossDomains(double *, std::string);
     void                           UpdateExtentsAcrossProcs();
     int                            GetMaterialIndex(std::string);
@@ -136,7 +135,7 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
     int                            numExplosions;
     bool                           hasMaterials;
     bool                           onlyCellExp;
-    int                            labelOffset;
+    bool                           oneSubPerDomain;
     
 };
 

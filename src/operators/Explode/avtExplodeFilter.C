@@ -102,6 +102,9 @@
 //      Alister Maguire, Tue Feb 27 11:08:51 PST 2018
 //      Removed datasetExtents. 
 //
+//      Alister Maguire, Tue Sep 25 11:21:25 PDT 2018
+//      Init oneSubPerDomain. Assume true and prove false. 
+//
 // ****************************************************************************
 
 avtExplodeFilter::avtExplodeFilter()
@@ -112,6 +115,7 @@ avtExplodeFilter::avtExplodeFilter()
     numExplosions      = 0;
     hasMaterials       = false;
     onlyCellExp        = true;
+    oneSubPerDomain    = true;
 }
 
 
@@ -201,61 +205,6 @@ bool
 avtExplodeFilter::Equivalent(const AttributeGroup *a)
 {
     return (atts == *(ExplodeAttributes*)a);
-}
-
-
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::ComputeLabelOffset
-//
-//  Purpose:
-//      Under certain circumstances, we have repeats in our labels. We need
-//      to find the offset in case the materials are not evenly distributed
-//      throughout the domains. (one example is after a reflect operator has
-//      been performed.)
-//
-//  Arguments:
-//      inputDomains    An int vector containing the initial input domains. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Mon Sep 24 11:06:43 PDT 2018
-//
-// ****************************************************************************
-void 
-avtExplodeFilter::ComputeLabelOffset(std::vector<int> inputDomains)
-{
-    int prevCounter  = -1;
-    int counter      = 0;
-    int prev         = inputDomains[0];
-
-    //
-    // If we have repeat labels, we will also have repeat input domains. 
-    // They SHOULD be in a consistent offset, but let's check to be sure. 
-    //
-    for (std::vector<int>::iterator dItr = inputDomains.begin() + 1; 
-        dItr < inputDomains.end(); ++dItr)
-    {
-        if (prev != (*dItr))
-        {
-            if (prevCounter == -1)
-            {
-                prevCounter = counter;
-            }
-            else if (counter != prevCounter)
-            {
-                EXCEPTION1(ImproperUseException, 
-                    "Unknown label offset found!");
-            }
-            counter = 0;
-            prev    = (*dItr);
-        }
-        else
-        {
-            counter++;
-        }
-    }
-
-    labelOffset = counter;
 }
 
 
@@ -517,9 +466,6 @@ avtExplodeFilter::ResetMaterialExtents(bool fullReset, int matIdx)
 //      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
 //      Changed name and input args. 
 //
-//      Alister Maguire, Mon Sep 24 11:28:36 PDT 2018
-//      Added handling of repeat labels. 
-//
 // ****************************************************************************
 
 avtDataTree_p
@@ -613,34 +559,17 @@ avtExplodeFilter::CreateDomainTree(vtkDataSet **dsets,
         }
     }
    
-    if ( (labelOffset == 0) && (labels.size() > numUniqueDomains) )
-    {
-        EXCEPTION1(ImproperUseException, 
-            "The number of material labels must match the number of domains!");
-    }
-
-    //
-    // In some cases, such as after a reflect operator, we have
-    // repeat labels. We need to condense the to one per domain. 
-    //
-    int labelBase = labelOffset + 1;
-    stringVector outLabels(numUniqueDomains);
-    for (int i = 0; i < numUniqueDomains; i++)
-    {
-        outLabels[i] = labels[labelBase * i];
-    }
-
     avtDataTree_p outTree = NULL;
 
     if (numUniqueDomains == 1)
     {
         outTree = new avtDataTree(1, mergedDomains,
-            uniqueDomainIds[0], outLabels);
+            uniqueDomainIds[0], labels);
     }
     else
     {
         outTree = new avtDataTree(numUniqueDomains, mergedDomains,
-            uniqueDomainIds, outLabels);
+            uniqueDomainIds, labels);
     }
 
     for (int i = 0; i < numUniqueDomains; ++i)
@@ -758,6 +687,10 @@ avtExplodeFilter::ExtractMaterialsFromDomains(avtDataTree_p inTree)
 //      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
 //      Fixed bug with point data extraction. 
 //
+//      Alister Maguire, Tue Sep 25 11:21:25 PDT 2018
+//      Added oneSubPerDomain. Also, if our domain has only one
+//      subset, we still need to disconnect all of it's cells.  
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -797,6 +730,16 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         return outDT;
     }
 
+    vtkAppendFilter *appendFilter = NULL;
+    if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
+    {
+        appendFilter = vtkAppendFilter::New();
+        appendFilter->SetInputData(in_ds);
+        appendFilter->Update();
+        in_ds = appendFilter->GetOutput();
+    }
+    vtkUnstructuredGrid *in_ug = (vtkUnstructuredGrid*)in_ds;
+
     //
     // If we have a boundary array, then we have materials to 
     // work with. 
@@ -820,23 +763,17 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         }
 
         //
+        // Raise flag to notify that domains have multiple 
+        // subsets. 
+        //
+        oneSubPerDomain = false;
+
+        //
         // Break up the dataset into a collection of datasets, one
         // per boundary.
         //
         int *boundaryList = ((vtkIntArray*)boundaryArray)->GetPointer(0);
         
-        vtkAppendFilter *appendFilter = NULL;
-
-        if (in_ds->GetDataObjectType() != VTK_UNSTRUCTURED_GRID)
-        {
-            appendFilter = vtkAppendFilter::New();
-            appendFilter->SetInputData(in_ds);
-            appendFilter->Update();
-            in_ds = appendFilter->GetOutput();
-        }
-
-        vtkUnstructuredGrid *in_ug = (vtkUnstructuredGrid*)in_ds;
-
         //
         // Get the data ready for transfer
         //
@@ -997,29 +934,90 @@ avtExplodeFilter::GetMaterialSubsets(avtDataRepresentation *in_dr)
         delete [] selectedBoundaries;
         delete [] cLabelStorage;
 
-        if (appendFilter != NULL)
-        {
-            appendFilter->Delete();
-        }
     }
     else
     {
         //
-        // The dataset represents a single boundary, so just turn it into
-        // a data tree.
+        // The dataset represents a single boundary, BUT we still need
+        // to disconnect it. Copy all of its data to a new, disconnected
+        // ugrid.  
         //
-        labels.push_back(label);
-        outDS    = new vtkDataSet *[1];
-        outDS[0] = in_ds;
-        outDS[0]->Register(NULL);  // This makes it symmetric with the 'if'
-                                    // case so we can delete it blindly later.
 
+        //
+        // Get the data ready for transfer
+        //  
+        vtkUnstructuredGrid *out_grid = vtkUnstructuredGrid::New();
+        int nCells               = in_ug->GetNumberOfCells();
+        vtkPointData *inPD       = in_ug->GetPointData();
+        vtkCellData  *inCD       = in_ug->GetCellData();
+        vtkPointData *outPD      = out_grid->GetPointData();
+        vtkCellData  *outCD      = out_grid->GetCellData();
+
+        out_grid->Allocate(nCells);
+        outCD->CopyAllocate(inCD);
+        outPD->CopyAllocate(inPD);
+        
+        vtkCellIterator *it = in_ug->NewCellIterator();
+        vtkPoints *pts      = vtkPoints::New();
+        vtkIdList *cellPts  = vtkIdList::New();
+        vtkIdList *ptIds    = vtkIdList::New();
+
+        //
+        // Copy the data over to our new ugrid. 
+        //
+        for (it->InitTraversal(); !it->IsDoneWithTraversal(); it->GoToNextCell())
+        {
+            int cellType      = it->GetCellType();
+            vtkIdType  cellId = it->GetCellId();
+            in_ug->GetCellPoints(cellId, cellPts);
+            int numIds = cellPts->GetNumberOfIds();
+
+            for (int i = 0; i < numIds; ++i)
+            {
+                double point[3];
+                in_ug->GetPoint(cellPts->GetId(i), point);
+                int nxtPtId = pts->InsertNextPoint(point);
+                ptIds->InsertNextId(nxtPtId);
+                outPD->CopyData(inPD, cellPts->GetId(i), nxtPtId);
+            }
+
+            int newId = out_grid->InsertNextCell(cellType, ptIds);
+            outCD->CopyData(inCD, cellId, newId);
+           
+            cellPts->Reset(); 
+            ptIds->Reset();
+        }
+
+        out_grid->SetPoints(pts); 
+ 
+        //
+        // Reclaim unused space.
+        //
+        outPD->Squeeze();
+
+        //
+        // Clean-up memory.
+        //
+        pts->Delete();
+        cellPts->Delete();
+        ptIds->Delete();
+        it->Delete();
+
+        labels.push_back(label);
         nDataSets = 1;
-                
+
+        outDS     = new vtkDataSet *[1];
+        outDS[0]  = (vtkDataSet*)out_grid;
+
         double bounds[6];
         in_ds->GetBounds(bounds);
         std::string matName(label);
         UpdateExtentsAcrossDomains(bounds, label);
+    }
+
+    if (appendFilter != NULL)
+    {
+        appendFilter->Delete();
     }
 
     if (nDataSets == 0)
@@ -1272,6 +1270,9 @@ avtExplodeFilter::PreExecute(void)
 //      Alister Maguire, Mon Sep 24 11:28:36 PDT 2018
 //      Added check for repeat labels. 
 //
+//      Alister Maguire, Tue Sep 25 11:21:25 PDT 2018
+//      Only re-create a domain tree if we need to. 
+//
 // ****************************************************************************
 
 void
@@ -1286,11 +1287,6 @@ avtExplodeFilter::Execute(void)
     stringVector     inLabels; 
     inTree->GetAllDomainIds(domainIds);
     inTree->GetAllLabels(inLabels);
-
-    //
-    // Check to see if we have repeat labels. 
-    //
-    ComputeLabelOffset(domainIds);
 
     //
     // If we are exploding all cells, we don't need to 
@@ -1509,8 +1505,38 @@ avtExplodeFilter::Execute(void)
         return;
     }
 
-    avtDataTree_p outTree = CreateDomainTree(matLeaves, nLeaves, 
-        matDomains, inLabels);
+    //
+    // Our labels will sometimes have repeats. We need to 
+    // condense them down before creating our domain tree. 
+    // 
+    stringVector compressedLabels;
+    int prev = domainIds[0];
+    compressedLabels.push_back(inLabels[0]);
+    for (int i = 1; i < domainIds.size(); ++i)
+    {
+        if (prev != domainIds[i])
+        {
+            compressedLabels.push_back(inLabels[i]);
+            prev = domainIds[i]; 
+        }
+    }
+    
+
+    //
+    // If we've exploded domains, and we know that we 
+    // have one subset per domain, we shouln't need to 
+    // re-create a domain tree. In other cases, we do. 
+    //
+    avtDataTree_p outTree = NULL;
+    if (atts.GetSubsetType() == ExplodeAttributes::Domain && oneSubPerDomain)
+    {
+        outTree = new avtDataTree(nLeaves, matLeaves, matDomains, compressedLabels);
+    }
+    else
+    {
+        outTree = CreateDomainTree(matLeaves, nLeaves, 
+            matDomains, compressedLabels);
+    }
 
     //
     // Clean up memory.
