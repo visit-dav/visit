@@ -8,7 +8,7 @@
 #                          3D unstructured, single domain
 #                          3D unstructured, multi domain
 #              plots     - Contour, Pseudocolor
-#              operators - Slice
+#              operators - Isosurface, Slice
 #
 #  Programmer: Eric Brugger
 #  Date:       Wed Sep 19 12:18:14 PDT 2018
@@ -36,7 +36,7 @@ v.nearPlane = -1.7321
 v.farPlane = 1.7321
 SetView3D(v)
 
-Test("vtkm_01")
+Test("vtkm_rect3d_01")
 
 DeleteAllPlots()
 
@@ -50,7 +50,7 @@ atts.originPoint = (0.5, 0.5, 0.5)
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_02")
+Test("vtkm_rect3d_02")
 
 DeleteAllPlots()
 
@@ -64,7 +64,37 @@ atts.originPoint = (0.5, 0.5, 0.5)
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_03")
+Test("vtkm_rect3d_03")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_rect3d_04")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_rect3d_05")
 
 #
 # Test an curvilinear mesh.
@@ -85,7 +115,7 @@ v.nearPlane = -32.0156
 v.farPlane = 32.0156
 SetView3D(v)
 
-Test("vtkm_04")
+Test("vtkm_curv3d_01")
 
 DeleteAllPlots()
 
@@ -99,7 +129,7 @@ atts.originPoint = (0., 2.5, 15.)
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_05")
+Test("vtkm_curv3d_02")
 
 DeleteAllPlots()
 
@@ -113,7 +143,37 @@ atts.originPoint = (0., 2.5, 15.)
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_06")
+Test("vtkm_curv3d_03")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_curv3d_04")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_curv3d_05")
 
 #
 # Test an unstructured mesh.
@@ -134,7 +194,7 @@ v.nearPlane = -22.9129
 v.farPlane = 22.9129
 SetView3D(v)
 
-Test("vtkm_07")
+Test("vtkm_ucd3d_01")
 
 DeleteAllPlots()
 
@@ -148,7 +208,7 @@ atts.originPoint = (0., 2.5, 10.)
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_08")
+Test("vtkm_ucd3d_02")
 
 DeleteAllPlots()
 
@@ -162,7 +222,37 @@ atts.originPoint = (0., 2.5, 10.)
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_09")
+Test("vtkm_ucd3d_03")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_ucd3d_04")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_ucd3d_05")
 
 #
 # Test a multi-domain unstructured mesh.
@@ -183,7 +273,7 @@ v.nearPlane = -22.9129
 v.farPlane = 22.9129
 SetView3D(v)
 
-Test("vtkm_10")
+Test("vtkm_multi_ucd3d_01")
 
 DeleteAllPlots()
 
@@ -197,7 +287,7 @@ atts.originPoint = (0., 2.5, 10.)
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_11")
+Test("vtkm_multi_ucd3d_02")
 
 DeleteAllPlots()
 
@@ -211,6 +301,36 @@ atts.originPoint = (0., 2.5, 10.)
 SetOperatorOptions(atts)
 DrawPlots()
 
-Test("vtkm_12")
+Test("vtkm_multi_ucd3d_03")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_multi_ucd3d_04")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Isosurface")
+atts = IsosurfaceAttributes()
+atts.contourNLevels = 10
+atts.contourMethod = atts.Level
+atts.minFlag = 0
+atts.maxFlag = 0
+atts.variable = "u"
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_multi_ucd3d_05")
 
 Exit()
