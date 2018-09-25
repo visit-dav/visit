@@ -204,61 +204,6 @@ avtExplodeFilter::Equivalent(const AttributeGroup *a)
 }
 
 
-
-// ****************************************************************************
-//  Method: avtExplodeFilter::ComputeLabelOffset
-//
-//  Purpose:
-//      Under certain circumstances, we have repeats in our labels. We need
-//      to find the offset in case the materials are not evenly distributed
-//      throughout the domains. (one example is after a reflect operator has
-//      been performed.)
-//
-//  Arguments:
-//      inputDomains    An int vector containing the initial input domains. 
-//
-//  Programmer: Alister Maguire
-//  Creation:   Mon Sep 24 11:06:43 PDT 2018
-//
-// ****************************************************************************
-void 
-avtExplodeFilter::ComputeLabelOffset(std::vector<int> inputDomains)
-{
-    int prevCounter  = -1;
-    int counter      = 0;
-    int prev         = inputDomains[0];
-
-    //
-    // If we have repeat labels, we will also have repeat input domains. 
-    // They SHOULD be in a consistent offset, but let's check to be sure. 
-    //
-    for (std::vector<int>::iterator dItr = inputDomains.begin() + 1; 
-        dItr < inputDomains.end(); ++dItr)
-    {
-        if (prev != (*dItr))
-        {
-            if (prevCounter == -1)
-            {
-                prevCounter = counter;
-            }
-            else if (counter != prevCounter)
-            {
-                EXCEPTION1(ImproperUseException, 
-                    "Unknown label offset found!");
-            }
-            counter = 0;
-            prev    = (*dItr);
-        }
-        else
-        {
-            counter++;
-        }
-    }
-
-    labelOffset = counter;
-}
-
-
 // ****************************************************************************
 //  Method: avtExplodeFilter::GetMaterialIndex
 //
@@ -517,9 +462,6 @@ avtExplodeFilter::ResetMaterialExtents(bool fullReset, int matIdx)
 //      Alister Maguire, Wed Feb  7 10:26:21 PST 2018
 //      Changed name and input args. 
 //
-//      Alister Maguire, Mon Sep 24 11:28:36 PDT 2018
-//      Added handling of repeat labels. 
-//
 // ****************************************************************************
 
 avtDataTree_p
@@ -613,34 +555,17 @@ avtExplodeFilter::CreateDomainTree(vtkDataSet **dsets,
         }
     }
    
-    if ( (labelOffset == 0) && (labels.size() > numUniqueDomains) )
-    {
-        EXCEPTION1(ImproperUseException, 
-            "The number of material labels must match the number of domains!");
-    }
-
-    //
-    // In some cases, such as after a reflect operator, we have
-    // repeat labels. We need to condense the to one per domain. 
-    //
-    int labelBase = labelOffset + 1;
-    stringVector outLabels(numUniqueDomains);
-    for (int i = 0; i < numUniqueDomains; i++)
-    {
-        outLabels[i] = labels[labelBase * i];
-    }
-
     avtDataTree_p outTree = NULL;
 
     if (numUniqueDomains == 1)
     {
         outTree = new avtDataTree(1, mergedDomains,
-            uniqueDomainIds[0], outLabels);
+            uniqueDomainIds[0], labels);
     }
     else
     {
         outTree = new avtDataTree(numUniqueDomains, mergedDomains,
-            uniqueDomainIds, outLabels);
+            uniqueDomainIds, labels);
     }
 
     for (int i = 0; i < numUniqueDomains; ++i)
@@ -1288,11 +1213,6 @@ avtExplodeFilter::Execute(void)
     inTree->GetAllLabels(inLabels);
 
     //
-    // Check to see if we have repeat labels. 
-    //
-    ComputeLabelOffset(domainIds);
-
-    //
     // If we are exploding all cells, we don't need to 
     // worry about materials. Also, if we don't have 
     // any materials, cell explosion is the only option. 
@@ -1509,8 +1429,24 @@ avtExplodeFilter::Execute(void)
         return;
     }
 
+    //
+    // Our labels will sometimes have repeats. We need to 
+    // condense them down before creating our domain tree. 
+    //
+    stringVector compressedLabels;
+    compressedLabels.push_back(inLabels[0]);
+    int prev = domainIds[0];
+    for (int i = 1; i < domainIds.size(); ++i)
+    {
+        if (prev != domainIds[i])
+        {
+            compressedLabels.push_back(inLabels[i]);
+            prev = domainIds[i];
+        }
+    }
+
     avtDataTree_p outTree = CreateDomainTree(matLeaves, nLeaves, 
-        matDomains, inLabels);
+        matDomains, compressedLabels);
 
     //
     // Clean up memory.
