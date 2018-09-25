@@ -113,7 +113,6 @@ class avtExplodeFilter : public avtDatasetToDatasetFilter,
     virtual avtContract_p          ModifyContract(avtContract_p);
     virtual void                   UpdateDataObjectInfo(void);
 
-    void                           ComputeLabelOffset(std::vector<int>);
     void                           UpdateExtentsAcrossDomains(double *, std::string);
     void                           UpdateExtentsAcrossProcs();
     int                            GetMaterialIndex(std::string);
