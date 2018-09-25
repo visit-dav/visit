@@ -56,9 +56,10 @@ SetBackendType("VTKm")
   <p>When VTK-m support is enabled, VisIt will use VTK-m for all operations that support it. The following operators currently support VTK-m.</p>
   <ul>
     <li>Contour plot: Restrictions - Only supports node centered variables.</li>
+    <li>Isosurface operator: Restrictions - Only supports node centered variables.</li>
     <li>Slice operator: Restrictions - Only works when <i>Project to 2D</i> is disabled.</li>
   </ul>
-  <p>VTK-m functionality is currently enabled for 3D rectilinear, curvilinear and unstructured grids with only hexahedral elements.</p>
+  <p>VTK-m functionality is currently enabled for 3D rectilinear, curvilinear and unstructured grids with only hexahedral elements. VTK-m supports both single block and multi-block grids.</p>
   </li>
 </ul>
 
