@@ -1150,6 +1150,11 @@ avtContourFilter::ExecuteDataTree_VTKM(avtDataRepresentation *in_dr)
         marcher.Update();
 
         vtkh::DataSet *isoOut = marcher.GetOutput();
+        if (isoOut->GetNumberOfDomains() == 0)
+        {
+            delete isoOut;
+            isoOut = NULL;
+        }
 
         if (shouldCreateLabels)
         {   

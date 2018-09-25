@@ -111,6 +111,7 @@ vtkh::DataSet  *avtDataRepresentation::nullVTKmDataset         = NULL;
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedIntArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <set>
@@ -442,35 +443,10 @@ ConvertVTKToVTKm(vtkDataSet *data)
                     vtkm::cont::Field(array->GetName(),
                     vtkm::cont::Field::Association::CELL_SET, fieldArray));
             }
-            else if (array->GetDataType() == VTK_UNSIGNED_INT)
-            {
-                vtkIdType nVals = array->GetNumberOfTuples();
-                unsigned char *vals =
-                    vtkUnsignedCharArray::SafeDownCast(array)->GetPointer(0);
-
-                vtkm::cont::ArrayHandle<vtkm::UInt8> fieldArray;
-                fieldArray.Allocate(nVals);
-  
-                for (vtkm::Id j = 0; j < nVals; ++j)
-                    fieldArray.GetPortalControl().Set(j, vals[j]);
-
-                ds.AddField(
-                    vtkm::cont::Field(array->GetName(),
-                    vtkm::cont::Field::Association::CELL_SET, fieldArray));
-            }
         }
         else if (array->GetNumberOfComponents() == 2)
         {
-            if (array->GetDataType() == VTK_FLOAT)
-            {
-            }
-            else if (array->GetDataType() == VTK_DOUBLE)
-            {
-            }
-            else if (array->GetDataType() == VTK_UNSIGNED_CHAR)
-            {
-            }
-            else if (array->GetDataType() == VTK_UNSIGNED_INT)
+            if (array->GetDataType() == VTK_UNSIGNED_INT)
             {
             }
         }
@@ -814,6 +790,9 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
 {
     vtkDataSet *ret = NULL;
  
+    if (data->GetNumberOfDomains() == 0)
+        return NULL;
+
     vtkm::cont::DataSet vtkm_ds;
     vtkm::Id vtkm_id;
     data->GetDomain(0, vtkm_ds, vtkm_id);
@@ -948,6 +927,7 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
     //
     if (ds != NULL)
     {
+        using ScalarUInt8 = vtkm::cont::ArrayHandle<vtkm::UInt8>;
         using Scalar32 = vtkm::cont::ArrayHandle<vtkm::Float32>;
         using Scalar64 = vtkm::cont::ArrayHandle<vtkm::Float64>;
         using Vector32 = vtkm::cont::ArrayHandle<vtkm::Vec<vtkm::Float32,3> >;
@@ -978,7 +958,26 @@ ConvertVTKmToVTK(vtkh::DataSet *data)
 
             auto field = vtkm_ds.GetField(i).GetData();
 
-            if (field.IsSameType(Scalar32()))
+            if (field.IsSameType(ScalarUInt8()))
+            {
+                ScalarUInt8 fieldArray;
+                field.CopyTo(fieldArray);
+
+                vtkm::Id nValues = fieldArray.GetNumberOfValues();
+
+                vtkUnsignedCharArray *outArray = vtkUnsignedCharArray::New();
+                outArray->SetName(fieldName);
+                outArray->SetNumberOfTuples(nValues);
+
+                memcpy(outArray->GetVoidPointer(0),
+                    fieldArray.GetStorage().GetArray(),
+                    sizeof(unsigned char)*nValues);
+                attr->AddArray(outArray);
+                attr->SetActiveScalars(fieldName);
+                attr->CopyFieldOn(fieldName);
+                outArray->Delete();
+            }
+            else if (field.IsSameType(Scalar32()))
             {
                 Scalar32 fieldArray;
                 field.CopyTo(fieldArray);
