@@ -6,6 +6,7 @@
 #  Tests:      mesh      - 3D rectilinear, single domain
 #                          3D curvilinear, single domain
 #                          3D unstructured, single domain
+#                          3D unstructured, multi domain
 #              plots     - Contour, Pseudocolor
 #              operators - Slice
 #
@@ -162,5 +163,54 @@ SetOperatorOptions(atts)
 DrawPlots()
 
 Test("vtkm_09")
+
+#
+# Test a multi-domain unstructured mesh.
+#
+DeleteAllPlots()
+
+OpenDatabase(silo_data_path("multi_ucd3d.silo"))
+
+AddPlot("Contour", "u")
+DrawPlots()
+
+v = View3DAttributes()
+v.viewNormal = (0.4854, 0.3984, 0.7782)
+v.focus = (0., 2.5, 10.)
+v.viewUp = (-0.1209, 0.9122, -0.3916)
+v.parallelScale = 11.4564
+v.nearPlane = -22.9129
+v.farPlane = 22.9129
+SetView3D(v)
+
+Test("vtkm_10")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "d")
+AddOperator("Slice")
+atts = SliceAttributes()
+atts.project2d = 0
+atts.normal = (0., 1., 0.)
+atts.originType = atts.Point
+atts.originPoint = (0., 2.5, 10.)
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_11")
+
+DeleteAllPlots()
+
+AddPlot("Pseudocolor", "u")
+AddOperator("Slice")
+atts = SliceAttributes()
+atts.project2d = 0
+atts.normal = (0., 1., 0.)
+atts.originType = atts.Point
+atts.originPoint = (0., 2.5, 10.)
+SetOperatorOptions(atts)
+DrawPlots()
+
+Test("vtkm_12")
 
 Exit()
