@@ -132,14 +132,14 @@ avtNASTRANFileFormat::avtNASTRANFileFormat(const char *filename,
 // ****************************************************************************
 // Method: avtNASTRANFileFormat::~avtNASTRANFileFormat
 //
-// Purpose: 
+// Purpose:
 //   Destructor for avtNASTRANFileFormat class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 6 15:59:07 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 avtNASTRANFileFormat::~avtNASTRANFileFormat()
@@ -178,14 +178,14 @@ avtNASTRANFileFormat::FreeUpResources(void)
 // ****************************************************************************
 // Method: avtNASTRANFileFormat::ActivateTimestep
 //
-// Purpose: 
+// Purpose:
 //   Called when we're activating the current time step.
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Jul 6 15:59:34 PST 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -201,10 +201,10 @@ avtNASTRANFileFormat::ActivateTimestep()
 }
 
 // ****************************************************************************
-// Function: Getf 
+// Function: Getf
 //
 // Purpose: Robust way of reading string for float value
-// 
+//
 // Programmer: Mark C. Miller, Thu Apr  3 16:27:01 PDT 2008
 //
 // Modifications:
@@ -216,7 +216,7 @@ avtNASTRANFileFormat::ActivateTimestep()
 //    may be missing from exponentiated numbers.
 //
 //    Mark C. Miller, Thu May  7 10:30:49 PDT 2009
-//    Fixed bug of triggering funky case in presence of leading spaces. 
+//    Fixed bug of triggering funky case in presence of leading spaces.
 //
 //    Mark C. Miller, Mon May 11 14:21:22 PDT 2009
 //    Ok, I 'fixed' this funky logic again. The above 'fix' caused the alg.
@@ -230,8 +230,8 @@ static float Getf(const char *s)
     double val = 0.0;
 
     // Check for one of these funky 'NASTRAN exponential format' strings.
-    // This is where a value like '1.2345e-5' is actually represented in the 
-    // file as '1.2345-5' with the 'e' character missing. It is awkward but 
+    // This is where a value like '1.2345e-5' is actually represented in the
+    // file as '1.2345-5' with the 'e' character missing. It is awkward but
     // apparently a NASTRAN standard. I guess the rationale is that given
     // an 8 character field width limit, removing the 'e' character gives them
     // one additional digit of precision. This logic is basically looking for
@@ -277,10 +277,10 @@ static float Getf(const char *s)
 }
 
 // ****************************************************************************
-// Function: Geti 
+// Function: Geti
 //
 // Purpose: Robust way of reading string for integer value
-// 
+//
 // Programmer: Mark C. Miller, Thu Apr  3 16:27:01 PDT 2008
 //
 // Modifications:
@@ -311,7 +311,7 @@ static int Geti(const char *s)
 // ****************************************************************************
 // Method: avtNASTRANFileFormat::ReadFile
 //
-// Purpose: 
+// Purpose:
 //   This method reads the NASTRAN file and constructs a dataset that gets
 //   returned later in the GetMesh method.
 //
@@ -325,7 +325,7 @@ static int Geti(const char *s)
 // Creation:   Wed Jul 6 16:00:08 PST 2005
 //
 // Modifications:
-//   
+//
 //    Mark C. Miller, Thu Mar 30 16:45:35 PST 2006
 //    Made it use VisItStat instead of stat
 //
@@ -408,8 +408,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
     vtkIdType verts[20]; (void) verts; // QuadraticHexahedron supports up to 20 vertices
     bool recognized = false;
     bool titleRead = false;
-    
-#define INDEX_FIELD_WIDTH 8 
+
+#define INDEX_FIELD_WIDTH 8
 
     for(int lineIndex = 0; ReadLine(ifile, line); ++lineIndex)
     {
@@ -565,13 +565,13 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // The differences in cell types are in the information stored after GB,
             // but we don't care about that for our purposes.
             // We want PID, GA, and GB.
-    
+
             // Parse the line into verts
             ParseLine(verts, line, 3, 2);
-            
+
             // Check if element is buildable
             int buildable = CheckBuildable(verts, 2);
-            
+
             // Set the material property id
             if (matCountOpt) {
                 matid = ParseField(line, 2);
@@ -604,18 +604,18 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // These cell types are like:
             // CELL_TYPE | EID | PID (or scalar) | G1 | C1 | G2 | C2 |
             // We want PID, G1, and G2
-            
+
             // Parse the line into verts array
             ParseLine(verts, line, 3, 3);
-            
+
             // Swap C1 and G2
             int swap_t = verts[1];
             verts[1] = verts[2];
             verts[2] = swap_t;
-            
+
             // Check if element is buildable
             int buildable = CheckBuildable(verts, 2);
-            
+
             // Set material property id
             if (matCountOpt) {
                 matid = ParseField(line, 2);
@@ -629,20 +629,20 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             }
             if (matCountOpt) matList.push_back(matid);
 #endif
-            
+
         }
         else if(strncmp(line, "CONROD", 6) == 0)
         {
             // These cell types are like:
             // CELL_TYPE | EID | GA | GB
             // We want GA and GB
-            
+
             // Parse the line into verts array
             ParseLine(verts, line, 2, 2);
-            
+
             // Check if element is buildable
             int buildable = CheckBuildable(verts, 2);
-            
+
             // Set material property id
             if (matCountOpt) {
                 matid = ParseField(line, 2);
@@ -666,13 +666,13 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             // Looks like NASTRAN no longer supports CTRIA2, but we have them in our tests
             // suite, so I've included them here in case a user wants to run with older
             // files.
-    
+
             // Parse line into verts array
             ParseLine(verts, line, 3, 3);
-            
+
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 3);
-            
+
             // Set the material property id
             if (matCountOpt) {
                 matid = ParseField(line, 2);
@@ -691,13 +691,13 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             // These cell types are like:
             // CELL_TYPE | EID | PID | G1 | G2 | G3 | G4 | G5 | G6
-            
+
             // Parse line into verts array
             ParseLine(verts, line, 3, 6);
-            
+
             // Check if element is buildable
             int buildable = CheckBuildable(verts, 6, 3);
-            
+
             // Set the material property id
             if (matCountOpt) {
                 matid = ParseField(line, 2);
@@ -721,16 +721,16 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         else if(strncmp(line, "CQUAD4", 6) == 0 ||
                 strncmp(line, "CSHEAR", 6) == 0 ||
                 strncmp(line, "CQUADR", 6) == 0)
-        {    
+        {
             // These cell types are like:
             // CELL_TYPE | EID | PID | G1 | G2 | G3 | G4 |
-            
+
             // Parse line into verts array
             ParseLine(verts, line, 3, 4);
-            
+
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 4);
-            
+
             // Set the material property id
             if (matCountOpt)
             {
@@ -747,17 +747,17 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 #endif
         }
         else if(strncmp(line, "CQUAD8", 6) == 0)
-        {    
+        {
             // These cell types are like:
             // CELL_TYPE | EID | PID | G1 | G2 | G3 | G4 | G5 | G6 |
             //           | G7  | G8  |
-            
+
             // Parse line into verts array
             ParseLine(verts, line, 3, 8);
-            
+
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 8, 4);
-            
+
             // Set the material property id
             if (matCountOpt)
             {
@@ -780,18 +780,18 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
 #endif
         }
         else if(strncmp(line, "CTETRA", 6) == 0)
-        {    
+        {
             // These cell types are like:
             // CELL_TYPE | EID | PID | G1 | G2  | G3 | G4 | G5 | G6 |
             //           | G7  | G8  | G9 | G10 |
             // where G5-10 are only needed for QUADRATIC.
-            
+
             // Parse line into verts array
             ParseLine(verts, line, 3, 10);
-            
+
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 10, 4);
-                        
+
             // Set the material property id
             if (matCountOpt)
             {
@@ -807,7 +807,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                        << "Building TETRA element." << endl;
                 ugrid->InsertNextCell(VTK_TETRA, 4, verts);
             }
-            else { 
+            else {
                 debug4 << "ERROR: Could not build element CTETRA EID: " << ParseField(line, 1)
                        << endl;
             }
@@ -816,20 +816,20 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         }
         else if(strncmp(line, "CPYRAM", 6) == 0 ||
                 strncmp(line, "CPYRA", 5) == 0)
-        {    
+        {
             // These cell types are like:
             // CELL_TYPE | EID | PID | G1 | G2  | G3  | G4  | G5  | G6 |
             //           | G7  | G8  | G9 | G10 | G11 | G12 | G13 |
             // where G6-13 are only needed for QUADRATIC.
             // Looks like NASTRAN no longer supporst CPYRAM, but we have that in our test
             // suite so I've included it here in case the user wants to run an older file.
-            
+
             // Parse line into verts array
             ParseLine(verts, line, 3, 13);
-            
+
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 13, 5);
-                        
+
             // Set the material property id
             if (matCountOpt)
             {
@@ -858,21 +858,21 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             //           | G7  | G8  | G9  | G10 | G11 | G12 | G13 | G14 |
             //           | G15 |
             // where G7-15. are only needed for QUADRATIC.
-            
+
             // Parse line into verts array
             ParseLine(verts, line, 3, 15);
-            
+
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 15, 6);
-            
-            
+
+
             // PENTA's (Wedges) have mismatched indices between NATRAN and VTK,
             // so we fix that here.
             if (buildable > 0) { // First order element fix
                 int swap_t = verts[1];
                 verts[1] = verts[2];
                 verts[2] = swap_t;
-                
+
                 swap_t = verts[4];
                 verts[4] = verts[5];
                 verts[5] = swap_t;
@@ -881,7 +881,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 int swap_t = verts[6];
                 verts[6] = verts[8];
                 verts[8] = swap_t;
-                
+
                 swap_t = verts[9];
                 verts[9] = verts[14];
                 verts[14] = verts[10];
@@ -890,7 +890,7 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                 verts[11] = verts[12];
                 verts[12] = swap_t;
             }
-                 
+
             // Set the material property id
             if (matCountOpt)
             {
@@ -928,13 +928,13 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
             //           | G7  | G8  | G9  | G10 | G11 | G12 | G13 | G14 |
             //           | G15 | G16 | G17 | G18 | G19 | G20 |
             // where G9-20. are only needed for QUADRATIC.
-            
+
             // Parse line into verts array
             ParseLine(verts, line, 3, 20);
-            
+
             // Check if the element is buildable
             int buildable = CheckBuildable(verts, 20, 8);
-            
+
             // Quadratic Hexahedrons are mismatched between NASTRAN and VTK.
             if(buildable == 2)
             {
@@ -945,8 +945,8 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
                     verts[i] = verts[j];
                     verts[j] = swap_t;
                 }
-            }            
-                        
+            }
+
             // Set the material property id
             if (matCountOpt)
             {
@@ -987,19 +987,19 @@ avtNASTRANFileFormat::ReadFile(const char *name, int nLines)
         {
             break;
         } // end line if
-        
+
         if (matid != INVALID_MAT_ID)
             uniqMatIds[matid] = 1;
     } // end ReadLine loop
-    
-    
+
+
     visitTimer->StopTimer(readingFile, "Interpreting NASTRAN file");
 
     if(recognized && nLines == ALL_LINES)
     {
 #if !defined(MDSERVER) && defined(USE_POINT_INDICES_TO_INSERT)
         int rpfTime = visitTimer->StartTimer();
-        vtkUnstructuredGridRelevantPointsFilter *rpf = 
+        vtkUnstructuredGridRelevantPointsFilter *rpf =
             vtkUnstructuredGridRelevantPointsFilter::New();
         rpf->SetInputData(ugrid);
         rpf->Update();
@@ -1050,7 +1050,7 @@ avtNASTRANFileFormat::ReadLine(ifstream& ifile, char *line)
 
     // Initial line read
     ifile.getline(line, 1024);
-    
+
     // Check for continuation line
     char* contCheck;
     for (int i = 0; i < 1024/72; i++)
@@ -1058,7 +1058,7 @@ avtNASTRANFileFormat::ReadLine(ifstream& ifile, char *line)
         int ndx = 72*(i+1);
         contCheck = line + ndx;
 
-        if(strncmp(contCheck, "+CONT", 5) == 0 || 
+        if(strncmp(contCheck, "+CONT", 5) == 0 ||
            strncmp(contCheck, "*CONT", 5) == 0 ||
            *contCheck == '+' ||
            *contCheck == '*')
@@ -1105,30 +1105,41 @@ avtNASTRANFileFormat::ReadLine(ifstream& ifile, char *line)
 //
 //  Programmer: Edward Rusu
 //  Creation:   Mon Aug 13 14:31:24 PST 2018
+//
+//  Modifications:
+//    Kathleen Biagas, Tue Sep 25 16:00:00 MST 2018
+//    Ensure verts up to index 'count' have been initialized. Prevents crash
+//    later on when it is expected that 'count' values are either valid or
+//    are set to -1.
+//
 // ****************************************************************************
+
 void
 avtNASTRANFileFormat::ParseLine(vtkIdType *verts, char *line, int start,
-                                int count) 
-{  
+                                int count)
+{
     char *valstart = line + INDEX_FIELD_WIDTH * start;
     char *valend = valstart + INDEX_FIELD_WIDTH;
     char val_t;
-    for (int i = 0; (i < count) && (*valstart != '\0'); i++) {
+    int i;
+    for (i = 0; (i < count) && (*valstart != '\0'); i++) {
         if(*valstart == '+' || *valstart == '*')
         { // At blank continuation element
             valstart += INDEX_FIELD_WIDTH;
             valend += INDEX_FIELD_WIDTH;
         }
-    
+
         val_t = *valend;
         *valend = '\0';
-        
+
         verts[i] = Geti(valstart)-1;
-        
+
         *valend = val_t;
         valstart += INDEX_FIELD_WIDTH;
         valend += INDEX_FIELD_WIDTH;
     }
+    for (int j = i; j < count; ++j)
+        verts[j] = -1;
 }
 
 // ****************************************************************************
@@ -1147,12 +1158,12 @@ avtNASTRANFileFormat::ParseLine(vtkIdType *verts, char *line, int start,
 // ****************************************************************************
 int
 avtNASTRANFileFormat::CheckBuildable(const vtkIdType *verts, int numExpected)
-{  
+{
     int buildable = 1;
     for (int i = 0; i < numExpected; i++) {
         if (verts[i] == -1)
         {
-            buildable == 0;
+            buildable = 0;
             break;
         }
     }
@@ -1162,7 +1173,7 @@ avtNASTRANFileFormat::CheckBuildable(const vtkIdType *verts, int numExpected)
 int
 avtNASTRANFileFormat::CheckBuildable(const vtkIdType *verts, int numExpected,
                                      int numNeeded)
-{  
+{
     int buildable = 2;
     for (int i = numNeeded; i < numExpected; i++) {
         if (verts[i] == -1)
@@ -1195,20 +1206,20 @@ avtNASTRANFileFormat::CheckBuildable(const vtkIdType *verts, int numExpected,
 // ****************************************************************************
 int
 avtNASTRANFileFormat::ParseField(char *line, int start)
-{  
+{
     char *valstart = line + INDEX_FIELD_WIDTH * start;
     char *valend = valstart + INDEX_FIELD_WIDTH;
     char val_t = *valend;
 
     *valend = '\0';
-    
+
     int out = Geti(valstart);
-    
+
     *valend = val_t;
-    
+
     return out;
 }
-    
+
 // ****************************************************************************
 //  Method: avtNASTRANFileFormat::PopulateDatabaseMetaData
 //
@@ -1320,7 +1331,7 @@ avtNASTRANFileFormat::GetMesh(const char *meshname)
 //  Purpose:
 //      Gets the material of given name.
 //
-//  Programmer: Mark C. Miller 
+//  Programmer: Mark C. Miller
 //  Creation:   Wed May 13 17:51:17 PDT 2009
 //
 //  Modifications:
