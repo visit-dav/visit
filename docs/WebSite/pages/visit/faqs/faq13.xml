@@ -31,7 +31,7 @@
 <ul>
   <li class="nobullet"><strong>visit -movie -geometry 1024x1024 -s movie.py -format tiff -output mymovie -fps 30 </strong></li>
 </ul>
-<p> VisIt's <a href="manuals.html">Python Interface Manual</a> documents all of the functions in the VisIt Python extension and includes examples of how to do common plotting and movie-making operations. If you need more examples of how to write Python scripts for VisIt, download the VisIt source code distribution and look for Python scripts in the <em>visitpy/examples</em> directory. If the two current ways of making movies sound too difficult, don't worry. We plan to enhance VisIt in the next few versions so it is easier to make movies.</p>
+<p> VisIt's <a href="http://visit.ilight.com/svn/visit/trunk/releases/2.10.0/VisItPythonManual.pdf">Python Interface Manual</a> documents all of the functions in the VisIt Python extension and includes examples of how to do common plotting and movie-making operations. If you need more examples of how to write Python scripts for VisIt, download the VisIt source code distribution and look for Python scripts in the <em>visitpy/examples</em> directory. If the two current ways of making movies sound too difficult, don't worry. We plan to enhance VisIt in the next few versions so it is easier to make movies.</p>
 
 </div>
 </div>	
