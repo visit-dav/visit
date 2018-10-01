@@ -69,6 +69,9 @@
 #  Eric Brugger, Mon Apr 11 15:08:56 PDT 2016
 #  Added visit_flow
 #
+#  Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
+#  Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
+#
 #****************************************************************************/
 
 SET(COMMON_SOURCES
@@ -220,7 +223,7 @@ TARGET_LINK_LIBRARIES(visitpy
 avtdbatts
 viewerrpc
 visitcommon
-${PYTHON_LIBRARIES}
+${PYTHON_LIBRARY}
 )
 
 # Create the CLI
@@ -244,7 +247,7 @@ viewerrpc
 avtdbatts
 visitcommon
 visitpy
-${PYTHON_LIBRARIES}
+${PYTHON_LIBRARY}
 ${CMAKE_THREAD_LIBS}
 )
 IF(NOT WIN32)
@@ -280,7 +283,7 @@ ELSE(VISIT_STATIC)
         avtdbatts
         visitcommon
         visitpy
-        ${PYTHON_LIBRARIES}
+        ${PYTHON_LIBRARY}
     )
 
     IF(NOT WIN32)

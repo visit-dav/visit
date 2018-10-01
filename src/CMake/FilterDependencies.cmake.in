@@ -1,0 +1,157 @@
+#*****************************************************************************
+#
+# Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+# Produced at the Lawrence Livermore National Laboratory
+# LLNL-CODE-442911
+# All rights reserved.
+#
+# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of  source code must  retain the above  copyright notice,
+#    this list of conditions and the disclaimer below.
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+#    documentation and/or other materials provided with the distribution.
+#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+#    be used to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#
+# Modifications:
+#
+#****************************************************************************/
+cmake_policy(SET CMP0011 NEW)
+cmake_policy(SET CMP0057 NEW)
+
+set(VISIT_BINARY_DIR @VISIT_BINARY_DIR@)
+set(VISIT_PYTHON_DIR @VISIT_PYTHON_DIR@)
+set(VTK_TARGETS @VTK_VALID_TARGETS@)
+set(VTK_SMALL_VERSION @VTK_MAJOR_VERSION@.@VTK_MINOR_VERSION@)
+
+function(FILTER_VISIT_LIB_DEPENDENCIES filename)
+    file(STRINGS ${filename}.in lines)
+    file(WRITE   ${filename} "# Filtered version\n")
+
+    foreach(line ${lines})
+        if("${line}" MATCHES "CMAKE_MAJOR")
+            continue()
+        elseif("${line}" MATCHES "CMake 2.6")
+            continue()
+        elseif("${line}" MATCHES "else")
+            # code below the else is for very early versions of cmake, which we are
+            # already guaranteed to not be using, so stop processing the file
+            break()
+        endif()
+
+        set(outputLine TRUE)
+        if("${line}" MATCHES ".*Plot[_ser|_par]*_LIB_DEPENDS.*")
+            set(outputLine FALSE)
+        elseif("${line}" MATCHES ".*Operator[_ser|_par]*_LIB_DEPENDS.*")
+            set(outputLine FALSE)
+        elseif("${line}" MATCHES ".*Database[_ser|_par]*_LIB_DEPENDS.*")
+            set(outputLine FALSE)
+        endif()
+        if (NOT outputLine)
+            continue()
+        endif()
+        # are there others that should be suppressed?
+        foreach(suppress visit_writer visitfrontend visitmodule proxyexample bow slivrG slivrV air alan bane biff coil dye echo ell gage hest hoover limn mite moss nrrd push ten unrrdu)
+            if("${line}" MATCHES ".*${suppress}_LIB_DEPENDS.*")
+                set(outputLine FALSE)
+            endif()
+        endforeach()
+        if (NOT outputLine)
+            continue()
+        endif()
+
+        # When we get here, we need to output a filtered line.
+        # The line is tokenized to make filtering easier (albeit slower).
+        #   * Replace vtk<lib> with vtk<lib>-<vtk_small_version>
+        #   * Replace Qt5::<lib> with Qt5<lib>
+        #   * Remove quotes surrounding 'xxx_LIB_DEPENDS'
+        string(REPLACE "${VISIT_PYTHON_DIR}/lib"
+                       "\${VISIT_LIBRARY_DIR}"
+                        line "${line}")
+        set(skip_next_token FALSE)
+        foreach(token ${line})
+            if(skip_next_token)
+                set(skip_next_token FALSE)
+                continue()
+            endif()
+            if(${token} MATCHES "_LIB_DEPENDS")
+                if(WIN32)
+                    # change viewer to viewerlib
+                    string(REPLACE "viewer_LIB_DEPENDS"
+                                   "viewerlib_LIB_DEPENDS" token ${token})
+                    # change gui to guilib
+                    string(REPLACE "gui_LIB_DEPENDS" 
+                                   "guilib_LIB_DEPENDS" token ${token})
+                endif()
+                # remove surrounding quotes
+                string(REPLACE "\"" "@@@@@" replace_quote ${token})
+                string(REGEX REPLACE "@@@@@([a-zA-Z_]+)_LIB_DEPENDS@@@@@"
+                       "\\1_LIB_DEPENDS" 
+                       rem_quote ${replace_quote})
+                string(REPLACE "@@@@@" "\"" newtoken ${rem_quote})
+            elseif(token MATCHES "Qt5::")
+                # replace Qt5::libname with Qt5libname
+                string(REGEX REPLACE "Qt5::([a-zA-Z]+)"
+                       "Qt5\\1"
+                       newtoken ${token})
+            elseif(${token} IN_LIST VTK_TARGETS)
+                # append VTK version to vtk lib names
+                set(newtoken "${token}-${VTK_SMALL_VERSION}")
+            elseif(${token} MATCHES "mpich")
+              # If we are installing mpich, then VISIT_PARALLEL_LINKER_FLAGS
+              # points to our installed mpich, so having it in depds list
+              # seems unnecessary, lets skip it then. 
+              # want to say skep the next token which should be 'general'
+              set(skip_next_token TRUE) 
+              continue()
+            else()
+                if(WIN32)
+                    if(token MATCHES "windowsbuild")
+                        # strip off location and extension
+                        get_filename_component(libname ${token} NAME_WE)
+                        set(newtoken "${libname}")
+                    elseif (token MATCHES "Program Files") #MS_MPI?
+                        # this is most likely MSMPI, handled through PARALLEL vars
+                        set(newtoken "")
+                    else()
+                        set(newtoken ${token})
+                    endif()
+                else()
+                    set(newtoken ${token})
+                endif()
+            endif()
+            if(NOT "${newtoken}" MATCHES "/")
+                if("${newtoken}" MATCHES "\\.a|\\.so|\\.dylib")
+                    set(newtoken "\${VISIT_LIBRARY_DIR}/${newtoken}")
+                endif()
+            endif()
+            list(APPEND filteredline ${newtoken})
+        endforeach()
+        file(APPEND ${filename} "${filteredline}\n")
+        unset(filteredline)
+    endforeach()
+endfunction()
+
+
+FILTER_VISIT_LIB_DEPENDENCIES(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake)

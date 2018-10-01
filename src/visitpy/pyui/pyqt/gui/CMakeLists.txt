@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
+#   Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
 #
 #*****************************************************************************
 
@@ -80,7 +82,7 @@ set(pyqtgui_link_libs
                       #viewersubjectproxy
                       #vtkqt
                       #${QT_QTCORE_LIBRARY}
-                      ${PYTHON_LIBRARIES}
+                      ${PYTHON_LIBRARY}
                       )
 
 SET(SIP_LIBRARY "pyqt_gui")

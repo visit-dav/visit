@@ -423,12 +423,20 @@
 #    icons. Previously, this resulted in a couple of invalid symbolic links
 #    ending up in the distribution file.
 #
+#    Kathleen Biagas, Fri Sep 28 16:34:09 PDT 2018
+#    Moved code for filtering lib dependencies (needed for building a plugin
+#    vs installed version) into separate CMake files, all handled by
+#    PluginVsInstallHelpers.cmake.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
 
 IF (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
+    cmake_policy(SET CMP0011 NEW)
+    cmake_policy(SET CMP0057 NEW)
+    cmake_policy(SET CMP0062 NEW)
     if(CMAKE_MAJOR_VERSION GREATER 2)
         cmake_policy(SET CMP0033 OLD)
     endif()
@@ -2112,157 +2120,18 @@ CONFIGURE_FILE(${VISIT_SOURCE_DIR}/include/visit-python-cmake.h.in
 CONFIGURE_FILE(${VISIT_SOURCE_DIR}/common/misc/ConfigureInfo.C.in
                ${VISIT_BINARY_DIR}/common/misc/ConfigureInfo.C @ONLY IMMEDIATE)
 
-#-----------------------------------------------------------------------------
-# Create CMake/PluginVsInstall.cmake
-#-----------------------------------------------------------------------------
+SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
 
 # The normal plugin case. We redefine these when we build against an installed
 # version of VisIt
-SET(VISIT_INCLUDE_DIR ${VISIT_SOURCE_DIR}  CACHE INTERNAL "Path to VisIt's includes")
-# VISIT_LIBRARY_DIR set previsouly, why change it now? And especially to point
-# to source  changing the name to _DIR2 to see if it munges anything.
-SET(VISIT_LIBRARY_DIR2 ${VISIT_SOURCE_DIR}/lib CACHE INTERNAL "Path to VisIt's libraries")
 IF(NOT WIN32)
     SET(VISIT_PLUGIN_DIR  ${VISIT_BINARY_DIR}/plugins CACHE INTERNAL "Path to VisIt's plugins")
 ELSE(NOT WIN32)
     SET(VISIT_PLUGIN_DIR  ${VISIT_EXECUTABLE_DIR} CACHE INTERNAL "Path to VisIt's plugins")
-ENDIF(NOT WIN32)
-
-# Obtain compiler version information for inclusion in PluginVsInstall.cmake
-# Note: This code block makes use of indirect variable reference (${${...}})
-IF(NOT WIN32)
-
-    # known different ways to get a compiler to spit out its version
-    SET(CMAKE_COMPILER_VERSION_FLAGS "--version" "-V" "-v")
-
-    FOREACH(CMAKE_COMPILER_NAME CMAKE_C_COMPILER CMAKE_CXX_COMPILER)
-        FOREACH(CMAKE_COMPILER_VERSION_FLAG ${CMAKE_COMPILER_VERSION_FLAGS})
-
-            EXECUTE_PROCESS(COMMAND ${${CMAKE_COMPILER_NAME}}
-                ${CMAKE_COMPILER_VERSION_FLAG} TIMEOUT 3
-                RESULT_VARIABLE COMPILER_VERSION_RETURN
-                OUTPUT_VARIABLE COMPILER_VERSION_STDOUT
-                ERROR_VARIABLE COMPILER_VERSION_STDERR)
-
-            # If stderr=="" AND $?==0 AND stdout!=""...
-            IF("${COMPILER_VERSION_STDERR}" STREQUAL "" AND
-                ${COMPILER_VERSION_RETURN} EQUAL 0 AND
-                NOT ("${COMPILER_VERSION_STDOUT}" STREQUAL ""))
-
-                # Looks like we got something useful from the compiler.
-                # Reformat it so it looks like a cmake comment and break
-                # out of the loop over version flags.
-                STRING(REGEX REPLACE "\n" "\n# "
-                    ${CMAKE_COMPILER_NAME}_VERSION_MESSAGE
-                    "${COMPILER_VERSION_STDOUT}")
-                BREAK()
-
-            ENDIF("${COMPILER_VERSION_STDERR}" STREQUAL "" AND
-                ${COMPILER_VERSION_RETURN} EQUAL 0 AND
-                NOT ("${COMPILER_VERSION_STDOUT}" STREQUAL ""))
-
-        ENDFOREACH(CMAKE_COMPILER_VERSION_FLAG ${CMAKE_COMPILER_VERSION_FLAGS})
-    ENDFOREACH(CMAKE_COMPILER_NAME CMAKE_C_COMPILER CMAKE_CXX_COMPILER)
-ELSE(NOT WIN32)
-    SET(CMAKE_C_COMPILER_VERSION_MESSAGE " ${CMAKE_GENERATOR}")
-    IF(MSVC)
-        IF(CMAKE_VERSION VERSION_LESS "2.8.10")
-            INCLUDE(CMakeDetermineVSServicePack)
-            DetermineVSServicePack(my_service_pack)
-            IF(my_service_pack)
-                SET(CMAKE_C_COMPILER_VERSION_MESSAGE "${CMAKE_C_COMPILER_VERSION_MESSAGE} (${my_service_pack})")
-            ENDIF(my_service_pack)
-        ENDIF()
-        IF(CMAKE_CXX_COMPILER_VERSION)
-            SET(CMAKE_CXX_COMPILER_VERSION_MESSAGE " Visual C/C++ version number: ${CMAKE_CXX_COMPILER_VERSION}")
-        ELSE()
-            SET(CMAKE_CXX_COMPILER_VERSION_MESSAGE " Visual C/C++ version number: ${MSVC_VERSION}")
-        ENDIF()
-        FILE(WRITE ${VISIT_BINARY_DIR}/CMake/VisItGenerator.cmake
-            "SET(CMAKE_GENERATOR \"${CMAKE_GENERATOR}\" CACHE INTERNAL \"\" FORCE)")
-        INSTALL(FILES ${VISIT_BINARY_DIR}/CMake/VisItGenerator.cmake
-                DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-                PERMISSIONS OWNER_READ OWNER_WRITE
-                            GROUP_READ GROUP_WRITE
-                            WORLD_READ
-        )
-    ENDIF(MSVC)
     if(VISIT_NO_ALLBUILD)
         add_custom_target(visit_special_builds ALL)
     endif()
 ENDIF(NOT WIN32)
-
-# Store some configure information into a C file (like version, SVN version
-# and platform things that change).
-
-# Fix some third-party include paths that are different on windows than unix.
-IF(UNIX)
-   #SET(python_include_relative_path "/python/include/python@PYTHON_VERSION@")
-   SET(python_include_relative_path "/python/include/python${PYTHON_VERSION}")
-   SET(exodusii_include_relative_path "/exodusii/inc")
-   SET(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
-ELSE(UNIX)
-   SET(python_include_relative_path "/python")
-   SET(exodusii_include_relative_path "/exodusii/include")
-   SET(vtk_include_relative_path "/vtk/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
-ENDIF(UNIX)
-
-# If we're installing MPICH as our MPI then filter the parallel flags so
-# libraries and includes will come from our internal MPICH installation.
-IF(VISIT_MPICH_INSTALL)
-    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
-                    f0_VISIT_PARALLEL_CXXFLAGS
-                    "${VISIT_PARALLEL_CXXFLAGS}")
-    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
-                    filtered_VISIT_PARALLEL_CXXFLAGS
-                    "${f0_VISIT_PARALLEL_CXXFLAGS}")
-
-    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
-                    f0_VISIT_PARALLEL_LINKER_FLAGS
-                    "${VISIT_PARALLEL_LINKER_FLAGS}")
-    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
-                    filtered_VISIT_PARALLEL_LINKER_FLAGS
-                    "${f0_VISIT_PARALLEL_LINKER_FLAGS}")
-
-    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
-                    f0_VISIT_PARALLEL_LIBS
-                    "${VISIT_PARALLEL_LIBS}")
-    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
-                    filtered_VISIT_PARALLEL_LIBS
-                    "${f0_VISIT_PARALLEL_LIBS}")
-
-    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
-                    f0_VISIT_PARALLEL_INCLUDE
-                    "${VISIT_PARALLEL_INCLUDE}")
-    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
-                    filtered_VISIT_PARALLEL_INCLUDE
-                    "${f0_VISIT_PARALLEL_INCLUDE}")
-
-    STRING(REPLACE "${VISIT_MPICH_DIR}/lib" "\${VISIT_LIBRARY_DIR}"
-                    f0_VISIT_PARALLEL_DEFS
-                    "${VISIT_PARALLEL_DEFS}")
-    STRING(REPLACE "${VISIT_MPICH_DIR}/include" "\${VISIT_INCLUDE_DIR}/mpich/include"
-                    filtered_VISIT_PARALLEL_DEFS
-                    "${f0_VISIT_PARALLEL_DEFS}")
-ELSE(VISIT_MPICH_INSTALL)
-    SET(filtered_VISIT_PARALLEL_CXXFLAGS     "${VISIT_PARALLEL_CXXFLAGS}")
-    SET(filtered_VISIT_PARALLEL_LINKER_FLAGS "${VISIT_PARALLEL_LINKER_FLAGS}")
-    SET(filtered_VISIT_PARALLEL_LIBS         "${VISIT_PARALLEL_LIBS}")
-    SET(filtered_VISIT_PARALLEL_INCLUDE      "${VISIT_PARALLEL_INCLUDE}")
-    SET(filtered_VISIT_PARALLEL_DEFS         "${VISIT_PARALLEL_DEFS}")
-ENDIF(VISIT_MPICH_INSTALL)
-
-CONFIGURE_FILE(${VISIT_SOURCE_DIR}/CMake/PluginVsInstall.cmake.in
-               ${VISIT_BINARY_DIR}/CMake/PluginVsInstall.cmake @ONLY IMMEDIATE)
-INSTALL(FILES ${VISIT_BINARY_DIR}/CMake/PluginVsInstall.cmake
-    DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-    PERMISSIONS OWNER_READ OWNER_WRITE
-                GROUP_READ GROUP_WRITE
-                WORLD_READ
-    )
-UNSET(python_include_relative_path)
-UNSET(exodusii_include_relative_path)
-UNSET(vtk_include_relative_path)
 
 #-----------------------------------------------------------------------------
 # If we're installing MPICH into our VisIt distribution then let's do that by
@@ -2482,191 +2351,6 @@ ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
 
 #-----------------------------------------------------------------------------
-# Create library dependencies file
-#-----------------------------------------------------------------------------
-EXPORT_LIBRARY_DEPENDENCIES(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake.in)
-
-FOREACH(VTK_TARGET ${VTK_LIBRARIES})
-    IF(TARGET ${VTK_TARGET})
-        # this lets us know if this is a real VTK lib, not a depend lib (such as python)
-        GET_PROPERTY(VTK_TARGET_IMPORT_LOC_EXISTS TARGET ${VTK_TARGET} 
-                                                  PROPERTY IMPORT_LOCATION SET)
-        IF(${VTK_TARGET_IMPORT_LOC_EXISTS})
-            # We can follow the import loc property  to get the actual filename, but we 
-            # will want to link with -lvkt , not libvtk ...
-            #
-            # So for now, we create the suffix manually. Keeping this code in case
-            # we need it to create something more sophisticated in the future. 
-            # 
-            # GET_PROPERTY(VTK_LIB_TARGET_LOC TARGET ${VTK_TARGET} 
-            #                                 PROPERTY IMPORT_LOCATION)
-            # get_filename_component(VTK_TRUE_TARGET ${VTK_LIB_TARGET_LOC} NAME_WE)
-            #
-            SET(VTK_TRUE_TARGET "${VTK_TARGET}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}") 
-            MESSAGE(STATUS "${VTK_TARGET} vs ${VTK_TRUE_TARGET}")
-            LIST(APPEND VTK_VALID_TARGETS  ${VTK_TARGET})
-            LIST(APPEND VTK_TRUE_TARGETS  ${VTK_TRUE_TARGET})
-        ENDIF()
-    ENDIF()
-ENDFOREACH()
-
-
-IF(WIN32)
-    get_filename_component(PD ${PYTHON_LIBRARIES} PATH)
-ENDIF(WIN32)
-
-INSTALL(CODE "
-FUNCTION(FILTER_LIBRARY_DEPENDENCIES filename)
-    FILE(STRINGS \${filename}.in lines)
-    FILE(WRITE \${filename} \"# Filtered version\\n\")
-    # we need to steal the lists from the parent scope so they can 
-    # be used in our install code
-    SET(FVTK_VALID_TARGETS ${VTK_VALID_TARGETS})
-    SET(FVTK_TRUE_TARGETS ${VTK_TRUE_TARGETS})
-    MESSAGE(STATUS \"VALID_TARGETS: \${FVTK_VALID_TARGETS}\")
-    MESSAGE(STATUS \"TRUE_TARGETS:  \${FVTK_TRUE_TARGETS}\")
-
-    FOREACH(line \${lines})
-        SET(outputLine TRUE)
-        IF(\"\${line}\" MATCHES \".*Plot[_ser|_par]*_LIB_DEPENDS.*\")
-            SET(outputLine FALSE)
-        ENDIF(\"\${line}\" MATCHES \".*Plot[_ser|_par]*_LIB_DEPENDS.*\")
-        IF(\"\${line}\" MATCHES \".*Operator[_ser|_par]*_LIB_DEPENDS.*\")
-            SET(outputLine FALSE)
-        ENDIF(\"\${line}\" MATCHES \".*Operator[_ser|_par]*_LIB_DEPENDS.*\")
-        IF(\"\${line}\" MATCHES \".*Database[_ser|_par]*_LIB_DEPENDS.*\")
-            SET(outputLine FALSE)
-        ENDIF(\"\${line}\" MATCHES \".*Database[_ser|_par]*_LIB_DEPENDS.*\")
-        FOREACH(suppress visit_writer visitfrontend visitmodule proxyexample bow slivrG slivrV air alan bane biff coil dye echo ell gage hest hoover limn mite moss nrrd push ten unrrdu)
-            IF(\"\${line}\" MATCHES \".*\${suppress}_LIB_DEPENDS.*\")
-                SET(outputLine FALSE)
-            ENDIF(\"\${line}\" MATCHES \".*\${suppress}_LIB_DEPENDS.*\")
-        ENDFOREACH(suppress)
-
-        # If we get here with outputLine true, we need to output a filtered version.
-        #   * Since all of VisIt's libs get 'installed' to VISIT_LIBRARY_DIR,
-        #     we replace instances of lib-specific LIBRARY_DIR variables with
-        #     VISIT_LIBRARY_DIR; QT, PYTHON, MPICH (It appears LibQtUiTools.a
-        #     is explicitly handled specially here too. No idea why.).
-        #   * Find all instances of absolute paths of the form '/*lib*.*'
-        #     and replace with {VISIT_LIBRARY_DIR}/ as well.
-
-        IF(\${outputLine} STREQUAL \"TRUE\")
-            STRING(REPLACE \"${QT_LIBRARY_DIR}/\"
-                   \"\\\${VISIT_LIBRARY_DIR}/\"
-                   filteredline
-                   \"\${line}\")
-            STRING(REPLACE \"${VISIT_PYTHON_DIR}/lib/\"
-                   \"\\\${VISIT_LIBRARY_DIR}/\"
-                   filteredline2
-                   \"\${filteredline}\")
-            STRING(REPLACE \"/libQtUiTools.a\"
-                   \"/../archives/libQtUiTools.a\"
-                   filteredline3
-                   \"\${filteredline2}\")
-
-            # Repeatedly regex replace abs paths to lib*.a, lib*.so, lib*.dylib
-            # With just the library file names themsevles. Do similarly for
-            # .framework references. We exlude system libs in /usr..., /etc...
-            # and /lib... by first finding and replacing them with @@@@@@@
-            # and then unduing that at the end.
-            # Input to this block = filteredline3
-            # Output from this block = filteredline3b
-            SET(filteredline3a \"\")
-            SET(filteredline3b \"\")
-            WHILE(NOT \"\${filteredline3b}\" STREQUAL \"\${filteredline3}\")
-                IF(NOT \"\${filteredline3b}\" STREQUAL \"\")
-                    SET(filteredline3 \"\${filteredline3b}\")
-                ENDIF(NOT \"\${filteredline3b}\" STREQUAL \"\")
-                STRING(REGEX REPLACE \";/(usr/lib|usr/local/lib|lib|etc)([^;]*)/lib(.*)\\\\.(a|so|dylib)\"
-                    \";@@@@@@@@\\\\1\\\\2/lib\\\\3.\\\\4\"
-                    filteredline3aa
-                    \"\${filteredline3}\")
-
-                STRING(REGEX REPLACE \";/[^;]*/lib(.*)\\\\.(a|so|dylib)\"
-                    \";\\\${VISIT_LIBRARY_DIR}/lib\\\\1.\\\\2\"
-                    filteredline3a
-                    \"\${filteredline3aa}\")
-                STRING(REGEX REPLACE \";/[^;]*/(.*)\\\\.framework\"
-                    \";\\\${VISIT_LIBRARY_DIR}/\\\\1.framework\"
-                    filteredline3bb
-                    \"\${filteredline3a}\")
-
-                STRING(REGEX REPLACE \";@@@@@@@@([^;]*)\"
-                    \";/\\\\1\"
-                    filteredline3b
-                    \"\${filteredline3bb}\")
-            ENDWHILE(NOT \"\${filteredline3b}\" STREQUAL \"\${filteredline3}\")
-
-            IF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
-                SET(filteredline4 \"\${filteredline3b}\")
-            ELSE(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
-                STRING(REPLACE \"${VISIT_MPICH_DIR}/lib/\"
-                       \"\\\${VISIT_LIBRARY_DIR}/\"
-                       filteredline4
-                       \"\${filteredline3b}\")
-            ENDIF(\"${VISIT_MPICH_DIR}\" STREQUAL \"\")
-            
-            #
-            # fix the names of any vtk dep targets
-            #
-            
-            LIST(LENGTH FVTK_TRUE_TARGETS  L_FVTK_TRUE_TARGETS)
-            MESSAGE(STATUS \"${L_FVTK_TRUE_TARGETS}\")
-            SET(filtered_line \"\${filteredline4}\")
-            LIST(LENGTH FVTK_TRUE_TARGETS  L_FVTK_TRUE_TARGETS)
-            MATH(EXPR t_max_index \"\${L_FVTK_TRUE_TARGETS}-1\")
-            message(STATUS \"\${t_max_index}\")
-            FOREACH(i RANGE \${t_max_index})
-                LIST(GET FVTK_VALID_TARGETS \${i} A)
-                LIST(GET FVTK_TRUE_TARGETS  \${i} B)
-                STRING(REPLACE \"\${A};\" 
-                               \"\${B};\"
-                               fl_temp 
-                               \"\${filtered_line}\")
-
-                SET(filtered_line \"\${fl_temp}\")
-            ENDFOREACH()
-
-            IF(NOT WIN32)
-                FILE(APPEND \${filename} \"\${filtered_line}\\n\")
-            ELSE(NOT WIN32)
-                # extra replacements that need to be made on Windows.
-                STRING(REPLACE \"${PD}\"
-                       \"\\\${VISIT_LIBRARY_DIR}\"
-                       filteredline5
-                       \"\${filtered_line}\")
-                STRING(REPLACE \"${ZLIB_LIBRARY_DIR}\"
-                       \"\\\${VISIT_LIBRARY_DIR}\"
-                       filteredline6
-                       \"\${filteredline5}\")
-                STRING(REPLACE \"viewer_LIB_DEPENDS\"
-                       \"viewerlib_LIB_DEPENDS\"
-                       filteredline7
-                       \"\${filteredline6}\")
-                STRING(REPLACE \"gui_LIB_DEPENDS\"
-                       \"guilib_LIB_DEPENDS\"
-                       filteredline8 \"\${filteredline7}\")
-                FILE(APPEND \${filename} \"\${filteredline8}\\n\")
-            ENDIF(NOT WIN32)
-            
-
-            
-        ENDIF(\${outputLine} STREQUAL \"TRUE\")
-    ENDFOREACH(line)
-ENDFUNCTION(FILTER_LIBRARY_DEPENDENCIES)
-FILTER_LIBRARY_DEPENDENCIES(${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake)
-")
-
-INSTALL(FILES ${VISIT_BINARY_DIR}/include/VisItLibraryDependencies.cmake
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-        PERMISSIONS OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ
-        CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel
-)
-
-#-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
 #          packages up a VisIt distribution.
 #-----------------------------------------------------------------------------
@@ -2785,9 +2469,9 @@ ELSE (NOT WIN32)
     MESSAGE(STATUS "\n\nSearch for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
 ENDIF (NOT WIN32)
 
-INSTALL(FILES ${VISIT_SOURCE_DIR}/CMake/VisItMacros.cmake
-        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}
-        PERMISSIONS OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ
-        )
+if(VISIT_INSTALL_THIRD_PARTY)
+
+    include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
+
+endif()
+

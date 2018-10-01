@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
+#   Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
 #
 #****************************************************************************/
 
@@ -94,7 +96,7 @@ vclproxy
 mdserverrpc
 mdserverproxy
 visitcommon
-${PYTHON_LIBRARIES}
+${PYTHON_LIBRARY}
 ${VTK_EXTRA_LIBS}
 ${CMAKE_THREAD_LIBS}
 )

@@ -309,6 +309,9 @@ static bool EndsWith(const char *s, const char *suffix)
  *   Display message box if attempting to use parallel engine but mpiexec
  *   not found.
  *
+ *   Kathleen Biagas, Thu Sep 27 11:43:37 PDT 2018
+ *   Change private plugin directory to userHome.
+ *
  *****************************************************************************/
 
 int
@@ -1097,6 +1100,7 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
     /*
      * Determine visit user path (Path to My Documents).
      */
+    string userHome;
     {
         // Test for user-specified VISITUSERHOME
         string personalUserHome = WinGetEnv("VISITUSERHOME");
@@ -1136,6 +1140,7 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
 #endif
                 exit(0);
             }
+            userHome = personalUserHome;
             sprintf(tmpdir, "%s\\My images", personalUserHome.c_str());
             if (_stat(tmpdir, &fs) == -1)
             {
@@ -1172,6 +1177,7 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
             {
                 _mkdir(tmpdir);
             }
+            userHome = expvisituserpath;
             sprintf(tmp, "VISITUSERHOME=%s", expvisituserpath);
             env.push_back(tmp);
         }
@@ -1209,23 +1215,11 @@ GetVisItEnvironment(stringVector &env, bool useShortFileName, bool addPluginVars
      * Set the plugin dir.
      */
     { 
-        char appData[MAX_PATH];
-        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
-                                          SHGFP_TYPE_CURRENT, appData)))
+        sprintf(tmp, "VISITPLUGINDIR=%s;%s", userHome.c_str(), visitpath);
+        env.push_back(tmp);
+        if (addPluginVars)
         {
-            PathAppend(appData, "LLNL");
-            PathAppend(appData, "VisIt");
-            sprintf(tmp, "VISITPLUGINDIR=%s;%s", appData, visitpath);
-            env.push_back(tmp);
-            if (addPluginVars)
-            {
-                sprintf(tmp, "VISITPLUGININSTPRI=%s", appData);
-                env.push_back(tmp);
-            }
-        }
-        else
-        {
-            sprintf(tmp, "VISITPLUGINDIR=%s", visitpath);
+            sprintf(tmp, "VISITPLUGININSTPRI=%s", userHome.c_str());
             env.push_back(tmp);
         }
     }

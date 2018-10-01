@@ -59,6 +59,9 @@
 #   OSPRay is only required if requested (VISIT_OSPRAY is set to true/on).
 #   Change OSPRay messages type to STATUS.
 #
+#   Kathleen Biagas, Thu Sep 27 11:34:32 PDT 2018
+#   Install InitVTKRenderingConfig.h when VISIT_INSTALL_THIRD_PARTY true.
+#
 #****************************************************************************/
 
 # if(VISIT_OSPRAY)
@@ -103,6 +106,13 @@ CONFIGURE_FILE(
   "${VISIT_SOURCE_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h.in"
   "${VISIT_BINARY_DIR}/include/vtk/InitVTKRenderingConfig.h"
 )
+
+if(VISIT_INSTALL_THIRD_PARTY)
+    # ensure the config file gets installed
+    install(FILES ${VISIT_BINARY_DIR}/include/vtk/InitVTKRenderingConfig.h
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Plotter/vtk
+        PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ)
+endif()
 
 SET(AVTPLOTTER_OPENGL_SOURCES
 avtOpenGLExtensionManager.C 

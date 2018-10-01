@@ -25,31 +25,13 @@
     <Files components="M">
       avtH5PartFileFormat.C
       avtH5PartOptions.C
-      hdf5_a.C
-      hdf5_d.C
-      hdf5_f.C
-      hdf5_g.C
-      hdf5_s.C
-      fqindex.C
-      indexfileC.C
-      indexfile.C
-      timestep.C
-      hdf5_fastquery.C
+      avtH5PartWriter.C
       HistogramCache.C
     </Files>
     <Files components="E">
       avtH5PartFileFormat.C
       avtH5PartOptions.C
-      hdf5_a.C
-      hdf5_d.C
-      hdf5_f.C
-      hdf5_g.C
-      hdf5_s.C
-      fqindex.C
-      indexfileC.C
-      indexfile.C
-      timestep.C
-      hdf5_fastquery.C
+      avtH5PartWriter.C
       HistogramCache.C
     </Files>
     <Attribute name="" purpose="" persistent="true" keyframe="true" exportAPI="" exportInclude="">

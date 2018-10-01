@@ -168,6 +168,10 @@
 //    instead of stuffing them in an add_defintions call.  Removed commented-
 //    out logic, clean up writing of whitespace.
 //
+//    Kathleen Biagas, Thu Sep 27 11:36:45 PDT 2018
+//    For non-dev builds: Filter VTK libs (to include version number), add
+//    VISIT_ARCHIVE_DIR as linkDir.  Add QtWidgets include dir.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -252,6 +256,17 @@ class CMakeGeneratorPlugin : public Plugin
                 s += (ConvertDollarParenthesis(vec[i]) + " ");
         }
         return s;
+    }
+
+    void
+    FilterVTKLibs(std::vector<QString> &libs)
+    {
+        QString vtkversion = QString("-%1.%2").arg(VTK_MAJ).arg(VTK_MIN);
+        for(size_t i = 0; i < libs.size(); ++i)
+        {
+            if(libs[i].startsWith("vtk"))
+                libs[i].append(vtkversion);
+        }
     }
 
     QString
@@ -486,6 +501,7 @@ class CMakeGeneratorPlugin : public Plugin
         out << "${QT_INCLUDE_DIR}" << endl;
         out << "${QT_QTCORE_INCLUDE_DIR}" << endl;
         out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
+        out << "${QT_QTWIDGETS_INCLUDE_DIR}" << endl;
         out << "${EAVL_INCLUDE_DIR}" << endl;
         out << "${VTKM_INCLUDE_DIR}" << endl;
         out << "${VTK_INCLUDE_DIRS}" << endl;
@@ -908,6 +924,10 @@ class CMakeGeneratorPlugin : public Plugin
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         linkDirs.push_back("${VTKM_LIBRARY_DIR}");
         linkDirs.push_back("${VTK_LIBRARY_DIRS}");
+        if (!using_dev)
+        {
+            linkDirs.push_back("${VISIT_ARCHIVE_DIR}");
+        }
         for (size_t i=0; i<ldflags.size(); i++)
         {
             if(ldflags[i].startsWith("${") || ldflags[i].startsWith("$("))
@@ -1322,23 +1342,13 @@ class CMakeGeneratorPlugin : public Plugin
         // include something in the generated output.
         if(!using_dev)
         {
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)" << endl;
-            out << "SET(VISIT_INCLUDE_DIR \"" << qvisithome 
-                << "/include\")" << endl;
-            out << "SET(VISIT_LIBRARY_DIR \"" << qvisithome 
-                << "/lib\")" << endl;
-#ifdef _WIN32
-            // There is no 'bin' dir for installed VisIt on Windows
-            out << "SET(VISIT_BINARY_DIR \""  << qvisithome 
-                << "\")" << endl;
-            out << "SET(VISIT_ARCHIVE_DIR \"" << qvisithome 
-                << "/lib\")" << endl;
-#else
-            out << "SET(VISIT_BINARY_DIR \""  << qvisithome 
-                << "/bin\")" << endl;
-            out << "SET(VISIT_ARCHIVE_DIR \"" << qvisithome 
-                << "/archives\")" << endl;
-#endif
+            FilterVTKLibs(libs);
+            FilterVTKLibs(glibs);
+            FilterVTKLibs(vlibs);
+            FilterVTKLibs(elibsSer);
+            FilterVTKLibs(elibsPar);
+
+            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)" << endl;
             if(installpublic)
             {
                 out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub 

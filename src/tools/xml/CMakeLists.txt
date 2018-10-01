@@ -108,6 +108,8 @@ TARGET_LINK_LIBRARIES(xml2java   ${RELEVANT_QT_LIBS})
 TARGET_LINK_LIBRARIES(xml2cmake  ${RELEVANT_QT_LIBS})
 TARGET_LINK_LIBRARIES(xml2sim    ${RELEVANT_QT_LIBS})
 
+target_compile_definitions(xml2cmake PRIVATE VTK_MAJ=${VTK_MAJOR_VERSION} VTK_MIN=${VTK_MINOR_VERSION})
+
 # Install the targets
 VISIT_INSTALL_TARGETS(xmltest xml2atts xml2window xml2info xml2avt xml2python xml2java xml2cmake)
 VISIT_TOOLS_ADD_FOLDER(xml xmltest xml2atts xml2window xml2info xml2avt xml2python xml2java xml2cmake xml2sim)
