@@ -48,6 +48,8 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Added support for all elements that both NASTRAN and VTK support. Updated existing elements to support QUADRATIC types.</li>
   <li>Host profiles were added for the Lawrence Livermore National Laboratories' Pascal system.</li>
   <li>Modified the BOUT reader to create a single regular block in the rotational direction, interpolating the field values onto it based on zshift instead of distorting the zones by zshift and using unmodified field values. This reduces the size of the mesh and also eliminates the rendering artifacts caused by the large aspect zones created by distorting the zones.</li>
+  <li>Added support for vtkGhostType in the vtk reader.</li>
+  <li>Added support for ghost_node_labels and ghost_zone_labels in Silo reader.</li>
 </ul>
 
 <a name="Dev_changes"></a>
