@@ -661,10 +661,10 @@ avtSLIVRImgCommunicator::GatherDepthAtRoot(const int numlocalPatches,
 
     // reference
     // https://www.mpich.org/static/docs/v3.1/www3/MPI_Gather.html
-    MPI_Gather(&numlocalPatches, /* send buffer */
+    MPI_Gather((void*)&numlocalPatches, /* send buffer */
                1, /* send count */
                MPI_INT, 
-               patchCountPerRank, /* address of receive buffer (root) */
+               (void*)patchCountPerRank, /* address of receive buffer (root) */
                1, /* number of elements for any single receive (root) */
                MPI_INT, 
                0, /* rank of receiving process (integer) */
@@ -693,8 +693,8 @@ avtSLIVRImgCommunicator::GatherDepthAtRoot(const int numlocalPatches,
     }
 
     // Gathers into specified locations from all processes in a group
-    MPI_Gatherv(localPatchesDepth, numlocalPatches, MPI_FLOAT, 
-                allPatchesDepth, /* receive all depth */
+    MPI_Gatherv((void*)localPatchesDepth, numlocalPatches, MPI_FLOAT, 
+                (void*)allPatchesDepth, /* receive all depth */
                 patchCountPerRank, patchesOffset, MPI_FLOAT, 
                 0, MPI_COMM_WORLD);
 
