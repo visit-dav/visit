@@ -33,6 +33,9 @@
 #    Kathleen Biagas, Thu Sep 21 14:56:25 MST 2017
 #    Added a test for PVTK files.
 #
+#    Edward Rusu, Mon Oct 01 15:09:24 PST 2018
+#    Added a test for vtkGhostType.
+#
 # ----------------------------------------------------------------------------
 
 def TestMaterials():
@@ -331,6 +334,27 @@ def TestPVTK():
     DeleteAllPlots()
     CloseDatabase(fN)
 
+def TestVTKGhostType():
+    TestSection("VTK ghost types")
+    OpenDatabase(data_path("vtk_test_data/vtkGhostType.vtk"))
+    ResetView()
+    AddPlot("Pseudocolor", "internal_var_GhostZones")
+    DrawPlots()
+    Test("vtk_43")
+
+    DeleteAllPlots()
+    AddPlot("Pseudocolor", "internal_var_GhostNodes")
+    DrawPlots()
+    Test("vtk_44")
+
+    DeleteAllPlots()
+    AddPlot("Mesh", "Mesh_gnz")
+    DrawPlots()
+    Test("vtk_45")
+    
+    DeleteAllPlots()
+    CloseDatabase(data_path("vtk_test_data/vtkGhostType.vtk"))
+
 TestMaterials()
 TestXML()
 TestHigherOrder()
@@ -340,5 +364,6 @@ TestPVTI()
 TestMixedTopology()
 TestVTM()
 TestPVTK()
+TestVTKGhostType()
 
 Exit()
