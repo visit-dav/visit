@@ -42,6 +42,10 @@ cmake_policy(SET CMP0057 NEW)
 
 set(VISIT_BINARY_DIR @VISIT_BINARY_DIR@)
 set(VISIT_PYTHON_DIR @VISIT_PYTHON_DIR@)
+set(VISIT_PYSIDE_DIR @VISIT_PYSIDE_DIR@)
+set(VISIT_ZLIB_DIR   @VISIT_ZLIB_DIR@)
+set(VISIT_BOOST_DIR  @VISIT_BOOST_DIR@)
+set(VISIT_MESA_DIR   @VISIT_MESA_DIR@)
 set(VTK_TARGETS @VTK_VALID_TARGETS@)
 set(VTK_SMALL_VERSION @VTK_MAJOR_VERSION@.@VTK_MINOR_VERSION@)
 
@@ -87,6 +91,18 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
         #   * Replace Qt5::<lib> with Qt5<lib>
         #   * Remove quotes surrounding 'xxx_LIB_DEPENDS'
         string(REPLACE "${VISIT_PYTHON_DIR}/lib"
+                       "\${VISIT_LIBRARY_DIR}"
+                        line "${line}")
+        string(REPLACE "${VISIT_PYSIDE_DIR}/lib"
+                       "\${VISIT_LIBRARY_DIR}"
+                        line "${line}")
+        string(REPLACE "${VISIT_ZLIB_DIR}/lib"
+                       "\${VISIT_LIBRARY_DIR}"
+                        line "${line}")
+        string(REPLACE "${VISIT_BOOST_DIR}/lib"
+                       "\${VISIT_LIBRARY_DIR}"
+                        line "${line}")
+        string(REPLACE "${VISIT_MESA_DIR}/lib"
                        "\${VISIT_LIBRARY_DIR}"
                         line "${line}")
         set(skip_next_token FALSE)

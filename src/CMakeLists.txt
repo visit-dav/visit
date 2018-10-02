@@ -430,16 +430,14 @@
 #
 #****************************************************************************/
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
 
 IF (COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
     cmake_policy(SET CMP0011 NEW)
+    cmake_policy(SET CMP0033 OLD)
     cmake_policy(SET CMP0057 NEW)
     cmake_policy(SET CMP0062 NEW)
-    if(CMAKE_MAJOR_VERSION GREATER 2)
-        cmake_policy(SET CMP0033 OLD)
-    endif()
     IF(WIN32 AND VISIT_QT5)
         cmake_policy(SET CMP0020 OLD)
     ENDIF()

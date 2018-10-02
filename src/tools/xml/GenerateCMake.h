@@ -1348,7 +1348,7 @@ class CMakeGeneratorPlugin : public Plugin
             FilterVTKLibs(elibsSer);
             FilterVTKLibs(elibsPar);
 
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.0 FATAL_ERROR)" << endl;
+            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << endl;
             if(installpublic)
             {
                 out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub 
