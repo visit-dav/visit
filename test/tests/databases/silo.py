@@ -76,6 +76,9 @@
 #    Kathleen Biagas, Thurs Jun 6 11:04:13 PDT 2013 
 #    Re-enable tests 42,44, and 45 on Windows, now that crash has been fixed.
 #
+#    Edward Rusu, Tues Oct 2 8:20:24 PDT 2018
+#    Added tests for ghost_zone/node_labels in the silo files.
+#
 # ----------------------------------------------------------------------------
 TurnOffAllAnnotations() # defines global object 'a'
 
@@ -604,5 +607,29 @@ DrawPlots()
 ResetView()
 Test("silo_%d"%testNum)
 testNum = testNum + 1
+
+TestSection("ghost_zone/node_labels")
+
+OpenDatabase(data_path("silo_ghost_test_data/specmix_quad.pdb"))
+ResetView()
+AddPlot("Subset", "Mesh_gnz")
+AddPlot("Mesh", "Mesh_gnz")
+DrawPlots()
+Test("silo_%d"%testNum)
+testNum = testNum + 1
+
+DeleteAllPlots()
+CloseDatabase(data_path("silo_ghost_test_data/specmix_quad.pdb"))
+
+OpenDatabase(data_path("silo_ghost_test_data/specmix_ucd.pdb"))
+ResetView()
+AddPlot("Subset", "Mesh_gnz")
+AddPlot("Mesh", "Mesh_gnz")
+DrawPlots()
+Test("silo_%d"%testNum)
+testNum = testNum + 1
+
+DeleteAllPlots()
+CloseDatabase(data_path("silo_ghost_test_data/specmix_ucd.pdb"))
 
 Exit()
