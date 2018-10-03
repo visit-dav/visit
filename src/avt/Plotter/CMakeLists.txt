@@ -83,36 +83,45 @@
 #                    of OSPRay. We should use the built-inosprayConfig.cmake
 #                    file to find OSPRay instead.
 #
+#   Kathleen Biagas, Thu Sep 27 11:34:32 PDT 2018
+#   Install InitVTKRenderingConfig.h when VISIT_INSTALL_THIRD_PARTY true.
+#
 #****************************************************************************/
 
 #if(VISIT_OSPRAY)
 #   SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 #       ${VISIT_SOURCE_DIR}/avt/Plotter/OSPRay/CMake)
 #   FIND_PACKAGE(OSPRay REQUIRED)
+#    SET(VISIT_VTK_OSPRAY_SOURCES
+#        OSPRay/vtkOSPRay/vtkOSPRay.h
+#        OSPRay/vtkOSPRay/vtkOSPRayActor.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayCamera.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayLight.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayManager.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.h
+#        OSPRay/vtkOSPRay/vtkOSPRayPolyDataMapper.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayProperty.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayRenderer.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayTexture.cxx
+#        OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.h
+#        OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.cxx
+#        OSPRay/vtkOSPRayModule.h
+#    )
 #endif()
-
-#SET(VISIT_VTK_OSPRAY_SOURCES
-#    OSPRay/vtkOSPRay/vtkOSPRay.h
-#    OSPRay/vtkOSPRay/vtkOSPRayActor.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayCamera.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayLight.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayManager.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayObjectFactory.h
-#    OSPRay/vtkOSPRay/vtkOSPRayPolyDataMapper.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayProperty.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayRenderer.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayTexture.cxx
-#    OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.h
-#    OSPRay/vtkOSPRay/vtkOSPRayVolumeRayCastMapper.cxx
-#    OSPRay/vtkOSPRayModule.h
-#)
 
 # create configuration file to pass off cmake options
 CONFIGURE_FILE(
   "${VISIT_SOURCE_DIR}/avt/Plotter/vtk/InitVTKRenderingConfig.h.in"
   "${VISIT_BINARY_DIR}/include/vtk/InitVTKRenderingConfig.h"
 )
+
+if(VISIT_INSTALL_THIRD_PARTY)
+    # ensure the config file gets installed
+    install(FILES ${VISIT_BINARY_DIR}/include/vtk/InitVTKRenderingConfig.h
+        DESTINATION ${VISIT_INSTALLED_VERSION_INCLUDE}/visit/avt/Plotter/vtk
+        PERMISSIONS OWNER_WRITE OWNER_READ GROUP_WRITE GROUP_READ WORLD_READ)
+endif()
 
 SET(AVTPLOTTER_OPENGL_SOURCES
 vtk/vtkOpenGLPointMapper.C

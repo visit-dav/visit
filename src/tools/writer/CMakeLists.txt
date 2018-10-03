@@ -38,6 +38,9 @@
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
+#   Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
+#   Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
+#
 #****************************************************************************/
 
 SET(WRITER_SOURCES
@@ -58,7 +61,7 @@ ${WRITER_SOURCES}
 )
 SET_TARGET_PROPERTIES(visit_writer PROPERTIES PREFIX "")
 TARGET_LINK_LIBRARIES(visit_writer
-${PYTHON_LIBRARIES}
+${PYTHON_LIBRARY}
 )
 
 VISIT_INSTALL_TARGETS(visit_writer)

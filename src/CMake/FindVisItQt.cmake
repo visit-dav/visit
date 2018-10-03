@@ -57,6 +57,9 @@
 #   Added Concurrent to the visit_qt_modules for Linux. Previously,
 #   it was only adding it for Mac, but Linux also needs it.
 #
+#   Kathleen Biagas, Thu Sep 27 11:33:43 PDT 2018
+#   Add UiTools to qt_libs_install.
+#
 #*****************************************************************************
 
 
@@ -157,6 +160,7 @@ if(NOT VISIT_QT_SKIP_INSTALL)
         Qt5::Qml
         Qt5::Svg
         Qt5::Xml
+        Qt5::UiTools
   )
   if(LINUX)
       set(qt_libs_install ${qt_libs_install} Qt5::Concurrent Qt5::X11Extras)

@@ -44,6 +44,9 @@
 #  Kathleen Biagas, Thu Jun 21 11:32:12 PST 2012 
 #  Change how parallel flags are handled on windows. 
 #
+#  Kathleen Biagas, Thu Sep 27 11:35:34 PDT 2018
+#  Change PYTHON_LIBRARIES to PYTHON_LIBRARY for consistency throughout visit.
+#
 #****************************************************************************/
 
 SET(MPICOM_PY_SOURCES py_src/__init__.py
@@ -93,7 +96,7 @@ IF(VISIT_PARALLEL)
     ENDIF(UNIX)
 
     TARGET_LINK_LIBRARIES(mpicom
-                          ${PYTHON_LIBRARIES}
+                          ${PYTHON_LIBRARY}
                           ${VISIT_PARALLEL_LIBS})
 
 ELSE(VISIT_PARALLEL)

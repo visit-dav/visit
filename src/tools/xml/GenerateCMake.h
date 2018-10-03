@@ -175,6 +175,10 @@
 //    Eric Brugger, Mon Sep 17 10:14:49 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Kathleen Biagas, Thu Sep 27 11:36:45 PDT 2018
+//    For non-dev builds: Filter VTK libs (to include version number), add
+//    VISIT_ARCHIVE_DIR as linkDir.  Add QtWidgets include dir.
+//
 // ****************************************************************************
 
 class CMakeGeneratorPlugin : public Plugin
@@ -259,6 +263,17 @@ class CMakeGeneratorPlugin : public Plugin
                 s += (ConvertDollarParenthesis(vec[i]) + " ");
         }
         return s;
+    }
+
+    void
+    FilterVTKLibs(std::vector<QString> &libs)
+    {
+        QString vtkversion = QString("-%1.%2").arg(VTK_MAJ).arg(VTK_MIN);
+        for(size_t i = 0; i < libs.size(); ++i)
+        {
+            if(libs[i].startsWith("vtk"))
+                libs[i].append(vtkversion);
+        }
     }
 
     QString
@@ -490,6 +505,13 @@ class CMakeGeneratorPlugin : public Plugin
         out << VisItIncludeDir() << "/winutil" << endl;
         out << VisItIncludeDir() << "/visit_vtk/full" << endl;
         out << VisItIncludeDir() << "/visit_vtk/lightweight" << endl;
+        if(!using_dev)
+        {
+            out << "${QT_INCLUDE_DIR}" << endl;
+            out << "${QT_QTCORE_INCLUDE_DIR}" << endl;
+            out << "${QT_QTGUI_INCLUDE_DIR}" << endl;
+            out << "${QT_QTWIDGETS_INCLUDE_DIR}" << endl;
+        }
         out << "${EAVL_INCLUDE_DIR}" << endl;
         out << "${VTKh_INCLUDE_DIRS}" << endl;
         out << "${VTKM_DIR}/include/vtkm-1.2" << endl;
@@ -664,6 +686,10 @@ class CMakeGeneratorPlugin : public Plugin
 
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
+        if (!using_dev)
+        {
+            linkDirs.push_back("${VISIT_ARCHIVE_DIR}");
+        }
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         for (size_t i=0; i<ldflags.size(); i++)
@@ -903,6 +929,10 @@ class CMakeGeneratorPlugin : public Plugin
         // Extract extra link directories from LDFLAGS if they have ${},$(),-L
         std::vector<QString> linkDirs;
         linkDirs.push_back("${VISIT_LIBRARY_DIR}");
+        if (!using_dev)
+        {
+            linkDirs.push_back("${VISIT_ARCHIVE_DIR}");
+        }
         linkDirs.push_back("${EAVL_LIBRARY_DIR}");
         for (size_t i=0; i<ldflags.size(); i++)
         {
@@ -1318,23 +1348,13 @@ class CMakeGeneratorPlugin : public Plugin
         // include something in the generated output.
         if(!using_dev)
         {
-            out << "CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8 FATAL_ERROR)" << endl;
-            out << "SET(VISIT_INCLUDE_DIR \"" << qvisithome 
-                << "/include\")" << endl;
-            out << "SET(VISIT_LIBRARY_DIR \"" << qvisithome 
-                << "/lib\")" << endl;
-#ifdef _WIN32
-            // There is no 'bin' dir for installed VisIt on Windows
-            out << "SET(VISIT_BINARY_DIR \""  << qvisithome 
-                << "\")" << endl;
-            out << "SET(VISIT_ARCHIVE_DIR \"" << qvisithome 
-                << "/lib\")" << endl;
-#else
-            out << "SET(VISIT_BINARY_DIR \""  << qvisithome 
-                << "/bin\")" << endl;
-            out << "SET(VISIT_ARCHIVE_DIR \"" << qvisithome 
-                << "/archives\")" << endl;
-#endif
+            FilterVTKLibs(libs);
+            FilterVTKLibs(glibs);
+            FilterVTKLibs(vlibs);
+            FilterVTKLibs(elibsSer);
+            FilterVTKLibs(elibsPar);
+
+            out << "CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)" << endl;
             if(installpublic)
             {
                 out << "SET(VISIT_PLUGIN_DIR \"" << qvisitplugdirpub 
