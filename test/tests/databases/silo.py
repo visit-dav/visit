@@ -608,6 +608,9 @@ ResetView()
 Test("silo_%d"%testNum)
 testNum = testNum + 1
 
+DeleteAllPlots()
+CloseDatabase(silo_data_path("multi_rect2d.silo"))
+
 TestSection("ghost_zone/node_labels")
 
 OpenDatabase(data_path("silo_ghost_test_data/specmix_quad.pdb"))
