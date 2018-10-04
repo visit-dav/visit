@@ -497,6 +497,16 @@ class avtSiloFileFormat : public avtSTMDFileFormat
                           GetLocalDomainBoundaryInfo(int, const char *);
 
     void                  GetQuadGhostZones(DBquadmesh *, vtkDataSet *);
+    void                  GetQuadGhostNodesFromLabels(DBquadmesh *,
+                                                      vtkDataSet *);
+    void                  GetQuadGhostZonesFromLabels(DBquadmesh *,
+                                                      vtkDataSet *);
+    void                  GetUcdGhostNodesFromLabels(DBucdmesh *,
+                                                     vtkUnstructuredGrid *,
+                                                     std::vector<int> *);
+    void                  GetUcdGhostZonesFromLabels(DBzonelist *,
+                                                     vtkUnstructuredGrid *,
+                                                     std::vector<int> *);
     void                  VerifyQuadmesh(DBquadmesh *, const char *);
 
     void                  DetermineFileAndDirectory(const char *input,

@@ -546,6 +546,8 @@ avtVTKFileReader::ReadInFile(int _domain)
 //    Matt Larsen, Fri Mar 2 09:00:15 PST 2018
 //    Getting image data extents correctly from vti files
 //
+//    Edward Rusu, Mon Oct 1 09:24:24 PST 2018
+//    Added support for vtkGhostType.
 // ****************************************************************************
 
 void
@@ -719,6 +721,21 @@ avtVTKFileReader::ReadInDataset(int domain)
             // Make some curves from this dataset.
             CreateCurves(rgrid);
         }
+    }
+    
+    // Convert vtkGhostType to avtGhostDataType
+    // Rename the arrays stored in dataset->GetCellData() and dataset->GetPointData()
+    
+    vtkDataArray *zoneArray = dataset->GetCellData()->GetArray("vtkGhostType");
+    if (zoneArray) {
+        zoneArray->SetName("avtGhostZones");
+        dataset->GetCellData()->AddArray(zoneArray);
+    }
+    
+    vtkDataArray *nodeArray = dataset->GetPointData()->GetArray("vtkGhostType");
+    if (nodeArray) {
+        nodeArray->SetName("avtGhostNodes");
+        dataset->GetPointData()->AddArray(nodeArray);
     }
 
     pieceDatasets[domain] = dataset;
