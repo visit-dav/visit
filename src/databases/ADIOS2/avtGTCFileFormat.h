@@ -49,6 +49,10 @@
 #include <memory>
 #include <adios2.h>
 
+
+class vtkUnstructuredGrid;
+class vtkPoints;
+
 // ****************************************************************************
 //  Class: avtGTCFileFormat
 //
@@ -67,16 +71,16 @@ class avtGTCFileFormat : public avtMTSDFileFormat
     static avtFileFormatInterface *CreateInterface(const char *const *list,
                                                    int nList,
                                                    int nBlock);
-    
+
                        avtGTCFileFormat(const char *);
-    virtual           ~avtGTCFileFormat() {;};
+    virtual           ~avtGTCFileFormat();
 
     //
     // This is used to return unconvention data -- ranging from material
     // information to information about block connectivity.
     //
-    // virtual void      *GetAuxiliaryData(const char *var, int timestep, 
-    //                                     const char *type, void *args, 
+    // virtual void      *GetAuxiliaryData(const char *var, int timestep,
+    //                                     const char *type, void *args,
     //                                     DestructorFunction &);
     //
 
@@ -93,7 +97,7 @@ class avtGTCFileFormat : public avtMTSDFileFormat
     virtual void           FreeUpResources();
 
     virtual vtkDataSet    *GetMesh(int, const char *);
-    virtual vtkDataSet    *GetPtMesh(int, const char *);    
+    virtual vtkDataSet    *GetPtMesh(int, const char *);
     virtual vtkDataArray  *GetVar(int, const char *);
     virtual vtkDataArray  *GetVectorVar(int, const char *);
 
@@ -105,8 +109,7 @@ class avtGTCFileFormat : public avtMTSDFileFormat
     std::map<std::string, adios2::Params> variables, attributes;
     std::map<std::string, std::pair<int,std::string>> meshInfo;
 
-//    vtkDataSet *triangulatePlane();
-    
+    vtkUnstructuredGrid *grid, *ptGrid;
     int numTimeSteps;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);

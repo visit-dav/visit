@@ -44,6 +44,7 @@
 #include <vector>
 #include <list>
 #include <map>
+#include <tuple>
 
 // ****************************************************************************
 //  Method: ostream operator<<
@@ -123,6 +124,14 @@ inline std::ostream& operator<<(std::ostream& out,
                                 const std::pair<S,T> &p)
 {
     out<<"("<<p.first<<", "<<p.second<<")";
+    return out;
+}
+
+template<class S, class T, class U>
+inline std::ostream& operator<<(std::ostream& out,
+                                const std::tuple<S,T,U> &t)
+{
+    out<<"("<<std::get<0>(t)<<", "<<std::get<1>(t)<<", "<<std::get<2>(t)<<")";
     return out;
 }
 
