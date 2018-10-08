@@ -507,6 +507,9 @@ class avtSiloFileFormat : public avtSTMDFileFormat
     void                  GetUcdGhostZonesFromLabels(DBzonelist *,
                                                      vtkUnstructuredGrid *,
                                                      std::vector<int> *);
+    void                  GetUcdPolyhedralGhostZonesFromLabels(DBphzonelist *,
+                                              vtkUnstructuredGrid *,
+                                              std::vector<int> *);
     void                  VerifyQuadmesh(DBquadmesh *, const char *);
 
     void                  DetermineFileAndDirectory(const char *input,

@@ -10619,10 +10619,10 @@ avtSiloFileFormat::ReadInConnectivity(vtkUnstructuredGrid *ugrid,
             ghostZones->SetName("avtGhostZones");
             ugrid->GetCellData()->AddArray(ghostZones);
             ghostZones->Delete();
-            ugrid->GetInformation()->Set(
-                vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
         }
     }
+    ugrid->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 }
 
 // ****************************************************************************
@@ -11712,11 +11712,10 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
     }
     
     // --- Read Ghost Zone Labels --- //
-    if (um->zones->ghost_zone_labels) {
-        GetUcdGhostZonesFromLabels(um->zones, ugrid, cellReMap);
-        debug5 << "GetUcdGhostZonesFromLabels" << std::endl;
+    if (um->phzones->ghost_zone_labels) {
+        GetUcdPolyhedralGhostZonesFromLabels(um->phzones, ugrid, cellReMap);
+        debug5 << "GetUcdPolyhedralGhostZonesFromLabels" << std::endl;
     } else {
-
         //
         // Handle the ghost zoning, if necessary. We can do this easily now that
         // the mesh has been re-mapped to all ucd elements. We use the cell
@@ -11762,10 +11761,10 @@ avtSiloFileFormat::ReadInArbConnectivity(const char *meshname,
             ghostZones->SetName("avtGhostZones");
             ugrid->GetCellData()->AddArray(ghostZones);
             ghostZones->Delete();
-            ugrid->GetInformation()->Set(
-                vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
         }
     }
+    ugrid->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 
     //
     // Remove the avtOriginalCellNumbers array if we don't really
@@ -12739,10 +12738,10 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
             ds->GetFieldData()->AddArray(realDims);
             ds->GetFieldData()->CopyFieldOn("avtRealDims");
             realDims->Delete();
-            ds->GetInformation()->Set(
-                vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
         }
     }
+    ds->GetInformation()->Set(
+        vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_GHOST_LEVELS(), 0);
 }
 
 // ****************************************************************************
@@ -12752,8 +12751,8 @@ avtSiloFileFormat::GetQuadGhostZones(DBquadmesh *qm, vtkDataSet *ds)
 //   Creates array of ghost nodes from DBquadmesh::ghost_node_labels.
 //
 // Arguments:
+//   DBquadmesh *qm : the mesh from which to source the data
 //   vtkDataset *ds : the object that stores the array
-//   const DBquadmesh &qm : the mesh from which to source the data
 //
 // Programmer: Edward Rusu
 // Creation:   Tue Sept 11 11:06:24 PDT 2018
@@ -12790,8 +12789,8 @@ avtSiloFileFormat::GetQuadGhostNodesFromLabels(DBquadmesh *qm,
 //   Creates array of ghost zones from DBquadmesh::ghost_zone_labels.
 //
 // Arguments:
+//   DBquadmesh *qm : the mesh from which to source the data
 //   vtkDataset *ds : the object that stores the array
-//   const DBquadmesh &qm : the mesh from which to source the data
 //
 // Programmer: Edward Rusu
 // Creation:   Tue Sept 11 13:50:24 PDT 2018
@@ -12828,8 +12827,9 @@ avtSiloFileFormat::GetQuadGhostZonesFromLabels(DBquadmesh *qm,
 //   Creates array of ghost nodes from DBucdmesh::ghost_node_labels.
 //
 // Arguments:
+//   DBucdmesh *um : the mesh from which to source the data
 //   vtkUnstructuredGrid *ugrid : the object that stores the array
-//   const DBucdmesh &um : the mesh from which to source the data
+//   std::vector<int> *cellRemap : vector that stores remapping information.
 //
 // Programmer: Edward Rusu
 // Creation:   Tue Sept 11 14:05:24 PDT 2018
@@ -12879,11 +12879,12 @@ avtSiloFileFormat::GetUcdGhostNodesFromLabels(DBucdmesh *um,
 // Method: GetUcdGhostZonesFromLabels
 //
 // Purpose: 
-//   Creates array of ghost zones from DBucdmesh::ghost_zone_labels.
+//   Creates array of ghost zones from DBucdmesh::Dbzonelist::ghost_zone_labels.
 //
 // Arguments:
+//   DBzonelist *zl : the list of zones to source data
 //   vtkUnstructuredGrid *ugrid : the object that stores the array
-//   const DBucdmesh &um : the mesh from which to source the data
+//   std::vector<int> *cellRemap : vector that stores remapping information.
 //
 // Programmer: Edward Rusu
 // Creation:   Tue Sept 11 14:14:24 PDT 2018
@@ -12904,6 +12905,61 @@ avtSiloFileFormat::GetUcdGhostZonesFromLabels(DBzonelist *zl,
         if (zl->ghost_zone_labels[i] == DB_GHOSTTYPE_NOGHOST)
             gvals[i] = realVal;
         else if (zl->ghost_zone_labels[i] == DB_GHOSTTYPE_INTDUP)
+            gvals[i] = ghostVal;    
+    }
+    
+    // --- Create temporary DBucdvar --- //
+    DBucdvar tmp;
+    tmp.centering = DB_ZONECENT;
+    tmp.datatype = DB_CHAR;
+    tmp.nels = numCells;
+    tmp.nvals = 1;
+    tmp.vals = (void**) malloc(sizeof(void*));
+    tmp.vals[0] = (void*) gvals;
+    
+    // --- Create ghostZones --- //
+    vector<int> noremap;
+    vtkDataArray *ghostZones = CopyAndPadUcdVar<unsigned char,
+        vtkUnsignedCharArray>(&tmp, cellReMap ? *cellReMap : noremap);
+    free(tmp.vals);
+    delete [] gvals;
+    
+    // --- Add Array to vtkDataSet --- //
+    ghostZones->SetName("avtGhostZones");
+    ugrid->GetCellData()->AddArray(ghostZones);
+    ghostZones->Delete();
+}
+
+// ****************************************************************************
+// Method: GetUcdPolyhedralGhostZonesFromLabels
+//
+// Purpose: 
+//   Creates array of ghost zones from DBucdmesh::Dbphzonelist::ghost_zone_labels.
+//
+// Arguments:
+//   DBphzonelist *pzl : the list of polyhedral zones to source ghost data.
+//   DBucdmesh *um : the mesh from which to source the data
+//   vtkUnstructuredGrid *ugrid : the object that stores the array
+//
+// Programmer: Edward Rusu
+// Creation:   Tue Sept 11 14:14:24 PDT 2018
+// ****************************************************************************
+void
+avtSiloFileFormat::GetUcdPolyhedralGhostZonesFromLabels(DBphzonelist *pzl,
+                                              vtkUnstructuredGrid *ugrid,
+                                              std::vector<int> *cellReMap)
+{
+    // --- Populate ghostZones --- //
+    int numCells = pzl->nzones;
+    unsigned char *gvals = new unsigned char[numCells];
+    unsigned char realVal = 0;
+    unsigned char ghostVal = 0;
+    avtGhostData::AddGhostZoneType(ghostVal, DUPLICATED_ZONE_INTERNAL_TO_PROBLEM);
+    
+    for (int i = 0; i < numCells; i++) {
+        if (pzl->ghost_zone_labels[i] == DB_GHOSTTYPE_NOGHOST)
+            gvals[i] = realVal;
+        else if (pzl->ghost_zone_labels[i] == DB_GHOSTTYPE_INTDUP)
             gvals[i] = ghostVal;    
     }
     
