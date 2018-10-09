@@ -1395,6 +1395,7 @@ function usage
     printf "\n"
 
     printf "%-20s %s [%s]\n" "--build-mode" "VisIt build mode (Debug or Release)" "$VISIT_BUILD_MODE"
+    printf "%-20s %s [%s]\n" "--create-rpm" "Enable creation of RPM packages" "$CREATE_RPM"
     printf "%-20s %s [%s]\n" "--cflag"   "Append a flag to CFLAGS" "${CFLAGS}"
     printf "%-20s %s [%s]\n" "--cxxflag" "Append a flag to CXXFLAGS" "$CXXFLAGS"
     printf "%-20s %s [%s]\n" "--cflags"  "Explicitly set CFLAGS" "$CFLAGS"

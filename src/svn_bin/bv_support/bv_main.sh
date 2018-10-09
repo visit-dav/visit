@@ -563,6 +563,7 @@ function initialize_build_visit()
     export VISIT_BUILD_MODE="Release"
     export VISIT_SELECTED_DATABASE_PLUGINS=""
     export DO_XDB="no"
+    export CREATE_RPM="no"
     export DO_CONTEXT_CHECK="yes"
     export VISIT_INSTALL_NETWORK=""
     DOWNLOAD_ONLY="no"
@@ -1162,6 +1163,7 @@ function run_build_visit()
             --cxxflags) next_arg="cxxflags";;
             --cc) next_arg="cc";;
             --cxx) next_arg="cxx";;
+            --create-rpm) CREATE_RPM="yes";;
             --log-file) next_arg="log-file";;
             --database-plugins) next_arg="database-plugins";;
             --debug) C_OPT_FLAGS="${C_OPT_FLAGS} -g"; CXX_OPT_FLAGS="${CXX_OPT_FLAGS} -g"; VISIT_BUILD_MODE="Debug";;

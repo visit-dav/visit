@@ -332,6 +332,8 @@ function build_visit
     fi
     if [[ "${VISIT_INSTALL_PREFIX}" != "" ]] ; then
         FEATURES="${FEATURES} -DCMAKE_INSTALL_PREFIX:PATH=${VISIT_INSTALL_PREFIX}"
+        FEATURES="${FEATURES} -DCPACK_INSTALL_PREFIX:PATH=${VISIT_INSTALL_PREFIX}"
+        FEATURES="${FEATURES} -DCPACK_PACKAGING_INSTALL_PREFIX:PATH=${VISIT_INSTALL_PREFIX}"
     fi
     # Select a specialized build mode.
     if [[ "${DO_DBIO_ONLY}" == "yes" ]] ; then
@@ -351,11 +353,18 @@ function build_visit
     if [[ "${VISIT_SELECTED_DATABASE_PLUGINS}" != "" ]] ; then
         FEATURES="${FEATURES} -DVISIT_SELECTED_DATABASE_PLUGINS:STRING=${VISIT_SELECTED_DATABASE_PLUGINS}"
     fi
-
     CMAKE_INSTALL=${CMAKE_INSTALL:-"$VISITDIR/cmake/${CMAKE_VERSION}/$VISITARCH/bin"}
     CMAKE_BIN="${CMAKE_INSTALL}/cmake"
     rm -f CMakeCache.txt
-    issue_command "${CMAKE_BIN}" ${FEATURES} ../src
+
+    if [[ "${CREATE_RPM}" == "yes" ]]; then
+        sed -i "s/SET(CPACK_GENERATOR \"TGZ\")/#SET(CPACK_GENERATOR \"TGZ\")/" CMakeLists.txt
+        FEATURES="${FEATURES} -DCPACK_BINARY_RPM:BOOL=ON -DCPACK_GENERATOR:STRING=\"RPM;TGZ\""
+        FEATURES="${FEATURES} -DCPACK_RPM_SPEC_MORE_DEFINE:STRING=\"%global_python_bytecompile_errors_terminate_build 0\""
+    fi
+
+    issue_command "${CMAKE_BIN}" ${FEATURES} .
+
     if [[ $? != 0 ]] ; then
         echo "VisIt configure failed.  Giving up"
         return 1
