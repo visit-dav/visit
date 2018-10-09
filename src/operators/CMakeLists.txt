@@ -71,7 +71,12 @@
 #   Eric Brugger, Wed Mar 22 10:34:24 PDT 2017
 #   I moved the SubdivideQuads operator from optional to required.
 #
+#   Kathleen Biagas, Tue Oct  9 12:48:07 PDT 2018
+#   Removed ProgrammableOp, since it doesn't compile and has been commented
+#   out for a while.
+#
 #****************************************************************************/
+
 IF(NOT WIN32)
     SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${VISIT_PLUGIN_DIR}/operators)
 ELSE(NOT WIN32)
@@ -122,7 +127,6 @@ MultiresControl
 OnionPeel
 PDF
 PersistentParticles
-#ProgrammableOp
 Project
 Reflect
 Replicate
