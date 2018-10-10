@@ -520,19 +520,25 @@ simv2_RectilinearMesh_check(visit_handle h)
             for(int i = 0; i < obj->ndims; ++i)
             {
                 int nCoordTuples = 0;
+
                 if(i == 0)
                     simv2_VariableData_getData(obj->xcoords, owner, dataType, nComps, nCoordTuples, data);
                 else if(i == 1)
                     simv2_VariableData_getData(obj->ycoords, owner, dataType, nComps, nCoordTuples, data);
                 else
                     simv2_VariableData_getData(obj->zcoords, owner, dataType, nComps, nCoordTuples, data);
-                nCells *= (nCoordTuples-1);
+
+                // calculate number of cells, but watch out for 2D meshes which have only 1
+                // point in one direction.
+                nCells *= (nCoordTuples > 1 ? (nCoordTuples - 1) : 1);
             }
 
             if(nCells != nTuples)
             {
-                VisItError("The number of elements in the ghost cell array does "
-                           "not match the number of mesh cells.");
+                char tmp[1024] = {'\0'};
+                snprintf(tmp, 1023, "The number of elements in the ghost cell array %d does "
+                    "not match the number of mesh cells %d.", nTuples, nCells);
+                VisItError(tmp);
                 return VISIT_ERROR;
             }
         }
