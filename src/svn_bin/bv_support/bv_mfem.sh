@@ -56,6 +56,21 @@ function bv_mfem_host_profile
         echo \
             "VISIT_OPTION_DEFAULT(VISIT_MFEM_DIR \${VISITHOME}/mfem/$MFEM_VERSION/\${VISITARCH})" \
             >> $HOSTCONF
+
+        ZLIB_LIBDEP=""
+        if [[ "$DO_ZLIB" == "yes" ]] ; then
+            ZLIB_LIBDEP="\${VISITHOME}/zlib/$ZLIB_VERSION/\${VISITARCH}/lib z"
+        else
+            ZLIB_LIBDEP="/usr/lib z"
+            #moving global patch to have limited effect
+            if [[ -d /usr/lib/x86_64-linux-gnu ]]; then
+                ZLIB_LIBDEP="/usr/lib/x86_64-linux-gnu z"
+            fi
+        fi
+
+        echo \
+            "VISIT_OPTION_DEFAULT(VISIT_MFEM_LIBDEP $ZLIB_LIBDEP TYPE STRING)" \
+                >> $HOSTCONF
     fi
 }
 
