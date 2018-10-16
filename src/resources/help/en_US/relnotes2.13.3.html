@@ -50,6 +50,7 @@ enhancements and bug-fixes that were added to this release.</p>
   <li>Modified the BOUT reader to create a single regular block in the rotational direction, interpolating the field values onto it based on zshift instead of distorting the zones by zshift and using unmodified field values. This reduces the size of the mesh and also eliminates the rendering artifacts caused by the large aspect zones created by distorting the zones.</li>
   <li>Added support for vtkGhostType in the vtk reader.</li>
   <li>Added support for ghost_node_labels and ghost_zone_labels in Silo reader.</li>
+  <li>Ensure build_visit builds MFEM with GZSTREAM compression feature enabled.</li>
 </ul>
 
 <a name="Dev_changes"></a>

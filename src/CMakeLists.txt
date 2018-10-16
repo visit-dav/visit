@@ -848,6 +848,7 @@ VISIT_3RDPARTY_VAR(H5PART_DIR    "Path containing the H5Part library's include a
 VISIT_3RDPARTY_DEP(H5PART_LIBDEP "H5Part library dependencies")
 VISIT_3RDPARTY_VAR(LLVM_DIR      "Path containing the LLVM library's include and lib")
 VISIT_3RDPARTY_VAR(MFEM_DIR      "Path containing the mfem library's include and lib")
+VISIT_3RDPARTY_VAR(MFEM_LIBDEP   "MFEM library dependencies")
 VISIT_3RDPARTY_VAR(MILI_DIR      "Path containing the Mili library's include and lib")
 VISIT_3RDPARTY_VAR(NEKTAR++_DIR  "Path containing the Nektar++ library's include and lib")
 VISIT_3RDPARTY_DEP(NEKTAR++_LIBDEP "Nektar++ library dependencies")
