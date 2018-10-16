@@ -17,6 +17,10 @@ function bv_mfem_depends_on
 {
     local depends_on=""
 
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        depends_on="$depends_on zlib"
+    fi
+
     echo $depends_on
 }
 
@@ -91,12 +95,16 @@ function build_mfem
 
     cd $MFEM_BUILD_DIR || error "Can't cd to mfem build dir."
 
+    if [[ "$DO_ZLIB" == "yes" ]] ; then
+        ZLIBARG=-L${VISITDIR}/zlib/${ZLIB_VERSION}/${VISITARCH}/lib
+    fi
+
     #
     # Call configure
     #
     info "Configuring mfem . . ."
-    info $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS"
-    $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS"
+    info $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz"
+    $MAKE config CXX="$CXX_COMPILER" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" MFEM_USE_GZSTREAM=YES LDFLAGS="$ZLIBARG -lz"
 
     #
     # Build mfem
