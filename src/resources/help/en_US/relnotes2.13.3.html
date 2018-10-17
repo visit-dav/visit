@@ -24,41 +24,40 @@ enhancements and bug-fixes that were added to this release.</p>
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Bugs fixed in version 2.13.3</font></b></p>
 <ul>
-  <li>Restoring sessions with different sources from GUI now works, even if the session's gui file is missing.</li>
-  <li>Adjust logic in Tecplot plugin to only do all-to-all curve definition if the first variable listed does not appear to be a coordinate variable.</li>
-  <li>Applied patch for MFEM plugin that reads "lod" tag to set proper LOD.</li>
-  <li>Fixed viewer crash that could occur when deleting windows containing lineout curves.</li>
+  <li>Corrected a bug with restoring sessions with different sources from the graphical user interface, even if the session's gui file is missing.</li>
+  <li>Modified the Tecplot reader to only create all-to-all curve definitions if the first variable listed does not appear to be a coordinate variable.</li>
+  <li>Modified the MFEM reader to read the "lod" tag to set the proper level of detail.</li>
+  <li>Corrected a viewer crash that could occur when deleting windows containing lineout curves.</li>
   <li>Corrected a bug in the CracksClipper operator attributes window that was restricting the Strain variable to Symmetric Tensors. It will now also accept normal Tensor variables.</li>
   <li>Corrected a bug in the CracksClipper operator in the calculation of the crack width for the third crack direction.</li>
   <li>Corrected a bug with defining symmetric tensors, where it was impossible to set the expression <i>Type</i> to <i>Symmetric Tensor Mesh Variable</i> and define an expression that could successfully be used elsewhere in VisIt. Symmetric tensors can now be defined using either all 4 components or all 9 components of the tensor, repeating variables so that the expression is actually a symmetric tensor. For example, a 2D Symmetric Tensor would be defined as "{{a,b},{b,c}}" and a 3D Symmetric Tensor would be defined as "{{a,b,c},{b,d,e},{c,e,f}}".</li>
   <li>The Line3D annotation object's default arrow is now cone shaped instead of flat, and its initial size is in relation to the current extents of the data being drawn.</li>
   <li>Corrected an error in the host profiles for Cori.</li>
-  <li>Fixed bug on Windows OS where executing a command from the Command window could yield the wrong results.</li>
-  <li>Fixed the issue on OSX where the screen turns black during zooming and lineouts.</li>
-  <li>Updated the viewer so that antialiasing is set when the OpenGL context is created for Qt5. Turning antialiasing on/off will require a VisIt restart.</li>
-  <li>Updated the explode operator to handle issues that would occur when exploding reflected multi-domain data.</li>
-  <li>Fixed problems building external plugins from an installed version of VisIt on Linux.</li>
+  <li>Corrected a bug on Windows where executing a command from the Command window could yield the wrong results.</li>
+  <li>Corrected an bug on OSX where the screen turns black during zooming and lineouts.</li>
+  <li>Corrected a bug where it wasn't possible to change the antialiasing. It is now possible to change the antialiasing, but it requires saving settings and restarting VisIt.</li>
+  <li>Corrected the Explode operator to handle bugs that would occur when exploding reflected multi-domain data.</li>
+  <li>Corrected problems building external plugins from an installed version of VisIt on Linux.</li>
 </ul>
 
 <a name="Enhancements"></a>
 <p><b><font size="4">Enhancements in version 2.13.3</font></b></p>
 <ul>
-  <li>When re-interpreting 1D meshes as curves, add support for those meshes being multi-block meshes thereby enabling support for multi-block curves.</li>
-  <li>Added support for CQUAD8 to NASTRAN Database reader.</li>
-  <li>Added support for all elements that both NASTRAN and VTK support. Updated existing elements to support QUADRATIC types.</li>
+  <li>Added support for multi-block curves.</li>
+  <li>Added support for CQUAD8 to the NASTRAN reader.</li>
+  <li>Added support for additional element types to the NASTRAN reader. Specifically all the elements that both NASTRAN and VTK support.</li>
   <li>Host profiles were added for the Lawrence Livermore National Laboratories' Pascal system.</li>
   <li>Modified the BOUT reader to create a single regular block in the rotational direction, interpolating the field values onto it based on zshift instead of distorting the zones by zshift and using unmodified field values. This reduces the size of the mesh and also eliminates the rendering artifacts caused by the large aspect zones created by distorting the zones.</li>
-  <li>Added support for vtkGhostType in the vtk reader.</li>
-  <li>Added support for ghost_node_labels and ghost_zone_labels in Silo reader.</li>
-  <li>Ensure build_visit builds MFEM with GZSTREAM compression feature enabled.</li>
+  <li>Added support for vtkGhostType in the VTK reader.</li>
+  <li>Added support for ghost_node_labels and ghost_zone_labels in the Silo reader.</li>
+  <li>Enhanced build_visit so that it builds MFEM with GZSTREAM compression enabled.</li>
   <li>Add support for relative indexing of nodes, normals and textures in Wavefront OBJ files.</li>
 </ul>
 
 <a name="Dev_changes"></a>
 <p><b><font size="4">Changes for VisIt developers in version 2.13.3</font></b></p>
 <ul>
-  <li>Resolved OSX 10.13 build_visit issues with Qt, NetCDF, Xdmf, and CCMIO</li>
-  <li>Developer Changes 2</li>
+  <li>Corrected bugs in build_visit building Qt, NetCDF, Xdmf, and CCMIO on OSX 10.13 systems.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
