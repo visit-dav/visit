@@ -29,7 +29,7 @@ case $user in
         ;;
     hrchilds)
         userNersc=hrchilds
-        userEmail=hankchilds3@gmail.com
+        userEmail=hank@uoregon.edu
         ;;
     mcmiller)
         userNersc=miller86
