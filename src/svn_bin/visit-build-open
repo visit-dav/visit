@@ -357,16 +357,13 @@ fi
 rm -f kickit
 cat <<EOF > kickit
 #!/bin/sh
-if test ! -e /scratch/$user ; then
-   mkdir /scratch/$user
+if test ! -e /home/$user/kickit ; then
+   mkdir /home/$user/kickit
 fi
-if test ! -e /scratch/$user/kickit ; then
-   mkdir /scratch/$user/kickit
-fi
-rm -rf /scratch/$user/kickit/visitbuild
-mkdir /scratch/$user/kickit/visitbuild
-mv kickit_$dist.tar.gz /scratch/$user/kickit/visitbuild/$dist.tar.gz
-cd /scratch/$user/kickit/visitbuild
+rm -rf /home/$user/kickit/visitbuild
+mkdir /home/$user/kickit/visitbuild
+mv kickit_$dist.tar.gz /home/$user/kickit/visitbuild/$dist.tar.gz
+cd /home/$user/kickit/visitbuild
 gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`

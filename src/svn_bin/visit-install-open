@@ -313,8 +313,8 @@ if [ $kickit = true ]
 then
    if [ $test = no ]
    then
-      scp kickit:/scratch/$user/kickit/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-rhel7.tar.gz
-      scp kickit:/scratch/$user/kickit/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-rhel7-wmesa.tar.gz
+      scp kickit:/home/$user/kickit/visitbuild/visit$ver2.linux-x86_64.tar.gz visit$ver2.linux-x86_64-rhel7.tar.gz
+      scp kickit:/home/$user/kickit/visitbuild/visit$ver2.linux-x86_64-wmesa.tar.gz visit$ver2.linux-x86_64-rhel7-wmesa.tar.gz
       scp visit$ver2.linux-x86_64-rhel7.tar.gz kickit:visit$ver2.linux-x86_64-rhel7.tar.gz
       scp visit-install kickit:
       scp kickit kickit:kickit_install
@@ -396,10 +396,8 @@ fi
 rm -f quartz
 cat <<EOF > quartz
 #!/bin/sh
-rm -rf /usr/gapps/visit/toss3
-./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit/toss3 > installlog 2>&1
-mv /usr/gapps/visit/toss3/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
-rm -rf /usr/gapps/visit/toss3
+./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-x86_64-quartz /usr/gapps/visit > installlog 2>&1
+mv /usr/gapps/visit/$ver+/linux-x86_64 /usr/gapps/visit/$ver+/linux-x86_64-toss3
 cp /usr/gapps/visit/nvidia304-libs/*.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so
 ln -s libGL.so.304.54 /usr/gapps/visit/$ver+/linux-x86_64-toss3/lib/libGL.so.1
