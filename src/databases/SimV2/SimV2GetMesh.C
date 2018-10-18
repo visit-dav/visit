@@ -52,6 +52,7 @@ using std::ostringstream;
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
+#include <vtkSOADataArrayTemplate.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnsignedCharArray.h>
@@ -514,7 +515,204 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 }
 
 // ****************************************************************************
-// Function: SimV2_Create_ComponentDataArray3_From_One_MultiArray
+// Method: SimV2_MultiArray_Compatible_With_VTK_SOA
+//
+// Purpose:
+//   Checks whether a Libsim multi-component array has components that are all
+//   the same type with the right strides. If so, it would be compatible with
+//   VTK's newer SOA data array type.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   c                : The handle to the variable data object.
+//
+// Returns:    True if the data are compatible with VTK SOA. False otherwise.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 18 14:17:56 PDT 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+bool
+SimV2_MultiArray_Compatible_With_VTK_SOA(int ndims, visit_handle c, int &dt)
+{
+    // Check whether the array components are contiguous and of the same type.
+    bool compatible = true;
+    int dataType0, stride0;
+    for(int i = 0; i < ndims; ++i)
+    {
+        // Get the information from the i'th data array component.
+        void *data = NULL;
+        int owner, dataType, nComps, nTuples, memory, offset, stride;
+        if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
+           nComps, nTuples, offset, stride, data) == VISIT_ERROR)
+        {
+            compatible = false;
+        }
+        else
+        {
+            if(i == 0)
+            {
+                dt = dataType0 = dataType;
+                stride0 = stride;
+
+                if(dataType == VISIT_DATATYPE_CHAR)
+                    compatible = stride == sizeof(char);
+                else if(dataType == VISIT_DATATYPE_INT)
+                    compatible = stride == sizeof(int);
+                else if(dataType == VISIT_DATATYPE_LONG)
+                    compatible = stride == sizeof(long);
+                else if(dataType == VISIT_DATATYPE_FLOAT)
+                    compatible = stride == sizeof(float);
+                else if(dataType == VISIT_DATATYPE_DOUBLE)
+                    compatible = stride == sizeof(double);
+            }
+            else
+            {
+                if(dataType0 != dataType || stride0 != stride)
+                    compatible = false;
+            }
+        }
+    }
+
+    return compatible;
+}
+
+// ****************************************************************************
+// Method: SimV2_MultiArray_To_VTK_SOA
+//
+// Purpose:
+//   If the libsim multi-array data is compatible with VTK SOA then make that
+//   type to wrap the data array.
+//
+// Arguments:
+//   dims             : The number of dimensions
+//   c                : The handle to the variable data object.
+//
+// Returns:    A vtkDataArray SOA instance or NULL if it is not compatible.
+//
+// Note:       
+//
+// Programmer: Brad Whitlock
+// Creation:   Thu Oct 18 14:17:56 PDT 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+vtkDataArray *
+SimV2_MultiArray_To_VTK_SOA(int ndims, visit_handle c)
+{
+    vtkDataArray *arr = NULL;
+
+    // If the data arrays are not compatible with the VTK SOA type then return NULL.
+    int dt;
+    if(!SimV2_MultiArray_Compatible_With_VTK_SOA(ndims, c, dt))
+        return arr;
+
+    void *data = NULL;
+    int owner, dataType, nComps, nTuples, memory, offset, stride;
+
+    // It was compatible, make the right return object.
+    if(dt == VISIT_DATATYPE_CHAR)
+    {
+        vtkSOADataArrayTemplate<char> *d = vtkSOADataArrayTemplate<char>::New();
+        d->SetNumberOfComponents(ndims);
+        for(int i = 0; i < ndims; ++i)
+        {
+            if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
+               nComps, nTuples, offset, stride, data) != VISIT_ERROR)
+            {
+                if(i == 0)
+                    d->SetNumberOfTuples(nTuples);
+                d->SetArray(i, (char *)data, nTuples, false, owner==VISIT_OWNER_SIM);
+                debug5 << "\tAdding char component " << i << ": " << data << endl;
+            }
+        }
+        arr = d;
+    }
+    else if(dt == VISIT_DATATYPE_INT)
+    {
+        vtkSOADataArrayTemplate<int> *d = vtkSOADataArrayTemplate<int>::New();
+        d->SetNumberOfComponents(ndims);
+        for(int i = 0; i < ndims; ++i)
+        {
+            if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
+               nComps, nTuples, offset, stride, data) != VISIT_ERROR)
+            {
+                if(i == 0)
+                    d->SetNumberOfTuples(nTuples);
+                d->SetArray(i, (int *)data, nTuples, false, owner==VISIT_OWNER_SIM);
+                debug5 << "\tAdding int component " << i << ": " << data << endl;
+            }
+        }
+        arr = d;
+    }
+    else if(dt == VISIT_DATATYPE_LONG)
+    {
+        vtkSOADataArrayTemplate<long> *d = vtkSOADataArrayTemplate<long>::New();
+        d->SetNumberOfComponents(ndims);
+        for(int i = 0; i < ndims; ++i)
+        {
+            if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
+               nComps, nTuples, offset, stride, data) != VISIT_ERROR)
+            {
+                if(i == 0)
+                    d->SetNumberOfTuples(nTuples);
+                d->SetArray(i, (long *)data, nTuples, false, owner==VISIT_OWNER_SIM);
+                debug5 << "\tAdding long component " << i << ": " << data << endl;
+            }
+        }
+        arr = d;
+    }
+    else if(dt == VISIT_DATATYPE_FLOAT)
+    {
+        vtkSOADataArrayTemplate<float> *d = vtkSOADataArrayTemplate<float>::New();
+        d->SetNumberOfComponents(ndims);
+        for(int i = 0; i < ndims; ++i)
+        {
+            if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
+               nComps, nTuples, offset, stride, data) != VISIT_ERROR)
+            {
+                if(i == 0)
+                    d->SetNumberOfTuples(nTuples);
+                d->SetArray(i, (float *)data, nTuples, false, owner==VISIT_OWNER_SIM);
+                debug5 << "\tAdding float component " << i << ": " << data << endl;
+            }
+        }
+        arr = d;
+    }
+    else if(dt == VISIT_DATATYPE_DOUBLE)
+    {
+        vtkSOADataArrayTemplate<double> *d = vtkSOADataArrayTemplate<double>::New();
+        d->SetNumberOfComponents(ndims);
+        for(int i = 0; i < ndims; ++i)
+        {
+            if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
+               nComps, nTuples, offset, stride, data) != VISIT_ERROR)
+            {
+                if(i == 0)
+                    d->SetNumberOfTuples(nTuples);
+                d->SetArray(i, (double *)data, nTuples, false, owner==VISIT_OWNER_SIM);
+                debug5 << "\tAdding double component " << i << ": " << data << endl;
+            }
+        }
+        arr = d;
+    }
+
+    if(arr != NULL)
+    {
+        debug5 << "\tSimV2_MultiArray_To_VTK_SOA: zero-copy" << endl;
+    }
+
+    return arr;
+}
+
+// ****************************************************************************
+// Function: SimV2_Create_DataArray3_From_One_MultiArray
 //
 // Purpose:
 //   Create a vtkComponentData with 3 components from a single VariableData
@@ -534,57 +732,69 @@ AddGhostNodesFromArray(vtkDataSet *ds, visit_handle ghostNodes)
 // Modifications:
 //
 // ****************************************************************************
-vtkComponentDataArray<float> *
-SimV2_Create_ComponentDataArray3_From_One_MultiArray(int ndims, visit_handle c)
+vtkDataArray *
+SimV2_Create_DataArray3_From_One_MultiArray(int ndims, visit_handle c)
 {
-    debug5 << "SimV2_Create_ComponentDataArray3_From_One_MultiArray" << endl;
+    debug5 << "SimV2_Create_DataArray3_From_One_MultiArray" << endl;
 
-    // Zero copy - use separate components to build up a view of the components
-    vtkComponentDataArray<float> *position = vtkComponentDataArray<float>::New();
-    position->SetNumberOfComponents(3);
+    vtkDataArray *arr = NULL;
 
-    bool doNull = false;
-    for(int i = 0; i < ndims; ++i)
+    // Try and make a VTK SOA data array from the multi array.
+    arr = SimV2_MultiArray_To_VTK_SOA(ndims, c);
+
+    if(arr == NULL)
     {
-        static char coordName[3] = {'x', 'y', 'z'};
+        debug5 << "\tCould not make VTK SOA, Make VisIt vtkComponentDataArray." << endl;
 
-        // Get the information from the i'th data array component.
-        void *data = NULL;
-        int owner, dataType, nComps, nTuples, memory, offset, stride;
-        if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
-           nComps, nTuples, offset, stride, data) == VISIT_ERROR)
+        // Zero copy - use separate components to build up a view of the components
+        vtkComponentDataArray<float> *position = vtkComponentDataArray<float>::New();
+        position->SetNumberOfComponents(3);
+
+        bool doNull = false;
+        for(int i = 0; i < ndims; ++i)
         {
-            position->Delete();
-            ostringstream oss;
-            oss << "Failed to get data for " << coordName[i];
-            EXCEPTION1(ImproperUseException, oss.str().c_str());
+            static char coordName[3] = {'x', 'y', 'z'};
+
+            // Get the information from the i'th data array component.
+            void *data = NULL;
+            int owner, dataType, nComps, nTuples, memory, offset, stride;
+            if(simv2_VariableData_getArrayData(c, i, memory, owner, dataType,
+               nComps, nTuples, offset, stride, data) == VISIT_ERROR)
+            {
+                position->Delete();
+                ostringstream oss;
+                oss << "Failed to get data for " << coordName[i];
+                EXCEPTION1(ImproperUseException, oss.str().c_str());
+            }
+
+            // Store the data array information into the data component.
+            if(i == 0)
+                position->SetNumberOfTuples(nTuples);
+            bool owns = owner == VISIT_OWNER_VISIT;
+
+            debug5 << "\tAdding component " << i << ": data=" << (void*)data
+                   << ", offset=" << offset << ", stride=" << stride
+                   << ", vtktype=" << SimV2_GetVTKType(dataType)
+                   << ", owns=" << (owns?"true":"false") << endl;
+
+            position->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, SimV2_GetVTKType(dataType), owns));
+            doNull |= owns;
+        }
+        // For 2D data, install an empty 3rd component.
+        if(ndims == 2)
+        {
+            debug5 << "\tAdding empty 3rd component." << endl;
+            position->SetComponentData(2, vtkArrayComponentStride(NULL, 0, 0, VTK_FLOAT, false));
         }
 
-        // Store the data array information into the data component.
-        if(i == 0)
-            position->SetNumberOfTuples(nTuples);
-        bool owns = owner == VISIT_OWNER_VISIT;
+        // Give up our ownership. VTK will free the data.
+        if(doNull)
+            simv2_VariableData_nullData(c);
 
-        debug5 << "\tAdding component " << i << ": data=" << (void*)data
-               << ", offset=" << offset << ", stride=" << stride
-               << ", vtktype=" << SimV2_GetVTKType(dataType)
-               << ", owns=" << (owns?"true":"false") << endl;
-
-        position->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, SimV2_GetVTKType(dataType), owns));
-        doNull |= owns;
-    }
-    // For 2D data, install an empty 3rd component.
-    if(ndims == 2)
-    {
-        debug5 << "\tAdding empty 3rd component." << endl;
-        position->SetComponentData(2, vtkArrayComponentStride(NULL, 0, 0, VTK_FLOAT, false));
+        arr = position;
     }
 
-    // Give up our ownership. VTK will free the data.
-    if(doNull)
-        simv2_VariableData_nullData(c);
-
-    return position;
+    return arr;
 }
 
 // ****************************************************************************
@@ -698,7 +908,7 @@ SimV2_Create_ComponentDataArray3_From_Three_SingleArray(int ndims,
 }
 
 // ****************************************************************************
-// Function: SimV2_CreatePoints_From_ComponentDataArray3
+// Function: SimV2_CreatePoints_From_DataArray3
 //
 // Purpose:
 //   Create a vtkPoints object from a component data array with 3 components.
@@ -720,8 +930,8 @@ SimV2_Create_ComponentDataArray3_From_Three_SingleArray(int ndims,
 // ****************************************************************************
 
 static vtkPoints *
-SimV2_CreatePoints_From_ComponentDataArray3(bool forceCopy, int ndims, int additionalPoints,
-    vtkComponentDataArray<float> *position)
+SimV2_CreatePoints_From_DataArray3(bool forceCopy, int ndims, int additionalPoints,
+    vtkDataArray *position)
 {
     (void)ndims;
 
@@ -729,7 +939,7 @@ SimV2_CreatePoints_From_ComponentDataArray3(bool forceCopy, int ndims, int addit
 
     if(/*ndims == 2 || */ forceCopy || additionalPoints > 0)
     {
-        debug5 << "SimV2_CreatePoints_From_ComponentDataArray3: copy points" << endl;
+        debug5 << "SimV2_CreatePoints_From_DataArray3: copy points" << endl;
 
         // We need to copy so copy the zero-copy form into a new vtkPoints.
         vtkIdType nTuples = position->GetNumberOfTuples();
@@ -742,7 +952,7 @@ SimV2_CreatePoints_From_ComponentDataArray3(bool forceCopy, int ndims, int addit
     }
     else
     {
-        debug5 << "SimV2_CreatePoints_From_ComponentDataArray3: zero copy" << endl;
+        debug5 << "SimV2_CreatePoints_From_DataArray3: zero copy" << endl;
 
         // Zero-copy.
         points->SetData(position);
@@ -786,7 +996,7 @@ SimV2_CreatePoints_Separate(int ndims,
 {
     debug5 << "SimV2_CreatePoints_Separate" << endl;
     vtkComponentDataArray<float> *position = SimV2_Create_ComponentDataArray3_From_Three_SingleArray(ndims, x,y,z);
-    return SimV2_CreatePoints_From_ComponentDataArray3(forceCopy, 3, additionalPoints, position);
+    return SimV2_CreatePoints_From_DataArray3(forceCopy, 3, additionalPoints, position);
 }
 
 // ****************************************************************************
@@ -964,8 +1174,8 @@ SimV2_CreatePoints_Interleaved_MultiArray(int ndims, visit_handle c, int additio
     // NOTE: Here we have a separate array for each component. Each component may
     //       have a different memory layout or storage type.
     debug5 << "SimV2_CreatePoints_Interleaved_MultiArray" << endl;
-    vtkComponentDataArray<float> *position = SimV2_Create_ComponentDataArray3_From_One_MultiArray(ndims, c);
-    return SimV2_CreatePoints_From_ComponentDataArray3(forceCopy, ndims, additionalPoints, position);
+    vtkDataArray *position = SimV2_Create_DataArray3_From_One_MultiArray(ndims, c);
+    return SimV2_CreatePoints_From_DataArray3(forceCopy, ndims, additionalPoints, position);
 }
 
 // ****************************************************************************

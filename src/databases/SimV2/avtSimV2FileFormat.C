@@ -124,7 +124,10 @@ using std::ostringstream;
 #include "SimV2GetMesh.h"
 
 const char *AUXILIARY_DATA_POLYHEDRAL_SPLIT = "POLYHEDRAL_SPLIT";
+
+extern vtkDataArray *SimV2_MultiArray_To_VTK_SOA(int ndims, visit_handle c);
 #endif
+
 
 int zc_getvoidpointer()
 {
@@ -2109,51 +2112,60 @@ vtkDataArray *
 SimV2_GetVar_Multiple(visit_handle hvar, const char *varname, int nArrs)
 {
     vtkDataArray *array = NULL;
-    int owner, dataType, nComponents, memory, offset, stride;
-    void *data = NULL;
 
-    // Zero-copy, multiple component
-    int *nTuples = new int[nArrs];
-    vtkComponentDataArray<float> *da = vtkComponentDataArray<float>::New();
-    da->SetNumberOfComponents(nArrs);
-    for(int i = 0; i < nArrs; ++i)
+    debug5 << "SimV2_GetVar_Multiple" << endl;
+
+    // Try and make a VTK SOA data array from the multi array.
+    array = SimV2_MultiArray_To_VTK_SOA(nArrs, hvar);
+
+    if(array == NULL)
     {
-        // Get the data from the opaque object.
-        int err = simv2_VariableData_getArrayData(hvar, i, memory,
-                                                  owner, dataType,
-                                                  nComponents, nTuples[i],
-                                                  offset, stride,
-                                                  data);
-        if (err == VISIT_ERROR)
+        int owner, dataType, nComponents, memory, offset, stride;
+        void *data = NULL;
+
+        // Zero-copy, multiple component
+        int *nTuples = new int[nArrs];
+        vtkComponentDataArray<float> *da = vtkComponentDataArray<float>::New();
+        da->SetNumberOfComponents(nArrs);
+        for(int i = 0; i < nArrs; ++i)
         {
-            delete [] nTuples;
-            da->Delete();
-            ostringstream oss;
-            oss << "Failed to get component " << i << " data for " << varname;
-            EXCEPTION1(InvalidVariableException, oss.str().c_str());
+            // Get the data from the opaque object.
+            int err = simv2_VariableData_getArrayData(hvar, i, memory,
+                                                      owner, dataType,
+                                                      nComponents, nTuples[i],
+                                                      offset, stride,
+                                                      data);
+            if (err == VISIT_ERROR)
+            {
+                delete [] nTuples;
+                da->Delete();
+                ostringstream oss;
+                oss << "Failed to get component " << i << " data for " << varname;
+                EXCEPTION1(InvalidVariableException, oss.str().c_str());
+            }
+
+            if(i == 0)
+                da->SetNumberOfTuples(nTuples[i]);
+
+            bool owns = (owner == VISIT_OWNER_VISIT);
+            int vtktype = SimV2_GetVTKType(dataType);
+            da->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, vtktype, owns));
         }
 
-        if(i == 0)
-            da->SetNumberOfTuples(nTuples[i]);
-
-        bool owns = (owner == VISIT_OWNER_VISIT);
-        int vtktype = SimV2_GetVTKType(dataType);
-        da->SetComponentData(i, vtkArrayComponentStride(data, offset, stride, vtktype, owns));
-    }
-
-    for(int i = 1; i < nArrs; ++i)
-    {
-        if(nTuples[0] != nTuples[i])
+        for(int i = 1; i < nArrs; ++i)
         {
-            da->Delete();
-            ostringstream oss;
-            oss << "The number of tuples is not the same for the tuples of " << varname;
-            EXCEPTION1(InvalidVariableException, oss.str().c_str());
+            if(nTuples[0] != nTuples[i])
+            {
+                da->Delete();
+                ostringstream oss;
+                oss << "The number of tuples is not the same for the tuples of " << varname;
+                EXCEPTION1(InvalidVariableException, oss.str().c_str());
+            }
         }
-    }
-    delete [] nTuples;
+        delete [] nTuples;
 
-    array = da;
+        array = da;
+    }
 
     return array;
 }
