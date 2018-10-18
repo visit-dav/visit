@@ -48,6 +48,8 @@
 #include <qwt_plot_panner.h>
 #include <qwt_plot_canvas.h>
 
+#include <DebugStream.h>
+
 #include <sstream>
 #include <iostream>
 #include <limits>
@@ -305,7 +307,14 @@ QvisStripChart::setCurveTitle( const unsigned int index,
                                const QString &newTitle)
 {
     bool clearData = false;
-  
+
+    if(index >= MAX_STRIP_CHART_VARS)
+    {
+        debug1 << "The curve index is above the maximum (MAX_STRIP_CHART_VARS)"
+               << endl;
+        return;
+    }
+
     // If blank use a default name. 
     if( newTitle.isEmpty() )
     {
@@ -576,6 +585,13 @@ void QvisStripChart::advanceDataCount( double time )
 void QvisStripChart::addDataPoint( const unsigned int index,
                                    const double x, const double y)
 {
+    if(index >= MAX_STRIP_CHART_VARS)
+    {
+        debug1 << "The curve index is above the maximum (MAX_STRIP_CHART_VARS)"
+               << endl;
+        return;
+    }
+
     // If a new time advance the data count which also sets
     // the new time.
     if( timeData[0] != x )

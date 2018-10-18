@@ -243,7 +243,7 @@ QvisSimulationWindow::CreateWindowContents()
 
     // Create the notepad area.
     QvisNotepadArea *notepadAux = new QvisNotepadArea(central);
-    topLayout->addWidget(notepadAux);
+    topLayout->addWidget(notepadAux, 10);
 
     // Create the command window and post it to the notepad.
     simCommands = new QvisSimulationCommandWindow(tr("Simulation controls"), 
@@ -2134,6 +2134,7 @@ QvisSimulationWindow::showCustomUIWindow()
     if( CustomUIWindow != NULL )
     {
         CustomUIWindow->show();
+        CustomUIWindow->raise();
 
         int index = GetEngineListIndex(activeEngine);
         if (index < 0)
