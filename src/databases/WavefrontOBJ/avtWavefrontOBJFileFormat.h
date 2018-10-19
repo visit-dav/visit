@@ -45,6 +45,8 @@
 
 #include <avtSTSDFileFormat.h>
 
+#include <set>
+#include <string>
 
 // ****************************************************************************
 //  Class: avtWavefrontOBJFileFormat
@@ -60,6 +62,9 @@
 //    Kathleen Bonnell, Tue Mar 19 08:27:40 PST 2002
 //    vtkScalars has been deprecated in VTK 4.0, use vtkDataArray instead.
 //
+//    Mark C. Miller, Fri Oct 19 15:45:44 PDT 2018
+//    Add variables to support OBJ groupings. Add GetAux method 
+//    to treat single-inclusion groupings also as materials.
 // ****************************************************************************
 
 class avtWavefrontOBJFileFormat : public avtSTSDFileFormat
@@ -77,6 +82,9 @@ class avtWavefrontOBJFileFormat : public avtSTSDFileFormat
 
     virtual void          FreeUpResources(void);
 
+    virtual void          *GetAuxiliaryData(const char *var,
+                              const char *type, void *, DestructorFunction &df);
+
   protected:
     vtkDataSet           *dataset;
     bool                  readInDataset;
@@ -87,6 +95,10 @@ class avtWavefrontOBJFileFormat : public avtSTSDFileFormat
     static const char    *VARNAME2;
 
     void                  ReadInDataset(void);
+
+    bool                  hasGroups;
+    std::set<std::string> uniqueGroupNames;
+    bool                  multipleGroupInclusion;
 };
 
 

@@ -44,6 +44,7 @@
 #include <vtkCellArray.h>
 #include <vtkCellType.h>
 #include <vtkDataSet.h>
+#include <vtkPolyData.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkStructuredGrid.h>
 #include <vtkUnstructuredGrid.h>
@@ -111,6 +112,8 @@ MIRConnectivity::~MIRConnectivity()
 //    The previous fix only applied to rectilinear cases.  I added code to
 //    revert to the old method for curvilinear meshes.
 //
+//    Mark C. Miller, Fri Oct 19 15:45:06 PDT 2018
+//    Handle VTK_POLY_DATA in same block as VTK_UNSTRUCTURED_GRID
 // ****************************************************************************
 
 void
@@ -223,10 +226,11 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
             }
         }
     }
-    else if (dstype == VTK_UNSTRUCTURED_GRID)
+    else if (dstype == VTK_UNSTRUCTURED_GRID || dstype == VTK_POLY_DATA)
     {
         vtkUnstructuredGrid *ug = (vtkUnstructuredGrid *) ds;
-        vtkCellArray *ca = ug->GetCells();
+        vtkPolyData *pd = (vtkPolyData *) ds;
+        vtkCellArray *ca = dstype==VTK_POLY_DATA?pd->GetPolys():ug->GetCells();
         ncells = ca->GetNumberOfCells();
         int buff_size = ca->GetSize();
         connectivity = new vtkIdType[buff_size];
@@ -238,7 +242,7 @@ MIRConnectivity::SetUpConnectivity(vtkDataSet *ds)
         celltype = new int[ncells];
         for (int i = 0 ; i < ncells ; i++)
         {
-            celltype[i] = ug->GetCellType(i);
+            celltype[i] = dstype==VTK_POLY_DATA?pd->GetCellType(i):ug->GetCellType(i);
         }
 
         int c = 0;

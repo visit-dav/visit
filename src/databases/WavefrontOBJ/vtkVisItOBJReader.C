@@ -16,12 +16,15 @@
 #include <InvalidFilesException.h>
 
 #include "vtkCellArray.h"
+#include "vtkCellData.h"
 #include "vtkFloatArray.h"
 #include "vtkInformation.h"
 #include "vtkInformationVector.h"
+#include "vtkIntArray.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
+#include "vtkStringArray.h"
 
 vtkStandardNewMacro(vtkVisItOBJReader);
 
@@ -82,6 +85,19 @@ polygonal face as above but without texture coordinates.
 Per-face tcoords and normals are supported by duplicating
 the vertices on each face as necessary. 
 
+
+Mark C. Miller, Fri Oct 19 09:45:48 PDT 2018
+
+I added logic to deal with relative node, normal and
+texture-coordinate references (e.g. negative values). I
+also added logic to handle groups, materials and material
+colors. This involves the attachment of abstract and
+ordinary cell data arrays to the returned VTK dataset.
+However, these arrays are in no way related to the poly
+data "mesh" object the dataset represents. These arrays
+are re-interpreted by avtWavefrontOBJFileFormat class to
+have the intended effect in VisIt.
+
 ---------------------------------------------------------*/
 
 // a replacement for isspace()
@@ -91,6 +107,46 @@ int is_whitespace(char c)
     return 1;
   else
     return 0;
+}
+
+// Parse an OBJ material file for material "names" and
+// coloration. Only the ambient color (Ka) is examined.
+static int
+ParseMTLFile(char const *filename,
+    vtkStringArray *colorNames, vtkFloatArray *rgbValues)
+{
+  FILE *in = fopen(filename,"r");
+  const int MAX_LINE=8192;
+  char line[MAX_LINE],*pChar;
+  float rgb[3];
+  int everything_ok = 1;
+  while (everything_ok && fgets(line,MAX_LINE,in)!=NULL) 
+    {
+    if (strncmp(line,"newmtl ",7)==0) 
+      {
+      int len = (int) strlen(line);
+      line[len-1] = '\0'; // chop off newline char
+      colorNames->InsertNextValue(&line[7]);
+      }
+    else if (strncmp(line,"Ka ",3)==0) 
+      {
+      // this is ambient color definition, expect three floats, separated by whitespace:
+      if (sscanf(line, "Ka %f %f %f", &rgb[0], &rgb[1], &rgb[2])==3) 
+        {
+        rgbValues->InsertNextTupleValue(rgb);
+        }
+      else 
+        {
+        everything_ok=0; // (false)
+        }
+      }
+    else 
+      {
+      //vtkDebugMacro(<<"Ignoring line: "<<line);
+      }
+    }
+  fclose(in);
+  return everything_ok;
 }
 
 int vtkVisItOBJReader::RequestData(
@@ -134,6 +190,11 @@ int vtkVisItOBJReader::RequestData(
   vtkCellArray *normal_polys = vtkCellArray::New();
   int hasNormals=0; // (false)
   int normals_same_as_verts=1; // (true)
+
+  vtkIntArray *groupIds = vtkIntArray::New();
+  vtkStringArray *groupNames = vtkStringArray::New();
+  vtkStringArray *groupColors = vtkStringArray::New();
+  int currGroupId = -1;
 
   int everything_ok = 1; // (true)   (use of this flag avoids early return and associated memory leak)
 
@@ -195,6 +256,9 @@ int vtkVisItOBJReader::RequestData(
       polys->InsertNextCell(0); // we don't yet know how many points are to come
       tcoord_polys->InsertNextCell(0);
       normal_polys->InsertNextCell(0);
+
+      if (groupNames->GetNumberOfTuples())
+        groupIds->InsertNextValue(currGroupId);
 
       int numPoints = points->GetNumberOfPoints();
       int numNormals = normals->GetNumberOfTuples();
@@ -278,6 +342,39 @@ int vtkVisItOBJReader::RequestData(
       if (nTCoords>0 && !hasTCoords) { hasTCoords=1; }
       if (nNormals>0 && !hasNormals) { hasNormals=1; }
       }
+    else if (strncmp(line,"g ",2)==0) // group name(s) multiple names handled by consumer 
+      {
+      currGroupId = groupNames->LookupValue(&line[2]);
+      if (currGroupId < 0)
+        {
+        int len = (int) strlen(line);
+        line[len-1] = '\0'; // chop off newline char
+        currGroupId = groupNames->InsertNextValue(&line[2]);
+        }
+      }
+    else if (strncmp(line,"mtllib ",7)==0)
+      {
+      vtkFloatArray *rgbValues = vtkFloatArray::New();
+      rgbValues->SetNumberOfComponents(3);
+      vtkStringArray *colorNames = vtkStringArray::New();
+      int len = (int) strlen(line);
+      line[len-1] = '\0'; // chop off newline char
+      if (ParseMTLFile(&line[7], colorNames, rgbValues))
+        {
+        colorNames->SetName("_vtkVisItOBJReader_ColorNames");
+        rgbValues->SetName("_vtkVisItOBJReader_RGBValues");
+        output->GetCellData()->AddArray(colorNames);
+        output->GetCellData()->AddArray(rgbValues);
+        }
+      rgbValues->Delete();
+      colorNames->Delete();
+      }
+    else if (strncmp(line,"usemtl ",7)==0)
+      {
+        int len = (int) strlen(line);
+        line[len-1] = '\0'; // chop off newline char
+        groupColors->InsertNextValue(&line[7]);
+      }
     else 
       {
       //vtkDebugMacro(<<"Ignoring line: "<<line);
@@ -302,6 +399,18 @@ int vtkVisItOBJReader::RequestData(
 
       output->SetPoints(points);
       output->SetPolys(polys);
+      if (groupNames->GetNumberOfTuples())
+        {
+        groupIds->SetName("_vtkVisItOBJReader_AggregateGroupIDs");
+        groupNames->SetName("_vtkVisItOBJReader_AggregateGroupNames");
+        output->GetCellData()->AddArray(groupIds);
+        output->GetCellData()->AddArray(groupNames);
+        }
+      if (groupColors->GetNumberOfTuples())
+        {
+        groupColors->SetName("_vtkVisItOBJReader_AggregateGroupColors");
+        output->GetCellData()->AddArray(groupColors);
+        }
 
       // if there is an exact correspondence between tcoords and vertices then can simply
       // assign the tcoords points as point data
@@ -327,6 +436,7 @@ int vtkVisItOBJReader::RequestData(
       vtkFloatArray *new_normals = vtkFloatArray::New();
       new_normals->SetNumberOfComponents(3);
       vtkCellArray *new_polys = vtkCellArray::New();
+      vtkIntArray *new_groupIds = groupIds->GetNumberOfTuples()>0?vtkIntArray::New():0;
 
       // for each poly, copy its vertices into new_points (and point at them)
       // also copy its tcoords into new_tcoords
@@ -376,12 +486,26 @@ int vtkVisItOBJReader::RequestData(
             }
           // copy this poly (pointing at the new points) into the new polys list 
           new_polys->InsertNextCell(n_pts,pts);
+          new_groupIds->InsertNextValue(groupIds->GetValue(i));
           }
         }
 
       // use the new structures for the output
       output->SetPoints(new_points);
       output->SetPolys(new_polys);
+      if (groupNames->GetNumberOfTuples())
+        {
+        new_groupIds->SetName("_vtkVisItOBJReader_AggregateGroupIDs");
+        groupNames->SetName("_vtkVisItOBJReader_AggregateGroupNames");
+        output->GetCellData()->AddArray(new_groupIds);
+        output->GetCellData()->AddArray(groupNames);
+        new_groupIds->Delete();
+        }
+      if (groupColors->GetNumberOfTuples())
+        {
+        groupColors->SetName("_vtkVisItOBJReader_AggregateGroupColors");
+        output->GetCellData()->AddArray(groupColors);
+        }
       if (hasTCoords)
         {
         output->GetPointData()->SetTCoords(new_tcoords);
@@ -405,6 +529,9 @@ int vtkVisItOBJReader::RequestData(
   polys->Delete();
   tcoord_polys->Delete();
   normal_polys->Delete();
+  groupIds->Delete();
+  groupNames->Delete();
+  groupColors->Delete();
 
   return 1;
 }
