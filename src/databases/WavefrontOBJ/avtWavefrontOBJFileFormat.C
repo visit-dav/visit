@@ -397,7 +397,7 @@ avtWavefrontOBJFileFormat::GetAuxiliaryData(const char *var,
         avtMaterial *mat = new avtMaterial((int) matnames.size(), matnames, nCells,
             matlist, 0, 0, 0, 0, 0);
 
-       delete matlist;
+       delete [] matlist;
        df = avtMaterial::Destruct;
        return (void*) mat;
    }
@@ -509,7 +509,7 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
 
         /* Get float rgb values from colorValues */
         float rgb[3];
-        colorValues->GetTupleValue(colorIndex, rgb);
+        colorValues->GetTypedTuple(colorIndex, rgb);
 
         /* Define X windows #RRGGBB color string format */
         char tmp[16];

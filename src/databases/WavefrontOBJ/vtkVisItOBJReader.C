@@ -133,7 +133,7 @@ ParseMTLFile(char const *filename,
       // this is ambient color definition, expect three floats, separated by whitespace:
       if (sscanf(line, "Ka %f %f %f", &rgb[0], &rgb[1], &rgb[2])==3) 
         {
-        rgbValues->InsertNextTupleValue(rgb);
+        rgbValues->InsertNextTypedTuple(rgb);
         }
       else 
         {
