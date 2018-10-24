@@ -12,7 +12,6 @@
         <!-- optional libraries -->
         <optional>
             <lib name="adios"/>
-            <lib name="adios2"/>
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
@@ -39,7 +38,6 @@
             <lib name="moab"/>
             <lib name="mpich"/>
             <lib name="mxml"/>
-            <lib name="nektarpp"/>
             <lib name="netcdf"/>
             <lib name="openexr"/>
             <lib name="openssl"/>
@@ -70,7 +68,6 @@
 
         <group name="optional" comment="All optional libraries" enabled="no">
             <lib name="adios"/>
-            <lib name="adios2"/>
             <lib name="advio"/>
             <lib name="boost"/>
             <lib name="boxlib"/>
@@ -88,7 +85,6 @@
             <lib name="mpich"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
-            <lib name="nektarpp"/>
             <lib name="openexr"/>
             <lib name="openssl"/>
             <lib name="ospray"/>
@@ -115,7 +111,6 @@
         <!-- all io libraries -->
         <group name="all-io" comment="Build all available I/O libraries" enabled="no">
             <lib name="adios"/>
-            <lib name="adios2"/>
 <!--        <lib name="advio"/>    Removed by Allen Sanderson-->
             <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
@@ -131,7 +126,6 @@
             <lib name="hdf5"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
-            <lib name="nektarpp"/>
             <lib name="openexr"/>
             <lib name="pidx"/>
             <lib name="silo"/>
@@ -145,7 +139,6 @@
         <!-- dbio-only-->
         <group name="dbio-only" comment="Disables EVERYTHING but I/O." enabled="no">
             <lib name="adios"/>
-            <lib name="adios2"/>
             <lib name="advio"/>
             <lib name="boost"/> <!-- required by nektarpp -->
             <lib name="boxlib"/>
@@ -161,7 +154,6 @@
             <lib name="hdf5"/>
             <lib name="mxml"/>
             <lib name="netcdf"/>
-            <lib name="nektarpp"/>
             <lib name="pidx"/>
             <lib name="silo"/>
             <lib name="szip"/>

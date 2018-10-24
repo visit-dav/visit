@@ -780,6 +780,10 @@ QvisAnnotationWindow::Create3DTab()
 //   Alister Maguire, Fri Mar  9 10:13:30 PST 2018
 //   Added checkbox for setting triad manually. 
 //
+//   Brad Whitlock, Wed Oct 24 16:05:26 PDT 2018
+//   Block some signals to prevent crash with autoupdate when opening 
+//   the window.
+//
 // ****************************************************************************
 
 QWidget *
@@ -959,8 +963,10 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     triadBoldToggle = new QCheckBox(tr("Bold"), top);
     connect(triadBoldToggle, SIGNAL(toggled(bool)),
             this, SLOT(triadBoldToggleChecked(bool)));
+    triadBoldToggle->blockSignals(true);
     triadBoldToggle->setChecked(
         annotationAtts->GetAxes3D().GetTriadBold());
+    triadBoldToggle->blockSignals(false);
 
     triadLayout->addWidget(triadBoldToggle, triadRow, 0);
     triadRow++;
@@ -969,8 +975,10 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     triadItalicToggle = new QCheckBox(tr("Italic"), top);
     connect(triadItalicToggle, SIGNAL(toggled(bool)),
             this, SLOT(triadItalicToggleChecked(bool)));
+    triadItalicToggle->blockSignals(true);
     triadItalicToggle->setChecked(
         annotationAtts->GetAxes3D().GetTriadItalic());
+    triadItalicToggle->blockSignals(false);
 
     triadLayout->addWidget(triadItalicToggle, triadRow, 0);
     triadRow++;

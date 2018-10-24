@@ -745,6 +745,7 @@ function build_vtk
     vopts="${vopts} -DModule_vtkIOLegacy:BOOL=true"
     vopts="${vopts} -DModule_vtkIOPLY:BOOL=true"
     vopts="${vopts} -DModule_vtkIOXML:BOOL=true"
+    vopts="${vopts} -DModule_vtkIOExodus:BOOL=true"
     vopts="${vopts} -DModule_vtkInteractionStyle:BOOL=true"
     vopts="${vopts} -DModule_vtkRenderingAnnotation:BOOL=true"
     vopts="${vopts} -DModule_vtkRenderingFreeType:BOOL=true"
@@ -825,6 +826,8 @@ function build_vtk
     cat bv_run_cmake.sh
     issue_command bash bv_run_cmake.sh || error "VTK configuration failed."
 
+    echo "NOT BUILDING"
+    return 0
 
     #
     # Now build VTK.
