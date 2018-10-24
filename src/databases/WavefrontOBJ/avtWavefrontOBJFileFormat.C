@@ -513,7 +513,7 @@ AddGroupings(avtDatabaseMetaData *md, vtkDataSet *ds, char const *meshname,
 
         /* Define X windows #RRGGBB color string format */
         char tmp[16];
-        snprintf(tmp, sizeof(tmp), "#%02X%02X%02X", (int) (rgb[0]*255), (int) (rgb[1]*255),
+        SNPRINTF(tmp, sizeof(tmp), "#%02X%02X%02X", (int) (rgb[0]*255), (int) (rgb[1]*255),
             (int) (rgb[2]*255));
         matcolors.push_back(tmp);
     }
