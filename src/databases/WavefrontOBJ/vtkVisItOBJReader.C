@@ -13,7 +13,10 @@
 
 =========================================================================*/
 #include "vtkVisItOBJReader.h"
+
 #include <InvalidFilesException.h>
+#include <FileFunctions.h>
+#include <snprintf.h>
 
 #include "vtkCellArray.h"
 #include "vtkCellData.h"
@@ -25,6 +28,8 @@
 #include "vtkPointData.h"
 #include "vtkPolyData.h"
 #include "vtkStringArray.h"
+
+#include <cstring>
 
 vtkStandardNewMacro(vtkVisItOBJReader);
 
@@ -112,14 +117,27 @@ int is_whitespace(char c)
 // Parse an OBJ material file for material "names" and
 // coloration. Only the ambient color (Ka) is examined.
 static int
-ParseMTLFile(char const *filename,
+ParseMTLFile(char const *objFileName, char const *mtlFileName,
     vtkStringArray *colorNames, vtkFloatArray *rgbValues)
 {
-  FILE *in = fopen(filename,"r");
   const int MAX_LINE=8192;
   char line[MAX_LINE],*pChar;
   float rgb[3];
   int everything_ok = 1;
+  FILE *in;
+
+  if (mtlFileName[0] == '/') // abs path case
+    {
+    in = fopen(mtlFileName,"r");
+    }
+  else
+    {
+    char tmpFileName[2048];
+    SNPRINTF(tmpFileName, sizeof(tmpFileName), "%s/%s",
+      FileFunctions::Dirname(objFileName), mtlFileName);
+    in = fopen(FileFunctions::Normalize(tmpFileName),"r");
+    }
+  if (!in) return 0;
   while (everything_ok && fgets(line,MAX_LINE,in)!=NULL) 
     {
     if (strncmp(line,"newmtl ",7)==0) 
@@ -359,7 +377,7 @@ int vtkVisItOBJReader::RequestData(
       vtkStringArray *colorNames = vtkStringArray::New();
       int len = (int) strlen(line);
       line[len-1] = '\0'; // chop off newline char
-      if (ParseMTLFile(&line[7], colorNames, rgbValues))
+      if (ParseMTLFile(this->FileName, &line[7], colorNames, rgbValues))
         {
         colorNames->SetName("_vtkVisItOBJReader_ColorNames");
         rgbValues->SetName("_vtkVisItOBJReader_RGBValues");
