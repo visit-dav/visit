@@ -36,6 +36,9 @@ function bv_hdf5_depends_on
         if [[ "$DO_ZLIB" == "yes" ]] ; then
             depends_on="$depends_on zlib"    
         fi
+        if [[ -n "$PAR_COMPILER" && "$DO_MOAB" == "yes"  && "$DO_MPICH" == "yes" ]]; then
+            depends_on="$depends_on mpich"
+        fi
 
         echo $depends_on
     fi
