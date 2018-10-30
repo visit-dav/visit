@@ -5220,6 +5220,9 @@ ViewerSubject::DeferCommandFromSimulation(const EngineKey &key,
 //   Get the entire ExportDBAttributes from the simulation so we get the export
 //   options too.
 //
+//   Brad Whitlock, Mon Oct 29 17:14:13 PDT 2018
+//   Allow SetUI commands whose strings contained colons.
+//
 // ****************************************************************************
 
 void
@@ -5266,33 +5269,46 @@ ViewerSubject::HandleCommandFromSimulation(const EngineKey &key,
         // s[3] = value
         // s[4] = enabled
 
-        if( s.size() != 5 )
+        std::string svalue;
+        bool enabled = true;
+        if( s.size() > 5 )
         {
-          std::stringstream msg;
+            // The most likely cause for this is the string we sent contains a colon.
+            // Let's allow that.
+            svalue = s[3];
+            for(size_t i = 4; i < s.size()-1; ++i)
+            {
+                svalue += ":";
+                svalue += s[i];
+            }
 
-          msg << "SetUI command expected 5 values but recieved " << s.size()
-              << " values. The original command is '"  << command << "'";
-            
-          GetViewerMessaging()->Warning(msg.str());
-
-          return;
+            // That makes the enabled value the last one.
+            enabled = (s[s.size()-1] == "1");
         }
-        
+        else if(s.size() == 5)
+        {
+            svalue = s[3];
+            enabled = (s[4] == "1");
+        }
+        else
+        {
+            std::stringstream msg;
+
+            msg << "SetUI command expected 5 values but recieved " << s.size()
+                << " values. The original command is '"  << command << "'";
+            
+            GetViewerMessaging()->Warning(msg.str());
+
+            return;
+        }
+
         // Send the new values to the client so they can be used to update
         // the custom sim window there.
         GetViewerState()->GetSimulationUIValues()->SetHost(key.OriginalHostName());
         GetViewerState()->GetSimulationUIValues()->SetSim(key.SimName());
         GetViewerState()->GetSimulationUIValues()->SetName(s[2]);
-#if 0
-        if(s[1] == "i")
-        {
-            int ival = atoi(s[3].c_str());
-            GetState()->GetSimulationUIValues()->SetIvalue(ival);
-        }
-        else
-#endif
-        GetViewerState()->GetSimulationUIValues()->SetSvalue(s[3]);
-        GetViewerState()->GetSimulationUIValues()->SetEnabled(s[4] == "1");
+        GetViewerState()->GetSimulationUIValues()->SetSvalue(svalue);
+        GetViewerState()->GetSimulationUIValues()->SetEnabled(enabled);
         GetViewerState()->GetSimulationUIValues()->Notify();
     }
     else if(command.substr(0,10) == "SaveWindow")
