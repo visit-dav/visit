@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Wed Oct 31 11:53:01 PDT 2018
+#   Added install logic.
 #
 #****************************************************************************/
 
@@ -51,11 +53,54 @@ IF (DEFINED VISIT_VTKH_DIR)
    MESSAGE(STATUS "  VTKh_VERSION_FULL = ${VTKh_VERSION_FULL}")
    MESSAGE(STATUS "  VTKh_VERSION = ${VTKh_VERSION}")
 
-   MESSAGE(STATUS "  VTKM_DIR = {VTKM_DIR}")
+   MESSAGE(STATUS "  VTKM_DIR = ${VTKM_DIR}")
    MESSAGE(STATUS "  VTKM_FOUND = ${VTKM_FOUND}")
    MESSAGE(STATUS "  VTKm_VERSION_MAJOR = ${VTKm_VERSION_MAJOR}")
    MESSAGE(STATUS "  VTKm_VERSION_MINOR = ${VTKm_VERSION_MINOR}")
    MESSAGE(STATUS "  VTKm_VERSION_PATCH = ${VTKm_VERSION_PATCH}")
    MESSAGE(STATUS "  VTKm_VERSION_FULL = ${VTKm_VERSION_FULL}")
    MESSAGE(STATUS "  VTKm_VERSION = ${VTKm_VERSION}")
+
+   if(VISIT_INSTALL_THIRD_PARTY)
+       include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
+       # use the vtkh and vtkm CMake properties to find locations and
+       # all interface link dependencies
+       function(get_lib_loc_and_install _lib)
+           get_target_property(ttype ${_lib} TYPE)
+           if (ttype STREQUAL "INTERFACE_LIBRARY")
+               return()
+           endif()
+           get_target_property(i_loc ${_lib} IMPORTED_LOCATION)
+           if (NOT i_loc)
+             get_target_property(i_loc ${_lib} IMPORTED_LOCATION_RELEASE)
+           endif()
+           if(i_loc)
+               THIRD_PARTY_INSTALL_LIBRARY(${i_loc})
+           endif()
+       endfunction()
+
+       get_target_property(VTKH_INT_LL vtkh INTERFACE_LINK_LIBRARIES)
+       set(addl_ll)
+       foreach(vtkhll ${VTKH_INT_LL})
+           get_lib_loc_and_install(${vtkhll})
+           get_target_property(VTKH_LL_DEP ${vtkhll} INTERFACE_LINK_LIBRARIES)
+           if(VTKH_LL_DEP)
+               foreach(ll_dep ${VTKH_LL_DEP})
+                   # don't process duplicates
+                   if (NOT ${ll_dep} IN_LIST VTKH_INT_LL AND
+                       NOT ${ll_dep} IN_LIST addl_ll)
+                       get_lib_loc_and_install(${ll_dep})
+                       list(APPEND addl_ll ${ll_dep})
+                   endif()
+               endforeach()
+           endif()
+       endforeach()
+       unset(addl_ll)
+       get_target_property(VTKH_LL_DEP vtkh_utils INTERFACE_LINK_LIBRARIES)
+
+       if(NOT VISIT_HEADERS_SKIP_INSTALL)
+           THIRD_PARTY_INSTALL_INCLUDE(vtkh ${VISIT_VTKH_DIR}/include)
+           THIRD_PARTY_INSTALL_INCLUDE(vtkm ${VTKM_DIR}/include)
+       endif()
+   endif()
 ENDIF()
