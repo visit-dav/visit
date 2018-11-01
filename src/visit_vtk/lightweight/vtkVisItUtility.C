@@ -51,6 +51,7 @@
 #include <vtkCell.h>
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
+#include <vtkDataSetWriter.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkGenericCell.h>
@@ -58,11 +59,12 @@
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
+#include <vtkPyramid.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkShortArray.h>
 #include <vtkStructuredGrid.h>
 #include <vtkVisItPointLocator.h>
-#include <vtkDataSetWriter.h>
+#include <vtkWedge.h>
 
 #include <DebugStream.h>
 
@@ -974,12 +976,26 @@ vtkVisItUtility::ContainsMixedGhostZoneTypes(vtkDataSet *ds)
 //    Hank Childs, Fri Jan  5 11:01:40 PST 2007
 //    Add support for degenerate hexes (faces inside out).
 //
+//    Eric Brugger, Thu Nov  1 11:20:45 PDT 2018
+//    Added support for splitting wedge and pyramid elements into tetrahedra
+//    to determine if a cell contains a point, since the VTK routine had
+//    numeric issues.
+//
 // ****************************************************************************
 
 bool
 vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
 {
-    int   i;
+    int   i, j;
+    int tet_faces[4][3] = { {0,1,2}, {1,0,3}, {0,2,3}, {1,3,2} };
+    int pyramid_tets[4][4] = { {0,1,5,4}, {1,2,5,4}, {2,3,5,4},
+                                      {3,0,5,4} };
+    int wedge_tets[11][4] = { {0,7,6,3}, {0,1,2,7}, {0,7,2,6}, {4,6,7,3},
+                              {4,7,6,8}, {2,6,7,8}, {2,8,7,1}, {4,7,8,1},
+                              {4,5,6,3}, {4,6,5,8}, {5,8,6,2} };
+    int wedge_quads[3][4] = { {0,2,5,3}, {0,1,4,3}, {1,2,5,4} };
+    int hex_faces[6][4] = { {0,4,7,3}, {1,2,6,5}, {0,1,5,4},
+                            {3,7,6,2}, {0,3,2,1}, {4,5,6,7} };
 
     int cellType = cell->GetCellType();
     if (cellType == VTK_HEXAHEDRON)
@@ -988,9 +1004,6 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
         vtkPoints *pts = hex->GetPoints();
         // vtkCell sets its points object data type to double. 
         double *pts_ptr = (double *) pts->GetVoidPointer(0);
-        static int faces[6][4] = { {0,4,7,3}, {1,2,6,5},
-                           {0,1,5,4}, {3,7,6,2},
-                           {0,3,2,1}, {4,5,6,7} };
 
         double center[3] = { 0., 0., 0. };
         for (i = 0 ; i < 8 ; i++)
@@ -1006,9 +1019,9 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
         for (i = 0 ; i < 6 ; i++)
         {
             double dir1[3], dir2[3];
-            int idx0 = faces[i][0];
-            int idx1 = faces[i][1];
-            int idx2 = faces[i][3];
+            int idx0 = hex_faces[i][0];
+            int idx1 = hex_faces[i][1];
+            int idx2 = hex_faces[i][3];
             dir1[0] = pts_ptr[3*idx1] - pts_ptr[3*idx0];
             dir1[1] = pts_ptr[3*idx1+1] - pts_ptr[3*idx0+1];
             dir1[2] = pts_ptr[3*idx1+2] - pts_ptr[3*idx0+2];
@@ -1038,8 +1051,8 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
             //    ?>= 0
             //
             double val1 = cross[0]*(pt[0] - origin[0])
-                       + cross[1]*(pt[1] - origin[1])
-                       + cross[2]*(pt[2] - origin[2]);
+                        + cross[1]*(pt[1] - origin[1])
+                        + cross[2]*(pt[2] - origin[2]);
 
             //
             // If the hexahedron is inside out, then val1 could be
@@ -1047,8 +1060,8 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
             // Find the sign for the cell center.
             //
             double val2 = cross[0]*(center[0] - origin[0])
-                       + cross[1]*(center[1] - origin[1])
-                       + cross[2]*(center[2] - origin[2]);
+                        + cross[1]*(center[1] - origin[1])
+                        + cross[2]*(center[2] - origin[2]);
 
             // 
             // If the point in question (pt) and the center are on opposite
@@ -1058,6 +1071,215 @@ vtkVisItUtility::CellContainsPoint(vtkCell *cell, const double *pt)
                 return false;
         }
         return true;
+    }
+    else if (cellType == VTK_PYRAMID)
+    {
+        vtkPyramid *pyramid = (vtkPyramid *) cell;
+        vtkPoints *pts = pyramid->GetPoints();
+        // vtkCell sets its points object data type to double. 
+        double *pts_ptr = (double *) pts->GetVoidPointer(0);
+
+        // Add an additional point that is the center of the base.
+        double pts2[6*3];
+        for (i = 0 ; i < 5*3 ; i++)
+            pts2[i] = pts_ptr[i];
+        double center[3] = { 0., 0., 0. };
+        for (i = 0 ; i < 4 ; i++)
+        {
+            center[0] += pts2[3*i];
+            center[1] += pts2[3*i+1];
+            center[2] += pts2[3*i+2];
+        }
+        center[0] /= 4.;
+        center[1] /= 4.;
+        center[2] /= 4.;
+        pts2[3*5+0] = center[0];
+        pts2[3*5+1] = center[1];
+        pts2[3*5+2] = center[2];
+
+        // Break the pyramid into 4 tetrahedra using the added point
+        // and loop over them.
+
+        // Loop over tetrahedra.
+        for (i = 0 ; i < 4 ; i++)
+        {
+            center[0] = 0.; center[1] = 0.; center[2] = 0.;
+            for (j = 0 ; j < 4 ; j++)
+            {
+                center[0] += pts2[3*pyramid_tets[i][j]];
+                center[1] += pts2[3*pyramid_tets[i][j]+1];
+                center[2] += pts2[3*pyramid_tets[i][j]+2];
+            }
+            center[0] /= 4.;
+            center[1] /= 4.;
+            center[2] /= 4.;
+
+            // Loop over faces.
+            for (j = 0 ; j < 4 ; j++)
+            {
+                double dir1[3], dir2[3];
+                int idx0 = pyramid_tets[i][tet_faces[j][0]];
+                int idx1 = pyramid_tets[i][tet_faces[j][1]];
+                int idx2 = pyramid_tets[i][tet_faces[j][2]];
+                dir1[0] = pts2[3*idx1]   - pts2[3*idx0];
+                dir1[1] = pts2[3*idx1+1] - pts2[3*idx0+1];
+                dir1[2] = pts2[3*idx1+2] - pts2[3*idx0+2];
+                dir2[0] = pts2[3*idx0]   - pts2[3*idx2];
+                dir2[1] = pts2[3*idx0+1] - pts2[3*idx2+1];
+                dir2[2] = pts2[3*idx0+2] - pts2[3*idx2+2];
+                double cross[3];
+                cross[0] = dir1[1]*dir2[2] - dir1[2]*dir2[1];
+                cross[1] = dir1[2]*dir2[0] - dir1[0]*dir2[2];
+                cross[2] = dir1[0]*dir2[1] - dir1[1]*dir2[0];
+                double origin[3];
+                origin[0] = pts2[3*idx0];
+                origin[1] = pts2[3*idx0+1];
+                origin[2] = pts2[3*idx0+2];
+
+                //
+                // The plane is of the form Ax + By + Cz - D = 0.
+                //
+                // Using the origin, we can calculate D:
+                // D = A*origin[0] + B*origin[1] + C*origin[2]
+                //
+                // We want to know if 'pt' gives:
+                // A*pt[0] + B*pt[1] + C*pt[2] - D >= 0.
+                //
+                // We can substitute in D to get
+                // A*(pt[0]-origin[0]) + B*(pt[1]-origin[1]) +
+                // C*(pt[2-origin[2]) >= 0
+                //
+                double val1 = cross[0]*(pt[0] - origin[0])
+                            + cross[1]*(pt[1] - origin[1])
+                            + cross[2]*(pt[2] - origin[2]);
+
+                //
+                // If the hexahedron is inside out, then val1 could be
+                // negative, because the face orientation is wrong.
+                // Find the sign for the cell center.
+                //
+                double val2 = cross[0]*(center[0] - origin[0])
+                            + cross[1]*(center[1] - origin[1])
+                            + cross[2]*(center[2] - origin[2]);
+
+                // 
+                // If the point in question (pt) and the center are on opposite
+                // sides of the cell, then declare the point outside the cell.
+                //
+                if (val1*val2 < 0.)
+                    break;
+            }
+            if (j == 4)
+                return true;
+        }
+        return false;
+    }
+    else if (cellType == VTK_WEDGE)
+    {
+        vtkWedge *wedge = (vtkWedge *) cell;
+        vtkPoints *pts = wedge->GetPoints();
+        // vtkCell sets its points object data type to double. 
+        double *pts_ptr = (double *) pts->GetVoidPointer(0);
+
+        // Add three additional points that are the center of each
+        // quad face edge.
+        double pts2[9*3];
+        for (i = 0 ; i < 6*3 ; i++)
+            pts2[i] = pts_ptr[i];
+        double center[3];
+        for (i = 0 ; i < 3 ; i++)
+        {
+            center[0] = 0.; center[1] = 0.; center[2] = 0.;
+            for (j = 0 ; j < 4 ; j++)
+            {
+                center[0] += pts2[3*wedge_quads[i][j]];
+                center[1] += pts2[3*wedge_quads[i][j]+1];
+                center[2] += pts2[3*wedge_quads[i][j]+2];
+            }
+            center[0] /= 4.;
+            center[1] /= 4.;
+            center[2] /= 4.;
+            pts2[3*(6+i)] = center[0];
+            pts2[3*(6+i)+1] = center[1];
+            pts2[3*(6+i)+2] = center[2];
+        }
+
+        // Break the wedge into 11 tetrahedra using the three added
+        // points and loop over them.
+
+        // Loop over tetrahedra.
+        for (i = 0 ; i < 11 ; i++)
+        {
+            center[0] = 0.; center[1] = 0.; center[2] = 0.;
+            for (j = 0 ; j < 4 ; j++)
+            {
+                center[0] += pts2[3*wedge_tets[i][j]];
+                center[1] += pts2[3*wedge_tets[i][j]+1];
+                center[2] += pts2[3*wedge_tets[i][j]+2];
+            }
+            center[0] /= 4.;
+            center[1] /= 4.;
+            center[2] /= 4.;
+
+            // Loop over faces.
+            for (j = 0 ; j < 4 ; j++)
+            {
+                double dir1[3], dir2[3];
+                int idx0 = wedge_tets[i][tet_faces[j][0]];
+                int idx1 = wedge_tets[i][tet_faces[j][1]];
+                int idx2 = wedge_tets[i][tet_faces[j][2]];
+                dir1[0] = pts2[3*idx1]   - pts2[3*idx0];
+                dir1[1] = pts2[3*idx1+1] - pts2[3*idx0+1];
+                dir1[2] = pts2[3*idx1+2] - pts2[3*idx0+2];
+                dir2[0] = pts2[3*idx0]   - pts2[3*idx2];
+                dir2[1] = pts2[3*idx0+1] - pts2[3*idx2+1];
+                dir2[2] = pts2[3*idx0+2] - pts2[3*idx2+2];
+                double cross[3];
+                cross[0] = dir1[1]*dir2[2] - dir1[2]*dir2[1];
+                cross[1] = dir1[2]*dir2[0] - dir1[0]*dir2[2];
+                cross[2] = dir1[0]*dir2[1] - dir1[1]*dir2[0];
+                double origin[3];
+                origin[0] = pts2[3*idx0];
+                origin[1] = pts2[3*idx0+1];
+                origin[2] = pts2[3*idx0+2];
+
+                //
+                // The plane is of the form Ax + By + Cz - D = 0.
+                //
+                // Using the origin, we can calculate D:
+                // D = A*origin[0] + B*origin[1] + C*origin[2]
+                //
+                // We want to know if 'pt' gives:
+                // A*pt[0] + B*pt[1] + C*pt[2] - D >= 0.
+                //
+                // We can substitute in D to get
+                // A*(pt[0]-origin[0]) + B*(pt[1]-origin[1]) +
+                // C*(pt[2-origin[2]) >= 0
+                //
+                double val1 = cross[0]*(pt[0] - origin[0])
+                            + cross[1]*(pt[1] - origin[1])
+                            + cross[2]*(pt[2] - origin[2]);
+
+                //
+                // If the hexahedron is inside out, then val1 could be
+                // negative, because the face orientation is wrong.
+                // Find the sign for the cell center.
+                //
+                double val2 = cross[0]*(center[0] - origin[0])
+                            + cross[1]*(center[1] - origin[1])
+                            + cross[2]*(center[2] - origin[2]);
+
+                // 
+                // If the point in question (pt) and the center are on opposite
+                // sides of the cell, then declare the point outside the cell.
+                //
+                if (val1*val2 < 0.)
+                    break;
+            }
+            if (j == 4)
+                return true;
+        }
+        return false;
     }
 
     double closestPt[3];
