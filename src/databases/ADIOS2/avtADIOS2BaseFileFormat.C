@@ -356,8 +356,8 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
     if (shape.size() == 2)
         shape.push_back(1);
 
-//    cout<<"********** SWAP DIMS"<<endl;
-//    std::swap(shape[0], shape[1]);
+    cout<<"********** SWAP DIMS"<<endl;
+    std::swap(shape[0], shape[1]);
 
     int dims[3] = {shape[0], shape[1], shape[2]};
 
