@@ -103,13 +103,15 @@ class avtGTCFileFormat : public avtMTSDFileFormat
 
   protected:
     // DATA MEMBERS
+    vtkUnstructuredGrid * CreateMesh(bool xyzMesh);
+
     std::shared_ptr<adios2::ADIOS> adios;
     adios2::IO io;
     adios2::Engine reader;
     std::map<std::string, adios2::Params> variables, attributes;
     std::map<std::string, std::pair<int,std::string>> meshInfo;
 
-    vtkUnstructuredGrid *grid, *ptGrid;
+    vtkUnstructuredGrid *grid, *ptGrid, *cylGrid;
     int numTimeSteps;
 
     virtual void           PopulateDatabaseMetaData(avtDatabaseMetaData *, int);

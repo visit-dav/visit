@@ -70,19 +70,22 @@ static std::vector<int> CSVToVectorInt(const std::string csv) noexcept
         return numbers;
     }
 
-    if (csv.find(",") == csv.npos) // if no commas, one int
+    string tmp;
+    for (int i = 0; i < csv.size(); i++)
+        if (csv[i] != ' ') tmp.push_back(csv[i]);
+
+    if (tmp.find(",") == tmp.npos) // if no commas, one int
     {
-        numbers.push_back(std::stoi(csv)); // might need to be checked
+        numbers.push_back(std::stoi(tmp)); // might need to be checked
     }
     else
     {
-        numbers.reserve(std::count(csv.begin(), csv.end(), ','));
-
-        std::istringstream csvSS(csv);
+        numbers.reserve(std::count(tmp.begin(), tmp.end(), ','));
+        std::istringstream csvSS(tmp);
         std::string value;
         while (std::getline(csvSS, value, ','))
         {
-            numbers.push_back(std::stoi(csv));
+            numbers.push_back(std::stoi(value));
         }
     }
 
@@ -119,11 +122,72 @@ avtADIOS2BaseFileFormat::CreateInterface(const char *const *list,
 //
 // ****************************************************************************
 
-avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
-//    :  adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)), io(adios->DeclareIO("sstIO")), numTimeSteps(1), avtMTSDFileFormat(&filename, 1)
-    :  adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)), io(adios->DeclareIO("ReadBP")), numTimeSteps(1), avtMTSDFileFormat(&filename, 1)
+const char * sstFileName = "stream_T1.bp.sst";
+const char * sstFileName2 = "stream_T1.bp";
+
+static const string getEngineType(const string &fname)
 {
-    reader = io.Open(filename, adios2::Mode::Read);
+    if (fname.find(".bp.sst") != string::npos)
+        return "SST";
+    else
+        return "BP";
+}
+
+static const string getFile(const string &fname)
+{
+    if (fname.find(".bp.sst") != string::npos)
+        return fname.substr(0, fname.size()-4);
+
+    return fname;
+}
+
+avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
+    : adios(std::make_shared<adios2::ADIOS>(adios2::DebugON)),
+      numTimeSteps(1),
+      isClosed(false),
+      avtMTSDFileFormat(&filename, 1)
+{
+    engineType = getEngineType(filename);
+    io = adios2::IO(adios->DeclareIO(engineType));
+    io.SetEngine(engineType);
+    reader = io.Open(getFile(filename), adios2::Mode::Read);
+
+    cout<<"avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat: "<<filename<<endl;
+#ifdef MDSERVER
+    cout<<"  Ctor: MDSERVER"<<endl;
+#else
+    cout<<"  Ctor: ENGINE"<<endl;
+#endif
+
+    if (engineType == "SST")
+    {
+        numTimeSteps = 100000;
+//        reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
+//        reader.EndStep();
+    }
+    else if (engineType == "BP")
+    {
+        map<string, adios2::Params> vars = io.AvailableVariables();
+        for (auto &v : vars)
+        {
+            string nsteps = v.second["AvailableStepsCount"];
+            cout<<"nsteps= :"<<nsteps<<":"<<endl;
+            if (!nsteps.empty())
+            {
+                numTimeSteps = std::stoi(nsteps);
+                break;
+            }
+        }
+    }
+
+#if 0
+    cout<<__FILE__<<" "<<__LINE__<<" "<<filename<<" "<<getFile(filename)<<endl;
+    cout<<"engineType= "<<engineType<<endl;
+    //reader = io.Open(filename, adios2::Mode::Read);
+
+    cout<<"io.Open("<<filename<<")"<<endl;
+
+    reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
     variables = io.AvailableVariables();
 
     if (variables.size() > 0)
@@ -132,9 +196,15 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
         string nsteps = var0["AvailableStepsCount"];
         numTimeSteps = std::stoi(nsteps);
     }
+    numTimeSteps = 1000;
+
+    cout<<"variables: "<<variables<<endl;
+    cout<<"Num Timesteps= "<<numTimeSteps<<endl;
 
     for (auto &v : variables)
-        cout<<"Var: "<<v.first<<endl;
+        cout<<"Var: "<<v.first<<" :: "<<v.second<<endl;
+    reader.EndStep();
+#endif
 }
 
 
@@ -192,11 +262,22 @@ avtADIOS2BaseFileFormat::FreeUpResources(void)
 void
 avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
+#ifdef MDSERVER
+    cout<<"PopulateDatabaseMetaData: MDSERVER "<<timeState<<endl;
+#else
+    cout<<"PopulateDatabaseMetaData: ENGINE "<<timeState<<endl;
+#endif
+
+    meshInfo.clear();
+    variables = io.AvailableVariables();
+
+
     vector<pair<string,string>> vars;
 
     for (const auto &varInfo : variables)
     {
         auto params = varInfo.second;
+
         string shape = params["Shape"];
         auto vecShape = CSVToVectorInt(shape);
         if (meshInfo.find(shape) == meshInfo.end())
@@ -227,6 +308,12 @@ avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int t
 
     for (auto &v : vars)
         AddScalarVarToMetaData(md, v.first, v.second, AVT_NODECENT);
+
+#if MDSERVER
+//    if (!isClosed)
+//        reader.Close();
+    isClosed = true;
+#endif
 }
 
 
@@ -268,6 +355,9 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
     auto shape = CSVToVectorInt(shapeStr);
     if (shape.size() == 2)
         shape.push_back(1);
+
+//    cout<<"********** SWAP DIMS"<<endl;
+//    std::swap(shape[0], shape[1]);
 
     int dims[3] = {shape[0], shape[1], shape[2]};
 
@@ -314,36 +404,46 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
 vtkDataArray *
 avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
 {
-    cout<<"GetVar: "<<varname<<endl;
+    cout<<"GetVar: "<<varname<<" ts= "<<timestate<<endl;
 
     if (variables.find(varname) == variables.end())
         return NULL;
 
     auto var = variables[varname];
     string varType = var["Type"];
-    if (varType == "double")
+
+    if (engineType == "BP")
     {
-        adios2::Variable<double> v = io.InquireVariable<double>(varname);
-        cout<<"DIMS= "<<v.Shape()<<endl;
-        v.SetSelection(adios2::Box<adios2::Dims>({0,0,0}, v.Shape()));
-        v.SetStepSelection({timestate, 1});
-
-        size_t numVals = 1;
-        for (int i = 0; i < v.Shape().size(); i++)
-            numVals *= v.Shape()[i];
-
-        vector<double> buff(numVals);
-        reader.Get(v, buff.data(), adios2::Mode::Sync);
-
-        vtkDoubleArray *arr = vtkDoubleArray::New();
-        arr->SetNumberOfComponents(1);
-        arr->SetNumberOfTuples(numVals);
-        for (int i = 0; i < numVals; i++)
-            arr->SetTuple1(i, buff[i]);
-        return arr;
+    }
+    else if (engineType == "SST")
+    {
+        adios2::StepStatus status = reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
+        if (status != adios2::StepStatus::OK)
+            return NULL;
     }
 
-    return NULL;
+    adios2::Variable<double> v = io.InquireVariable<double>(varname);
+    cout<<"DIMS= "<<v.Shape()<<endl;
+    if (engineType == "BP")
+        v.SetStepSelection({timestate, 1});
+
+    size_t numVals = 1;
+    for (int i = 0; i < v.Shape().size(); i++)
+        numVals *= v.Shape()[i];
+
+    vector<double> buff(numVals);
+    reader.Get(v, buff.data(), adios2::Mode::Sync);
+
+    vtkDoubleArray *arr = vtkDoubleArray::New();
+    arr->SetNumberOfComponents(1);
+    arr->SetNumberOfTuples(numVals);
+    for (int i = 0; i < numVals; i++)
+        arr->SetTuple1(i, buff[i]);
+
+    if (engineType == "SST")
+        reader.EndStep();
+
+    return arr;
 }
 
 

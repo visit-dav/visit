@@ -5,6 +5,7 @@
     </CXXFLAGS>
     <FilePatterns>
       *.bp
+      *.sst
     </FilePatterns>
     <Files components="M">
       avtADIOS2FileFormat.C

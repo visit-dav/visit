@@ -74,21 +74,17 @@ ADIOS2CommonPluginInfo::GetDatabaseType()
 //  Creation:   omitted
 //
 // ****************************************************************************
-
 avtDatabase *
 ADIOS2CommonPluginInfo::SetupDatabase(const char *const *list,
-                                     int nList,
-                                     int nBlock)
+                                      int nList, int nBlock)
 {
     avtDatabase *db = 0;
-
     //
     // Create a file format interface.
     //
     avtFileFormatInterface *ffi = ADIOS2_CreateFileFormatInterface(list,
                                                                   nList,
                                                                   nBlock);
-
     //
     // If we created a file format interface, try creating a database.
     //

@@ -47,6 +47,8 @@
 #include <avtADIOS2SSTFileFormat.h>
 #include <avtADIOS2BaseFileFormat.h>
 #include <avtGTCFileFormat.h>
+#include <avtMEUMMAPSFileFormat.h>
+#include <string>
 
 // ****************************************************************************
 // Method: ADIOS2_CreateFileFormatInterface
@@ -83,26 +85,25 @@ avtFileFormatInterface *
 ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock)
 {
     avtFileFormatInterface *ffi = NULL;
-    enum Flavor {GTC, BASIC, SST, FAIL};
+    enum Flavor {GTC, BASIC, SST, MEUMMAPS, FAIL};
+    bool isSST = (std::string(list[0]).find(".sst") != std::string::npos);
 
+    cout<<__FILE__<<" "<<__LINE__<<" isSST "<<isSST<<endl;
     Flavor flavor = FAIL;
     if (list != NULL || nList > 0)
     {
         // Determine the type of reader that we want to use.
         TRY
         {
-            if (avtGTCFileFormat::Identify(list[0]))
-            {
-                flavor = GTC;
-            }
-            else if (avtADIOS2BaseFileFormat::Identify(list[0]))
-            {
+            flavor = BASIC;
+            if (isSST)
                 flavor = BASIC;
-            }
-            else if (avtADIOS2SSTFileFormat::Identify(list[0]))
-            {
-                flavor = SST;
-            }
+            else if (avtGTCFileFormat::Identify(list[0]))
+                flavor = GTC;
+            else if (avtMEUMMAPSFileFormat::Identify(list[0]))
+                flavor = MEUMMAPS;
+            else if (avtADIOS2BaseFileFormat::Identify(list[0]))
+                flavor = BASIC;
         }
         CATCH(VisItException)
         {
@@ -110,12 +111,17 @@ ADIOS2_CreateFileFormatInterface(const char * const *list, int nList, int nBlock
         }
         ENDTRY
 
+        cout<<"FLAVOR= "<<flavor<<endl;
         switch(flavor)
         {
           case GTC:
             ffi = avtGTCFileFormat::CreateInterface(list, nList, nBlock);
             break;
+          case MEUMMAPS:
+            ffi = avtMEUMMAPSFileFormat::CreateInterface(list, nList, nBlock);
+            break;
           case BASIC:
+              cout<<"OPEN A BASIC READER"<<endl;
             ffi = avtADIOS2BaseFileFormat::CreateInterface(list, nList, nBlock);
             break;
           case SST:

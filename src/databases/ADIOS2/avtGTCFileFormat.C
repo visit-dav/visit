@@ -109,6 +109,7 @@ avtGTCFileFormat::avtGTCFileFormat(const char *filename)
       numTimeSteps(1),
       avtMTSDFileFormat(&filename, 1),
       grid(NULL),
+      cylGrid(NULL),
       ptGrid(NULL)
 {
     reader = io.Open(filename, adios2::Mode::Read);
@@ -145,10 +146,13 @@ avtGTCFileFormat::~avtGTCFileFormat()
 {
     if (grid)
         grid->Delete();
+    if (cylGrid)
+        cylGrid->Delete();
     if (ptGrid)
         ptGrid->Delete();
 
     grid = NULL;
+    cylGrid = NULL;
     ptGrid = NULL;
 }
 
@@ -224,11 +228,13 @@ avtGTCFileFormat::FreeUpResources()
 void
 avtGTCFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-    AddMeshToMetaData(md, "ptmesh", AVT_POINT_MESH, NULL, 1, 0, 3, 3);
     AddMeshToMetaData(md, "mesh", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 3);
+    AddMeshToMetaData(md, "mesh_pt", AVT_POINT_MESH, NULL, 1, 0, 3, 3);
+    AddMeshToMetaData(md, "mesh_cyl", AVT_UNSTRUCTURED_MESH, NULL, 1, 0, 3, 3);
 
     AddScalarVarToMetaData(md, "potential", "mesh", AVT_NODECENT);
-    AddScalarVarToMetaData(md, "potential_pt", "ptmesh", AVT_NODECENT);
+    AddScalarVarToMetaData(md, "potential_pt", "mesh_pt", AVT_NODECENT);
+    AddScalarVarToMetaData(md, "potential_cyl", "mesh_cyl", AVT_NODECENT);
 }
 
 
@@ -1122,24 +1128,17 @@ createMapping(const vector<int> &igrid,
 //
 // ****************************************************************************
 
-vtkDataSet *
-avtGTCFileFormat::GetMesh(int timestate, const char *meshname)
+vtkUnstructuredGrid *
+avtGTCFileFormat::CreateMesh(bool xyzMesh)
 {
-    if (!strcmp(meshname, "ptmesh"))
-        return GetPtMesh(timestate, meshname);
-
-    if (grid != NULL)
-    {
-        grid->Register(NULL);
-        return grid;
-    }
-
-    //Create the grid.
     adios2::Variable<float> cVar = io.InquireVariable<float>("coordinates");
     adios2::Variable<int> igridVar = io.InquireVariable<int>("igrid");
     adios2::Variable<int> indexShiftVar = io.InquireVariable<int>("index-shift");
+
     if (!cVar || !igridVar || !indexShiftVar)
         return NULL;
+
+    vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::New();
 
     auto cDims = cVar.Shape();
 
@@ -1163,6 +1162,40 @@ avtGTCFileFormat::GetMesh(int timestate, const char *meshname)
     int numPlanes = cDims[2];
     int ptsPerPlane = cDims[0];
 
+    if (!xyzMesh)
+    {
+        float phi = 0.0f;
+        float dPhi = (2.0*M_PI)/(numPlanes-1);
+        for (int i = 0; i < numPlanes-1; i++)
+        {
+            cout<<"PHI= "<<phi*(180.0/M_PI)<<endl;
+            for (int j = 0; j < ptsPerPlane; j++)
+            {
+                int idx = i*ptsPerPlane+j;
+                float x = xbuff[idx];
+                float y = ybuff[idx];
+                float z = zbuff[idx];
+                float r = sqrt(x*x + y*y);
+
+                xbuff[idx] = r;
+                ybuff[idx] = phi;
+                zbuff[idx] = z;
+            }
+            phi += dPhi;
+        }
+
+        //We need to copy the first plane to the last.
+        int idx = numPlanes*ptsPerPlane;
+        xbuff.resize((numPlanes+1)*ptsPerPlane);
+        ybuff.resize((numPlanes+1)*ptsPerPlane);
+        zbuff.resize((numPlanes+1)*ptsPerPlane);
+        for (int j = 0; j < ptsPerPlane; j++)
+        {
+            xbuff[idx+j] = xbuff[j];
+            ybuff[idx+j] = ybuff[j];
+            zbuff[idx+j] = zbuff[j];
+        }
+    }
 
     //create mesh elements between planes
     int numE, numV;
@@ -1170,17 +1203,17 @@ avtGTCFileFormat::GetMesh(int timestate, const char *meshname)
     create_potential_mesh_vertex_list(&xbuff[0],
                                       &ybuff[0],
                                       &zbuff[0],
-                                      numPlanes,
+                                      //numPlanes,
+                                     (xyzMesh ? numPlanes : numPlanes-1),
                                       ptsPerPlane,
                                       &vertexList,
                                       numE, numV);
 
     int numPts = xbuff.size();
-    grid = vtkUnstructuredGrid::New();
     vtkPoints *pts = vtkPoints::New();
     pts->SetNumberOfPoints(numPts);
 
-    grid->SetPoints(pts);
+    mesh->SetPoints(pts);
     pts->Delete();
 
     //set points
@@ -1193,8 +1226,11 @@ avtGTCFileFormat::GetMesh(int timestate, const char *meshname)
     {
         for (int j = 0; j < numV; j++)
             wedge[j] = vertexList[i*numV+j];
-        grid->InsertNextCell(VTK_WEDGE, 6, wedge);
+        mesh->InsertNextCell(VTK_WEDGE, 6, wedge);
     }
+    if (!xyzMesh)
+        return mesh;
+
 
     //Connect first and last plane.
     //This requires the igrid to map nodes from last plane to first plane.
@@ -1228,13 +1264,51 @@ avtGTCFileFormat::GetMesh(int timestate, const char *meshname)
             wedge[3] = idsN[0] + offset;
             wedge[4] = idsN[1] + offset;
             wedge[5] = idsN[2] + offset;
-            grid->InsertNextCell(VTK_WEDGE, 6, wedge);
+            mesh->InsertNextCell(VTK_WEDGE, 6, wedge);
         }
     }
 
+    return mesh;
+}
+
+vtkDataSet *
+avtGTCFileFormat::GetMesh(int timestate, const char *meshname)
+{
+    if (!strcmp(meshname, "mesh_pt"))
+        return GetPtMesh(timestate, meshname);
+
+    bool xyzMesh = (string(meshname) == "mesh");
+
+    if (xyzMesh && grid != NULL)
+    {
+        grid->Register(NULL);
+        return grid;
+    }
+    else if (!xyzMesh && cylGrid != NULL)
+    {
+        cylGrid->Register(NULL);
+        return cylGrid;
+    }
+
+    //Create the grid.
+    vtkUnstructuredGrid *mesh = CreateMesh(xyzMesh);
+
+    if (mesh == NULL)
+        EXCEPTION1(ImproperUseException, "Invalid file");
+
     //Need to hold onto this point, so add-ref it.
-    grid->Register(NULL);
-    return grid;
+    if (xyzMesh)
+    {
+        grid = mesh;
+        grid->Register(NULL);
+        return grid;
+    }
+    else
+    {
+        cylGrid = mesh;
+        cylGrid->Register(NULL);
+        return cylGrid;
+    }
 }
 
 // ****************************************************************************
@@ -1259,7 +1333,7 @@ vtkDataArray *
 avtGTCFileFormat::GetVar(int timestate, const char *varname)
 {
     string vname(varname);
-    if (string(varname) == "potential_pt")
+    if (string(varname) == "potential_pt" || string(varname) == "potential_cyl")
         vname = "potential";
 
     adios2::Variable<float> var = io.InquireVariable<float>(vname);
