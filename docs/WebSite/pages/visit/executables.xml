@@ -70,7 +70,7 @@
           <td>Mac OS X 10.13 - Intel 64 bit<br />
           Darwin 10.13, Darwin Kernel Version 17.7.0, clang-900.39.2, MPICH<br />
           <i>(Includes parallel VisIt with self-contained MPICH MPI, Uintah. Works on Mac OS X 10.13 and later.)</i></td>
-          <td><a href="http://portal.nersc.gov/project/visit/releases/2.13.3/VisIt-2.13.3-10.12.dmg">Download</a></td>
+          <td><a href="http://portal.nersc.gov/project/visit/releases/2.13.3/VisIt-2.13.3-10.13.dmg">Download</a></td>
         </tr>
         <tr>
           <td>Linux - x86_64 64 bit<br />
