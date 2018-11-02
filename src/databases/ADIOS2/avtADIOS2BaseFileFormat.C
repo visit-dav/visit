@@ -152,13 +152,6 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
     io.SetEngine(engineType);
     reader = io.Open(getFile(filename), adios2::Mode::Read);
 
-    cout<<"avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat: "<<filename<<endl;
-#ifdef MDSERVER
-    cout<<"  Ctor: MDSERVER"<<endl;
-#else
-    cout<<"  Ctor: ENGINE"<<endl;
-#endif
-
     if (engineType == "SST")
     {
         numTimeSteps = 100000;
@@ -171,7 +164,6 @@ avtADIOS2BaseFileFormat::avtADIOS2BaseFileFormat(const char *filename)
         for (auto &v : vars)
         {
             string nsteps = v.second["AvailableStepsCount"];
-            cout<<"nsteps= :"<<nsteps<<":"<<endl;
             if (!nsteps.empty())
             {
                 numTimeSteps = std::stoi(nsteps);
@@ -262,15 +254,14 @@ avtADIOS2BaseFileFormat::FreeUpResources(void)
 void
 avtADIOS2BaseFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int timeState)
 {
-#ifdef MDSERVER
-    cout<<"PopulateDatabaseMetaData: MDSERVER "<<timeState<<endl;
-#else
-    cout<<"PopulateDatabaseMetaData: ENGINE "<<timeState<<endl;
-#endif
+    if (engineType == "SST")
+    {
+        reader.BeginStep(adios2::StepMode::NextAvailable, 0.0f);
+        reader.EndStep();
+    }
 
     meshInfo.clear();
     variables = io.AvailableVariables();
-
 
     vector<pair<string,string>> vars;
 
@@ -356,7 +347,7 @@ avtADIOS2BaseFileFormat::GetMesh(int timestate, const char *meshname)
     if (shape.size() == 2)
         shape.push_back(1);
 
-    cout<<"********** SWAP DIMS"<<endl;
+    //cout<<"********** SWAP DIMS"<<endl;
     std::swap(shape[0], shape[1]);
 
     int dims[3] = {shape[0], shape[1], shape[2]};
@@ -423,7 +414,7 @@ avtADIOS2BaseFileFormat::GetVar(int timestate, const char *varname)
     }
 
     adios2::Variable<double> v = io.InquireVariable<double>(varname);
-    cout<<"DIMS= "<<v.Shape()<<endl;
+    //cout<<"DIMS= "<<v.Shape()<<endl;
     if (engineType == "BP")
         v.SetStepSelection({timestate, 1});
 
