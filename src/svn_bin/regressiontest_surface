@@ -190,19 +190,13 @@ else
 fi
 
 #
-# Run the test suite on $testHost.
+# Create the script to checkout the source code.
 #
-rm -f $testHost
-cat <<EOF > $testHost
+rm -f checkout_${testHost}
+cat <<EOF > checkout_${testHost}
 #!/bin/sh
 
-dateTag=\`date +%Y-%m-%d-%H:%M\`
-
-if test "$serial" = "true" ; then
-    modes="$testHost,$branch,serial"
-else
-    modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
-fi
+dateTag=\$1
 
 # Check out the source
 if test "$debug" = "true" ; then
@@ -252,6 +246,27 @@ if test "$debug" = "true" ; then
 fi
 
 echo "Checkout of $branch completed at: \`date\`"
+
+EOF
+
+chmod 750 checkout_${testHost}
+
+#
+# Create the script to build and run the test suite on $testHost.
+#
+rm -f runit_${testHost}
+cat <<EOF > runit_${testHost}
+#!/bin/sh
+
+dateTag=\$1
+
+if test "$serial" = "true" ; then
+    modes="$testHost,$branch,serial"
+else
+    modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
+fi
+
+cd $testDir/$user/$workingDir
 
 # Build the code
 cd src
@@ -341,6 +356,31 @@ for m in \$modes; do
     echo "Test \$m completed at: \`date\`"
 done
 
+# Tar up the results
+tar -czvf  html.tar.gz \$dateTag
+
+EOF
+
+chmod 750 runit_${testHost}
+
+#
+# Create the script to build and run the test suite on $testHost.
+#
+rm -f postit_${testHost}
+cat <<EOF > postit_${testHost}
+#!/bin/sh
+
+dateTag=\$1
+
+if test "$serial" = "true" ; then
+    modes="$testHost,$branch,serial"
+else
+    modes="$testHost,$branch,serial $testHost,$branch,parallel $testHost,$branch,scalable,parallel,icet"
+fi
+
+cd $testDir/$user/$workingDir
+cd test
+
 # Determine if the test suite passed or failed.
 hasFailed=""
 for m in \$modes; do
@@ -367,10 +407,6 @@ if test "$post" = "true" ; then
         echo "\$svnRevision" > src/svn_bin/lastpass_$testHost
         svn commit -m "Update the revision number of the last test suite pass." src/svn_bin/lastpass_$testHost
     fi
-
-    # Tar up the results
-    cd test
-    tar -czvf  html.tar.gz \$dateTag
 
     # Copy the results to nersc
     scp html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
@@ -411,11 +447,16 @@ fi
 
 EOF
 
-chmod 750 $testHost
+chmod 750 postit_${testHost}
 
 # Run the test suite.
 if test "$testHost" = "pascal" ; then
-    scp pascal pascal:pascal_testit
+    scp checkout_pascal pascal:
+    scp runit_pascal pascal:
+    scp postit_pascal pascal:
     subTag=`date +%Y-%m-%d-%H:%M`
-    ssh pascal "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o pascal_testit_$subTag.out -q pvis -A wbronze -z ./pascal_testit"
+    ssh pascal "./checkout_pascal $subTag"
+    ssh pascal "msub -l nodes=1:ppn=16 -l gres=ignore -l walltime=10:00:00 -o pascal_testit_$subTag.out -q pvis -A wbronze -z ./runit_pascal $subTag"
+    sleep 28800
+    ssh pascal "./postit_pascal $subTag"
 fi
