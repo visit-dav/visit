@@ -307,26 +307,28 @@ function apply_nektarpp_4_4_1_OSX_patch
 {
     info "Patching Nektar++ 4.4.1 for OS X"
     patch -p0 << \EOF
-diff -rcN nektar++-4.4.1/CMakeLists_orig.txt  nektar++-4.4.1/CMakeLists.txt 
-*** nektar++-4.4.1/CMakeLists_orig.txt	2017-03-06 11:04:22.000000000 -0700
---- nektar++-4.4.1/CMakeLists.txt	2017-09-05 14:47:37.000000000 -0600
+diff -rcN nektar++-4.4.1/CMakeLists.orig.txt  nektar++-4.4.1/CMakeLists.txt 
+*** nektar++-4.4.1/CMakeLists.orig.txt	2018-11-06 08:03:29.000000000 -0700
+--- nektar++-4.4.1/CMakeLists.txt	2018-11-06 08:04:33.000000000 -0700
 ***************
 *** 326,333 ****
   
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES SolverUtils LibUtilities StdRegions SpatialDomains LocalRegions
-!          MultiRegions Collections GlobalMapping FieldUtils NekMeshUtils)
+!         MultiRegions Collections GlobalMapping FieldUtils NekMeshUtils)
       INCLUDE_DIRECTORIES(library)
       ADD_SUBDIRECTORY(library)
+      INSTALL(EXPORT Nektar++Libraries DESTINATION ${LIB_DIR}/cmake COMPONENT dev)
 --- 326,333 ----
   
   # Build active components
   IF (NEKTAR_BUILD_LIBRARY)
 !     SET(NEKTAR++_LIBRARIES LibUtilities StdRegions SpatialDomains LocalRegions
-!          MultiRegions Collections GlobalMapping FieldUtils)
+!         MultiRegions Collections GlobalMapping FieldUtils)
       INCLUDE_DIRECTORIES(library)
       ADD_SUBDIRECTORY(library)
+      INSTALL(EXPORT Nektar++Libraries DESTINATION ${LIB_DIR}/cmake COMPONENT dev)
 EOF
 }
 
