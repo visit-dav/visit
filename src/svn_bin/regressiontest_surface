@@ -409,6 +409,7 @@ if test "$post" = "true" ; then
     fi
 
     # Copy the results to nersc
+    cd test
     scp html.tar.gz $userNersc@$nerscHost:${branch}_html.tar.gz
     if test "$debug" = "true" ; then
         echo "Results copied to $nerscHost at: `date`" | mail -s "Results copied" $userEmail
