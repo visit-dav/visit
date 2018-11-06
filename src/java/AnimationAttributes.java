@@ -76,7 +76,7 @@ public class AnimationAttributes extends AttributeSubject
         pipelineCachingMode = false;
         frameIncrement = 1;
         timeout = 1;
-        playbackMode = PLAYBACKMODE_LOOPING;
+        playbackMode = PLAYBACKMODE_PLAYONCE;
     }
 
     public AnimationAttributes(int nMoreFields)
@@ -87,7 +87,7 @@ public class AnimationAttributes extends AttributeSubject
         pipelineCachingMode = false;
         frameIncrement = 1;
         timeout = 1;
-        playbackMode = PLAYBACKMODE_LOOPING;
+        playbackMode = PLAYBACKMODE_PLAYONCE;
     }
 
     public AnimationAttributes(AnimationAttributes obj)
