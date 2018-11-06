@@ -349,14 +349,18 @@ function build_netcdf
     info "Configuring NetCDF . . ."
     cd $NETCDF_BUILD_DIR || error "Can't cd to netcdf build dir."
     info "Invoking command to configure NetCDF"
+    EXTRA_FLAGS=""
     if [[ "$OPSYS" == "Darwin" ]]; then
         if [[ "$DO_STATIC_BUILD" == "no" ]]; then
             EXTRA_FLAGS="--enable-largefile --enable-shared --disable-static"
         else
             EXTRA_FLAGS="--enable-largefile"
         fi
-    else
-        EXTRA_FLAGS=""
+    fi
+    EXTRA_AC_FLAGS=""
+    # detect coral systems, which older versions of autoconf don't detect
+    if [[ "$(uname -m)" == "ppc64le" ]] ; then
+         EXTRA_AC_FLAGS="ac_cv_build=powerpc64le-unknown-linux-gnu"
     fi
     H5ARGS=""
     if [[ "$DO_HDF5" == "yes" ]] ; then
@@ -373,13 +377,13 @@ function build_netcdf
 
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" \
         CFLAGS=\"$C_OPT_FLAGS\" CXXFLAGS=\"$CXX_OPT_FLAGS\" \
-        FC=\"\" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
+        FC=\"\" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
         --disable-dap \
         --prefix=\"$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH\""
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                FC="" $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
+                FC="" $EXTRA_AC_FLAGS $EXTRA_FLAGS --enable-cxx-4 $H5ARGS $ZLIBARGS\
                 --disable-dap \
                 --prefix="$VISITDIR/netcdf/$NETCDF_VERSION/$VISITARCH"
 

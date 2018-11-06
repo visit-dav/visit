@@ -98,13 +98,21 @@ function build_szip
         cf_szip="--disable-shared --enable-static"
     fi
 
+    extra_ac_flags=""
+    # detect coral systems, which older versions of autoconf don't detect
+    if [[ "$(uname -m)" == "ppc64le" ]] ; then
+         extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    fi
+
     info "./configure CXX=\"$CXX_COMPILER\" CC=\"$C_COMPILER\" LIBS=\"-lm\" \
         CFLAGS=\"$CFLAGS $C_OPT_FLAGS\" CXXFLAGS=\"$CXXFLAGS $CXX_OPT_FLAGS\" \
-        --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" ${cf_szip}"
+        --prefix=\"$VISITDIR/szip/$SZIP_VERSION/$VISITARCH\" ${cf_szip} \
+        ${extra_ac_flags}"
 
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" LIBS="-lm" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ${cf_szip}
+                --prefix="$VISITDIR/szip/$SZIP_VERSION/$VISITARCH" ${cf_szip} \
+                ${extra_ac_flags}
 
     if [[ $? != 0 ]] ; then
         warn "SZIP configure failed.  Giving up"

@@ -1028,10 +1028,16 @@ function build_mili
     info "Configuring Mili . . ."
     cd $MILI_BUILD_DIR || error "Can't cd to mili build dir."
 
+    extra_ac_flags=""
+    # detect coral systems, which older versions of autoconf don't detect
+    if [[ "$(uname -m)" == "ppc64le" ]] ; then
+         extra_ac_flags="ac_cv_build=powerpc64le-unknown-linux-gnu"
+    fi
+
     info "Invoking command to configure Mili"
     ./configure CXX="$CXX_COMPILER" CC="$C_COMPILER" \
                 CFLAGS="$CFLAGS $C_OPT_FLAGS" CXXFLAGS="$CXXFLAGS $CXX_OPT_FLAGS" \
-                ac_cv_prog_FOUND_GMAKE=make \
+                ac_cv_prog_FOUND_GMAKE=make $extra_ac_flags \
                 --prefix="$VISITDIR/mili/$MILI_VERSION/$VISITARCH"
     if [[ $? != 0 ]] ; then
         warn "Mili configure failed.  Giving up"
