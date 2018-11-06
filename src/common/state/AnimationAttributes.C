@@ -136,7 +136,7 @@ void AnimationAttributes::Init()
     pipelineCachingMode = false;
     frameIncrement = 1;
     timeout = 1;
-    playbackMode = Looping;
+    playbackMode = PlayOnce;
 
     AnimationAttributes::SelectAll();
 }

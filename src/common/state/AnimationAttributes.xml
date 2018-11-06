@@ -23,7 +23,7 @@
       1
     </Field>
     <Field name="playbackMode" label="playbackMode" type="enum" subtype="PlaybackMode">
-      Looping
+      PlayOnce
     </Field>
     <Function name="ProcessOldVersions" user="true" member="true">
     </Function>
