@@ -1,0 +1,28 @@
+.container {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+h4 {
+  margin-top: 25px;
+}
+.row {
+  margin-bottom: 5px;
+}
+.row .row {
+  margin-top: 2 px;
+  margin-bottom: 2px;
+}
+[class*="col-"] {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  background-color: #eee;
+  border: 1px solid #ddd;
+  background-color: rgba(86,61,124,.15);
+  border: 1px solid rgba(86,61,124,.2);
+}
+
+hr {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
