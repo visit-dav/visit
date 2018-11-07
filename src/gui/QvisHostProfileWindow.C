@@ -1123,6 +1123,9 @@ QvisHostProfileWindow::CreateParallelSettingsGroup()
 //   Brad Whitlock, Thu Mar 15 11:29:01 PDT 2012
 //   Add sbatch/aprun.
 //
+//   Brad Whitlock, Wed Nov  7 10:53:27 PST 2018
+//   Add lrun.
+//
 // ****************************************************************************
 
 QWidget *
@@ -1156,6 +1159,7 @@ QvisHostProfileWindow::CreateLaunchSettingsGroup()
     launchMethod->addItem("srun");
     launchMethod->addItem("WindowsHPC");
     launchMethod->addItem("yod");
+    launchMethod->addItem("lrun");
     launchMethod->addItem("msub/aprun");
     launchMethod->addItem("msub/srun");
     launchMethod->addItem("psub/mpirun");
