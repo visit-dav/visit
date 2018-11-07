@@ -206,6 +206,37 @@ class JobSubmitter_mpiexec(JobSubmitter):
         return parcmd
 
 ###############################################################################
+# Class: JobSubmitter_lrun
+#
+# Purpose:    Launch an MPI job with lrun (LLNL's jsrun wrapper)
+#
+# Programmer: Cyrus Harrison
+# Date:       Wed Nov  7 10:47:30 PST 2018
+#
+# Modifications:
+#
+###############################################################################
+class JobSubmitter_lrun(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_lrun,self).__init__(launcher)
+
+    def Executable(self):
+        return ["lrun"]
+
+    def CreateCommand(self, args, debugger):
+        parcmd = self.Executable()
+        if self.parallel.nn != None:
+            parcmd = parcmd + ["-N" +str(self.parallel.nn)] 
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-p" + str(self.parallel.np)]
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = debugger.CreateCommand(parcmd + args)
+        return parcmd
+
+###############################################################################
 # Class: JobSubmitter_aprun
 #
 # Purpose:    Launch an MPI job with aprun.
@@ -3413,6 +3444,9 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
     #    Gunther H. Weber, Wed Dec  5 18:39:31 PST 2012
     #    Added mpiexec as new job submitter
     #
+    #    Cyrus Harrison, Wed Nov  7 10:50:15 PST 2018
+    #    Added lrun as new job submitter
+    #
     ############################################################################
 
     def JobSubmitterFactory(self, launch):
@@ -3434,6 +3468,8 @@ VisIt does not recognize your terminal application so it will ignore the -newcon
             return JobSubmitter_poe(self)
         elif launch == "ibrun":
             return JobSubmitter_ibrun(self)
+        elif launch == "lrun":
+            return JobSubmitter_lrun(self)
         elif launch == "prun":
             return JobSubmitter_prun(self)
         elif launch[:4] == "srun":
