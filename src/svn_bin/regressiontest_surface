@@ -444,6 +444,10 @@ if test "$post" = "true" ; then
     cd ..
     chgrp -R visit $workingDir
     chmod -R g+rwX,o+rX $workingDir
+
+    # Copy the update script to nersc and execute it.
+    scp src/svn_bin/visit-update-test-website $userNersc@$nerscHost:
+    ssh $userNersc@$nerscHost "./visit-update-test-website"
 fi
 
 EOF

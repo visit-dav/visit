@@ -97,9 +97,79 @@ function bv_vtkm_dry_run
 #
 # *************************************************************************** #
 
+function apply_patch_1
+{
+   patch -p0 << \EOF
+diff -c ./vtkm/TypeListTag.h.orig ./vtkm/TypeListTag.h
+*** ./vtkm/TypeListTag.h.orig	Tue Nov  6 16:17:57 2018
+--- ./vtkm/TypeListTag.h	Tue Nov  6 16:15:29 2018
+***************
+*** 204,210 ****
+  /// A list of the most commonly used types across multiple domains. Includes
+  /// integers, floating points, and 3 dimensional vectors of floating points.
+  ///
+! struct TypeListTagCommon : vtkm::ListTagBase<vtkm::Int32,
+                                               vtkm::Int64,
+                                               vtkm::Float32,
+                                               vtkm::Float64,
+--- 204,211 ----
+  /// A list of the most commonly used types across multiple domains. Includes
+  /// integers, floating points, and 3 dimensional vectors of floating points.
+  ///
+! struct TypeListTagCommon : vtkm::ListTagBase<vtkm::UInt8,
+!                                              vtkm::Int32,
+                                               vtkm::Int64,
+                                               vtkm::Float32,
+                                               vtkm::Float64,
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtkm patch 1 failed."
+      return 1
+    fi
+    return 0;
+}
+
+function apply_patch_2
+{
+   patch -p0 << \EOF
+diff -c ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig ./vtkm/cont/arg/TransportTagTopologyFieldIn.h
+*** ./vtkm/cont/arg/TransportTagTopologyFieldIn.h.orig	Tue Nov  6 16:18:09 2018
+--- ./vtkm/cont/arg/TransportTagTopologyFieldIn.h	Tue Nov  6 16:16:18 2018
+***************
+*** 98,104 ****
+--- 98,106 ----
+    {
+      if (object.GetNumberOfValues() != detail::TopologyDomainSize(inputDomain, TopologyElementTag()))
+      {
++ #if 0
+        throw vtkm::cont::ErrorBadValue("Input array to worklet invocation the wrong size.");
++ #endif
+      }
+  
+      return object.PrepareForInput(Device());
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtkm patch 2 failed."
+      return 1
+    fi
+    return 0;
+}
+
 function apply_vtkm_patch
 {
     info "Patching VTKm . . ."
+
+    apply_patch_1
+    if [[ $? != 0 ]] ; then
+       return 1
+    fi
+
+    apply_patch_2
+    if [[ $? != 0 ]] ; then
+       return 1
+    fi
 
     return 0
 }
