@@ -376,7 +376,7 @@ ReadKeyFromRoot(HKEY which_root, const char *ver, const char *key, char **keyval
 
     /* Try and read the key from the system registry. */
     sprintf(regkey, "VISIT%s", ver);
-    *keyval = (char *)malloc(maxStrSize);
+    *keyval = (char *) malloc(maxStrSize * sizeof(char)););
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD keyType, strSize = maxStrSize;
@@ -742,7 +742,7 @@ visit_handle_command_callback(const char *cmd, const char *args, void *cbdata)
         if(strncmp(cmd, "UI;", 3) == 0)
         {
             char *cmd2, *args2;
-            cmd2 = (char*)malloc(strlen(cmd) + 1 - 3);
+            cmd2 = (char*) malloc((strlen(cmd) + 1 - 3) * sizeof(char));
             strcpy(cmd2, cmd + 3);
             args2 = cmd2;
             while(*args2 != ';')
@@ -1202,7 +1202,7 @@ static int GetConnectionParameters(VISIT_SOCKET desc)
 
    LIBSIM_API_ENTER1(GetConnectionParameters, "desc=%d", desc);
 
-   engine_argv = (char**)malloc(sizeof(char*) * 100);
+   engine_argv = (char**) malloc(100 * sizeof(char*));
 
    if (parallelRank == 0)
    {
@@ -1313,7 +1313,7 @@ static int CreateEngine(int batch)
             if(engine_argc == 0)
             {
                 engine_argc = 1;
-                engine_argv = (char **)malloc(sizeof(char*)*LIBSIM_MAX_STRING_LIST_SIZE);
+                engine_argv = (char **)malloc(LIBSIM_MAX_STRING_LIST_SIZE * sizeof(char));
                 memset(engine_argv, 0, sizeof(char*)*LIBSIM_MAX_STRING_LIST_SIZE);
                 engine_argv[0] = strdup("/usr/gapps/visit/bin/visit");
 #if 1
@@ -1321,7 +1321,7 @@ static int CreateEngine(int batch)
                 {
                     char *start, *end, *tmpstr;
                     start = end = visit_options;
-                    tmpstr = (char *)malloc(LIBSIM_MAX_STRING_SIZE);
+                    tmpstr = (char *)malloc(LIBSIM_MAX_STRING_SIZE * sizeof(char));
                     while(start != NULL)
                     {
                         int len = 0;
@@ -1666,7 +1666,8 @@ static const char *GetHomeDirectory(void)
     if(returnpath != NULL)
         free(returnpath);
     pathlen = 1 + strlen(expvisituserpath);
-    returnpath = (char*)malloc(pathlen);
+    returnpath = (char*) malloc(pathlen * sizeof(char));
+);
     strcpy(returnpath, expvisituserpath);
 
     LIBSIM_API_LEAVE1(GetHomeDirectory, "homedir=%s", returnpath);
@@ -2106,7 +2107,7 @@ static int LoadVisItLibrary(void)
         }
 #endif /* VISIT_STATIC */
 
-        callbacks = (visit_callback_t *)malloc(sizeof(visit_callback_t));
+        callbacks = (visit_callback_t *) malloc(sizeof(visit_callback_t));
         memset(callbacks, 0, sizeof(visit_callback_t));
 
         CONTROL_DLSYM(get_engine,                 void *, (void));
@@ -2338,7 +2339,7 @@ void VisItSetDirectory(char *d)
     if(d != NULL)
     {
         if (visit_directory == NULL)
-            visit_directory = (char*)(malloc(1000));
+            visit_directory = (char*)(malloc(1000 * sizeof(char)));
 
         if(visit_directory != NULL)
             strcpy(visit_directory, d);
@@ -2371,7 +2372,7 @@ void VisItSetOptions(char *o)
     if(o != NULL)
     {
         if (visit_options == NULL)
-            visit_options = (char*)(malloc(1000));
+            visit_options = (char*)(malloc(1000 * sizeof(char)));
 
         if(visit_options != NULL)
             strcpy(visit_options, o);
@@ -2605,8 +2606,8 @@ int VisItInitializeSocketAndDumpSimFile(const char *name,
 
     if(simulationFileName == NULL)
     {
-        simulationFileName = (char *)malloc(sizeof(char) * MAX_SIMULATION_FILENAME);
-        memset(simulationFileName, 0, sizeof(char) * MAX_SIMULATION_FILENAME);
+        simulationFileName = (char *) malloc(MAX_SIMULATION_FILENAME * sizeof(char));
+        memset(simulationFileName, 0, MAX_SIMULATION_FILENAME * sizeof(char));
     }
 
     if ( !absoluteFilename )
@@ -3604,9 +3605,8 @@ void VisItExecuteCommand(const char *command)
     if (engine && callbacks != NULL && callbacks->control.execute_command &&
         command != NULL)
     {
-        char *cmd2 = NULL;
         LIBSIM_MESSAGE("  Calling simv2_execute_command");
-        cmd2 = (char *)malloc(strlen(command) + 1 + 10);
+        char *cmd2 = (char *) malloc((strlen(command) + 1 + 10) * sizeof(char));
         if(cmd2 != NULL)
         {
             sprintf(cmd2, "Interpret:%s", command);
@@ -4222,11 +4222,13 @@ VisItUI_setValueI(const char *name, int value, int enabled)
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
-        char cmd[nChars];
+        char *cmd = (char*) malloc(nChars * sizeof(char));
         
         sprintf(cmd, "SetUI:s:%s:%d:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
+
+        free( cmd );
     }
     LIBSIM_API_LEAVE(VisItUI_setValueI)
     return retval;
@@ -4242,11 +4244,13 @@ VisItUI_setValueD(const char *name, double value, int enabled)
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
-        char cmd[nChars];
+        char *cmd = (char*) malloc(nChars * sizeof(char));
         
         sprintf(cmd, "SetUI:s:%s:%lf:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
+
+        free( cmd );
     }
     LIBSIM_API_LEAVE(VisItUI_setValueI)
     return retval;
@@ -4262,11 +4266,13 @@ VisItUI_setValueS(const char *name, const char *value, int enabled)
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         const unsigned int nChars = strlen( name ) + strlen( value ) + CMD_MAX_STR_LEN;
-        char cmd[nChars];
+        char *cmd = (char*) malloc(nChars * sizeof(char));
         
         sprintf(cmd, "SetUI:s:%s:%s:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
+
+        free( cmd );
     }
     LIBSIM_API_LEAVE(VisItUI_setValueS)
     return retval;
@@ -4284,12 +4290,14 @@ VisItUI_setTableValueI(const char *name,
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
-        char cmd[nChars];
+        char *cmd = (char*) malloc(nChars * sizeof(char));
         
         sprintf(cmd, "SetUI:s:%s:%d | %d | %d :%d",
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
+
+        free( cmd );
     }
     LIBSIM_API_LEAVE(VisItUI_setTableValueI)
     return retval;
@@ -4312,6 +4320,8 @@ VisItUI_setTableValueD(const char *name,
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
+
+        free( cmd );
     }
     LIBSIM_API_LEAVE(VisItUI_setTableValueI)
     return retval;
@@ -4334,6 +4344,8 @@ VisItUI_setTableValueV(const char *name,
                 name, row, column, x, y, z, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
+
+        free( cmd );
     }
     LIBSIM_API_LEAVE(VisItUI_setTableValueV)
     return retval;
@@ -4350,12 +4362,14 @@ VisItUI_setTableValueS(const char *name,
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         const unsigned int nChars = strlen( name ) + strlen( value ) + CMD_MAX_STR_LEN;
-        char cmd[nChars];
+        char *cmd = (char*) malloc(nChars * sizeof(char));
         
         sprintf(cmd, "SetUI:s:%s:%d | %d | %s :%d",
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
+
+        free( cmd );
     }
     LIBSIM_API_LEAVE(VisItUI_setTableValueS)
     return retval;
@@ -4960,8 +4974,8 @@ cinema_t_compute_phi_theta(cinema_t *obj)
 {
     int itheta, iphi;
     double tt, tp;
-    obj->theta = (double *)malloc(obj->ntheta * sizeof(double));
-    obj->phi   = (double *)malloc(obj->nphi * sizeof(double));
+    obj->theta = (double *) malloc(obj->ntheta * sizeof(double));
+    obj->phi   = (double *) malloc(obj->nphi * sizeof(double));
     for(itheta = 0; itheta < obj->ntheta; ++itheta)
     {
         if(obj->ntheta > 1)
@@ -4992,7 +5006,7 @@ cinema_t *cinema_create(const char *file_cdb)
     {
         cinema_map_size = 10;
         cinema_map_n = 1;
-        cinema_map = (cinema_t *)malloc(cinema_map_size * sizeof(cinema_t));
+        cinema_map = (cinema_t *) malloc(cinema_map_size * sizeof(cinema_t));
 
         cinema_t_create(&cinema_map[0]);
         free(cinema_map[0].file_cdb);
@@ -5084,7 +5098,7 @@ dir_create(char **dirnames, int ndirnames)
     if(parallelRank == 0)
     {
         len = dir_join_size(dirnames, ndirnames);
-        joinname = (char *)malloc(len * sizeof(char));
+        joinname = (char *) malloc(len * sizeof(char));
         if(joinname != NULL)
         {
             int i, len = 0;
@@ -5159,7 +5173,7 @@ cinema_t_static_image(cinema_t *obj)
         int i, nvars, changevars, len;
 
         len = dir_join_size(dirnames, 2) + 1024;
-        path = (char *)malloc(len * sizeof(char));
+        path = (char *) malloc(len * sizeof(char));
 
         /* Determine whether we have variables to switch. */
         changevars = cinema_t_hasvars(obj, &nvars);
@@ -5302,7 +5316,7 @@ cinema_t_phitheta_image(cinema_t *obj)
                 if(path == NULL)
                 {
                     int len = dir_join_size(dirnames, 5) + 1024;
-                    path = (char *)malloc(len * sizeof(char));
+                    path = (char *) malloc(len * sizeof(char));
                 }
 
                 /* Compensate to match PV.*/
