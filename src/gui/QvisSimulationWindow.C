@@ -708,9 +708,24 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
         if (ui->inherits("QComboBox"))
         {
-            debug5 << "found QComboBox " << name.toStdString()
-                   << " value = " << value.toInt() << endl;
-            ((QComboBox*)ui)->setCurrentIndex(value.toInt());
+            bool okay;
+            int index = value.toInt( &okay );
+
+            if( okay )
+            {
+              debug5 << "found QComboBox " << name.toStdString()
+                     << " value = " << value.toInt() << endl;
+              
+              ((QComboBox*)ui)->setCurrentIndex(index);
+            }
+            else
+            {
+              debug5 << "found QComboBox " << name.toStdString()
+                     << " items = " << value.toStdString() << endl;
+
+              ((QComboBox*)ui)->clear();
+              ((QComboBox*)ui)->addItems( value.split('|') );
+            }
         }
 
         if (ui->inherits("QTableWidget"))
@@ -1830,6 +1845,33 @@ QvisSimulationWindow::GetUIFile(const QString &key) const
 // ****************************************************************************
 void
 QvisSimulationWindow::parseCompositeCMD( const std::string cmd,
+                                         std::string &ctrl,
+                                         std::string &text )
+{
+  std::string strcmd(cmd);
+
+  ctrl = getNextString( strcmd, " | " );
+  text = getNextString( strcmd, " | " );
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::parseCompositeCMD
+//
+// Purpose:
+//   This method is called to parse a composite cmd to get the
+//   index and name.
+//
+// Arguments:
+//   cmd      : The properly form command string.
+//
+// Programmer: Allen Sanderson
+// Creation:   6 May 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::parseCompositeCMD( const std::string cmd,
                                          unsigned int &index,
                                          std::string &text )
 {
@@ -1935,10 +1977,14 @@ std::string QvisSimulationWindow::getNextString( std::string &cmd,
 
   std::string str = cmd;
 
-  if( delim != std::string::npos)
+  if( delim != std::string::npos )
   {
     str.erase(delim, std::string::npos);  
     cmd.erase(0, delim+delimiter.length());
+  }
+  else
+  {
+    cmd.clear();
   }
   
   return str;
