@@ -90,6 +90,8 @@
 #define SNPRINTF snprintf
 #endif
 
+#define CMD_MAX_STR_LEN 256
+
 /*******************************************************************************
  * Simple dynamic string type
  ******************************************************************************/
@@ -364,21 +366,22 @@ ErrorToString(int err)
 * UTILITY FUNCTIONS
 *******************************************************************************/
 static int
-ReadKeyFromRoot(HKEY which_root, const char *ver, const char *key,
-    char **keyval)
+ReadKeyFromRoot(HKEY which_root, const char *ver, const char *key, char **keyval)
 {
+    const unsigned int maxStrSize = 500;
+    
     int  readSuccess = 0;
     char regkey[100];
     HKEY hkey;
 
     /* Try and read the key from the system registry. */
     sprintf(regkey, "VISIT%s", ver);
-    *keyval = (char *)malloc(500);
+    *keyval = (char *)malloc(maxStrSize);
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
-        DWORD keyType, strSize = 500;
+        DWORD keyType, strSize = maxStrSize;
         if(RegQueryValueEx(hkey, key, NULL, &keyType,
-           (unsigned char *)*keyval, &strSize) == ERROR_SUCCESS)
+                           (unsigned char *)*keyval, &strSize) == ERROR_SUCCESS)
         {
             readSuccess = 1;
         }
@@ -1409,7 +1412,7 @@ static int ConnectToViewer(void)
 {
     LIBSIM_API_ENTER(ConnectToViewer);
 
-    LIBSIM_MESSAGE_STRINGLIST("Calling simv2_connect_viewer: argv",
+    LIBSIM_MESSAGE_STRINGLIST("Calling simv2_connect_viewer: argv=",
                               engine_argc, engine_argv);
     if (!(*callbacks->control.connect_viewer)(engine, engine_argc, engine_argv))
     {
@@ -4218,7 +4221,9 @@ VisItUI_setValueI(const char *name, int value, int enabled)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
-        char cmd[500];
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char cmd[nChars];
+        
         sprintf(cmd, "SetUI:s:%s:%d:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4236,7 +4241,9 @@ VisItUI_setValueD(const char *name, double value, int enabled)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
-        char cmd[500];
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char cmd[nChars];
+        
         sprintf(cmd, "SetUI:s:%s:%lf:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4254,7 +4261,9 @@ VisItUI_setValueS(const char *name, const char *value, int enabled)
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
-        char cmd[500];
+        const unsigned int nChars = strlen( name ) + strlen( value ) + CMD_MAX_STR_LEN;
+        char cmd[nChars];
+        
         sprintf(cmd, "SetUI:s:%s:%s:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4274,7 +4283,9 @@ VisItUI_setTableValueI(const char *name,
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
-        char cmd[500];
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char cmd[nChars];
+        
         sprintf(cmd, "SetUI:s:%s:%d | %d | %d :%d",
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
@@ -4294,7 +4305,9 @@ VisItUI_setTableValueD(const char *name,
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
-        char cmd[500];
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char cmd[nChars];
+        
         sprintf(cmd, "SetUI:s:%s:%d | %d | %lf :%d",
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
@@ -4314,7 +4327,9 @@ VisItUI_setTableValueV(const char *name,
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
-        char cmd[500];
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char cmd[nChars];
+        
         sprintf(cmd, "SetUI:s:%s:%d | %d | %lf,%lf,%lf :%d",
                 name, row, column, x, y, z, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
@@ -4334,7 +4349,9 @@ VisItUI_setTableValueS(const char *name,
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
-        char cmd[500];
+        const unsigned int nChars = strlen( name ) + strlen( value ) + CMD_MAX_STR_LEN;
+        char cmd[nChars];
+        
         sprintf(cmd, "SetUI:s:%s:%d | %d | %s :%d",
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
