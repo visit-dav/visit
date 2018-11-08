@@ -107,6 +107,9 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #   Eric Brugger, Thu Aug 30 12:27:37 PDT 2018
 #   I added max to the list of toss3 machines.
 #
+#   Eric Brugger, Thu Nov  8 15:44:54 PST 2018
+#   I added rzalastor and zin to the list of toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -177,12 +180,14 @@ class LLNLLauncher(MainLauncher):
             self.sectorname() == "mica" or \
             self.sectorname() == "pascal" or \
             self.sectorname() == "quartz" or \
+            self.sectorname() == "rzalastor" or \
             self.sectorname() == "rzgenie" or \
             self.sectorname() == "rzhasgpu" or \
             self.sectorname() == "rztopaz" or \
             self.sectorname() == "rztrona" or \
             self.sectorname() == "surface" or \
             self.sectorname() == "syrah" or \
+            self.sectorname() == "zin" or \
             self.sectorname() == "agate":
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
