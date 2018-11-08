@@ -369,14 +369,14 @@ static int
 ReadKeyFromRoot(HKEY which_root, const char *ver, const char *key, char **keyval)
 {
     const unsigned int maxStrSize = 500;
-    
+
     int  readSuccess = 0;
     char regkey[100];
     HKEY hkey;
 
     /* Try and read the key from the system registry. */
     sprintf(regkey, "VISIT%s", ver);
-    *keyval = (char *) malloc(maxStrSize * sizeof(char)););
+    *keyval = (char *) malloc(maxStrSize * sizeof(char));
     if(RegOpenKeyEx(which_root, regkey, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS)
     {
         DWORD keyType, strSize = maxStrSize;
@@ -1667,7 +1667,7 @@ static const char *GetHomeDirectory(void)
         free(returnpath);
     pathlen = 1 + strlen(expvisituserpath);
     returnpath = (char*) malloc(pathlen * sizeof(char));
-);
+
     strcpy(returnpath, expvisituserpath);
 
     LIBSIM_API_LEAVE1(GetHomeDirectory, "homedir=%s", returnpath);
@@ -4223,7 +4223,7 @@ VisItUI_setValueI(const char *name, int value, int enabled)
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
-        
+
         sprintf(cmd, "SetUI:s:%s:%d:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4245,7 +4245,7 @@ VisItUI_setValueD(const char *name, double value, int enabled)
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
-        
+
         sprintf(cmd, "SetUI:s:%s:%lf:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4267,7 +4267,7 @@ VisItUI_setValueS(const char *name, const char *value, int enabled)
     {
         const unsigned int nChars = strlen( name ) + strlen( value ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
-        
+
         sprintf(cmd, "SetUI:s:%s:%s:%d", name, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
@@ -4291,7 +4291,7 @@ VisItUI_setTableValueI(const char *name,
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
-        
+
         sprintf(cmd, "SetUI:s:%s:%d | %d | %d :%d",
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
@@ -4314,8 +4314,8 @@ VisItUI_setTableValueD(const char *name,
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
-        char cmd[nChars];
-        
+        char *cmd = (char*) malloc(nChars * sizeof(char));
+
         sprintf(cmd, "SetUI:s:%s:%d | %d | %lf :%d",
                 name, row, column, value, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
@@ -4338,8 +4338,8 @@ VisItUI_setTableValueV(const char *name,
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
-        char cmd[nChars];
-        
+        char *cmd = (char*) malloc(nChars * sizeof(char));
+
         sprintf(cmd, "SetUI:s:%s:%d | %d | %lf,%lf,%lf :%d",
                 name, row, column, x, y, z, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
