@@ -60,6 +60,9 @@
 #   Kathleen Biagas, Mon May 20 14:37:19 MST 2013
 #   On Windows, look for dll's in 'bin' directory if not found in 'lib'.
 #
+#   Kathleen Biagas, Thu Nov  8 10:11:29 PST 2018
+#   Added '*.hxx' pattern for includes.
+#
 #****************************************************************************/
 
 #
@@ -275,6 +278,7 @@ FUNCTION(THIRD_PARTY_INSTALL_INCLUDE pkg incdir)
                 PATTERN "*.h"
                 PATTERN "*.H"
                 PATTERN "*.hpp"
+                PATTERN "*.hxx"
                 PATTERN "*.HPP"
                 PATTERN "*.inc"
                 PATTERN "libccmio" EXCLUDE

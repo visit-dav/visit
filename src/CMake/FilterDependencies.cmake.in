@@ -35,6 +35,9 @@
 # DAMAGE.
 #
 # Modifications:
+#    Kathleen Biagas, Thu Nov  8 10:05:40 PST 2018
+#    Added VISIT_MESAGL_DIR, VISIT_LLVM_DIR, guard some of the string
+#    replacements with tests for whether the VISIT_XXX_DIR var exists.
 #
 #****************************************************************************/
 cmake_policy(SET CMP0011 NEW)
@@ -48,6 +51,8 @@ set(VISIT_OPENEXR_DIR @VISIT_OPENEXR_DIR@)
 set(VISIT_QWT_DIR     @VISIT_QWT_DIR@)
 set(VTK_TARGETS       @VTK_VALID_TARGETS@)
 set(VTK_SMALL_VERSION @VTK_MAJOR_VERSION@.@VTK_MINOR_VERSION@)
+set(VISIT_MESAGL_DIR  @VISIT_MESAGL_DIR@)
+set(VISIT_LLVM_DIR    @VISIT_LLVM_DIR@)
 
 function(FILTER_VISIT_LIB_DEPENDENCIES filename)
     file(STRINGS ${filename}.in lines)
@@ -90,27 +95,47 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
         #   * Replace vtk<lib> with vtk<lib>-<vtk_small_version>
         #   * Replace Qt5::<lib> with Qt5<lib>
         #   * Remove quotes surrounding 'xxx_LIB_DEPENDS'
-        string(REPLACE "${VISIT_PYTHON_DIR}/lib"
-                       "\${VISIT_LIBRARY_DIR}"
-                        line "${line}")
-        string(REPLACE "${VISIT_ZLIB_DIR}/lib"
-                       "\${VISIT_LIBRARY_DIR}"
-                        line "${line}")
-        string(REPLACE "${VISIT_BOOST_DIR}/lib"
-                       "\${VISIT_LIBRARY_DIR}"
-                        line "${line}")
-        if(APPLE OR WIN32) # built as dynamic on apple and window 
-            string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
+        if(VISIT_PYTHON_DIR)
+            string(REPLACE "${VISIT_PYTHON_DIR}/lib"
                            "\${VISIT_LIBRARY_DIR}"
                             line "${line}")
-        else() # built as static on linux
-            string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
-                           "\${VISIT_ARCHIVE_DIR}"
+        endif()
+        if(VISIT_ZLIB_DIR)
+            string(REPLACE "${VISIT_ZLIB_DIR}/lib"
+                           "\${VISIT_LIBRARY_DIR}"
                             line "${line}")
         endif()
-        string(REPLACE "${VISIT_QWT_DIR}/lib"
-                       "\${VISIT_LIBRARY_DIR}"
-                        line "${line}")
+        if(VISIT_BOOST_DIR)
+            string(REPLACE "${VISIT_BOOST_DIR}/lib"
+                           "\${VISIT_LIBRARY_DIR}"
+                            line "${line}")
+        endif()
+        if(VISIT_OPENEXR_DIR)
+            if(APPLE OR WIN32) # built as dynamic on apple and window 
+                string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
+                               "\${VISIT_LIBRARY_DIR}"
+                                line "${line}")
+            else() # built as static on linux
+                string(REPLACE "${VISIT_OPENEXR_DIR}/lib"
+                               "\${VISIT_ARCHIVE_DIR}"
+                                line "${line}")
+            endif()
+        endif()
+        if(VISIT_QWT_DIR)
+            string(REPLACE "${VISIT_QWT_DIR}/lib"
+                           "\${VISIT_LIBRARY_DIR}"
+                            line "${line}")
+        endif()
+        if(VISIT_MESAGL_DIR)
+            string(REPLACE "${VISIT_MESAGL_DIR}/lib"
+                           "\${VISIT_LIBRARY_DIR}/mesagl"
+                            line "${line}")
+        endif()
+        if(VISIT_LLVM_DIR)
+            string(REPLACE "${VISIT_LLVM_DIR}/lib"
+                           "\${VISIT_LIBRARY_DIR}/mesagl"
+                            line "${line}")
+        endif()
         set(skip_next_token FALSE)
         foreach(token ${line})
             if(skip_next_token)
@@ -121,10 +146,10 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
                 if(WIN32)
                     # change viewer to viewerlib
                     string(REPLACE "viewer_LIB_DEPENDS"
-                                   "viewerlib_LIB_DEPENDS" token ${token})
+                                   "viewerlib_LIB_DEPENDS" newtoken ${token})
                     # change gui to guilib
                     string(REPLACE "gui_LIB_DEPENDS" 
-                                   "guilib_LIB_DEPENDS" token ${token})
+                                   "guilib_LIB_DEPENDS" newtoken ${token})
                 endif()
                 # remove surrounding quotes
                 string(REPLACE "\"" "@@@@@" replace_quote ${token})
@@ -144,9 +169,11 @@ function(FILTER_VISIT_LIB_DEPENDENCIES filename)
               # If we are installing mpich, then VISIT_PARALLEL_LINKER_FLAGS
               # points to our installed mpich, so having it in depds list
               # seems unnecessary, lets skip it then. 
-              # want to say skep the next token which should be 'general'
+              # want to say skip the next token which should be 'general'
               set(skip_next_token TRUE) 
               continue()
+            elseif(${token} MATCHES "OSMesa")
+                string(REPLACE "mesagl" "osmesa" newtoken ${token})
             else()
                 if(WIN32)
                     if(token MATCHES "windowsbuild")

@@ -238,14 +238,14 @@ function build_vtkm
 
     vopts=""
     vopts="${vopts} -DCMAKE_INSTALL_PREFIX:PATH=${VISITDIR}/vtkm/${VTKM_VERSION}/${VISITARCH}"
-    vopts="${vopts} -DVTKm_ENABLE_TESTING=OFF"
-    vopts="${vopts} -DVTKm_BUILD_RENDERING=OFF"
-    vopts="${vopts} -DVTKm_USE_64BIT_IDS=OFF"
-    vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION=ON"
-    vopts="${vopts} -DCMAKE_BUILD_TYPE=Release"
+    vopts="${vopts} -DVTKm_ENABLE_TESTING:BOOL=OFF"
+    vopts="${vopts} -DVTKm_ENABLE_RENDERING:BOOL=ON"
+    vopts="${vopts} -DVTKm_USE_64BIT_IDS:BOOL=OFF"
+    vopts="${vopts} -DVTKm_USE_DOUBLE_PRECISION:BOOL=ON"
+    vopts="${vopts} -DCMAKE_BUILD_TYPE:STRING=Release"
     if [[ -d $CUDA_HOME ]]; then
         echo "Building with CUDA support."
-        vopts="${vopts} -DVTKm_ENABLE_CUDA=ON"
+        vopts="${vopts} -DVTKm_ENABLE_CUDA:BOOL=ON"
         vopts="${vopts} -DVTKm_CUDA_Architecture=kepler"
     fi
 

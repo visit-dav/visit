@@ -96,7 +96,6 @@ IF (DEFINED VISIT_VTKH_DIR)
            endif()
        endforeach()
        unset(addl_ll)
-       get_target_property(VTKH_LL_DEP vtkh_utils INTERFACE_LINK_LIBRARIES)
 
        if(NOT VISIT_HEADERS_SKIP_INSTALL)
            THIRD_PARTY_INSTALL_INCLUDE(vtkh ${VISIT_VTKH_DIR}/include)

@@ -39,6 +39,10 @@
 #   Set OPENGL_gl_LIBRARY, OPENGL_LIBRARIES, OPENGL_glu_LIBRARY, and
 #   OPENGL_INCLUDE_DIR in cache.
 #
+#   Kathleen Biagas, Thu Nov  8 10:12:32 PST 2018
+#   Added MESAGL_API_LIBRARY, to ensure it gets installed.
+#   Added includes to install.
+#
 #****************************************************************************/
 
 #
@@ -88,6 +92,30 @@ if (VISIT_MESAGL_DIR)
   else()
       message(FATAL_ERROR "VISIT_MESAGL_DIR provided, but it doesn't contain GL library")
   endif()
+
+  find_library(MESAGL_API_LIBRARY glapi  PATH ${VISIT_MESAGL_DIR}/lib NO_DEFAULT_PATH)
+  if (MESAGL_API_LIBRARY)
+      get_filename_component(MESAGL_API_LIB ${MESAGL_API_LIBRARY} NAME)
+      execute_process(COMMAND objdump -p ${MESAGL_API_LIBRARY}
+                      COMMAND grep SONAME
+                      RESULT_VARIABLE MESAGL_API_SONAME_RESULT
+                      OUTPUT_VARIABLE MESAGL_API_SONAME
+                      ERROR_VARIABLE MESAGL_API_SONAME_ERROR)
+      if(MESAGL_API_SONAME)
+          string(REPLACE "SONAME" "" MESAGL_API_SONAME ${MESAGL_API_SONAME})
+          string(STRIP ${MESAGL_API_SONAME} MESAGL_API_SONAME)
+          set(MESAGL_API_LIBRARY ${VISIT_MESAGL_DIR}/lib/${MESAGL_API_SONAME})
+      endif()
+
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy
+                              ${MESAGL_API_LIBRARY}
+                              ${VISIT_BINARY_DIR}/lib/mesagl/)
+
+        list(APPEND OPENGL_gl_LIBRARY ${MESAGL_API_LIBRARY})
+        list(APPEND OPENGL_LIBRARIES ${MESAGL_API_LIBRARY})
+
+  endif()
+
 
   find_library(MESAGLU_LIBRARY GLU  PATH ${VISIT_MESAGL_DIR}/lib NO_DEFAULT_PATH)
   if (MESAGLU_LIBRARY)
@@ -150,4 +178,8 @@ if (VISIT_MESAGL_DIR)
                                 WORLD_READ             WORLD_EXECUTE
           CONFIGURATIONS "" None Debug Release RelWithDebInfo MinSizeRel)
 
+  if(VISIT_INSTALL_THIRD_PARTY AND NOT VISIT_HEADERS_SKIP_INSTALL)
+      include(${VISIT_SOURCE_DIR}/CMake/ThirdPartyInstallLibrary.cmake)
+      THIRD_PARTY_INSTALL_INCLUDE(mesagl ${VISIT_MESAGL_DIR}/include)
+  endif()
 endif(VISIT_MESAGL_DIR)

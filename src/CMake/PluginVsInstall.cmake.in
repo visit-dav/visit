@@ -100,6 +100,9 @@
 #   get_filename_component calls to get root install directory for setting
 #   VISIT_INCLUDE_DIR, VISIT_LIBRARY_DIR, VISIT_BINARY_DIR, VISIT_ARCHIVE_DIR.
 #
+#   Kathleen Biagas, Thu Nov  8 10:10:06 PST 2018
+#   Added VTKh_INCLUDE_DIRS and VTKM_DIR.
+#
 #****************************************************************************/
 
 ##
@@ -337,6 +340,9 @@ endif()
 set(OPENEXR_INCLUDE_DIR  ${VISIT_INCLUDE_DIR}/openexr/OpenEXR)
 set(OPENEXR_LIBRARY_DIR  ${VISIT_LIBRARY_DIR} ${VISIT_ARCHIVE_DIR})
 set(OPENEXR_LIB @OPENEXR_LIB@)
+
+set(VTKh_INCLUDE_DIRS  ${VISIT_INCLUDE_DIR}/vtkh/include)
+set(VTKM_DIR           ${VISIT_INCLUDE_DIR}/vtkm)
 
 include(${VISIT_INCLUDE_DIR}/VisItMacros.cmake)
 

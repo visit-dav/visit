@@ -35,6 +35,8 @@
 # DAMAGE.
 #
 # Modifications:
+#   Kathleen Biagas, Thu Nov  8 10:08:38 PST 2018
+#   Added string replacments related to VISIT_MESAGL_DIR.
 #
 #******************************************************************************
 
@@ -72,6 +74,41 @@ foreach(cl ${check_libs})
 
 endforeach()
 unset(check_libs)
+
+if(VISIT_MESAGL_DIR)
+    string(REPLACE "${VISIT_MESAGL_DIR}/include"
+                   "\${VISIT_INCLUDE_DIR}/mesgal/include"
+                   OPENGL_INCLUDE_DIR
+                   "${OPENGL_INCLUDE_DIR}")
+    string(REPLACE "${VISIT_MESAGL_DIR}/lib"
+                   "\${VISIT_LIBRARY_DIR}/mesagl"
+                   OPENGL_gl_LIBRARY
+                   "${OPENGL_gl_LIBRARY}")
+    string(REPLACE "${VISIT_LLVM_DIR}/lib"
+                   "\${VISIT_LIBRARY_DIR}/mesagl"
+                   OPENGL_gl_LIBRARY
+                   "${OPENGL_gl_LIBRARY}")
+    string(REPLACE "${VISIT_MESAGL_DIR}/lib"
+                   "\${VISIT_LIBRARY_DIR}/mesagl"
+                   OPENGL_glu_LIBRARY
+                   "${OPENGL_glu_LIBRARY}")
+    string(REPLACE "${VISIT_MESAGL_DIR}/lib"
+                   "\${VISIT_LIBRARY_DIR}/mesagl"
+                   OPENGL_LIBRARIES
+                   "${OPENGL_LIBRARIES}")
+    string(REPLACE "${VISIT_LLVM_DIR}/lib"
+                   "\${VISIT_LIBRARY_DIR}/mesagl"
+                   OPENGL_LIBRARIES
+                   "${OPENGL_LIBRARIES}")
+    string(REPLACE "${VISIT_MESAGL_DIR}/lib"
+                   "\${VISIT_LIBRARY_DIR}/mesagl"
+                   TESSELLATION_LIBRARY
+                   "${TESSELLATION_LIBRARY}")
+    string(REPLACE "${VISIT_LLVM_DIR}/lib"
+                   "\${VISIT_LIBRARY_DIR}/mesagl"
+                   TESSELLATION_LIBRARY
+                   "${TESSELLATION_LIBRARY}")
+endif()
 
 #-----------------------------------------------------------------------------
 # Create CMake/PluginVsInstall.cmake

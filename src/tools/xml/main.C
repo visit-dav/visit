@@ -90,9 +90,9 @@ PrintUsage(const char *prog)
     cErr << "    options:" << Endl;
     cErr << "        -clobber       overwrite old files if possible" << Endl;
     cErr << "        -noprint       no debug output" << Endl;
-    cErr << "        -public        (xml2makefile/xml2cmake only) install publicly" 
+    cErr << "        -public        (xml2cmake only) install publicly" 
          << Endl;
-    cErr << "        -private       (xml2makefile/xml2cmake only) install privately" 
+    cErr << "        -private       (xml2cmake only) install privately" 
          << Endl;
     cErr << "        -outputtoinputdir  store results in same location as "
          << ".xml file" << Endl;
