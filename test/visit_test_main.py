@@ -249,6 +249,20 @@ def visit_bin_path(*args):
     rargs.extend(args)
     return abs_path(*rargs)
 
+# ----------------------------------------------------------------------------
+#  Method: visit_src_path
+#
+#  Programmer: Kathleen Biagas
+#  Date:       November 8, 2018 
+# ----------------------------------------------------------------------------
+def visit_src_path(*args):
+    """
+    Generates proper absolute path relative to the 'src' directory.
+    """
+    rargs = [TestEnv.params["src_dir"]]
+    rargs.extend(args)
+    return abs_path(*rargs)
+
 
 # ----------------------------------------------------------------------------
 #  Method: baseline_path
@@ -2539,6 +2553,10 @@ def TestExpressions(name, meshQuality=True, operatorCreated=False, prefix=""):
 #  Modifications:
 #    Kathleen Biagas, Tue Jul 23 10:51:37 PDT 2013
 #    Added class method "add_skip_case".
+#
+#    Kathleen Biagas, Thu Nov  8 10:28:37 PST 2018
+#    Assume entire category is skipped if 'file' key is missing.
+#
 # ----------------------------------------------------------------------------
 class TestEnv(object):
     """
@@ -2609,12 +2627,16 @@ class TestEnv(object):
                             continue
                     if test['category'] == cls.params["category"]:
                         # see if the file matches
-                        if test['file'] == cls.params["file"]:
-                            if not test.has_key("cases"):
-                                return True
-                            else:
-                                if case_name in test['cases']:
+                        if test.has_key("file"):
+                            if test['file'] == cls.params["file"]:
+                                if not test.has_key("cases"):
                                     return True
+                                else:
+                                    if case_name in test['cases']:
+                                        return True
+                        else:
+                            # whole category skipped
+                            return True
         return False
     @classmethod
     def add_skip_case(cls,case_name):

@@ -1,0 +1,339 @@
+#*****************************************************************************
+#
+# Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
+# Produced at the Lawrence Livermore National Laboratory
+# LLNL-CODE-442911
+# All rights reserved.
+#
+# This file is  part of VisIt. For  details, see https://visit.llnl.gov/.  The
+# full copyright notice is contained in the file COPYRIGHT located at the root
+# of the VisIt distribution or at http://www.llnl.gov/visit/copyright.html.
+#
+# Redistribution  and  use  in  source  and  binary  forms,  with  or  without
+# modification, are permitted provided that the following conditions are met:
+#
+#  - Redistributions of  source code must  retain the above  copyright notice,
+#    this list of conditions and the disclaimer below.
+#  - Redistributions in binary form must reproduce the above copyright notice,
+#    this  list of  conditions  and  the  disclaimer (as noted below)  in  the
+#    documentation and/or other materials provided with the distribution.
+#  - Neither the name of  the LLNS/LLNL nor the names of  its contributors may
+#    be used to endorse or promote products derived from this software without
+#    specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT  HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR  IMPLIED WARRANTIES, INCLUDING,  BUT NOT  LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND  FITNESS FOR A PARTICULAR  PURPOSE
+# ARE  DISCLAIMED. IN  NO EVENT  SHALL LAWRENCE  LIVERMORE NATIONAL  SECURITY,
+# LLC, THE  U.S.  DEPARTMENT OF  ENERGY  OR  CONTRIBUTORS BE  LIABLE  FOR  ANY
+# DIRECT,  INDIRECT,   INCIDENTAL,   SPECIAL,   EXEMPLARY,  OR   CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT  LIMITED TO, PROCUREMENT OF  SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF  USE, DATA, OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER
+# CAUSED  AND  ON  ANY  THEORY  OF  LIABILITY,  WHETHER  IN  CONTRACT,  STRICT
+# LIABILITY, OR TORT  (INCLUDING NEGLIGENCE OR OTHERWISE)  ARISING IN ANY  WAY
+# OUT OF THE  USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+# DAMAGE.
+#*****************************************************************************
+
+"""
+file: pluginVsInstallHelpers
+description: Helper methods for testing builds of plugins against installed VisIt.
+author: Kathleen Biagas
+date: November 8, 2018
+"""
+
+
+import glob
+import pprint
+
+# -----------------------------------------------------------------------------
+#   Method: saveLogFile
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Thu Nov 8, 2018
+#
+#   Helper which saves a file to the test suite's logs directory.
+#
+# -----------------------------------------------------------------------------
+def saveLogFile(f, pluginType):
+    logdir = test_root_path("logs")
+    if not os.path.isdir(logdir):
+        os.mkdir(logdir)
+    logdir = abs_path(logdir, "plugins", "%sVsInstall"%pluginType) 
+    if not os.path.isdir(logdir):
+        os.mkdir(logdir)
+    shutil.copy2(f, logdir)
+
+# -----------------------------------------------------------------------------
+#   Method: getVersion
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Thu Nov 8, 2018
+#
+#   Helper which reads the VERSION file for the version and returns the string.
+#
+# -----------------------------------------------------------------------------
+def getVersion():
+    versionfile = visit_src_path("VERSION")
+    vf = open(versionfile, "r")
+    version = vf.readline()
+    vf.close()
+    return version[:-1].strip()
+
+# -----------------------------------------------------------------------------
+#   Method: createPackage
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Thu Nov 8, 2018
+#
+#   Helper which calls 'make package' in the build dir.
+#
+# -----------------------------------------------------------------------------
+def createPackage():
+    print "createPackage, chdir to: ", visit_bin_path("..")
+    os.chdir(visit_bin_path(".."))
+    version = getVersion().replace(".", "_")
+    # this is for linux, won't work on windows, what about Mac?
+    # is there a better way to check if the package has already been created?
+    pkgFiles = glob.glob(visit_bin_path("..", 'visit%s.*.tar.gz'%version))
+    print "pkg exists? ", pkgFiles
+    if len(pkgFiles) > 0:
+        return 1
+
+    status = 1
+    fname = abs_path(TestEnv.params["run_dir"], "createPackage_results.txt")
+    f = open(fname, "w")
+    try:
+        subprocess.check_call(["gmake", "-j", "8", "package"],stdout=f,stderr=f)
+        status = 1
+    except subprocess.CalledProcessError as err:
+        status = 0
+    except OSError as e:
+        status = 0
+    f.close()
+    if not status:
+        saveLogFile(fname)
+    os.chdir(test_root_path())
+    return status
+
+# -----------------------------------------------------------------------------
+#   Method: installPackage
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Thu Nov 8, 2018
+#
+#   Helper which installs the package in the build dir.
+#
+# -----------------------------------------------------------------------------
+def installPackage():
+    fname = abs_path(TestEnv.params["run_dir"], "installPackage_results.txt")
+    f = open(fname, "w")
+    f.write("installPackage, chdir to: %s\n"%visit_bin_path(".."))
+    os.chdir(visit_bin_path(".."))
+    installCmd = visit_src_path( "svn_bin", "visit-install")
+    f.write("installPackage, installCmd: %s\n"% installCmd)
+    installDir = visit_bin_path("..", "_install")
+    f.write("installPackage, installDir: %s\n"% installDir)
+    version = getVersion()
+    if (os.path.isdir(abs_path(installDir, version))):
+        f.write("install path already exists\n")
+        f.close()
+        return 1
+    
+    status = 1
+    try:
+        f.write("calling install cmd\n")
+        subprocess.check_call([installCmd, "-c", "llnl_open", version, "linux-x86_64", installDir ], stdout=f,stderr=f)
+        f.write("calling install cmd ... done\n")
+        # now we have to move the install to linux-x86_64-toss3 if running on a toss3,
+        # or VisIt won't launch
+        #  This is the list from llnl's custom launcher
+        if "borax"    in socket.gethostname() or \
+           "catalyst" in socket.gethostname() or \
+           "jade"     in socket.gethostname() or \
+           "max"      in socket.gethostname() or \
+           "mica"     in socket.gethostname() or \
+           "pascal"   in socket.gethostname() or \
+           "quartz"   in socket.gethostname() or \
+           "rzgenie"  in socket.gethostname() or \
+           "rzhasgpu" in socket.gethostname() or \
+           "rztopaz"  in socket.gethostname() or \
+           "rztrona"  in socket.gethostname() or \
+           "surface"  in socket.gethostname() or \
+           "syrah"    in socket.gethostname() or \
+           "agate"    in socket.gethostname() :
+            print "installPackage, renaming to toss3"
+            os.chdir(abs_path(installDir, version))
+            os.rename("linux-x86_64", "linux-x86_64-toss3")
+        status = 1
+    except subprocess.CalledProcessError as err:
+        status = 0
+    except OSError as e:
+        status = 0
+    f.close()
+    if not status:
+        saveLogFile(fname)
+    os.chdir(test_root_path())
+    return status
+
+# -----------------------------------------------------------------------------
+#   Method: regencmake
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Thu Nov 8, 2018
+#
+#   Helper which runs xml2cmake for the given plugin.
+#
+# -----------------------------------------------------------------------------
+def regencmake(plugin, pluginResults):
+    print "regenerating cmake for ", plugin
+    pluginArg = plugin + '.xml'
+    xml2cmake = visit_bin_path("..", "_install", "bin", "xml2cmake")
+    status = 1
+    fname = "%s_xml2cmake_res.txt" %plugin
+    f = open(fname, "w")
+    try:
+        subprocess.check_call([xml2cmake, "-clobber", "-public", pluginArg ],stdout=f,stderr=f)
+    except subprocess.CalledProcessError as err:
+        pluginResults[plugin] = 'xml2cmake failed'
+        status = 0
+    except OSError as e:
+        pluginResults[plugin] = 'xml2cmake executable could not be found'
+        status = 0
+    f.close()
+    if not status:
+        saveLogFile(fname)
+    return status
+
+# -----------------------------------------------------------------------------
+#   Method: build
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Thu Nov 8, 2018
+#
+#   Helper which runs cmake and make for the given plugin.
+#
+# -----------------------------------------------------------------------------
+def build(plugin, pluginResults):
+    cmakecmd = TestEnv.params["cmake_cmd"]
+    if not os.path.isabs(cmakecmd):
+        # check if its in PATH
+        epath =os.environ['PATH']
+        for e in epath.split(":"):
+            cc = os.path.join(e, cmakecmd)
+            if os.path.isfile(cc):
+                cmakecmd = cc
+                break
+    if not os.path.isabs(cmakecmd):
+        pluginResults[plugin] = 'cmake executable (%s) could not be found'%cmakecmd
+        return 0
+    os.mkdir("build")
+    os.chdir("build")
+    status = 1
+    fname = "%s_build_res.txt" %plugin
+    f = open(fname, "w")
+    try:
+        print "running cmake for ", plugin
+        subprocess.check_call([cmakecmd, "../"],stdout=f,stderr=f)
+    except subprocess.CalledProcessError as err:
+        pluginResults[plugin] = 'cmake configure failed'
+        status = 0
+    except OSError as e:
+        pluginResults[plugin] = 'cmake executable (%s) could not be found'%cmakecmd
+        status = 0
+
+    if status == 1:
+        try:
+            print "running make for ", plugin
+            subprocess.check_call(["gmake", "-j", "8"],stdout=f,stderr=f)
+            pluginResults[plugin] = 'success'
+        except subprocess.CalledProcessError as err:
+            pluginResults[plugin] = 'make failed'
+            status = 0
+        except OSError as e:
+            pluginResults[plugin] = 'make executable could not be found'
+            status = 0
+    f.close()
+    if not status:
+        saveLogFile(fname)
+    os.chdir("..")
+    return status
+
+# -----------------------------------------------------------------------------
+#   Method: buildPlugin
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Thu Nov 8, 2018
+#
+#   Helper which runs copies to the rund dir and builds each plugin of the
+#   given type 
+#
+# -----------------------------------------------------------------------------
+def buildPlugin(pluginType, skiplist):
+    print "buildPlugin: ", pluginType
+    plugindir = abs_path(TestEnv.params["run_dir"], pluginType)
+
+    if os.path.exists(plugindir):
+        shutil.rmtree(plugindir)
+    subprocess.call(["cp", "-R", visit_src_path(pluginType), plugindir])
+    os.chdir(plugindir)
+    plugins = glob.glob("*")
+    #print plugins
+    pluginResults={}
+    for pl in plugins:
+        if os.path.isdir(pl):
+            pluginResults[pl] = {}
+            if pl in skiplist:
+               pluginResults[pl] = "skipped"
+               continue
+            os.chdir(pl)
+            status = regencmake(pl, pluginResults)
+            if status == 0: 
+                os.chdir("..")
+                continue
+            status = build(pl, pluginResults)
+            os.chdir("..")
+        
+    os.chdir("..")
+    return pluginResults
+
+
+# -----------------------------------------------------------------------------
+#   Method: do_plugin_type
+#
+#   Programmer: Kathleen Biagas
+#   Date:       Thu Nov 8, 2018
+#
+#   Main helper which calls the rest for the given plugin type.
+#
+# -----------------------------------------------------------------------------
+def do_plugin_type(pluginType, skiplist):
+    # createPackage and installPackage cause the test to overrun the limit
+    # so, instead of creating (which has been added to the build),
+    # just check that the install exists
+
+    #success = createPackage()
+    #if not success:
+    #    TestText("%sVsInstall"%pluginType, "Create package failed")
+    #    Exit(-1)
+
+    #success = installPackage()
+
+    #if not success:
+    #    TestText("%sVsInstall"%pluginType, "Install package failed")
+    #    Exit(-1)
+
+    installDir = visit_bin_path("..", "_install")
+    version = getVersion()
+    if not os.path.isdir(abs_path(installDir, version)):
+        TestText("%sVsInstall"%pluginType, "No installed package.")
+        Exit(-1)
+
+    results = {}
+    results = buildPlugin(pluginType, skiplist)
+
+    pp = pprint.PrettyPrinter(indent=4)
+    txt = pp.pformat(results)
+    TestText("%sVsInstall"%pluginType, txt)
+
+

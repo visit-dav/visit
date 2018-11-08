@@ -93,6 +93,9 @@ def test_path():
 #  Cyrus Harrison, Tue May 28 12:05:45 PDT 2013
 #  Add support for platform based skips.
 #
+#  Kathleen Biagas, Thu Nov  8 10:30:36 PST 2018
+#  Assume entire category is skipped it 'file' key is missing.
+#
 # ----------------------------------------------------------------------------
 def check_skip(skip_list,test_modes,test_cat,test_file):
     if skip_list is None:
@@ -111,11 +114,15 @@ def check_skip(skip_list,test_modes,test_cat,test_file):
                     if not splat.startswith(tplat):
                         continue
                 if test['category'] == test_cat:
-                    if test['file'] == test_file:
-                        if not test.has_key("cases"):
-                        # skip the entire file if
-                        # there are no specific cases
-                            return True
+                    if test.has_key("file"):
+                        if test['file'] == test_file:
+                            if not test.has_key("cases"):
+                            # skip the entire file if
+                            # there are no specific cases
+                                return True
+                    else:
+                        # skip the entire category
+                        return True
     return False
 # ----------------------------------------------------------------------------
 #  Method: parse_test_specific_vargs
@@ -130,6 +137,22 @@ def parse_test_specific_vargs(test_file):
     vargs = " ".join(vargs)
     vargs = vargs.replace("VARGS:","")
     return vargs
+
+# ----------------------------------------------------------------------------
+#  Method: parse_test_specific_limit
+#
+#  Programmer: Kathleen Biagas 
+#  Date:       Thu Nov 8, 2018
+# ----------------------------------------------------------------------------
+def parse_test_specific_limit(test_file):
+    lines = [l.strip() for l in open(test_file).readlines()]
+    # check for pattern "# ... LIMIT: {limit}
+    limline = [l[1:] for l in lines if len(l) > 0 and l[0] == "#" and l.count("LIMIT:")  == 1]
+    if len(limline) > 0:
+        limline = " ".join(limline)
+        limline = limline.replace("LIMIT:","")
+        return int(limline)
+    return -1
 
 # ----------------------------------------------------------------------------
 #  Method: launch_visit_test
@@ -159,6 +182,10 @@ def parse_test_specific_vargs(test_file):
 #    Burlen Loring, Wed Oct 21 15:44:24 PDT 2015
 #    Added an option (--display-failed) to display current,
 #    baseline, and diff in a popup window as the test runs.
+#
+#    Kathleen Biagas, Thu Nov  8 10:31:51 PST 2018
+#    Added src_dir and cmake_cmd, for plugin-vs-install tests.
+#    If test has specified its own 'LIMIT' use it for the kill limit.
 #
 # ----------------------------------------------------------------------------
 def launch_visit_test(args):
@@ -238,6 +265,7 @@ def launch_visit_test(args):
     tparams["numdiff"]        = opts["numdiff"]
     tparams["top_dir"]        = top_dir
     tparams["data_dir"]       = opts["data_dir"]
+    tparams["src_dir"]        = opts["src_dir"]
     tparams["data_host"]      = opts["data_host"]
     tparams["baseline_dir"]   = opts["baseline_dir"]
     tparams["tests_dir"]      = opts["tests_dir"]
@@ -248,7 +276,8 @@ def launch_visit_test(args):
     tparams["display_failed"] = opts["display_failed"]
     tparams["parallel_launch"]= opts["parallel_launch"]
     tparams["host_profile_dir"]   = opts["host_profile_dir"]
-    tparams["sessionfiles"]= opts["sessionfiles"]
+    tparams["sessionfiles"]   = opts["sessionfiles"]
+    tparams["cmake_cmd"]      = opts["cmake_cmd"]
 
     exe_dir, exe_file = os.path.split(tparams["visit_bin"])
     if sys.platform.startswith("win"):
@@ -287,10 +316,15 @@ def launch_visit_test(args):
         curr_dir = os.getcwd()
         os.chdir(run_dir)
         rcode = 0
+        test_specific_limit = parse_test_specific_limit(test)
+        if test_specific_limit != -1:
+            use_limit = test_specific_limit
+        else:
+            use_limit = opts["limit"]
         sexe_res = sexe(rcmd,
                         suppress_output=(not (opts["verbose"] or opts["less_verbose"])),
                         echo=opts["verbose"],
-                        timeout=opts["limit"] * 1.1) # proc kill swtich at 110% of the selected timeout
+                        timeout=use_limit * 1.1) # proc kill switch at 110% of the selected timeout
         json_res_file = pjoin(opts["result_dir"],"json","%s_%s.json" %(test_cat,test_base))
         if os.path.isfile(json_res_file):
             results = json_load(json_res_file)
@@ -408,18 +442,24 @@ def log_test_result(result_dir,result):
 #
 #    Mark C. Miller, Tue Sep  6 18:54:31 PDT 2016
 #    Added sessionfiles option to rigoursly test session files
+#
+#    Kathleen Biagas, Thu Nov  8 10:33:45 PST 2018
+#    Added src_dir and cmake_cmd.  
+#
 # ----------------------------------------------------------------------------
 def default_suite_options():
     data_dir_def    = abs_path(visit_root(),"data")
     base_dir_def    = abs_path(visit_root(),"test","baseline")
     tests_dir_def   = abs_path(visit_root(),"test","tests")
     visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
+    src_dir_def     = abs_path(visit_root(),"src")
     skip_def        = pjoin(test_path(),"skip.json")
     nprocs_def      = multiprocessing.cpu_count()
     opts_full_defs = {
                       "use_pil":True,
                       "threshold_diff":False,
                       "threshold_error":{},
+                      "src_dir":      src_dir_def,
                       "data_dir":     data_dir_def,
                       "baseline_dir": base_dir_def,
                       "tests_dir":    tests_dir_def,
@@ -456,6 +496,7 @@ def default_suite_options():
                       "display_failed":False,
                       "parallel_launch":"mpirun",
                       "sessionfiles":False,
+                      "cmake_cmd":"cmake",
                       "no_timings":False,
                       "rsync_post":None}
     return opts_full_defs
@@ -463,6 +504,7 @@ def default_suite_options():
 def finalize_options(opts):
     opts["executable"]   = abs_path(opts["executable"])
     opts["result_dir"]   = abs_path(opts["result_dir"])
+    opts["src_dir"]      = abs_path(opts["src_dir"])
     opts["data_dir"]     = abs_path(opts["data_dir"])
     opts["tests_dir"]    = abs_path(opts["tests_dir"])
     opts["baseline_dir"] = abs_path(opts["baseline_dir"])
@@ -498,6 +540,11 @@ def finalize_options(opts):
 #
 #    Mark C. Miller, Tue Sep  6 18:54:31 PDT 2016
 #    Added sessionfiles option to rigoursly test session files
+#
+#    Kathleen Biagas, Thu Nov  8 10:34:27 PST 2018
+#    Added '--src' for specifying src_dir, and --cmake for specifying
+#    cmake_cmd, used for plugin-vs-install tests.
+#
 # ----------------------------------------------------------------------------
 def parse_args():
     """
@@ -511,6 +558,10 @@ def parse_args():
                       default=True,
                       action="store_false",
                       help="no image differencing (no PIL)")
+    parser.add_option( "--src",
+                      dest="src_dir",
+                      default=defs["src_dir"],
+                      help="path to src directory [default=%s]" % defs["src_dir"])
     parser.add_option("-d",
                       "--data-dir",
                       dest="data_dir",
@@ -708,6 +759,10 @@ def parse_args():
     parser.add_option("--rsync-post",
                       default=defs["rsync_post"],
                       help="Post results via rsync")
+    parser.add_option( "--cmake",
+                      dest="cmake_cmd",
+                      default=defs["cmake_cmd"],
+                      help="path to cmake executable [default=%s]" % defs["cmake_cmd"])
 
     # parse args
     opts, tests = parser.parse_args()
@@ -867,7 +922,7 @@ def cleanup(res_dir,delay):
     try:
         shutil.rmtree(run_dir)
     except OSError as e:
-        Log("<Error Removing Suite _run Directory> %s" % run_dir)
+        Log("<Error Removing _run Directory> %s" % run_dir)
 
 # ----------------------------------------------------------------------------
 #  Method: launch_tests
