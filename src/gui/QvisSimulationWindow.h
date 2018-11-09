@@ -134,11 +134,15 @@ private:
     QString GetUIFileDirectory() const;
     QString GetUIFile(const QString &key) const;
 
-    void ConnectUIChildren(QObject *obj, SimCommandSlots *cc);
+    void ConnectUIChildren(QObject *obj);
+    void ConnectUI(QObject *ui);
+    
     void CreateCustomUIWindow();
     void UpdateUIComponent(QWidget *window,
                            const QString &name, const QString &value, bool e);
 
+    void parseCompositeCMD( const std::string cmd, std::string &ctrl,
+                            std::string &text );
     void parseCompositeCMD( const std::string cmd, unsigned int &index,
                             std::string &text );
     void parseCompositeCMD( const std::string cmd,
@@ -189,5 +193,7 @@ private:
     QvisStripChartMgr  *stripChartMgr;
     QvisSimulationCommandWindow  *simCommands;
     QvisSimulationMessageWindow  *simMessages;
+
+    SimCommandSlots *CommandConnections;
 };
 #endif

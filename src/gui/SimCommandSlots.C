@@ -38,6 +38,7 @@
 
 #include "SimCommandSlots.h"
 
+#include <QAction>
 #include <QDateTime>
 #include <QDateTimeEdit>
 #include <QMessageBox>
@@ -100,7 +101,7 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
 {
     if (ui)
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
     else
         QMessageBox::warning(0, "VisIt", tr("Invalid ui component"),
                              tr("Ok"), 0, 0, 0, 1 );
@@ -143,6 +144,14 @@ void SimCommandSlots::ClickedHandler()
 {
     const QObject *ui = sender();
     debug5 << "inside clicked signal" << endl;
+    if (ui)
+    {
+      debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
+      debug5 << "Clicked" << endl;
+    }
+    else
+      debug5 << "unknown signaler" << endl;
     SendCMD("clicked()", ui, "NONE");
 }
 
@@ -165,13 +174,41 @@ void SimCommandSlots::ToggledHandler(bool on)
     if (ui)
     {
       debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
       debug5 << "New Value = " << on << endl;
     }
     else
       debug5 << "unknown signaler" << endl;
     QString value = QString::number(on);
     SendCMD("valueChanged(int)", ui, value);
+}
+
+// ****************************************************************************
+// Method: SimCommandSlots::TriggeredHandler
+//
+// Purpose:
+//   This is the TriggeredHandler signal handler function. It is generated
+//   when the users changes a value on a custom UI widget.
+//
+// Programmer: Allen Sanderson
+// Creation:   Feb 6, 2016
+//
+// ****************************************************************************
+
+void SimCommandSlots::TriggeredHandler(QAction *action)
+{
+    const QObject *ui = sender();
+    debug5 << "inside TriggeredHandler signal" << endl;
+    if (ui)
+    {
+      debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
+      debug5 << "Trigger text = " << action->text().toStdString() << endl;
+    }
+    else
+      debug5 << "unknown signaler" << endl;
+    QString text = action->text();
+    SendCMD("textChanged(char *)", ui, text);
 }
 
 // ****************************************************************************
@@ -193,7 +230,7 @@ void SimCommandSlots::CurrentIndexChangedHandler(int index)
     if (ui)
     {
       debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
       debug5 << "New Value = " << index << endl;
     }
     else
@@ -225,7 +262,7 @@ void SimCommandSlots::ValueChangedHandler(int index)
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
         debug5 << "New Value = " << index << endl;
     }
     else
@@ -255,7 +292,7 @@ void SimCommandSlots::ValueChangedHandler(const QTime &theTime)
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
     }
     else
         debug5 << "unknown signaler" << endl;
@@ -284,7 +321,7 @@ void SimCommandSlots::ValueChangedHandler(const QDate &theDate)
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
     }
     else
         debug5 << "unknown signaler" << endl;
@@ -313,7 +350,7 @@ void SimCommandSlots::StateChangedHandler(int OnOff)
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
     }
     else
         debug5 << "unknown signaler" << endl;
@@ -341,7 +378,8 @@ void SimCommandSlots::CellChangedHandler(int row, int col)
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
+        
         tvalue = ((QTableWidget *)ui)->item(row, col)->text();
         debug5 << "New Value row,col,text = " << row << ", " << col << ", "
                << tvalue.toStdString() << endl;
@@ -376,7 +414,7 @@ void SimCommandSlots::ActivatedHandler(int index)
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
         debug5 << "New Value = " << index << endl;
     }
     else
@@ -406,7 +444,7 @@ void SimCommandSlots::TextChangedHandler(const QString &newText)
     if (ui)
     {
         debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
-               << ui->objectName().toStdString().c_str() << " parent " << ui->parent()->objectName().toStdString().c_str() << endl;
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
         debug5 << "New Text Value = " << newText.toStdString() << endl;
     }
     else

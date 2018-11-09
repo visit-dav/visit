@@ -48,6 +48,7 @@
 #include <ViewerProxy.h>
 
 class QEvent;
+class QAction;
 
 // ****************************************************************************
 // Class: SimCommandSlots
@@ -77,6 +78,7 @@ public slots:
     void SimCommands() {printf("command Slot Fired\n");};
     void ClickedHandler();
     void ToggledHandler(bool);
+    void TriggeredHandler(QAction *);
     void CurrentIndexChangedHandler(int);
     void TextChangedHandler(const QString &);
     void ValueChangedHandler(int);

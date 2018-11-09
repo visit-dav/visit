@@ -68,6 +68,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QMenu>
 #include <QMessageBox>
 #include <QMetaMethod>
 #include <QMetaObject>
@@ -297,7 +298,7 @@ QvisSimulationWindow::CreateWindowContents()
 //
 // ****************************************************************************
 void
-QvisSimulationWindow::ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
+QvisSimulationWindow::ConnectUIChildren(QObject *obj)
 {
     // Connect up handlers to all signals based on component type.
     const QObjectList &GUI_Objects = obj->children();
@@ -305,128 +306,159 @@ QvisSimulationWindow::ConnectUIChildren(QObject *obj, SimCommandSlots *cc)
     for (int i = 0; i < GUI_Objects.size(); ++i)
     {
         QObject *ui = GUI_Objects[i];
-        const QMetaObject *mo = ui->metaObject();
+
+        ConnectUI(ui);
+    }
+}
+        
+// ****************************************************************************
+// Method: ConnectUI
+//
+// Purpose: 
+//   Returns the name of the directory where VisIt looks for UI files.
+//
+// Arguments:
+//   obj : The Qt object
+//   cc  : Simulation command slots
+//
+// Returns:    Connect slots to the object.
+//
+// Programmer: Shelly Prevost
+// Creation:   December 21, 2005
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::ConnectUI(QObject *ui)
+{
+    SimCommandSlots *cc = CommandConnections;
+    
+    const QMetaObject *mo = ui->metaObject();
 
 #if 0
-        const QMetaObject *ccmo = cc->metaObject();
+    const QMetaObject *ccmo = cc->metaObject();
 
-        for(int m = 0; m < uimo->methodCount(); ++m)
+    for(int m = 0; m < uimo->methodCount(); ++m)
+    {
+        QMetaMethod uimm = uimo->method(m);
+        
+        if(uimm.methodType() == QMetaMethod::Signal)
         {
-            QMetaMethod uimm = uimo->method(m);
-
-            if(uimm.methodType() == QMetaMethod::Signal)
+            for(int n = 0; n < ccmo->methodCount(); ++n)
             {
-                for(int n = 0; n < ccmo->methodCount(); ++n)
+                QMetaMethod ccmm = ccmo->method(n);
+                if(ccmm.methodType() == QMetaMethod::Slot &&
+                   strcmp(uimm.signature(), ccmm.signature()) == 0)
                 {
-                    QMetaMethod ccmm = ccmo->method(n);
-                    if(ccmm.methodType() == QMetaMethod::Slot &&
-                       strcmp(uimm.signature(), ccmm.signature()) == 0)
-                    {
-                        connect(ui, uimm.signature(),
-                                cc, ccmm.signature());
-                    }
+                    connect(ui, uimm.signature(),
+                            cc, ccmm.signature());
                 }
             }
         }
-
-                
-        if(mm.methodType() == QMetaMethod::Method)
-            qDebug("    %d: method: %s", m, mm.signature());
-        else if(mm.methodType() == QMetaMethod::Signal)
-            qDebug("    %d: signal: %s", m, mm.signature());
-        else if(mm.methodType() == QMetaMethod::Slot)
-            qDebug("    %d: slot:   %s", m, mm.signature());
-        else if(mm.methodType() == QMetaMethod::Constructor)
-            qDebug("    %d: ctor:   %s", m, mm.signature());
-        }
-#endif
-
-#if 0    
-        // Useful for getting slot signature
-        for(int m = 0; m < mo->methodCount(); ++m)
-        {
-            QMetaMethod mm = mo->method(m);
-
-            if(mm.methodType() == QMetaMethod::Signal)
-            {
-              std::cerr << ui->objectName().toStdString() << "  "
-                        << mm.signature() << std::endl;
-            }
-        }
-#endif
-
-        if (mo->indexOfSignal("clicked()") != -1)
-        {
-//qDebug("connect %s clicked()\n", ui->objectName().toStdString().c_str());
-            QObject::connect(ui, SIGNAL(clicked()),
-                    cc, SLOT(ClickedHandler()));
-        }
-
-        if (mo->indexOfSignal("toggled(bool)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(toggled(bool)),
-                             cc, SLOT(ToggledHandler(bool)));
-        }
-
-        if (mo->indexOfSignal("valueChanged(int)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(valueChanged(int)),
-                             cc, SLOT(ValueChangedHandler(int)));
-        }
-
-        if (mo->indexOfSignal("valueChanged(const QDate&)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(valueChanged(const QDate&)),
-                             cc, SLOT(ValueChangedHandler(const QDate &)));
-        }
-
-        if (mo->indexOfSignal("valueChanged(const QTime&)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(valueChanged(const QTime&)),
-                             cc, SLOT(ValueChangedHandler(const QTime &)));
-        }
-
-        if (mo->indexOfSignal("itemChanged(QTableWidgetItem)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(itemChanged(const QTableWidgetItem &item)),
-                             cc, SLOT(ItemChangedHandler(const QTableWidgetItem &)));
-        }
-
-        if (mo->indexOfSignal("stateChanged(int)") != -1)
-        {
-//qDebug("connect %s stateChanged(int)\n", ui->objectName().toStdString().c_str());
-            QObject::connect(ui, SIGNAL(stateChanged(int)),
-                             cc, SLOT(StateChangedHandler(int)));
-        }
-
-        if (mo->indexOfSignal("activated(int)") != -1)
-        {
-//qDebug("connect %s activated(int)\n", ui->objectName().toStdString().c_str());
-            QObject::connect(ui, SIGNAL(activated(int)),
-                             cc, SLOT(ActivatedHandler(int)));
-        }
-
-        if (mo->indexOfSignal("textChanged(QString)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(textChanged(const QString &)),
-                             cc, SLOT(TextChangedHandler(const QString&)));
-        }
-
-        if (mo->indexOfSignal("cellChanged(int,int)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(cellChanged(int, int)),
-                             cc, SLOT(CellChangedHandler(int, int)));
-        }
-
-        if (mo->indexOfSignal("currentIndexChanged(int)") != -1)
-        {
-            QObject::connect(ui, SIGNAL(currentIndexChanged(int)),
-                             cc, SLOT(CurrentIndexChangedHandler(int)));
-        }
-
-        // We've hooked up signals for this object, now do its children.
-        ConnectUIChildren(ui, cc);
     }
+    
+    if(mm.methodType() == QMetaMethod::Method)
+      qDebug("    %d: method: %s", m, mm.signature());
+    else if(mm.methodType() == QMetaMethod::Signal)
+      qDebug("    %d: signal: %s", m, mm.signature());
+    else if(mm.methodType() == QMetaMethod::Slot)
+      qDebug("    %d: slot:   %s", m, mm.signature());
+    else if(mm.methodType() == QMetaMethod::Constructor)
+      qDebug("    %d: ctor:   %s", m, mm.signature());
+#endif
+
+#if 0
+    // Useful for getting slot signature
+    for(int m = 0; m < mo->methodCount(); ++m)
+    {
+        QMetaMethod mm = mo->method(m);
+        
+        if(mm.methodType() == QMetaMethod::Signal)
+        {
+            std::cerr << ui->objectName().toStdString() << "  "
+                      << mm.methodSignature().constData() << "  "
+                      << std::endl;
+        }
+    }
+#endif
+    
+    if (mo->indexOfSignal("clicked()") != -1)
+    {
+        QObject::connect(ui, SIGNAL(clicked()),
+                         cc, SLOT(ClickedHandler()));
+    }
+    
+    if (mo->indexOfSignal("toggled(bool)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(toggled(bool)),
+                         cc, SLOT(ToggledHandler(bool)));
+    }
+
+    if (mo->indexOfSignal("triggered(QAction*)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(triggered(QAction *)),
+                         cc, SLOT(TriggeredHandler(QAction *)));
+    }
+
+    if (mo->indexOfSignal("valueChanged(int)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(valueChanged(int)),
+                         cc, SLOT(ValueChangedHandler(int)));
+    }
+
+    if (mo->indexOfSignal("valueChanged(const QDate&)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(valueChanged(const QDate&)),
+                         cc, SLOT(ValueChangedHandler(const QDate &)));
+    }
+
+    if (mo->indexOfSignal("valueChanged(const QTime&)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(valueChanged(const QTime&)),
+                         cc, SLOT(ValueChangedHandler(const QTime &)));
+    }
+
+    if (mo->indexOfSignal("itemChanged(QTableWidgetItem)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(itemChanged(const QTableWidgetItem &item)),
+                         cc, SLOT(ItemChangedHandler(const QTableWidgetItem &)));
+    }
+
+    if (mo->indexOfSignal("stateChanged(int)") != -1)
+    {
+        //qDebug("connect %s stateChanged(int)\n", ui->objectName().toStdString().c_str());
+        QObject::connect(ui, SIGNAL(stateChanged(int)),
+                         cc, SLOT(StateChangedHandler(int)));
+    }
+
+    if (mo->indexOfSignal("activated(int)") != -1)
+    {
+        //qDebug("connect %s activated(int)\n", ui->objectName().toStdString().c_str());
+        QObject::connect(ui, SIGNAL(activated(int)),
+                         cc, SLOT(ActivatedHandler(int)));
+    }
+
+    if (mo->indexOfSignal("textChanged(QString)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(textChanged(const QString &)),
+                         cc, SLOT(TextChangedHandler(const QString&)));
+    }
+
+    if (mo->indexOfSignal("cellChanged(int,int)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(cellChanged(int, int)),
+                         cc, SLOT(CellChangedHandler(int, int)));
+    }
+
+    if (mo->indexOfSignal("currentIndexChanged(int)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(currentIndexChanged(int)),
+                         cc, SLOT(CurrentIndexChangedHandler(int)));
+    }
+
+    // We've hooked up signals for this object, now do its children.
+    ConnectUIChildren(ui);
 }
 
 // ****************************************************************************
@@ -476,8 +508,7 @@ QvisSimulationWindow::CreateCustomUIWindow()
 
     // Dynamically create the custom UI be reading in it's xml file.
     int index = GetEngineListIndex(activeEngine);
-    SimCommandSlots *CommandConnections =
-      new SimCommandSlots(GetViewerProxy(), engines, index);
+    CommandConnections = new SimCommandSlots(GetViewerProxy(), engines, index);
 
     QFile uiFile(fname);
     if(uiFile.open(QIODevice::ReadOnly))
@@ -501,7 +532,7 @@ QvisSimulationWindow::CreateCustomUIWindow()
     // Hook up the widget and its children to the command connections
     // object which will translate its signals into commands that we
     // will send to the simulation.
-    ConnectUIChildren(CustomUIWindow, CommandConnections);
+    ConnectUIChildren(CustomUIWindow);
   
     // enable custom command UI button
     debug5 << "enabling custom command button" << endl;
@@ -632,6 +663,35 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             debug5 << "found QRadioButton " << name.toStdString()
                    << " text = " << value.toStdString() << endl;
             ((QRadioButton*)ui)->setChecked(value=="1");
+        }
+
+        if (ui->inherits("QPushButton"))
+        {
+            debug5 << "found QPushButton " << name.toStdString()
+                   << " text = " << value.toStdString() << endl;
+
+            QMenu *menu = ((QPushButton*)ui)->menu();
+
+            if( menu )
+              menu->clear();
+            else
+            {
+              menu = new QMenu( name );
+              menu->setObjectName( name );
+            
+              ConnectUI(menu);
+            }
+            
+            std::string actions = value.toStdString();
+
+            while( !actions.empty() )
+            {
+              std::string action = getNextString( actions, "|" );
+
+              menu->addAction( QString( action.c_str() ) );
+            }
+
+            ((QPushButton*)ui)->setMenu(menu);
         }
 
         if (ui->inherits("QProgressBar"))
