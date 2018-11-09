@@ -283,7 +283,8 @@ QvisSimulationWindow::CreateWindowContents()
 // Method: ConnectUIChildren
 //
 // Purpose: 
-//   Returns the name of the directory where VisIt looks for UI files.
+//   Connect the custon Ui gui signals to the availble slots
+//   for an object's children.
 //
 // Arguments:
 //   obj : The Qt object
@@ -310,12 +311,13 @@ QvisSimulationWindow::ConnectUIChildren(QObject *obj)
         ConnectUI(ui);
     }
 }
-        
+
 // ****************************************************************************
 // Method: ConnectUI
 //
 // Purpose: 
-//   Returns the name of the directory where VisIt looks for UI files.
+//   Connect the custon Ui gui signals to the availble slots
+//   for an object.
 //
 // Arguments:
 //   obj : The Qt object
@@ -647,7 +649,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         if (ui->inherits("QLabel"))
         {
             debug5 << "found QLabel " << name.toStdString()
-                   << " text = " << value.toStdString() << endl;
+                   << " label = " << value.toStdString() << endl;
             ((QLabel*)ui)->setText(value);
         }
 
@@ -661,19 +663,27 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         if (ui->inherits("QRadioButton"))
         {
             debug5 << "found QRadioButton " << name.toStdString()
-                   << " text = " << value.toStdString() << endl;
-            ((QRadioButton*)ui)->setChecked(value=="1");
+                   << " checked = " <<  (value == "1" ? "true" : "false")
+                   << endl;
+            ((QRadioButton*)ui)->setChecked( value == "1" );
         }
 
         if (ui->inherits("QPushButton"))
         {
             debug5 << "found QPushButton " << name.toStdString()
-                   << " text = " << value.toStdString() << endl;
+                   << " menu items = " << value.toStdString() << endl;
 
+            // One can optionally add a menu to push button. This step
+            // comes after the push button has been constructed and is
+            // dynamic.
+
+            // Check to see if a menu has already been added if so re-use it.
             QMenu *menu = ((QPushButton*)ui)->menu();
 
             if( menu )
+            {
               menu->clear();
+            }
             else
             {
               menu = new QMenu( name );
@@ -681,7 +691,8 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
             
               ConnectUI(menu);
             }
-            
+
+            // Add all of the actions to the menu.
             std::string actions = value.toStdString();
 
             while( !actions.empty() )
@@ -739,7 +750,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         if ( ui->inherits ( "QTimeEdit"))
         {
             debug5 << "found QTimeEdit " << name.toStdString()
-                   << " text = " << value.toStdString() << endl;
+                   << " time = " << value.toStdString() << endl;
             QTime time1 = QTime::fromString(value);
             ((QTimeEdit*)ui)->setTime(time1);
         }
@@ -747,7 +758,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         if (ui->inherits("QDateEdit"))
         {
             debug5 << "found QDateEdit " << name.toStdString()
-                   << " value = " << value.toStdString() << endl;
+                   << " date = " << value.toStdString() << endl;
             QDate date = QDate::fromString( value );
             ((QDateEdit*)ui)->setDate(date);
         }
@@ -755,33 +766,41 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         if (ui->inherits("QCheckBox"))
         {
             debug5 << "found QCheckBox " << name.toStdString()
-                   << " value = " << value.toStdString() << endl;
-            ((QCheckBox*)ui)->setChecked(value=="1");
+                   << " checked = " << (value == "1" ? "true" : "false")
+                   << endl;
+            ((QCheckBox*)ui)->setChecked( value == "1" );
         }
 
         if (ui->inherits("QGroupBox"))
         {
             debug5 << "found QGroupBox " << name.toStdString()
-                   << " value = " << value.toStdString() << endl;
-            ((QGroupBox*)ui)->setChecked(value=="1");
+                   << " checked = " <<  (value == "1" ? "true" : "false")
+                   << endl;
+            ((QGroupBox*)ui)->setChecked( value == "1" );
         }
 
         if (ui->inherits("QComboBox"))
         {
+            // For ComboBox one can change the menu items
+            // dynamically. So check to see if the string value is an
+            // int or characters.
             bool okay;
             int index = value.toInt( &okay );
 
+            // The string value is an int so set the current index.
             if( okay )
             {
               debug5 << "found QComboBox " << name.toStdString()
-                     << " value = " << value.toInt() << endl;
+                     << " current index = " << value.toInt() << endl;
               
               ((QComboBox*)ui)->setCurrentIndex(index);
             }
+            // The string value is character so clear the drop menu
+            // and add the new entries.
             else
             {
               debug5 << "found QComboBox " << name.toStdString()
-                     << " items = " << value.toStdString() << endl;
+                     << " menu items = " << value.toStdString() << endl;
 
               ((QComboBox*)ui)->clear();
               ((QComboBox*)ui)->addItems( value.split('|') );
@@ -801,7 +820,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
             debug5 << "found QTableWidget " << name.toStdString()
                    << " row = " << row << " column = " << column
-                   << " with value = " << text << std::endl;
+                   << " with text = " << text << std::endl;
 
             if( text == std::string("CLEAR_TABLE") )
             {
@@ -856,7 +875,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
         ui->blockSignals(false);
     }
     else
-        debug5 << "could not find UI component named "
+        debug5 << "Could not find UI component named "
                << name.toStdString() << endl;
 }
 
