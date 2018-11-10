@@ -290,6 +290,7 @@ if test "$branch" = "trunk" ; then
         -DCMAKE_BUILD_TYPE=Release \
         -DVISIT_BUILD_ALL_PLUGINS=1 \
         -DVISIT_DATA_MANUAL_EXAMPLES:BOOL=ON \
+        -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON \
         -DIGNORE_THIRD_PARTY_LIB_PROBLEMS:BOOL=ON \
         -DCMAKE_CXX_FLAGS_RELEASE:STRING="-fopenmp -O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
         -DCMAKE_C_FLAGS_RELEASE:STRING="-O3 -DNDEBUG -Wall -pedantic -Wextra -Wno-long-long -Wno-unused-parameter" \
@@ -307,7 +308,7 @@ else
         . >> ../buildlog 2>&1
 fi
 rm -rf ../make.out ../make.err
-make -k -j 36 1>../make.out 2>../make.err
+make -k -j 36 package 1>../make.out 2>../make.err
 if test $? -ne 0; then
     echo "Source build FAILED at: \`date\`" | mail -s "Source build FAILED" $userEmail
     exit 1
@@ -336,10 +337,10 @@ fi
 echo "Starting install:\`date\`"
 
 # Install the package
-cd ..
-version=`cat $srcdir/VERSION`
+cd ../src
+version=`cat $testDir/$user/$workingDir/src/VERSION`
 
-../src/svn_bin/visit-install -c llnl_open $version linux-x86_64 ./_install >> ../installLog 2>&1
+./svn_bin/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../installLog 2>&1
 
 if test "$testHost" = "pascal"     || \
    test "$testHost" = "borax"      || \
@@ -355,7 +356,7 @@ if test "$testHost" = "pascal"     || \
    test "$testHost" = "rzsurface"  || \
    test "$testHost" = "syrah"      || \
    test "$testHost" = "agate"  ; then
-    mv ./_install/$version/linux-x86_64 ./_install/$version/linux-x86_64-toss3
+    mv ./_install/\$version/linux-x86_64 ./_install/\$version/linux-x86_64-toss3
 fi
 
 
