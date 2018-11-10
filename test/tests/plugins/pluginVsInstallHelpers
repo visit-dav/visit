@@ -55,11 +55,11 @@ import pprint
 #   Helper which saves a file to the test suite's logs directory.
 #
 # -----------------------------------------------------------------------------
-def saveLogFile(f, pluginType):
+def saveLogFile(f):
     logdir = test_root_path("logs")
     if not os.path.isdir(logdir):
         os.mkdir(logdir)
-    logdir = abs_path(logdir, "plugins", "%sVsInstall"%pluginType) 
+    logdir = abs_path(logdir, "plugins") 
     if not os.path.isdir(logdir):
         os.mkdir(logdir)
     shutil.copy2(f, logdir)
@@ -278,6 +278,12 @@ def buildPlugin(pluginType, skiplist):
     subprocess.call(["cp", "-R", visit_src_path(pluginType), plugindir])
     os.chdir(plugindir)
     plugins = glob.glob("*")
+    try:
+        # this exists for in-source builds but not out-of-source
+        plugins.remove("CMakeFiles")
+    except Exception:
+        pass 
+        
     #print plugins
     pluginResults={}
     for pl in plugins:
