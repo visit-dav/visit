@@ -1489,6 +1489,8 @@ Connectivity-Based CMFE Function: ``conn_cmfe()`` : ``conn_cmfe(<Donor Variable>
     :ref:`pos_cmfe() <Pos_Cmfe_Expression_Function>` except that
     ``conn_cmfe()`` *assumes* that any differences in the coordinates of the
     two meshes are numerically insignificant to the resulting mapped variable.
+    In other words, differences in the coordinate fields, if they exist, are
+    not incorporated into the resulting mapping.
 
 .. _Curve_Cmfe_Expression_Function:
 
