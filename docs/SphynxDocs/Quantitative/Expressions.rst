@@ -1352,8 +1352,9 @@ donor variable is defined.
 Position-Based CMFE Function: ``pos_cmfe()`` : ``pos_cmfe(<Donor Variable>,<Target Mesh>,<Fill>)``
    The ``pos_cmfe()`` function performs the mapping assuming the two meshes,
    that is the ``<Target Mesh>`` and the mesh upon which the
-   ``<Donor Variable>`` is defined, share *only* a common spatial (positional)
-   extent. Its friend, the :ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>`
+   ``<Donor Variable>`` (e.g. the *donor mesh*) is defined, share *only* a
+   common spatial (positional) extent. Its friend, the
+   :ref:`conn_cmfe() <Conn_Cmfe_Expression_Function>`
    function is *optimized* to perform the mapping when the two meshes are also
    *topologically identical*. In other words, their *coordinate* **and**
    *connectivity* arrays are 1:1. In this case, the mapping can be performed
