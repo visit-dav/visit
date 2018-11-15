@@ -1403,6 +1403,17 @@ int VisItUI_setValueI(const char *name, int value, int enabled);
 int VisItUI_setValueD(const char *name, double value, int enabled);
 int VisItUI_setValueS(const char *name, const char *value, int enabled);
 
+  
+int VisItUI_setListValueI(const char *name,
+                          int row, int value, int enabled);
+int VisItUI_setListValueD(const char *name,
+                          int row, double value, int enabled);
+int VisItUI_setListValueV(const char *name,
+                          int row, double x, double y, double z, int enabled);
+int VisItUI_setListValueS(const char *name,
+                          int row, const char *value, int enabled);
+
+
 int VisItUI_setTableValueI(const char *name,
                            int row, int col, int value, int enabled);
 int VisItUI_setTableValueD(const char *name,
@@ -1412,6 +1423,9 @@ int VisItUI_setTableValueV(const char *name,
 int VisItUI_setTableValueS(const char *name,
                            int row, int col, const char *value, int enabled);
 
+
+int VisItUI_addStripChartPoint(int chart, int curve, int cycle, double value);
+  
 /* Include some experimental plotting functions */
 #include <VisItControlInterface_V2_plotting.h>
 

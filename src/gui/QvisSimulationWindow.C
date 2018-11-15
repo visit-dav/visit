@@ -68,6 +68,8 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMetaMethod>
@@ -378,6 +380,7 @@ QvisSimulationWindow::ConnectUI(QObject *ui)
         
         if(mm.methodType() == QMetaMethod::Signal)
         {
+          if( ui->objectName().toStdString() == "ListWidget" )
             std::cerr << ui->objectName().toStdString() << "  "
                       << mm.methodSignature().constData() << "  "
                       << std::endl;
@@ -421,12 +424,6 @@ QvisSimulationWindow::ConnectUI(QObject *ui)
                          cc, SLOT(ValueChangedHandler(const QTime &)));
     }
 
-    if (mo->indexOfSignal("itemChanged(QTableWidgetItem)") != -1)
-    {
-        QObject::connect(ui, SIGNAL(itemChanged(const QTableWidgetItem &item)),
-                         cc, SLOT(ItemChangedHandler(const QTableWidgetItem &)));
-    }
-
     if (mo->indexOfSignal("stateChanged(int)") != -1)
     {
         //qDebug("connect %s stateChanged(int)\n", ui->objectName().toStdString().c_str());
@@ -447,12 +444,33 @@ QvisSimulationWindow::ConnectUI(QObject *ui)
                          cc, SLOT(TextChangedHandler(const QString&)));
     }
 
+    // List widget related
+    if (mo->indexOfSignal("currentRowChanged(int)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(currentRowChanged(int)),
+                         cc, SLOT(CurrentRowChangedHandler(int)));
+    }
+
+    if (mo->indexOfSignal("currentTextChanged(QString)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(currentTextChanged(QString)),
+                         cc, SLOT(CurrentTextChangedHandler(QString)));
+    }
+
+    if (mo->indexOfSignal("itemChanged(QListWidgetItem*)") != -1)
+    {
+        QObject::connect(ui, SIGNAL(itemChanged(QListWidgetItem*)),
+                         cc, SLOT(ItemChangedHandler(QListWidgetItem*)));
+    }
+
+    // Table widget related
     if (mo->indexOfSignal("cellChanged(int,int)") != -1)
     {
         QObject::connect(ui, SIGNAL(cellChanged(int, int)),
                          cc, SLOT(CellChangedHandler(int, int)));
     }
 
+    // Combobox related
     if (mo->indexOfSignal("currentIndexChanged(int)") != -1)
     {
         QObject::connect(ui, SIGNAL(currentIndexChanged(int)),
@@ -804,6 +822,59 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
               ((QComboBox*)ui)->clear();
               ((QComboBox*)ui)->addItems( value.split('|') );
+            }
+        }
+
+        if (ui->inherits("QListWidget"))
+        {
+            QListWidget* tWidget = ((QListWidget*)ui);
+
+            tWidget->setEnabled(true);
+
+            unsigned int row;
+            std::string text;
+
+            parseCompositeCMD( value.toStdString(), row, text );
+
+            debug5 << "found QListWidget " << name.toStdString()
+                   << " row = " << row << " with text = " << text << std::endl;
+
+            if( text == std::string("CLEAR_LIST") )
+            {
+              while( tWidget->count() )
+                tWidget->removeItemWidget( tWidget->item( tWidget->count() - 1) );
+            }                                 
+            else if( text == std::string("REMOVE_ROW") &&
+                     row < tWidget->count() )
+            {
+              tWidget->removeItemWidget( tWidget->item( row ) );
+            }                                 
+            else
+            {
+              QListWidgetItem *item = tWidget->item(row);
+              
+              // See if the item has already been created.
+              if( item )
+              {
+                // Update the text
+                item->setText(tr("%1").arg(text.c_str()));
+              }
+              else
+              {
+                // Create a new item and make sure there is room for it.
+                item = new QListWidgetItem(tr("%1").arg(text.c_str()));
+                
+                tWidget->insertItem(row, item);
+              }
+
+              // Is the item editable?
+              if( e )
+                item->setFlags( Qt::ItemIsSelectable |
+                                Qt::ItemIsEditable |
+                                Qt::ItemIsEnabled );
+              else
+                item->setFlags( Qt::ItemIsSelectable |
+                                Qt::ItemIsEnabled );
             }
         }
 

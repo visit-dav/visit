@@ -41,6 +41,7 @@
 #include <QAction>
 #include <QDateTime>
 #include <QDateTimeEdit>
+#include <QListWidget>
 #include <QMessageBox>
 #include <QString>
 #include <QTableWidget>
@@ -50,9 +51,6 @@
 #include <ViewerProxy.h>
 #include <string>
 #include <DebugStream.h>
-
-
-using std::string;
 
 // ****************************************************************************
 // Method: SimCommandSlots::SimCommandSlots
@@ -113,8 +111,8 @@ int SimCommandSlots::SendCMD(QString sig, const QObject *ui, QString value)
         return -1;
     }
 
-    string host = engines->GetEngineName()[simIndex];
-    string sim  = engines->GetSimulationName()[simIndex];
+    std::string host = engines->GetEngineName()[simIndex];
+    std::string sim  = engines->GetSimulationName()[simIndex];
 
     QString cmd = QString("UI;%1;%2;%3;%4").arg(ui->objectName())
                                            .arg(ui->metaObject()->className())
@@ -330,7 +328,7 @@ void SimCommandSlots::ValueChangedHandler(const QDate &theDate)
 }
 
 // ****************************************************************************
-// Method: SimCommandSlots::SimCommandSlots
+// Method: SimCommandSlots::StateChangedHandler
 //
 // Purpose:
 //   This is the StateChangedHandler signal handler function. It is generated
@@ -391,6 +389,96 @@ void SimCommandSlots::CellChangedHandler(int row, int col)
       QString::number(row) + " | " + QString::number(col) + " | " + tvalue;
     
     SendCMD("cellChanged(int,int)", ui, value);
+}
+
+// ****************************************************************************
+// Method: SimCommandSlots::ItemChangedHandler
+//
+// Purpose:
+//   This is the ItemChangedHandler signal handler function. It is
+//   generated when the user changes a text value inside a list
+//   widget item in custom UI widget.
+//
+// Programmer: Allen Sanderson
+// Creation:   Nov 6, 2018
+//
+// ****************************************************************************
+
+void SimCommandSlots::ItemChangedHandler(QListWidgetItem *item)
+{
+    const QObject *ui = sender();
+    debug5 << "inside CellChangedHandler signal" << endl;
+    QString tvalue;
+    if (ui)
+    {
+        debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
+        
+        tvalue = item->text();
+        debug5 << "New Value text = " << tvalue.toStdString() << endl;
+    }
+    else
+        debug5 << "unknown signaler" << endl;
+
+    SendCMD("textChanged(char *)", ui, tvalue);
+}
+
+// ****************************************************************************
+// Method: SimCommandSlots::CurrentRowChangedHandler
+//
+// Purpose:
+//   This is the CurrentRowChangedHandler signal handler function. It
+//   is generated when the user selects a new row inside a list
+//   widget item in custom UI widget.
+//
+// Programmer: Allen Sanderson
+// Creation:   Nov 6, 2018
+//
+// ****************************************************************************
+
+void SimCommandSlots::CurrentRowChangedHandler(int row)
+{
+    const QObject *ui = sender();
+    debug5 << "inside ValueChangedHandler signal" << endl;
+    if (ui)
+    {
+        debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
+        debug5 << "New Value = " << row << endl;
+    // QString tvalue = ((QListWidget *)ui)->item(row)->text();
+    }
+    else
+        debug5 << "unknown signaler" << endl;
+    QString value = QString::number(row);
+    SendCMD("valueChanged(int)", ui, value);
+}
+
+// ****************************************************************************
+// Method: SimCommandSlots::CurrentTextChangedHandler
+//
+// Purpose:
+//   This is the CurrentTextChangedHandler signal handler function. It
+//   is generated when the users selects a new text inside a list
+//   widget item in custom UI widget.
+//
+// Programmer: Allen Sanderson
+// Creation:   Nov 6, 2018
+//
+// ****************************************************************************
+
+void SimCommandSlots::CurrentTextChangedHandler(const QString &newText)
+{
+    const QObject *ui = sender();
+    debug5 << "inside CurrentTextChangedHandler signal" << endl;
+    if (ui)
+    {
+        debug5 << "signal sender is type " << ui->metaObject()->className() << " named "
+               << ui->objectName().toStdString() << " parent " << ui->parent()->objectName().toStdString() << endl;
+        debug5 << "New Text Value = " << newText.toStdString() << endl;
+    }
+    else
+        debug5 << "unknown signaler" << endl;
+    SendCMD("textChanged(char *)", ui, newText);
 }
 
 // ****************************************************************************

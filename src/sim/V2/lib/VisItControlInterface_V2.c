@@ -4280,6 +4280,103 @@ VisItUI_setValueS(const char *name, const char *value, int enabled)
 
 
 int
+VisItUI_setListValueI(const char *name,
+                      int row, int value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setListValueI);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char *cmd = (char*) malloc(nChars * sizeof(char));
+
+        sprintf(cmd, "SetUI:s:%s:%d | %d :%d",
+                name, row, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+
+        free( cmd );
+    }
+    LIBSIM_API_LEAVE(VisItUI_setListValueI)
+    return retval;
+}
+
+int
+VisItUI_setListValueD(const char *name,
+                      int row, double value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setListValueI);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char *cmd = (char*) malloc(nChars * sizeof(char));
+
+        sprintf(cmd, "SetUI:s:%s:%d | %lf :%d",
+                name, row, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+
+        free( cmd );
+    }
+    LIBSIM_API_LEAVE(VisItUI_setListValueI)
+    return retval;
+}
+
+int
+VisItUI_setListValueV(const char *name,
+                      int row, double x, double y, double z, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setListValueV);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char *cmd = (char*) malloc(nChars * sizeof(char));
+
+        sprintf(cmd, "SetUI:s:%s:%d | %lf,%lf,%lf :%d",
+                name, row, x, y, z, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+
+        free( cmd );
+    }
+    LIBSIM_API_LEAVE(VisItUI_setListValueV)
+    return retval;
+}
+
+int
+VisItUI_setListValueS(const char *name,
+                      int row, const char *value, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setListValueS);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        const unsigned int nChars = strlen( name ) + strlen( value ) + CMD_MAX_STR_LEN;
+        char *cmd = (char*) malloc(nChars * sizeof(char));
+        
+        sprintf(cmd, "SetUI:s:%s:%d | %s :%d",
+                name, row, value, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+
+        free( cmd );
+    }
+    LIBSIM_API_LEAVE(VisItUI_setListValueS)
+    return retval;
+}
+
+
+int
 VisItUI_setTableValueI(const char *name,
                        int row, int column, int value, int enabled)
 {
@@ -4372,6 +4469,30 @@ VisItUI_setTableValueS(const char *name,
         free( cmd );
     }
     LIBSIM_API_LEAVE(VisItUI_setTableValueS)
+    return retval;
+}
+ 
+int
+VisItUI_addStripChartPoint(int chart, int curve, int cycle, double value)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_addStripChartPoint);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        const char *name = "STRIP_CHART_ADD_POINT";
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char *cmd = (char*) malloc(nChars * sizeof(char));
+        
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %d | %f :%d",
+                name, chart, curve, cycle, value, 1);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+
+        free( cmd );
+    }
+    LIBSIM_API_LEAVE(VisItUI_addStripChartPoint)
     return retval;
 }
  

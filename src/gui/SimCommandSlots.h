@@ -49,6 +49,7 @@
 
 class QEvent;
 class QAction;
+class QListWidgetItem;
 
 // ****************************************************************************
 // Class: SimCommandSlots
@@ -87,6 +88,10 @@ public slots:
     void ActivatedHandler(int);
     void StateChangedHandler(int);
     void CellChangedHandler(int, int);
+    void ItemChangedHandler(QListWidgetItem *item);
+    void CurrentRowChangedHandler(int);
+    void CurrentTextChangedHandler(const QString &);
+  
     int  SendCMD(QString sig, const  QObject *ui,QString value);
 
 private:
