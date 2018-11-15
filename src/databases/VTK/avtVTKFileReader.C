@@ -1274,6 +1274,10 @@ avtVTKFileReader::GetVectorVar(int domain, const char *var)
 //    Kathleen Biagas, Thu Aug 13 17:29:21 PDT 2015
 //    Add support for groups and block names.
 //
+//    Kathleen Biagas, Thu Nov 15 09:20:40 PST 2018
+//    If unstructured grid has declared no cells (valid in xml verisons),
+//    assume it is a point mesh and set topodim to 0.
+//
 // ****************************************************************************
 
 void
@@ -1346,6 +1350,13 @@ avtVTKFileReader::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
                 debug5 << "The mesh contains all lines, set topo=1" << endl;
                 topo = 1;
             }
+        }
+        else if (types->GetNumberOfTuples() == 0)
+        {
+            // no cells declared, assume  point mesh.
+            debug5 << "The VTK file format contains all points -- "
+                   << "declaring this a point mesh." << endl;
+            topo = 0;
         }
 
         types->Delete();
