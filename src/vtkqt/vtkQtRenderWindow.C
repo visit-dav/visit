@@ -124,12 +124,8 @@ vtkQtRenderWindow::vtkQtRenderWindow(QWidget *parent, Qt::WindowFlags f) : QMain
     setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+#ifndef Q_OS_OSX
     setWindowFlags(f);
-#else
-    #ifndef Q_OS_OSX
-        setWindowFlags(f);
-    #endif
 #endif
     // With the call to setCentralWidget() vtkQtRenderWindow takes
     // ownership of the gl widget pointer and deletes it at the
@@ -144,12 +140,8 @@ vtkQtRenderWindow::vtkQtRenderWindow(bool stereo, QWidget *parent, Qt::WindowFla
     setUnifiedTitleAndToolBarOnMac(false);
     setAnimated(false);
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
+#ifndef Q_OS_OSX
     setWindowFlags(f);
-#else
-    #ifndef Q_OS_OSX
-        setWindowFlags(f);
-    #endif
 #endif
     // With the call to setCentralWidget() vtkQtRenderWindow takes
     // ownership of the gl widget pointer and deletes it at the

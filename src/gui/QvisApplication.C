@@ -65,7 +65,7 @@
 QvisApplication::QvisApplication( int &argc, char **argv) :
     QApplication(argc, argv)
 {
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     needToMakeActive = false;
     eventLoop = 0;
 #endif
@@ -74,7 +74,7 @@ QvisApplication::QvisApplication( int &argc, char **argv) :
 QvisApplication::QvisApplication( int &argc, char **argv, bool GUIenabled ) :
     QApplication(argc, argv, GUIenabled)
 {
-#if defined(Q_WS_MACX) || defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
     needToMakeActive = false;
     eventLoop = 0;
 #endif
