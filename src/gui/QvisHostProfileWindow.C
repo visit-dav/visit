@@ -38,6 +38,8 @@
 
 #include <QvisHostProfileWindow.h>
 
+#include <visit-config.h>
+
 #include <QAbstractTableModel>
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -77,6 +79,7 @@
 #include <HostProfileList.h>
 #include <StringHelpers.h>
 #include <ViewerProxy.h>
+#include <InstallationFunctions.h>
 
 #include <cstdlib>
 
@@ -440,6 +443,9 @@ QvisHostProfileWindow::CreateWindowContents()
 // Creation:   September 10, 2013
 //
 // Modifications:
+//    Kathleen Biagas, Thu Nov 15 12:39:41 PST 2018
+//    Add current version's URL to remoteUrl combobox if not running from a
+//    development version.
 //
 // ****************************************************************************
 
@@ -477,6 +483,14 @@ QvisHostProfileWindow::CreateRemoteProfilesGroup()
     gridLayout->addWidget(importButton, 0, 2, 1, 1);
 
     /// todo: use a configuration API to load remote url..
+    if (!GetIsDevelopmentVersion())
+    {
+        QString relURL, ver(VISIT_VERSION);
+        if(ver.right(1) == "b")
+            ver = ver.left(ver.length()-1);
+        relURL = QString("http://visit.ilight.com/svn/visit/tags/") + ver + QString("/src/resources/hosts/");
+        remoteUrl->addItem(relURL);
+    }
     remoteUrl->addItem("http://visit.ilight.com/svn/visit/trunk/src/resources/hosts/");
     remoteUrl->setCurrentIndex(0);
 
