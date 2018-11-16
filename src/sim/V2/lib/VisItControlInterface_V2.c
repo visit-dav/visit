@@ -4239,7 +4239,7 @@ VisItUI_setValueD(const char *name, double value, int enabled)
 {
     int retval = VISIT_ERROR;
 
-    LIBSIM_API_ENTER(VisItUI_setValueI);
+    LIBSIM_API_ENTER(VisItUI_setValueD);
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
@@ -4252,7 +4252,29 @@ VisItUI_setValueD(const char *name, double value, int enabled)
 
         free( cmd );
     }
-    LIBSIM_API_LEAVE(VisItUI_setValueI)
+    LIBSIM_API_LEAVE(VisItUI_setValueD)
+    return retval;
+}
+
+int
+VisItUI_setValueV(const char *name, double x, double y, double z, int enabled)
+{
+    int retval = VISIT_ERROR;
+
+    LIBSIM_API_ENTER(VisItUI_setValueV);
+    /* Make sure the function exists before using it. */
+    if (engine && callbacks != NULL && callbacks->control.execute_command)
+    {
+        const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
+        char *cmd = (char*) malloc(nChars * sizeof(char));
+
+        sprintf(cmd, "SetUI:s:%s:%lf,%lf,%lf:%d", name, x, y, z, enabled?1:0);
+        (*callbacks->control.execute_command)(engine, cmd);
+        retval = VISIT_OKAY;
+
+        free( cmd );
+    }
+    LIBSIM_API_LEAVE(VisItUI_setValueV)
     return retval;
 }
 
@@ -4281,7 +4303,7 @@ VisItUI_setValueS(const char *name, const char *value, int enabled)
 
 int
 VisItUI_setListValueI(const char *name,
-                      int row, int value, int enabled)
+                      int row, int value, int editable, int enabled)
 {
     int retval = VISIT_ERROR;
 
@@ -4292,8 +4314,8 @@ VisItUI_setListValueI(const char *name,
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%d | %d :%d",
-                name, row, value, enabled?1:0);
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %d :%d",
+                name, row, value, editable?1:0, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
 
@@ -4305,31 +4327,31 @@ VisItUI_setListValueI(const char *name,
 
 int
 VisItUI_setListValueD(const char *name,
-                      int row, double value, int enabled)
+                      int row, double value, int editable, int enabled)
 {
     int retval = VISIT_ERROR;
 
-    LIBSIM_API_ENTER(VisItUI_setListValueI);
+    LIBSIM_API_ENTER(VisItUI_setListValueD);
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%d | %lf :%d",
-                name, row, value, enabled?1:0);
+        sprintf(cmd, "SetUI:s:%s:%d | %lf | %d :%d",
+                name, row, value, editable?1:0, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
 
         free( cmd );
     }
-    LIBSIM_API_LEAVE(VisItUI_setListValueI)
+    LIBSIM_API_LEAVE(VisItUI_setListValueD)
     return retval;
 }
 
 int
 VisItUI_setListValueV(const char *name,
-                      int row, double x, double y, double z, int enabled)
+                      int row, double x, double y, double z, int editable, int enabled)
 {
     int retval = VISIT_ERROR;
 
@@ -4340,8 +4362,8 @@ VisItUI_setListValueV(const char *name,
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
 
-        sprintf(cmd, "SetUI:s:%s:%d | %lf,%lf,%lf :%d",
-                name, row, x, y, z, enabled?1:0);
+        sprintf(cmd, "SetUI:s:%s:%d | %lf,%lf,%lf | %d :%d",
+                name, row, x, y, z, editable?1:0, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
 
@@ -4353,7 +4375,7 @@ VisItUI_setListValueV(const char *name,
 
 int
 VisItUI_setListValueS(const char *name,
-                      int row, const char *value, int enabled)
+                      int row, const char *value, int editable, int enabled)
 {
     int retval = VISIT_ERROR;
 
@@ -4364,8 +4386,8 @@ VisItUI_setListValueS(const char *name,
         const unsigned int nChars = strlen( name ) + strlen( value ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
         
-        sprintf(cmd, "SetUI:s:%s:%d | %s :%d",
-                name, row, value, enabled?1:0);
+        sprintf(cmd, "SetUI:s:%s:%d | %s | %d :%d",
+                name, row, value, editable?1:0, enabled?1:0);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;
 
@@ -4406,7 +4428,7 @@ VisItUI_setTableValueD(const char *name,
 {
     int retval = VISIT_ERROR;
 
-    LIBSIM_API_ENTER(VisItUI_setTableValueI);
+    LIBSIM_API_ENTER(VisItUI_setTableValueD);
     /* Make sure the function exists before using it. */
     if (engine && callbacks != NULL && callbacks->control.execute_command)
     {
@@ -4420,7 +4442,7 @@ VisItUI_setTableValueD(const char *name,
 
         free( cmd );
     }
-    LIBSIM_API_LEAVE(VisItUI_setTableValueI)
+    LIBSIM_API_LEAVE(VisItUI_setTableValueD)
     return retval;
 }
 
@@ -4485,7 +4507,7 @@ VisItUI_addStripChartPoint(int chart, int curve, int cycle, double value)
         const unsigned int nChars = strlen( name ) + CMD_MAX_STR_LEN;
         char *cmd = (char*) malloc(nChars * sizeof(char));
         
-        sprintf(cmd, "SetUI:s:%s:%d | %d | %d | %f :%d",
+        sprintf(cmd, "SetUI:s:%s:%d | %d | %d | %lf :%d",
                 name, chart, curve, cycle, value, 1);
         (*callbacks->control.execute_command)(engine, cmd);
         retval = VISIT_OKAY;

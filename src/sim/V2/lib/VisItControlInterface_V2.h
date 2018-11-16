@@ -1401,17 +1401,18 @@ int VisItUI_cellChanged(const char *name, void (*cb)(char *,void*), void *cbdata
 
 int VisItUI_setValueI(const char *name, int value, int enabled);
 int VisItUI_setValueD(const char *name, double value, int enabled);
+int VisItUI_setValueV(const char *name, double x, double y, double z, int enabled);
 int VisItUI_setValueS(const char *name, const char *value, int enabled);
 
-  
+
 int VisItUI_setListValueI(const char *name,
-                          int row, int value, int enabled);
+                          int row, int value, int editable, int enabled);
 int VisItUI_setListValueD(const char *name,
-                          int row, double value, int enabled);
+                          int row, double value, int editable, int enabled);
 int VisItUI_setListValueV(const char *name,
-                          int row, double x, double y, double z, int enabled);
+                          int row, double x, double y, double z, int editable, int enabled);
 int VisItUI_setListValueS(const char *name,
-                          int row, const char *value, int enabled);
+                          int row, const char *value, int editable, int enabled);
 
 
 int VisItUI_setTableValueI(const char *name,

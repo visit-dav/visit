@@ -149,6 +149,9 @@ private:
                             unsigned int &row, unsigned int &column,
                             std::string &text );
     void parseCompositeCMD( const std::string cmd,
+                            unsigned int &row, std::string &text,
+                            unsigned int &editable );
+    void parseCompositeCMD( const std::string cmd,
                             unsigned int &row, unsigned int &column,
                             double &x, double &y );
     std::string getNextString( std::string &cmd, const std::string delimiter );

@@ -6371,6 +6371,67 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisItUI_setValueV(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  char *arg1 = (char *) 0 ;
+  double arg2 ;
+  double arg3 ;
+  double arg4 ;
+  int arg5 ;
+  int res1 ;
+  char *buf1 = 0 ;
+  int alloc1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisItUI_setValueV",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setValueV" "', argument " "1"" of type '" "char const *""'");
+  }
+  arg1 = reinterpret_cast< char * >(buf1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisItUI_setValueV" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisItUI_setValueV" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisItUI_setValueV" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = static_cast< double >(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VisItUI_setValueV" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  result = (int)VisItUI_setValueV((char const *)arg1,arg2,arg3,arg4,arg5);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return resultobj;
+fail:
+  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisItUI_setValueS(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   char *arg1 = (char *) 0 ;
@@ -6423,6 +6484,7 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueI(PyObject *SWIGUNUSEDPARM(self),
   int arg2 ;
   int arg3 ;
   int arg4 ;
+  int arg5 ;
   int res1 ;
   char *buf1 = 0 ;
   int alloc1 = 0 ;
@@ -6432,13 +6494,16 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueI(PyObject *SWIGUNUSEDPARM(self),
   int ecode3 = 0 ;
   int val4 ;
   int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:VisItUI_setListValueI",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisItUI_setListValueI",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setListValueI" "', argument " "1"" of type '" "char const *""'");
@@ -6459,7 +6524,12 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueI(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisItUI_setListValueI" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = static_cast< int >(val4);
-  result = (int)VisItUI_setListValueI((char const *)arg1,arg2,arg3,arg4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VisItUI_setListValueI" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  result = (int)VisItUI_setListValueI((char const *)arg1,arg2,arg3,arg4,arg5);
   resultobj = SWIG_From_int(static_cast< int >(result));
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return resultobj;
@@ -6475,6 +6545,7 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueD(PyObject *SWIGUNUSEDPARM(self),
   int arg2 ;
   double arg3 ;
   int arg4 ;
+  int arg5 ;
   int res1 ;
   char *buf1 = 0 ;
   int alloc1 = 0 ;
@@ -6484,13 +6555,16 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueD(PyObject *SWIGUNUSEDPARM(self),
   int ecode3 = 0 ;
   int val4 ;
   int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:VisItUI_setListValueD",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisItUI_setListValueD",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setListValueD" "', argument " "1"" of type '" "char const *""'");
@@ -6511,7 +6585,12 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueD(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisItUI_setListValueD" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = static_cast< int >(val4);
-  result = (int)VisItUI_setListValueD((char const *)arg1,arg2,arg3,arg4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VisItUI_setListValueD" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  result = (int)VisItUI_setListValueD((char const *)arg1,arg2,arg3,arg4,arg5);
   resultobj = SWIG_From_int(static_cast< int >(result));
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return resultobj;
@@ -6529,6 +6608,7 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueV(PyObject *SWIGUNUSEDPARM(self),
   double arg4 ;
   double arg5 ;
   int arg6 ;
+  int arg7 ;
   int res1 ;
   char *buf1 = 0 ;
   int alloc1 = 0 ;
@@ -6542,15 +6622,18 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueV(PyObject *SWIGUNUSEDPARM(self),
   int ecode5 = 0 ;
   int val6 ;
   int ecode6 = 0 ;
+  int val7 ;
+  int ecode7 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
   PyObject * obj4 = 0 ;
   PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOOOO:VisItUI_setListValueV",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOO:VisItUI_setListValueV",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) SWIG_fail;
   res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setListValueV" "', argument " "1"" of type '" "char const *""'");
@@ -6581,7 +6664,12 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueV(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "VisItUI_setListValueV" "', argument " "6"" of type '" "int""'");
   } 
   arg6 = static_cast< int >(val6);
-  result = (int)VisItUI_setListValueV((char const *)arg1,arg2,arg3,arg4,arg5,arg6);
+  ecode7 = SWIG_AsVal_int(obj6, &val7);
+  if (!SWIG_IsOK(ecode7)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "VisItUI_setListValueV" "', argument " "7"" of type '" "int""'");
+  } 
+  arg7 = static_cast< int >(val7);
+  result = (int)VisItUI_setListValueV((char const *)arg1,arg2,arg3,arg4,arg5,arg6,arg7);
   resultobj = SWIG_From_int(static_cast< int >(result));
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return resultobj;
@@ -6597,6 +6685,7 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueS(PyObject *SWIGUNUSEDPARM(self),
   int arg2 ;
   char *arg3 = (char *) 0 ;
   int arg4 ;
+  int arg5 ;
   int res1 ;
   char *buf1 = 0 ;
   int alloc1 = 0 ;
@@ -6607,13 +6696,16 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueS(PyObject *SWIGUNUSEDPARM(self),
   int alloc3 = 0 ;
   int val4 ;
   int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:VisItUI_setListValueS",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisItUI_setListValueS",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_AsCharPtrAndSize(obj0, &buf1, NULL, &alloc1);
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "VisItUI_setListValueS" "', argument " "1"" of type '" "char const *""'");
@@ -6634,7 +6726,12 @@ SWIGINTERN PyObject *_wrap_VisItUI_setListValueS(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisItUI_setListValueS" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = static_cast< int >(val4);
-  result = (int)VisItUI_setListValueS((char const *)arg1,arg2,(char const *)arg3,arg4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "VisItUI_setListValueS" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = static_cast< int >(val5);
+  result = (int)VisItUI_setListValueS((char const *)arg1,arg2,(char const *)arg3,arg4,arg5);
   resultobj = SWIG_From_int(static_cast< int >(result));
   if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   if (alloc3 == SWIG_NEWOBJ) delete[] buf3;
@@ -17438,6 +17535,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisItUI_cellChanged", _wrap_VisItUI_cellChanged, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setValueI", _wrap_VisItUI_setValueI, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setValueD", _wrap_VisItUI_setValueD, METH_VARARGS, NULL},
+	 { (char *)"VisItUI_setValueV", _wrap_VisItUI_setValueV, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setValueS", _wrap_VisItUI_setValueS, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setListValueI", _wrap_VisItUI_setListValueI, METH_VARARGS, NULL},
 	 { (char *)"VisItUI_setListValueD", _wrap_VisItUI_setListValueD, METH_VARARGS, NULL},

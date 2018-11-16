@@ -831,10 +831,10 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
             lWidget->setEnabled(true);
 
-            unsigned int row;
+            unsigned int row, editable;
             std::string text;
 
-            parseCompositeCMD( value.toStdString(), row, text );
+            parseCompositeCMD( value.toStdString(), row, text, editable );
 
             debug5 << "found QListWidget " << name.toStdString()
                    << " row = " << row << " with text = " << text << std::endl;
@@ -851,7 +851,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
               }
             }                                 
             else if( text == std::string("REMOVE_ROW") &&
-                     0 <= row && row < lWidget->count() )
+                     row < lWidget->count() )
             {
               QListWidgetItem *item = lWidget->takeItem( row );
               
@@ -883,13 +883,16 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
               }
 
               // Is the item editable?
-              if( e )
-                item->setFlags( Qt::ItemIsSelectable |
-                                Qt::ItemIsEditable |
-                                Qt::ItemIsEnabled );
+              if( editable )
+                item->setFlags( Qt::ItemIsEditable |
+                                Qt::ItemIsEnabled |
+                                Qt::ItemIsSelectable );
+              // Is the item enabled?
+              else if( e )
+                item->setFlags( Qt::ItemIsEnabled |
+                                Qt::ItemIsSelectable );
               else
-                item->setFlags( Qt::ItemIsSelectable |
-                                Qt::ItemIsEnabled );
+                item->setFlags(Qt::NoItemFlags);
             }
         }
 
@@ -916,7 +919,7 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                 tWidget->removeRow( tWidget->rowCount() - 1);
             }                             
             else if( text == std::string("REMOVE_ROW") &&
-                     0 <= row && row < tWidget->rowCount() )
+                     row < tWidget->rowCount() )
             {
               tWidget->removeRow( row );
             }                                 
@@ -949,11 +952,11 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                 tWidget->setItem(row, column, item);
               }
 
-              // Is the item editable?
+              // Is the item editable/enabled?
               if( e )
-                item->setFlags( Qt::ItemIsSelectable |
-                                Qt::ItemIsEditable |
-                                Qt::ItemIsEnabled );
+                item->setFlags( Qt::ItemIsEditable |
+                                Qt::ItemIsEnabled |
+                                Qt::ItemIsSelectable );
               else
                 item->setFlags(Qt::NoItemFlags);
             }
@@ -2081,6 +2084,39 @@ QvisSimulationWindow::parseCompositeCMD( const std::string cmd,
   column = atoi( str.c_str() );
 
   text = getNextString( strcmd, " | " );
+}
+
+// ****************************************************************************
+// Method: QvisSimulationWindow::parseCompositeCMD
+//
+// Purpose:
+//   This method is called to parse a composite cmd to get the
+//   row, column, and name.
+//
+// Arguments:
+//   cmd      : The properly form command string.
+//
+// Programmer: Allen Sanderson
+// Creation:   6 May 2016
+//
+// Modifications:
+//
+// ****************************************************************************
+void
+QvisSimulationWindow::parseCompositeCMD( const std::string cmd,
+                                         unsigned int &row,
+                                         std::string &text,
+                                         unsigned int &editable )
+{
+  std::string strcmd(cmd);
+
+  std::string str = getNextString( strcmd, " | " );
+  row = atoi( str.c_str() );
+
+  text = getNextString( strcmd, " | " );
+
+  str = getNextString( strcmd, " | " );
+  editable = atoi( str.c_str() );
 }
 
 // ****************************************************************************

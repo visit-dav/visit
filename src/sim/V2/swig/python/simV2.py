@@ -375,24 +375,28 @@ def VisItUI_setValueD(name, value, enabled):
     return _simV2.VisItUI_setValueD(name, value, enabled)
 VisItUI_setValueD = _simV2.VisItUI_setValueD
 
+def VisItUI_setValueV(name, x, y, z, enabled):
+    return _simV2.VisItUI_setValueV(name, x, y, z, enabled)
+VisItUI_setValueV = _simV2.VisItUI_setValueV
+
 def VisItUI_setValueS(name, value, enabled):
     return _simV2.VisItUI_setValueS(name, value, enabled)
 VisItUI_setValueS = _simV2.VisItUI_setValueS
 
-def VisItUI_setListValueI(name, row, value, enabled):
-    return _simV2.VisItUI_setListValueI(name, row, value, enabled)
+def VisItUI_setListValueI(name, row, value, editable, enabled):
+    return _simV2.VisItUI_setListValueI(name, row, value, editable, enabled)
 VisItUI_setListValueI = _simV2.VisItUI_setListValueI
 
-def VisItUI_setListValueD(name, row, value, enabled):
-    return _simV2.VisItUI_setListValueD(name, row, value, enabled)
+def VisItUI_setListValueD(name, row, value, editable, enabled):
+    return _simV2.VisItUI_setListValueD(name, row, value, editable, enabled)
 VisItUI_setListValueD = _simV2.VisItUI_setListValueD
 
-def VisItUI_setListValueV(name, row, x, y, z, enabled):
-    return _simV2.VisItUI_setListValueV(name, row, x, y, z, enabled)
+def VisItUI_setListValueV(name, row, x, y, z, editable, enabled):
+    return _simV2.VisItUI_setListValueV(name, row, x, y, z, editable, enabled)
 VisItUI_setListValueV = _simV2.VisItUI_setListValueV
 
-def VisItUI_setListValueS(name, row, value, enabled):
-    return _simV2.VisItUI_setListValueS(name, row, value, enabled)
+def VisItUI_setListValueS(name, row, value, editable, enabled):
+    return _simV2.VisItUI_setListValueS(name, row, value, editable, enabled)
 VisItUI_setListValueS = _simV2.VisItUI_setListValueS
 
 def VisItUI_setTableValueI(name, row, col, value, enabled):
