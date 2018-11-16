@@ -827,9 +827,9 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
         if (ui->inherits("QListWidget"))
         {
-            QListWidget* tWidget = ((QListWidget*)ui);
+            QListWidget* lWidget = ((QListWidget*)ui);
 
-            tWidget->setEnabled(true);
+            lWidget->setEnabled(true);
 
             unsigned int row;
             std::string text;
@@ -841,17 +841,26 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
 
             if( text == std::string("CLEAR_LIST") )
             {
-              while( tWidget->count() )
-                tWidget->removeItemWidget( tWidget->item( tWidget->count() - 1) );
+              while( lWidget->count() )
+              {
+                QListWidgetItem *item =
+                  lWidget->takeItem( lWidget->count() - 1 );
+
+                if( item )
+                  delete item;
+              }
             }                                 
             else if( text == std::string("REMOVE_ROW") &&
-                     row < tWidget->count() )
+                     0 <= row && row < lWidget->count() )
             {
-              tWidget->removeItemWidget( tWidget->item( row ) );
+              QListWidgetItem *item = lWidget->takeItem( row );
+              
+              if( item )
+                delete item;
             }                                 
             else
             {
-              QListWidgetItem *item = tWidget->item(row);
+              QListWidgetItem *item = lWidget->item(row);
               
               // See if the item has already been created.
               if( item )
@@ -861,10 +870,16 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
               }
               else
               {
-                // Create a new item and make sure there is room for it.
+                // Insert blank items if the count is less than the
+                // row. Otherwise the item will be inserted at the end
+                // of the list.
+                while( lWidget->count() < row )
+                  lWidget->addItem(QString(""));
+                  
+                // Create a new item and insert it into the list
                 item = new QListWidgetItem(tr("%1").arg(text.c_str()));
                 
-                tWidget->insertItem(row, item);
+                lWidget->insertItem(row, item);
               }
 
               // Is the item editable?
@@ -893,18 +908,20 @@ QvisSimulationWindow::UpdateUIComponent(QWidget *window, const QString &name,
                    << " row = " << row << " column = " << column
                    << " with text = " << text << std::endl;
 
+            // NOTE : It is not clear if when removing a row or column
+            // if the items are deleted. Possible memory leak?
             if( text == std::string("CLEAR_TABLE") )
             {
               while( tWidget->rowCount() )
                 tWidget->removeRow( tWidget->rowCount() - 1);
-            }                                 
+            }                             
             else if( text == std::string("REMOVE_ROW") &&
-                     row < tWidget->rowCount() )
+                     0 <= row && row < tWidget->rowCount() )
             {
               tWidget->removeRow( row );
             }                                 
             else if( text == std::string("REMOVE_COLUMN") &&
-                     column < tWidget->columnCount() )
+                     column <= 0 && column < tWidget->columnCount() )
             {
               tWidget->removeColumn( column );
             }                                 
