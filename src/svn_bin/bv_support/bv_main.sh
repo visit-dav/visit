@@ -151,6 +151,27 @@ function initialize_build_visit()
                 export MESA_TARGET=${MESA_TARGET-"linux"}
                 QT_PLATFORM="linux-g++"
             fi
+        elif [[ "$(uname -m)" == "ppc64le" ]] ; then
+            if [[ "$C_COMPILER" == "xlc" ]] ; then
+                CFLAGS="$CFLAGS -qpic"
+                FCFLAGS="$FCFLAGS -qpic"
+                CXXFLAGS="$CXXFLAGS -qpic"
+                export CXX_COMPILER=${CXX_COMPILER-"xlC"}
+                export MESA_TARGET=${MESA_TARGET-"linux"}
+                QT_PLATFORM="linux-xlc" #aix-xlc"
+            else
+                CFLAGS="$CFLAGS -fPIC"
+                FCFLAGS="$FCFLAGS -fPIC"
+                if [[ "$C_COMPILER" == "gcc" || "$C_COMPILER" == "" ]]; then
+                    C_OPT_FLAGS="$C_OPT_FLAGS -O2"
+                fi
+                CXXFLAGS="$CXXFLAGS -fPIC"
+                if [[ "$CXX_COMPILER" == "g++" || "$CXX_COMPILER" == "" ]]; then
+                    CXX_OPT_FLAGS="$CXX_OPT_FLAGS -O2"
+                fi
+                export MESA_TARGET=${MESA_TARGET-"linux"}
+                QT_PLATFORM="linux-g++"
+            fi
         elif [[ "$(uname -m)" == "ia64" ]] ; then
             CFLAGS="$CFLAGS -fPIC"
             FCFLAGS="$FCFLAGS -fPIC"

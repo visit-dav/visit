@@ -62,6 +62,9 @@
 #   systems. I made a change in internallauncher and customlauncher
 #   that made this unnecessary.
 #
+#   Eric Brugger, Mon Nov 19 15:54:23 PST 2018
+#   Added shark.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -74,6 +77,7 @@ user=`whoami`
 winnipeg=true
 zin=true
 jade=true
+shark=true
 trinity=true
 
 ver=undefined
@@ -90,6 +94,7 @@ do
          winnipeg=false
          zin=false
          jade=false
+         shark=false
          trinity=false
          shift
          ;;
@@ -115,6 +120,14 @@ do
          ;;
       +jade)
          jade=true
+         shift
+         ;;
+      -shark)
+         shark=false
+         shift
+         ;;
+      +shark)
+         shark=true
          shift
          ;;
       -trinity)
@@ -278,6 +291,43 @@ then
 fi
 
 #
+# Install on shark.
+#
+rm -f shark
+cat <<EOF > shark
+#!/bin/sh
+./visit-install -private -c llnl_closed -g visit -b wbronze -gw -l $ver linux-intel-shark /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo ""                                              > resultlog 2>&1
+echo "        install of visit on shark"             >> resultlog 2>&1
+echo "       ---------------------------"            >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+df -k /usr/gapps/visit                               >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-intel/bin         >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "The database plugins:"                         >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.shark
+EOF
+
+if [ $shark = true ]
+then
+   if [ $test = no ]
+   then
+      scp shark23:/usr/tmp/$user/shark/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-intel-shark.tar.gz
+      scp visit$ver2.linux-intel-shark.tar.gz shark:
+      scp visit-install shark:
+      scp shark shark:shark_install
+      ssh shark "chmod 750 shark_install;./shark_install"
+   fi
+fi
+
+#
 # Install on trinity.
 #
 rm -f trinity
@@ -317,5 +367,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f winnipeg zin jade trinity
+   rm -f winnipeg zin jade shark trinity
 fi

@@ -91,6 +91,9 @@
 #   Eric  Brugger, Mon Oct  9 09:33:38 PDT 2017
 #   I updated the builds for visit 2.13.0.
 #
+#   Eric Brugger, Mon Nov 19 15:45:52 PST 2018
+#   Added shark.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -103,6 +106,7 @@ user=`whoami`
 winnipeg=true
 zin=true
 jade=true
+shark=true
 trinity=true
 
 dist=undefined
@@ -119,6 +123,7 @@ do
          winnipeg=false
          zin=false
          jade=false
+         shark=false
          trinity=false
          shift
          ;;
@@ -146,6 +151,14 @@ do
          jade=true
          shift
          ;;
+      -shark)
+         shark=false
+         shift
+         ;;
+      +shark)
+         shark=true
+         shift
+         ;;
       -trinity)
          trinity=false
          shift
@@ -168,9 +181,10 @@ if [ $dist = undefined ]
 then
    echo "Usage: [-none] [-<machine name>] -d <distribution>"
    echo "Valid machine names:"
-   echo "    winnipeg (B-Div, Linux),"
+   echo "    winnipeg (B-Div, x86_64),"
    echo "    zin (LC, x86_64)"
    echo "    jade (LC, x86_64)"
+   echo "    shark (LC, ppc)"
    echo "    trinity (LANL, x86_64)"
    exit
 fi
@@ -342,6 +356,56 @@ then
 fi
 
 #
+# Build on shark.
+#
+rm -f shark
+cat <<EOF > shark
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/shark ; then
+   mkdir /usr/tmp/$user/shark
+fi
+rm -rf /usr/tmp/$user/shark/visitbuild
+mkdir /usr/tmp/$user/shark/visitbuild
+mv shark_$dist.tar.gz /usr/tmp/$user/shark/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/shark/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/usr/workspace/ws1/visit/visit/thirdparty_shared/2.13.0/blueos3/cmake/3.8.1/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-intel.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on shark"        > resultlog 2>&1
+echo "       -------------------------"       >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $shark = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on shark"
+      scp shark shark23:shark_buildit
+      scp $dist.tar.gz shark23:shark_$dist.tar.gz
+      ssh shark23 "chmod 750 shark_buildit;./shark_buildit" &
+   fi
+fi
+
+#
 # Build on trinity.
 #
 rm -f trinity
@@ -396,5 +460,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f winnipeg zin jade trinity
+   rm -f winnipeg zin jade shark trinity
 fi
