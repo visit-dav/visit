@@ -375,7 +375,7 @@ gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
 cd $dist/src
 ver=\`cat VERSION\`
 ver2=\`echo \$ver | tr "." "_"\`
-/usr/workspace/ws1/visit/visit/thirdparty_shared/2.13.0/blueos3/cmake/3.8.1/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+/usr/workspace/ws1/visit/visit/thirdparty_shared/2.13.3/blueos3/cmake/3.8.1/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
 make -j 6 >> ../../buildlog 2>&1
 make -j 6 package >> ../../buildlog 2>&1
 mv visit\$ver2.linux-intel.tar.gz ../..
