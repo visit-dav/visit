@@ -769,6 +769,10 @@ output streams.
 # Date:       Thu May 17 14:22:04 PDT 2012
 #
 # Modifications:
+#   Eric Brugger, Tue Nov 27 11:39:36 PST 2018
+#   I added support for specifying the bank and number of processes per node
+#   to bsub. I also added support to specifying the plugindir, visithome and
+#   visitarchhome.
 #
 ###############################################################################
 
@@ -791,10 +795,22 @@ class JobSubmitter_bsub(JobSubmitter):
             parcmd = parcmd + ["-q", self.parallel.partition]
         if self.parallel.time != None:
             parcmd = parcmd + ["-W", self.parallel.time]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-G", self.parallel.bank]
+        nodes = self.parallel.nn
+        if nodes == None:
+            nodes = self.parallel.np
+        ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = parcmd + ["-R", "\"span[ptile=%s]\"" % ppn]
         parcmd = parcmd + [sublauncher]
         if self.parallel.sublaunchargs != None:
             parcmd = parcmd + self.parallel.sublaunchargs
-        parcmd = debugger.CreateCommand(parcmd + self.VisItExecutable() + args)
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = parcmd + args
+        parcmd = debugger.CreateCommand(parcmd)
         return parcmd
 
 ###############################################################################
