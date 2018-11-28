@@ -61,23 +61,19 @@
 
 // Macros that let us access the AnnotationObject and store the fields
 // we care about into the available fields.
-#define GetPreserveOrientation GetFontBold
-#define SetPreserveOrientation SetFontBold
+#define GetPreserveOrientation GetOptions().GetEntry("preserveOrientation")->AsBool
 
 #define GetRotations GetPosition2
 #define SetRotations SetPosition2
 
 // The flag that lets us switch between relative and fixed heights.
-#define GetRelativeHeightMode GetFontItalic
-#define SetRelativeHeightMode SetFontItalic
+#define GetRelativeHeightMode GetOptions().GetEntry("useRelativeHeight")->AsBool
 
 // Relative scale will scale the text as a percentage of the bbox diagonal
-#define GetRelativeHeight GetIntAttribute1
-#define SetRelativeHeight SetIntAttribute1
+#define GetRelativeHeight GetOptions().GetEntry("relativeHeight")->AsInt
 
 // Fixed height in world coordinates.
-#define GetFixedHeight   GetDoubleAttribute1
-#define SetFixedHeight   SetDoubleAttribute1
+#define GetFixedHeight   GetOptions().GetEntry("fixedHeight")->AsDouble
 
 double avtText3DColleague::initialTime = 0.;
 int    avtText3DColleague::initialCycle = 0;
@@ -539,16 +535,17 @@ avtText3DColleague::GetOptions(AnnotationObject &annot)
     annot.SetTextColor(info->textColor);
     annot.SetUseForegroundForTextColor(info->useForegroundForTextColor);
 
+    MapNode opts;
     // Store whether we're facing the camera.
-    annot.SetPreserveOrientation(info->textActor->GetCamera() != NULL);
+    opts["preserveOrientation"] = (bool)(info->textActor->GetCamera() != NULL);
 
     // Store the rotations that we're applying to the text.
     annot.SetRotations(info->rotations);
 
     // Store the height information.
-    annot.SetRelativeHeightMode(info->useRelativeHeight);
-    annot.SetRelativeHeight(info->relativeHeight);
-    annot.SetFixedHeight(info->fixedHeight);
+    opts["useRelativeHeight"] = info->useRelativeHeight;
+    opts["relativeHeight"] = info->relativeHeight;
+    opts["fixedHeight"] = info->fixedHeight;
     if(!info->scaleInitialized)
     {
         UpdateActorScale();
@@ -559,6 +556,7 @@ avtText3DColleague::GetOptions(AnnotationObject &annot)
     stringVector text;
     text.push_back(info->textFormatString);
     annot.SetText(text);
+    annot.SetOptions(opts);
 }
 
 // ****************************************************************************

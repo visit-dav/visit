@@ -89,17 +89,16 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     connect(point1Edit, SIGNAL(returnPressed()),
             this, SLOT(point1Changed()));
     QLabel *startLabel = new QLabel(tr("Start"), this);
-    cLayout->addWidget(point1Edit, row, 1, 1, 3);
+    cLayout->addWidget(point1Edit, row, 1);
     cLayout->addWidget(startLabel, row, 0);
-    ++row;
 
     // Add controls for point2
     point2Edit = new QLineEdit(this);
     connect(point2Edit, SIGNAL(returnPressed()),
             this, SLOT(point2Changed()));
     QLabel *endLabel = new QLabel(tr("End"), this);
-    cLayout->addWidget(point2Edit, row, 1, 1, 3);
-    cLayout->addWidget(endLabel, row, 0);
+    cLayout->addWidget(point2Edit, row, 4);
+    cLayout->addWidget(endLabel, row, 3);
     ++row;
 
     // Add controls for line type.
@@ -108,17 +107,16 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     lineType->addItem(tr("Tube"));
     connect(lineType, SIGNAL(activated(int)),
             this, SLOT(lineTypeChanged(int)));
-    cLayout->addWidget(lineType, row, 1, 1, 2);
+    cLayout->addWidget(lineType, row, 1, 1, 1);
     cLayout->addWidget(new QLabel(tr("Line type"), this), row, 0);
-    ++row;
 
     // Add controls for line width.
     widthWidget = new QvisLineWidthWidget(0, this);
     connect(widthWidget, SIGNAL(lineWidthChanged(int)),
             this, SLOT(widthChanged(int)));
-    cLayout->addWidget(widthWidget, row, 1);
+    cLayout->addWidget(widthWidget, row, 4);
     widthLabel = new QLabel(tr("Line Width"), this);
-    cLayout->addWidget(widthLabel, row, 0);
+    cLayout->addWidget(widthLabel, row, 3);
     //++row;
 
     // Add controls for tube quality.
@@ -129,18 +127,20 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     tubeQuality->setCurrentIndex(1);
     connect(tubeQuality, SIGNAL(activated(int)),
             this, SLOT(tubeQualityChanged(int)));
-    cLayout->addWidget(tubeQuality, row, 1);
+    cLayout->addWidget(tubeQuality, row, 4);
     tubeQualLabel = new QLabel(tr("Tube Quality"), this);
-    cLayout->addWidget(tubeQualLabel, row, 0);
-    //++row;
+    cLayout->addWidget(tubeQualLabel, row, 3);
+    ++row;
 
     // Add controls for tube radius.
     tubeRadius = new QLineEdit(this);
     connect(tubeRadius, SIGNAL(returnPressed()),
             this, SLOT(tubeRadiusChanged()));
-    cLayout->addWidget(tubeRadius, row, 3);
+    connect(tubeRadius, SIGNAL(editingFinished()),
+            this, SLOT(tubeRadiusChanged()));
+    cLayout->addWidget(tubeRadius, row, 4);
     tubeRadLabel = new QLabel(tr("Tube Radius"), this);
-    cLayout->addWidget(tubeRadLabel, row, 2);
+    cLayout->addWidget(tubeRadLabel, row, 3);
     ++row;
 
     // Added a use foreground toggle
@@ -152,7 +152,7 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
 
     // Add controls for the line color.
     colorLabel = new QLabel(tr("Line color"), this);
-    cLayout->addWidget(colorLabel, row, 0, Qt::AlignLeft);
+    cLayout->addWidget(colorLabel, row, 0, Qt::AlignRight);
 
     colorButton = new QvisColorButton(this);
     connect(colorButton, SIGNAL(selectedColor(const QColor &)),
@@ -163,7 +163,7 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     opacitySlider = new QvisOpacitySlider(0, 255, 10, 0, this);
     connect(opacitySlider, SIGNAL(valueChanged(int)),
             this, SLOT(opacityChanged(int)));
-    cLayout->addWidget(opacitySlider, row, 2, 1, 3);
+    cLayout->addWidget(opacitySlider, row, 3, 1, 3);
     ++row;
 
     // Add controls for arrow 1 (Begin arrow)
@@ -186,9 +186,20 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     arrow1Radius = new QLineEdit(this);
     connect(arrow1Radius, SIGNAL(returnPressed()),
             this, SLOT(arrow1RadiusChanged()));
+    connect(arrow1Radius, SIGNAL(editingFinished()),
+            this, SLOT(arrow1RadiusChanged()));
     cLayout->addWidget(arrow1Radius, row, 3);
     rad1Label = new QLabel(tr("Radius"), this);
     cLayout->addWidget(rad1Label, row, 2, Qt::AlignRight);
+
+    arrow1Height = new QLineEdit(this);
+    connect(arrow1Height, SIGNAL(returnPressed()),
+            this, SLOT(arrow1HeightChanged()));
+    connect(arrow1Height, SIGNAL(editingFinished()),
+            this, SLOT(arrow1HeightChanged()));
+    cLayout->addWidget(arrow1Height, row, 5);
+    height1Label = new QLabel(tr("Height"), this);
+    cLayout->addWidget(height1Label, row, 4, Qt::AlignRight);
     ++row;
 
     // Add controls for arrow 2 (End arrow)
@@ -211,11 +222,21 @@ QvisLine3DInterface::QvisLine3DInterface(QWidget *parent) :
     arrow2Radius = new QLineEdit(this);
     connect(arrow2Radius, SIGNAL(returnPressed()),
             this, SLOT(arrow2RadiusChanged()));
+    connect(arrow2Radius, SIGNAL(editingFinished()),
+            this, SLOT(arrow2RadiusChanged()));
     cLayout->addWidget(arrow2Radius, row, 3);
     rad2Label = new QLabel(tr("Radius"), this);
     cLayout->addWidget(rad2Label, row, 2, Qt::AlignRight);
-    ++row;
 
+    arrow2Height = new QLineEdit(this);
+    connect(arrow2Height, SIGNAL(returnPressed()),
+            this, SLOT(arrow2HeightChanged()));
+    connect(arrow2Height, SIGNAL(editingFinished()),
+            this, SLOT(arrow2HeightChanged()));
+    cLayout->addWidget(arrow2Height, row, 5);
+    height2Label = new QLabel(tr("Height"), this);
+    cLayout->addWidget(height2Label, row, 4, Qt::AlignRight);
+    ++row;
 
     // Added a visibility toggle
     visibleCheckBox = new QCheckBox(tr("Visible"), this);
@@ -294,6 +315,7 @@ void
 QvisLine3DInterface::UpdateControls()
 {
     // Set the start position.
+    const MapNode &opts = annot->GetOptions();
     QString pos;
     pos.sprintf("%lg %lg %lg",
         annot->GetPosition()[0],
@@ -309,21 +331,20 @@ QvisLine3DInterface::UpdateControls()
     point2Edit->setText(pos);
 
     lineType->blockSignals(true);
-    lineType->setCurrentIndex(annot->GetIntAttribute3());
+    lineType->setCurrentIndex(opts.GetEntry("lineType")->AsInt());
     lineType->blockSignals(false);
 
-    // Set the values for the width and style
+    // Set the width
     widthWidget->blockSignals(true);
-    widthWidget->SetLineWidth(annot->GetIntAttribute1());
+    widthWidget->SetLineWidth(opts.GetEntry("width")->AsInt());
     widthWidget->setEnabled(lineType->currentIndex() == 0);
     widthWidget->setVisible(lineType->currentIndex() == 0);
     widthLabel->setEnabled(lineType->currentIndex() == 0);
     widthLabel->setVisible(lineType->currentIndex() == 0);
     widthWidget->blockSignals(false);
 
-    doubleVector dv = annot->GetDoubleVector1();
     tubeQuality->blockSignals(true);
-    tubeQuality->setCurrentIndex((int)dv[2]);
+    tubeQuality->setCurrentIndex(opts.GetEntry("tubeQuality")->AsInt());
     tubeQuality->setEnabled(lineType->currentIndex() == 1);
     tubeQuality->setVisible(lineType->currentIndex() == 1);
     tubeQualLabel->setEnabled(lineType->currentIndex() == 1);
@@ -331,7 +352,7 @@ QvisLine3DInterface::UpdateControls()
     tubeQuality->blockSignals(false);
 
     tubeRadius->blockSignals(true);
-    pos.sprintf("%lg", dv[3]);
+    pos.sprintf("%lg", opts.GetEntry("tubeRadius")->AsDouble());
     tubeRadius->setText(pos);
     tubeRadius->setEnabled(lineType->currentIndex() == 1);
     tubeRadius->setVisible(lineType->currentIndex() == 1);
@@ -370,42 +391,62 @@ QvisLine3DInterface::UpdateControls()
     opacitySlider->blockSignals(false);
     colorButton->blockSignals(false);
 
-    ColorAttribute ca = annot->GetColor2();
 
     beginArrow->blockSignals(true);
-    beginArrow->setChecked((bool)(ca.Red()));
+    beginArrow->setChecked(opts.GetEntry("arrow1")->AsBool());
     beginArrow->blockSignals(false);
 
     arrow1Resolution->blockSignals(true);
-    arrow1Resolution->setValue((int)ca.Blue());
+    arrow1Resolution->setValue(opts.GetEntry("arrow1Resolution")->AsInt());
     arrow1Resolution->setEnabled(beginArrow->isChecked());
     res1Label->setEnabled(beginArrow->isChecked());
     arrow1Resolution->blockSignals(false);
 
 
     arrow1Radius->blockSignals(true);
-    pos.sprintf("%lg", dv[0]);
+    pos.sprintf("%lg", opts.GetEntry("arrow1Radius")->AsDouble());
     arrow1Radius->setText(pos);
     arrow1Radius->setEnabled(beginArrow->isChecked());
     rad1Label->setEnabled(beginArrow->isChecked());
     arrow1Radius->blockSignals(false);
 
+    arrow1Height->blockSignals(true);
+    pos.sprintf("%lg", opts.GetEntry("arrow1Height")->AsDouble());
+    arrow1Height->setText(pos);
+    arrow1Height->setEnabled(beginArrow->isChecked());
+    height1Label->setEnabled(beginArrow->isChecked());
+    arrow1Height->blockSignals(false);
+
     endArrow->blockSignals(true);
-    endArrow->setChecked((bool)(ca.Green()));
+    endArrow->setChecked((bool)(opts.GetEntry("arrow2")->AsBool()));
     endArrow->blockSignals(false);
 
     arrow2Resolution->blockSignals(true);
-    arrow2Resolution->setValue((int)ca.Alpha());
+    arrow2Resolution->setValue(opts.GetEntry("arrow2Resolution")->AsInt());
     arrow2Resolution->setEnabled(endArrow->isChecked());
     res2Label->setEnabled(endArrow->isChecked());
     arrow2Resolution->blockSignals(false);
 
     arrow2Radius->blockSignals(true);
-    pos.sprintf("%lg", dv[1]);
+    pos.sprintf("%lg", opts.GetEntry("arrow2Radius")->AsDouble());
     arrow2Radius->setText(pos);
     arrow2Radius->setEnabled(endArrow->isChecked());
     rad2Label->setEnabled(endArrow->isChecked());
     arrow2Radius->blockSignals(false);
+
+    arrow2Height->blockSignals(true);
+    if (opts.HasEntry("arrow2Height"))
+    {
+        pos.sprintf("%lg", opts.GetEntry("arrow2Height")->AsDouble());
+        arrow2Height->setText(pos);
+    }
+    else
+    {
+        arrow2Height->setText("-1");
+    }
+    arrow2Height->setEnabled(endArrow->isChecked());
+    height2Label->setEnabled(endArrow->isChecked());
+    arrow2Height->blockSignals(false);
 
     // Set the visible check box.
     visibleCheckBox->blockSignals(true);
@@ -437,6 +478,7 @@ QvisLine3DInterface::GetCurrentValues(int which_widget)
 {
     bool doAll = (which_widget == -1);
 
+    // point 1
     if (doAll || which_widget == 0)
     {
         double v[3];
@@ -451,6 +493,7 @@ QvisLine3DInterface::GetCurrentValues(int which_widget)
             annot->SetPosition(annot->GetPosition());
         }
     }
+    // point 2
     if (doAll || which_widget == 1)
     {
         double v[3];
@@ -465,58 +508,89 @@ QvisLine3DInterface::GetCurrentValues(int which_widget)
             annot->SetPosition2(annot->GetPosition2());
         }
     }
+    // tube radius
     if (doAll || which_widget == 2)
     {
         double v;
-        doubleVector dv = annot->GetDoubleVector1();
-        if(LineEditGetDouble(arrow1Radius, v))
+        if(LineEditGetDouble(tubeRadius, v))
         {
-            dv[0] = v;
-            annot->SetDoubleVector1(dv);
+            annot->GetOptions().GetEntry("tubeRadius")->SetValue(v);
         }
         else
         {
+            v = annot->GetOptions().GetEntry("tubeRadius")->AsDouble();
             QString msg = tr("The radius must be specified as a floating point "
                "value. Resetting to the last good value of %1.").
-               arg(DoubleToQString(dv[0]));
+               arg(DoubleToQString(v));
             Error(msg);
-            annot->SetDoubleVector1(dv);
         }
     }
+    // arrow 1 radius
     if (doAll || which_widget == 3)
     {
         double v;
-        doubleVector dv = annot->GetDoubleVector1();
-        if(LineEditGetDouble(arrow2Radius, v))
+        if(LineEditGetDouble(arrow1Radius, v))
         {
-            dv[1] = v;
-            annot->SetDoubleVector1(dv);
+            annot->GetOptions().GetEntry("arrow1Radius")->SetValue(v);
         }
         else
         {
+            v = annot->GetOptions().GetEntry("arrow1Radius")->AsDouble();
             QString msg = tr("The radius must be specified as a floating point "
                "value. Resetting to the last good value of %1.").
-               arg(DoubleToQString(dv[1]));
+               arg(DoubleToQString(v));
             Error(msg);
-            annot->SetDoubleVector1(dv);
         }
     }
+    // arrow 1 height
     if (doAll || which_widget == 4)
     {
         double v;
-        doubleVector dv = annot->GetDoubleVector1();
-        if(LineEditGetDouble(tubeRadius, v))
+        if(LineEditGetDouble(arrow1Height, v))
         {
-            dv[3] = v;
-            annot->SetDoubleVector1(dv);
+            annot->GetOptions().GetEntry("arrow1Height")->SetValue(v);
         }
         else
         {
+            v = annot->GetOptions().GetEntry("arrow1Height")->AsDouble();
+            QString msg = tr("The height must be specified as a floating point "
+               "value. Resetting to the last good value of %1.").
+               arg(DoubleToQString(v));
+            Error(msg);
+        }
+    }
+    // arrow 2 radius
+    if (doAll || which_widget == 5)
+    {
+        double v;
+        if(LineEditGetDouble(arrow2Radius, v))
+        {
+            annot->GetOptions().GetEntry("arrow2Radius")->SetValue(v);
+        }
+        else
+        {
+            v = annot->GetOptions().GetEntry("arrow2Radius")->AsDouble();
             QString msg = tr("The radius must be specified as a floating point "
                "value. Resetting to the last good value of %1.").
-               arg(DoubleToQString(dv[3]));
+               arg(DoubleToQString(v));
             Error(msg);
-            annot->SetDoubleVector1(dv);
+        }
+    }
+    // arrow 2 height
+    if (doAll || which_widget == 6)
+    {
+        double v;
+        if(LineEditGetDouble(arrow2Height, v))
+        {
+            annot->GetOptions().GetEntry("arrow2Height")->SetValue(v);
+        }
+        else
+        {
+            v = annot->GetOptions().GetEntry("arrow2Height")->AsDouble();
+            QString msg = tr("The height must be specified as a floating point "
+               "value. Resetting to the last good value of %1.").
+               arg(DoubleToQString(v));
+            Error(msg);
         }
     }
 }
@@ -544,7 +618,6 @@ void
 QvisLine3DInterface::point1Changed()
 {
     GetCurrentValues(0);
-    Apply();
 }
 
 
@@ -566,7 +639,6 @@ void
 QvisLine3DInterface::point2Changed()
 {
     GetCurrentValues(1);
-    Apply();
 }
 
 
@@ -590,8 +662,7 @@ QvisLine3DInterface::point2Changed()
 void
 QvisLine3DInterface::widthChanged(int w)
 {
-    annot->SetIntAttribute1(w);
-    Apply();
+    annot->GetOptions().GetEntry("width")->SetValue(w);
 }
 
 
@@ -618,7 +689,6 @@ QvisLine3DInterface::colorChanged(const QColor &c)
     int a = annot->GetColor1().Alpha();
     ColorAttribute tc(c.red(), c.green(), c.blue(), a);
     annot->SetColor1(tc);
-    Apply();
 }
 
 
@@ -645,8 +715,6 @@ QvisLine3DInterface::opacityChanged(int opacity)
     ColorAttribute tc(annot->GetColor1());
     tc.SetAlpha(opacity);
     annot->SetColor1(tc);
-    SetUpdate(false);
-    Apply();
 }
 
 
@@ -671,7 +739,6 @@ void
 QvisLine3DInterface::visibilityToggled(bool val)
 {
     annot->SetVisible(val);
-    SetUpdate(false);
     Apply();
 }
 
@@ -721,9 +788,7 @@ QvisLine3DInterface::useForegroundColorToggled(bool val)
 void
 QvisLine3DInterface::beginArrowToggled(bool val)
 {
-    ColorAttribute ca = annot->GetColor2();
-    ca.SetRed(val?1:0);
-    annot->SetColor2(ca);
+    annot->GetOptions().GetEntry("arrow1")->SetValue(val);
     Apply();
 }
 
@@ -747,10 +812,7 @@ QvisLine3DInterface::beginArrowToggled(bool val)
 void
 QvisLine3DInterface::arrow1ResolutionChanged(int r)
 {
-    ColorAttribute ca = annot->GetColor2();
-    ca.SetBlue(r);
-    annot->SetColor2(ca);
-    Apply();
+    annot->GetOptions().GetEntry("arrow1Resolution")->SetValue(r);
 }
 
 
@@ -771,9 +833,30 @@ QvisLine3DInterface::arrow1ResolutionChanged(int r)
 void
 QvisLine3DInterface::arrow1RadiusChanged()
 {
-    GetCurrentValues(2);
-    Apply();
+    GetCurrentValues(3);
 }
+
+
+// ****************************************************************************
+// Method: QvisLine3DInterface::arrow1HeightChanged
+//
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
+//   arrow1Height line edit.
+//
+// Programmer: Kathleen Biagas
+// Creation:   November 28, 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisLine3DInterface::arrow1HeightChanged()
+{
+    GetCurrentValues(4);
+}
+
 
 
 // ****************************************************************************
@@ -796,9 +879,7 @@ QvisLine3DInterface::arrow1RadiusChanged()
 void
 QvisLine3DInterface::endArrowToggled(bool val)
 {
-    ColorAttribute ca = annot->GetColor2();
-    ca.SetGreen(val?1:0);
-    annot->SetColor2(ca);
+    annot->GetOptions().GetEntry("arrow2")->SetValue(val);
     Apply();
 }
 
@@ -822,10 +903,7 @@ QvisLine3DInterface::endArrowToggled(bool val)
 void
 QvisLine3DInterface::arrow2ResolutionChanged(int r)
 {
-    ColorAttribute ca = annot->GetColor2();
-    ca.SetAlpha(r);
-    annot->SetColor2(ca);
-    Apply();
+    annot->GetOptions().GetEntry("arrow2Resolution")->SetValue(r);
 }
 
 
@@ -846,8 +924,27 @@ QvisLine3DInterface::arrow2ResolutionChanged(int r)
 void
 QvisLine3DInterface::arrow2RadiusChanged()
 {
-    GetCurrentValues(3);
-    Apply();
+    GetCurrentValues(5);
+}
+
+// ****************************************************************************
+// Method: QvisLine3DInterface::arrow2HeightChanged
+//
+// Purpose:
+//   This is a Qt slot function that is called when return is pressed in the
+//   arrow2Height line edit.
+//
+// Programmer: Kathleen Biagas
+// Creation:   November 28, 2018
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+QvisLine3DInterface::arrow2HeightChanged()
+{
+    GetCurrentValues(6);
 }
 
 
@@ -868,7 +965,7 @@ QvisLine3DInterface::arrow2RadiusChanged()
 void
 QvisLine3DInterface::lineTypeChanged(int val)
 {
-    annot->SetIntAttribute3(val);
+    annot->GetOptions().GetEntry("lineType")->SetValue(val);
     Apply();
 }
 
@@ -890,10 +987,7 @@ QvisLine3DInterface::lineTypeChanged(int val)
 void
 QvisLine3DInterface::tubeQualityChanged(int val)
 {
-    doubleVector dv = annot->GetDoubleVector1();
-    dv[2] = (double) val;
-    annot->SetDoubleVector1(dv);
-    Apply();
+    annot->GetOptions().GetEntry("tubeQuality")->SetValue(val);
 }
 
 
@@ -914,8 +1008,7 @@ QvisLine3DInterface::tubeQualityChanged(int val)
 void
 QvisLine3DInterface::tubeRadiusChanged()
 {
-    GetCurrentValues(4);
-    Apply();
+    GetCurrentValues(2);
 }
 
 

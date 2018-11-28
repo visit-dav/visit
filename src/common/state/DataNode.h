@@ -53,7 +53,8 @@ typedef enum
     CHAR_VECTOR_NODE, UNSIGNED_CHAR_VECTOR_NODE, INT_VECTOR_NODE,
     LONG_VECTOR_NODE, FLOAT_VECTOR_NODE,
     DOUBLE_VECTOR_NODE, STRING_VECTOR_NODE, BOOL_VECTOR_NODE,
-    MAP_NODE_NODE
+    MAP_NODE_NODE,
+    MAX_NODE_TYPES
 } NodeTypeEnum;
 
 // ****************************************************************************

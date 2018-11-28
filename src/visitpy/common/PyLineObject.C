@@ -253,7 +253,7 @@ LineObject_SetWidth(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the width in the object.
-    obj->data->SetIntAttribute1(ival);
+    obj->data->GetOptions().GetEntry("width")->SetValue(ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -414,10 +414,7 @@ LineObject_SetBeginArrow(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the beginArrow in the object.
-/* CUSTOM */
-    obj->data->GetColor2().SetGreen(ival);
-    //obj->data->SetBeginArrow(ival);
-/*CUSTOM*/
+    obj->data->GetOptions().GetEntry("beginArrow")->SetValue(ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -428,9 +425,7 @@ static PyObject *
 LineObject_GetBeginArrow(PyObject *self, PyObject *args)
 {
     LineObjectObject *obj = (LineObjectObject *)self;
-/* CUSTOM */
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColor2().Green()));
-    //PyObject *retval = PyInt_FromLong(long(obj->data->GetBeginArrow()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("beginArrow")->AsInt()));
     return retval;
 }
 
@@ -444,10 +439,7 @@ LineObject_SetEndArrow(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the endArrow in the object.
-/* CUSTOM */
-    obj->data->GetColor2().SetBlue(ival);
-    //obj->data->SetEndArrow(ival);
-/*CUSTOM*/
+    obj->data->GetOptions().GetEntry("endArrow")->SetValue(ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -458,9 +450,7 @@ static PyObject *
 LineObject_GetEndArrow(PyObject *self, PyObject *args)
 {
     LineObjectObject *obj = (LineObjectObject *)self;
-/* CUSTOM */
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColor2().Blue()));
-    //PyObject *retval = PyInt_FromLong(long(obj->data->GetEndArrow()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("endArrow")->AsInt()));
     return retval;
 }
 
@@ -607,7 +597,7 @@ LineObject_print(PyObject *v, FILE *fp, int flags)
         const double *position2 = obj->data->GetPosition2();
         fprintf(fp, "position2 = (%g, %g)\n", position2[0], position2[1]);
     }
-    fprintf(fp, "width = %d\n", obj->data->GetIntAttribute1());
+    fprintf(fp, "width = %d\n", obj->data->GetOptions().GetEntry("width")->AsInt());
     if (obj->data->GetUseForegroundForTextColor())
         fprintf(fp, "useForegroundForLineColor = 1\n");
     else 
@@ -615,8 +605,8 @@ LineObject_print(PyObject *v, FILE *fp, int flags)
     const unsigned char *color = obj->data->GetColor1().GetColor();
     fprintf(fp, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
     fprintf(fp, "opacity = %d\n", obj->data->GetColor1().Alpha());
-    fprintf(fp, "beginArrow = %d\n", obj->data->GetColor2().Green());
-    fprintf(fp, "endArrow = %d\n", obj->data->GetColor2().Blue());
+    fprintf(fp, "beginArrow = %d\n", obj->data->GetOptions().GetEntry("beginArrow")->AsInt());
+    fprintf(fp, "endArrow = %d\n", obj->data->GetOptions().GetEntry("endArrow")->AsInt());
 
     return 0;
 }
@@ -657,9 +647,9 @@ PyLineObject_StringRepresentation(const AnnotationObject *atts)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "opacity = %d\n", atts->GetColor1().Alpha());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "beginArrow = %d\n", atts->GetColor2().Green());
+    SNPRINTF(tmpStr, 1000, "beginArrow = %d\n", atts->GetOptions().GetEntry("beginArrow")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "endArrow = %d\n", atts->GetColor2().Blue());
+    SNPRINTF(tmpStr, 1000, "endArrow = %d\n", atts->GetOptions().GetEntry("endArrow")->AsInt());
     str += tmpStr;
     return PyString_FromString(str.c_str());
 }

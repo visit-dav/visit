@@ -597,7 +597,7 @@ LegendAttributesObject_SetFontHeight(PyObject *self, PyObject *args)
 
     // Set the font height in the object.
 /*CUSTOM*/
-    obj->data->SetDoubleAttribute1(dval);
+    obj->data->GetOptions().GetEntry("fontHeight")->SetValue(dval);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -609,7 +609,7 @@ LegendAttributesObject_GetFontHeight(PyObject *self, PyObject *args)
 {
     LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
 /*CUSTOM*/
-    return PyFloat_FromDouble(obj->data->GetDoubleAttribute1());
+    return PyFloat_FromDouble(obj->data->GetOptions().GetEntry("fontHeight")->AsDouble());
 }
 
 // Create some set/get functions for the bits from IntAttribute1.
@@ -784,7 +784,7 @@ LegendAttributesObject_SetNumTicks(PyObject *self, PyObject *args)
 
     // Set the number of ticks in the object.
 /*CUSTOM*/
-    obj->data->SetIntAttribute2(ival);
+    obj->data->GetOptions().GetEntry("numTicks")->SetValue(ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -796,7 +796,7 @@ LegendAttributesObject_GetNumTicks(PyObject *self, PyObject *args)
 {
     LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
 /*CUSTOM*/
-    return PyInt_FromLong(obj->data->GetIntAttribute2());
+    return PyInt_FromLong(obj->data->GetOptions().GetEntry("numTicks")->AsInt());
 }
 
 
@@ -805,10 +805,8 @@ LegendAttributesObject_SetSuppliedValues(PyObject *self, PyObject *args)
 {
     LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
 
-    doubleVector &vec = obj->data->GetDoubleVector1(); 
     PyObject     *tuple;
-
-    if (obj->data->GetIntAttribute3() != LEGEND_TYPE_VARIABLE)
+    if (obj->data->GetOptions().GetEntry("legendType")->AsInt() != LEGEND_TYPE_VARIABLE)
     {
         cerr <<"   Cannot set suppliedValues for this type of legend." << endl;
         Py_INCREF(Py_None);
@@ -818,6 +816,7 @@ LegendAttributesObject_SetSuppliedValues(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "O", &tuple))
         return NULL;
 
+    doubleVector  vec;
     if(PyTuple_Check(tuple))
     {
         vec.resize(PyTuple_Size(tuple));
@@ -852,8 +851,7 @@ LegendAttributesObject_SetSuppliedValues(PyObject *self, PyObject *args)
     else
         return NULL;
 
-    obj->data->SetDoubleVector1(vec);
-/*CUSTOM*/
+    obj->data->GetOptions().GetEntry("suppliedValues")->SetValue(vec);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -865,7 +863,7 @@ LegendAttributesObject_GetSuppliedValues(PyObject *self, PyObject *args)
 {
     LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the suppliedValues.
-    const doubleVector &suppliedValues = obj->data->GetDoubleVector1();
+    const doubleVector &suppliedValues = obj->data->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
     PyObject *retval = PyTuple_New(suppliedValues.size());
     for (size_t i = 0; i < suppliedValues.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyFloat_FromDouble(suppliedValues[i]));
@@ -877,12 +875,12 @@ LegendAttributesObject_SetSuppliedLabels(PyObject *self, PyObject *args)
 {
     LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
 
-    stringVector &vec = obj->data->GetStringVector1(); 
     PyObject     *tuple;
 
     if (!PyArg_ParseTuple(args, "O", &tuple))
         return NULL;
 
+    stringVector vec;
     if(PyTuple_Check(tuple))
     {
         vec.resize(PyTuple_Size(tuple));
@@ -895,7 +893,7 @@ LegendAttributesObject_SetSuppliedLabels(PyObject *self, PyObject *args)
                 vec[i] = std::string("");
         }
     }
-   else if(PyString_Check(tuple))
+    else if(PyString_Check(tuple))
     {
         vec.resize(1);
         vec[0] = std::string(PyString_AS_STRING(tuple));
@@ -903,8 +901,7 @@ LegendAttributesObject_SetSuppliedLabels(PyObject *self, PyObject *args)
     else
         return NULL;
 
-    obj->data->SetStringVector1(vec);
-/*CUSTOM*/
+    obj->data->GetOptions().GetEntry("suppliedLabels")->SetValue(vec);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -916,7 +913,7 @@ LegendAttributesObject_GetSuppliedLabels(PyObject *self, PyObject *args)
 {
     LegendAttributesObjectObject *obj = (LegendAttributesObjectObject *)self;
     // Allocate a tuple the with enough entries to hold the suppliedLabels.
-    const stringVector &suppliedLabels = obj->data->GetStringVector1();
+    const stringVector &suppliedLabels = obj->data->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
     PyObject *retval = PyTuple_New(suppliedLabels.size());
     for (size_t i = 0; i < suppliedLabels.size(); ++i)
         PyTuple_SET_ITEM(retval, i, PyString_FromString(suppliedLabels[i].c_str()));
@@ -1210,7 +1207,7 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "fontShadow = 0\n");
 
     fprintf(fp, "fontHeight = %g\n", 
-            obj->data->GetDoubleAttribute1());
+            obj->data->GetOptions().GetEntry("fontHeight")->AsDouble());
 
     const char *drawLabelNames = "None, Values, Labels, Both";
     if (!GetBool(obj->data, LEGEND_DRAW_VALUES))
@@ -1245,13 +1242,13 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
     fprintf(fp, "controlTicks = %d\n", 
             GetBool(obj->data, LEGEND_CONTROL_TICKS)?1:0);
     fprintf(fp, "numTicks = %d\n", 
-            obj->data->GetIntAttribute2());
+            obj->data->GetOptions().GetEntry("numTicks")->AsInt());
     fprintf(fp, "minMaxInclusive = %d\n", 
             GetBool(obj->data, LEGEND_MINMAX_INCLUSIVE)?1:0);
 
-    if (obj->data->GetIntAttribute3() == LEGEND_TYPE_VARIABLE)
+    if (obj->data->GetOptions().GetEntry("legendType")->AsInt() == LEGEND_TYPE_VARIABLE)
     {
-        const doubleVector & sv = obj->data->GetDoubleVector1();
+        const doubleVector & sv = obj->data->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
         fprintf(fp, "suppliedValues = (");
         for (size_t i = 0; i < sv.size(); ++i)
         {
@@ -1264,7 +1261,7 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
     }
     else
     {
-        const stringVector & sl = obj->data->GetStringVector2();
+        const stringVector & sl = obj->data->GetOptions().GetEntry("suppliedValuesStrings")->AsStringVector();
         fprintf(fp, "suppliedValues = (");
         for (size_t i = 0; i < sl.size(); ++i)
         {
@@ -1276,7 +1273,7 @@ LegendAttributesObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, ")\n");
     }
 
-    const stringVector & sl = obj->data->GetStringVector1();
+    const stringVector & sl = obj->data->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
     fprintf(fp, "suppliedLabels = (");
     for (size_t i = 0; i < sl.size(); ++i)
     {
@@ -1362,7 +1359,7 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
     str += tmpStr;
 
     SNPRINTF(tmpStr, 1000, "fontHeight = %g\n", 
-            atts->GetDoubleAttribute1());
+            atts->GetOptions().GetEntry("fontHeight")->AsDouble());
     str += tmpStr;
 
     const char *drawLabelNames = "None, Values, Labels, Both";
@@ -1403,15 +1400,15 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
             GetBool(atts, LEGEND_CONTROL_TICKS)?1:0);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "numTicks = %d\n", 
-            atts->GetIntAttribute2());
+            atts->GetOptions().GetEntry("numTicks")->AsInt());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "minMaxInclusive = %d\n", 
             GetBool(atts, LEGEND_MINMAX_INCLUSIVE)?1:0);
     str += tmpStr;
 
-    if (atts->GetIntAttribute3() == LEGEND_TYPE_VARIABLE)
+    if (atts->GetOptions().GetEntry("legendType")->AsInt() == LEGEND_TYPE_VARIABLE)
     {
-        const doubleVector & sv = atts->GetDoubleVector1();
+        const doubleVector & sv = atts->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
         SNPRINTF(tmpStr, 1000, "suppliedValues = (");
         str += tmpStr;
         for (size_t i = 0; i < sv.size(); ++i)
@@ -1427,7 +1424,7 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
     }
     else
     {
-        const stringVector & sl = atts->GetStringVector2();
+        const stringVector & sl = atts->GetOptions().GetEntry("suppliedValuesStrings")->AsStringVector();
         SNPRINTF(tmpStr, 1000, "suppliedValues = (");
         str += tmpStr;
         for (size_t i = 0; i < sl.size(); ++i)
@@ -1442,7 +1439,7 @@ PyLegendAttributesObject_StringRepresentation(const AnnotationObject *atts)
         str += tmpStr;
     }
 
-    const stringVector & sl = atts->GetStringVector1();
+    const stringVector &sl = atts->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
     SNPRINTF(tmpStr, 1000, "suppliedLabels = (");
     str += tmpStr;
     for (size_t i = 0; i < sl.size(); ++i)

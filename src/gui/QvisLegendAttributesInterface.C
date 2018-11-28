@@ -512,7 +512,7 @@ QvisLegendAttributesInterface::UpdateControls()
     }
     orientationComboBox->blockSignals(false);
 
-    int type = annot->GetIntAttribute3();
+    int type = annot->GetOptions().GetEntry("legendType")->AsInt();
     //
     tickControl->blockSignals(true);
     tickControl->setChecked(GetBool(LEGEND_CONTROL_TICKS));
@@ -523,7 +523,7 @@ QvisLegendAttributesInterface::UpdateControls()
                                 GetBool(LEGEND_CONTROL_TICKS));
     numTicksLabel->setEnabled(type == LEGEND_TYPE_VARIABLE &&
                               GetBool(LEGEND_CONTROL_TICKS));
-    numTicksSpinBox->setValue(annot->GetIntAttribute2());
+    numTicksSpinBox->setValue(annot->GetOptions().GetEntry("numTicks")->AsInt());
     numTicksSpinBox->blockSignals(false);
 
     minMaxCheckBox->blockSignals(true);
@@ -536,7 +536,7 @@ QvisLegendAttributesInterface::UpdateControls()
     int size;
     if (type == LEGEND_TYPE_VARIABLE)
     {
-        doubleVector sv = annot->GetDoubleVector1();
+        doubleVector sv = annot->GetOptions().GetEntry("suppliedValues")->AsDoubleVector();
         size = (int)sv.size();
         ResizeSuppliedLabelsList(size);
         QString fmt(formatString->text());
@@ -551,7 +551,7 @@ QvisLegendAttributesInterface::UpdateControls()
     }
     else 
     {
-        stringVector sv = annot->GetStringVector2();
+        stringVector sv = annot->GetOptions().GetEntry("suppliedValuesStrings")->AsStringVector();
         size = (int)sv.size();
         ResizeSuppliedLabelsList(size);
         suppliedLabels->horizontalHeaderItem(0)->setText(tr("Computed values"));
@@ -563,7 +563,7 @@ QvisLegendAttributesInterface::UpdateControls()
         }
     }
  
-    stringVector sl = annot->GetStringVector1();
+    stringVector sl = annot->GetOptions().GetEntry("suppliedLabels")->AsStringVector();
     size = (int)sl.size();
     for (int i = 0; i < suppliedLabels->rowCount(); ++i)
     {
@@ -639,7 +639,7 @@ QvisLegendAttributesInterface::UpdateControls()
     drawMinmaxCheckBox->blockSignals(false);
 
     // Set the font height
-    fontHeight->setText(QString().sprintf("%g", annot->GetDoubleAttribute1()));
+    fontHeight->setText(QString().sprintf("%g", annot->GetOptions().GetEntry("fontHeight")->AsDouble()));
 
     // Set the use foreground color check box.
     useForegroundColorCheckBox->blockSignals(true);
@@ -757,17 +757,18 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
         bool okay;
         double val = fontHeight->text().toDouble(&okay);
         if(okay)
-            annot->SetDoubleAttribute1(val);
+            annot->GetOptions().GetEntry("fontHeight")->SetValue(val);
     }
 
-    if (which_widget == AnnotationObject::ID_intAttribute2 || doAll)
+    if (which_widget == 27 || doAll)
     {
-        annot->SetIntAttribute2(numTicksSpinBox->value());
+        annot->GetOptions().GetEntry("numTicks")->SetValue(numTicksSpinBox->value());
     }
-    if (which_widget == AnnotationObject::ID_doubleVector1 || doAll)
+    if (doAll)
     {
-        doubleVector temp;
         double d;
+        doubleVector temp;
+        stringVector stemp;
         QString txt; 
         int nRows = suppliedLabels->rowCount();
 
@@ -785,28 +786,11 @@ QvisLegendAttributesInterface::GetCurrentValues(int which_widget)
             d = txt.toDouble(&okay);
             if (okay)
                 temp.push_back(d);
-        }
-        annot->SetDoubleVector1(temp);
-    }
-    if (which_widget == AnnotationObject::ID_stringVector1 || doAll)
-    {
-        stringVector temp;
-        QString txt; 
-
-        // Qt 4.6 on Mac doesn't update properly.  This trick tickles it
-        // into a good state.
-        int currentRow = suppliedLabels->currentRow();
-        int currentCol = suppliedLabels->currentColumn();
-        suppliedLabels->setCurrentCell(currentRow, (currentCol==0? 1 :0));
-        suppliedLabels->setCurrentCell(currentRow, currentCol);
-
-        int nRows = suppliedLabels->rowCount();
-        for (int rowNum = 0; rowNum < nRows; ++rowNum)
-        {
             txt = suppliedLabels->item(rowNum, 1)->text();
-            temp.push_back(txt.trimmed().toStdString());
+            stemp.push_back(txt.trimmed().toStdString());
         }
-        annot->SetStringVector1(temp);
+        annot->GetOptions().GetEntry("suppliedValues")->SetValue(temp);
+        annot->GetOptions().GetEntry("suppliedLabels")->SetValue(stemp);
     }
 }
 
@@ -1304,7 +1288,7 @@ QvisLegendAttributesInterface::tickControlToggled(bool val)
 void
 QvisLegendAttributesInterface::numTicksChanged(int n)
 {
-    GetCurrentValues(AnnotationObject::ID_intAttribute2);
+    GetCurrentValues(27);
     Apply();
 }
 

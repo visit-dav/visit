@@ -43,23 +43,23 @@
 
 // Macros that let us access the AnnotationObject and store the fields
 // we care about into the available fields.
-#define GetPreserveOrientation GetFontBold
-#define SetPreserveOrientation SetFontBold
+#define GetPreserveOrientation GetOptions().GetEntry("preserveOrientation")->AsBool
+#define SetPreserveOrientation GetOptions().GetEntry("preserveOrientation")->SetValue
 
 #define GetRotations GetPosition2
 #define SetRotations SetPosition2
 
 // The flag that lets us switch between relative and fixed heights.
-#define GetHeightMode GetFontItalic
-#define SetHeightMode SetFontItalic
+#define GetHeightMode GetOptions().GetEntry("useRelativeHeight")->AsBool
+#define SetHeightMode GetOptions().GetEntry("useRelativeHeight")->SetValue
 
 // Relative scale will scale the text as a percentage of the bbox diagonal
-#define GetRelativeHeight GetIntAttribute1
-#define SetRelativeHeight SetIntAttribute1
+#define GetRelativeHeight GetOptions().GetEntry("relativeHeight")->AsInt
+#define SetRelativeHeight GetOptions().GetEntry("relativeHeight")->SetValue
 
 // Fixed height in world coordinates.
-#define GetFixedHeight   GetDoubleAttribute1
-#define SetFixedHeight   SetDoubleAttribute1
+#define GetFixedHeight   GetOptions().GetEntry("fixedHeight")->AsDouble
+#define SetFixedHeight   GetOptions().GetEntry("fixedHeight")->SetValue
 
 // Functions that we need in visitmodule.C
 extern void UpdateAnnotationHelper(AnnotationObject *);

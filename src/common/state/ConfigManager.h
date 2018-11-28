@@ -41,6 +41,7 @@
 #include <state_exports.h>
 #include <stdio.h>
 #include <DataNode.h>
+#include <MapNode.h>
 #include <string>
 
 // ****************************************************************************
@@ -80,6 +81,9 @@
 //   Jeremy Meredith, Tue Aug  2 16:05:09 PDT 2005
 //   Added WriteEscapedString method.
 //
+//   Kathleen Biagas, Wed Nov 28 13:44:08 PST 2018
+//   Added methods to read/write MapNode nodes.
+//
 // ****************************************************************************
 
 class STATE_API ConfigManager
@@ -117,6 +121,12 @@ protected:
                  int &tagLength, bool &tagIsEndTag, bool &noEndTag);
     stringVector ReadStringVector(std::istream &in, char termChar);
     void RemoveLeadAndTailQuotes(stringVector &sv);
+
+    void WriteMapNode(std::ostream& out, const MapNode &, int indentLevel = 0);
+    void ReadMapNodeFieldData(std::istream& in, MapNode &mn,
+                             const std::string &tagName, NodeTypeEnum type,
+                             int tagLength, bool noEndTag);
+    void ReadMapNodeFields(std::istream &in, MapNode &mn, bool &te);
 
 private:
     // File attributes used in reading.

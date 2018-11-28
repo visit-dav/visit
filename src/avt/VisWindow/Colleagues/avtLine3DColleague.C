@@ -394,6 +394,9 @@ avtLine3DColleague::SetOptions(const AnnotationObject &annot)
     AnnotationObject currentOptions;
     GetOptions(currentOptions);
 
+    const MapNode &newOpts = annot.GetOptions();
+    const MapNode &curOpts = currentOptions.GetOptions();
+
     //
     // Set the position coordinates if they are different
     //
@@ -416,17 +419,10 @@ avtLine3DColleague::SetOptions(const AnnotationObject &annot)
         arrow2Source->SetCenter(p2[0], p2[1], p2[2]);
     }
 
-    //
-    // Set the line width if it is different
-    //
-    if (currentOptions.GetIntAttribute1() != annot.GetIntAttribute1())
+    if (! (curOpts == newOpts))
     {
-        lineActor->GetProperty()->SetLineWidth(annot.GetIntAttribute1()+1);
-    }
-
-    if (currentOptions.GetIntAttribute3() != annot.GetIntAttribute3())
-    {
-        lineType = annot.GetIntAttribute3();
+        lineActor->GetProperty()->SetLineWidth(newOpts.GetEntry("width")->AsInt()+1);
+        lineType = newOpts.GetEntry("lineType")->AsInt();
         if (lineType)
         {
             tubeFilter->SetInputConnection(lineSource->GetOutputPort());
@@ -436,33 +432,26 @@ avtLine3DColleague::SetOptions(const AnnotationObject &annot)
         {
             lineMapper->SetInputConnection(lineSource->GetOutputPort());
         }
-    }
 
-    if(currentOptions.GetColor2() != annot.GetColor2())
-    {
-        useArrow1 = annot.GetColor2().Red();
-        useArrow2 = annot.GetColor2().Green();
-        arrow1Source->SetResolution(annot.GetColor2().Blue());
-        arrow2Source->SetResolution(annot.GetColor2().Alpha());
-    }
-
-    if(currentOptions.GetDoubleVector1() != annot.GetDoubleVector1())
-    {
-        doubleVector dv = annot.GetDoubleVector1();
-        arrow1Source->SetRadius(dv[0]);
-        arrow2Source->SetRadius(dv[1]);
-        // since there is no user-settable height option, base it off the radius
-        arrow1Source->SetHeight(dv[0]*2.8);
-        arrow2Source->SetHeight(dv[1]*2.8);
-
-        int qual = (int) dv[2];
+        int qual = newOpts.GetEntry("tubeQuality")->AsInt();
         if (qual == 0)
             tubeFilter->SetNumberOfSides(3);
         else if (qual == 1)
             tubeFilter->SetNumberOfSides(9);
         else
             tubeFilter->SetNumberOfSides(15);
-        tubeFilter->SetRadius(dv[3]);
+        tubeFilter->SetRadius(newOpts.GetEntry("tubeRadius")->AsDouble());
+
+
+        useArrow1 = newOpts.GetEntry("arrow1")->AsBool();
+        arrow1Source->SetResolution(newOpts.GetEntry("arrow1Resolution")->AsInt());
+        arrow1Source->SetRadius(newOpts.GetEntry("arrow1Radius")->AsDouble());
+        arrow1Source->SetHeight(newOpts.GetEntry("arrow1Height")->AsDouble());
+
+        useArrow2 = newOpts.GetEntry("arrow2")->AsBool();
+        arrow2Source->SetResolution(newOpts.GetEntry("arrow2Resolution")->AsInt());
+        arrow2Source->SetRadius(newOpts.GetEntry("arrow2Radius")->AsDouble());
+        arrow2Source->SetHeight(newOpts.GetEntry("arrow2Height")->AsDouble());
     }
 
     //
@@ -552,18 +541,10 @@ avtLine3DColleague::GetOptions(AnnotationObject &annot)
 
     annot.SetColor1(lineColor);
     annot.SetUseForegroundForTextColor(useForegroundForLineColor);
-    annot.SetIntAttribute1(lineActor->GetProperty()->GetLineWidth()-1);
-    annot.SetIntAttribute3(lineType);
 
-    ColorAttribute ca = annot.GetColor2();
-    ca.SetRed(useArrow1);
-    ca.SetGreen(useArrow2);
-    ca.SetBlue(arrow1Source->GetResolution());
-    ca.SetAlpha(arrow2Source->GetResolution());
-    annot.SetColor2(ca);
-    doubleVector v;
-    v.push_back(arrow1Source->GetRadius());
-    v.push_back(arrow2Source->GetRadius());
+    MapNode opts;
+    opts["width"] = (int)lineActor->GetProperty()->GetLineWidth()-1;
+    opts["lineType"] = lineType;
     int ns = tubeFilter->GetNumberOfSides();
     if (ns ==3)
         ns = 0; // low quality
@@ -571,9 +552,20 @@ avtLine3DColleague::GetOptions(AnnotationObject &annot)
         ns = 1; // medium quality
     if (ns ==15)
         ns = 2; // high quality
-    v.push_back((double)ns);
-    v.push_back(tubeFilter->GetRadius());
-    annot.SetDoubleVector1(v);
+    opts["tubeQuality"] = ns;
+    opts["tubeRadius"] = tubeFilter->GetRadius();
+
+    opts["arrow1"] = useArrow1;
+    opts["arrow1Resolution"] = arrow1Source->GetResolution();
+    opts["arrow1Radius"] = arrow1Source->GetRadius();
+    opts["arrow1Height"] = arrow1Source->GetHeight();
+
+    opts["arrow2"] = useArrow2;
+    opts["arrow2Resolution"] = arrow2Source->GetResolution();
+    opts["arrow2Radius"] = arrow2Source->GetRadius();
+    opts["arrow2Height"] = arrow2Source->GetHeight();
+
+    annot.SetOptions(opts);
 }
 
 

@@ -98,6 +98,8 @@ private slots:
     void arrow2ResolutionChanged(int);
     void arrow1RadiusChanged();
     void arrow2RadiusChanged();
+    void arrow1HeightChanged();
+    void arrow2HeightChanged();
     void lineTypeChanged(int);
     void tubeQualityChanged(int);
     void tubeRadiusChanged();
@@ -123,11 +125,15 @@ private:
     QSpinBox               *arrow1Resolution;
     QLabel                 *rad1Label;
     QLineEdit              *arrow1Radius;
+    QLabel                 *height1Label;
+    QLineEdit              *arrow1Height;
     QCheckBox              *endArrow;
     QLabel                 *res2Label;
     QSpinBox               *arrow2Resolution;
     QLabel                 *rad2Label;
     QLineEdit              *arrow2Radius;
+    QLabel                 *height2Label;
+    QLineEdit              *arrow2Height;
 
     QCheckBox              *visibleCheckBox;
 };

@@ -1548,7 +1548,7 @@ const char *NodeTypeName(int e)
 
 NodeTypeEnum GetNodeType(const char *str)
 {
-    for(int i = 1; i < 24; ++i)
+    for(int i = 1; i < MAX_NODE_TYPES; ++i)
     {
         if (strcmp(str, NodeTypeName(i)) == 0)
         {

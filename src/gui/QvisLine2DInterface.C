@@ -129,7 +129,7 @@ QvisLine2DInterface::QvisLine2DInterface(QWidget *parent) :
 
     // Add controls for the line color.
     colorLabel = new QLabel(tr("Line color"), this);
-    cLayout->addWidget(colorLabel, row, 0, Qt::AlignLeft);
+    cLayout->addWidget(colorLabel, row, 0, Qt::AlignRight);
 
     colorButton = new QvisColorButton(this);
     connect(colorButton, SIGNAL(selectedColor(const QColor &)),
@@ -252,14 +252,14 @@ QvisLine2DInterface::UpdateControls()
 
     // Set the values for the width and style 
     widthWidget->blockSignals(true);
-    widthWidget->SetLineWidth(annot->GetIntAttribute1());
+    widthWidget->SetLineWidth(annot->GetOptions().GetEntry("width")->AsInt());
     widthWidget->blockSignals(false);
 
     // Set the begin and end arrow styles.
     beginArrowComboBox->blockSignals(true);
     endArrowComboBox->blockSignals(true);
-    beginArrowComboBox->setCurrentIndex(annot->GetColor2().Green());
-    endArrowComboBox->setCurrentIndex(annot->GetColor2().Blue());
+    beginArrowComboBox->setCurrentIndex(annot->GetOptions().GetEntry("beginArrow")->AsInt());
+    endArrowComboBox->setCurrentIndex(annot->GetOptions().GetEntry("endArrow")->AsInt());
     beginArrowComboBox->blockSignals(false);
     endArrowComboBox->blockSignals(false);
 
@@ -359,8 +359,6 @@ QvisLine2DInterface::positionStartChanged(double x, double y)
 {
     double pos[] = {x, y, 0.};
     annot->SetPosition(pos);
-    SetUpdate(false);
-    Apply();
 }
 
 // ****************************************************************************
@@ -381,8 +379,6 @@ QvisLine2DInterface::positionEndChanged(double x, double y)
 {
     double pos[] = {x, y, 0.};
     annot->SetPosition2(pos);
-    SetUpdate(false);
-    Apply();
 }
 
 // ****************************************************************************
@@ -407,13 +403,7 @@ QvisLine2DInterface::positionEndChanged(double x, double y)
 void
 QvisLine2DInterface::beginArrowChanged(int i)
 {
-    ColorAttribute ca;
-    ca.SetRgb(annot->GetColor2().Red(),
-              i,
-              annot->GetColor2().Blue());
-    annot->SetColor2(ca);
-    SetUpdate(false);
-    Apply();
+    annot->GetOptions().GetEntry("beginArrow")->SetValue(i);
 }
 
 // ****************************************************************************
@@ -438,13 +428,7 @@ QvisLine2DInterface::beginArrowChanged(int i)
 void
 QvisLine2DInterface::endArrowChanged(int i)
 {
-    ColorAttribute ca;
-    ca.SetRgb(annot->GetColor2().Red(),
-              annot->GetColor2().Green(),
-              i);
-    annot->SetColor2(ca);
-    SetUpdate(false);
-    Apply();
+    annot->GetOptions().GetEntry("endArrow")->SetValue(i);
 }
 
 // ****************************************************************************
@@ -466,8 +450,7 @@ QvisLine2DInterface::endArrowChanged(int i)
 void
 QvisLine2DInterface::widthChanged(int w)
 {
-    annot->SetIntAttribute1(w);
-    Apply();
+    annot->GetOptions().GetEntry("width")->SetValue(w);
 }
 
 // ****************************************************************************
@@ -492,7 +475,6 @@ QvisLine2DInterface::colorChanged(const QColor &c)
     int a = annot->GetColor1().Alpha();
     ColorAttribute tc(c.red(), c.green(), c.blue(), a);
     annot->SetColor1(tc);
-    Apply();
 }
 
 // ****************************************************************************
@@ -517,8 +499,6 @@ QvisLine2DInterface::opacityChanged(int opacity)
     ColorAttribute tc(annot->GetColor1());
     tc.SetAlpha(opacity);
     annot->SetColor1(tc);
-    SetUpdate(false);
-    Apply();
 }
 
 // ****************************************************************************
@@ -541,8 +521,6 @@ void
 QvisLine2DInterface::visibilityToggled(bool val)
 {
     annot->SetVisible(val);
-    SetUpdate(false);
-    Apply();
 }
 
 // ****************************************************************************

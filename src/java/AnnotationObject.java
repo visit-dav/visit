@@ -39,7 +39,6 @@
 package llnl.visit;
 
 import java.util.Vector;
-import java.lang.Double;
 
 // ****************************************************************************
 // Class: AnnotationObject
@@ -58,7 +57,7 @@ import java.lang.Double;
 
 public class AnnotationObject extends AttributeSubject
 {
-    private static int AnnotationObject_numAdditionalAtts = 22;
+    private static int AnnotationObject_numAdditionalAtts = 18;
 
     // Enum values
     public final static int ANNOTATIONTYPE_TEXT2D = 0;
@@ -105,11 +104,7 @@ public class AnnotationObject extends AttributeSubject
         fontShadow = false;
         doubleAttribute1 = 0;
         intAttribute1 = 0;
-        intAttribute2 = 0;
-        intAttribute3 = 0;
-        doubleVector1 = new Vector();
-        stringVector1 = new Vector();
-        stringVector2 = new Vector();
+        options = new MapNode();
     }
 
     public AnnotationObject(int nMoreFields)
@@ -139,11 +134,7 @@ public class AnnotationObject extends AttributeSubject
         fontShadow = false;
         doubleAttribute1 = 0;
         intAttribute1 = 0;
-        intAttribute2 = 0;
-        intAttribute3 = 0;
-        doubleVector1 = new Vector();
-        stringVector1 = new Vector();
-        stringVector2 = new Vector();
+        options = new MapNode();
     }
 
     public AnnotationObject(AnnotationObject obj)
@@ -180,23 +171,7 @@ public class AnnotationObject extends AttributeSubject
         fontShadow = obj.fontShadow;
         doubleAttribute1 = obj.doubleAttribute1;
         intAttribute1 = obj.intAttribute1;
-        intAttribute2 = obj.intAttribute2;
-        intAttribute3 = obj.intAttribute3;
-        doubleVector1 = new Vector(obj.doubleVector1.size());
-        for(i = 0; i < obj.doubleVector1.size(); ++i)
-        {
-            Double dv = (Double)obj.doubleVector1.elementAt(i);
-            doubleVector1.addElement(new Double(dv.doubleValue()));
-        }
-
-        stringVector1 = new Vector(obj.stringVector1.size());
-        for(i = 0; i < obj.stringVector1.size(); ++i)
-            stringVector1.addElement(new String((String)obj.stringVector1.elementAt(i)));
-
-        stringVector2 = new Vector(obj.stringVector2.size());
-        for(i = 0; i < obj.stringVector2.size(); ++i)
-            stringVector2.addElement(new String((String)obj.stringVector2.elementAt(i)));
-
+        options = new MapNode(obj.options);
 
         SelectAll();
     }
@@ -234,33 +209,6 @@ public class AnnotationObject extends AttributeSubject
             String text2 = (String)obj.text.elementAt(i);
             text_equal = text1.equals(text2);
         }
-        // Compare the elements in the doubleVector1 vector.
-        boolean doubleVector1_equal = (obj.doubleVector1.size() == doubleVector1.size());
-        for(i = 0; (i < doubleVector1.size()) && doubleVector1_equal; ++i)
-        {
-            // Make references to Double from Object.
-            Double doubleVector11 = (Double)doubleVector1.elementAt(i);
-            Double doubleVector12 = (Double)obj.doubleVector1.elementAt(i);
-            doubleVector1_equal = doubleVector11.equals(doubleVector12);
-        }
-        // Compare the elements in the stringVector1 vector.
-        boolean stringVector1_equal = (obj.stringVector1.size() == stringVector1.size());
-        for(i = 0; (i < stringVector1.size()) && stringVector1_equal; ++i)
-        {
-            // Make references to String from Object.
-            String stringVector11 = (String)stringVector1.elementAt(i);
-            String stringVector12 = (String)obj.stringVector1.elementAt(i);
-            stringVector1_equal = stringVector11.equals(stringVector12);
-        }
-        // Compare the elements in the stringVector2 vector.
-        boolean stringVector2_equal = (obj.stringVector2.size() == stringVector2.size());
-        for(i = 0; (i < stringVector2.size()) && stringVector2_equal; ++i)
-        {
-            // Make references to String from Object.
-            String stringVector21 = (String)stringVector2.elementAt(i);
-            String stringVector22 = (String)obj.stringVector2.elementAt(i);
-            stringVector2_equal = stringVector21.equals(stringVector22);
-        }
         // Create the return value
         return ((objectName.equals(obj.objectName)) &&
                 (objectType == obj.objectType) &&
@@ -279,11 +227,7 @@ public class AnnotationObject extends AttributeSubject
                 (fontShadow == obj.fontShadow) &&
                 (doubleAttribute1 == obj.doubleAttribute1) &&
                 (intAttribute1 == obj.intAttribute1) &&
-                (intAttribute2 == obj.intAttribute2) &&
-                (intAttribute3 == obj.intAttribute3) &&
-                doubleVector1_equal &&
-                stringVector1_equal &&
-                stringVector2_equal);
+                (options.equals(obj.options)));
     }
 
     // Property setting methods
@@ -409,34 +353,10 @@ public class AnnotationObject extends AttributeSubject
         Select(16);
     }
 
-    public void SetIntAttribute2(int intAttribute2_)
+    public void SetOptions(MapNode options_)
     {
-        intAttribute2 = intAttribute2_;
+        options = options_;
         Select(17);
-    }
-
-    public void SetIntAttribute3(int intAttribute3_)
-    {
-        intAttribute3 = intAttribute3_;
-        Select(18);
-    }
-
-    public void SetDoubleVector1(Vector doubleVector1_)
-    {
-        doubleVector1 = doubleVector1_;
-        Select(19);
-    }
-
-    public void SetStringVector1(Vector stringVector1_)
-    {
-        stringVector1 = stringVector1_;
-        Select(20);
-    }
-
-    public void SetStringVector2(Vector stringVector2_)
-    {
-        stringVector2 = stringVector2_;
-        Select(21);
     }
 
     // Property getting methods
@@ -457,11 +377,7 @@ public class AnnotationObject extends AttributeSubject
     public boolean        GetFontShadow() { return fontShadow; }
     public double         GetDoubleAttribute1() { return doubleAttribute1; }
     public int            GetIntAttribute1() { return intAttribute1; }
-    public int            GetIntAttribute2() { return intAttribute2; }
-    public int            GetIntAttribute3() { return intAttribute3; }
-    public Vector         GetDoubleVector1() { return doubleVector1; }
-    public Vector         GetStringVector1() { return stringVector1; }
-    public Vector         GetStringVector2() { return stringVector2; }
+    public MapNode        GetOptions() { return options; }
 
     // Write and read methods.
     public void WriteAtts(CommunicationBuffer buf)
@@ -501,15 +417,7 @@ public class AnnotationObject extends AttributeSubject
         if(WriteSelect(16, buf))
             buf.WriteInt(intAttribute1);
         if(WriteSelect(17, buf))
-            buf.WriteInt(intAttribute2);
-        if(WriteSelect(18, buf))
-            buf.WriteInt(intAttribute3);
-        if(WriteSelect(19, buf))
-            buf.WriteDoubleVector(doubleVector1);
-        if(WriteSelect(20, buf))
-            buf.WriteStringVector(stringVector1);
-        if(WriteSelect(21, buf))
-            buf.WriteStringVector(stringVector2);
+            options.Write(buf);
     }
 
     public void ReadAtts(int index, CommunicationBuffer buf)
@@ -571,19 +479,7 @@ public class AnnotationObject extends AttributeSubject
             SetIntAttribute1(buf.ReadInt());
             break;
         case 17:
-            SetIntAttribute2(buf.ReadInt());
-            break;
-        case 18:
-            SetIntAttribute3(buf.ReadInt());
-            break;
-        case 19:
-            SetDoubleVector1(buf.ReadDoubleVector());
-            break;
-        case 20:
-            SetStringVector1(buf.ReadStringVector());
-            break;
-        case 21:
-            SetStringVector2(buf.ReadStringVector());
+            options.Read(buf);
             break;
         }
     }
@@ -638,11 +534,7 @@ public class AnnotationObject extends AttributeSubject
         str = str + boolToString("fontShadow", fontShadow, indent) + "\n";
         str = str + doubleToString("doubleAttribute1", doubleAttribute1, indent) + "\n";
         str = str + intToString("intAttribute1", intAttribute1, indent) + "\n";
-        str = str + intToString("intAttribute2", intAttribute2, indent) + "\n";
-        str = str + intToString("intAttribute3", intAttribute3, indent) + "\n";
-        str = str + doubleVectorToString("doubleVector1", doubleVector1, indent) + "\n";
-        str = str + stringVectorToString("stringVector1", stringVector1, indent) + "\n";
-        str = str + stringVectorToString("stringVector2", stringVector2, indent) + "\n";
+        str = str + indent + "options = " + options.toString(indent);
         return str;
     }
 
@@ -665,10 +557,6 @@ public class AnnotationObject extends AttributeSubject
     private boolean        fontShadow;
     private double         doubleAttribute1;
     private int            intAttribute1;
-    private int            intAttribute2;
-    private int            intAttribute3;
-    private Vector         doubleVector1; // vector of Double objects
-    private Vector         stringVector1; // vector of String objects
-    private Vector         stringVector2; // vector of String objects
+    private MapNode        options;
 }
 

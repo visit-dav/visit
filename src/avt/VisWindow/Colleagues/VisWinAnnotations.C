@@ -847,21 +847,21 @@ VisWinAnnotations::UpdateAnnotationObjectList(AnnotationObjectList &al)
                 avtLegend_p legend = (*it)->GetLegend();
                 if (*legend != NULL)
                 {
-                    annot.SetIntAttribute3(legend->GetType());
+                    annot.GetOptions().GetEntry("legendType")->SetValue(legend->GetType());
                     if (legend->GetType() == 0 && 
                         legend->GetCurrentlyDrawn() &&
                         !legend->GetUseSuppliedLabels())
                     {
                         doubleVector v;
                         legend->GetCalculatedLabels(v);
-                        annot.SetDoubleVector1(v);
+                        annot.GetOptions().GetEntry("suppliedValues")->SetValue(v);
                     }
                     else if (legend->GetType() == 1 &&
                              legend->GetCurrentlyDrawn())
                     {
                         stringVector s;
                         legend->GetCalculatedLabels(s);
-                        annot.SetStringVector2(s);
+                        annot.GetOptions().GetEntry("suppliedValuesStrings")->SetValue(s);
                     }
                     break;
                 }

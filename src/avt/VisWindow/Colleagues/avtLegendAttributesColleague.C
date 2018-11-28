@@ -126,7 +126,7 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(
     atts.SetPosition2(defaultScale);
 
     // Set the default font height.
-    atts.SetDoubleAttribute1(0.015);
+    atts.GetOptions().GetEntry("fontHeight")->SetValue(0.015);
 
     // Set the default bounding box color.
     atts.SetColor1(ColorAttribute(0,0,0,50));
@@ -138,10 +138,10 @@ avtLegendAttributesColleague::avtLegendAttributesColleague(
     atts.SetFontShadow(false);
 
     // Set the default number of ticks 
-    atts.SetIntAttribute2(5);
+    atts.GetOptions().GetEntry("numTicks")->SetValue(5);
 
     // Set the default legend type to variable
-    atts.SetIntAttribute3(0);
+    atts.GetOptions().GetEntry("legendType")->SetValue(0);
 }
 
 // ****************************************************************************
@@ -401,14 +401,14 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
     if (GetBool(atts, LEGEND_CONTROL_TICKS))
     {
         legend->SetUseSuppliedLabels(false);
-        legend->SetNumTicks(atts.GetIntAttribute2());
+        legend->SetNumTicks(atts.GetOptions().GetEntry("numTicks")->AsInt());
         legend->SetMinMaxInclusive(GetBool(atts, LEGEND_MINMAX_INCLUSIVE));
     }
     else 
     {
         legend->SetUseSuppliedLabels(true);
-        legend->SetSuppliedValues(atts.GetDoubleVector1());
-        legend->SetSuppliedLabels(atts.GetStringVector1());
+        legend->SetSuppliedValues(atts.GetOptions().GetEntry("suppliedValues")->AsDoubleVector());
+        legend->SetSuppliedLabels(atts.GetOptions().GetEntry("suppliedLabels")->AsStringVector());
     }
 
     // Set the legend's foreground color.
@@ -426,7 +426,7 @@ avtLegendAttributesColleague::CustomizeLegend(avtLegend_p legend)
     legend->SetForegroundColor(textColor);
 
     // Set the legend font height.
-    legend->SetFontHeight(atts.GetDoubleAttribute1());
+    legend->SetFontHeight(atts.GetOptions().GetEntry("fontHeight")->AsDouble());
 
     // Set whether the title is drawn.
     legend->SetTitleVisibility(GetBool(atts, LEGEND_DRAW_TITLE));

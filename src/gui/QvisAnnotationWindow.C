@@ -1995,7 +1995,7 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
     annotationListBox->clear();
     for(i = 0; i < annotationObjectList->GetNumAnnotations(); ++i)
     {
-        const AnnotationObject &annot = annotationObjectList->operator[](i);
+        const AnnotationObject &annot = annotationObjectList->GetAnnotation(i);
         int annotType = int(annot.GetObjectType());
 
         if(annotType >= 0 && annotType < nObjectInterfaces)
@@ -2059,7 +2059,7 @@ QvisAnnotationWindow::UpdateAnnotationObjectControls(bool doAll)
                     // making sure gets shown. Make sure that it has the
                     // right values in the widgets.
                     AnnotationObject &annot =
-                        annotationObjectList->operator[](firstInterfaceIndex);
+                        annotationObjectList->GetAnnotation(firstInterfaceIndex);
                     objectInterfaces[i]->Update(&annot);
                     objectInterfaces[i]->setEnabled(true);
                     displayInterface = objectInterfaces[i];

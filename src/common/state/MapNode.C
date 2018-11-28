@@ -65,32 +65,32 @@ MapNode::MapNode(const MapNode &node)
 
 MapNode::MapNode(const XMLNode &node,bool decodeString)
 {
-    SetValue(node,decodeString);
+    SetXValue(node,decodeString);
 }
 
 MapNode::MapNode(const XMLNode *node, bool decodeString)
 {
-    SetValue(*node,decodeString);
+    SetXValue(*node,decodeString);
 }
 
 MapNode::MapNode(const JSONNode &node, bool decodeString)
 {
-    SetValue(node, decodeString);
+    SetJValue(node, decodeString);
 }
 
 MapNode::MapNode(const JSONNode *node, bool decodeString)
 {
-    SetValue(*node,decodeString);
+    SetJValue(*node,decodeString);
 }
 
 MapNode::MapNode(const JSONNode &node,const JSONNode &metadata, bool decodeString)
 {
-    SetValue(node, metadata, decodeString);
+    SetJValue(node, metadata, decodeString);
 }
 
 MapNode::MapNode(const JSONNode *node, const JSONNode* metadata, bool decodeString)
 {
-    SetValue(*node,*metadata,decodeString);
+    SetJValue(*node,*metadata,decodeString);
 }
 
 // ****************************************************************************
@@ -547,7 +547,7 @@ MapNode::ToJSONNodeMetaData(bool id) const
 //
 // ****************************************************************************
 void 
-MapNode::SetValue(const XMLNode &node,bool decodeString)
+MapNode::SetXValue(const XMLNode &node,bool decodeString)
 {
     entries.clear();
     int nchildren = node.GetNumChildren();    
@@ -585,7 +585,7 @@ MapNode::SetValue(const XMLNode &node,bool decodeString)
 //
 // ****************************************************************************
 void
-MapNode::SetValue(const JSONNode &node,bool decodeString)
+MapNode::SetJValue(const JSONNode &node,bool decodeString)
 {
     entries.clear();
 
@@ -609,7 +609,7 @@ MapNode::SetValue(const JSONNode &node,bool decodeString)
             metadata = itr->second;
     }
 
-    SetValue(data,metadata,decodeString);
+    SetJValue(data,metadata,decodeString);
 }
 
 // ****************************************************************************
@@ -628,7 +628,7 @@ MapNode::SetValue(const JSONNode &node,bool decodeString)
 // ****************************************************************************
 
 void
-MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeString)
+MapNode::SetJValue(const JSONNode& data, const JSONNode& metadata, bool decodeString)
 {
     int data_type = 0;
 
@@ -653,7 +653,7 @@ MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeStr
         for(;itr != object.end(); ++itr,++mitr)
         {
             entries[itr->first] = MapNode();
-            entries[itr->first].SetValue(itr->second,mitr->second,decodeString);
+            entries[itr->first].SetJValue(itr->second,mitr->second,decodeString);
         }
     }
     else if(data_type == 0 && data.GetType() == JSONNode::JSONARRAY)
@@ -665,13 +665,13 @@ MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeStr
         for(size_t i = 0; i < array.size(); ++i) {
             sprintf(buffer, "%ld", i);
             entries[buffer] = MapNode();
-            entries[buffer].SetValue(array[i], marray[i], decodeString);
+            entries[buffer].SetJValue(array[i], marray[i], decodeString);
         }
     }
     else
     {
         if(data_type == MapNodeType) {
-            SetValue(data);
+            SetJValue(data);
         }
         else {
             Variant::SetValue(data,metadata,decodeString);
@@ -680,9 +680,9 @@ MapNode::SetValue(const JSONNode& data, const JSONNode& metadata, bool decodeStr
 }
 
 void
-MapNode::SetValue(const JSONNode* data, const JSONNode* metadata, bool decodeString)
+MapNode::SetJValue(const JSONNode* data, const JSONNode* metadata, bool decodeString)
 {
-    MapNode::SetValue(*data, *metadata, decodeString);
+    MapNode::SetJValue(*data, *metadata, decodeString);
 }
 
 // ****************************************************************************

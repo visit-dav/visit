@@ -191,7 +191,7 @@ class STATE_API Variant
 
 
     void                      SetValue(const Variant&);
-    void                      SetValue(const XMLNode&,bool decodeString = true);
+    virtual void              SetValue(const XMLNode&,bool decodeString = true);
     void                      SetValue(const XMLNode*,bool decodeString = true);
     virtual void              SetValue(const JSONNode&,const JSONNode&, bool decodeString = true);
     virtual void              SetValue(const JSONNode*,const JSONNode* meta, bool decodeString = true);

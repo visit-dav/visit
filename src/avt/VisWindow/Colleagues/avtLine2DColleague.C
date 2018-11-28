@@ -495,7 +495,7 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     lineData->GetPoints()->SetPoint(0, p0[0], p0[1], 0.);
     lineData->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
 
-    actor->GetProperty()->SetLineWidth(annot.GetIntAttribute1()+1);
+    actor->GetProperty()->SetLineWidth(annot.GetOptions().GetEntry("width")->AsInt()+1);
 
     //
     // The line color has changed or the useForegroundForTextColor flag
@@ -533,8 +533,8 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
         actor->GetProperty()->SetOpacity(double(lc[3]));
     }
 
-    beginArrowStyle = annot.GetColor2().Green();
-    endArrowStyle = annot.GetColor2().Blue();
+    beginArrowStyle = annot.GetOptions().GetEntry("beginArrow")->AsInt();
+    endArrowStyle = annot.GetOptions().GetEntry("endArrow")->AsInt();
 
     updateArrows(beginArrowLine, endArrowLine, p0, p1);
     updateArrows(beginArrowSolid, endArrowSolid, p0, p1);
@@ -618,12 +618,12 @@ avtLine2DColleague::GetOptions(AnnotationObject &annot)
 
     annot.SetColor1(lineColor);
     annot.SetUseForegroundForTextColor(useForegroundForLineColor);
-    annot.SetIntAttribute1(actor->GetProperty()->GetLineWidth()-1);
-    ColorAttribute ca;
-    ca.SetRgb(0,
-              beginArrowStyle,
-              endArrowStyle);
-    annot.SetColor2(ca);
+
+    MapNode opts;
+    opts["width"] = (int)actor->GetProperty()->GetLineWidth()-1;
+    opts["beginArrow"] = beginArrowStyle;
+    opts["endArrow"] = endArrowStyle;
+    annot.SetOptions(opts);
 }
 
 // ****************************************************************************

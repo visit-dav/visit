@@ -115,9 +115,7 @@ public:
     void SelectColor1();
     void SelectColor2();
     void SelectText();
-    void SelectDoubleVector1();
-    void SelectStringVector1();
-    void SelectStringVector2();
+    void SelectOptions();
 
     // Property setting methods
     void SetObjectName(const std::string &objectName_);
@@ -137,11 +135,7 @@ public:
     void SetFontShadow(bool fontShadow_);
     void SetDoubleAttribute1(double doubleAttribute1_);
     void SetIntAttribute1(int intAttribute1_);
-    void SetIntAttribute2(int intAttribute2_);
-    void SetIntAttribute3(int intAttribute3_);
-    void SetDoubleVector1(const doubleVector &doubleVector1_);
-    void SetStringVector1(const stringVector &stringVector1_);
-    void SetStringVector2(const stringVector &stringVector2_);
+    void SetOptions(const MapNode &options_);
 
     // Property getting methods
     const std::string    &GetObjectName() const;
@@ -168,14 +162,8 @@ public:
     bool                 GetFontShadow() const;
     double               GetDoubleAttribute1() const;
     int                  GetIntAttribute1() const;
-    int                  GetIntAttribute2() const;
-    int                  GetIntAttribute3() const;
-    const doubleVector   &GetDoubleVector1() const;
-          doubleVector   &GetDoubleVector1();
-    const stringVector   &GetStringVector1() const;
-          stringVector   &GetStringVector1();
-    const stringVector   &GetStringVector2() const;
-          stringVector   &GetStringVector2();
+    const MapNode        &GetOptions() const;
+          MapNode        &GetOptions();
 
     // Persistence methods
     virtual bool CreateNode(DataNode *node, bool completeSave, bool forceAdd);
@@ -201,6 +189,10 @@ public:
 
     // User-defined methods
     virtual void ProcessOldVersions(DataNode *parentNode, const char *configVersion);
+    void ProcessOldLegend(DataNode *searchNode, const char *configVersion);
+    void ProcessOldLine3D(DataNode *searchNode);
+    void ProcessOldLine2D(DataNode *searchNode);
+    void ProcessOldText3D(DataNode *searchNode);
 
     // IDs that can be used to identify fields in case statements
     enum {
@@ -221,11 +213,7 @@ public:
         ID_fontShadow,
         ID_doubleAttribute1,
         ID_intAttribute1,
-        ID_intAttribute2,
-        ID_intAttribute3,
-        ID_doubleVector1,
-        ID_stringVector1,
-        ID_stringVector2,
+        ID_options,
         ID__LAST
     };
 
@@ -247,16 +235,12 @@ private:
     bool           fontShadow;
     double         doubleAttribute1;
     int            intAttribute1;
-    int            intAttribute2;
-    int            intAttribute3;
-    doubleVector   doubleVector1;
-    stringVector   stringVector1;
-    stringVector   stringVector2;
+    MapNode        options;
 
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define ANNOTATIONOBJECT_TMFS "sibbDDabaas*ibbbdiiid*s*s*"
+#define ANNOTATIONOBJECT_TMFS "sibbDDabaas*ibbbdim"
 
 #endif

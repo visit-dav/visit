@@ -52,14 +52,14 @@
 // ****************************************************************************
 // Method: ConfigManager::ConfigManager
 //
-// Purpose: 
+// Purpose:
 //   Constructor for the ConfigManager class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 17:17:00 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ConfigManager::ConfigManager()
@@ -71,14 +71,14 @@ ConfigManager::ConfigManager()
 // ****************************************************************************
 // Method: ConfigManager::~ConfigManager
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the ConfigManager class.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 17:17:23 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 ConfigManager::~ConfigManager()
@@ -88,7 +88,7 @@ ConfigManager::~ConfigManager()
 // ****************************************************************************
 // Method: ConfigManager::WriteBack
 //
-// Purpose: 
+// Purpose:
 //   This is a debugging method writes the DataNode tree specified by
 //   root to a file called WRITEBACK. It is used to test the validity
 //   of a tree that has been read from a file.
@@ -120,7 +120,7 @@ ConfigManager::WriteBack(DataNode *root)
 // ****************************************************************************
 // Method: ConfigManager::WriteIndent
 //
-// Purpose: 
+// Purpose:
 //   This method writes indentation spaces to the open file.
 //
 // Arguments:
@@ -130,7 +130,7 @@ ConfigManager::WriteBack(DataNode *root)
 // Creation:   Fri Sep 29 17:19:28 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -143,7 +143,7 @@ ConfigManager::WriteIndent(std::ostream& out, int indentLevel)
 // ****************************************************************************
 // Method: ConfigManager::WriteQuotedStringData
 //
-// Purpose: 
+// Purpose:
 //   Writes the string to the file surrounded by quotes and and quotes that
 //   the string had in it are escaped.
 //
@@ -154,7 +154,7 @@ ConfigManager::WriteIndent(std::ostream& out, int indentLevel)
 // Creation:   Fri Oct 3 16:18:10 PST 2003
 //
 // Modifications:
-//   
+//
 //    Allen Sanderson, Thu Sep  1 15:25:29 PDT 2016
 //    Replaced duplicate loop of string output with call to WriteEscapedString
 // ****************************************************************************
@@ -173,7 +173,7 @@ ConfigManager::WriteQuotedStringData(std::ostream& out, const std::string &str)
 // ****************************************************************************
 // Method: ConfigManager::WriteEscapedStringData
 //
-// Purpose: 
+// Purpose:
 //   Writes the string to the file escaping various characters as needed.
 //
 // Arguments:
@@ -183,7 +183,7 @@ ConfigManager::WriteQuotedStringData(std::ostream& out, const std::string &str)
 // Creation:   August  2, 2005
 //
 // Modifications:
-//   
+//
 //    Mark C. Miller, Thu Sep  1 14:48:24 PDT 2016
 //    Change to proper XML-style escaping of certain characters
 // ****************************************************************************
@@ -212,7 +212,7 @@ ConfigManager::WriteEscapedString(std::ostream &out, const std::string &str)
 // ****************************************************************************
 // Method: ConfigManager::WriteData
 //
-// Purpose: 
+// Purpose:
 //   This method writes out the data contained in the specified
 //   DataNode to the open file as ASCII.
 //
@@ -402,7 +402,7 @@ ConfigManager::WriteData(std::ostream& out, DataNode *node)
 // ****************************************************************************
 // Method: ConfigManager::WriteObject
 //
-// Purpose: 
+// Purpose:
 //   This method writes out the DataNode tree to the open file. This
 //   is the code that actually writes a config file.
 //
@@ -432,6 +432,11 @@ ConfigManager::WriteObject(std::ostream& out, DataNode *node, int indentLevel)
     WriteIndent(out, indentLevel);
     if(node->GetNodeType() == INTERNAL_NODE)
         out << "<Object name=\"" << node->GetKey().c_str() << "\">\n";
+    else if (node->GetNodeType() == MAP_NODE_NODE)
+    {
+        out << "<Object name=\""<< node->GetKey().c_str()
+            << "\" type=\"MapNode\">\n";
+    }
     else
     {
         // Write out the field tag based on the node type.
@@ -465,6 +470,10 @@ ConfigManager::WriteObject(std::ostream& out, DataNode *node, int indentLevel)
                 WriteObject(out, children[i], indentLevel + 1);
         }
     }
+    else if(node->GetNodeType() == MAP_NODE_NODE)
+    {
+        WriteMapNode(out, node->AsMapNode(), indentLevel+1);
+    }
     else
     {
         // We have to write actual values.
@@ -472,7 +481,8 @@ ConfigManager::WriteObject(std::ostream& out, DataNode *node, int indentLevel)
     }
 
     // Write the ending tag.
-    if(node->GetNodeType() == INTERNAL_NODE)
+    if(node->GetNodeType() == INTERNAL_NODE ||
+       node->GetNodeType() == MAP_NODE_NODE)
     {
         WriteIndent(out, indentLevel);
         out << "</Object>\n";
@@ -486,7 +496,7 @@ ConfigManager::WriteObject(std::ostream& out, DataNode *node, int indentLevel)
 // ****************************************************************************
 // Method: ConfigManager::ReadChar
 //
-// Purpose: 
+// Purpose:
 //   This method reads a character from the open file. It also can
 //   read one character that has been "put back" into the file.
 //
@@ -494,7 +504,7 @@ ConfigManager::WriteObject(std::ostream& out, DataNode *node, int indentLevel)
 // Creation:   Fri Sep 29 17:23:34 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 char
@@ -526,7 +536,7 @@ ConfigManager::ReadChar(std::istream& in)
 // ****************************************************************************
 // Method: ConfigManager::PutBackChar
 //
-// Purpose: 
+// Purpose:
 //   Logically puts a character back into the open file.
 //
 // Arguments:
@@ -536,7 +546,7 @@ ConfigManager::ReadChar(std::istream& in)
 // Creation:   Fri Sep 29 17:24:23 PST 2000
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -549,14 +559,14 @@ ConfigManager::PutBackChar(char c)
 // ****************************************************************************
 // Method: ConfigManager::FinishTag
 //
-// Purpose: 
+// Purpose:
 //   Read until a '>' character or eof is encountered.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Sep 29 17:29:57 PST 2000
 //
 // Modifications:
-//   
+//
 //   Hank Childs, Thu Jun  8 16:14:54 PDT 2006
 //   Initialize 'c' to remove compiler warning.
 //
@@ -575,7 +585,7 @@ ConfigManager::FinishTag(std::istream& in)
 // ****************************************************************************
 // Method: ConfigManager::ReadStringVector
 //
-// Purpose: 
+// Purpose:
 //   Reads a vector of strings from the open file until a termination character
 //   is encountered.
 //
@@ -583,7 +593,7 @@ ConfigManager::FinishTag(std::istream& in)
 //   termChar : That character at which to stop reading.
 //
 // Returns:    A string vector.
-// 
+//
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 3 09:39:11 PDT 2003
 //
@@ -703,39 +713,39 @@ ConfigManager::ReadStringVector(std::istream& in, char termChar)
           retval[i].replace(pos,4,"<");
       }
       while(pos != std::string::npos);
-            
+
       do {
         if( (pos = retval[i].find("&gt;")) != std::string::npos)
           retval[i].replace(pos,4,">");
       }
       while(pos != std::string::npos);
-            
+
       do {
         if( (pos = retval[i].find("&amp;")) != std::string::npos)
           retval[i].replace(pos,5,"&");
       }
       while(pos != std::string::npos);
-            
+
       do {
         if( (pos = retval[i].find("&apos;")) != std::string::npos)
           retval[i].replace(pos,6,"'");
       }
       while(pos != std::string::npos);
-            
+
       do {
         if( (pos = retval[i].find("&quot;")) != std::string::npos)
           retval[i].replace(pos,6,"\"");
       }
       while(pos != std::string::npos);
     }
-            
+
     return retval;
 }
 
 // ****************************************************************************
 // Method: ConfigManager::RemoveLeadAndTailQuotes
 //
-// Purpose: 
+// Purpose:
 //   Removes leading and trailing quotes in all of the strings in the vector.
 //
 // Arguments:
@@ -745,7 +755,7 @@ ConfigManager::ReadStringVector(std::istream& in, char termChar)
 // Creation:   Mon Oct 6 08:55:23 PDT 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -766,7 +776,7 @@ ConfigManager::RemoveLeadAndTailQuotes(stringVector &sv)
 // ****************************************************************************
 // Method: ConfigManager::ReadFieldData
 //
-// Purpose: 
+// Purpose:
 //   Reads the data for the specified node type, creates a DataNode to
 //   store it, and returns the created DataNode.
 //
@@ -821,7 +831,7 @@ ConfigManager::ReadFieldData(std::istream& in,
       // Read strings until we get a '<' character.
       sv = ReadStringVector(in, '<');
     }
-    
+
     int minSize = (tagLength == 0) ? (int)sv.size() :
                   ((tagLength < (int)sv.size()) ? tagLength : (int)sv.size());
 
@@ -910,7 +920,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 
                 retval = new DataNode(tagName, cvalArray, minSize);
             }
-            
+
             if(cvalArray != 0)
                 delete [] cvalArray;
         }
@@ -929,7 +939,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 
                 retval = new DataNode(tagName, uvalArray, minSize);
             }
-            
+
             if(uvalArray != 0)
                 delete [] uvalArray;
         }
@@ -945,7 +955,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 
                 retval = new DataNode(tagName, ivalArray, minSize);
             }
-            
+
             if(ivalArray != 0)
                 delete [] ivalArray;
         }
@@ -961,7 +971,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 
                 retval = new DataNode(tagName, lvalArray, minSize);
             }
-            
+
             if(lvalArray != 0)
                 delete [] lvalArray;
         }
@@ -977,7 +987,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 
                 retval = new DataNode(tagName, fvalArray, minSize);
             }
-            
+
             if(fvalArray != 0)
                 delete [] fvalArray;
         }
@@ -993,7 +1003,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 
                 retval = new DataNode(tagName, dvalArray, minSize);
             }
-            
+
             if(dvalArray != 0)
                 delete [] dvalArray;
         }
@@ -1010,7 +1020,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 
                 retval = new DataNode(tagName, svalArray, minSize);
             }
-            
+
             if(svalArray != 0)
                 delete [] svalArray;
         }
@@ -1026,7 +1036,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 
                 retval = new DataNode(tagName, bvalArray, minSize);
             }
-            
+
             if(bvalArray != 0)
                 delete [] bvalArray;
         }
@@ -1139,7 +1149,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 // ****************************************************************************
 // Method: ConfigManager::ReadObject
 //
-// Purpose: 
+// Purpose:
 //   This method reads the top level and all child DataNodes from the
 //   config file and makes them children of parentNode.
 //
@@ -1151,7 +1161,7 @@ ConfigManager::ReadFieldData(std::istream& in,
 // Creation:   Fri Sep 29 17:36:21 PST 2000
 //
 // Modifications:
-//   
+//
 //    Mark C. Miller, Tue Mar 31 18:54:53 PDT 2015
 //    Incorporate changes as per Brad's guidance to force locale to en_US
 //    when reading.
@@ -1179,7 +1189,7 @@ ConfigManager::ReadObject(std::istream& in, DataNode *parentNode)
 // ****************************************************************************
 // Method: ConfigManager::ReadObjectHelper
 //
-// Purpose: 
+// Purpose:
 //   This method recursively reads all objects and fields from the file.
 //
 // Arguments:
@@ -1188,13 +1198,13 @@ ConfigManager::ReadObject(std::istream& in, DataNode *parentNode)
 //
 // Returns:    True if we should keep reading, false otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jul 3 16:09:28 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1230,6 +1240,17 @@ ConfigManager::ReadObjectHelper(std::istream &in, DataNode *parentNode, bool &te
         if(tagIsEndTag || noEndTag)
             return keepReading;
     }
+    else if(tagType == MAP_NODE_NODE)
+    {
+        MapNode mn;
+        // Read all the fields into the MapNode
+        ReadMapNodeFields(in, mn, noEndTag);
+        if (mn.GetNumEntries() > 0)
+        {
+            DataNode *node = new DataNode(tagName, mn);
+            parentNode->AddNode(node);
+        }
+    }
     else
       keepReading =
         ReadField(in, parentNode, tagName, tagType, tagLength, noEndTag);
@@ -1246,16 +1267,16 @@ ConfigManager::ReadObjectHelper(std::istream &in, DataNode *parentNode, bool &te
       // If ending tag then must have been an error.
       keepReading = sv.size() > 0;
     }
-    
+
     te = false;
-    
+
     return keepReading;
 }
 
 // ****************************************************************************
 // Method: ConfigManager::ReadTag
 //
-// Purpose: 
+// Purpose:
 //   Reads a tag header and determines the type of object being read.
 //
 // Arguments:
@@ -1270,7 +1291,7 @@ ConfigManager::ReadObjectHelper(std::istream &in, DataNode *parentNode, bool &te
 // Creation:   Thu Jul 3 16:11:08 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1352,13 +1373,13 @@ ConfigManager::ReadTag(std::istream& in, std::string &tagName,
     // Get the NodeTypeEnum from the tag's type name.
     tagType = GetNodeType(tagTypeStr.c_str());
 
-    return sv.size() > 0;    
+    return sv.size() > 0;
 }
 
 // ****************************************************************************
 // Method: ConfigManager::ReadField
 //
-// Purpose: 
+// Purpose:
 //   Reads a field and adds it to the parentNode.
 //
 // Arguments:
@@ -1373,7 +1394,7 @@ ConfigManager::ReadTag(std::istream& in, std::string &tagName,
 // Creation:   Thu Jul 3 16:15:00 PST 2003
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -1391,3 +1412,314 @@ ConfigManager::ReadField(std::istream& in,
 
     return retval != 0;
 }
+
+
+// ****************************************************************************
+// Method: ConfigManager::WriteMapNode
+//
+// Purpose:
+//   This method writes out the data contained in the specified
+//   MapeNode to the passed output stream.
+//
+// Arguments:
+//   out:            The output stream used for writing.
+//   mn:             The MapNode node whose data will be written.
+//   indentLevel:    The indent level to use.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   November 28, 2018 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ConfigManager::WriteMapNode(std::ostream &out, const MapNode &mn, int indentLevel)
+{
+    stringVector names;
+    mn.GetEntryNames(names);
+    for (size_t i = 0; i < names.size(); ++i)
+    {
+        const MapNode *entry = mn.GetEntry(names[i]);
+        WriteIndent(out, indentLevel);
+        out << "<Field name=\"" << names[i] << "\" type=\""
+            << entry->TypeName() << "\">"
+            << const_cast<MapNode *>(entry)->ConvertToString()
+            << "</Field>\n";
+    }
+}
+
+
+// ****************************************************************************
+// Method: ConfigManager::ReadMapNodeFieldData
+//
+// Purpose:
+//   Reads data from the input stream and stores the field in the MapNode.
+//
+// Arguments:
+//   in:        The input stream.
+//   mn:        The MapNode used to store the field.
+//   tagName:   The name of the field, used as MapNode key.
+//   type:      The type of the field.
+//   tagLength: The length of the field.
+//   noEndTag:  Flag
+//
+// Programmer: Kathleen Biagas 
+// Creation:   November 28, 2018 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ConfigManager::ReadMapNodeFieldData(std::istream& in, MapNode &mn,
+                             const std::string &tagName, NodeTypeEnum type,
+                             int tagLength, bool noEndTag)
+{
+    int           i;
+    char          cval;
+    unsigned char uval;
+    int           ival;
+    long          lval;
+    float         fval;
+    double        dval;
+    bool          bval;
+
+    stringVector sv;
+
+    // If there is no ending tag then a short cut and there is no data.
+    if( !noEndTag )
+    {
+      // Read strings until we get a '<' character.
+      sv = ReadStringVector(in, '<');
+    }
+
+    int minSize = (tagLength == 0) ? (int)sv.size() :
+                  ((tagLength < (int)sv.size()) ? tagLength : (int)sv.size());
+
+    // All 20, or whatever, cases.
+    switch(type)
+    {
+    case CHAR_NODE:
+        // Read a character.
+        if(minSize > 0)
+        {
+            mn[tagName] =  sv[0][0];
+        }
+        break;
+    case UNSIGNED_CHAR_NODE:
+        // Read an int and turn it into an unsigned character.
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%d", &ival);
+            uval = (unsigned char)ival;
+            mn[tagName]  = uval;
+        }
+        break;
+    case INT_NODE:
+        // Read an int.
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%d", &ival);
+            mn[tagName]  = ival;
+        }
+        break;
+    case LONG_NODE:
+        // Read a long.
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%ld", &lval);
+            mn[tagName]  = lval;
+        }
+        break;
+    case FLOAT_NODE:
+        // Read a float.
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%g", &fval);
+            mn[tagName]  = fval;
+        }
+        break;
+    case DOUBLE_NODE:
+        // Read a double.
+        if(minSize > 0)
+        {
+            sscanf(sv[0].c_str(), "%lg", &dval);
+            mn[tagName]  = dval;
+        }
+        break;
+    case STRING_NODE:
+        { // new scope
+            RemoveLeadAndTailQuotes(sv);
+            std::string temp;
+            for(i = 0; i < minSize; ++i)
+            {
+                temp += sv[i];
+                if(i < (minSize - 1))
+                    temp += " ";
+            }
+            mn[tagName] = temp;
+        }
+        break;
+    case BOOL_NODE:
+        { // new scope
+            bval = false;
+            if(minSize > 0)
+            {
+                bval = (sv[0] == "true");
+            }
+            mn[tagName] = bval;
+        }
+        break;
+    case CHAR_VECTOR_NODE:
+        { // new scope
+            charVector temp;
+            if(minSize > 0)
+            {
+                for(i = 0; i < minSize; ++i)
+                {
+                    sscanf(sv[i].c_str(), "%c", &cval);
+                    temp.push_back(cval);
+                }
+
+                mn[tagName] = temp;
+            }
+        }
+        break;
+    case UNSIGNED_CHAR_VECTOR_NODE:
+        { // new scope
+            unsignedCharVector temp;
+            if(minSize > 0)
+            {
+                for(i = 0; i < minSize; ++i)
+                {
+                    sscanf(sv[i].c_str(), "%d", &ival);
+                    uval = (unsigned char)ival;
+                    temp.push_back(uval);
+                }
+
+                mn[tagName] = temp;
+            }
+        }
+        break;
+    case INT_VECTOR_NODE:
+        { // new scope
+            intVector temp;
+            if(minSize > 0)
+            {
+                for(i = 0; i < minSize; ++i)
+                {
+                    sscanf(sv[i].c_str(), "%d", &ival);
+                    temp.push_back(ival);
+                }
+
+                mn[tagName] = temp;
+            }
+        }
+        break;
+    case LONG_VECTOR_NODE:
+        { // new scope
+            longVector temp;
+            if(minSize > 0)
+            {
+                for(i = 0; i < minSize; ++i)
+                {
+                    sscanf(sv[i].c_str(), "%ld", &lval);
+                    temp.push_back(lval);
+                }
+
+                mn[tagName] = temp;
+            }
+        }
+        break;
+    case FLOAT_VECTOR_NODE:
+        { // new scope
+            floatVector temp;
+            if(minSize > 0)
+            {
+                for(i = 0; i < minSize; ++i)
+                {
+                    sscanf(sv[i].c_str(), "%g", &fval);
+                    temp.push_back(fval);
+                }
+
+                mn[tagName] = temp;
+            }
+        }
+        break;
+    case DOUBLE_VECTOR_NODE:
+        { // new scope
+            doubleVector temp;
+            if(minSize > 0)
+            {
+                for(i = 0; i < minSize; ++i)
+                {
+                    sscanf(sv[i].c_str(), "%lg", &dval);
+                    temp.push_back(dval);
+                }
+
+                mn[tagName] = temp;
+            }
+        }
+        break;
+    case STRING_VECTOR_NODE:
+        if(minSize > 0)
+        {
+            RemoveLeadAndTailQuotes(sv);
+            mn[tagName] = sv;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+
+// ****************************************************************************
+// Method: ConfigManager::ReadMapNodeFields
+//
+// Purpose:
+//   Reads data from the input stream and stores the fields in the MapNode.
+//
+// Arguments:
+//   in:        The input stream.
+//   mn:        The MapNode used to store the field.
+//   te:        Indicates tag is and end tag.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   November 28, 2018 
+//
+// Modifications:
+//
+// ****************************************************************************
+
+void
+ConfigManager::ReadMapNodeFields(std::istream &in, MapNode &mn, bool &te)
+{
+    bool tagIsEndTag = false;
+    bool noEndTag = false;
+    std::string  tagName;
+    NodeTypeEnum tagType = INTERNAL_NODE;
+    int          tagLength = 0;
+
+
+    ReadTag(in, tagName, tagType, tagLength,
+                          tagIsEndTag, noEndTag);
+    if (tagIsEndTag)
+    {
+        // MapNode is empty
+        te = true;
+        return;
+    }
+
+    while (!tagIsEndTag)
+    {
+        ReadMapNodeFieldData(in, mn, tagName, tagType, tagLength, noEndTag);
+        // Consume the end tag for the Field object
+        stringVector sv = ReadStringVector(in,'>');
+        ReadTag(in, tagName, tagType, tagLength, tagIsEndTag, noEndTag);
+    }
+
+    te = true;
+}
+

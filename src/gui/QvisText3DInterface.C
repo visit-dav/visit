@@ -51,23 +51,23 @@
 
 #include <AnnotationObject.h>
 
-#define GetFacesCamera GetFontBold
-#define SetFacesCamera SetFontBold
+#define GetFacesCamera GetOptions().GetEntry("preserveOrientation")->AsBool
+#define SetFacesCamera GetOptions().GetEntry("preserveOrientation")->SetValue
 
 #define GetRotations GetPosition2
 #define SetRotations SetPosition2
 
 // The flag that lets us switch between relative and fixed heights.
-#define GetRelativeHeightMode GetFontItalic
-#define SetRelativeHeightMode SetFontItalic
+#define GetRelativeHeightMode GetOptions().GetEntry("useRelativeHeight")->AsBool
+#define SetRelativeHeightMode GetOptions().GetEntry("useRelativeHeight")->SetValue
 
 // Relative scale will scale the text as a percentage of the bbox diagonal
-#define GetRelativeHeight GetIntAttribute1
-#define SetRelativeHeight SetIntAttribute1
+#define GetRelativeHeight GetOptions().GetEntry("relativeHeight")->AsInt
+#define SetRelativeHeight GetOptions().GetEntry("relatveHeight")->SetValue
 
 // Fixed height in world coordinates.
-#define GetFixedHeight   GetDoubleAttribute1
-#define SetFixedHeight   SetDoubleAttribute1
+#define GetFixedHeight   GetOptions().GetEntry("fixedHeight")->AsDouble
+#define SetFixedHeight   GetOptions().GetEntry("fixedHeight")->SetValue
 
 // ****************************************************************************
 // Method: QvisText3DInterface::QvisText3DInterface

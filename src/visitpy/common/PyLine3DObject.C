@@ -41,6 +41,7 @@
 #include <stdio.h>
 #include <snprintf.h>
 #include <ColorAttribute.h>
+#include <MapNode.h>
 
 // Functions that we need in visitmodule.C
 extern void UpdateAnnotationHelper(AnnotationObject *);
@@ -244,14 +245,19 @@ Line3DObject_SetLineType(PyObject *self, PyObject *args)
         return NULL;
 
     if (ival >= 0 && ival <= 2)
-        obj->data->SetIntAttribute3(ival);
+    {
+        obj->data->GetOptions().GetEntry("lineType")->SetValue(ival);
+        UpdateAnnotationHelper(obj->data);
+    }
     else
+    {
         fprintf(stderr, "An invalid  value was given. "
                 "Valid values are in the range of [0,1]. "
                 "You can also use the following names: "
                 "\"LINE\", \"TUBE\"\n");
+        return NULL;
+    }
 
-    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -261,7 +267,7 @@ static PyObject *
 Line3DObject_GetLineType(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntAttribute3()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("lineType")->AsInt()));
     return retval;
 }
 
@@ -275,7 +281,7 @@ Line3DObject_SetWidth(PyObject *self, PyObject *args)
         return NULL;
 
     // Set the width in the object.
-    obj->data->SetIntAttribute1(ival);
+    obj->data->GetOptions().GetEntry("width")->SetValue(ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -286,7 +292,7 @@ static PyObject *
 Line3DObject_GetWidth(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetIntAttribute1()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("width")->AsInt()));
     return retval;
 }
 
@@ -299,18 +305,20 @@ Line3DObject_SetTubeQuality(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    doubleVector dv = obj->data->GetDoubleVector1();
-    // Set the style in the object.
     if (ival >= 0 && ival <= 2)
-        dv[2] = (double) ival; 
+    {
+        obj->data->GetOptions().GetEntry("tubeQuality")->SetValue(ival);
+        UpdateAnnotationHelper(obj->data);
+    }
     else
+    {
         fprintf(stderr, "An invalid  value was given. "
                 "Valid values are in the range of [0,2]. "
                 "You can also use the following names: "
                 "\"LOW\", \"MEDIUM\", \"HIGH\"\n");
+        return NULL;
+    }
 
-    obj->data->SetDoubleVector1(dv);
-    UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -320,9 +328,7 @@ static PyObject *
 Line3DObject_GetTubeQuality(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    doubleVector dv = obj->data->GetDoubleVector1();
-    int tq = (int)dv[2];
-    PyObject *retval = PyInt_FromLong(long(tq));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("tubeQuality")->AsInt()));
     return retval;
 }
 
@@ -334,11 +340,7 @@ Line3DObject_SetTubeRadius(PyObject *self, PyObject *args)
     double dval;
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
-
-    // Set the opacity in the object.
-    doubleVector dv = obj->data->GetDoubleVector1();
-    dv[3] = dval;
-    obj->data->SetDoubleVector1(dv);
+    obj->data->GetOptions().GetEntry("tubeRadius")->SetValue(dval);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -349,8 +351,7 @@ static PyObject *
 Line3DObject_GetTubeRadius(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    doubleVector dv = obj->data->GetDoubleVector1();
-    PyObject *retval = PyFloat_FromDouble(double(dv[3]));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("tubeRadius")->AsDouble());
     return retval;
 }
 
@@ -491,8 +492,7 @@ Line3DObject_SetArrow1(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the opacity in the object.
-    obj->data->GetColor2().SetRed(ival);
+    obj->data->GetOptions().GetEntry("arrow1")->SetValue((bool)ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -503,7 +503,7 @@ static PyObject *
 Line3DObject_GetArrow1(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColor2().Red()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("arrow1")->AsBool()));
     return retval;
 }
 
@@ -516,8 +516,7 @@ Line3DObject_SetArrow1Resolution(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the opacity in the object.
-    obj->data->GetColor2().SetBlue(ival);
+    obj->data->GetOptions().GetEntry("arrow1Resolution")->SetValue(ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -528,7 +527,7 @@ static PyObject *
 Line3DObject_GetArrow1Resolution(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColor2().Blue()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("arrow1Resolution")->AsInt()));
     return retval;
 }
 
@@ -542,10 +541,7 @@ Line3DObject_SetArrow1Radius(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the opacity in the object.
-    doubleVector dv = obj->data->GetDoubleVector1();
-    dv[0] = dval;
-    obj->data->SetDoubleVector1(dv);
+    obj->data->GetOptions().GetEntry("arrow1Radius")->SetValue(dval);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -556,8 +552,31 @@ static PyObject *
 Line3DObject_GetArrow1Radius(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    doubleVector dv = obj->data->GetDoubleVector1();
-    PyObject *retval = PyFloat_FromDouble(double(dv[0]));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("arrow1Radius")->AsDouble());
+    return retval;
+}
+
+static PyObject *
+Line3DObject_SetArrow1Height(PyObject *self, PyObject *args)
+{
+    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    obj->data->GetOptions().GetEntry("arrow1Height")->SetValue(dval);
+    UpdateAnnotationHelper(obj->data);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
+Line3DObject_GetArrow1Height(PyObject *self, PyObject *args)
+{
+    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("arrow1Height")->AsDouble());
     return retval;
 }
 
@@ -570,8 +589,7 @@ Line3DObject_SetArrow2(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the opacity in the object.
-    obj->data->GetColor2().SetGreen(ival);
+    obj->data->GetOptions().GetEntry("arrow2")->SetValue((bool)ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -582,7 +600,7 @@ static PyObject *
 Line3DObject_GetArrow2(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColor2().Green()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("arrow2")->AsInt()));
     return retval;
 }
 
@@ -595,8 +613,7 @@ Line3DObject_SetArrow2Resolution(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "i", &ival))
         return NULL;
 
-    // Set the opacity in the object.
-    obj->data->GetColor2().SetAlpha(ival);
+    obj->data->GetOptions().GetEntry("arrow2Resolution")->SetValue(ival);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -607,7 +624,7 @@ static PyObject *
 Line3DObject_GetArrow2Resolution(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    PyObject *retval = PyInt_FromLong(long(obj->data->GetColor2().Alpha()));
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetOptions().GetEntry("arrow2Resolution")->AsInt()));
     return retval;
 }
 
@@ -621,10 +638,7 @@ Line3DObject_SetArrow2Radius(PyObject *self, PyObject *args)
     if(!PyArg_ParseTuple(args, "d", &dval))
         return NULL;
 
-    // Set the opacity in the object.
-    doubleVector dv = obj->data->GetDoubleVector1();
-    dv[1] = dval;
-    obj->data->SetDoubleVector1(dv);
+    obj->data->GetOptions().GetEntry("arrow2Radius")->SetValue(dval);
     UpdateAnnotationHelper(obj->data);
 
     Py_INCREF(Py_None);
@@ -635,8 +649,31 @@ static PyObject *
 Line3DObject_GetArrow2Radius(PyObject *self, PyObject *args)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)self;
-    doubleVector dv = obj->data->GetDoubleVector1();
-    PyObject *retval = PyFloat_FromDouble(double(dv[1]));
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("arrow2Radius")->AsDouble());
+    return retval;
+}
+
+static PyObject *
+Line3DObject_SetArrow2Height(PyObject *self, PyObject *args)
+{
+    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    obj->data->GetOptions().GetEntry("arrow2Height")->SetValue(dval);
+    UpdateAnnotationHelper(obj->data);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+static PyObject *
+Line3DObject_GetArrow2Height(PyObject *self, PyObject *args)
+{
+    Line3DObjectObject *obj = (Line3DObjectObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetOptions().GetEntry("arrow2Height")->AsDouble());
     return retval;
 }
 
@@ -683,12 +720,16 @@ static struct PyMethodDef Line3DObject_methods[] = {
     {"GetArrow1Resolution", Line3DObject_GetArrow1Resolution, METH_VARARGS},
     {"SetArrow1Radius", Line3DObject_SetArrow1Radius, METH_VARARGS},
     {"GetArrow1Radius", Line3DObject_GetArrow1Radius, METH_VARARGS},
+    {"SetArrow1Height", Line3DObject_SetArrow1Height, METH_VARARGS},
+    {"GetArrow1Height", Line3DObject_GetArrow1Height, METH_VARARGS},
     {"SetArrow2", Line3DObject_SetArrow2, METH_VARARGS},
     {"GetArrow2", Line3DObject_GetArrow2, METH_VARARGS},
     {"SetArrow2Resolution", Line3DObject_SetArrow2Resolution, METH_VARARGS},
     {"GetArrow2Resolution", Line3DObject_GetArrow2Resolution, METH_VARARGS},
     {"SetArrow2Radius", Line3DObject_SetArrow2Radius, METH_VARARGS},
     {"GetArrow2Radius", Line3DObject_GetArrow2Radius, METH_VARARGS},
+    {"SetArrow2Height", Line3DObject_SetArrow2Height, METH_VARARGS},
+    {"GetArrow2Height", Line3DObject_GetArrow2Height, METH_VARARGS},
     {"Delete", Line3DObject_Delete, METH_VARARGS},
     {NULL, NULL}
 };
@@ -733,7 +774,7 @@ Line3DObject_getattr(PyObject *self, char *name)
     if(strcmp(name, "width") == 0)
         return Line3DObject_GetWidth(self, NULL);
     if(strcmp(name, "tubeQuality") == 0)
-        return Line3DObject_SetTubeQuality(self, NULL);
+        return Line3DObject_GetTubeQuality(self, NULL);
     if(strcmp(name, "LOW") == 0)
         return PyInt_FromLong(long(0));
     if(strcmp(name, "MEDIUM") == 0)
@@ -755,12 +796,16 @@ Line3DObject_getattr(PyObject *self, char *name)
         return Line3DObject_GetArrow1Resolution(self, NULL);
     if(strcmp(name, "arrow1Radius") == 0)
         return Line3DObject_GetArrow1Radius(self, NULL);
+    if(strcmp(name, "arrow1Height") == 0)
+        return Line3DObject_GetArrow1Height(self, NULL);
     if(strcmp(name, "arrow2") == 0)
         return Line3DObject_GetArrow2(self, NULL);
     if(strcmp(name, "arrow2Resolution") == 0)
         return Line3DObject_GetArrow2Resolution(self, NULL);
     if(strcmp(name, "arrow2Radius") == 0)
         return Line3DObject_GetArrow2Radius(self, NULL);
+    if(strcmp(name, "arrow2Height") == 0)
+        return Line3DObject_GetArrow2Height(self, NULL);
 
 
     return Py_FindMethod(Line3DObject_methods, self, name);
@@ -804,12 +849,16 @@ Line3DObject_setattr(PyObject *self, char *name, PyObject *args)
         retval = (Line3DObject_SetArrow1Resolution(self, tuple) != NULL);
     else if(strcmp(name, "arrow1Radius") == 0)
         retval = (Line3DObject_SetArrow1Radius(self, tuple) != NULL);
+    else if(strcmp(name, "arrow1Height") == 0)
+        retval = (Line3DObject_SetArrow1Height(self, tuple) != NULL);
     else if(strcmp(name, "arrow2") == 0)
         retval = (Line3DObject_SetArrow2(self, tuple) != NULL);
     else if(strcmp(name, "arrow2Resolution") == 0)
         retval = (Line3DObject_SetArrow2Resolution(self, tuple) != NULL);
     else if(strcmp(name, "arrow2Radius") == 0)
         retval = (Line3DObject_SetArrow2Radius(self, tuple) != NULL);
+    else if(strcmp(name, "arrow2Height") == 0)
+        retval = (Line3DObject_SetArrow2Height(self, tuple) != NULL);
 
     Py_DECREF(tuple);
     return retval ? 0 : -1;
@@ -819,6 +868,7 @@ static int
 Line3DObject_print(PyObject *v, FILE *fp, int flags)
 {
     Line3DObjectObject *obj = (Line3DObjectObject *)v;
+    const MapNode &opts = obj->data->GetOptions();
 
     if(obj->data->GetVisible())
         fprintf(fp, "visible = 1\n");
@@ -837,14 +887,13 @@ Line3DObject_print(PyObject *v, FILE *fp, int flags)
         fprintf(fp, "point2 = (%g, %g, %g)\n",pos2[0], pos2[1], pos2[2]);
     }
     const char *type_values[] = {"LINE", "TUBE"};
-    fprintf(fp, "lineType = %s  # LINE, TUBE\n", type_values[obj->data->GetIntAttribute3()]);
-    fprintf(fp, "width = %d\n", obj->data->GetIntAttribute1());
+    fprintf(fp, "lineType = %s  # LINE, TUBE\n", type_values[opts.GetEntry("lineType")->AsInt()]);
+    fprintf(fp, "width = %d\n", opts.GetEntry("width")->AsInt());
 
-    doubleVector dv = obj->data->GetDoubleVector1();
 
     const char *qual_values[] = {"LOW", "MEDIUM", "HIGH"};
-    fprintf(fp, "tubeQuality = %s  # LOW, MEDIUM, HIGH\n", qual_values[(int)dv[2]]);
-    fprintf(fp, "tubeRadius = %lg\n", dv[3]);
+    fprintf(fp, "tubeQuality = %s  # LOW, MEDIUM, HIGH\n", qual_values[opts.GetEntry("tubeQuality")->AsInt()]);
+    fprintf(fp, "tubeRadius = %lg\n", opts.GetEntry("tubeRadius")->AsDouble());
     
     if (obj->data->GetUseForegroundForTextColor())
         fprintf(fp, "useForegroundForLineColor = 1\n");
@@ -854,13 +903,15 @@ Line3DObject_print(PyObject *v, FILE *fp, int flags)
     fprintf(fp, "color = (%d, %d, %d, %d)\n", int(color[0]), int(color[1]), int(color[2]), int(color[3]));
     fprintf(fp, "opacity = %d\n", obj->data->GetColor1().Alpha());
 
-    ColorAttribute color2 = obj->data->GetColor2();
-    fprintf(fp, "arrow1 = %d\n", color2.Red());
-    fprintf(fp, "arrow1Resolution = %d\n", color2.Blue());
-    fprintf(fp, "arrow1Radius = %lg\n", dv[0]);
-    fprintf(fp, "arrow2 = %d\n", color2.Green());
-    fprintf(fp, "arrow2Resolution = %d\n", color2.Alpha());
-    fprintf(fp, "arrow2Radius = %lg\n", dv[1]);
+    fprintf(fp, "arrow1 = %d\n", opts.GetEntry("arrow1")->AsInt());
+    fprintf(fp, "arrow1Resolution = %d\n", opts.GetEntry("arrow1Resolution")->AsInt());
+
+    fprintf(fp, "arrow1Radius = %lg\n", opts.GetEntry("arrow1Radius")->AsDouble());
+    fprintf(fp, "arrow1Height = %lg\n", opts.GetEntry("arrow1Height")->AsDouble());
+    fprintf(fp, "arrow2 = %d\n", opts.GetEntry("arrow2")->AsInt());
+    fprintf(fp, "arrow2Resolution = %d\n", opts.GetEntry("arrow2Resolution")->AsInt());
+    fprintf(fp, "arrow2Radius = %lg\n", opts.GetEntry("arrow2Radius")->AsDouble());
+    fprintf(fp, "arrow2Height = %lg\n", opts.GetEntry("arrow2Height")->AsDouble());
     return 0;
 }
 
@@ -870,6 +921,7 @@ PyLine3DObject_StringRepresentation(const AnnotationObject *atts)
 {
     std::string str; 
     char tmpStr[1000]; 
+    const MapNode &opts = atts->GetOptions();
 
     if(atts->GetVisible())
         SNPRINTF(tmpStr, 1000, "visible = 1\n");
@@ -889,17 +941,16 @@ PyLine3DObject_StringRepresentation(const AnnotationObject *atts)
     str += tmpStr;
 
     const char *type_values[] = {"LINE", "TUBE"};
-    SNPRINTF(tmpStr, 1000, "lineType = %s  # LINE, TUBE\n", type_values[atts->GetIntAttribute3()]);
+    SNPRINTF(tmpStr, 1000, "lineType = %s  # LINE, TUBE\n", type_values[opts.GetEntry("lineType")->AsInt()]);
     str += tmpStr;
 
-    SNPRINTF(tmpStr, 1000, "width = %d\n", atts->GetIntAttribute1());
+    SNPRINTF(tmpStr, 1000, "width = %d\n", opts.GetEntry("width")->AsInt());
     str += tmpStr;
 
-    doubleVector v = atts->GetDoubleVector1();
     const char *qual_values[] = {"LOW", "MEDIUM", "HIGH"};
-    SNPRINTF(tmpStr, 1000, "tubeQuality = %s  # LOW, MEDIUM, HIGH\n", qual_values[(int)v[2]]);
+    SNPRINTF(tmpStr, 1000, "tubeQuality = %s  # LOW, MEDIUM, HIGH\n", qual_values[opts.GetEntry("tubeQuality")->AsInt()]);
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "tubeRadius = %lg\n", v[3]);
+    SNPRINTF(tmpStr, 1000, "tubeRadius = %lg\n", opts.GetEntry("tubeRadius")->AsDouble());
     str += tmpStr;
 
     if(atts->GetUseForegroundForTextColor())
@@ -915,18 +966,19 @@ PyLine3DObject_StringRepresentation(const AnnotationObject *atts)
     str += tmpStr;
 
     
-    ColorAttribute color2 = atts->GetColor2();
-    SNPRINTF(tmpStr, 1000, "arrow1 = %d\n", color2.Red());
+    SNPRINTF(tmpStr, 1000, "arrow1 = %d\n", opts.GetEntry("arrow1")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow1Resolution = %d\n", color2.Blue());
+    SNPRINTF(tmpStr, 1000, "arrow1Resolution = %d\n", opts.GetEntry("arrow1Resolution")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow1Radius = %lg\n", v[0]);
+    SNPRINTF(tmpStr, 1000, "arrow1Radius = %lg\n", opts.GetEntry("arrow1Radius")->AsDouble());
+    SNPRINTF(tmpStr, 1000, "arrow1Height = %lg\n", opts.GetEntry("arrow1Height")->AsDouble());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2 = %d\n", color2.Green());
+    SNPRINTF(tmpStr, 1000, "arrow2 = %d\n", opts.GetEntry("arrow1")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2Resolution = %d\n", color2.Alpha());
+    SNPRINTF(tmpStr, 1000, "arrow2Resolution = %d\n", opts.GetEntry("arrow2Resolution")->AsInt());
     str += tmpStr;
-    SNPRINTF(tmpStr, 1000, "arrow2Radius = %lg\n", v[1]);
+    SNPRINTF(tmpStr, 1000, "arrow2Radius = %lg\n", opts.GetEntry("arrow2Radius")->AsDouble());
+    SNPRINTF(tmpStr, 1000, "arrow2Height = %lg\n", opts.GetEntry("arrow2Height")->AsDouble());
     str += tmpStr;
  
     return PyString_FromString(str.c_str());
