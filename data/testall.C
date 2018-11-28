@@ -2358,18 +2358,15 @@ build_ucd3d(DBfile * dbfile, int size)
     var3name = "u";
     var4name = "v";
     var5name = "w";
-    xcenter = 0.;
-    ycenter = 0.;
     for (i = 0; i < 21; i++)
     {
         for (j = 0; j < 21; j++)
         {
             for (k = 0; k < 6; k++)
             {
-                dist = sqrt((x[i] - xcenter) * (x[i] - xcenter) +
-                            (y[j] - ycenter) * (y[j] - ycenter));
-                u[i * 126 + j * 6 + k] = (x[i] - xcenter) / dist;
-                v[i * 126 + j * 6 + k] = (y[j] - ycenter) / dist;
+                dist = sqrt(x[i] * x[i] + y[j] * y[j]);
+                u[i * 126 + j * 6 + k] = x[i] / dist;
+                v[i * 126 + j * 6 + k] = y[j] / dist;
                 w[i * 126 + j * 6 + k] = 0.;
             }
         }
