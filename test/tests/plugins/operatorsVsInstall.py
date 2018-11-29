@@ -17,6 +17,6 @@
 
 Source(tests_path("plugins", "pluginVsInstallHelpers"))
 
-do_plugin_type("operators", [])
+do_plugin_type("operators", ["Remap"])
 
 Exit()
