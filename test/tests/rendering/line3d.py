@@ -55,6 +55,8 @@ line.arrow1Resolution = 1
 line.arrow2Resolution = 1
 line.arrow1Radius = 2
 line.arrow2Radius = 2
+line.arrow1Height = 5.6
+line.arrow2Height = 5.6
 line.arrow1 = 1
 Test("line3d07")
 # Test arrow at end
@@ -73,6 +75,7 @@ line.tubeRadius = 0.3
 # make the arrow a cone
 line.arrow2Resolution = 15
 line.arrow2Radius = 1
+line.arrow2Height = 2.8
 Test("line3d10")
 
 
@@ -87,6 +90,7 @@ nextLine.lineType = line.TUBE
 nextLine.tubeRadius = 0.3
 nextLine.arrow2Resolution = 15
 nextLine.arrow2Radius = 1
+nextLine.arrow2Height = 2.8
 Test("line3d11")
 
 # Start Removing lines
