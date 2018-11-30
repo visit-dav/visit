@@ -106,6 +106,9 @@
 #   Eric Brugger, Wed Oct 17 16:56:58 PDT 2018
 #   I deleted cab.
 #
+#   Eric Brugger, Fri Nov 30 11:11:41 PST 2018
+#   I added lassen.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -150,6 +153,7 @@ kickit=true
 ubuntu1404_64=false
 ifyou=false
 quartz=true
+lassen=true
 rztrona=true
 rzalastor=true
 rzuseq=false
@@ -172,6 +176,7 @@ do
          ubuntu1404_64=false
          ifyou=false
          quartz=false
+         lassen=false
          rztrona=false
          rzalastor=false
          carver=false
@@ -208,6 +213,14 @@ do
          ;;
       +quartz)
          quartz=true
+         shift
+         ;;
+      -lassen)
+         lassen=false
+         shift
+         ;;
+      +lassen)
+         lassen=true
          shift
          ;;
       -rztrona)
@@ -434,6 +447,43 @@ then
 fi
 
 #
+# Install on lassen.
+#
+rm -f lassen
+cat <<EOF > lassen
+#!/bin/sh
+./visit-install -private -c llnl_open_cz -g visit -b wbronze -gw -l $ver linux-intel-lassen /usr/gapps/visit > installlog 2>&1
+rm -f resultlog
+echo ""                                              > resultlog 2>&1
+echo "        install of visit on lassen"            >> resultlog 2>&1
+echo "       ----------------------------"           >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+df -k /usr/gapps/visit                               >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+ls -l /usr/gapps/visit/$ver+/linux-intel/bin         >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "number of database plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls /usr/gapps/visit/$ver+/linux-intel/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                              >> resultlog 2>&1
+echo "The database plugins:"                         >> resultlog 2>&1
+ls /usr/gapps/visit/$ver+/linux-intel/plugins/databases/libI* | sed "s/\/usr\/gapps\/visit\/$ver+\/linux-intel\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+mv resultlog resultlog.lassen
+EOF
+
+if [ $lassen = true ]
+then
+   if [ $test = no ]
+   then
+      scp lassen708:/usr/tmp/$user/lassen/visitbuild/visit$ver2.linux-intel.tar.gz visit$ver2.linux-intel-lassen.tar.gz
+      scp visit$ver2.linux-intel-lassen.tar.gz lassen:
+      scp visit-install lassen:
+      scp lassen lassen:lassen_install
+      ssh lassen "chmod 750 lassen_install;./lassen_install"
+   fi
+fi
+
+#
 # Install on rztrona.
 #
 rm -f rztrona
@@ -656,5 +706,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz rztrona rzalastor rzuseq carver glory vulcan
+   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzalastor rzuseq carver glory vulcan
 fi

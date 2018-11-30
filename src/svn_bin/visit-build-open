@@ -161,6 +161,9 @@
 #   Eric Brugger, Wed Oct 17 16:55:41 PDT 2018
 #   I deleted cab.
 #
+#   Eric Brugger, Fri Nov 30 09:56:06 PST 2018
+#   I added lassen.
+#
 #-----------------------------------------------------------------------
 
 test=no
@@ -205,6 +208,7 @@ kickit=true
 ubuntu1404_64=false
 ifyou=false
 quartz=true
+lassen=true
 rztrona=true
 rzalastor=true
 rzuseq=false
@@ -227,6 +231,7 @@ do
          ubuntu1404_64=false
          ifyou=false
          quartz=false
+         lassen=false
          rztrona=false
          rzalastor=false
          rzuseq=false
@@ -265,6 +270,14 @@ do
          ;;
       +quartz)
          quartz=true
+         shift
+         ;;
+      -lassen)
+         lassen=false
+         shift
+         ;;
+      +lassen)
+         lassen=true
          shift
          ;;
       -rztrona)
@@ -333,6 +346,7 @@ then
    echo "    ubuntu1404_64(B-Div, Linux, x86_64),"
    echo "    ifyou (LC, Linux, x86_64),"
    echo "    quartz (LC, Linux, x86_64),"
+   echo "    lassen (LC, Linux, x86_64),"
    echo "    rztrona (LC, Linux, x86_64),"
    echo "    rzalastor (LC, Linux, x86_64),"
    echo "    rzuesq (LC, Linux, ppc64-BG/Q),"
@@ -594,6 +608,56 @@ then
       scp quartz quartz386:quartz_buildit
       scp $dist.tar.gz quartz386:quartz_$dist.tar.gz
       ssh quartz386 "chmod 750 quartz_buildit;./quartz_buildit" &
+   fi
+fi
+
+#
+# Build on lassen.
+#
+rm -f lassen
+cat <<EOF > lassen
+#!/bin/sh
+if test ! -d /usr/tmp/$user ; then
+   mkdir /usr/tmp/$user
+fi
+if test ! -d /usr/tmp/$user/lassen ; then
+   mkdir /usr/tmp/$user/lassen
+fi
+rm -rf /usr/tmp/$user/lassen/visitbuild
+mkdir /usr/tmp/$user/lassen/visitbuild
+mv lassen_$dist.tar.gz /usr/tmp/$user/lassen/visitbuild/$dist.tar.gz
+cd /usr/tmp/$user/lassen/visitbuild
+gunzip -c $dist.tar.gz | tar xvf - > buildlog 2>&1
+cd $dist/src
+ver=\`cat VERSION\`
+ver2=\`echo \$ver | tr "." "_"\`
+/usr/workspace/wsa/visit/visit/thirdparty_shared/2.13.3/blueos3/cmake/3.8.1/linux-ppc64le_gcc-4.9/bin/cmake . -DCMAKE_BUILD_TYPE:STRING=Release -DVISIT_INSTALL_THIRD_PARTY:BOOL=ON >> ../../buildlog 2>&1
+make -j 6 >> ../../buildlog 2>&1
+make -j 6 package >> ../../buildlog 2>&1
+mv visit\$ver2.linux-intel.tar.gz ../..
+cd ../..
+rm -f resultlog
+echo "        build of visit on lassen"       > resultlog 2>&1
+echo "       ------------------------- "      >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+ls -l                                         >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "number of database plugins = "\`ls $dist/src/plugins/databases/libI* | wc -l\` >> resultlog 2>&1
+echo "number of operator plugins = "\`ls $dist/src/plugins/operators/libI* | wc -l\` >> resultlog 2>&1
+echo "number of plot plugins = "\`ls $dist/src/plugins/plots/libI* | wc -l\` >> resultlog 2>&1
+echo ""                                       >> resultlog 2>&1
+echo "The database plugins:"                  >> resultlog 2>&1
+ls $dist/src/plugins/databases/libI* | sed "s/$dist\/src\/plugins\/databases\/libI//" | sed "s/Database.so//" >> resultlog 2>&1
+EOF
+
+if [ $lassen = true ]
+then
+   if [ $test = no ]
+   then
+      echo "Building on lassen"
+      scp lassen lassen708:lassen_buildit
+      scp $dist.tar.gz lassen708:lassen_$dist.tar.gz
+      ssh lassen708 "chmod 750 lassen_buildit;./lassen_buildit" &
    fi
 fi
 
@@ -949,5 +1013,5 @@ fi
 #
 if [ $test = no ]
 then
-   rm -f kickit ubuntu1404_64 ifyou quartz rztrona rzalastor rzuseq carver glory vulcan
+   rm -f kickit ubuntu1404_64 ifyou quartz lassen rztrona rzalastor rzuseq carver glory vulcan
 fi
