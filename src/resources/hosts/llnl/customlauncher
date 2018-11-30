@@ -46,6 +46,52 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
             return ["/usr/tce/packages/openmpi/openmpi-2.1.0-gcc-4.9.3/bin/mpirun"]
         return super(JobSubmitter_mpirun_LLNL, self).Executable()
 
+###############################################################################
+# Class: JobSubmitter_bsub_LLNL
+#
+# Purpose:    Custom "bsub" job submitter for LLNL.
+#
+# Programmer: Eric Brugger
+# Date:       Fri Nov 30 14:15:23 PST 2018
+#
+###############################################################################
+
+class JobSubmitter_bsub_LLNL(JobSubmitter):
+    def __init__(self, launcher):
+        super(JobSubmitter_bsub_LLNL, self).__init__(launcher)
+
+    def Executable(self):
+        return ["bsub"]
+
+    def CreateCommand(self, args, debugger):
+        bsub, sublauncher = self.LauncherAndSubLauncher()
+        parcmd = self.Executable()
+        parcmd = parcmd + ["-csm", "y"]
+        if self.parallel.launchargs != None:
+            parcmd = parcmd + self.parallel.launchargs
+        if self.parallel.np != None:
+            parcmd = parcmd + ["-n", str(int(self.parallel.np)+1)]
+        if self.parallel.partition != None:
+            parcmd = parcmd + ["-q", self.parallel.partition]
+        if self.parallel.time != None:
+            parcmd = parcmd + ["-W", self.parallel.time]
+        if self.parallel.bank != None:
+            parcmd = parcmd + ["-G", self.parallel.bank]
+        nodes = self.parallel.nn
+        if nodes == None:
+            nodes = self.parallel.np
+        ppn = str(int(math.ceil(float(self.parallel.np) / float(nodes))))
+        parcmd = parcmd + ["-R", "1*{select[(LN)&&(type==any)] order[r15s:pg] span[hosts=1]}+%s*{select[(CN)&&(type==any)] order[r15s:pg] span[ptile=%s]}" % (self.parallel.np,ppn)]
+        parcmd = parcmd + [sublauncher]
+        if self.parallel.sublaunchargs != None:
+            parcmd = parcmd + self.parallel.sublaunchargs
+        parcmd = parcmd + self.VisItExecutable()
+        parcmd = parcmd + ["-plugindir", GETENV("VISITPLUGINDIR")]
+        parcmd = parcmd + ["-visithome", GETENV("VISITHOME")]
+        parcmd = parcmd + ["-visitarchhome", GETENV("VISITARCHHOME")]
+        parcmd = parcmd + args
+        parcmd = debugger.CreateCommand(parcmd)
+        return parcmd
 
 ###############################################################################
 # Class: LLNLLauncher
@@ -109,6 +155,9 @@ class JobSubmitter_mpirun_LLNL(JobSubmitter_mpirun):
 #
 #   Eric Brugger, Thu Nov  8 15:44:54 PST 2018
 #   I added rzalastor and zin to the list of toss3 machines.
+#
+#   Eric Brugger, Fri Nov 30 14:15:23 PST 2018
+#   I modified the launcher to use a custom launcher on lassen and seirra.
 #
 ###############################################################################
 
@@ -202,6 +251,10 @@ class LLNLLauncher(MainLauncher):
             return JobSubmitter_qsub_LLNL(self)
         if launch[:6] == "mpirun":
             return JobSubmitter_mpirun_LLNL(self)
+        if launch[:4] == "bsub":
+            if self.sectorname() == "lassen" or \
+                self.sectorname() == "sierra":
+                return JobSubmitter_bsub_LLNL(self)
         return super(LLNLLauncher, self).JobSubmitterFactory(launch)
 
 # Launcher creation function
