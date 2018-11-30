@@ -788,7 +788,7 @@ avtImage_p
 avtVolumeFilter::RenderImage(avtImage_p opaque_image,
                              const WindowAttributes &window)
 {
-#if defined(VISIT_SLIVR) || defined(VISIT_SLIVR)
+#if defined(VISIT_SLIVR) || defined(VISIT_OSPRAY)
     if (atts.GetRendererType() == VolumeAttributes::RayCastingSLIVR ||
         atts.GetRendererType() == VolumeAttributes::RayCastingOSPRay){
         return RenderImageRayCasting(opaque_image,window);
