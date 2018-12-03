@@ -50,6 +50,7 @@
     'Project': 'success',
     'RadialResample': 'success',
     'Reflect': 'success',
+    'Remap': 'skipped',
     'RemoveCells': 'success',
     'Replicate': 'success',
     'Resample': 'success',
