@@ -55,5 +55,5 @@ nerscHost="cori.nersc.gov"
 cd visit_run_tests
 
 # Copy the update script to nersc and execute it.
-scp svn_bin/visit-update-test-website $userNersc@$nerscHost:
+scp scripts/visit-update-test-website $userNersc@$nerscHost:
 ssh $userNersc@$nerscHost "./visit-update-test-website"
