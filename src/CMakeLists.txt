@@ -741,7 +741,7 @@ OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that f
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
 OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
-OPTION(VISIT_NO_SPHINX "Disable ability to build sphinx documentation" OFF)
+OPTION(VISIT_NO_SPHINX "Disable ability to build sphinx documentation" ON)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
