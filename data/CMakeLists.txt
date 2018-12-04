@@ -93,336 +93,60 @@
 #   Modify the script to untar files of the name "*test_data*.tar.gz" instead
 #   of just "*test_data.tar.gz".
 #
+#   Mark C. Miller, Mon Jun 25 17:23:58 PDT 2018
+#   Moved data generation .[Ch] sources to src/tools/data/datagen.
+#   Switch to 7z compression reducing total size by almost half.
+#   Since 7z itself is both a compressor and an archiver, we no longer
+#   need to use tar and files have only .7z extension and do not include
+#   .tar in file name extensions. Added `help` target for info on using 7z.
+#   Added convenience targets so deep knowledge of using 7z isn't necessary.
+#
 #****************************************************************************/
-
-cmake_minimum_required(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_POLICY(PUSH)
+IF(${CMAKE_VERSION} VERSION_GREATER "2.8.13")
+    CMAKE_POLICY(SET CMP0037 OLD) # allow defining help target
+ENDIF(${CMAKE_VERSION} VERSION_GREATER "2.8.13")
 
 IF(WIN32)
     PROJECT(VISIT_DATA)
 ENDIF(WIN32)
 
-#-----------------------------------------------------------------------------
-# If this directory exists the root CMakeLists.txt adds this directroy as a 
-# subdirectory to the main VisIt project.
-#
-# Prevent users from running cmake directy in this directory.
-#-----------------------------------------------------------------------------
-IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-    MESSAGE(FATAL_ERROR "VisIt's \"data\" directory cannot be configured "
-                    "independently from the main \"src\" directory. Please "
-                    "run cmake on VisIt's \"src\" directory.")
-ENDIF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-
-
-MESSAGE(STATUS "Configuring VisIt Data Targets")
+MESSAGE(STATUS "Configuring VisIt Binary Tarball Data Targets")
 
 #-----------------------------------------------------------------------------
-# BUILD_DATA_TARGET cmake function
-# Helper function that compiles & links a data generator program.
-# Usage:
-#  BUILD_DATA_TARGET( target_name
-#                    INCLUDE_DIRS
-#                     path/to/includes
-#                     path/to/more/includes
-#                    LIB_DIRS
-#                     path/to/libs
-#                     path/to/more/libs
-#                    LIBS
-#                     lib_names
-#                    DEFS
-#                     definitions (eg. Preprocessor for windows)
-#
-# Source files are detected in two ways:
-#  If ${target_name}_SOURCES is set:  its contents are used.
-#  Otherwise: ${target_name}.C is used.
-#
+# Set up archiver executable name (7z, 7za and p7zip are common ones)
 #-----------------------------------------------------------------------------
-FUNCTION(BUILD_DATA_TARGET_IMPL target_name do_parallel)
-    SET(target_SOURCES "")
-    SET(target_INCLUDE_DIRS "")
-    SET(target_LIB_DIRS "")
-    SET(target_LIBS "")
-    SET(target_DEFS "")
-
-    # cmake gymnastics to implement optional argument sections:
-    FOREACH(ARG ${ARGN})
-        IF(${ARG} STREQUAL "INCLUDE_DIRS" OR
-           ${ARG} STREQUAL "LIB_DIRS" OR
-           ${ARG} STREQUAL "LIBS" OR
-           ${ARG} STREQUAL "DEFS")
-            #switch var name to extend
-            SET(ARG_VAR target_${ARG})
-        ELSE()
-            # add current arg into current varname
-            SET("${ARG_VAR}" ${${ARG_VAR}} ${ARG})
-        ENDIF()
-    ENDFOREACH(ARG ${ARGN})
-
-    INCLUDE_DIRECTORIES(${target_INCLUDE_DIRS})
-    LINK_DIRECTORIES(${target_LIB_DIRS})
-
-    # Automatically setup target_SOURCES if not set
-    IF(DEFINED ${target_name}_SOURCES)
-        SET(target_SOURCES "${${target_name}_SOURCES}")
-    ELSE()
-        SET(target_SOURCES ${target_name}.C)
-    ENDIF()
-
-    SET(tname ${target_name})
-    IF("${do_parallel}" STREQUAL "ON")
-        IF(VISIT_PARALLEL)
-            SET(tname "${target_name}_par")
-            ADD_PARALLEL_EXECUTABLE(${tname} ${target_SOURCES})
-        ENDIF()
-    ELSE()
-        ADD_EXECUTABLE(${tname} ${target_SOURCES})
-    ENDIF()
-
-    ADD_DEFINITIONS(${target_DEFS})
-    TARGET_LINK_LIBRARIES(${tname} ${target_LIBS})
-    SET_TARGET_PROPERTIES(${tname}
-                           PROPERTIES
-                        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-                          )
-
-ENDFUNCTION(BUILD_DATA_TARGET_IMPL target_name)
-
-FUNCTION(BUILD_DATA_TARGET target_name)
-    BUILD_DATA_TARGET_IMPL(${target_name} "OFF" ${ARGN})
-ENDFUNCTION(BUILD_DATA_TARGET target_name)
-
-FUNCTION(BUILD_PARALLEL_DATA_TARGET target_name)
-    BUILD_DATA_TARGET_IMPL(${target_name} "ON" ${ARGN})
-ENDFUNCTION(BUILD_PARALLEL_DATA_TARGET target_name)
+IF(NOT VISIT_DATA_ARCHIVER_NAME)
+    SET(VISIT_DATA_ARCHIVER_NAME 7z)
+ENDIF(NOT VISIT_DATA_ARCHIVER_NAME)
 
 #-----------------------------------------------------------------------------
-# Data Generation Program Targets
-#
-# This are build as part of the default target.
+# Find the archiver exectuable
 #-----------------------------------------------------------------------------
+IF(WIN32)
+    SET(PF1 "PROGRAMFILES")
+    SET(PF2 "PROGRAMFILES(X86)")
+    FIND_PROGRAM(ARCHIVER_EXE "${VISIT_DATA_ARCHIVER_NAME}" "${VISIT_SEVEN_ZIP_DIR}" 
+        "$ENV{${PF1}}/7-Zip" 
+        "$ENV{${PF2}}/7-Zip")
+    UNSET(PF2)
+    UNSET(PF1)
+ELSE(WIN32)
+    FIND_PROGRAM(ARCHIVER_EXE "${VISIT_DATA_ARCHIVER_NAME}" "${VISIT_SEVEN_ZIP_DIR}")
+ENDIF(WIN32)
 
 #-----------------------------------------------------------------------------
-# Basic Data Gen Programs
+# Set arguments for archiver creation, extraction and list convenience targets
 #-----------------------------------------------------------------------------
-SET(BASIC_TARGETS
-bov
-curve_builder
-distribution_curves
-mandelbulb
-xdmf_binary
-)
-
-SET(BASIC_TARGETS_PAR
-mandelbulb
-)
-
-#-----------------------------------------------------------------------------
-# VTK Gen Programs
-#-----------------------------------------------------------------------------
-SET(VTK_TARGETS degen_meshes)
-
-#-----------------------------------------------------------------------------
-# HDF5 Data Gen Programs
-#-----------------------------------------------------------------------------
-SET(HDF5_TARGETS unic xdmf xdmf2d)
-
-#-----------------------------------------------------------------------------
-# PDB Data Gen Programs
-#-----------------------------------------------------------------------------
-SET(PDB_TARGETS
-correlationtest
-pdbdatabase
-streak
-)
-
-#-----------------------------------------------------------------------------
-#  Setup {TARGET}_SOURCES for targets with multiple source files.
-#-----------------------------------------------------------------------------
-SET(correlationtest_SOURCES correlationtest.C pdbdatabase_link.C)
-SET(pdbdatabase_SOURCES pdbdatabase.C pdbdatabase_link.C)
-SET(streak_SOURCES streak.C pdbdatabase_link.C)
-
-#-----------------------------------------------------------------------------
-# Silo Data Gen Programs
-#-----------------------------------------------------------------------------
-SET(SILO_TARGETS
-arbpoly
-bigsil
-bounce
-big_quads
-csg
-emptydomains
-fullframe
-galaxy
-ghost
-global_node
-globe
-largefile
-lineout_test
-lowfrac
-mat_3x3_3across
-mat_3x3x3_3across
-meshorigin
-mmadj_rect_2d
-multi_test
-multidir
-noise
-noise2d
-non_conforming
-one_quad
-quad_disk
-sid97
-specmix
-specmix_double
-testall
-thinplane
-tire
-wave
-)
-
-#-----------------------------------------------------------------------------
-#  Setup {TARGET}_SOURCES for targets with multiple source files.
-#-----------------------------------------------------------------------------
-SET(noise_SOURCES noise.C QuadMesh.C)
-SET(multidir_SOURCES multidir.C QuadMesh.C)
-
-
-#-----------------------------------------------------------------------------
-# Build all Basic Targets
-#-----------------------------------------------------------------------------
-FOREACH(BASIC_TARGET ${BASIC_TARGETS})
-   BUILD_DATA_TARGET(${BASIC_TARGET}
-                     INCLUDE_DIRS
-                     ${CMAKE_CURRENT_SOURCE_DIR}
-                     ${VISIT_BINARY_DIR}/include
-                     ${VISIT_SOURCE_DIR}/include)
-ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS})
-
-FOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
-   BUILD_PARALLEL_DATA_TARGET(${BASIC_TARGET}
-                     INCLUDE_DIRS
-                     ${CMAKE_CURRENT_SOURCE_DIR}
-                     ${VISIT_BINARY_DIR}/include
-                     ${VISIT_SOURCE_DIR}/include)
-ENDFOREACH(BASIC_TARGET ${BASIC_TARGETS_PAR})
-
-#-----------------------------------------------------------------------------
-# Build all VTK Targets
-#-----------------------------------------------------------------------------
-FOREACH(VTK_TARGET ${VTK_TARGETS})
-    BUILD_DATA_TARGET(${VTK_TARGET}
-                  INCLUDE_DIRS
-                    ${VTK_INCLUDE_DIRS}
-                  LIB_DIRS
-                    ${VTK_LIBRARY_DIRS}
-                  LIBS
-                    vtkIOLegacy
-                 )
-ENDFOREACH(VTK_TARGET ${VTK_TARGETS})
-
-#-----------------------------------------------------------------------------
-# If we have HDF5 build all HDF5 Data Gen Target Programs
-#-----------------------------------------------------------------------------
-IF(HDF5_FOUND)
-    FOREACH(HDF5_TARGET ${HDF5_TARGETS})
-        BUILD_DATA_TARGET(${HDF5_TARGET}
-                          INCLUDE_DIRS
-                            ${CMAKE_CURRENT_SOURCE_DIR}
-                            ${HDF5_INCLUDE_DIR}
-                          LIB_DIRS
-                            ${HDF5_LIBRARY_DIR}
-                          LIBS
-                            ${HDF5_LIB}
-                         )
-    ENDFOREACH()
-ENDIF(HDF5_FOUND)
-
-#-----------------------------------------------------------------------------
-# If we have Silo build all Silo & PDB Data Gen Programs
-#-----------------------------------------------------------------------------
-IF(SILO_FOUND)
-    # Build PDB Targets (The required pdb symbols live in Silo's libs.)
-    FOREACH(PDB_TARGET ${PDB_TARGETS})
-        BUILD_DATA_TARGET(${PDB_TARGET}
-                          INCLUDE_DIRS
-                            ${CMAKE_CURRENT_SOURCE_DIR}
-                            ${VISIT_BINARY_DIR}/include
-                            ${VISIT_SOURCE_DIR}/include
-                          LIB_DIRS
-                            ${PDB_LIBRARY_DIR}
-                        LIBS
-                            ${PDB_LIB}
-                        )
-    ENDFOREACH()
-    # Build Silo Targets
-    FOREACH (SILO_TARGET ${SILO_TARGETS})
-        BUILD_DATA_TARGET(${SILO_TARGET}
-                          INCLUDE_DIRS
-                            ${CMAKE_CURRENT_SOURCE_DIR}
-                            ${SILO_INCLUDE_DIR}
-                            ${VISIT_SOURCE_DIR}/common/utility
-                        LIB_DIRS
-                            ${SILO_LIBRARY_DIR}
-                        LIBS
-                            ${SILO_LIB}
-                        )
-    ENDFOREACH()
-    if(WIN32)
-      set_target_properties(multi_test PROPERTIES LINK_FLAGS "/STACK:8000000")
-    endif()
-ENDIF(SILO_FOUND)
-
-#-----------------------------------------------------------------------------
-# Setup the Data Generation Target.
-#-----------------------------------------------------------------------------
-# We have a single target "testdata" that generates all of our test data.
-# This untars all archived datasets.
-#-----------------------------------------------------------------------------
-
-
-#-----------------------------------------------------------------------------
-# Discover the proper untar command.
-#
-# "cmake -E tar" supports untaring for normal & gzipped tarballs.
-# Unfortunately it is very slow so we only use it as a fallback. It also
-# fails on Windows for many of our .tar.gz data files.
-#
-#  Kathleen Biagas, Wed Oct  2 14:19:36 PDT 2013
-#  Added PROGRAM6432 env var to search as I discovered that 32-bit cmake
-#  running on 64-bit Windows 8 reports 'Program Files (x86)' for 
-#  'ENV${PROGRAMFILES}'.
-#
-#-----------------------------------------------------------------------------
-IF(NOT WIN32)
-    FIND_PROGRAM(TAR_EXE tar)
-    IF(NOT "${TAR_EXE}" STREQUAL "TAR_EXE-NOTFOUND")
-        SET(UNTAR_CMD ${TAR_EXE})
-        SET(UNTAR_ARGS "-xzvf")
-    ELSE()
-        SET(UNTAR_CMD ${CMAKE_COMMAND})
-        SET(UNTAR_ARGS "-E tar -xzvf")
-    ENDIF()
-ELSE(NOT WIN32)
-   # There used to be limitations in cmake's untar, even winzip's command line,
-   # so 7-zip was utilized.  Recent versions of 7-zip now handle symlinks on
-   # windows. Cool! but the functionality requires 7-zip be run as-admin or
-   # have a special group-policy set that allows symlink creation otherwise the
-   # extraction fails.  So, now only use 7-zip if requested. 
-   # 
-   if(VISIT_USE_7ZIP)
-       set(PF1 "PROGRAMFILES")
-       set(PF2 "PROGRAMFILES(X86)")
-       FIND_PROGRAM(SEVEN_ZIP_EXE 7z "${VISIT_SEVEN_ZIP_DIR}" 
-                                     "$ENV{${PF1}}/7-Zip" 
-                                     "$ENV{${PF2}}/7-Zip")
-       unset(PF2)
-       unset(PF1)
-       if("${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
-           MESSAGE(WARNING "7-Zip not found, .tar.gz data files will not be extracted.")
-       endif()
-   endif()
-ENDIF(NOT WIN32)
-
+IF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
+    MESSAGE(WARNING "Archiver \"${VISIT_DATA_ARCHIVER}\" not found, data files cannot be extracted.")
+ELSE("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
+    SET(ARCHIVER_CMD ${ARCHIVER_EXE})
+    SET(ARCHIVER_XARGS x -y)                 # Expand archive args
+    SET(ARCHIVER_CARGS a -y -m0=lzma2 -mx=9) # Create archive args
+    SET(ARCHIVER_LARGS l -y)                 # List archive args
+ENDIF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
 
 #-----------------------------------------------------------------------------
 # Create the list of archived data targets.
@@ -431,45 +155,36 @@ ENDIF(NOT WIN32)
 # of the source tarball. This makes tracking the dependencies simple.
 #
 #-----------------------------------------------------------------------------
-FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data*.tar.gz)
+FILE(GLOB ARCHIVED_TARGETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *test_data*.7z)
 
 #-----------------------------------------------------------------------------
-# Add a custom command to extract each archived dataset & collect
+# Add a custom command that extracts all archived dataset *and* collect
 # output directory names in a dependency list.
+#
+# Note 1: Although we could also define convenience targets with the expanded
+# names of the UNarchived directories (e.g. silo_test_data), doing so
+# signifcantly increases the time for CMake to complete its configuring and
+# generating phases. This is because it winds up populuating several makefile
+# snipits in files in subdirs of ./CMakeFiles for each such target.
+# In addition, such targets are useful only for archives known at cmake-time.
+# It does not help, for example, when adding a new archive here.
+#
+# Note 2: With traditional Make, this could have been easily handled as a
+# pattern rule of the form:
+#   %_test_data : %_test_data.7z
+#       $(ARCHIVER_CMD) $(ARCHIVER_XARGS) $<
+# which is also processed at make-time, not configure/cmake-time.
+# But not all target platforms understand or use make pattern rules.    
 #-----------------------------------------------------------------------------
 SET(DATA_TARGET_DEPENDS "")
-
 FOREACH(DATASET_TARGET_FILE ${ARCHIVED_TARGETS})
-    STRING(REPLACE ".tar.gz" "" DATASET_TARGET "${DATASET_TARGET_FILE}")
-
-    IF(NOT WIN32)
-        ADD_CUSTOM_COMMAND(
-            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
-            COMMAND ${UNTAR_CMD}
-            ARGS ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            )
-    ELSE(NOT WIN32)
-        if(VISIT_USE_7ZIP AND NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
-            # With 7-zip, first command extracts the tar file part, the second 
-            # extracts the data files from the tarball.
-            # We then must delete the .tar file
-            ADD_CUSTOM_COMMAND(
-                OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
-                COMMAND ${SEVEN_ZIP_EXE} x -y ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
-                COMMAND ${SEVEN_ZIP_EXE} x -y ${DATASET_TARGET}.tar
-                COMMAND del ${DATASET_TARGET}.tar
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                )
-        else()
-            ADD_CUSTOM_COMMAND(
-                OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
-                COMMAND ${CMAKE_COMMAND} -E tar -xzvf ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
-                WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            )
-        endif()
-    ENDIF (NOT WIN32)
-    SET( DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
+    STRING(REPLACE ".7z" "" DATASET_TARGET "${DATASET_TARGET_FILE}")
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET}
+        COMMAND ${ARCHIVER_CMD}
+        ARGS ${ARCHIVER_XARGS} ${CMAKE_CURRENT_SOURCE_DIR}/${DATASET_TARGET_FILE}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    SET(DATA_TARGET_DEPENDS ${DATA_TARGET_DEPENDS} ${CMAKE_CURRENT_BINARY_DIR}/${DATASET_TARGET})
 ENDFOREACH()
 
 #-----------------------------------------------------------------------------
@@ -480,165 +195,115 @@ ADD_CUSTOM_TARGET(testdata)
 ADD_DEPENDENCIES(testdata data)
 
 #-----------------------------------------------------------------------------
-# Add install command for contents of "data"
+# CMake variable names for make variables used in coneneience targets below.
+# Note the {} surrounding the make variables allowing them to be expanded at
+# make time, not cmake time.
 #-----------------------------------------------------------------------------
+SET(ARCHIVE_NAME {ANAME})
+SET(ARCHIVE_FILES {AFILES})
 
-IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
-    IF(NOT WIN32)
-        SET(DIST_UNTAR_CMD "${UNTAR_CMD} ${UNTAR_ARGS} ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz")
+#-----------------------------------------------------------------------------
+# Define convenience command/target to create an archive
+#-----------------------------------------------------------------------------
+ADD_CUSTOM_COMMAND(
+    OUTPUT _archive_create
+    COMMAND ${ARCHIVER_EXE} ${ARCHIVER_CARGS} $${ARCHIVE_NAME} $${ARCHIVE_FILES})
+ADD_CUSTOM_TARGET(archive DEPENDS _archive_create)
 
-        INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-    ELSE(NOT WIN32)
-        IF(VISIT_USE_7ZIP AND NOT "${SEVEN_ZIP_EXE}" STREQUAL "SEVEN_ZIP_EXE-NOTFOUND")
-            SET (DIST_UNTAR_CMD1 "\"${SEVEN_ZIP_EXE}\" x -y \"${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz\"")
-            SET (DIST_UNTAR_CMD2 "\"${SEVEN_ZIP_EXE}\" x -y visit_dist_data.tar")
-            SET (DIST_UNTAR_CMD3 "del /F visit_dist_data.tar")
-            INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD1} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-            INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD2} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-            INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD3} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-        else()
-            SET(DIST_UNTAR_CMD "${CMAKE_COMMAND} -E tar -xzvf ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz")
-            INSTALL(CODE "execute_process(COMMAND ${DIST_UNTAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )")
-        endif()
-    ENDIF(NOT WIN32)
+#-----------------------------------------------------------------------------
+# Define convenience command/target to expand an archive
+#-----------------------------------------------------------------------------
+ADD_CUSTOM_COMMAND(
+    OUTPUT _archive_expand
+    COMMAND ${ARCHIVER_EXE} ${ARCHIVER_XARGS} $${ARCHIVE_NAME})
+ADD_CUSTOM_TARGET(expand DEPENDS _archive_expand)
 
-    INSTALL(DIRECTORY
-                ${CMAKE_CURRENT_BINARY_DIR}/visit_dist_data/
-            DESTINATION
-                data
-            DIRECTORY_PERMISSIONS
-                OWNER_READ OWNER_WRITE OWNER_EXECUTE
-                GROUP_READ GROUP_WRITE GROUP_EXECUTE
-                WORLD_READ WORLD_EXECUTE)
-ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
-    IF(SILO_FOUND)
-        SET(EXE_EXT "")
-        SET(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
-        SET(CMDS "")
-        IF (WIN32)
-            SET(EXE_EXT ".exe")
-            SET(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR})
-            FOREACH(SD ${SILO_LIBRARY_DIR})
-              FOREACH(SL ${SILO_LIB})
-                IF(EXISTS ${SD}/${SL})
-                  GET_FILENAME_COMPONENT(SL_WE ${SL} NAME_WE)
-                  FOREACH(CFG ${CMAKE_CONFIGURATION_TYPES})
-                      FILE(COPY        ${SD}/${SL_WE}.dll
-                           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CFG})
-                  ENDFOREACH()
-                ENDIF()
-              ENDFOREACH()
-            ENDFOREACH()
-        ENDIF()
+#-----------------------------------------------------------------------------
+# Define convenience command/target to list an archive
+#-----------------------------------------------------------------------------
+ADD_CUSTOM_COMMAND(
+    OUTPUT _archive_list
+    COMMAND ${ARCHIVER_EXE} ${ARCHIVER_LARGS} $${ARCHIVE_NAME})
+ADD_CUSTOM_TARGET(list DEPENDS _archive_list)
 
-        SET(testall_output  curv2d_colmajor.silo
-                            curv3d.silo
-                            curv3d_colmajor.silo
-                            poly3d.silo
-                            rect2d.silo
-                            rect3d.silo
-                            ucd2d.silo
-                            ucd3d.silo)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${testall_output}
-                           COMMAND "$<TARGET_FILE:testall>"
-                           DEPENDS testall
-                           WORKING_DIRECTORY ${DATA_OUT_DIR}
-                           COMMENT "Running testall")
-        set(globe_output globe.silo globe_mat0.silo)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${globe_output}
-                           COMMAND "$<TARGET_FILE:globe>"
-                           DEPENDS globe
-                           WORKING_DIRECTORY ${DATA_OUT_DIR}
-                           COMMENT "Running globe")
-        set(correlationtest_output dbA00.pdb dbB00.pdb dbC00.pdb)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${correlationtest_output}
-                           COMMAND "$<TARGET_FILE:correlationtest>"
-                           DEPENDS correlationtest
-                           WORKING_DIRECTORY ${DATA_OUT_DIR}
-                           COMMENT "Running correlationtest")
-        set(multi_test_output  multi_curv2d.silo
-                               multi_curv3d.silo
-                               multi_point2d.silo
-                               multi_rect2d.silo
-                               multi_rect3d.silo
-                               multi_ucd3d.silo
-                               hist_ucd3d_0000
-                               hist_ucd3d_0001
-                               hist_ucd3d_0002
-                               hist_ucd3d_0003
-                               hist_ucd3d_0004
-                               hist_ucd3d_0005
-                               hist_ucd3d_0006
-                               hist_ucd3d_0007
-                               hist_ucd3d_0008
-                               hist_ucd3d_0009
-                               histne_ucd3d_0000
-                               histne_ucd3d_0001
-                               histne_ucd3d_0002
-                               histne_ucd3d_0003
-                               histne_ucd3d_0004
-                               histne_ucd3d_0005
-                               histne_ucd3d_0006
-                               histne_ucd3d_0007
-                               histne_ucd3d_0008
-                               histne_ucd3d_0009
-                               multi_ucd3d_ti_0001
-                               multi_ucd3d_ti_0002
-                               multi_ucd3d_ti_0003
-                               multi_ucd3d_ti_base)
-        ADD_CUSTOM_COMMAND(OUTPUT  ${multi_test_output}
-                           COMMAND "$<TARGET_FILE:multi_test>"
-                           DEPENDS multi_test
-                           WORKING_DIRECTORY ${DATA_OUT_DIR}
-                           COMMENT "Running multi_test")
-        ADD_CUSTOM_COMMAND(OUTPUT  noise.silo
-                           COMMAND "$<TARGET_FILE:noise>"
-                           DEPENDS noise
-                           WORKING_DIRECTORY ${DATA_OUT_DIR}
-                           COMMENT "Running noise")
-        ADD_CUSTOM_COMMAND(OUTPUT  tire.silo
-                           COMMAND "$<TARGET_FILE:tire>"
-                           DEPENDS tire
-                           WORKING_DIRECTORY ${DATA_OUT_DIR}
-                           COMMENT "Running tire")
+#-----------------------------------------------------------------------------
+# Define help bootstrap and associate with all (default) target so would-be
+# users are likely to stumble into it.
+#-----------------------------------------------------------------------------
+ADD_CUSTOM_TARGET(
+    _help_hint ALL VERBATIM
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Run 'make help' for useful make targets and meanings"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "")
 
-        ADD_CUSTOM_TARGET(create_data_examples ALL
-                          DEPENDS noise.silo
-                                  tire.silo
-                                  ${globe_output}
-                                  ${correlationtest_output}
-                                  ${multi_test_output}
-                                  ${testall_output}
-                         )
+#-----------------------------------------------------------------------------
+# Define target for help on 7z
+#-----------------------------------------------------------------------------
+ADD_CUSTOM_TARGET(
+    7zhelp VERBATIM
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "              Help using 7z archiver/compresser"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "7z (or 7-Zip) is an archiving and compression tool that replaces"  
+    COMMAND ${CMAKE_COMMAND} -E echo "the combination of tools like tar and gzip (.tar.gz or .tgz) and"
+    COMMAND ${CMAKE_COMMAND} -E echo "often does a better job at compression. 7z supports a variety of"
+    COMMAND ${CMAKE_COMMAND} -E echo "archival and comression file formats including .tar.gz. Here are"
+    COMMAND ${CMAKE_COMMAND} -E echo "examples of command-lines to use 7z. Sometimes the 7z executable"
+    COMMAND ${CMAKE_COMMAND} -E echo "is named 7za, p7zip or 7-Zip. See www.7-zip.org for more info."
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "creating an archive for VisIt test data"
+    COMMAND ${CMAKE_COMMAND} -E echo "  7z a -m0=lzma2 -mx=9 <archive-file-name>.7z <file1>|<dir1>|<file2>..."
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "expand an archive"
+    COMMAND ${CMAKE_COMMAND} -E echo "  7z x <archive-file-name>.7z"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "list contents of an archive"
+    COMMAND ${CMAKE_COMMAND} -E echo "  7z l <archive-file-name>.7z"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "For VisIt test data archives, we want maximal compression and this"
+    COMMAND ${CMAKE_COMMAND} -E echo "is usually best acchived using ultra compression (-mx=9) and lzma2"
+    COMMAND ${CMAKE_COMMAND} -E echo "algorithm (-m0=lzma2). Also, we require compression be used on any"
+    COMMAND ${CMAKE_COMMAND} -E echo "single file or collections of related files exceeding 1Mb in size."
+    COMMAND ${CMAKE_COMMAND} -E echo "It is a best practice to put all related files in a directory named"
+    COMMAND ${CMAKE_COMMAND} -E echo "<format>_test_data where <format> (e.g. vtk_test_data) is a moniker"
+    COMMAND ${CMAKE_COMMAND} -E echo "indicating the data format and then archive that single directory."
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "")
 
-        INSTALL(FILES
-                    ${DATA_OUT_DIR}/curv2d.silo
-                    ${DATA_OUT_DIR}/curv3d.silo
-                    ${DATA_OUT_DIR}/dbA00.pdb
-                    ${DATA_OUT_DIR}/dbB00.pdb
-                    ${DATA_OUT_DIR}/globe.silo
-                    ${DATA_OUT_DIR}/globe_mat0.silo
-                    ${DATA_OUT_DIR}/multi_rect2d.silo
-                    ${DATA_OUT_DIR}/multi_rect3d.silo
-                    ${DATA_OUT_DIR}/multi_ucd3d.silo
-                    ${DATA_OUT_DIR}/noise.silo
-                    ${DATA_OUT_DIR}/poly3d.silo
-                    ${DATA_OUT_DIR}/rect2d.silo
-                    ${DATA_OUT_DIR}/rect3d.silo
-                    ${DATA_OUT_DIR}/tire.silo
-                    ${DATA_OUT_DIR}/ucd2d.silo
-                    ${DATA_OUT_DIR}/ucd3d.silo
-                DESTINATION
-                    data
-                PERMISSIONS
-                    OWNER_READ OWNER_WRITE
-                    GROUP_READ GROUP_WRITE
-                    WORLD_READ)
-    ELSE(SILO_FOUND)
-        MESSAGE(STATUS "Data files not included since visit_dist_data.tar.gz")
-        MESSAGE(STATUS "is missing and VisIt is not being built with Silo")
-        MESSAGE(STATUS "support.")
-    ENDIF(SILO_FOUND)
-ENDIF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
+#-----------------------------------------------------------------------------
+# Define help target. Note, in later versions of CMake, CMP0037 needs to be
+# set to old.
+#-----------------------------------------------------------------------------
+ADD_CUSTOM_TARGET(
+    help VERBATIM
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "               Conveninent make targets:"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "To create an archive..."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> AFILES=... archive"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "  ANAME is the name of the archive without the extension (e.g .7z)"
+    COMMAND ${CMAKE_COMMAND} -E echo "  AFILES can a directory name, a file name, or space separated"
+    COMMAND ${CMAKE_COMMAND} -E echo "    list of files and/or directories bracketed in quotes."
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "To expand a single, specific archive..."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> expand"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "To list contents of a single, specific archive..."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=<arname> list"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "Examples..."
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=silo_hdf5_test_data.7z list"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=new_archive AFILES=\"*.txt\" archive"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make ANAME=foodir_archive AFILES=foodir archive"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "To get more help on using the 7z archiver"
+    COMMAND ${CMAKE_COMMAND} -E echo "  make 7zhelp"
+    COMMAND ${CMAKE_COMMAND} -E echo ""
+    COMMAND ${CMAKE_COMMAND} -E echo "")
 
-
+CMAKE_POLICY(POP)

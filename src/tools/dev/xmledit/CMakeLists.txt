@@ -35,55 +35,84 @@
 # DAMAGE.
 #
 # Modifications:
-#   Kathleen Bonnell, Wed Jun 2 15:11:22 PST 2010
-#   Disable MakeMili on windows.
-#
-#   Kathleen Bonnell, Fri Jun  4 14:46:56 PDT 2010
-#   Change ${MILI_FOUND} to MILI_FOUND.
-#
 #   Kathleen Bonnell, Wed Jan 05 10:25:13 PST 2010
 #   Add FOLDER property.
 #
-#   Cyrus Harrison, Fri Apr 29 15:33:38 PDT 2011
-#   Added mrgtree2dot utility.
-#
-#   Brad Whitlock, Thu Oct 20 12:38:14 PDT 2011
-#   Do not build writer when we're doing a static build.
-#
-#   Brad Whitlock, Wed May 23 17:10:05 PDT 2012
-#   Add usedataserver example program.
-#
-#   Eric Brugger, Wed Dec  5 13:17:20 PST 2012
-#   Add xmf_writer.
-#
-#   Eric Brugger, Wed Apr 17 12:00:47 PDT 2013
-#   Also build qtssh on unix.
-#
-#   Eric Brugger, Wed Dec 17 12:37:22 PST 2014
-#   Add avtexamples.
-#
-#   Kathleen Biagas, Dec 22, 2014
-#   Add ability to turn off building of avt examples.
-#
-#   Eric Brugger, Thu Oct  1 08:34:37 PDT 2015
-#   Add add_visit_searchpath.
-#
 #****************************************************************************/
 
-MACRO(VISIT_TOOLS_ADD_FOLDER type)
-    IF(${ARGC} GREATER 1)
-        SET_TARGET_PROPERTIES(${ARGN} PROPERTIES FOLDER tools/${type})
-    ELSE(${ARGC} GREATER 1)
-        SET_TARGET_PROPERTIES(${type} PROPERTIES FOLDER tools/${type})
-    ENDIF(${ARGC} GREATER 1)
-ENDMACRO(VISIT_TOOLS_ADD_FOLDER)
+SET(XMLEDIT_SOURCES
+XMLEditMain.C
+XMLDocument.C
+XMLEdit.C
+XMLEditAttribute.C
+XMLEditPlugin.C
+XMLEditEnums.C
+XMLEditFields.C
+XMLEditFunctions.C
+XMLEditCode.C
+XMLEditCodeGeneratorWindow.C
+XMLEditCodeSelectionDialog.C
+XMLEditConstants.C
+XMLEditIncludes.C
+XMLEditMakefile.C
+)
 
-IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    ADD_SUBDIRECTORY(data)
-ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    ADD_SUBDIRECTORY(data)
-    ADD_SUBDIRECTORY(dev)
-    ADD_SUBDIRECTORY(examples)
-    ADD_SUBDIRECTORY(fx)
-    ADD_SUBDIRECTORY(third_party)
-ENDIF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+SET(XMLEDIT_MOC_SOURCES
+XMLEdit.h
+XMLEditAttribute.h
+XMLEditPlugin.h
+XMLEditEnums.h
+XMLEditFields.h
+XMLEditFunctions.h
+XMLEditCode.h
+XMLEditCodeGeneratorWindow.h
+XMLEditCodeSelectionDialog.h
+XMLEditConstants.h
+XMLEditIncludes.h
+XMLEditMakefile.h
+)
+QT_WRAP_CPP(xmledit XMLEDIT_SOURCES ${XMLEDIT_MOC_SOURCES})
+
+INCLUDE_DIRECTORIES(
+${CMAKE_CURRENT_SOURCE_DIR}
+${VISIT_COMMON_INCLUDES}
+${VISIT_SOURCE_DIR}/tools/dev/xml
+)
+
+IF(APPLE)
+    ADD_EXECUTABLE(xmledit MACOSX_BUNDLE ${XMLEDIT_SOURCES})
+    SET(MACOSX_BUNDLE_BUNDLE_NAME          "XmlEdit ${VISIT_VERSION}")
+    SET(MACOSX_BUNDLE_INFO_STRING          "Editor for VisIt plugin XML files")
+    SET(MACOSX_BUNDLE_ICON_FILE            ${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns)
+    SET_SOURCE_FILES_PROPERTIES(${VISIT_SOURCE_DIR}/common/icons/VisItIcon.icns
+        PROPERTIES
+        MACOSX_PACKAGE_LOCATION Resources
+    )
+    SET(MACOSX_BUNDLE_GUI_IDENTIFIER       VISI)
+    SET(MACOSX_BUNDLE_LONG_VERSION_STRING  "XmlEdit version ${VISIT_VERSION}")
+    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING "XmlEdit ${VISIT_VERSION}")
+    SET(MACOSX_BUNDLE_BUNDLE_VERSION       ${VISIT_VERSION})
+    SET(MACOSX_BUNDLE_COPYRIGHT            "Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC")
+ELSE(APPLE)
+    ADD_EXECUTABLE(xmledit ${VISIT_APPLICATION_STYLE} ${XMLEDIT_SOURCES})
+ENDIF(APPLE)
+
+SET(RELEVANT_QT_LIBS 
+${QT_QTGUI_LIBRARY}
+${QT_QTXML_LIBRARY}
+${QT_QTCORE_LIBRARY}
+)
+IF(VISIT_STATIC)
+    MAC_NIB_INSTALL(xmledit)
+    SET(RELEVANT_QT_LIBS
+        ${RELEVANT_QT_LIBS}
+        ${QT_QTGUI_LIB_DEPENDENCIES}
+        ${QT_QTXML_LIB_DEPENDENCIES}
+        ${QT_QTCORE_LIB_DEPENDENCIES}
+    )
+ENDIF(VISIT_STATIC)
+
+TARGET_LINK_LIBRARIES(xmledit ${RELEVANT_QT_LIBS})
+
+VISIT_INSTALL_TARGETS(xmledit)
+VISIT_TOOLS_ADD_FOLDER(xml xmledit)
