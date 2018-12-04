@@ -725,6 +725,8 @@ int VisIt_MeshMetaData_setCellOrigin(visit_handle h, int);
 int VisIt_MeshMetaData_setNodeOrigin(visit_handle h, int);
 int VisIt_MeshMetaData_setHasSpatialExtents(visit_handle h, int);
 int VisIt_MeshMetaData_setSpatialExtents(visit_handle h, double[6]);
+int VisIt_MeshMetaData_setHasLogicalBounds(visit_handle h, int);
+int VisIt_MeshMetaData_setLogicalBounds(visit_handle h, int[3]);
 
 #ifdef __cplusplus
 }
@@ -1339,7 +1341,11 @@ int VisIt_VariableMetaData_setTreatAsASCII(visit_handle h, int);
 int VisIt_VariableMetaData_setHideFromGUI(visit_handle h, int);
 int VisIt_VariableMetaData_setNumComponents(visit_handle h, int);
 int VisIt_VariableMetaData_addMaterialName(visit_handle h, const char *);
-
+int VisIt_VariableMetaData_setEnumerationType(visit_handle h, int);
+int VisIt_VariableMetaData_addEnumGraphEdge(visit_handle h, int, int);
+int VisIt_VariableMetaData_addEnumNameValue(visit_handle h, const char *, double);
+int VisIt_VariableMetaData_addEnumNameRange(visit_handle h, const char *, double, double);
+  
 #ifdef __cplusplus
 }
 #endif

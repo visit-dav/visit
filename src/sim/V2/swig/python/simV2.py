@@ -651,6 +651,21 @@ VISIT_VARTYPE_MESH = _simV2.VISIT_VARTYPE_MESH
 _simV2.VISIT_VARTYPE_CURVE_swigconstant(_simV2)
 VISIT_VARTYPE_CURVE = _simV2.VISIT_VARTYPE_CURVE
 
+_simV2.VISIT_ENUMTYPE_NONE_swigconstant(_simV2)
+VISIT_ENUMTYPE_NONE = _simV2.VISIT_ENUMTYPE_NONE
+
+_simV2.VISIT_ENUMTYPE_BY_VALUE_swigconstant(_simV2)
+VISIT_ENUMTYPE_BY_VALUE = _simV2.VISIT_ENUMTYPE_BY_VALUE
+
+_simV2.VISIT_ENUMTYPE_BY_RANGE_swigconstant(_simV2)
+VISIT_ENUMTYPE_BY_RANGE = _simV2.VISIT_ENUMTYPE_BY_RANGE
+
+_simV2.VISIT_ENUMTYPE_BY_BITMASK_swigconstant(_simV2)
+VISIT_ENUMTYPE_BY_BITMASK = _simV2.VISIT_ENUMTYPE_BY_BITMASK
+
+_simV2.VISIT_ENUMTYPE_BY_NCHOOSER_swigconstant(_simV2)
+VISIT_ENUMTYPE_BY_NCHOOSER = _simV2.VISIT_ENUMTYPE_BY_NCHOOSER
+
 _simV2.VISIT_CMDARG_NONE_swigconstant(_simV2)
 VISIT_CMDARG_NONE = _simV2.VISIT_CMDARG_NONE
 
@@ -1350,6 +1365,14 @@ def VisIt_MeshMetaData_setSpatialExtents(h, arg2):
     return _simV2.VisIt_MeshMetaData_setSpatialExtents(h, arg2)
 VisIt_MeshMetaData_setSpatialExtents = _simV2.VisIt_MeshMetaData_setSpatialExtents
 
+def VisIt_MeshMetaData_setHasLogicalBounds(h, arg2):
+    return _simV2.VisIt_MeshMetaData_setHasLogicalBounds(h, arg2)
+VisIt_MeshMetaData_setHasLogicalBounds = _simV2.VisIt_MeshMetaData_setHasLogicalBounds
+
+def VisIt_MeshMetaData_setLogicalBounds(h, arg2):
+    return _simV2.VisIt_MeshMetaData_setLogicalBounds(h, arg2)
+VisIt_MeshMetaData_setLogicalBounds = _simV2.VisIt_MeshMetaData_setLogicalBounds
+
 def VisIt_NameList_alloc(*args):
     return _simV2.VisIt_NameList_alloc(*args)
 VisIt_NameList_alloc = _simV2.VisIt_NameList_alloc
@@ -1685,6 +1708,22 @@ VisIt_VariableMetaData_setNumComponents = _simV2.VisIt_VariableMetaData_setNumCo
 def VisIt_VariableMetaData_addMaterialName(h, arg2):
     return _simV2.VisIt_VariableMetaData_addMaterialName(h, arg2)
 VisIt_VariableMetaData_addMaterialName = _simV2.VisIt_VariableMetaData_addMaterialName
+
+def VisIt_VariableMetaData_setEnumerationType(h, arg2):
+    return _simV2.VisIt_VariableMetaData_setEnumerationType(h, arg2)
+VisIt_VariableMetaData_setEnumerationType = _simV2.VisIt_VariableMetaData_setEnumerationType
+
+def VisIt_VariableMetaData_addEnumGraphEdge(h, arg2, arg3):
+    return _simV2.VisIt_VariableMetaData_addEnumGraphEdge(h, arg2, arg3)
+VisIt_VariableMetaData_addEnumGraphEdge = _simV2.VisIt_VariableMetaData_addEnumGraphEdge
+
+def VisIt_VariableMetaData_addEnumNameValue(h, arg2, arg3):
+    return _simV2.VisIt_VariableMetaData_addEnumNameValue(h, arg2, arg3)
+VisIt_VariableMetaData_addEnumNameValue = _simV2.VisIt_VariableMetaData_addEnumNameValue
+
+def VisIt_VariableMetaData_addEnumNameRange(h, arg2, arg3, arg4):
+    return _simV2.VisIt_VariableMetaData_addEnumNameRange(h, arg2, arg3, arg4)
+VisIt_VariableMetaData_addEnumNameRange = _simV2.VisIt_VariableMetaData_addEnumNameRange
 # This file is compatible with both classic and new-style classes.
 
 

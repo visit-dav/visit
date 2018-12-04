@@ -71,6 +71,8 @@ struct VisIt_MeshMetaData : public VisIt_ObjectBase
     int          nodeOrigin;
     bool         hasSpatialExtents;
     double       spatialExtents[6];
+    bool         hasLogicalBounds;
+    int          logicalBounds[3];
 };
 
 VisIt_MeshMetaData::VisIt_MeshMetaData() : VisIt_ObjectBase(VISIT_MESHMETADATA)
@@ -100,6 +102,10 @@ VisIt_MeshMetaData::VisIt_MeshMetaData() : VisIt_ObjectBase(VISIT_MESHMETADATA)
     spatialExtents[3] = 0.;
     spatialExtents[4] = 0.;
     spatialExtents[5] = 0.;
+    hasLogicalBounds = false;
+    logicalBounds[0] = 0.;
+    logicalBounds[1] = 0.;
+    logicalBounds[2] = 0.;
 }
 
 VisIt_MeshMetaData::~VisIt_MeshMetaData()
@@ -1008,6 +1014,74 @@ simv2_MeshMetaData_getSpatialExtents(visit_handle h, double val[6])
     if(obj != NULL)
     {
         memcpy((void *)val, (void *)obj->spatialExtents, 6 * sizeof(double));
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+
+int
+simv2_MeshMetaData_setHasLogicalBounds(visit_handle h, int val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_setHasLogicalBounds");
+    if(obj != NULL)
+    {
+        obj->hasLogicalBounds = (val > 0);
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_MeshMetaData_getHasLogicalBounds(visit_handle h, int *val)
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_MeshMetaData_getHasLogicalBounds: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getHasLogicalBounds");
+    if(obj != NULL)
+    {
+        *val = obj->hasLogicalBounds ? 1 : 0;
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+int
+simv2_MeshMetaData_setLogicalBounds(visit_handle h, int val[3])
+{
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_setLogicalBounds");
+    if(obj != NULL)
+    {
+        obj->hasLogicalBounds = true;
+        memcpy((void *)obj->logicalBounds, (void *)val, 3 * sizeof(int));
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_MeshMetaData_getLogicalBounds(visit_handle h, int val[3])
+{
+    int retval = VISIT_ERROR;
+    if(val == NULL)
+    {
+        VisItError("simv2_MeshMetaData_getLogicalBounds: Invalid address.");
+        return VISIT_ERROR;
+    }
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getLogicalBounds");
+    if(obj != NULL)
+    {
+        memcpy((void *)val, (void *)obj->logicalBounds, 3 * sizeof(int));
         retval = VISIT_OKAY;
     }
     else

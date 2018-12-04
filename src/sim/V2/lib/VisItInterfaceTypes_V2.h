@@ -85,6 +85,15 @@ typedef enum {
     VISIT_VARTYPE_CURVE            = 101
 } VisIt_VarType;
 
+typedef enum
+{
+    VISIT_ENUMTYPE_NONE        = 0,
+    VISIT_ENUMTYPE_BY_VALUE    = 1,
+    VISIT_ENUMTYPE_BY_RANGE    = 2,
+    VISIT_ENUMTYPE_BY_BITMASK  = 3,
+    VISIT_ENUMTYPE_BY_NCHOOSER = 4
+} VisIt_EnumType;
+  
 /* Command Argument Type */
 #define VISIT_CMDARG_NONE                 0
 #define VISIT_CMDARG_INT                  1

@@ -62,9 +62,14 @@ int VisIt_VariableMetaData_getHideFromGUI(visit_handle h, int*);
 int VisIt_VariableMetaData_setNumComponents(visit_handle h, int);
 int VisIt_VariableMetaData_getNumComponents(visit_handle h, int*);
 int VisIt_VariableMetaData_addMaterialName(visit_handle h, const char *);
-int VisIt_VariableMetaData_getNumMaterialName(visit_handle h, int *);
+int VisIt_VariableMetaData_getNumMaterialNames(visit_handle h, int *);
 int VisIt_VariableMetaData_getMaterialName(visit_handle h, int, char **);
-
+int VisIt_VariableMetaData_setEnumerationType(visit_handle h, int);
+int VisIt_VariableMetaData_getEnumerationType(visit_handle h, int*);
+int VisIt_VariableMetaData_addEnumGraphEdge(visit_handle h, int, int);
+int VisIt_VariableMetaData_addEnumNameValue(visit_handle h, const char *, double);
+int VisIt_VariableMetaData_addEnumNameRange(visit_handle h, const char *, double, double);
+  
 #ifdef __cplusplus
 }
 #endif

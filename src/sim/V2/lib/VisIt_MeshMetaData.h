@@ -91,6 +91,10 @@ int VisIt_MeshMetaData_setHasSpatialExtents(visit_handle h, int);
 int VisIt_MeshMetaData_getHasSpatialExtents(visit_handle h, int*);
 int VisIt_MeshMetaData_setSpatialExtents(visit_handle h, double[6]);
 int VisIt_MeshMetaData_getSpatialExtents(visit_handle h, double[6]);
+int VisIt_MeshMetaData_setHasLogicalBounds(visit_handle h, int);
+int VisIt_MeshMetaData_getHasLogicalBounds(visit_handle h, int*);
+int VisIt_MeshMetaData_setLogicalBounds(visit_handle h, int[3]);
+int VisIt_MeshMetaData_getLogicalBounds(visit_handle h, int[3]);
 
 #ifdef __cplusplus
 }

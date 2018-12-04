@@ -94,6 +94,10 @@ SIMV2_API int simv2_MeshMetaData_setHasSpatialExtents(visit_handle h, int);
 SIMV2_API int simv2_MeshMetaData_getHasSpatialExtents(visit_handle h, int*);
 SIMV2_API int simv2_MeshMetaData_setSpatialExtents(visit_handle h, double[6]);
 SIMV2_API int simv2_MeshMetaData_getSpatialExtents(visit_handle h, double[6]);
+SIMV2_API int simv2_MeshMetaData_setHasLogicalBounds(visit_handle h, int);
+SIMV2_API int simv2_MeshMetaData_getHasLogicalBounds(visit_handle h, int*);
+SIMV2_API int simv2_MeshMetaData_setLogicalBounds(visit_handle h, int[3]);
+SIMV2_API int simv2_MeshMetaData_getLogicalBounds(visit_handle h, int[3]);
 
 #ifdef __cplusplus
 };

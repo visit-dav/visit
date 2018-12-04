@@ -2967,32 +2967,33 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 
 /* -------- TYPES TABLE (BEGIN) -------- */
 
-#define SWIGTYPE_p_VisIt_MeshType swig_types[0]
-#define SWIGTYPE_p_VisIt_VarCentering swig_types[1]
-#define SWIGTYPE_p_VisIt_VarType swig_types[2]
-#define SWIGTYPE_p_char swig_types[3]
-#define SWIGTYPE_p_double swig_types[4]
-#define SWIGTYPE_p_f_int_p_q_const__char_p_void__int swig_types[5]
-#define SWIGTYPE_p_f_int_p_void__void swig_types[6]
-#define SWIGTYPE_p_f_p_char_int_int__int swig_types[7]
-#define SWIGTYPE_p_f_p_char_int_int_p_void__int swig_types[8]
-#define SWIGTYPE_p_f_p_char_p_void__void swig_types[9]
-#define SWIGTYPE_p_f_p_int_int__int swig_types[10]
-#define SWIGTYPE_p_f_p_int_int_p_void__int swig_types[11]
-#define SWIGTYPE_p_f_p_q_const__char_int_int_int_int_p_void__int swig_types[12]
-#define SWIGTYPE_p_f_p_q_const__char_p_q_const__char_int_int_int_p_void__int swig_types[13]
-#define SWIGTYPE_p_f_p_q_const__char_p_q_const__char_p_void__void swig_types[14]
-#define SWIGTYPE_p_f_p_q_const__char_p_void__int swig_types[15]
-#define SWIGTYPE_p_f_p_void__int swig_types[16]
-#define SWIGTYPE_p_f_p_void__void swig_types[17]
-#define SWIGTYPE_p_f_void__void swig_types[18]
-#define SWIGTYPE_p_float swig_types[19]
-#define SWIGTYPE_p_int swig_types[20]
-#define SWIGTYPE_p_long swig_types[21]
-#define SWIGTYPE_p_p_char swig_types[22]
-#define SWIGTYPE_p_unsigned_char swig_types[23]
-static swig_type_info *swig_types[25];
-static swig_module_info swig_module = {swig_types, 24, 0, 0, 0, 0};
+#define SWIGTYPE_p_VisIt_EnumType swig_types[0]
+#define SWIGTYPE_p_VisIt_MeshType swig_types[1]
+#define SWIGTYPE_p_VisIt_VarCentering swig_types[2]
+#define SWIGTYPE_p_VisIt_VarType swig_types[3]
+#define SWIGTYPE_p_char swig_types[4]
+#define SWIGTYPE_p_double swig_types[5]
+#define SWIGTYPE_p_f_int_p_q_const__char_p_void__int swig_types[6]
+#define SWIGTYPE_p_f_int_p_void__void swig_types[7]
+#define SWIGTYPE_p_f_p_char_int_int__int swig_types[8]
+#define SWIGTYPE_p_f_p_char_int_int_p_void__int swig_types[9]
+#define SWIGTYPE_p_f_p_char_p_void__void swig_types[10]
+#define SWIGTYPE_p_f_p_int_int__int swig_types[11]
+#define SWIGTYPE_p_f_p_int_int_p_void__int swig_types[12]
+#define SWIGTYPE_p_f_p_q_const__char_int_int_int_int_p_void__int swig_types[13]
+#define SWIGTYPE_p_f_p_q_const__char_p_q_const__char_int_int_int_p_void__int swig_types[14]
+#define SWIGTYPE_p_f_p_q_const__char_p_q_const__char_p_void__void swig_types[15]
+#define SWIGTYPE_p_f_p_q_const__char_p_void__int swig_types[16]
+#define SWIGTYPE_p_f_p_void__int swig_types[17]
+#define SWIGTYPE_p_f_p_void__void swig_types[18]
+#define SWIGTYPE_p_f_void__void swig_types[19]
+#define SWIGTYPE_p_float swig_types[20]
+#define SWIGTYPE_p_int swig_types[21]
+#define SWIGTYPE_p_long swig_types[22]
+#define SWIGTYPE_p_p_char swig_types[23]
+#define SWIGTYPE_p_unsigned_char swig_types[24]
+static swig_type_info *swig_types[26];
+static swig_module_info swig_module = {swig_types, 25, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -8837,6 +8838,61 @@ SWIGINTERN PyObject *VISIT_VARTYPE_CURVE_swigconstant(PyObject *SWIGUNUSEDPARM(s
 }
 
 
+SWIGINTERN PyObject *VISIT_ENUMTYPE_NONE_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_ENUMTYPE_NONE",SWIG_From_int(static_cast< int >(VISIT_ENUMTYPE_NONE)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_ENUMTYPE_BY_VALUE_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_ENUMTYPE_BY_VALUE",SWIG_From_int(static_cast< int >(VISIT_ENUMTYPE_BY_VALUE)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_ENUMTYPE_BY_RANGE_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_ENUMTYPE_BY_RANGE",SWIG_From_int(static_cast< int >(VISIT_ENUMTYPE_BY_RANGE)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_ENUMTYPE_BY_BITMASK_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_ENUMTYPE_BY_BITMASK",SWIG_From_int(static_cast< int >(VISIT_ENUMTYPE_BY_BITMASK)));
+  return SWIG_Py_Void();
+}
+
+
+SWIGINTERN PyObject *VISIT_ENUMTYPE_BY_NCHOOSER_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *module;
+  PyObject *d;
+  if (!PyArg_ParseTuple(args,(char*)"O:swigconstant", &module)) return NULL;
+  d = PyModule_GetDict(module);
+  if (!d) return NULL;
+  SWIG_Python_SetConstant(d, "VISIT_ENUMTYPE_BY_NCHOOSER",SWIG_From_int(static_cast< int >(VISIT_ENUMTYPE_BY_NCHOOSER)));
+  return SWIG_Py_Void();
+}
+
+
 SWIGINTERN PyObject *VISIT_CMDARG_NONE_swigconstant(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *module;
   PyObject *d;
@@ -13680,6 +13736,75 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisIt_MeshMetaData_setHasLogicalBounds(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  int arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_MeshMetaData_setHasLogicalBounds",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_MeshMetaData_setHasLogicalBounds" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_MeshMetaData_setHasLogicalBounds" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  result = (int)VisIt_MeshMetaData_setHasLogicalBounds(arg1,arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_MeshMetaData_setLogicalBounds(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  int *arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int temp2[3] ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_MeshMetaData_setLogicalBounds",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_MeshMetaData_setLogicalBounds" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  {
+    int i;   if (!PySequence_Check(obj1)) {
+      PyErr_SetString(PyExc_ValueError,"Expected a sequence");     return NULL;   
+    }   if (PySequence_Length(obj1) != 3) {
+      PyErr_SetString(PyExc_ValueError,"Size mismatch. Expected ""3" " elements");     return NULL;   
+    }   for (i = 0; i < 3; i++) {
+      PyObject *o = PySequence_GetItem(obj1,i);     if (PyNumber_Check(o)) {
+        temp2[i] = (int) PyInt_AsLong(o);     
+      } else {
+        PyErr_SetString(PyExc_ValueError,"Sequence elements must be numbers");       return NULL;     
+      }   
+    }   arg2 = temp2; 
+  }
+  result = (int)VisIt_MeshMetaData_setLogicalBounds(arg1,arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisIt_NameList_alloc__SWIG_1(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   visit_handle *arg1 = (visit_handle *) 0 ;
@@ -17462,6 +17587,172 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_setEnumerationType(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  int arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_VariableMetaData_setEnumerationType",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_setEnumerationType" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_VariableMetaData_setEnumerationType" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  result = (int)VisIt_VariableMetaData_setEnumerationType(arg1,arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumGraphEdge(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  int arg2 ;
+  int arg3 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  int val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VisIt_VariableMetaData_addEnumGraphEdge",&obj0,&obj1,&obj2)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_addEnumGraphEdge" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_VariableMetaData_addEnumGraphEdge" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = static_cast< int >(val2);
+  ecode3 = SWIG_AsVal_int(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisIt_VariableMetaData_addEnumGraphEdge" "', argument " "3"" of type '" "int""'");
+  } 
+  arg3 = static_cast< int >(val3);
+  result = (int)VisIt_VariableMetaData_addEnumGraphEdge(arg1,arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumNameValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  char *arg2 = (char *) 0 ;
+  double arg3 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VisIt_VariableMetaData_addEnumNameValue",&obj0,&obj1,&obj2)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_addEnumNameValue" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VisIt_VariableMetaData_addEnumNameValue" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = reinterpret_cast< char * >(buf2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisIt_VariableMetaData_addEnumNameValue" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  result = (int)VisIt_VariableMetaData_addEnumNameValue(arg1,(char const *)arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumNameRange(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  char *arg2 = (char *) 0 ;
+  double arg3 ;
+  double arg4 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  double val4 ;
+  int ecode4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:VisIt_VariableMetaData_addEnumNameRange",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_addEnumNameRange" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VisIt_VariableMetaData_addEnumNameRange" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = reinterpret_cast< char * >(buf2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisIt_VariableMetaData_addEnumNameRange" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  ecode4 = SWIG_AsVal_double(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisIt_VariableMetaData_addEnumNameRange" "', argument " "4"" of type '" "double""'");
+  } 
+  arg4 = static_cast< double >(val4);
+  result = (int)VisIt_VariableMetaData_addEnumNameRange(arg1,(char const *)arg2,arg3,arg4);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return NULL;
+}
+
+
 static PyMethodDef SwigMethods[] = {
 	 { (char *)"SWIG_PyInstanceMethod_New", (PyCFunction)SWIG_PyInstanceMethod_New, METH_O, NULL},
 	 { (char *)"VisItDisconnect", _wrap_VisItDisconnect, METH_VARARGS, NULL},
@@ -17610,6 +17901,11 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VISIT_VARTYPE_ARRAY_swigconstant", VISIT_VARTYPE_ARRAY_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_VARTYPE_MESH_swigconstant", VISIT_VARTYPE_MESH_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_VARTYPE_CURVE_swigconstant", VISIT_VARTYPE_CURVE_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_ENUMTYPE_NONE_swigconstant", VISIT_ENUMTYPE_NONE_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_ENUMTYPE_BY_VALUE_swigconstant", VISIT_ENUMTYPE_BY_VALUE_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_ENUMTYPE_BY_RANGE_swigconstant", VISIT_ENUMTYPE_BY_RANGE_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_ENUMTYPE_BY_BITMASK_swigconstant", VISIT_ENUMTYPE_BY_BITMASK_swigconstant, METH_VARARGS, NULL},
+	 { (char *)"VISIT_ENUMTYPE_BY_NCHOOSER_swigconstant", VISIT_ENUMTYPE_BY_NCHOOSER_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_CMDARG_NONE_swigconstant", VISIT_CMDARG_NONE_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_CMDARG_INT_swigconstant", VISIT_CMDARG_INT_swigconstant, METH_VARARGS, NULL},
 	 { (char *)"VISIT_CMDARG_FLOAT_swigconstant", VISIT_CMDARG_FLOAT_swigconstant, METH_VARARGS, NULL},
@@ -17813,6 +18109,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisIt_MeshMetaData_setNodeOrigin", _wrap_VisIt_MeshMetaData_setNodeOrigin, METH_VARARGS, NULL},
 	 { (char *)"VisIt_MeshMetaData_setHasSpatialExtents", _wrap_VisIt_MeshMetaData_setHasSpatialExtents, METH_VARARGS, NULL},
 	 { (char *)"VisIt_MeshMetaData_setSpatialExtents", _wrap_VisIt_MeshMetaData_setSpatialExtents, METH_VARARGS, NULL},
+	 { (char *)"VisIt_MeshMetaData_setHasLogicalBounds", _wrap_VisIt_MeshMetaData_setHasLogicalBounds, METH_VARARGS, NULL},
+	 { (char *)"VisIt_MeshMetaData_setLogicalBounds", _wrap_VisIt_MeshMetaData_setLogicalBounds, METH_VARARGS, NULL},
 	 { (char *)"VisIt_NameList_alloc", _wrap_VisIt_NameList_alloc, METH_VARARGS, NULL},
 	 { (char *)"VisIt_NameList_free", _wrap_VisIt_NameList_free, METH_VARARGS, NULL},
 	 { (char *)"VisIt_NameList_addName", _wrap_VisIt_NameList_addName, METH_VARARGS, NULL},
@@ -17897,12 +18195,17 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisIt_VariableMetaData_setHideFromGUI", _wrap_VisIt_VariableMetaData_setHideFromGUI, METH_VARARGS, NULL},
 	 { (char *)"VisIt_VariableMetaData_setNumComponents", _wrap_VisIt_VariableMetaData_setNumComponents, METH_VARARGS, NULL},
 	 { (char *)"VisIt_VariableMetaData_addMaterialName", _wrap_VisIt_VariableMetaData_addMaterialName, METH_VARARGS, NULL},
+	 { (char *)"VisIt_VariableMetaData_setEnumerationType", _wrap_VisIt_VariableMetaData_setEnumerationType, METH_VARARGS, NULL},
+	 { (char *)"VisIt_VariableMetaData_addEnumGraphEdge", _wrap_VisIt_VariableMetaData_addEnumGraphEdge, METH_VARARGS, NULL},
+	 { (char *)"VisIt_VariableMetaData_addEnumNameValue", _wrap_VisIt_VariableMetaData_addEnumNameValue, METH_VARARGS, NULL},
+	 { (char *)"VisIt_VariableMetaData_addEnumNameRange", _wrap_VisIt_VariableMetaData_addEnumNameRange, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 
 
 /* -------- TYPE CONVERSION AND EQUIVALENCE RULES (BEGIN) -------- */
 
+static swig_type_info _swigt__p_VisIt_EnumType = {"_p_VisIt_EnumType", "enum VisIt_EnumType *|VisIt_EnumType *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_VisIt_MeshType = {"_p_VisIt_MeshType", "enum VisIt_MeshType *|VisIt_MeshType *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_VisIt_VarCentering = {"_p_VisIt_VarCentering", "enum VisIt_VarCentering *|VisIt_VarCentering *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_VisIt_VarType = {"_p_VisIt_VarType", "enum VisIt_VarType *|VisIt_VarType *", 0, 0, (void*)0, 0};
@@ -17929,6 +18232,7 @@ static swig_type_info _swigt__p_p_char = {"_p_p_char", "char **", 0, 0, (void*)0
 static swig_type_info _swigt__p_unsigned_char = {"_p_unsigned_char", "unsigned char *", 0, 0, (void*)0, 0};
 
 static swig_type_info *swig_type_initial[] = {
+  &_swigt__p_VisIt_EnumType,
   &_swigt__p_VisIt_MeshType,
   &_swigt__p_VisIt_VarCentering,
   &_swigt__p_VisIt_VarType,
@@ -17955,6 +18259,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_unsigned_char,
 };
 
+static swig_cast_info _swigc__p_VisIt_EnumType[] = {  {&_swigt__p_VisIt_EnumType, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_VisIt_MeshType[] = {  {&_swigt__p_VisIt_MeshType, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_VisIt_VarCentering[] = {  {&_swigt__p_VisIt_VarCentering, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_VisIt_VarType[] = {  {&_swigt__p_VisIt_VarType, 0, 0, 0},{0, 0, 0, 0}};
@@ -17981,6 +18286,7 @@ static swig_cast_info _swigc__p_p_char[] = {  {&_swigt__p_p_char, 0, 0, 0},{0, 0
 static swig_cast_info _swigc__p_unsigned_char[] = {  {&_swigt__p_unsigned_char, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
+  _swigc__p_VisIt_EnumType,
   _swigc__p_VisIt_MeshType,
   _swigc__p_VisIt_VarCentering,
   _swigc__p_VisIt_VarType,

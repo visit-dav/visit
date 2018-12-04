@@ -193,9 +193,9 @@ VisIt_VariableMetaData_addMaterialName(visit_handle h, const char *val)
 }
 
 int
-VisIt_VariableMetaData_getNumMaterialName(visit_handle h, int *val)
+VisIt_VariableMetaData_getNumMaterialNames(visit_handle h, int *val)
 {
-    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getNumMaterialName,
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getNumMaterialNames,
         int, (visit_handle, int *),
         (h, val));
 }
@@ -206,6 +206,86 @@ VisIt_VariableMetaData_getMaterialName(visit_handle h, int i, char **val)
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_getMaterialName,
         int, (visit_handle, int, char **),
         (h, i, val));
+}
+
+int
+VisIt_VariableMetaData_setEnumerationType(visit_handle h, int val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_setEnumerationType,
+        int, (visit_handle, int),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_getEnumerationType(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getEnumerationType,
+        int, (visit_handle, int*),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_addEnumNameValue(visit_handle h, const char *name, double val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_addEnumNameValue,
+                          int, (visit_handle, const char *, double),
+                          (h, name, val));
+}
+
+int
+VisIt_VariableMetaData_addEnumNameRange(visit_handle h, const char *name, double minVal, double maxVal)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_addEnumNameRange,
+                          int, (visit_handle, const char *, double, double),
+                          (h, name, minVal, maxVal));
+}
+
+int
+VisIt_VariableMetaData_getNumEnumNames(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getNumEnumNames,
+        int, (visit_handle, int *),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_getEnumName(visit_handle h, int i, char **val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getEnumName,
+        int, (visit_handle, int, char **),
+        (h, i, val));
+}
+
+int
+VisIt_VariableMetaData_getEnumNameRange(visit_handle h, int i, double * minVal, double * maxVal)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getEnumNameRange,
+                          int, (visit_handle, int, double *, double *),
+                          (h, i, minVal, maxVal));
+}
+
+int
+VisIt_VariableMetaData_addEnumGraphEdge(visit_handle h, int head, int tail)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_addEnumGraphEdge,
+                          int, (visit_handle, int, int),
+                          (h, head, tail));
+}
+
+int
+VisIt_VariableMetaData_getNumEnumGraphEdges(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getNumEnumGraphEdges,
+        int, (visit_handle, int *),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int * tail)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_addEnumGraphEdge,
+                          int, (visit_handle, int, int *, int *),
+                          (h, i, head, tail));
 }
 
 
@@ -230,8 +310,19 @@ VisIt_VariableMetaData_getMaterialName(visit_handle h, int i, char **val)
 #define F_VISITMDVARSETNUMCOMPONENTS      F77_ID(visitmdvarsetnumcomponents_,visitmdvarsetnumcomponents, VISITMDVARSETNUMCOMPONENTS)
 #define F_VISITMDVARGETNUMCOMPONENTS      F77_ID(visitmdvargetnumcomponents_,visitmdvargetnumcomponents, VISITMDVARGETNUMCOMPONENTS)
 #define F_VISITMDVARADDMATERIALNAME       F77_ID(visitmdvaraddmaterialname_,visitmdvaraddmaterialname, VISITMDVARADDMATERIALNAME)
-#define F_VISITMDVARGETNUMMATERIALNAME    F77_ID(visitmdvargetnummaterialname_,visitmdvargetnummaterialname, VISITMDVARGETNUMMATERIALNAME)
+#define F_VISITMDVARGETNUMMATERIALNAMES   F77_ID(visitmdvargetnummaterialnames_,visitmdvargetnummaterialnames, VISITMDVARGETNUMMATERIALNAMES)
 #define F_VISITMDVARGETMATERIALNAME       F77_ID(visitmdvargetmaterialname_,visitmdvargetmaterialname, VISITMDVARGETMATERIALNAME)
+
+#define F_VISITMDENUMSETTYPE               F77_ID(visitmdenumsettype_,visitmdenumsettype, VISITMDENUMSETTYPE)
+#define F_VISITMDENUMGETTYPE               F77_ID(visitmdenumgettype_,visitmdenumgettype, VISITMDENUMGETTYPE)
+#define F_VISITMDVARADDENUMNAMEVALUE       F77_ID(visitmdvaraddenumnamevalue_,visitmdvaraddenumnamevalue,VISITMDVARADDENUMNAMEVALUE)
+#define F_VISITMDVARADDENUMNAMERANGE       F77_ID(visitmdvaraddenumnamerange_,visitmdvaraddenumnamerange,VISITMDVARADDENUMNAMERANGE)
+#define F_VISITMDVARGETNUMENUMNAMES        F77_ID(visitmdvargetnumenumnames_,visitmdvargetnumenumnames,VISITMDVARGETNUMENUMNAMES)
+#define F_VISITMDVARGETENUMNAME            F77_ID(visitmdvargetenumname_,visitmdvargetenumname,VISITMDVARGETENUMNAME)
+#define F_VISITMDVARGETENUMNAMERANGE       F77_ID(visitmdvargetenumnamerange_,visitmdvargetenumnamerange,VISITMDVARGETENUMNAMERANGE)
+#define F_VISITMDVARADDENUMGRAPHEDGE       F77_ID(visitmdvaraddenumgraphedge_,visitmdvaraddenumgraphedge,VISITMDVARADDENUMGRAPHEDGE)
+#define F_VISITMDVARGETNUMENUMGRAPHEDGES   F77_ID(visitmdvargetnumenumgraphedges_,visitmdvargetnumenumgraphedges,VISITMDVARGETNUMENUMGRAPHEDGES)
+#define F_VISITMDVARGETENUMGRAPHEDGE       F77_ID(visitmdvargetenumgraphedge_,visitmdvargetenumgraphedge,VISITMDVARGETENUMGRAPHEDGE)
 
 int
 F_VISITMDVARALLOC(visit_handle *h)
@@ -389,9 +480,9 @@ F_VISITMDVARADDMATERIALNAME(visit_handle *h, const char *val, int *lval)
 }
 
 int
-F_VISITMDVARGETNUMMATERIALNAME(visit_handle *h, int *val)
+F_VISITMDVARGETNUMMATERIALNAMES(visit_handle *h, int *val)
 {
-    return VisIt_VariableMetaData_getNumMaterialName(*h, val);
+    return VisIt_VariableMetaData_getNumMaterialNames(*h, val);
 }
 
 int
@@ -408,3 +499,80 @@ F_VISITMDVARGETMATERIALNAME(visit_handle *h, int *i, char *val, int *lval)
     return retval;
 }
 
+int
+F_VISITMDENUMSETTYPE(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_setEnumerationType(*h, *val);
+}
+
+int
+F_VISITMDENUMGETTYPE(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_getEnumerationType(*h, val);
+}
+
+int
+F_VISITMDVARADDENUMNAMEVALUE(visit_handle *h, char *name, int *lname, double *val)
+{
+    char *f_name = NULL;
+    int retval;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisIt_VariableMetaData_addEnumNameValue( *h, f_name, *val);
+    FREE(f_name);
+    return retval;
+}
+
+int
+F_VISITMDVARADDENUMNAMERANGE(visit_handle *h, char *name, int *lname, double *minVal, double *maxVal)
+{
+    char *f_name = NULL;
+    int retval;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisIt_VariableMetaData_addEnumNameRange( *h, f_name, *minVal, *maxVal);
+    FREE(f_name);
+    return retval;
+}
+
+int
+F_VISITMDVARGETNUMENUMNAMES(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_getNumEnumNames(*h, val);
+}
+
+int
+F_VISITMDVARGETENUMNAME(visit_handle *h, int *i, char *val, int *lval)
+{
+    char *s = NULL;
+    int retval;
+    retval = VisIt_VariableMetaData_getEnumName(*h, *i, &s);
+    if(s != NULL)
+    {
+        visit_cstring_to_fstring(s, val, *lval);
+        free(s);
+    }
+    return retval;
+}
+
+int
+F_VISITMDVARGETENUMNAMERANGE(visit_handle *h, int *i, double *head, double *tail)
+{
+    return VisIt_VariableMetaData_getEnumNameRange( *h, *i, head, tail);
+}
+
+int
+F_VISITMDVARADDENUMGRAPHEDGE(visit_handle *h, int *head, int *tail)
+{
+    return VisIt_VariableMetaData_addEnumGraphEdge( *h, *head, *tail);
+}
+
+int
+F_VISITMDVARGETNUMENUMGRAPHEDGES(visit_handle *h, int *val)
+{
+    return VisIt_VariableMetaData_getNumEnumGraphEdges(*h, val);
+}
+
+int
+F_VISITMDVARGETENUMGRAPHEDGE(visit_handle *h, int *i, int *head, int *tail)
+{
+    return VisIt_VariableMetaData_getEnumGraphEdge( *h, *i, head, tail);
+}

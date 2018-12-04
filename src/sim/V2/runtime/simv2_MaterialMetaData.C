@@ -210,15 +210,15 @@ simv2_MaterialMetaData_addMaterialName(visit_handle h, const char *val)
 }
 
 int
-simv2_MaterialMetaData_getNumMaterialName(visit_handle h, int *val)
+simv2_MaterialMetaData_getNumMaterialNames(visit_handle h, int *val)
 {
     if(val == NULL)
     {
-        VisItError("simv2_MaterialMetaData_getNumMaterialName: Invalid address");
+        VisItError("simv2_MaterialMetaData_getNumMaterialNames: Invalid address");
         return VISIT_ERROR;
     }
     int retval = VISIT_ERROR;
-    VisIt_MaterialMetaData *obj = GetObject(h, "simv2_MaterialMetaData_getNumMaterialName");
+    VisIt_MaterialMetaData *obj = GetObject(h, "simv2_MaterialMetaData_getNumMaterialNames");
     if(obj != NULL)
     {
         *val = obj->materialNames.size();

@@ -97,9 +97,9 @@ VisIt_MaterialMetaData_addMaterialName(visit_handle h, const char *val)
 }
 
 int
-VisIt_MaterialMetaData_getNumMaterialName(visit_handle h, int *val)
+VisIt_MaterialMetaData_getNumMaterialNames(visit_handle h, int *val)
 {
-    VISIT_DYNAMIC_EXECUTE(MaterialMetaData_getNumMaterialName,
+    VISIT_DYNAMIC_EXECUTE(MaterialMetaData_getNumMaterialNames,
         int, (visit_handle, int *),
         (h, val));
 }
@@ -122,7 +122,7 @@ VisIt_MaterialMetaData_getMaterialName(visit_handle h, int i, char **val)
 #define F_VISITMDMATSETMESHNAME           F77_ID(visitmdmatsetmeshname_,visitmdmatsetmeshname, VISITMDMATSETMESHNAME)
 #define F_VISITMDMATGETMESHNAME           F77_ID(visitmdmatgetmeshname_,visitmdmatgetmeshname, VISITMDMATGETMESHNAME)
 #define F_VISITMDMATADDMATERIALNAME       F77_ID(visitmdmataddmaterialname_,visitmdmataddmaterialname, VISITMDMATADDMATERIALNAME)
-#define F_VISITMDMATGETNUMMATERIALNAME    F77_ID(visitmdmatgetnummaterialname_,visitmdmatgetnummaterialname, VISITMDMATGETNUMMATERIALNAME)
+#define F_VISITMDMATGETNUMMATERIALNAMES    F77_ID(visitmdmatgetnummaterialnames_,visitmdmatgetnummaterialnames, VISITMDMATGETNUMMATERIALNAMES)
 #define F_VISITMDMATGETMATERIALNAME       F77_ID(visitmdmatgetmaterialname_,visitmdmatgetmaterialname, VISITMDMATGETMATERIALNAME)
 
 int
@@ -197,9 +197,9 @@ F_VISITMDMATADDMATERIALNAME(visit_handle *h, const char *val, int *lval)
 }
 
 int
-F_VISITMDMATGETNUMMATERIALNAME(visit_handle *h, int *val)
+F_VISITMDMATGETNUMMATERIALNAMES(visit_handle *h, int *val)
 {
-    return VisIt_MaterialMetaData_getNumMaterialName(*h, val);
+    return VisIt_MaterialMetaData_getNumMaterialNames(*h, val);
 }
 
 int

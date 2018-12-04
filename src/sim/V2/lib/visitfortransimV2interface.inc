@@ -123,6 +123,18 @@
       integer      VISIT_VARTYPE_CURVE          
       parameter   (VISIT_VARTYPE_CURVE               = 101)
 
+!... Enumerated Type
+      integer      VISIT_ENUMTYPE_NONE             
+      parameter   (VISIT_ENUMTYPE_NONE               = 0)
+      integer      VISIT_ENUMTYPE_BY_VALUE              
+      parameter   (VISIT_ENUMTYPE_BY_VALUE           = 1)
+      integer      VISIT_ENUMTYPE_BY_RANGE      
+      parameter   (VISIT_ENUMTYPE_BY_RANGE           = 2)
+      integer      VISIT_ENUMTYPE_BY_BITMASK      
+      parameter   (VISIT_ENUMTYPE_BY_BITMASK         = 3)
+      integer      VISIT_ENUMTYPE_BY_NCHOOSER    
+      parameter   (VISIT_ENUMTYPE_BY_NCHOOSER        = 4)
+
 !... Command Argument Type
       integer      VISIT_CMDARG_NONE                 
       parameter   (VISIT_CMDARG_NONE                 = 0)
@@ -871,9 +883,9 @@
       external visitmdmataddmaterialname
       integer  visitmdmataddmaterialname
 
-! visitmdmatgetnummaterialname(visit_handle h, int val)
-      external visitmdmatgetnummaterialname
-      integer  visitmdmatgetnummaterialname
+! visitmdmatgetnummaterialnames(visit_handle h, int val)
+      external visitmdmatgetnummaterialnames
+      integer  visitmdmatgetnummaterialnames
 
 ! visitmdmatgetmaterialname(visit_handle h, int i, string val, int lval)
       external visitmdmatgetmaterialname
@@ -1075,6 +1087,21 @@
       external visitmdmeshgetspatialextents
       integer visitmdmeshgetspatialextents
 
+! visitmdmeshsethaslogicalbounds(visit_handle h, int hasB)
+      external visitmdmeshsethaslogicalbounds
+      integer visitmdmeshsethaslogicalbounds
+
+! visitmdmeshgethaslogicalbounds(visit_handle h, int hasB)
+      external visitmdmeshgethaslogicalbounds
+      integer visitmdmeshgethaslogicalbounds
+
+! visitmdmeshsetlogicalbounds(visit_handle h, int bounds[3])
+      external visitmdmeshsetlogicalbounds
+      integer visitmdmeshsetlogicalbounds
+
+! visitmdmeshgetlogicalbounds(visit_handle h, int bounds[3])
+      external visitmdmeshgetlogicalbounds
+      integer visitmdmeshgetlogicalbounds
 
 ! VisIt_NameList functions
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1341,9 +1368,9 @@
       external visitmdvaraddmaterialname
       integer  visitmdvaraddmaterialname
 
-! visitmdvargetnummaterialname(visit_handle h, int val)
-      external visitmdvargetnummaterialname
-      integer  visitmdvargetnummaterialname
+! visitmdvargetnummaterialnames(visit_handle h, int val)
+      external visitmdvargetnummaterialnames
+      integer  visitmdvargetnummaterialnames
 
 ! visitmdvargetmaterialname(visit_handle h, int i, string val, int lval)
       external visitmdvargetmaterialname

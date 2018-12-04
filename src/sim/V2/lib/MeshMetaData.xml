@@ -75,6 +75,14 @@
       0.
       0.
     </Field>
+    <Field name="hasLogicalBounds" label="Has spatial extents" type="bool">
+      false
+    </Field>
+    <Field name="logicalBounds" label="Spatial extents" type="intArray" length="6">
+      0.
+      0.
+      0.
+    </Field>
     <Function name="simv2_MeshMetaData_check" user="true" member="true">
     </Function>
   </Attribute>

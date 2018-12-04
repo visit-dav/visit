@@ -306,6 +306,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
                 mesh->topologicalDimension = tdim;
                 mesh->spatialDimension = sdim;
                 mesh->hasSpatialExtents = false;
+                mesh->hasLogicalBounds = false;
 
                 switch (meshType)
                 {
@@ -470,6 +471,21 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
         }
     }
 
+    // Get the logical bounds.
+    int hasB = 0;
+    if(simv2_MeshMetaData_getHasLogicalBounds(h, &hasB) == VISIT_OKAY)
+    {
+        int bounds[3] = {0,0,0};
+        if(hasB > 0 &&
+           simv2_MeshMetaData_getLogicalBounds(h, bounds) == VISIT_OKAY)
+        {
+            mesh->hasLogicalBounds = true;
+            mesh->logicalBounds[0] = bounds[0];
+            mesh->logicalBounds[1] = bounds[1];
+            mesh->logicalBounds[2] = bounds[2];
+        }
+    }
+
     md->Add(mesh);
 }
 
@@ -504,7 +520,7 @@ RestrictMaterialIndices(visit_handle h, const avtMaterialMetaData *mmd)
     if(mmd != NULL)
     {
         int nmat = 0;
-        if(simv2_VariableMetaData_getNumMaterialName(h, &nmat) == VISIT_OKAY)
+        if(simv2_VariableMetaData_getNumMaterialNames(h, &nmat) == VISIT_OKAY)
         {
             for(int m = 0; m < nmat; ++m)
             {
@@ -608,7 +624,69 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     scalar->hideFromGUI = hideFromGUI;
                     scalar->matRestricted = RestrictMaterialIndices(h, mmd);
 
-                    md->Add(scalar);
+                    int enumType;
+                    if(simv2_VariableMetaData_getEnumerationType(h, &enumType) == VISIT_OKAY) {
+                      switch( enumType ) {
+                      case VISIT_ENUMTYPE_NONE:
+                        scalar->SetEnumerationType(avtScalarMetaData::None);
+                        break;
+                      case VISIT_ENUMTYPE_BY_VALUE:
+                        scalar->SetEnumerationType(avtScalarMetaData::ByValue);
+                        break;
+                      case VISIT_ENUMTYPE_BY_RANGE:
+                        scalar->SetEnumerationType(avtScalarMetaData::ByRange);
+                        break;
+                      case VISIT_ENUMTYPE_BY_BITMASK:
+                        scalar->SetEnumerationType(avtScalarMetaData::ByBitMask);
+                        break;
+                      case VISIT_ENUMTYPE_BY_NCHOOSER:
+                        scalar->SetEnumerationType(avtScalarMetaData::ByNChooseR);
+                        break;
+                      default:
+                        scalar->SetEnumerationType(avtScalarMetaData::None);
+                      }
+                    }
+
+                    int nNames;
+                    if(simv2_VariableMetaData_getNumEnumNames(h, &nNames) == VISIT_OKAY && nNames > 0)
+                    {
+                      std::cerr << "nNames " << nNames << std::endl;
+                      
+                      for( int i=0; i<nNames; ++i )
+                      {
+                        char *name = NULL;
+                        double minVal, maxVal;
+                        
+                        if(simv2_VariableMetaData_getEnumName(h, i, &name) == VISIT_OKAY &&
+                           simv2_VariableMetaData_getEnumNameRange(h, i, &minVal, &maxVal) == VISIT_OKAY)
+                        {
+                          std::cerr << i << " adding enum " << name << "  "
+                                    << minVal << "  " << maxVal << std::endl;
+                          scalar->AddEnumNameRange(name, minVal, maxVal);
+                          free(name);
+                        }
+                      }
+                    }
+
+                    int nGraphEdges;
+                    if(simv2_VariableMetaData_getNumEnumGraphEdges(h, &nGraphEdges) == VISIT_OKAY && nGraphEdges > 0)
+                    {
+                      std::cerr << "nGraphEdges " << nGraphEdges << std::endl;
+                      
+                      for( int i=0; i<nGraphEdges; ++i )
+                      {
+                        int head, tail;
+                        
+                        if(simv2_VariableMetaData_getEnumGraphEdge(h, i, &head, &tail) == VISIT_OKAY)
+                        {
+                          std::cerr << i << " adding edge " << name << "  "
+                                    << head << "  " << tail << std::endl;
+                          scalar->AddEnumGraphEdge( head, tail );
+                        }                       
+                      }
+                    }
+
+                    md->Add(scalar);                
                 }
                 else if(type == VISIT_VARTYPE_VECTOR)
                 {
@@ -700,7 +778,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
 
                     md->Add(arr);
                 }
-            }
+            }       
             free(meshName);
         }
         free(name);
@@ -735,7 +813,7 @@ AddMaterialMetaData(avtDatabaseMetaData *md, visit_handle h)
         if(simv2_MaterialMetaData_getMeshName(h, &meshName) == VISIT_OKAY)
         {
             int nMat = 0;
-            if(simv2_MaterialMetaData_getNumMaterialName(h, &nMat) == VISIT_OKAY)
+            if(simv2_MaterialMetaData_getNumMaterialNames(h, &nMat) == VISIT_OKAY)
             {
                 avtMaterialMetaData *material = new avtMaterialMetaData;
                 material->name = name;

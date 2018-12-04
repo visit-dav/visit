@@ -53,7 +53,7 @@ SIMV2_API int simv2_MaterialMetaData_getName(visit_handle h, char **);
 SIMV2_API int simv2_MaterialMetaData_setMeshName(visit_handle h, const char *);
 SIMV2_API int simv2_MaterialMetaData_getMeshName(visit_handle h, char **);
 SIMV2_API int simv2_MaterialMetaData_addMaterialName(visit_handle h, const char *);
-SIMV2_API int simv2_MaterialMetaData_getNumMaterialName(visit_handle h, int *);
+SIMV2_API int simv2_MaterialMetaData_getNumMaterialNames(visit_handle h, int *);
 SIMV2_API int simv2_MaterialMetaData_getMaterialName(visit_handle h, int, char **);
 
 #ifdef __cplusplus

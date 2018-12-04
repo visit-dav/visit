@@ -65,8 +65,23 @@ SIMV2_API int simv2_VariableMetaData_getHideFromGUI(visit_handle h, int*);
 SIMV2_API int simv2_VariableMetaData_setNumComponents(visit_handle h, int);
 SIMV2_API int simv2_VariableMetaData_getNumComponents(visit_handle h, int*);
 SIMV2_API int simv2_VariableMetaData_addMaterialName(visit_handle h, const char *);
-SIMV2_API int simv2_VariableMetaData_getNumMaterialName(visit_handle h, int *);
+SIMV2_API int simv2_VariableMetaData_getNumMaterialNames(visit_handle h, int *);
 SIMV2_API int simv2_VariableMetaData_getMaterialName(visit_handle h, int, char **);
+
+SIMV2_API int simv2_VariableMetaData_setEnumerationType(visit_handle h, int);
+SIMV2_API int simv2_VariableMetaData_getEnumerationType(visit_handle h, int*);
+  
+SIMV2_API int simv2_VariableMetaData_getNumEnumNames(visit_handle h, int *);
+SIMV2_API int simv2_VariableMetaData_getEnumName(visit_handle h, int, char **);
+
+SIMV2_API int simv2_VariableMetaData_addEnumNameValue(visit_handle h, const char *, double);
+SIMV2_API int simv2_VariableMetaData_addEnumNameRange(visit_handle h, const char *, double, double);
+SIMV2_API int simv2_VariableMetaData_getNumEnumNameRanges(visit_handle h, int *);
+SIMV2_API int simv2_VariableMetaData_getEnumNameRange(visit_handle h, int, double *, double *);
+
+SIMV2_API int simv2_VariableMetaData_addEnumGraphEdge(visit_handle h, int, int);
+SIMV2_API int simv2_VariableMetaData_getNumEnumGraphEdges(visit_handle h, int *);
+SIMV2_API int simv2_VariableMetaData_getEnumGraphEdge(visit_handle h, int, int *, int *);
 
 #ifdef __cplusplus
 };

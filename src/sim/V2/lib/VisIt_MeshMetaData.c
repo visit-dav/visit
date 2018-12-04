@@ -424,6 +424,38 @@ VisIt_MeshMetaData_getSpatialExtents(visit_handle h, double val[6])
         (h, val));
 }
 
+int
+VisIt_MeshMetaData_setHasLogicalBounds(visit_handle h, int val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_setHasLogicalBounds,
+        int, (visit_handle, int),
+        (h, val));
+}
+
+int
+VisIt_MeshMetaData_getHasLogicalBounds(visit_handle h, int *val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getHasLogicalBounds,
+        int, (visit_handle, int*),
+        (h, val));
+}
+
+int
+VisIt_MeshMetaData_setLogicalBounds(visit_handle h, int val[3])
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_setLogicalBounds,
+        int, (visit_handle, int[3]),
+        (h, val));
+}
+
+int
+VisIt_MeshMetaData_getLogicalBounds(visit_handle h, int val[3])
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_getLogicalBounds,
+        int, (visit_handle, int[3]),
+        (h, val));
+}
+
 
 /************************** Fortran callable routines *************************/
 /* maxlen 012345678901234567890123456789                                      */
@@ -474,6 +506,10 @@ VisIt_MeshMetaData_getSpatialExtents(visit_handle h, double val[6])
 #define F_VISITMDMESHGETHASSPATIALEXTENTS  F77_ID(visitmdmeshgethasspatialextents_,visitmdmeshgethasspatialextents, VISITMDMESHGETHASSPATIALEXTENTS)
 #define F_VISITMDMESHSETSPATIALEXTENTS    F77_ID(visitmdmeshsetspatialextents_,visitmdmeshsetspatialextents, VISITMDMESHSETSPATIALEXTENTS)
 #define F_VISITMDMESHGETSPATIALEXTENTS    F77_ID(visitmdmeshgetspatialextents_,visitmdmeshgetspatialextents, VISITMDMESHGETSPATIALEXTENTS)
+#define F_VISITMDMESHSETHASLOGICALBOUNDS  F77_ID(visitmdmeshsethaslogicalbounds_,visitmdmeshsethaslogicalbounds, VISITMDMESHSETHASLOGICALBOUNDS)
+#define F_VISITMDMESHGETHASLOGICALBOUNDS  F77_ID(visitmdmeshgethaslogicalbounds_,visitmdmeshgethaslogicalbounds, VISITMDMESHGETHASLOGICALBOUNDS)
+#define F_VISITMDMESHSETLOGICALBOUNDS    F77_ID(visitmdmeshsetlogicalbounds_,visitmdmeshsetlogicalbounds, VISITMDMESHSETLOGICALBOUNDS)
+#define F_VISITMDMESHGETLOGICALBOUNDS    F77_ID(visitmdmeshgetlogicalbounds_,visitmdmeshgetlogicalbounds, VISITMDMESHGETLOGICALBOUNDS)
 
 int
 F_VISITMDMESHALLOC(visit_handle *h)
@@ -906,5 +942,29 @@ int
 F_VISITMDMESHGETSPATIALEXTENTS(visit_handle *h, double val[6])
 {
     return VisIt_MeshMetaData_getSpatialExtents(*h, val);
+}
+
+int
+F_VISITMDMESHSETHASLOGICALBOUNDS(visit_handle *h, int *val)
+{
+    return VisIt_MeshMetaData_setHasLogicalBounds(*h, *val);
+}
+
+int
+F_VISITMDMESHGETHASLOGICALBOUNDS(visit_handle *h, int *val)
+{
+    return VisIt_MeshMetaData_getHasLogicalBounds(*h, val);
+}
+
+int
+F_VISITMDMESHSETLOGICALBOUNDS(visit_handle *h, int val[3])
+{
+    return VisIt_MeshMetaData_setLogicalBounds(*h, val);
+}
+
+int
+F_VISITMDMESHGETLOGICALBOUNDS(visit_handle *h, int val[3])
+{
+    return VisIt_MeshMetaData_getLogicalBounds(*h, val);
 }
 
