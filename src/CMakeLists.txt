@@ -741,7 +741,7 @@ OPTION(VISIT_CREATE_SOCKET_RELAY_EXECUTABLE "Create a separate executable that f
 OPTION(VISIT_RPATH_RELATIVE_TO_EXECUTABLE_PATH "Install rpath relative to executable location using \$ORIGIN tag" OFF)
 OPTION(VISIT_FORTRAN "Enable compilation of Fortran example progams" OFF)
 OPTION(VISIT_DATA_MANUAL_EXAMPLES "Build Getting Data Into VisIt examples" OFF)
-OPTION(VISIT_NO_SPHINX "Disable ability to build sphinx documentation" ON)
+OPTION(VISIT_SPHINX "Enable ability to build sphinx documentation" OFF)
 
 OPTION(IGNORE_THIRD_PARTY_LIB_PROBLEMS "Ignore problems finding requested third party libraries")
 OPTION(VISIT_FORCE_SSH_TUNNELING "Force ssh tunnelling for sockets" OFF)
@@ -2268,9 +2268,9 @@ IF (NOT BUILD_TESTING)
 ENDIF()
 ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 
-IF(NOT VISIT_NO_SPHINX)
+IF(VISIT_SPHINX)
     ADD_SUBDIRECTORY(doc)
-ENDIF(NOT VISIT_NO_SPHINX)
+ENDIF()
 
 #-----------------------------------------------------------------------------
 # CPack -- This leverages our install targets to provide a "make package" that
