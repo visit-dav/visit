@@ -70,7 +70,7 @@ from visit_test_ctest import *
 #  Date:       Wed May 30 2012
 # ----------------------------------------------------------------------------
 def visit_root():
-    return abs_path(test_path(),"..")
+    return abs_path(test_path(),"../..")
 
 
 # ----------------------------------------------------------------------------
@@ -446,11 +446,15 @@ def log_test_result(result_dir,result):
 #    Kathleen Biagas, Thu Nov  8 10:33:45 PST 2018
 #    Added src_dir and cmake_cmd.  
 #
+#    Eric Brugger, Wed Dec  5 13:05:18 PST 2018
+#    Changed the definition of tests_dir_def to the new location of the
+#    test directory.
+#
 # ----------------------------------------------------------------------------
 def default_suite_options():
     data_dir_def    = abs_path(visit_root(),"data")
     base_dir_def    = abs_path(visit_root(),"test","baseline")
-    tests_dir_def   = abs_path(visit_root(),"test","tests")
+    tests_dir_def   = abs_path(visit_root(),"src","test","tests")
     visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
     src_dir_def     = abs_path(visit_root(),"src")
     skip_def        = pjoin(test_path(),"skip.json")
