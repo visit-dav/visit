@@ -69,4 +69,4 @@ elseif(HAVE_EGL)
 endif()
 
 VISIT_INSTALL_TARGETS(text2polys time_annotation)
-VISIT_TOOLS_ADD_FOLDER(annotations text2polys time_annotation)
+VISIT_FX_ADD_FOLDER(annotations text2polys time_annotation)

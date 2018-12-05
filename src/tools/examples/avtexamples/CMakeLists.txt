@@ -86,7 +86,7 @@ ${ICET_LIBRARY_DIR}
 
 ADD_EXECUTABLE(avtFilterExample avtFilterExample.C)
 VISIT_INSTALL_TARGETS(avtFilterExample)
-VISIT_TOOLS_ADD_FOLDER(avtexamples avtFilterExample)
+VISIT_EXAMPLES_ADD_FOLDER(avtexamples avtFilterExample)
 
 TARGET_LINK_LIBRARIES(avtFilterExample
 ${engine_ser_exe_IDatabase}
@@ -113,7 +113,7 @@ endif()
 
 ADD_EXECUTABLE(avtRenderExample avtRenderExample.C)
 VISIT_INSTALL_TARGETS(avtRenderExample)
-VISIT_TOOLS_ADD_FOLDER(avtexamples avtRenderExample)
+VISIT_EXAMPLES_ADD_FOLDER(avtexamples avtRenderExample)
 
 TARGET_LINK_LIBRARIES(avtRenderExample
 ${engine_ser_exe_IDatabase}
@@ -145,7 +145,7 @@ endif()
 
 ADD_EXECUTABLE(avtPluginExample avtPluginExample.C)
 VISIT_INSTALL_TARGETS(avtPluginExample)
-VISIT_TOOLS_ADD_FOLDER(avtexamples avtPluginExample)
+VISIT_EXAMPLES_ADD_FOLDER(avtexamples avtPluginExample)
 
 TARGET_LINK_LIBRARIES(avtPluginExample
 ${engine_ser_exe_IDatabase}
@@ -172,7 +172,7 @@ endif()
 
 ADD_EXECUTABLE(avtPlotPluginExample avtPlotPluginExample.C)
 VISIT_INSTALL_TARGETS(avtPlotPluginExample)
-VISIT_TOOLS_ADD_FOLDER(avtexamples avtPlotPluginExample)
+VISIT_EXAMPLES_ADD_FOLDER(avtexamples avtPlotPluginExample)
 
 TARGET_LINK_LIBRARIES(avtPlotPluginExample
 ${engine_ser_exe_IDatabase}
@@ -203,7 +203,7 @@ endif()
 
 ADD_EXECUTABLE(networkManagerExample networkManagerExample.C)
 VISIT_INSTALL_TARGETS(networkManagerExample)
-VISIT_TOOLS_ADD_FOLDER(avtexamples networkManagerExample)
+VISIT_EXAMPLES_ADD_FOLDER(avtexamples networkManagerExample)
 
 TARGET_LINK_LIBRARIES(networkManagerExample
 ${engine_ser_exe_IDatabase}

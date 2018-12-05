@@ -65,4 +65,4 @@ ${PYTHON_LIBRARY}
 )
 
 VISIT_INSTALL_TARGETS(visit_writer)
-VISIT_TOOLS_ADD_FOLDER(visit_writer)
+VISIT_DATA_ADD_FOLDER(visit_writer)

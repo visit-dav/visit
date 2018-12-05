@@ -165,6 +165,7 @@ FUNCTION(BUILD_DATA_TARGET_IMPL target_name do_parallel)
     ELSE()
         ADD_EXECUTABLE(${tname} ${target_SOURCES})
     ENDIF()
+    VISIT_DATA_ADD_FOLDER(datagen ${tname})
 
     ADD_DEFINITIONS(${target_DEFS})
     TARGET_LINK_LIBRARIES(${tname} ${target_LIBS})
@@ -396,6 +397,7 @@ ENDIF(VISIT_USE_7ZIP)
 # Add custom target: "testdata"
 #-----------------------------------------------------------------------------
 ADD_CUSTOM_TARGET(testdata)
+VISIT_TOOLS_ADD_FOLDER(data testdata)
 #ADD_DEPENDENCIES(testdata data)
 
 #-----------------------------------------------------------------------------
@@ -436,21 +438,28 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
         SET(EXE_EXT "")
         SET(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
         SET(CMDS "")
-        IF (WIN32)
-            SET(EXE_EXT ".exe")
-            SET(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR})
-            FOREACH(SD ${SILO_LIBRARY_DIR})
-              FOREACH(SL ${SILO_LIB})
-                IF(EXISTS ${SD}/${SL})
-                  GET_FILENAME_COMPONENT(SL_WE ${SL} NAME_WE)
-                  FOREACH(CFG ${CMAKE_CONFIGURATION_TYPES})
-                      FILE(COPY        ${SD}/${SL_WE}.dll
+        if(WIN32)
+            set(EXE_EXT ".exe")
+            set(DATA_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR})
+            foreach(SD ${SILO_LIBRARY_DIR})
+              foreach(SL ${SILO_LIB})
+                get_filename_component(SL ${SL} NAME)
+                if(EXISTS ${SD}/${SL})
+                  get_filename_component(SL_WE ${SL} NAME_WE)
+                  set(dllName "${SD}/${SL_WE}.dll")
+                  if(NOT EXISTS ${dllName})
+                      set(dllName "${SD}/../bin/${SL_WE}.dll")
+                  endif()
+                  if(EXISTS ${dllName})
+                    foreach(CFG ${CMAKE_CONFIGURATION_TYPES})
+                      file(COPY        ${dllName}
                            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/${CFG})
-                  ENDFOREACH()
-                ENDIF()
-              ENDFOREACH()
-            ENDFOREACH()
-        ENDIF()
+                    endforeach()
+                  endif()
+                endif()
+              endforeach()
+            endforeach()
+        endif()
 
         SET(testall_output  curv2d.silo
                             curv2d_colmajor.silo
@@ -508,6 +517,7 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
             ${correlationtest_output}
             ${multi_test_output})
         ADD_CUSTOM_TARGET(create_data_examples ALL DEPENDS ${all_example_output})
+        VISIT_DATA_ADD_FOLDER(datagen create_data_examples)
 
         # Create data install target
         STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${DATA_OUT_DIR}/\\1\\2" install_files "${all_example_output}")
@@ -526,6 +536,7 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                            COMMENT "Generating visit_dist_data.tar.gz")
         ADD_CUSTOM_TARGET(visit_dist_data DEPENDS visit_dist_data.tar.gz)
+        VISIT_DATA_ADD_FOLDER(datagen visit_dist_data)
 
     ELSE(SILO_FOUND)
         MESSAGE(STATUS "Data files not included since visit_dist_data.tar.gz")

@@ -69,4 +69,4 @@ target_link_libraries(visit_transition vtkIOImage visit_vtk)
 
 # Installation targets
 VISIT_INSTALL_TARGETS(visit_composite visit_transition)
-VISIT_TOOLS_ADD_FOLDER(imagetools visit_composite visit_transition)
+VISIT_FX_ADD_FOLDER(imagetools visit_composite visit_transition)

@@ -393,7 +393,7 @@ ELSE(NOT WIN32)
             --install-purelib=${VLD_NATIVE}/${dest_dir}
             DEPENDS  ${setup_file} ${ARGN}
             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
+    set_target_properties(${target_name} PROPERTIES FOLDER visit_py_setup)
     if(VISIT_NO_ALLBUILD)
         add_dependencies(visit_special_builds ${target_name})
     endif()

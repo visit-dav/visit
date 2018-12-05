@@ -104,7 +104,7 @@ FUNCTION(SET_SIMULATION_PROPERTIES target)
         SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
             OUTPUT_NAME ${target}
             RUNTIME_OUTPUT_DIRECTORY ${VISIT_BINARY_DIR}/tools/DataManualExamples/Simulations
-            FOLDER tools/DataManualExamples/Simulations
+            FOLDER tools/data/DataManualExamples/Simulations
         )
         IF(NOT VISIT_DATA_MANUAL_EXAMPLES)
             SET_TARGET_PROPERTIES(sim_${target} PROPERTIES
@@ -119,7 +119,7 @@ FUNCTION(SET_SIMULATION_PROPERTIES target)
             RUNTIME_OUTPUT_DIRECTORY_DEBUG ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
             RUNTIME_OUTPUT_DIRECTORY_REWITHDEBINFO ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
             RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL ${VISIT_EXECUTABLE_DIR}/tools/DataManualExamples/Simulations
-            FOLDER tools/DataManualExamples/Simulations
+            FOLDER tools/data/DataManualExamples/Simulations
         )
     ENDIF()
 ENDFUNCTION(SET_SIMULATION_PROPERTIES)

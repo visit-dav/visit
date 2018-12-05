@@ -36,6 +36,16 @@
 #
 # Modifications:
 #****************************************************************************/
+
+macro(VISIT_EXAMPLES_ADD_FOLDER type)
+    if(${ARGC} GREATER 1)
+        set_target_properties(${ARGN} PROPERTIES FOLDER tools/examples/${type})
+    else()
+        set_target_properties(${type} PROPERTIES FOLDER tools/examples/${type})
+    endif()
+endmacro()
+
+
 IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
 ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     IF(VISIT_BUILD_AVTEXAMPLES AND NOT VISIT_STATIC)

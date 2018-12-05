@@ -210,4 +210,4 @@ IF(VISIT_STATIC)
     )
 ENDIF(VISIT_STATIC)
 
-VISIT_TOOLS_ADD_FOLDER(embedded embedded multiwindow)
+VISIT_EXAMPLES_ADD_FOLDER(embedded embedded multiwindow)

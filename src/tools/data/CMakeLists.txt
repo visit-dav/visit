@@ -36,35 +36,38 @@
 #
 # Modifications:
 #****************************************************************************/
-IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    ADD_SUBDIRECTORY(convert)
-ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
-    IF(WIN32)
-        # Don't want the data dir files to be added to the main VISIT
-        # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new
-        # PROJECT in data/CMakeLists.txt
-        SET(V_EX "EXCLUDE_FROM_ALL")
-    ENDIF(WIN32)
-    ADD_SUBDIRECTORY(datagen ${V_EX})
-    # We always want these to be built
-    IF(SILO_FOUND AND NOT WIN32)
-        ADD_SUBDIRECTORY(add_visit_searchpath)
-    ENDIF(SILO_FOUND AND NOT WIN32)
-    ADD_SUBDIRECTORY(convert)
-    IF(MILI_FOUND AND NOT WIN32)
-        ADD_SUBDIRECTORY(makemili)
-    ENDIF(MILI_FOUND AND NOT WIN32)
-    IF(SILO_FOUND)
-        ADD_SUBDIRECTORY(mrgtree2dot)
-    ENDIF(SILO_FOUND)
-    IF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
-        ADD_SUBDIRECTORY(writer)
-    ENDIF(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
-    IF(HDF5_FOUND AND NOT WIN32)
-        ADD_SUBDIRECTORY(xdmf_writer)
-    ENDIF(HDF5_FOUND AND NOT WIN32)
-    ADD_SUBDIRECTORY(DataManualExamples)
-ENDIF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
 
-# These do not need to be built:
-# surfcomp
+macro(VISIT_DATA_ADD_FOLDER type)
+    if(${ARGC} GREATER 1)
+        set_target_properties(${ARGN} PROPERTIES FOLDER tools/data/${type})
+    else()
+        set_target_properties(${type} PROPERTIES FOLDER tools/data/${type})
+    endif()
+endmacro()
+
+
+if(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
+    add_subdirectory(convert)
+else()
+    add_subdirectory(datagen)
+    # We always want these to be built
+    if(SILO_FOUND)
+        add_subdirectory(mrgtree2dot)
+        if(NOT WIN32)
+            add_subdirectory(add_visit_searchpath)
+        endif()
+    endif()
+    add_subdirectory(convert)
+    if(MILI_FOUND AND NOT WIN32)
+        add_subdirectory(makemili)
+    endif()
+    if(VISIT_PYTHON_SCRIPTING AND NOT VISIT_STATIC)
+        add_subdirectory(writer)
+        add_subdirectory(ultrawrapper)
+    endif()
+    if(HDF5_FOUND AND NOT WIN32)
+        add_subdirectory(xdmf_writer)
+    endif()
+    add_subdirectory(DataManualExamples)
+endif()
+

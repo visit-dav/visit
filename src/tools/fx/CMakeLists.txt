@@ -36,6 +36,17 @@
 #
 # Modifications:
 #****************************************************************************/
+
+
+macro(VISIT_FX_ADD_FOLDER type)
+    if(${ARGC} GREATER 1)
+        set_target_properties(${ARGN} PROPERTIES FOLDER tools/fx/${type})
+    else()
+        set_target_properties(${type} PROPERTIES FOLDER tools/fx/${type})
+    endif()
+endmacro()
+
+
 IF(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
 ELSE(VISIT_DBIO_ONLY OR VISIT_ENGINE_ONLY OR VISIT_SERVER_COMPONENTS_ONLY)
     ADD_SUBDIRECTORY(annotations) # fx
