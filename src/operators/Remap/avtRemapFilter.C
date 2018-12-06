@@ -174,12 +174,6 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 avtDataRepresentation *
 avtRemapFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
-    // Temporary set of intrisic or extrinsic boolean to determine the type
-    // of variable. Use this until I can figure out a better way.
-    bool intrinsic = true;
-    bool extrinsic = false;
-    //
-    //
 
 
     
@@ -249,6 +243,12 @@ PrintData(rg);
         rg->GetCellData()->AddArray(vars[vdx]);
         rg->GetCellData()->SetScalars(vars[vdx]);
     }
+    
+    // Determine the variable type from the attributes
+    /*enum*/ RemapAttributes::VariableTypes varType =
+        atts.GetVariableType();
+std::cout << "Variable type: ";
+std::cout << varType << std::endl;
     
 std::cout << "Added blank vars to rg:" << std::endl;
 PrintData(rg);
@@ -396,7 +396,7 @@ double DEBUG_maxDiff = DBL_MIN;
             double value = 0.0;
             vtkDoubleArray* myVariable =
                 vtkDoubleArray::SafeDownCast(ug->GetCellData()->GetArray(vdx));
-            if (intrinsic) // like density
+            if (varType == RemapAttributes::intrinsic) // like density
             {
                 for (vtkIdType tuple = 0;
                      tuple < myVariable->GetNumberOfTuples(); tuple++)
@@ -407,7 +407,7 @@ double DEBUG_maxDiff = DBL_MIN;
                 value /= rCellVolume;
                 vars[vdx]->SetComponent(rCell, 0, value);
             }
-            else if (extrinsic) // like mass
+            else if (varType == RemapAttributes::extrinsic) // like mass
             {
                 for (vtkIdType tuple = 0;
                      tuple < myVariable->GetNumberOfTuples(); tuple++)
@@ -519,6 +519,31 @@ PrintData(out_dr);
 //
 // ****************************************************************************
 
+
+inline void
+Swap1(double &a, double &b)
+{
+    double tmp = a;
+    a = b;
+    b = tmp;
+}
+
+inline void
+Swap3(double c[][3], int a, int b)
+{
+    Swap1(c[a][0], c[b][0]);
+    Swap1(c[a][1], c[b][1]);
+    Swap1(c[a][2], c[b][2]);
+}
+
+inline
+void Copy3(double coords[][3], double a[], int i)
+{
+    a[0] = coords[i][0];
+    a[1] = coords[i][1];
+    a[2] = coords[i][2];
+}
+
 vtkDoubleArray*
 avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
 {
@@ -550,14 +575,58 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
             pointData->GetTuple(j, coordinates[j]); // Set the j-th entry in coordiantes to the tuple from pointData at j
         }
         
+        int subdiv[3][4] = { {0,5,4,3}, {0,2,1,4}, {0,4,5,2} };
+        // ^ Need this to be before switch otherwise ill-formed program.
         switch(cell->GetCellType()) // right now only support Triangle and Quad
         {
             case VTK_TRIANGLE:
                 volume = v_tri_area(3, coordinates);
                 break;
             case VTK_QUAD:
+                //volume = v_quad_area(3, coordinates);
+                volume = v_quad_area(4, coordinates);
+                // Based on V_QuadMetric, I believe this should be 4.
+                // Should run tests and see if there is a change in the output
+                break;
             case VTK_PIXEL:
-                volume = v_quad_area(3, coordinates);
+std::cout << "PIXEL" << std::endl;
+                Swap3(coordinates, 2, 3);
+                volume = v_quad_area(4, coordinates);
+                break;
+            case VTK_VOXEL:
+                Swap3(coordinates, 2, 3);
+                Swap3(coordinates, 6, 7);
+                volume = v_hex_volume(8, coordinates);
+                break;
+            case VTK_HEXAHEDRON:
+                volume = v_hex_volume(8, coordinates);
+                break;
+            case VTK_TETRA:
+                volume = v_tet_volume(4, coordinates);
+                break;
+            case VTK_WEDGE:
+                double tet_coordinates[4][3];
+                volume = 0;
+                for (int i = 0 ; i < 3 ; i++)
+                {
+                    for (int j = 0 ; j < 4 ; j++)
+                        for (int k = 0 ; k < 3 ; k++)
+                            tet_coordinates[j][k] = coordinates[subdiv[i][j]][k];
+                    volume += v_tet_volume(4, tet_coordinates);
+                }
+                break;
+            case VTK_PYRAMID:
+                double one[4][3];
+                double two[4][3];
+                Copy3(coordinates,one[0], 0);
+                Copy3(coordinates,one[1], 1);
+                Copy3(coordinates,one[2], 2);
+                Copy3(coordinates,one[3], 4);
+                Copy3(coordinates,two[0], 0);
+                Copy3(coordinates,two[1], 2);
+                Copy3(coordinates,two[2], 3);
+                Copy3(coordinates,two[3], 4);
+                volume = v_tet_volume(4,one) + v_tet_volume(4, two);
                 break;
             default:
                 std::cout << "Cannot calculate volume for cell of type: "
