@@ -654,16 +654,16 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                       
                       for( int i=0; i<nNames; ++i )
                       {
-                        char *name = NULL;
+                        char *eName = NULL;
                         double minVal, maxVal;
                         
-                        if(simv2_VariableMetaData_getEnumName(h, i, &name) == VISIT_OKAY &&
+                        if(simv2_VariableMetaData_getEnumName(h, i, &eName) == VISIT_OKAY &&
                            simv2_VariableMetaData_getEnumNameRange(h, i, &minVal, &maxVal) == VISIT_OKAY)
                         {
-                          std::cerr << i << " adding enum " << name << "  "
+                          std::cerr << i << " adding enum " << eName << "  "
                                     << minVal << "  " << maxVal << std::endl;
                           scalar->AddEnumNameRange(name, minVal, maxVal);
-                          free(name);
+                          free(eName);
                         }
                       }
                     }
@@ -679,13 +679,37 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                         
                         if(simv2_VariableMetaData_getEnumGraphEdge(h, i, &head, &tail) == VISIT_OKAY)
                         {
-                          std::cerr << i << " adding edge " << name << "  "
+                          std::cerr << i << " adding edge "
                                     << head << "  " << tail << std::endl;
                           scalar->AddEnumGraphEdge( head, tail );
                         }                       
                       }
                     }
 
+                    double minVal, maxVal;
+
+                    if(simv2_VariableMetaData_getEnumAlwaysIncludeRange(h, &minVal, &maxVal) == VISIT_OKAY)
+                    {
+                        // The defaults are +DBL_MAX and -DBL_MAX which will fail this conditional
+                        if( minVal <= maxVal )
+                        {
+                            std::cerr << " always including edge "
+                                      << minVal << "  " << maxVal << std::endl;
+                            scalar->SetEnumAlwaysIncludeRange( minVal, maxVal );
+                        }
+                    }
+                    
+                    if(simv2_VariableMetaData_getEnumAlwaysExcludeRange(h, &minVal, &maxVal) == VISIT_OKAY)
+                    {
+                        // The defaults are +DBL_MAX and -DBL_MAX which will fail this conditional
+                        if( minVal <= maxVal )
+                        {
+                            std::cerr << " always excluding edge "
+                                      << minVal << "  " << maxVal << std::endl;
+                            scalar->SetEnumAlwaysExcludeRange( minVal, maxVal );
+                        }
+                    }
+                    
                     md->Add(scalar);                
                 }
                 else if(type == VISIT_VARTYPE_VECTOR)

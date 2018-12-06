@@ -67,8 +67,14 @@ int VisIt_VariableMetaData_getMaterialName(visit_handle h, int, char **);
 int VisIt_VariableMetaData_setEnumerationType(visit_handle h, int);
 int VisIt_VariableMetaData_getEnumerationType(visit_handle h, int*);
 int VisIt_VariableMetaData_addEnumGraphEdge(visit_handle h, int, int);
-int VisIt_VariableMetaData_addEnumNameValue(visit_handle h, const char *, double);
-int VisIt_VariableMetaData_addEnumNameRange(visit_handle h, const char *, double, double);
+int VisIt_VariableMetaData_addEnumNameValue(visit_handle h, const char *, double, int *);
+int VisIt_VariableMetaData_addEnumNameRange(visit_handle h, const char *, double, double, int *);
+int VisIt_VariableMetaData_setEnumAlwaysExcludeValue(visit_handle h, double);
+int VisIt_VariableMetaData_setEnumAlwaysExcludeRange(visit_handle h, double, double);
+int VisIt_VariableMetaData_getEnumAlwaysExcludeRange(visit_handle h, double *, double *);  
+int VisIt_VariableMetaData_setEnumAlwaysIncludeValue(visit_handle h, double);
+int VisIt_VariableMetaData_setEnumAlwaysIncludeRange(visit_handle h, double, double);
+int VisIt_VariableMetaData_getEnumAlwaysIncludeRange(visit_handle h, double *, double *);
   
 #ifdef __cplusplus
 }

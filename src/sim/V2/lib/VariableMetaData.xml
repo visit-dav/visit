@@ -53,6 +53,14 @@
     </Field>
     <Field name="enumRanges" label="Enum ranges" type="doubleVector">
     </Field>
+    <Field name="enumAlwaysInclude" label="Enum always include" type="doubleVector" length="2">
+      +DBL_MAX;
+      -DBL_MAX;
+    </Field>
+    <Field name="enumAlwaysExclude" label="Enum always exclude" type="doubleVector" length="2">
+      +DBL_MAX;
+      -DBL_MAX;
+    </Field>
     <Field name="enumGraphEdges" label="Enum graph edges " type="intVector">
     </Field>
     <Function name="simv2_VariableMetaData_check" user="true" member="true">

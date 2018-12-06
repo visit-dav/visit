@@ -17663,6 +17663,7 @@ SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumNameValue(PyObject *SWI
   visit_handle arg1 ;
   char *arg2 = (char *) 0 ;
   double arg3 ;
+  int *arg4 = (int *) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   int res2 ;
@@ -17670,12 +17671,15 @@ SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumNameValue(PyObject *SWI
   int alloc2 = 0 ;
   double val3 ;
   int ecode3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:VisIt_VariableMetaData_addEnumNameValue",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:VisIt_VariableMetaData_addEnumNameValue",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_addEnumNameValue" "', argument " "1"" of type '" "visit_handle""'");
@@ -17691,7 +17695,12 @@ SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumNameValue(PyObject *SWI
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisIt_VariableMetaData_addEnumNameValue" "', argument " "3"" of type '" "double""'");
   } 
   arg3 = static_cast< double >(val3);
-  result = (int)VisIt_VariableMetaData_addEnumNameValue(arg1,(char const *)arg2,arg3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4,SWIGTYPE_p_int, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "VisIt_VariableMetaData_addEnumNameValue" "', argument " "4"" of type '" "int *""'"); 
+  }
+  arg4 = reinterpret_cast< int * >(argp4);
+  result = (int)VisIt_VariableMetaData_addEnumNameValue(arg1,(char const *)arg2,arg3,arg4);
   resultobj = SWIG_From_int(static_cast< int >(result));
   if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
   return resultobj;
@@ -17707,6 +17716,7 @@ SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumNameRange(PyObject *SWI
   char *arg2 = (char *) 0 ;
   double arg3 ;
   double arg4 ;
+  int *arg5 = (int *) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   int res2 ;
@@ -17716,13 +17726,16 @@ SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumNameRange(PyObject *SWI
   int ecode3 = 0 ;
   double val4 ;
   int ecode4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:VisIt_VariableMetaData_addEnumNameRange",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:VisIt_VariableMetaData_addEnumNameRange",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_addEnumNameRange" "', argument " "1"" of type '" "visit_handle""'");
@@ -17743,12 +17756,159 @@ SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumNameRange(PyObject *SWI
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "VisIt_VariableMetaData_addEnumNameRange" "', argument " "4"" of type '" "double""'");
   } 
   arg4 = static_cast< double >(val4);
-  result = (int)VisIt_VariableMetaData_addEnumNameRange(arg1,(char const *)arg2,arg3,arg4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_int, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "VisIt_VariableMetaData_addEnumNameRange" "', argument " "5"" of type '" "int *""'"); 
+  }
+  arg5 = reinterpret_cast< int * >(argp5);
+  result = (int)VisIt_VariableMetaData_addEnumNameRange(arg1,(char const *)arg2,arg3,arg4,arg5);
   resultobj = SWIG_From_int(static_cast< int >(result));
   if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
   return resultobj;
 fail:
   if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_setEnumAlwaysExcludeValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  double arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_VariableMetaData_setEnumAlwaysExcludeValue",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_setEnumAlwaysExcludeValue" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_VariableMetaData_setEnumAlwaysExcludeValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  result = (int)VisIt_VariableMetaData_setEnumAlwaysExcludeValue(arg1,arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_setEnumAlwaysExcludeRange(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  double arg2 ;
+  double arg3 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VisIt_VariableMetaData_setEnumAlwaysExcludeRange",&obj0,&obj1,&obj2)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_setEnumAlwaysExcludeRange" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_VariableMetaData_setEnumAlwaysExcludeRange" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisIt_VariableMetaData_setEnumAlwaysExcludeRange" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  result = (int)VisIt_VariableMetaData_setEnumAlwaysExcludeRange(arg1,arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_setEnumAlwaysIncludeValue(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  double arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_VariableMetaData_setEnumAlwaysIncludeValue",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_setEnumAlwaysIncludeValue" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_VariableMetaData_setEnumAlwaysIncludeValue" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  result = (int)VisIt_VariableMetaData_setEnumAlwaysIncludeValue(arg1,arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_setEnumAlwaysIncludeRange(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  double arg2 ;
+  double arg3 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  double val2 ;
+  int ecode2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOO:VisIt_VariableMetaData_setEnumAlwaysIncludeRange",&obj0,&obj1,&obj2)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_setEnumAlwaysIncludeRange" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  ecode2 = SWIG_AsVal_double(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "VisIt_VariableMetaData_setEnumAlwaysIncludeRange" "', argument " "2"" of type '" "double""'");
+  } 
+  arg2 = static_cast< double >(val2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisIt_VariableMetaData_setEnumAlwaysIncludeRange" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = static_cast< double >(val3);
+  result = (int)VisIt_VariableMetaData_setEnumAlwaysIncludeRange(arg1,arg2,arg3);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  return resultobj;
+fail:
   return NULL;
 }
 
@@ -18199,6 +18359,10 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisIt_VariableMetaData_addEnumGraphEdge", _wrap_VisIt_VariableMetaData_addEnumGraphEdge, METH_VARARGS, NULL},
 	 { (char *)"VisIt_VariableMetaData_addEnumNameValue", _wrap_VisIt_VariableMetaData_addEnumNameValue, METH_VARARGS, NULL},
 	 { (char *)"VisIt_VariableMetaData_addEnumNameRange", _wrap_VisIt_VariableMetaData_addEnumNameRange, METH_VARARGS, NULL},
+	 { (char *)"VisIt_VariableMetaData_setEnumAlwaysExcludeValue", _wrap_VisIt_VariableMetaData_setEnumAlwaysExcludeValue, METH_VARARGS, NULL},
+	 { (char *)"VisIt_VariableMetaData_setEnumAlwaysExcludeRange", _wrap_VisIt_VariableMetaData_setEnumAlwaysExcludeRange, METH_VARARGS, NULL},
+	 { (char *)"VisIt_VariableMetaData_setEnumAlwaysIncludeValue", _wrap_VisIt_VariableMetaData_setEnumAlwaysIncludeValue, METH_VARARGS, NULL},
+	 { (char *)"VisIt_VariableMetaData_setEnumAlwaysIncludeRange", _wrap_VisIt_VariableMetaData_setEnumAlwaysIncludeRange, METH_VARARGS, NULL},
 	 { NULL, NULL, 0, NULL }
 };
 

@@ -225,19 +225,19 @@ VisIt_VariableMetaData_getEnumerationType(visit_handle h, int *val)
 }
 
 int
-VisIt_VariableMetaData_addEnumNameValue(visit_handle h, const char *name, double val)
+VisIt_VariableMetaData_addEnumNameValue(visit_handle h, const char *name, double val, int * index)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_addEnumNameValue,
-                          int, (visit_handle, const char *, double),
-                          (h, name, val));
+                          int, (visit_handle, const char *, double, int *),
+                          (h, name, val, index));
 }
 
 int
-VisIt_VariableMetaData_addEnumNameRange(visit_handle h, const char *name, double minVal, double maxVal)
+VisIt_VariableMetaData_addEnumNameRange(visit_handle h, const char *name, double minVal, double maxVal, int * index)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_addEnumNameRange,
-                          int, (visit_handle, const char *, double, double),
-                          (h, name, minVal, maxVal));
+                          int, (visit_handle, const char *, double, double, int *),
+                          (h, name, minVal, maxVal, index));
 }
 
 int
@@ -283,10 +283,59 @@ VisIt_VariableMetaData_getNumEnumGraphEdges(visit_handle h, int *val)
 int
 VisIt_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int * tail)
 {
-    VISIT_DYNAMIC_EXECUTE(VariableMetaData_addEnumGraphEdge,
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getEnumGraphEdge,
                           int, (visit_handle, int, int *, int *),
                           (h, i, head, tail));
 }
+
+int
+VisIt_VariableMetaData_setEnumAlwaysExcludeValue(visit_handle h, double val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_setEnumAlwaysExcludeValue,
+        int, (visit_handle, double),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_setEnumAlwaysExcludeRange(visit_handle h, double minVal, double maxVal)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_setEnumAlwaysExcludeRange,
+                          int, (visit_handle, double, double),
+                          (h, minVal, maxVal));
+}
+
+int
+VisIt_VariableMetaData_getEnumAlwaysExcludeRange(visit_handle h, double *minVal, double *maxVal)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getEnumAlwaysExcludeRange,
+                          int, (visit_handle, double *, double *),
+                          (h, minVal, maxVal));
+}
+
+int
+VisIt_VariableMetaData_setEnumAlwaysIncludeValue(visit_handle h, double val)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_setEnumAlwaysIncludeValue,
+        int, (visit_handle, double),
+        (h, val));
+}
+
+int
+VisIt_VariableMetaData_setEnumAlwaysIncludeRange(visit_handle h, double minVal, double maxVal)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_setEnumAlwaysIncludeRange,
+                          int, (visit_handle, double, double),
+                          (h, minVal, maxVal));
+}
+
+int
+VisIt_VariableMetaData_getEnumAlwaysIncludeRange(visit_handle h, double *minVal, double *maxVal)
+{
+    VISIT_DYNAMIC_EXECUTE(VariableMetaData_getEnumAlwaysIncludeRange,
+                          int, (visit_handle, double *, double *),
+                          (h, minVal, maxVal));
+}
+
 
 
 /************************** Fortran callable routines *************************/
@@ -323,6 +372,13 @@ VisIt_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int *
 #define F_VISITMDVARADDENUMGRAPHEDGE       F77_ID(visitmdvaraddenumgraphedge_,visitmdvaraddenumgraphedge,VISITMDVARADDENUMGRAPHEDGE)
 #define F_VISITMDVARGETNUMENUMGRAPHEDGES   F77_ID(visitmdvargetnumenumgraphedges_,visitmdvargetnumenumgraphedges,VISITMDVARGETNUMENUMGRAPHEDGES)
 #define F_VISITMDVARGETENUMGRAPHEDGE       F77_ID(visitmdvargetenumgraphedge_,visitmdvargetenumgraphedge,VISITMDVARGETENUMGRAPHEDGE)
+
+#define F_VISITMDVARSETENUMALWAYSEXCLUDEVALUE F77_ID(visitmdvarsetenumalwaysexcludevalue_,visitmdvarsetenumalwaysexcludevalue,VISITMDVARSETENUMALWAYSEXCLUDEVALUE)
+#define F_VISITMDVARSETENUMALWAYSEXCLUDERANGE F77_ID(visitmdvarsetenumalwaysexcluderange_,visitmdvarsetenumalwaysexcluderange,VISITMDVARSETENUMALWAYSEXCLUDERANGE)
+#define F_VISITMDVARGETENUMALWAYSEXCLUDERANGE F77_ID(visitmdvargetenumalwaysexcluderange_,visitmdvargetenumalwaysexcluderange,VISITMDVARGETENUMALWAYSEXCLUDERANGE)
+#define F_VISITMDVARSETENUMALWAYSINCLUDEVALUE F77_ID(visitmdvarsetenumalwaysincludevalue_,visitmdvarsetenumalwaysincludevalue,VISITMDVARSETENUMALWAYSINCLUDEVALUE)
+#define F_VISITMDVARSETENUMALWAYSINCLUDERANGE F77_ID(visitmdvarsetenumalwaysincluderange_,visitmdvarsetenumalwaysincluderange,VISITMDVARSETENUMALWAYSINCLUDERANGE)
+#define F_VISITMDVARGETENUMALWAYSINCLUDERANGE F77_ID(visitmdvargetenumalwaysincluderange_,visitmdvargetenumalwaysincluderange,VISITMDVARGETENUMALWAYSINCLUDERANGE)
 
 int
 F_VISITMDVARALLOC(visit_handle *h)
@@ -512,23 +568,23 @@ F_VISITMDENUMGETTYPE(visit_handle *h, int *val)
 }
 
 int
-F_VISITMDVARADDENUMNAMEVALUE(visit_handle *h, char *name, int *lname, double *val)
+F_VISITMDVARADDENUMNAMEVALUE(visit_handle *h, char *name, int *lname, double *val, int * index)
 {
     char *f_name = NULL;
     int retval;
     COPY_FORTRAN_STRING(f_name, name, lname);
-    retval = VisIt_VariableMetaData_addEnumNameValue( *h, f_name, *val);
+    retval = VisIt_VariableMetaData_addEnumNameValue( *h, f_name, *val, index );
     FREE(f_name);
     return retval;
 }
 
 int
-F_VISITMDVARADDENUMNAMERANGE(visit_handle *h, char *name, int *lname, double *minVal, double *maxVal)
+F_VISITMDVARADDENUMNAMERANGE(visit_handle *h, char *name, int *lname, double *minVal, double *maxVal, int * index)
 {
     char *f_name = NULL;
     int retval;
     COPY_FORTRAN_STRING(f_name, name, lname);
-    retval = VisIt_VariableMetaData_addEnumNameRange( *h, f_name, *minVal, *maxVal);
+    retval = VisIt_VariableMetaData_addEnumNameRange( *h, f_name, *minVal, *maxVal, index );
     FREE(f_name);
     return retval;
 }
@@ -575,4 +631,40 @@ int
 F_VISITMDVARGETENUMGRAPHEDGE(visit_handle *h, int *i, int *head, int *tail)
 {
     return VisIt_VariableMetaData_getEnumGraphEdge( *h, *i, head, tail);
+}
+
+int
+F_VISITMDVARSETENUMALWAYSINCLUDEVALUE(visit_handle *h, double *val)
+{
+    return VisIt_VariableMetaData_setEnumAlwaysIncludeValue( *h, *val);
+}
+
+int
+F_VISITMDVARSETENUMALWAYSINCLUDERANGE(visit_handle *h, double *minVal, double *maxVal)
+{
+    return VisIt_VariableMetaData_setEnumAlwaysIncludeRange( *h, *minVal, *maxVal);
+}
+
+int
+F_VISITMDVARGETENUMALWAYSINCLUDERANGE(visit_handle *h, double *minVal, double *maxVal)
+{
+    return VisIt_VariableMetaData_getEnumAlwaysIncludeRange( *h, minVal, maxVal);
+}
+
+int
+F_VISITMDVARSETENUMALWAYSEXCLUDEVALUE(visit_handle *h, double *val)
+{
+    return VisIt_VariableMetaData_setEnumAlwaysExcludeValue( *h, *val);
+}
+
+int
+F_VISITMDVARSETENUMALWAYSEXCLUDERANGE(visit_handle *h, double *minVal, double *maxVal)
+{
+    return VisIt_VariableMetaData_setEnumAlwaysExcludeRange( *h, *minVal, *maxVal);
+}
+
+int
+F_VISITMDVARGETENUMALWAYSEXCLUDERANGE(visit_handle *h, double *minVal, double *maxVal)
+{
+    return VisIt_VariableMetaData_getEnumAlwaysExcludeRange( *h, minVal, maxVal);
 }

@@ -1717,13 +1717,29 @@ def VisIt_VariableMetaData_addEnumGraphEdge(h, arg2, arg3):
     return _simV2.VisIt_VariableMetaData_addEnumGraphEdge(h, arg2, arg3)
 VisIt_VariableMetaData_addEnumGraphEdge = _simV2.VisIt_VariableMetaData_addEnumGraphEdge
 
-def VisIt_VariableMetaData_addEnumNameValue(h, arg2, arg3):
-    return _simV2.VisIt_VariableMetaData_addEnumNameValue(h, arg2, arg3)
+def VisIt_VariableMetaData_addEnumNameValue(h, arg2, arg3, arg4):
+    return _simV2.VisIt_VariableMetaData_addEnumNameValue(h, arg2, arg3, arg4)
 VisIt_VariableMetaData_addEnumNameValue = _simV2.VisIt_VariableMetaData_addEnumNameValue
 
-def VisIt_VariableMetaData_addEnumNameRange(h, arg2, arg3, arg4):
-    return _simV2.VisIt_VariableMetaData_addEnumNameRange(h, arg2, arg3, arg4)
+def VisIt_VariableMetaData_addEnumNameRange(h, arg2, arg3, arg4, arg5):
+    return _simV2.VisIt_VariableMetaData_addEnumNameRange(h, arg2, arg3, arg4, arg5)
 VisIt_VariableMetaData_addEnumNameRange = _simV2.VisIt_VariableMetaData_addEnumNameRange
+
+def VisIt_VariableMetaData_setEnumAlwaysExcludeValue(h, arg2):
+    return _simV2.VisIt_VariableMetaData_setEnumAlwaysExcludeValue(h, arg2)
+VisIt_VariableMetaData_setEnumAlwaysExcludeValue = _simV2.VisIt_VariableMetaData_setEnumAlwaysExcludeValue
+
+def VisIt_VariableMetaData_setEnumAlwaysExcludeRange(h, arg2, arg3):
+    return _simV2.VisIt_VariableMetaData_setEnumAlwaysExcludeRange(h, arg2, arg3)
+VisIt_VariableMetaData_setEnumAlwaysExcludeRange = _simV2.VisIt_VariableMetaData_setEnumAlwaysExcludeRange
+
+def VisIt_VariableMetaData_setEnumAlwaysIncludeValue(h, arg2):
+    return _simV2.VisIt_VariableMetaData_setEnumAlwaysIncludeValue(h, arg2)
+VisIt_VariableMetaData_setEnumAlwaysIncludeValue = _simV2.VisIt_VariableMetaData_setEnumAlwaysIncludeValue
+
+def VisIt_VariableMetaData_setEnumAlwaysIncludeRange(h, arg2, arg3):
+    return _simV2.VisIt_VariableMetaData_setEnumAlwaysIncludeRange(h, arg2, arg3)
+VisIt_VariableMetaData_setEnumAlwaysIncludeRange = _simV2.VisIt_VariableMetaData_setEnumAlwaysIncludeRange
 # This file is compatible with both classic and new-style classes.
 
 

@@ -38,6 +38,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <float.h>
 #include <snprintf.h>
 #include <vectortypes.h>
 #include "VisItDataInterfaceRuntime.h"
@@ -63,6 +64,8 @@ struct VisIt_VariableMetaData : public VisIt_ObjectBase
     int          enumerationType;
     stringVector enumNames;
     doubleVector enumRanges;
+    double       enumAlwaysExclude[2];
+    double       enumAlwaysInclude[2];
     intVector    enumGraphEdges;
 };
 
@@ -77,6 +80,10 @@ VisIt_VariableMetaData::VisIt_VariableMetaData() : VisIt_ObjectBase(VISIT_VARIAB
     hideFromGUI = false;
     numComponents = 1;
     enumerationType = VISIT_ENUMTYPE_NONE;
+    enumAlwaysExclude[0] = +DBL_MAX;
+    enumAlwaysExclude[1] = -DBL_MAX;
+    enumAlwaysInclude[0] = +DBL_MAX;
+    enumAlwaysInclude[1] = -DBL_MAX;
 }
 
 VisIt_VariableMetaData::~VisIt_VariableMetaData()
@@ -526,12 +533,13 @@ simv2_VariableMetaData_getEnumerationType(visit_handle h, int* val)
     return retval;
 }
 
-int simv2_VariableMetaData_addEnumNameValue(visit_handle h, const char * name, double val)
+int simv2_VariableMetaData_addEnumNameValue(visit_handle h, const char * name, double val, int * index)
 {
     int retval = VISIT_ERROR;
-    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setEnumerationType");
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_addEnumNameValue");
     if(obj != NULL)
     {
+        *index = obj->enumNames.size();
         obj->enumNames.push_back(name);
         obj->enumRanges.push_back(val);
         obj->enumRanges.push_back(val);
@@ -541,7 +549,7 @@ int simv2_VariableMetaData_addEnumNameValue(visit_handle h, const char * name, d
 }
 
 int
-simv2_VariableMetaData_addEnumNameRange(visit_handle h, const char * name, double minVal, double maxVal)
+simv2_VariableMetaData_addEnumNameRange(visit_handle h, const char * name, double minVal, double maxVal, int * index)
 {
     int retval = VISIT_ERROR;
     VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setEnumerationType");
@@ -553,6 +561,7 @@ simv2_VariableMetaData_addEnumNameRange(visit_handle h, const char * name, doubl
             return VISIT_ERROR;
         }
         
+        *index = obj->enumNames.size();
         obj->enumNames.push_back(name);
         obj->enumRanges.push_back(minVal);
         obj->enumRanges.push_back(maxVal);
@@ -651,7 +660,7 @@ int
 simv2_VariableMetaData_addEnumGraphEdge(visit_handle h, int head, int tail)
 {
     int retval = VISIT_ERROR;
-    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setEnumerationType");
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_addEnumGraphEdge");
     if(obj != NULL)
     {
         obj->enumGraphEdges.push_back(head);
@@ -686,11 +695,11 @@ simv2_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int *
 {
     if(head == NULL || tail == NULL)
     {
-        VisItError("simv2_VariableMetaData_getNumEnumGraphEdges: Invalid address");
+        VisItError("simv2_VariableMetaData_getEnumGraphEdge: Invalid address");
         return VISIT_ERROR;
     }
     int retval = VISIT_ERROR;
-    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_getNumEnumGraphEdges");
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_getEnumGraphEdge");
     if(obj != NULL && i >= 0 && i < static_cast<int>(obj->enumGraphEdges.size() /2))
     {
         *head = obj->enumGraphEdges[i*2  ];
@@ -702,6 +711,124 @@ simv2_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int *
         *head = 0;
         *tail = 0;
     }    
+    return retval;
+}
+
+int
+simv2_VariableMetaData_setEnumAlwaysIncludeValue(visit_handle h, double val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setEnumAlwaysIncludeValue");
+    if(obj != NULL)
+    {
+        obj->enumAlwaysInclude[0] = val;
+        obj->enumAlwaysInclude[1] = val;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_VariableMetaData_setEnumAlwaysIncludeRange(visit_handle h, double minVal, double maxVal)
+{
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setEnumAlwaysIncludeRange");
+    if(obj != NULL)
+    {
+        if (minVal > maxVal)
+        {
+            VisItError("simv2_VariableMetaData_setEnumAlwaysIncludeRange: minVal > maxVal.");
+            return VISIT_ERROR;
+        }
+        
+        obj->enumAlwaysInclude[0] = minVal;
+        obj->enumAlwaysInclude[1] = maxVal;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_VariableMetaData_getEnumAlwaysIncludeRange(visit_handle h, double * minVal, double * maxVal)
+{
+    if(minVal == NULL || maxVal == NULL)
+    {
+        VisItError("simv2_VariableMetaData_getEnumAlwaysIncludeRange: Invalid address");
+        return VISIT_ERROR;
+    }
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_getEnumAlwaysIncludeRange");
+    if(obj != NULL )
+    {
+        *minVal = obj->enumAlwaysInclude[0];
+        *maxVal = obj->enumAlwaysInclude[1];
+
+        retval = VISIT_OKAY;
+    }
+    else
+    {
+        *minVal = 0;
+        *maxVal = 0;
+    }
+    return retval;
+}
+
+int
+simv2_VariableMetaData_setEnumAlwaysExcludeValue(visit_handle h, double val)
+{
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setEnumAlwaysExcludeValue");
+    if(obj != NULL)
+    {
+        obj->enumAlwaysExclude[0] = val;
+        obj->enumAlwaysExclude[1] = val;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_VariableMetaData_setEnumAlwaysExcludeRange(visit_handle h, double minVal, double maxVal)
+{
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_setEnumAlwaysExcludeRange");
+    if(obj != NULL)
+    {
+        if (minVal > maxVal)
+        {
+            VisItError("simv2_VariableMetaData_setEnumAlwaysExcludeRange: minVal > maxVal.");
+            return VISIT_ERROR;
+        }
+        
+        obj->enumAlwaysExclude[0] = minVal;
+        obj->enumAlwaysExclude[1] = maxVal;
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_VariableMetaData_getEnumAlwaysExcludeRange(visit_handle h, double * minVal, double * maxVal)
+{
+    if(minVal == NULL || maxVal == NULL)
+    {
+        VisItError("simv2_VariableMetaData_getEnumAlwaysExcludeRange: Invalid address");
+        return VISIT_ERROR;
+    }
+    int retval = VISIT_ERROR;
+    VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_getEnumAlwaysExcludeRange");
+    if(obj != NULL )
+    {
+        *minVal = obj->enumAlwaysExclude[0];
+        *maxVal = obj->enumAlwaysExclude[1];
+
+        retval = VISIT_OKAY;
+    }
+    else
+    {
+        *minVal = 0;
+        *maxVal = 0;
+    }
     return retval;
 }
 
