@@ -2226,48 +2226,27 @@ ADD_SUBDIRECTORY(include)
 ADD_SUBDIRECTORY(resources)
 
 #-----------------------------------------------------------------------------
-# Add the "data" directory if it exists
+# Add the "data" directory on WINDOWS if it exists
 #-----------------------------------------------------------------------------
-IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/data)
-    IF(WIN32)
-        # Don't want the data dir files to be added to the main VISIT
-        # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new
-        # PROJECT in data/CMakeLists.txt
-        SET(V_EX "EXCLUDE_FROM_ALL")
-    ENDIF(WIN32)
-    IF(VISIT_OUT_OF_SOURCE_BUILD)
-        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/data
-                         ${CMAKE_CURRENT_BINARY_DIR}/data
-                         ${V_EX})
-    ELSE(VISIT_OUT_OF_SOURCE_BUILD)
-        ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/data
-                         ${VISIT_SOURCE_DIR}/data
-                         ${V_EX})
-    ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
-ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/data)
-ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+if(WIN32 AND IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+    # Don't want the data dir files to be added to the main VISIT
+    # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new
+    # PROJECT in data/CMakeLists.txt
+    add_subdirectory(${VISIT_SOURCE_DIR}/../data
+                     ${CMAKE_CURRENT_BINARY_DIR}/data
+                     EXCLUDE_FROM_ALL)
+endif()
 
 
 #-----------------------------------------------------------------------------
-# Add the "test" directory if it exists
+# Add the "test" directory 
 #-----------------------------------------------------------------------------
 # I'm trying to make the new tetsing work hramoniously with the old testing
 # while it's evaluated. if the new testing were ever made permanent then
 # this code would be removed.
-IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-IF (NOT BUILD_CTEST_TESTING)
-    IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/test)
-        IF(VISIT_OUT_OF_SOURCE_BUILD)
-            ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/test
-                             ${CMAKE_CURRENT_BINARY_DIR}/test)
-        ELSE(VISIT_OUT_OF_SOURCE_BUILD)
-            ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/test
-                             ${VISIT_SOURCE_DIR}/test)
-        ENDIF(VISIT_OUT_OF_SOURCE_BUILD)
-    ENDIF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/test)
-ENDIF()
-ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
+if(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY AND NOT BUILD_CTEST_TESTING)
+      add_subdirectory(test)
+endif()
 
 IF(VISIT_SPHINX)
     ADD_SUBDIRECTORY(doc)

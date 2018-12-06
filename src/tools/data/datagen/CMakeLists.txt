@@ -182,7 +182,12 @@ ENDFUNCTION(BUILD_DATA_TARGET_IMPL target_name)
 
 FUNCTION(BUILD_VISIT_DIST_DATA)
     FILE(MAKE_DIRECTORY visit_dist_data)
+if(WIN32)
+    file(GLOB vdd_files "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFGINT_DIR}/*.{silo,pdb}")
+    FILE(COPY ${vdd_files} DESTINATION visit_dist_data )
+else()
     FILE(COPY dummy DESTINATION visit_dist_data FILES_MATCHING PATTERN "*.{silo,pdb}")
+endif()
     SET(DIST_TAR_CMD "${TAR_CMD} ${TAR_ARGS} visit_dist_data.tar.gz visit_dist_data")
     EXECUTE_PROCESS(COMMAND ${DIST_TAR_CMD} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 ENDFUNCTION(BUILD_VISIT_DIST_DATA)
@@ -399,13 +404,6 @@ ELSE(VISIT_USE_7ZIP)
 ENDIF(VISIT_USE_7ZIP)
 
 #-----------------------------------------------------------------------------
-# Add custom target: "testdata"
-#-----------------------------------------------------------------------------
-ADD_CUSTOM_TARGET(testdata)
-VISIT_TOOLS_ADD_FOLDER(data testdata)
-#ADD_DEPENDENCIES(testdata data)
-
-#-----------------------------------------------------------------------------
 # CMake variable names for make variables used in convenience targets below.
 # Note the {} surrounding the make variables allowing them to be expanded at
 # make time, not cmake time. Allows for `make SILO_DRIVER=DB_HDF5` to build
@@ -532,7 +530,11 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
         VISIT_DATA_ADD_FOLDER(datagen create_data_examples)
 
         # Create data install target
+if(NOT WIN32)
         STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${DATA_OUT_DIR}/\\1\\2" install_files "${all_example_output}")
+else()
+        STRING(REGEX REPLACE "([a-zA-Z0-9_\\.+]+)(;|$)" "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}/\\1\\2" install_files "${all_example_output}")
+endif()
         INSTALL(FILES ${install_files} DESTINATION data
            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ)
 
