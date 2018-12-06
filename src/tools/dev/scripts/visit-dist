@@ -115,11 +115,11 @@ system("cd src; svn info . | grep \"Revision:\" | cut -d' ' -f2 > SVN_REVISION; 
 $dist = "";
 if($opt_dbioonly)
 {
-    $filelist = "./src/svn_bin/source_files -dbio-only";
+    $filelist = "./src/tools/dev/scripts/source_files -dbio-only";
 }
 else
 {
-    $filelist = "./src/svn_bin/source_files";
+    $filelist = "./src/tools/dev/scripts/source_files";
 }
 
 $fulldist = shift;

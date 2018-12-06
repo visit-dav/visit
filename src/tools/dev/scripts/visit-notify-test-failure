@@ -84,8 +84,8 @@ fi
 # Determine the revision number of the last pass.
 #
 lastpass=0
-if test -e src/svn_bin/lastpass_$host ; then
-   lastpass=`cat src/svn_bin/lastpass_$host`
+if test -e src/tools/dev/scripts/lastpass_$host ; then
+   lastpass=`cat src/tools/dev/scripts/lastpass_$host`
    lastpass=`expr $lastpass + 1` 
 fi
 
@@ -114,7 +114,7 @@ rm -f parse_users
 #
 modifiersEmails=
 for user in `cat modifiers` ; do
-    useremail=`./src/svn_bin/nersc_username_to_email $user`
+    useremail=`./src/tools/dev/scripts/nersc_username_to_email $user`
     modifiersEmails="$modifiersEmails $useremail"
 done
 rm -f modifiers
