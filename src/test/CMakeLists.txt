@@ -63,6 +63,6 @@ PYTHON_ADD_DISTUTILS_SETUP(visit_testing_py_setup
                            site-packages
                            setup.py)
 
-IF(BUILD_TESTING)
-    SUBDIRS(tests)
-ENDIF()
+if(BUILD_CTEST_TESTING)
+    add_subdirectory(tests)
+endif()

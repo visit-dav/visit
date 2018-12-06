@@ -997,8 +997,8 @@ VISIT_INSTALLED_VERSION_INCLUDE
 
 # experimental!!
 # ctest/cdash testing support
-SET(BUILD_TESTING OFF CACHE BOOL "Enable ctest hooks into VisIt's regression suite")
-IF(BUILD_TESTING)
+SET(BUILD_CTEST_TESTING OFF CACHE BOOL "Enable ctest hooks into VisIt's regression suite")
+IF(BUILD_CTEST_TESTING)
     # enable native cmake testing
     INCLUDE(CTest)
     CONFIGURE_FILE(
@@ -2255,7 +2255,7 @@ ENDIF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
 # while it's evaluated. if the new testing were ever made permanent then
 # this code would be removed.
 IF(NOT VISIT_ENGINE_ONLY AND NOT VISIT_SERVER_COMPONENTS_ONLY)
-IF (NOT BUILD_TESTING)
+IF (NOT BUILD_CTEST_TESTING)
     IF(IS_DIRECTORY ${VISIT_SOURCE_DIR}/test)
         IF(VISIT_OUT_OF_SOURCE_BUILD)
             ADD_SUBDIRECTORY(${VISIT_SOURCE_DIR}/test
