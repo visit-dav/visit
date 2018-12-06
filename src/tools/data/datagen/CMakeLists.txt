@@ -98,6 +98,11 @@
 #   force all users/consumers of VisIt to have to have/use 7z. So, for
 #   example data we package with VisIt distributions, we still use good 'ole
 #   tar and gzip.
+#
+#   Kathleen Biagas, Thu Dec  6 14:21:19 PST 2018
+#   Add VISIT_DEFAULT_SILO_DRIVER cmake arg, which if blank will allow
+#   driver to be specified at make time.
+#
 #****************************************************************************/
 
 cmake_minimum_required(VERSION 2.8)
@@ -406,7 +411,14 @@ VISIT_TOOLS_ADD_FOLDER(data testdata)
 # make time, not cmake time. Allows for `make SILO_DRIVER=DB_HDF5` to build
 # all Silo data using HDF5 driver.
 #-----------------------------------------------------------------------------
-SET(SILO_DRIVER_ARG {SILO_DRIVER})
+if(VISIT_DEFAULT_SILO_DRIVER STREQUAL "HDF5" OR
+   VISIT_DEFAULT_SILO_DRIVER STREQUAL "PDB")
+    set(SDA "DB_${VISIT_DEFAULT_SILO_DRIVER}")
+else()
+    message(STATUS "VISIT_DEFAULT_SILO_DRIVER not specified, leaving driver designation blank for use at make time.")
+    set(SILO_DRIVER_ARG {SILO_DRIVER})
+    set(SDA "$${SILO_DRIVER_ARG}")
+endif()
 
 #-----------------------------------------------------------------------------
 # Add install command for contents of "data"
@@ -473,19 +485,19 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                             ucd_lines2d.silo
                             ucd_lines3d.silo)
         ADD_CUSTOM_COMMAND(OUTPUT  ${testall_output}
-                           COMMAND "$<TARGET_FILE:testall>" $${SILO_DRIVER_ARG}
+                           COMMAND "$<TARGET_FILE:testall>" ${SDA}
                            DEPENDS testall
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running testall")
         SET(globe_output globe.silo globe_mat0.silo globe_matcolors.silo)
         ADD_CUSTOM_COMMAND(OUTPUT  ${globe_output}
-                           COMMAND "$<TARGET_FILE:globe>" $${SILO_DRIVER_ARG}
+                           COMMAND "$<TARGET_FILE:globe>" ${SDA}
                            DEPENDS globe
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running globe")
         SET(correlationtest_output dbA00.pdb dbB00.pdb dbC00.pdb)
         ADD_CUSTOM_COMMAND(OUTPUT  ${correlationtest_output}
-                           COMMAND "$<TARGET_FILE:correlationtest>" $${SILO_DRIVER_ARG}
+                           COMMAND "$<TARGET_FILE:correlationtest>" ${SDA}
                            DEPENDS correlationtest
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running correlationtest")
@@ -496,17 +508,17 @@ ELSE(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/visit_dist_data.tar.gz)
                                multi_rect3d.silo
                                multi_ucd3d.silo)
         ADD_CUSTOM_COMMAND(OUTPUT  ${multi_test_output}
-                           COMMAND "$<TARGET_FILE:multi_test>" -noCycles -noTimeInvariantMultimesh $${SILO_DRIVER_ARG}
+                           COMMAND "$<TARGET_FILE:multi_test>" -noCycles -noTimeInvariantMultimesh ${SDA}
                            DEPENDS multi_test
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running multi_test")
         ADD_CUSTOM_COMMAND(OUTPUT  noise.silo
-                           COMMAND "$<TARGET_FILE:noise>" $${SILO_DRIVER_ARG}
+                           COMMAND "$<TARGET_FILE:noise>" ${SDA}
                            DEPENDS noise
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running noise")
         ADD_CUSTOM_COMMAND(OUTPUT  tire.silo
-                           COMMAND "$<TARGET_FILE:tire>" $${SILO_DRIVER_ARG}
+                           COMMAND "$<TARGET_FILE:tire>" ${SDA}
                            DEPENDS tire
                            WORKING_DIRECTORY ${DATA_OUT_DIR}
                            COMMENT "Running tire")
