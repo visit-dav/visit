@@ -2358,15 +2358,18 @@ build_ucd3d(DBfile * dbfile, int size)
     var3name = "u";
     var4name = "v";
     var5name = "w";
+    xcenter = 0.;
+    ycenter = 0.;
     for (i = 0; i < 21; i++)
     {
         for (j = 0; j < 21; j++)
         {
             for (k = 0; k < 6; k++)
             {
-                dist = sqrt(x[i] * x[i] + y[j] * y[j]);
-                u[i * 126 + j * 6 + k] = x[i] / dist;
-                v[i * 126 + j * 6 + k] = y[j] / dist;
+                dist = sqrt((x[i] - xcenter) * (x[i] - xcenter) +
+                            (y[j] - ycenter) * (y[j] - ycenter));
+                u[i * 126 + j * 6 + k] = (x[i] - xcenter) / dist;
+                v[i * 126 + j * 6 + k] = (y[j] - ycenter) / dist;
                 w[i * 126 + j * 6 + k] = 0.;
             }
         }
@@ -3471,26 +3474,12 @@ main(int argc, char *argv[])
             size = 2;
         else if (strcmp (argv[i], "-large") == 0)
             size = 3;
-        else if (strcmp(argv[i], "-driver") == 0)
-        {
-            i++;
-
-            if (strcmp(argv[i], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[i], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[i]);
-            }
-        }
+        else if (strcmp(argv[i], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[i], "DB_PDB") == 0)
+            driver = DB_PDB;
         else
-            printf ("Unknown execute line option.\n");
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
     }
 
     //

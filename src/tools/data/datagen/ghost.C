@@ -265,30 +265,12 @@ int main(int argc, char **argv)
     int i = 1;
     while (i < argc)
     {
-        if (strcmp(argv[i], "-driver") == 0)
-        {
-            i++;
-
-            if (strcmp(argv[i], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[i], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[i]);
-            }
-        }
+        if (strcmp(argv[i], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[i], "DB_PDB") == 0)
+            driver = DB_PDB;
         else
-        {
-            fprintf(stderr, "unrecognized argument \"%s\"\n", argv[i]);
-            return -1;
-        }
-
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
         i++;
     }
 

@@ -115,31 +115,16 @@ main(int argc, char *argv[])
     double    time, time_minus_1;
     int       cycle;
 
-    for (i = 0; i < argc; i++)
+    for (i = 1; i < argc; i++)
     {
-        if (strcmp(argv[i], "-driver") == 0)
-        {
-            i++;
-
-            if (strcmp(argv[i], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[i], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[i]);
-            }
-        }
-        else if (strcmp(argv[i], "-single_file") == 0)
-        {
-            i++;
+        if (strcmp(argv[i], "-single_file") == 0)
             single_file = 1;
-        }
+        else if (strcmp(argv[i], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[i], "DB_PDB") == 0)
+            driver = DB_PDB;
+        else
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
     }
 
     ofstream ofile;

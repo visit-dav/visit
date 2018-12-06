@@ -113,6 +113,7 @@ main(int argc, char *argv[])
     float          val[ONE_MEG/sizeof(float)];
     char          filename[1024];
     DBfile        *dbfile;
+    int           driver = DB_PDB;
 
     
     if (argc == 1)
@@ -126,6 +127,16 @@ main(int argc, char *argv[])
     {
         strncpy(filename, argv[1], sizeof(filename));
         filename[1023] = '\0';
+
+        for (i = 2; i < argc; i++)
+        {
+            if (strcmp(argv[i], "DB_HDF5") == 0)
+                driver = DB_HDF5;
+            else if (strcmp(argv[i], "DB_PDB") == 0)
+                driver = DB_PDB;
+            else
+                fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
+        }
     }
 
     DBShowErrors(DB_TOP, NULL);
@@ -133,7 +144,7 @@ main(int argc, char *argv[])
 
     // Create a file that contains a simple variables.
     printf("Creating file: \"%s\"\n", filename);
-    dbfile = DBCreate(filename, 0, DB_LOCAL, "Large File Test", DB_HDF5);
+    dbfile = DBCreate(filename, 0, DB_LOCAL, "Large File Test", driver);
 
     if (dbfile == NULL)
     {

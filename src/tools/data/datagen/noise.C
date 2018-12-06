@@ -1065,32 +1065,16 @@ main(int argc, char *argv[])
             }
             ++j;
         }
-        else if (strcmp(argv[j], "-driver") == 0)
-        {
-            j++;
-
-            if (strcmp(argv[j], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[j], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[j]);
-            }
-        }
+        else if (strcmp(argv[j], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[j], "DB_PDB") == 0)
+            driver = DB_PDB;
         else if (strcmp(argv[j], "-meteor") == 0)
-        {
             do_meteor = true;
-        }
         else if (strcmp(argv[j], "-flow") == 0)
-        {
             do_flow = true;
-        }
+        else
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[j]);
     }
 
 #ifndef PORTABLE_RANDOM_NUMBERS

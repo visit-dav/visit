@@ -1664,24 +1664,12 @@ main(int argc, char *argv[])
             }
             ++j;
         }
-        else if (strcmp(argv[j], "-driver") == 0)
-        {
-            j++;
-
-            if (strcmp(argv[j], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[j], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[j]);
-            }
-        }
+        else if (strcmp(argv[j], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[j], "DB_PDB") == 0)
+            driver = DB_PDB;
+        else
+            fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[j]);
     }
 
     // Set the seed for the random number generator.

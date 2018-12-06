@@ -401,7 +401,7 @@ VISIT_TOOLS_ADD_FOLDER(data testdata)
 #ADD_DEPENDENCIES(testdata data)
 
 #-----------------------------------------------------------------------------
-# CMake variable names for make variables used in coneneience targets below.
+# CMake variable names for make variables used in convenience targets below.
 # Note the {} surrounding the make variables allowing them to be expanded at
 # make time, not cmake time. Allows for `make SILO_DRIVER=DB_HDF5` to build
 # all Silo data using HDF5 driver.

@@ -291,7 +291,7 @@ protected:
 class SiloDataSaver : public ParticleDataSaver
 {
 public:
-    SiloDataSaver(const std::string &name) : ParticleDataSaver(name), dirName()
+    SiloDataSaver(const std::string &name, int _driver = DB_PDB) : ParticleDataSaver(name), driver(_driver), dirName()
     {
     }
 
@@ -312,7 +312,7 @@ public:
     {
         std::string filename(MasterFile());        
         DBfile *dbfile = DBCreate(filename.c_str(), DB_CLOBBER, DB_LOCAL,
-                                  "3D point mesh", DB_HDF5);
+                                  "3D point mesh", driver);
         if(dbfile == NULL)
         {
             fprintf(stderr, "Could not create master Silo file!\n");
@@ -365,7 +365,7 @@ public:
     {
         std::string filename(BoundariesFile());
         DBfile *dbfile = DBCreate(filename.c_str(), DB_CLOBBER, DB_LOCAL,
-                                  "3D point mesh domain boundaries", DB_HDF5);
+                                  "3D point mesh domain boundaries", driver);
         if(dbfile == NULL)
         {
             fprintf(stderr, "Could not create Silo file!\n");
@@ -448,7 +448,7 @@ public:
 
         std::string filename(DomainFile(dom));
         DBfile *dbfile = DBCreate(filename.c_str(), DB_CLOBBER, DB_LOCAL,
-                                  "3D point mesh", DB_HDF5);
+                                  "3D point mesh", driver);
         if(dbfile == NULL)
         {
             fprintf(stderr, "Could not create Silo file!\n");
@@ -558,6 +558,7 @@ protected:
     }
 
     std::string dirName;
+    int driver;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -877,6 +878,7 @@ main(int argc, char *argv[])
 {
     SimState sim;
     const char *fileBase = "bounce";
+    int driver = DB_PDB;
 
     // Parse some command line arguments.
     for(int i = 1; i < argc; ++i)
@@ -928,6 +930,10 @@ main(int argc, char *argv[])
                 sim.divisions[2] = n;
             ++i;
         }
+        else if (strcmp(argv[i], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[i], "DB_PDB") == 0)
+            driver = DB_PDB;
         else
         {
             printf("Usage: %s [-emit] [-keepParticles] [-noKeepParticles] [-o filebase] [-nparticles n]\n\n", argv[0]);
@@ -977,7 +983,7 @@ main(int argc, char *argv[])
     else
         sim.CreateParticles(100);
 
-    SiloDataSaver saver(fileBase);
+    SiloDataSaver saver(fileBase, driver);
     saver.WriteBoundariesFile(sim.divisions, sim.extents);
 
     // Advance through time.

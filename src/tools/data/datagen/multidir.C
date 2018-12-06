@@ -494,28 +494,14 @@ main(int argc, char *argv[])
     // Look through command line args.
     for(int j = 1; j < argc; ++j)
     {
-        if (strcmp(argv[j], "-driver") == 0)
-        {
-            j++;
-
-            if (strcmp(argv[j], "DB_HDF5") == 0)
-            {
-                opt.driver = DB_HDF5;
-            }
-            else if (strcmp(argv[j], "DB_PDB") == 0)
-            {
-                opt.driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Unrecognized driver name \"%s\"\n",
-                   argv[j]);
-            }
-        }
+        if (strcmp(argv[j], "DB_HDF5") == 0)
+            opt.driver = DB_HDF5;
+        else if (strcmp(argv[j], "DB_PDB") == 0)
+            opt.driver = DB_PDB;
         else if (strcmp(argv[j], "-abspaths") == 0)
-        {
             opt.useAbsoluteFilePaths = true;
-        }
+        else
+           fprintf(stderr,"Unrecognized driver name \"%s\"\n", argv[j]);
     }
 
     // Make all of the data go into a subdirectory so it's easier to delete later.

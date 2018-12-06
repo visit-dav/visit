@@ -206,16 +206,12 @@ int main(int argc, char *argv[]) {
 
   /* Parse command-line */
   for (i=1; i<argc; i++) {
-      if (strcmp(argv[i], "-driver") == 0) {
-          i++;
-          if (strcmp(argv[i], "DB_HDF5") == 0) {
-              driver = DB_HDF5;
-          } else if (strcmp(argv[i], "DB_PDB") == 0) {
-              driver = DB_PDB;
-          } else {
-              fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
-          }
-      }
+      if (strcmp(argv[i], "DB_HDF5") == 0)
+          driver = DB_HDF5;
+      else if (strcmp(argv[i], "DB_PDB") == 0)
+          driver = DB_PDB;
+      else
+          fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
   }
 
   Mesh_Create(&mesh,20,20);

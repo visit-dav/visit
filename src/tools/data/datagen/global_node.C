@@ -85,26 +85,14 @@ int driver = DB_PDB;
 int main(int argc, char *argv[])
 {
 
-    for (int i = 0; i < argc; i++)
+    for (int i = 1; i < argc; i++)
     {
-        if (strcmp(argv[i], "-driver") == 0)
-        {
-            i++;
-
-            if (strcmp(argv[i], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[i], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[i]);
-            }
-        }
+        if (strcmp(argv[i], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[i], "DB_PDB") == 0)
+            driver = DB_PDB;
+        else
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
     }
 
     DBfile *dbfile = DBCreate("global_node.silo", DB_CLOBBER, DB_LOCAL,NULL,driver);

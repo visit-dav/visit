@@ -891,24 +891,12 @@ main(int argc, char *argv[])
     // Look through command line args.
     for(int j = 1; j < argc; ++j)
     {
-        if (strcmp(argv[j], "-driver") == 0)
-        {
-            j++;
-
-            if (strcmp(argv[j], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[j], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-                fprintf(stderr,"Unrecognized driver name \"%s\"\n",
-                    argv[j]);
-            }
-        }
+        if (strcmp(argv[j], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[j], "DB_PDB") == 0)
+            driver = DB_PDB;
+        else
+            fprintf(stderr,"Unrecognized driver name \"%s\"\n", argv[j]);
     }
 
     StarData stars;

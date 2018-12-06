@@ -394,25 +394,12 @@ main(int argc, char *argv[])
     DBShowErrors(DB_ALL, NULL);
     while (i < argc)
     {
-        if (strcmp(argv[i], "-driver") == 0)
-        {
-            i++;
-
-            if (strcmp(argv[i], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[i], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[i]);
-               exit(-1);
-            }
-        }
+        if (strcmp(argv[i], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[i], "DB_PDB") == 0)
+            driver = DB_PDB;
+        else
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
         i++;
     }
 

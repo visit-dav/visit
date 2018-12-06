@@ -59,25 +59,10 @@ main(int argc, char **argv)
     int i = 1;
     while (i < argc)
     {
-        if (strcmp(argv[i], "-driver") == 0)
-        {
-            i++;
-
-            if (strcmp(argv[i], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[i], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[i]);
-               exit(-1);
-            }
-        }
+        if (strcmp(argv[i], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[i], "DB_PDB") == 0)
+            driver = DB_PDB;
         else if (strcmp(argv[i], "-n") == 0)
         {
             i++;
@@ -93,7 +78,8 @@ main(int argc, char **argv)
                exit(-1);
             }
         }
-
+        else
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[i]);
         i++;
     }
 

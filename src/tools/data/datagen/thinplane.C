@@ -89,24 +89,12 @@ int main(int argc, char *argv[])
 {
     for (int args = 1 ; args < argc ; args++)
     {
-        if (strcmp(argv[args], "-driver") == 0)
-        {
-            args++;
-
-            if (strcmp(argv[args], "DB_HDF5") == 0)
-            {
-                driver = DB_HDF5;
-            }
-            else if (strcmp(argv[args], "DB_PDB") == 0)
-            {
-                driver = DB_PDB;
-            }
-            else
-            {
-               fprintf(stderr,"Uncrecognized driver name \"%s\"\n",
-                   argv[args]);
-            }
-        }
+        if (strcmp(argv[args], "DB_HDF5") == 0)
+            driver = DB_HDF5;
+        else if (strcmp(argv[args], "DB_PDB") == 0)
+            driver = DB_PDB;
+        else
+           fprintf(stderr,"Uncrecognized driver name \"%s\"\n", argv[args]);
     }
     n_total_domains = ndomains_per_dim*ndomains_per_dim*ndomains_per_dim;
     ndomains_per_group = ndomains_per_dim*ndomains_per_dim;
