@@ -216,6 +216,8 @@ void avtScalarMetaData::Copy(const avtScalarMetaData &obj)
 
     enumPartialCellMode = obj.enumPartialCellMode;
     enumGraphEdges = obj.enumGraphEdges;
+    enumGraphEdgeNames = obj.enumGraphEdgeNames;
+    enumGraphEdgeNameIndexs = obj.enumGraphEdgeNameIndexs;
     enumNChooseRN = obj.enumNChooseRN;
     enumNChooseRMaxR = obj.enumNChooseRMaxR;
     missingDataType = obj.missingDataType;
@@ -405,6 +407,8 @@ avtScalarMetaData::operator == (const avtScalarMetaData &obj) const
             enumAlwaysInclude_equal &&
             (enumPartialCellMode == obj.enumPartialCellMode) &&
             (enumGraphEdges == obj.enumGraphEdges) &&
+            (enumGraphEdgeNames == obj.enumGraphEdgeNames) &&
+            (enumGraphEdgeNameIndexs == obj.enumGraphEdgeNameIndexs) &&
             (enumNChooseRN == obj.enumNChooseRN) &&
             (enumNChooseRMaxR == obj.enumNChooseRMaxR) &&
             (missingDataType == obj.missingDataType) &&
@@ -555,18 +559,20 @@ avtScalarMetaData::SelectAll()
 {
     // call the base class' SelectAll() first
     avtVarMetaData::SelectAll();
-    Select(ID_treatAsASCII,        (void *)&treatAsASCII);
-    Select(ID_enumerationType,     (void *)&enumerationType);
-    Select(ID_enumNames,           (void *)&enumNames);
-    Select(ID_enumRanges,          (void *)&enumRanges);
-    Select(ID_enumAlwaysExclude,   (void *)enumAlwaysExclude, 2);
-    Select(ID_enumAlwaysInclude,   (void *)enumAlwaysInclude, 2);
-    Select(ID_enumPartialCellMode, (void *)&enumPartialCellMode);
-    Select(ID_enumGraphEdges,      (void *)&enumGraphEdges);
-    Select(ID_enumNChooseRN,       (void *)&enumNChooseRN);
-    Select(ID_enumNChooseRMaxR,    (void *)&enumNChooseRMaxR);
-    Select(ID_missingDataType,     (void *)&missingDataType);
-    Select(ID_missingData,         (void *)missingData, 2);
+    Select(ID_treatAsASCII,            (void *)&treatAsASCII);
+    Select(ID_enumerationType,         (void *)&enumerationType);
+    Select(ID_enumNames,               (void *)&enumNames);
+    Select(ID_enumRanges,              (void *)&enumRanges);
+    Select(ID_enumAlwaysExclude,       (void *)enumAlwaysExclude, 2);
+    Select(ID_enumAlwaysInclude,       (void *)enumAlwaysInclude, 2);
+    Select(ID_enumPartialCellMode,     (void *)&enumPartialCellMode);
+    Select(ID_enumGraphEdges,          (void *)&enumGraphEdges);
+    Select(ID_enumGraphEdgeNames,      (void *)&enumGraphEdgeNames);
+    Select(ID_enumGraphEdgeNameIndexs, (void *)&enumGraphEdgeNameIndexs);
+    Select(ID_enumNChooseRN,           (void *)&enumNChooseRN);
+    Select(ID_enumNChooseRMaxR,        (void *)&enumNChooseRMaxR);
+    Select(ID_missingDataType,         (void *)&missingDataType);
+    Select(ID_missingData,             (void *)missingData, 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -696,18 +702,20 @@ avtScalarMetaData::GetFieldName(int index) const
 {
     switch (index)
     {
-    case ID_treatAsASCII:        return "treatAsASCII";
-    case ID_enumerationType:     return "enumerationType";
-    case ID_enumNames:           return "enumNames";
-    case ID_enumRanges:          return "enumRanges";
-    case ID_enumAlwaysExclude:   return "enumAlwaysExclude";
-    case ID_enumAlwaysInclude:   return "enumAlwaysInclude";
-    case ID_enumPartialCellMode: return "enumPartialCellMode";
-    case ID_enumGraphEdges:      return "enumGraphEdges";
-    case ID_enumNChooseRN:       return "enumNChooseRN";
-    case ID_enumNChooseRMaxR:    return "enumNChooseRMaxR";
-    case ID_missingDataType:     return "missingDataType";
-    case ID_missingData:         return "missingData";
+    case ID_treatAsASCII:            return "treatAsASCII";
+    case ID_enumerationType:         return "enumerationType";
+    case ID_enumNames:               return "enumNames";
+    case ID_enumRanges:              return "enumRanges";
+    case ID_enumAlwaysExclude:       return "enumAlwaysExclude";
+    case ID_enumAlwaysInclude:       return "enumAlwaysInclude";
+    case ID_enumPartialCellMode:     return "enumPartialCellMode";
+    case ID_enumGraphEdges:          return "enumGraphEdges";
+    case ID_enumGraphEdgeNames:      return "enumGraphEdgeNames";
+    case ID_enumGraphEdgeNameIndexs: return "enumGraphEdgeNameIndexs";
+    case ID_enumNChooseRN:           return "enumNChooseRN";
+    case ID_enumNChooseRMaxR:        return "enumNChooseRMaxR";
+    case ID_missingDataType:         return "missingDataType";
+    case ID_missingData:             return "missingData";
     default:  return avtVarMetaData::GetFieldName(index);
     }
 }
@@ -732,18 +740,20 @@ avtScalarMetaData::GetFieldType(int index) const
 {
     switch (index)
     {
-    case ID_treatAsASCII:        return FieldType_bool;
-    case ID_enumerationType:     return FieldType_enum;
-    case ID_enumNames:           return FieldType_stringVector;
-    case ID_enumRanges:          return FieldType_doubleVector;
-    case ID_enumAlwaysExclude:   return FieldType_doubleArray;
-    case ID_enumAlwaysInclude:   return FieldType_doubleArray;
-    case ID_enumPartialCellMode: return FieldType_enum;
-    case ID_enumGraphEdges:      return FieldType_intVector;
-    case ID_enumNChooseRN:       return FieldType_int;
-    case ID_enumNChooseRMaxR:    return FieldType_int;
-    case ID_missingDataType:     return FieldType_enum;
-    case ID_missingData:         return FieldType_doubleArray;
+    case ID_treatAsASCII:            return FieldType_bool;
+    case ID_enumerationType:         return FieldType_enum;
+    case ID_enumNames:               return FieldType_stringVector;
+    case ID_enumRanges:              return FieldType_doubleVector;
+    case ID_enumAlwaysExclude:       return FieldType_doubleArray;
+    case ID_enumAlwaysInclude:       return FieldType_doubleArray;
+    case ID_enumPartialCellMode:     return FieldType_enum;
+    case ID_enumGraphEdges:          return FieldType_intVector;
+    case ID_enumGraphEdgeNames:      return FieldType_stringVector;
+    case ID_enumGraphEdgeNameIndexs: return FieldType_intVector;
+    case ID_enumNChooseRN:           return FieldType_int;
+    case ID_enumNChooseRMaxR:        return FieldType_int;
+    case ID_missingDataType:         return FieldType_enum;
+    case ID_missingData:             return FieldType_doubleArray;
     default:  return avtVarMetaData::GetFieldType(index);
     }
 }
@@ -768,18 +778,20 @@ avtScalarMetaData::GetFieldTypeName(int index) const
 {
     switch (index)
     {
-    case ID_treatAsASCII:        return "bool";
-    case ID_enumerationType:     return "enum";
-    case ID_enumNames:           return "stringVector";
-    case ID_enumRanges:          return "doubleVector";
-    case ID_enumAlwaysExclude:   return "doubleArray";
-    case ID_enumAlwaysInclude:   return "doubleArray";
-    case ID_enumPartialCellMode: return "enum";
-    case ID_enumGraphEdges:      return "intVector";
-    case ID_enumNChooseRN:       return "int";
-    case ID_enumNChooseRMaxR:    return "int";
-    case ID_missingDataType:     return "enum";
-    case ID_missingData:         return "doubleArray";
+    case ID_treatAsASCII:            return "bool";
+    case ID_enumerationType:         return "enum";
+    case ID_enumNames:               return "stringVector";
+    case ID_enumRanges:              return "doubleVector";
+    case ID_enumAlwaysExclude:       return "doubleArray";
+    case ID_enumAlwaysInclude:       return "doubleArray";
+    case ID_enumPartialCellMode:     return "enum";
+    case ID_enumGraphEdges:          return "intVector";
+    case ID_enumGraphEdgeNames:      return "stringVector";
+    case ID_enumGraphEdgeNameIndexs: return "intVector";
+    case ID_enumNChooseRN:           return "int";
+    case ID_enumNChooseRMaxR:        return "int";
+    case ID_missingDataType:         return "enum";
+    case ID_missingData:             return "doubleArray";
     default:  return avtVarMetaData::GetFieldTypeName(index);
     }
 }
@@ -854,6 +866,16 @@ avtScalarMetaData::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_enumGraphEdges:
         {  // new scope
         retval = (enumGraphEdges == obj.enumGraphEdges);
+        }
+        break;
+    case ID_enumGraphEdgeNames:
+        {  // new scope
+        retval = (enumGraphEdgeNames == obj.enumGraphEdgeNames);
+        }
+        break;
+    case ID_enumGraphEdgeNameIndexs:
+        {  // new scope
+        retval = (enumGraphEdgeNameIndexs == obj.enumGraphEdgeNameIndexs);
         }
         break;
     case ID_enumNChooseRN:
@@ -1062,10 +1084,28 @@ avtScalarMetaData::Print(ostream &out, int indent) const
 }
 
 void
-avtScalarMetaData::AddEnumGraphEdge(int head, int tail)
+avtScalarMetaData::AddEnumGraphEdge(int head, int tail, std::string edgeName)
 {
     enumGraphEdges.push_back(head);
-    enumGraphEdges.push_back(tail);
+    enumGraphEdges.push_back(tail);   
+
+    // No edge name so default index is -1.
+    if( edgeName.empty() )
+        enumGraphEdgeNameIndexs.push_back(-1);
+    else
+    {
+        // New edge name so store the name use a map for fast lookup
+        // but the actual storage is the vectorString.
+        if( enumGraphEdgeNameMap.find( edgeName ) == enumGraphEdgeNameMap.end() )
+        {
+            int index = enumGraphEdgeNameMap.size();
+            enumGraphEdgeNameMap[edgeName] = index;
+
+            enumGraphEdgeNames.push_back( edgeName );
+        }
+
+        enumGraphEdgeNameIndexs.push_back(enumGraphEdgeNameMap[edgeName]);
+    }                
 }
 
 // ****************************************************************************

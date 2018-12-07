@@ -186,13 +186,31 @@ avtScalarMetaData::Print(ostream &out, int indent) const
 }
 
 Function: AddEnumGraphEdge
-Declaration: void AddEnumGraphEdge(int head, int tail);
+Declaration: void AddEnumGraphEdge(int head, int tail, std::string edgeName = std::string(""));
 Definition:
 void
-avtScalarMetaData::AddEnumGraphEdge(int head, int tail)
+avtScalarMetaData::AddEnumGraphEdge(int head, int tail, std::string edgeName)
 {
     enumGraphEdges.push_back(head);
-    enumGraphEdges.push_back(tail);
+    enumGraphEdges.push_back(tail);   
+
+    // No edge name so default index is -1.
+    if( edgeName.empty() )
+        enumGraphEdgeNameIndexs.push_back(-1);
+    else
+    {
+        // New edge name so store the name use a map for fast lookup
+        // but the actual storage is the vectorString.
+        if( enumGraphEdgeNameMap.find( edgeName ) == enumGraphEdgeNameMap.end() )
+        {
+            int index = enumGraphEdgeNameMap.size();
+            enumGraphEdgeNameMap[edgeName] = index;
+
+            enumGraphEdgeNames.push_back (edgeName );
+        }
+
+        enumGraphEdgeNameIndexs.push_back(enumGraphEdgeNameMap[edgeName]);
+    }                
 }
 
 Function: AddEnumNameValue

@@ -158,7 +158,7 @@ public:
     avtScalarMetaData(std::string, std::string, avtCentering);
     avtScalarMetaData(std::string, std::string, avtCentering, double, double);
     void Print(ostream &, int = 0) const;
-    void AddEnumGraphEdge(int head, int tail);
+    void AddEnumGraphEdge(int head, int tail, std::string edgeName = std::string(""));
     int AddEnumNameValue(std::string name, double val);
     int AddEnumNameRange(std::string name, double min, double max);
     void SetEnumAlwaysExcludeValue(double val);
@@ -181,6 +181,8 @@ public:
         ID_enumAlwaysInclude,
         ID_enumPartialCellMode,
         ID_enumGraphEdges,
+        ID_enumGraphEdgeNames,
+        ID_enumGraphEdgeNameIndexs,
         ID_enumNChooseRN,
         ID_enumNChooseRMaxR,
         ID_missingDataType,
@@ -195,6 +197,8 @@ public:
     double       enumAlwaysExclude[2];
     double       enumAlwaysInclude[2];
     intVector    enumGraphEdges;
+    stringVector enumGraphEdgeNames;
+    intVector    enumGraphEdgeNameIndexs;
 private:
     int          enumerationType;
     int          enumPartialCellMode;
@@ -203,10 +207,12 @@ private:
     int          missingDataType;
     double       missingData[2];
 
+    std::map< std::string, int> enumGraphEdgeNameMap;
+
     // Static class format string for type map.
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define AVTSCALARMETADATA_TMFS AVTVARMETADATA_TMFS "bis*d*DDii*iiiD"
+#define AVTSCALARMETADATA_TMFS AVTVARMETADATA_TMFS "bis*d*DDii*s*i*iiiD"
 
 #endif

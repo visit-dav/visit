@@ -42,6 +42,10 @@
     </Field>
     <Field name="enumGraphEdges" label="Enumeration values graph" type="intVector" access="public">
     </Field>
+    <Field name="enumGraphEdgeNames" label="Enumeration values graph edge names" type="stringVector" access="public">
+    </Field>
+    <Field name="enumGraphEdgeNameIndexs" label="Enumeration values graph edge name indexs" type="intVector" access="public">
+    </Field>
     <Field name="enumNChooseRN" label="N value for NChooseR mode" type="int">
       0
     </Field>
