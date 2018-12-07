@@ -641,6 +641,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   for (int i = 0; i < numLevels; i++)
     totalPatches += stepInfo->levelInfo[i].patchInfo.size();
 
+  // Used for the domain partitioning
   std::vector<int> groupIds(totalPatches);
   std::vector<std::string> pieceNames(totalPatches);
 
@@ -660,6 +661,17 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   // level 0
   LevelInfo &levelInfo = stepInfo->levelInfo[0];
 
+  // This can be done once for everything because the spatial range is
+  // the same for all meshes
+  double box_min[3], box_max[3];
+  levelInfo.getExtents(box_min, box_max);
+  
+  // debug5 << "box_min/max=["
+  //     << box_min[0] << "," << box_min[1] << ","
+  //     << box_min[2] << "] to ["
+  //     << box_max[0] << "," << box_max[1] << ","
+  //     << box_max[2] << "]" << std::endl;
+
   // Don't add node data unless NC_Mesh exists (some only have CC_MESH
   // or SFCk_MESH)
   bool addNodeData = false;
@@ -678,28 +690,6 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   // variable lists.
   std::set<std::string> mesh_vars_added;
 
-  // Get CC bounds
-  int low[3], high[3];
-  levelInfo.getBounds(low, high, "CC_Mesh");
-
-  // This can be done once for everything because the spatial range is
-  // the same for all meshes
-  double box_min[3] = { levelInfo.anchor[0] + low[0]  * levelInfo.spacing[0],
-                        levelInfo.anchor[1] + low[1]  * levelInfo.spacing[1],
-                        levelInfo.anchor[2] + low[2]  * levelInfo.spacing[2] };
-
-  double box_max[3] = { levelInfo.anchor[0] + high[0] * levelInfo.spacing[0],
-                        levelInfo.anchor[1] + high[1] * levelInfo.spacing[1],
-                        levelInfo.anchor[2] + high[2] * levelInfo.spacing[2] };
-
-  //debug5<<"box_min/max=["<<box_min[0]<<","<<box_min[1]<<","<<box_min[2]<<"] to ["<<box_max[0]<<","<<box_max[1]<<","<<box_max[2]<<"]\n";
-
-  int logical[3];
-  for (int i=0; i<3; ++i)
-    logical[i] = high[i]-low[i];
-  
-  //debug5 <<"logical: "<< logical[0] << ", "<< logical[1] << ", "<< logical[2]<<endl;
-
   for (int i=0; i<(int)stepInfo->varInfo.size(); ++i)
   {
     if (stepInfo->varInfo[i].type.find("ParticleVariable") == std::string::npos)
@@ -711,11 +701,14 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
       avtCentering cent;
       std::string mesh_for_this_var;
-
+      
+      int low[3], high[3];
+      
       if (vartype.find("NC") != std::string::npos)
       {
         mesh_for_this_var.assign("NC_Mesh");
         cent = AVT_NODECENT;
+        levelInfo.getBounds(low, high, mesh_for_this_var);
 
         addNodeData = true;
         addPatchData = true;
@@ -724,6 +717,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
       {  
         mesh_for_this_var.assign("CC_Mesh");
         cent = AVT_ZONECENT;
+        levelInfo.getBounds(low, high, mesh_for_this_var);
 
         addPatchData = true;
       }
@@ -737,11 +731,13 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
           mesh_for_this_var.assign("SFCZ_Mesh");
 
         cent = AVT_ZONECENT;
+        levelInfo.getBounds(low, high, mesh_for_this_var);
       }  
       else if (vartype.find("PerPatch") != std::string::npos)
-      {  
+      { 
         mesh_for_this_var = "Patch_Mesh";
         cent = AVT_ZONECENT;
+        levelInfo.getBounds(low, high, "CC_Mesh");
         
         isPerPatchVar = true;
       }
@@ -750,6 +746,13 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         debug5<< varname<<" has an unknown vartype: "<<vartype<<endl;
         continue;
       }
+
+      int logical[3];
+      for (int i=0; i<3; ++i)
+        logical[i] = high[i]-low[i];
+      
+      //debug5 <<"logical: "<< logical[0] << ", "<< logical[1] << ", "<< logical[2]<<endl;
+
       
       if (meshes_added.find(mesh_for_this_var) == meshes_added.end())
       {
@@ -776,7 +779,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         mesh->maxSpatialExtents[1] = box_max[1];
         mesh->minSpatialExtents[2] = box_min[2];
         mesh->maxSpatialExtents[2] = box_max[2];
-
+        
         mesh->hasLogicalBounds = true;
         mesh->logicalBounds[0] = logical[0];
         mesh->logicalBounds[1] = logical[1];
@@ -917,6 +920,12 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   // Add the patch data
   if (addPatchData)
   {
+    int low[3], high[3];
+    levelInfo.getBounds(low, high, "CC_Mesh");
+    int logical[3];
+    for (int i=0; i<3; ++i)
+      logical[i] = high[i]-low[i];
+      
     avtMeshMetaData *mesh = new avtMeshMetaData;
 
     mesh->name = "Patch_Mesh";
@@ -1025,7 +1034,7 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
           newVarname.append("*");
         }
 
-        if (meshes_added.find(mesh_for_this_var)==meshes_added.end())
+        if (meshes_added.find(mesh_for_this_var) == meshes_added.end())
         {
           avtMeshMetaData *mesh = new avtMeshMetaData;
 
@@ -1050,6 +1059,12 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
           mesh->minSpatialExtents[2] = box_min[2];
           mesh->maxSpatialExtents[2] = box_max[2];
 
+          int low[3], high[3];
+          levelInfo.getBounds(low, high, mesh_for_this_var);
+          int logical[3];
+          for (int i=0; i<3; ++i)
+            logical[i] = high[i]-low[i];
+          
           mesh->hasLogicalBounds = true;
           mesh->logicalBounds[0] = logical[0];
           mesh->logicalBounds[1] = logical[1];
