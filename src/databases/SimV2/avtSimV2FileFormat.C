@@ -572,8 +572,8 @@ RestrictMaterialIndices(visit_handle h, const avtMaterialMetaData *mmd)
 void
 AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
 {
-    char *name = NULL, *meshName = NULL;
-    if(simv2_VariableMetaData_getName(h, &name) == VISIT_OKAY)
+    char *varName = NULL, *meshName = NULL;
+    if(simv2_VariableMetaData_getName(h, &varName) == VISIT_OKAY)
     {
         if(simv2_VariableMetaData_getMeshName(h, &meshName) == VISIT_OKAY)
         {
@@ -613,8 +613,8 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     simv2_VariableMetaData_getTreatAsASCII(h, &treatAsASCII);
 
                     avtScalarMetaData *scalar = new avtScalarMetaData;
-                    scalar->name = name;
-                    scalar->originalName = name;
+                    scalar->name = varName;
+                    scalar->originalName = varName;
                     scalar->meshName = meshName;
                     scalar->centering = centering;
                     scalar->treatAsASCII = treatAsASCII != 0;
@@ -650,8 +650,6 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     int nNames;
                     if(simv2_VariableMetaData_getNumEnumNames(h, &nNames) == VISIT_OKAY && nNames > 0)
                     {
-                      std::cerr << "nNames " << nNames << std::endl;
-                      
                       for( int i=0; i<nNames; ++i )
                       {
                         char *eName = NULL;
@@ -660,9 +658,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                         if(simv2_VariableMetaData_getEnumName(h, i, &eName) == VISIT_OKAY &&
                            simv2_VariableMetaData_getEnumNameRange(h, i, &minVal, &maxVal) == VISIT_OKAY)
                         {
-                          std::cerr << i << " adding enum " << eName << "  "
-                                    << minVal << "  " << maxVal << std::endl;
-                          scalar->AddEnumNameRange(name, minVal, maxVal);
+                          scalar->AddEnumNameRange(eName, minVal, maxVal);
                           free(eName);
                         }
                       }
@@ -671,17 +667,15 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     int nGraphEdges;
                     if(simv2_VariableMetaData_getNumEnumGraphEdges(h, &nGraphEdges) == VISIT_OKAY && nGraphEdges > 0)
                     {
-                      std::cerr << "nGraphEdges " << nGraphEdges << std::endl;
-                      
                       for( int i=0; i<nGraphEdges; ++i )
                       {
                         int head, tail;
+                        char *edgeName = NULL;
                         
-                        if(simv2_VariableMetaData_getEnumGraphEdge(h, i, &head, &tail) == VISIT_OKAY)
+                        if(simv2_VariableMetaData_getEnumGraphEdge(h, i, &head, &tail, &edgeName) == VISIT_OKAY)
                         {
-                          std::cerr << i << " adding edge "
-                                    << head << "  " << tail << std::endl;
-                          scalar->AddEnumGraphEdge( head, tail );
+                          scalar->AddEnumGraphEdge( head, tail, edgeName );
+                          free(edgeName);
                         }                       
                       }
                     }
@@ -693,8 +687,6 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                         // The defaults are +DBL_MAX and -DBL_MAX which will fail this conditional
                         if( minVal <= maxVal )
                         {
-                            std::cerr << " always including edge "
-                                      << minVal << "  " << maxVal << std::endl;
                             scalar->SetEnumAlwaysIncludeRange( minVal, maxVal );
                         }
                     }
@@ -704,8 +696,6 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                         // The defaults are +DBL_MAX and -DBL_MAX which will fail this conditional
                         if( minVal <= maxVal )
                         {
-                            std::cerr << " always excluding edge "
-                                      << minVal << "  " << maxVal << std::endl;
                             scalar->SetEnumAlwaysExcludeRange( minVal, maxVal );
                         }
                     }
@@ -718,8 +708,8 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     simv2_VariableMetaData_getNumComponents(h, &nComponents);
 
                     avtVectorMetaData *vector = new avtVectorMetaData;
-                    vector->name = name;
-                    vector->originalName = name;
+                    vector->name = varName;
+                    vector->originalName = varName;
                     vector->meshName = meshName;
                     vector->centering = centering;
                     vector->varDim = nComponents;
@@ -736,8 +726,8 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     simv2_VariableMetaData_getNumComponents(h, &nComponents);
 
                     avtTensorMetaData *tensor = new avtTensorMetaData;
-                    tensor->name = name;
-                    tensor->originalName = name;
+                    tensor->name = varName;
+                    tensor->originalName = varName;
                     tensor->meshName = meshName;
                     tensor->centering = centering;
                     tensor->dim = nComponents;
@@ -754,8 +744,8 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     simv2_VariableMetaData_getNumComponents(h, &nComponents);
 
                     avtSymmetricTensorMetaData *tensor = new avtSymmetricTensorMetaData;
-                    tensor->name = name;
-                    tensor->originalName = name;
+                    tensor->name = varName;
+                    tensor->originalName = varName;
                     tensor->meshName = meshName;
                     tensor->centering = centering;
                     tensor->dim = nComponents;
@@ -769,8 +759,8 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                 else if(type == VISIT_VARTYPE_LABEL)
                 {
                     avtLabelMetaData *label = new avtLabelMetaData;
-                    label->name = name;
-                    label->originalName = name;
+                    label->name = varName;
+                    label->originalName = varName;
                     label->meshName = meshName;
                     label->centering = centering;
                     label->hideFromGUI = hideFromGUI;
@@ -784,8 +774,8 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
                     simv2_VariableMetaData_getNumComponents(h, &nComponents);
 
                     avtArrayMetaData *arr = new avtArrayMetaData;
-                    arr->name = name;
-                    arr->originalName = name;
+                    arr->name = varName;
+                    arr->originalName = varName;
                     arr->meshName = meshName;
                     arr->centering = centering;
                     arr->nVars = nComponents;
@@ -805,7 +795,7 @@ AddVariableMetaData(avtDatabaseMetaData *md, visit_handle h)
             }       
             free(meshName);
         }
-        free(name);
+        free(varName);
     }
 }
 
