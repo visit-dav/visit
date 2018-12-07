@@ -359,6 +359,12 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
     EXCEPTION1(InvalidDBTypeException, "The function releaseGrid could not be located in the library!!!");
   }
 
+  queryProcessors = (unsigned int (*)(DataArchive*)) dlsym(libHandle, "queryProcessors");
+  if((error = dlerror()) != NULL) 
+  {
+    EXCEPTION1(InvalidDBTypeException, "The function queryProcessors could not be located in the library!!!");
+  }
+
   getCycleTimes = (std::vector<double> (*)(DataArchive*)) dlsym(libHandle, "getCycleTimes");
   if((error = dlerror()) != NULL) 
   {
@@ -406,6 +412,10 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   // Timestep times
   int t2 = visitTimer->StartTimer();
 
+  debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+  nProcs = (*queryProcessors)(archive);
+  debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+  
   debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
   cycleTimes = (*getCycleTimes)(archive);
   debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
@@ -774,6 +784,45 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
         md->Add(mesh);
         meshes_added.insert(mesh_for_this_var);
+
+        // Add a SIL for subsettng via the nodes and ranks.
+        const unsigned int nRanks = nProcs;
+        const unsigned int nNodes = nProcs > 50 ? nProcs/10 : 1;
+
+        int rank_enum_id[nRanks];
+        int node_enum_id[nNodes];
+        
+        std::string enum_name = std::string("Nodes_Ranks/") + mesh_for_this_var;
+        
+        avtScalarMetaData *smd = new avtScalarMetaData(enum_name,
+                                                       mesh_for_this_var,
+                                                       AVT_ZONECENT );
+
+        smd->SetEnumerationType(avtScalarMetaData::ByValue);
+        smd->hideFromGUI = true;
+
+        // smd->AddEnumNameRange("Rank_%04d", 0, nRanks-1);
+        for( unsigned int i=0; i<nRanks; ++i ) {
+          char msg[12];
+          sprintf( msg, "Rank_%04d", i );
+          rank_enum_id[i] = smd->AddEnumNameValue( msg, i);
+        }
+
+        if( nNodes > 1 ) {
+
+          // smd->AddEnumNameRange("Node_%04d", 0, nNodes-1);
+          for( unsigned int i=0; i<nNodes; ++i ) {
+            char msg[12];
+            sprintf( msg, "Node_%04d", i );
+            node_enum_id[i] = smd->AddEnumNameValue( msg, nRanks+i);
+          }
+          
+          for( unsigned int i=0; i<nRanks; ++i ) {
+            smd->AddEnumGraphEdge(node_enum_id[i/10], rank_enum_id[i], "Ranks" );
+          }
+        }
+        
+        md->Add(smd);
       }
 
       // Add mesh vars
@@ -1868,7 +1917,8 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     isInternalVar = true;
     varType = "NC_Mesh";
   }
-  else if( strcmp(varname, "Patch/Id") == 0 ||
+  else if( strncmp(varname, "Nodes_Ranks/", 12) == 0 ||
+           strcmp(varname, "Patch/Id") == 0 ||
            strcmp(varname, "Patch/ProcId") == 0 ||
 
            strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
@@ -1879,9 +1929,9 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
   }
   else
   {
-    // For PerPatch data remove the patch/ prefix and get the var
+    // For PerPatch data remove the Patch/ prefix and get the var
     // name and set the material to zero.
-    if( varName == "Patch/" )
+    if( varName == "Patch" )
     {
       // Get the var name and material sans "Patch/".
       varName = std::string(varname);
@@ -2010,18 +2060,22 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     {
       gd = new GridDataRaw;
 
-      // Using the node mesh
-      if (strncmp(varname, "Patch/Nodes", 11) == 0 )
+      // Using the cell mesh for Nodes and Ranks and the node mesh for
+      // node coordinates.
+      if (strcmp(varname, "Nodes_Ranks/CC_Mesh") == 0 ||
+          strcmp(varname, "Nodes_Ranks/NC_Mesh") == 0 ||
+          strncmp(varname, "Patch/Nodes", 11) == 0 )
         gd->num = ((phigh[0] - plow[0]) *
                    (phigh[1] - plow[1]) *
                    (phigh[2] - plow[2]));
       // Using the patch mesh
-      else
+      else //if (strncmp(varname, "Nodes_Ranks/Patch", 17) == 0 ||
         gd->num = 1;
 
       // The runtime processor data and patch id and processor are
       // scalar values while the bounds are vector values.
-      if (strcmp(varname, "Patch/Id") == 0 ||
+      if (strncmp(varname, "Nodes_Ranks/", 12) == 0 ||
+          strcmp(varname, "Patch/Id") == 0 ||
           strcmp(varname, "Patch/ProcId") == 0 )
         gd->components = 1;
       else // if( strncmp(varname, "Patch/Nodes",  11) == 0 ||
@@ -2042,7 +2096,8 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 #endif      
       }
       // Patch processor rank
-      else if (strcmp(varname, "Patch/ProcId") == 0 )
+      else if( strncmp(varname, "Nodes_Ranks/", 12) == 0 ||
+               strcmp(varname, "Patch/ProcId") == 0 )
       {
 #if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
         double value = patchInfo.getProcId();
@@ -2171,7 +2226,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     else
     {
       std::stringstream msg;
-      msg << "Visit libsim - "
+      msg << "Visit - "
           << "Uintah variable \"" << varname << "\"  "
           << "could not be processed.";
       

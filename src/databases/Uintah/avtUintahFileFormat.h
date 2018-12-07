@@ -127,6 +127,7 @@ protected:
 
   // Data that is not dependent on time
   DataArchive *archive;
+  unsigned int nProcs;
   std::vector<double> cycleTimes;
 
   // Data that is dependent on time
@@ -142,6 +143,7 @@ protected:
   GridP*           (*getGrid)(DataArchive*, int);
   void             (*releaseGrid)(GridP*);
 
+  unsigned int     (*queryProcessors)(DataArchive*);
   std::vector<double>   (*getCycleTimes)(DataArchive*);
   TimeStepInfo*    (*getTimeStepInfo)(DataArchive*, GridP*, int, int);
 
