@@ -39,8 +39,6 @@
 #****************************************************************************/
 INCLUDE(${VISIT_SOURCE_DIR}/CMake/FindSphinx.cmake)
 
-find_package(Sphinx REQUIRED)
- 
 if(NOT DEFINED SPHINX_THEME)
     set(SPHINX_THEME sphinx_rtd_theme)
 endif()

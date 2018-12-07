@@ -55,8 +55,11 @@ LINK_DIRECTORIES(${LIBRARY_OUTPUT_DIRECTORY})
 ADD_LIBRARY(viewerproxy ${VIEWERPROXY_SOURCES})
 TARGET_LINK_LIBRARIES(viewerproxy viewerrpc visitcommon avtdbatts)
 
-ADD_EXECUTABLE(proxyexample EXCLUDE_FROM_ALL proxyexample.C)
-set_target_properties(proxyexample PROPERTIES FOLDER examples)
+ADD_EXECUTABLE(proxyexample proxyexample.C)
+set_target_properties(proxyexample PROPERTIES
+                      FOLDER examples
+                      EXCLUDE_FROM_ALL 1
+                      EXCLUDE_FROM_DEFAULT_BUILD 1)
 TARGET_LINK_LIBRARIES(proxyexample viewerrpc viewerproxy visitcommon avtdbatts)
 
 VISIT_INSTALL_TARGETS(viewerproxy)

@@ -151,9 +151,7 @@ function( Sphinx_add_targets target_base_name conf source base_destination )
     add_dependencies( ${target_base_name}_text ${_dependencies} )
   endif()
 
-  if( ${BUILD_TESTING} )
-    sphinx_add_target( ${target_base_name}_linkcheck linkcheck ${conf} ${source} ${base_destination}/linkcheck )
+    Sphinx_add_target( ${target_base_name}_linkcheck linkcheck ${conf} ${source} ${base_destination}/linkcheck )
 
     add_dependencies( ${target_base_name}_linkcheck ${_dependencies} )
-  endif()
 endfunction()
