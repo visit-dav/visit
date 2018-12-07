@@ -67,6 +67,7 @@ struct VisIt_VariableMetaData : public VisIt_ObjectBase
     double       enumAlwaysExclude[2];
     double       enumAlwaysInclude[2];
     intVector    enumGraphEdges;
+    stringVector enumGraphEdgeNames;
 };
 
 VisIt_VariableMetaData::VisIt_VariableMetaData() : VisIt_ObjectBase(VISIT_VARIABLEMETADATA)
@@ -657,7 +658,7 @@ simv2_VariableMetaData_getEnumNameRange(visit_handle h, int i, double * minVal, 
 }
 
 int
-simv2_VariableMetaData_addEnumGraphEdge(visit_handle h, int head, int tail)
+simv2_VariableMetaData_addEnumGraphEdge(visit_handle h, int head, int tail, const char *edgeName)
 {
     int retval = VISIT_ERROR;
     VisIt_VariableMetaData *obj = GetObject(h, "simv2_VariableMetaData_addEnumGraphEdge");
@@ -665,6 +666,7 @@ simv2_VariableMetaData_addEnumGraphEdge(visit_handle h, int head, int tail)
     {
         obj->enumGraphEdges.push_back(head);
         obj->enumGraphEdges.push_back(tail);
+        obj->enumGraphEdgeNames.push_back(edgeName);
         retval = VISIT_OKAY;
     }
     return retval;
@@ -691,9 +693,9 @@ simv2_VariableMetaData_getNumEnumGraphEdges(visit_handle h, int *val)
 }
 
 int
-simv2_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int * tail)
+simv2_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int * tail, char **edgeName)
 {
-    if(head == NULL || tail == NULL)
+    if(head == NULL || tail == NULL || edgeName == NULL)
     {
         VisItError("simv2_VariableMetaData_getEnumGraphEdge: Invalid address");
         return VISIT_ERROR;
@@ -704,12 +706,15 @@ simv2_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int *
     {
         *head = obj->enumGraphEdges[i*2  ];
         *tail = obj->enumGraphEdges[i*2+1];
+        *edgeName = (char *)malloc(obj->enumGraphEdgeNames[i].size() + 1);
+        strcpy(*edgeName, obj->enumGraphEdgeNames[i].c_str());
         retval = VISIT_OKAY;
     }
     else
     {
         *head = 0;
         *tail = 0;
+        *edgeName = 0;
     }    
     return retval;
 }

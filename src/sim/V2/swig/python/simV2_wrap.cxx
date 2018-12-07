@@ -17623,18 +17623,23 @@ SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumGraphEdge(PyObject *SWI
   visit_handle arg1 ;
   int arg2 ;
   int arg3 ;
+  char *arg4 = (char *) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
   int val3 ;
   int ecode3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:VisIt_VariableMetaData_addEnumGraphEdge",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:VisIt_VariableMetaData_addEnumGraphEdge",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_VariableMetaData_addEnumGraphEdge" "', argument " "1"" of type '" "visit_handle""'");
@@ -17650,10 +17655,17 @@ SWIGINTERN PyObject *_wrap_VisIt_VariableMetaData_addEnumGraphEdge(PyObject *SWI
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "VisIt_VariableMetaData_addEnumGraphEdge" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = static_cast< int >(val3);
-  result = (int)VisIt_VariableMetaData_addEnumGraphEdge(arg1,arg2,arg3);
+  res4 = SWIG_AsCharPtrAndSize(obj3, &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "VisIt_VariableMetaData_addEnumGraphEdge" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = reinterpret_cast< char * >(buf4);
+  result = (int)VisIt_VariableMetaData_addEnumGraphEdge(arg1,arg2,arg3,(char const *)arg4);
   resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
   return resultobj;
 fail:
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
   return NULL;
 }
 

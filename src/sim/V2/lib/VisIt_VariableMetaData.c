@@ -265,11 +265,11 @@ VisIt_VariableMetaData_getEnumNameRange(visit_handle h, int i, double * minVal, 
 }
 
 int
-VisIt_VariableMetaData_addEnumGraphEdge(visit_handle h, int head, int tail)
+VisIt_VariableMetaData_addEnumGraphEdge(visit_handle h, int head, int tail, const char * name)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_addEnumGraphEdge,
-                          int, (visit_handle, int, int),
-                          (h, head, tail));
+                          int, (visit_handle, int, int, const char *),
+                          (h, head, tail, name));
 }
 
 int
@@ -281,11 +281,11 @@ VisIt_VariableMetaData_getNumEnumGraphEdges(visit_handle h, int *val)
 }
 
 int
-VisIt_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int * tail)
+VisIt_VariableMetaData_getEnumGraphEdge(visit_handle h, int i, int * head, int * tail, char **edgeName)
 {
     VISIT_DYNAMIC_EXECUTE(VariableMetaData_getEnumGraphEdge,
-                          int, (visit_handle, int, int *, int *),
-                          (h, i, head, tail));
+                          int, (visit_handle, int, int *, int *, char**),
+                          (h, i, head, tail, edgeName));
 }
 
 int
@@ -616,9 +616,14 @@ F_VISITMDVARGETENUMNAMERANGE(visit_handle *h, int *i, double *head, double *tail
 }
 
 int
-F_VISITMDVARADDENUMGRAPHEDGE(visit_handle *h, int *head, int *tail)
+F_VISITMDVARADDENUMGRAPHEDGE(visit_handle *h, int *head, int *tail, char *name, int *lname)
 {
-    return VisIt_VariableMetaData_addEnumGraphEdge( *h, *head, *tail);
+    char *f_name = NULL;
+    int retval;
+    COPY_FORTRAN_STRING(f_name, name, lname);
+    retval = VisIt_VariableMetaData_addEnumGraphEdge( *h, *head, *tail, f_name);
+    FREE(f_name);
+    return retval;
 }
 
 int
@@ -628,9 +633,17 @@ F_VISITMDVARGETNUMENUMGRAPHEDGES(visit_handle *h, int *val)
 }
 
 int
-F_VISITMDVARGETENUMGRAPHEDGE(visit_handle *h, int *i, int *head, int *tail)
+F_VISITMDVARGETENUMGRAPHEDGE(visit_handle *h, int *i, int *head, int *tail, char *name, int *lname)
 {
-    return VisIt_VariableMetaData_getEnumGraphEdge( *h, *i, head, tail);
+    char *s = NULL;
+    int retval;
+    retval = VisIt_VariableMetaData_getEnumGraphEdge( *h, *i, head, tail, &s);
+    if(s != NULL)
+    {
+        visit_cstring_to_fstring(s, name, *lname);
+        free(s);
+    }
+    return retval;
 }
 
 int

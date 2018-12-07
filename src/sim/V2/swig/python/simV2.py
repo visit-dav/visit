@@ -1713,8 +1713,8 @@ def VisIt_VariableMetaData_setEnumerationType(h, arg2):
     return _simV2.VisIt_VariableMetaData_setEnumerationType(h, arg2)
 VisIt_VariableMetaData_setEnumerationType = _simV2.VisIt_VariableMetaData_setEnumerationType
 
-def VisIt_VariableMetaData_addEnumGraphEdge(h, arg2, arg3):
-    return _simV2.VisIt_VariableMetaData_addEnumGraphEdge(h, arg2, arg3)
+def VisIt_VariableMetaData_addEnumGraphEdge(h, arg2, arg3, arg4):
+    return _simV2.VisIt_VariableMetaData_addEnumGraphEdge(h, arg2, arg3, arg4)
 VisIt_VariableMetaData_addEnumGraphEdge = _simV2.VisIt_VariableMetaData_addEnumGraphEdge
 
 def VisIt_VariableMetaData_addEnumNameValue(h, arg2, arg3, arg4):
