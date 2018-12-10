@@ -437,6 +437,9 @@
 #    vs installed version) into separate CMake files, all handled by
 #    PluginVsInstallHelpers.cmake.
 #
+#    Kathleen Biagas, Mon Dec 10 14:41:27 MST 2018
+#    Have CMake find the MSVC runtime libraries needed for Windows distro.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -2294,6 +2297,8 @@ IF (NOT WIN32)
 ELSE (NOT WIN32)
     IF(VISIT_MAKE_NSIS_INSTALLER)
       IF(${MAKENSIS_FOUND})
+        set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION ".")
+        include("InstallRequiredSystemLibraries")
         # create a custom target that will run our nsis scripts.
         # Make sure it won't run unless specifically called.
         #
