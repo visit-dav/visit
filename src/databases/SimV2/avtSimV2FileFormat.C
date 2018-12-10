@@ -365,7 +365,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     int nDomainNames = 0;
     if(simv2_MeshMetaData_getNumDomainName(h, &nDomainNames) == VISIT_OKAY)
     {
-      if( nDomains != nDomainNames )
+      if( nDomainNames && nDomainNames != nDomains )
         EXCEPTION1(ImproperUseException,
                    "Invalid mesh number of domains and names does not match in MeshMetaData.");
           
@@ -398,7 +398,7 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
         int nGroupNames = 0;
         if(simv2_MeshMetaData_getNumGroupName(h, &nGroupNames) == VISIT_OKAY)
         {
-          if( nGroups != nGroupNames )
+          if( nGroupNames && nGroupNames != nGroups )
             EXCEPTION1(ImproperUseException,
                        "Invalid mesh number of groups and names does not match in MeshMetaData.");
           
