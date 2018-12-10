@@ -225,6 +225,14 @@ VisIt_MeshMetaData_getGroupTitle(visit_handle h, char **val)
 }
 
 int
+VisIt_MeshMetaData_addGroupName(visit_handle h, const char *val)
+{
+    VISIT_DYNAMIC_EXECUTE(MeshMetaData_addGroupName,
+        int, (visit_handle, const char *),
+        (h, val));
+}
+
+int
 VisIt_MeshMetaData_setGroupPieceName(visit_handle h, const char *val)
 {
     VISIT_DYNAMIC_EXECUTE(MeshMetaData_setGroupPieceName,
@@ -482,6 +490,7 @@ VisIt_MeshMetaData_getLogicalBounds(visit_handle h, int val[3])
 #define F_VISITMDMESHGETNUMGROUPS         F77_ID(visitmdmeshgetnumgroups_,visitmdmeshgetnumgroups, VISITMDMESHGETNUMGROUPS)
 #define F_VISITMDMESHSETGROUPTITLE        F77_ID(visitmdmeshsetgrouptitle_,visitmdmeshsetgrouptitle, VISITMDMESHSETGROUPTITLE)
 #define F_VISITMDMESHGETGROUPTITLE        F77_ID(visitmdmeshgetgrouptitle_,visitmdmeshgetgrouptitle, VISITMDMESHGETGROUPTITLE)
+#define F_VISITMDMESHADDGROUPNAME        F77_ID(visitmdmeshaddgroupname_,visitmdmeshaddgroupname, VISITMDMESHADDGROUPNAME)
 #define F_VISITMDMESHSETGROUPPIECENAME    F77_ID(visitmdmeshsetgrouppiecename_,visitmdmeshsetgrouppiecename, VISITMDMESHSETGROUPPIECENAME)
 #define F_VISITMDMESHGETGROUPPIECENAME    F77_ID(visitmdmeshgetgrouppiecename_,visitmdmeshgetgrouppiecename, VISITMDMESHGETGROUPPIECENAME)
 #define F_VISITMDMESHSETGROUPIDS          F77_ID(visitmdmeshsetgroupids_,visitmdmeshsetgroupids, VISITMDMESHSETGROUPIDS)
@@ -707,6 +716,17 @@ F_VISITMDMESHGETGROUPTITLE(visit_handle *h, char *val, int *lval)
         visit_cstring_to_fstring(s, val, *lval);
         free(s);
     }
+    return retval;
+}
+
+int
+F_VISITMDMESHADDGROUPNAME(visit_handle *h, const char *val, int *lval)
+{
+    char *f_val = NULL;
+    int retval;
+    COPY_FORTRAN_STRING(f_val, val, lval);
+    retval = VisIt_MeshMetaData_addGroupName(*h, f_val);
+    FREE(f_val);
     return retval;
 }
 
@@ -967,4 +987,3 @@ F_VISITMDMESHGETLOGICALBOUNDS(visit_handle *h, int val[3])
 {
     return VisIt_MeshMetaData_getLogicalBounds(*h, val);
 }
-

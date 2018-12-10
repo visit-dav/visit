@@ -13336,6 +13336,40 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_VisIt_MeshMetaData_addGroupName(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  visit_handle arg1 ;
+  char *arg2 = (char *) 0 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:VisIt_MeshMetaData_addGroupName",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "VisIt_MeshMetaData_addGroupName" "', argument " "1"" of type '" "visit_handle""'");
+  } 
+  arg1 = static_cast< visit_handle >(val1);
+  res2 = SWIG_AsCharPtrAndSize(obj1, &buf2, NULL, &alloc2);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "VisIt_MeshMetaData_addGroupName" "', argument " "2"" of type '" "char const *""'");
+  }
+  arg2 = reinterpret_cast< char * >(buf2);
+  result = (int)VisIt_MeshMetaData_addGroupName(arg1,(char const *)arg2);
+  resultobj = SWIG_From_int(static_cast< int >(result));
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return resultobj;
+fail:
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *_wrap_VisIt_MeshMetaData_setGroupPieceName(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
   visit_handle arg1 ;
@@ -18269,6 +18303,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"VisIt_MeshMetaData_addDomainName", _wrap_VisIt_MeshMetaData_addDomainName, METH_VARARGS, NULL},
 	 { (char *)"VisIt_MeshMetaData_setNumGroups", _wrap_VisIt_MeshMetaData_setNumGroups, METH_VARARGS, NULL},
 	 { (char *)"VisIt_MeshMetaData_setGroupTitle", _wrap_VisIt_MeshMetaData_setGroupTitle, METH_VARARGS, NULL},
+	 { (char *)"VisIt_MeshMetaData_addGroupName", _wrap_VisIt_MeshMetaData_addGroupName, METH_VARARGS, NULL},
 	 { (char *)"VisIt_MeshMetaData_setGroupPieceName", _wrap_VisIt_MeshMetaData_setGroupPieceName, METH_VARARGS, NULL},
 	 { (char *)"VisIt_MeshMetaData_addGroupId", _wrap_VisIt_MeshMetaData_addGroupId, METH_VARARGS, NULL},
 	 { (char *)"VisIt_MeshMetaData_setXUnits", _wrap_VisIt_MeshMetaData_setXUnits, METH_VARARGS, NULL},

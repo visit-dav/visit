@@ -1317,6 +1317,10 @@ def VisIt_MeshMetaData_setGroupTitle(h, arg2):
     return _simV2.VisIt_MeshMetaData_setGroupTitle(h, arg2)
 VisIt_MeshMetaData_setGroupTitle = _simV2.VisIt_MeshMetaData_setGroupTitle
 
+def VisIt_MeshMetaData_addGroupName(h, arg2):
+    return _simV2.VisIt_MeshMetaData_addGroupName(h, arg2)
+VisIt_MeshMetaData_addGroupName = _simV2.VisIt_MeshMetaData_addGroupName
+
 def VisIt_MeshMetaData_setGroupPieceName(h, arg2):
     return _simV2.VisIt_MeshMetaData_setGroupPieceName(h, arg2)
 VisIt_MeshMetaData_setGroupPieceName = _simV2.VisIt_MeshMetaData_setGroupPieceName

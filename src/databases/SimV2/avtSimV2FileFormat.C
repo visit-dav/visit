@@ -365,6 +365,10 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
     int nDomainNames = 0;
     if(simv2_MeshMetaData_getNumDomainName(h, &nDomainNames) == VISIT_OKAY)
     {
+      if( nDomains != nDomainNames )
+        EXCEPTION1(ImproperUseException,
+                   "Invalid mesh number of domains and names does not match in MeshMetaData.");
+          
         for(int i = 0; i < nDomainNames; ++i)
         {
             char *name = NULL;
@@ -389,6 +393,26 @@ AddMeshMetaData(avtDatabaseMetaData *md, visit_handle h)
         {
             mesh->groupTitle = std::string(groupTitle);
             free(groupTitle);
+        }
+
+        int nGroupNames = 0;
+        if(simv2_MeshMetaData_getNumGroupName(h, &nGroupNames) == VISIT_OKAY)
+        {
+          if( nGroups != nGroupNames )
+            EXCEPTION1(ImproperUseException,
+                       "Invalid mesh number of groups and names does not match in MeshMetaData.");
+          
+            for(int i = 0; i < nGroupNames; ++i)
+            {
+                char *name = NULL;
+                if(simv2_MeshMetaData_getGroupName(h, i, &name) == VISIT_OKAY)
+                {
+                    mesh->groupNames.push_back(name);
+                    free(name);
+                }
+                else
+                  mesh->groupNames.push_back("");
+            }
         }
 
         char *groupPieceName = NULL;

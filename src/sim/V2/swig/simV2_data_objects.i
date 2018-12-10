@@ -713,6 +713,7 @@ int VisIt_MeshMetaData_setDomainPieceName(visit_handle h, const char *);
 int VisIt_MeshMetaData_addDomainName(visit_handle h, const char *);
 int VisIt_MeshMetaData_setNumGroups(visit_handle h, int);
 int VisIt_MeshMetaData_setGroupTitle(visit_handle h, const char *);
+int VisIt_MeshMetaData_addGroupName(visit_handle h, const char *);
 int VisIt_MeshMetaData_setGroupPieceName(visit_handle h, const char *);
 int VisIt_MeshMetaData_addGroupId(visit_handle h, int);
 int VisIt_MeshMetaData_setXUnits(visit_handle h, const char *);

@@ -60,6 +60,7 @@ struct VisIt_MeshMetaData : public VisIt_ObjectBase
     int          numGroups;
     std::string  groupTitle;
     std::string  groupPieceName;
+    stringVector groupNames;
     intVector    groupIds;
     std::string  xUnits;
     std::string  yUnits;
@@ -565,6 +566,65 @@ simv2_MeshMetaData_getGroupTitle(visit_handle h, char **val)
     {
         *val = (char*)malloc(obj->groupTitle.size() + 1);
         strcpy(*val, obj->groupTitle.c_str());
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = NULL;
+    return retval;
+}
+
+int
+simv2_MeshMetaData_addGroupName(visit_handle h, const char *val)
+{
+    if(val == NULL)
+    {
+        VisItError("An invalid string was provided for groupNames");
+        return VISIT_ERROR;
+    }
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_addGroupName");
+    if(obj != NULL)
+    {
+        obj->groupNames.push_back(val);
+        retval = VISIT_OKAY;
+    }
+    return retval;
+}
+
+int
+simv2_MeshMetaData_getNumGroupName(visit_handle h, int *val)
+{
+    if(val == NULL)
+    {
+        VisItError("simv2_MeshMetaData_getNumGroupName: Invalid address");
+        return VISIT_ERROR;
+    }
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getNumGroupName");
+    if(obj != NULL)
+    {
+        *val = obj->groupNames.size();
+        retval = VISIT_OKAY;
+    }
+    else
+        *val = 0;
+    return retval;
+}
+
+int
+simv2_MeshMetaData_getGroupName(visit_handle h, int i, char **val)
+{
+    if(val == NULL)
+    {
+        VisItError("simv2_MeshMetaData_getGroupName: Invalid address");
+        return VISIT_ERROR;
+    }
+    int retval = VISIT_ERROR;
+    VisIt_MeshMetaData *obj = GetObject(h, "simv2_MeshMetaData_getGroupName");
+    if(obj != NULL && i >= 0 && i < static_cast<int>(obj->groupNames.size()))
+    {
+        *val = (char *)malloc(obj->groupNames[i].size() + 1);
+        strcpy(*val, obj->groupNames[i].c_str());
         retval = VISIT_OKAY;
     }
     else
@@ -1110,4 +1170,3 @@ simv2_MeshMetaData_check(visit_handle h)
     }
     return retval;
 }
-
