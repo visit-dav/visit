@@ -92,7 +92,7 @@ export bv_PREFIX=$bv_PATH/bv_support/
 # exec-version gets the older version of the script and runs it..
 export build_version=""
 export webroot="http://visit.ilight.com/svn/visit/"
-export webaddr="${webroot}/trunk/src/svn_bin/bv_support/"
+export webaddr="${webroot}/trunk/src/tools/dev/scripts/bv_support/"
 
 #state = "disabled", "enabled", "installed"
 declare -a reqlibs
@@ -124,7 +124,7 @@ function check_for_versioning
 
     if [[ "$build_version" != "" ]]; then
       VISIT_VERSION="$build_version"
-      webaddr="${webroot}/tags/$VISIT_VERSION/src/svn_bin/build_visit"
+      webaddr="${webroot}/tags/$VISIT_VERSION/src/tools/dev/scripts/build_visit"
       echo "using $webaddr for source"
     fi
 }
@@ -335,7 +335,7 @@ function call_build_visit
 
         # have to inject a hack for versions older than 2.6.3
         bv_PREFIX=$PWD/bv_support
-        webaddr="$webroot/tags/$build_version/src/svn_bin/bv_support/"
+        webaddr="$webroot/tags/$build_version/src/tools/dev/scripts/bv_support/"
         echo "rerouting support from $webaddr"
         configure_support_files
 
@@ -515,7 +515,7 @@ function bv_write_unified_file
 
     echo "export build_version=\"\"" >> $OUTPUT_bv_FILE
     echo "export webroot=\"http://visit.ilight.com/svn/visit/\"" >> $OUTPUT_bv_FILE
-    echo "export webaddr=\"\${webroot}/trunk/src/svn_bin/bv_support/\"" >> $OUTPUT_bv_FILE
+    echo "export webaddr=\"\${webroot}/trunk/src/tools/dev/scripts/bv_support/\"" >> $OUTPUT_bv_FILE
 
     echo "declare -a reqlibs" >> $OUTPUT_bv_FILE
     echo "declare -a optlibs" >> $OUTPUT_bv_FILE
