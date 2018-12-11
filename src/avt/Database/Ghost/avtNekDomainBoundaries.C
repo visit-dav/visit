@@ -70,6 +70,9 @@ using std::vector;
 //  Creation:    Fri Jan 18 16:21:34 PST 2008
 //
 //  Modifications:
+//    Eric Brugger, Tue Dec 11 09:50:38 PST 2018
+//    Corrected a bug generating ghost nodes for Nek5000 files where all the
+//    nodes were marked as ghost when the mesh was 2D.
 //
 // ****************************************************************************
 
@@ -79,6 +82,7 @@ avtNekDomainBoundaries::avtNekDomainBoundaries()
     aNeighborDomains = NULL;
     bFullDomainInfo = false;
     nDomains = 0;
+    nDims = 3;
     for (ii = 0; ii < 3; ii++)
         iBlockSize[ii] = 0;
     for (ii = 0; ii < 8; ii++)
@@ -131,10 +135,14 @@ avtNekDomainBoundaries::~avtNekDomainBoundaries()
 //    Add argument for mulitple blocks in a single VTK input.
 //    Also calculate ptsPerDomain.
 //
+//    Eric Brugger, Tue Dec 11 09:50:38 PST 2018
+//    Corrected a bug generating ghost nodes for Nek5000 files where all the
+//    nodes were marked as ghost when the mesh was 2D.
+//
 // ****************************************************************************
 
 void
-avtNekDomainBoundaries::SetDomainInfo(int num_domains, 
+avtNekDomainBoundaries::SetDomainInfo(int num_domains, int num_dims,
                                       const int dims[3], bool mblocks)
 {
     iBlockSize[0] = dims[0];
@@ -143,6 +151,7 @@ avtNekDomainBoundaries::SetDomainInfo(int num_domains,
     ptsPerDomain = iBlockSize[0]*iBlockSize[1]*iBlockSize[2];
     
     nDomains = num_domains;
+    nDims = num_dims;
 
     multipleBlocks = mblocks;
     
@@ -705,6 +714,10 @@ avtNekDomainBoundaries::ExtractMatchingFaces(Face *faces, int nFaces,
 //    Hank Childs, Mon Feb 28 10:02:55 PST 2011
 //    Add support for having multiple blocks stuffed into a single VTK DS.
 //
+//    Eric Brugger, Tue Dec 11 09:50:38 PST 2018
+//    Corrected a bug generating ghost nodes for Nek5000 files where all the
+//    nodes were marked as ghost when the mesh was 2D.
+//
 // ****************************************************************************
 
 void                      
@@ -828,7 +841,7 @@ avtNekDomainBoundaries::CreateGhostNodes(vector<int>          domainNum,
             gn->Delete();
         }
 
-        for (int jj = 0; jj < 6; jj++)
+        for (int jj = 0; jj < 2*nDims; jj++)
         {
             //Look in allDomains for the domain that neighbors the current face
             //If found, mark the points on this face.

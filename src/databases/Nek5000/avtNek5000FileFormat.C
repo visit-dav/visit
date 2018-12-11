@@ -1198,6 +1198,10 @@ avtNek5000FileFormat::FreeUpResources(void)
 //    Hank Childs, Mon Mar  4 18:35:27 PST 2013
 //    Add support for duplicating data.
 //
+//    Eric Brugger, Tue Dec 11 09:53:55 PST 2018
+//    Corrected a bug generating ghost nodes for Nek5000 files where all the
+//    nodes were marked as ghost when the mesh was 2D.
+//
 // ****************************************************************************
 
 void
@@ -1238,7 +1242,7 @@ avtNek5000FileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md, int /*ti
     {
         avtNekDomainBoundaries *db = new avtNekDomainBoundaries;
         bool multipleBlocks = true;
-        db->SetDomainInfo(iNumBlocks, iBlockSize, multipleBlocks);
+        db->SetDomainInfo(iNumBlocks, iDim, iBlockSize, multipleBlocks);
 
         void_ref_ptr vr = void_ref_ptr(db, avtNekDomainBoundaries::Destruct);
         cache->CacheVoidRef("any_mesh",
