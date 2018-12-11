@@ -90,6 +90,10 @@ class avtMaterial;
 //    Added the ExchangeVector method and removed the Exchange*Vector methods.
 //    (* = Float, Double, etc)
 //
+//    Eric Brugger, Tue Dec 11 09:46:02 PST 2018
+//    Corrected a bug generating ghost nodes for Nek5000 files where all the
+//    nodes were marked as ghost when the mesh was 2D.
+//
 // ****************************************************************************
 
 class DATABASE_API avtNekDomainBoundaries : public avtDomainBoundaries
@@ -132,6 +136,7 @@ class DATABASE_API avtNekDomainBoundaries : public avtDomainBoundaries
 
     // These are unique to this class
     virtual void                      SetDomainInfo(int num_domains, 
+                                                    int num_dims,
                                                     const int dims[3],
                                                     bool multipleBlocks = false);
     virtual void                      SetCacheDomainAdjacency(bool bCache) 
@@ -167,6 +172,7 @@ class DATABASE_API avtNekDomainBoundaries : public avtDomainBoundaries
                           //use in future calls to CreateGhostNodes
 
     int  nDomains;
+    int  nDims;
     int  iBlockSize[3];
     int  ptsPerDomain;
     bool multipleBlocks;

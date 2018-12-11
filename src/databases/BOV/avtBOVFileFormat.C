@@ -1494,6 +1494,10 @@ avtBOVFileFormat::GetAuxiliaryData(const char *var, int domain,
 //    Hank Childs, Tue Nov 30 11:41:44 PST 2010
 //    Only overset the time if we know if it is accurate.
 //
+//    Eric Brugger, Tue Dec 11 10:18:16 PST 2018
+//    Corrected a bug generating ghost nodes for Nek5000 files where all the
+//    nodes were marked as ghost when the mesh was 2D.
+//
 // ****************************************************************************
 
 void
@@ -1593,7 +1597,7 @@ avtBOVFileFormat::PopulateDatabaseMetaData(avtDatabaseMetaData *md)
             bs[0] = (int)bricklet_size[0];
             bs[1] = (int)bricklet_size[1];
             bs[2] = (int)bricklet_size[2];
-            db->SetDomainInfo(nb, bs);
+            db->SetDomainInfo(nb, dim, bs);
 
             void_ref_ptr vr = void_ref_ptr(db, avtNekDomainBoundaries::Destruct);
             cache->CacheVoidRef("any_mesh",
