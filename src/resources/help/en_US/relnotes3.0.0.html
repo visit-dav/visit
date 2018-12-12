@@ -99,13 +99,14 @@ SetBackendType("VTKm")
   <li>The <i>Pick Operator</i> now supports swivelling the camera focus to center on the current pick. This can be accessed through the gui by checking the "Swivel Focus" box. If you are using the python interface, you can turn this ability on and off by setting the boolean variable "swivelFocusToPick" within the pick attributes. </li>
   <li>Two related features have been added to the <i>Pick Operator</i>, and these are the ability to force a user-defined pick label and the ability to remove all previous picks that have the same label as the current pick. When used in conjunction, you can create a specialized pick operator that, with every new pick, removes all previous picks that contain the same user-defined label. As of now, these options are only accessible through the python interface pick attributes. To force a user-defined label, set the boolean variable "overridePickLabel" to True, and set "forcedPickLabel" to your chosen label. To remove all previous picks with the same label, set "removeLabelTwins" to True. </li>
   <li>The <i>Pick Operator</i> now supports highlighting node picks.</li>
+  <li>Default index for <i>OnionPeel</i> operator was changed from 1 to 0.</li>
 </ul>
 
 <a name="Bugs_fixed"></a>
 <p><b><font size="4">Other bugs fixed in version 3.0</font></b></p>
 <ul>
-  <li></li>
-  <li></li>
+  <li><i>ANNOTATION_INT</i> facelists with faces appearing in more than one sublist are now handled correctly.</li>
+  <li>Fixed empty plots caused by combination of enumerated subsets plus <i>OnionPeel</i> operator.</li>
   <li></li>
   <li></li>
   <li></li>
@@ -136,6 +137,7 @@ SetBackendType("VTKm")
 <ul>
   <li>VisIt's VTK-m infrastructure has been updated to work with VTK-m 1.1.0. In addition, the VisIt expression infrastructure was enhanced to allow VisIt expressions to be written using VTK-m.</li>
   <li>VisIt has been ported to use the git/master branch of the IceT compositing library.</li>
+  <li>avtGenericDatabase now dumps some intermmediate results of its dataset collection when -dump is in effect.</li>
 </ul>
 
 <p>Click the following link to view the release notes for the previous version
