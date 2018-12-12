@@ -134,7 +134,7 @@ void OnionPeelAttributes::Init()
     useGlobalId = false;
     categoryName = "Whole";
     subsetName = "Whole";
-    index.push_back(1);
+    index.push_back(0);
     logical = false;
     requestedLayer = 0;
     seedType = SeedCell;

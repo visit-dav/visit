@@ -22,7 +22,7 @@
         Whole
       </Field>
       <Field name="index" label="Location" type="intVector">
-        1
+        0
       </Field>
       <Field name="logical" label="Logical" type="bool">
         false

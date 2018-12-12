@@ -80,7 +80,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         categoryName = new String("Whole");
         subsetName = new String("Whole");
         index = new Vector();
-        index.addElement(new Integer(1));
+        index.addElement(new Integer(0));
         logical = false;
         requestedLayer = 0;
         seedType = SEEDIDTYPE_SEEDCELL;
@@ -96,7 +96,7 @@ public class OnionPeelAttributes extends AttributeSubject implements Plugin
         categoryName = new String("Whole");
         subsetName = new String("Whole");
         index = new Vector();
-        index.addElement(new Integer(1));
+        index.addElement(new Integer(0));
         logical = false;
         requestedLayer = 0;
         seedType = SEEDIDTYPE_SEEDCELL;
