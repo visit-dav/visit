@@ -6484,6 +6484,9 @@ compare_ev_pair(const void *a, const void *b)
 //    Replaced float* arg with vtiBitArray and changed calls to manipulate the
 //    float* array with calls to SetComponents of the vtkBitArray. This enables
 //    the code to support an arbitrary number of nodelists.
+//
+//    Mark C. Miller, Wed Dec 12 04:54:13 PST 2018
+//    Adjust logic to handle cases where edges/faces appear in multiple lists.
 // ****************************************************************************
 
 static void
@@ -6588,9 +6591,9 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         //
                         // If the edge id of the current edge (edgeIdx) is the
                         // same as the current one in the list we are here to paint,
-                        // then paint it.
+                        // then paint it. The while loop is to handle duplcate entries.
                         //
-                        if (edgeIdx == elemidv[elemIdx].id)
+                        while (edgeIdx == elemidv[elemIdx].id)
                         {
                             nlvar->SetComponent(edge[i][0], elemidv[elemIdx].val, 1);
                             nlvar->SetComponent(edge[i][1], elemidv[elemIdx].val, 1);
@@ -6798,9 +6801,9 @@ PaintNodesForAnnotIntFacelist(vtkBitArray *nlvar,
                         //
                         // If the face id of the current face (faceIdx) is the
                         // same as the current one in the list we are here to paint,
-                        // then paint it.
+                        // then paint it. The while loop is to handle duplicate entries.
                         //
-                        if (faceIdx == elemidv[elemIdx].id)
+                        while (faceIdx == elemidv[elemIdx].id)
                         {
                             nlvar->SetComponent(face[i][0], elemidv[elemIdx].val, 1);
                             nlvar->SetComponent(face[i][1], elemidv[elemIdx].val, 1);

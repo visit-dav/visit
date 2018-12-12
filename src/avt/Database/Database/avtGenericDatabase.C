@@ -52,6 +52,7 @@
 #include <vtkCellData.h>
 #include <vtkCSGGrid.h>
 #include <vtkDataSet.h>
+#include <vtkDataSetWriter.h>
 #include <vtkDoubleArray.h>
 #include <vtkEnumThreshold.h>
 #include <vtkFloatArray.h>
@@ -75,12 +76,14 @@
 #include <vtkVisItUtility.h>
 
 #include <snprintf.h>
+#include <visitstream.h>
 
 #include <avtCallback.h>
 #include <avtCommonDataFunctions.h>
 #include <avtDatabaseMetaData.h>
 #include <avtDatasetCollection.h>
 #include <avtDatasetVerifier.h>
+#include <avtDebugDumpOptions.h>
 #include <avtDomainBoundaries.h>
 #include <avtDomainNesting.h>
 #include <avtFileFormatInterface.h>
@@ -278,6 +281,43 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 }
 
 // ****************************************************************************
+//  Function: DebugDumpDatasetCollection
+//
+//  Purpose: Utility to include various phases of generic database operations
+//      during a -dump run.
+//
+//  Created: Mark C. Miller, Wed Dec 12 04:58:26 PST 2018
+// ****************************************************************************
+static void
+DebugDumpDatasetCollection(avtDatasetCollection &dsc, int ndoms,
+    string phaseName)
+
+{
+    static int call_count = 0;
+    std::ostringstream oss;
+
+    if (!avtDebugDumpOptions::DumpEnabled())
+        return;
+
+    string dumpDir = avtDebugDumpOptions::GetDumpDirectory();
+    if (dumpDir == "")
+        dumpDir = ".";
+    oss << dumpDir << "/gdb." << std::setfill('0') << std::setw(4) << call_count << "." << phaseName << ".vtk";
+    string dumpFile = oss.str();
+    vtkDataSetWriter *dsw = vtkDataSetWriter::New();
+    dsw->SetFileTypeToASCII();
+    dsw->SetFileName(dumpFile.c_str());
+    for (int i = 0 ; i < ndoms; i++)
+    {
+        vtkDataSet *ds = dsc.GetDataset(i, 0);
+        dsw->SetInputData(i, ds);
+    }
+    dsw->Write();
+    dsw->Delete();
+    call_count++;
+}
+
+// ****************************************************************************
 //  Method: avtGenericDatabase::GetOutput
 //
 //  Purpose:
@@ -467,6 +507,8 @@ avtGenericDatabase::SetCycleTimeInDatabaseMetaData(avtDatabaseMetaData *md, int 
 //    I modified the multi-pass discretizion of CSG meshes to only process
 //    a portion of the mesh on each processor instead of the entire mesh.
 //
+//    Mark C. Miller, Wed Dec 12 04:58:53 PST 2018
+//    Add judicious calls to DebugDumpDatasetCollection
 // ****************************************************************************
 
 avtDataTree_p
@@ -542,6 +584,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
         // This is the primary routine that reads things in from disk.
         //
         ReadDataset(datasetCollection, domains, spec, src, selectionsApplied);
+        DebugDumpDatasetCollection(datasetCollection, nDomains, "output.ReadDataset");
 
         //
         // Now that we have read things in from disk, verify that the dataset
@@ -797,6 +840,7 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 
     if (ghostDataIsNeeded && !alreadyDidGhosts)
     {
+        DebugDumpDatasetCollection(datasetCollection, nDomains, "input.CommunicateGhost");
         didGhosts = CommunicateGhosts(ghostType, datasetCollection, domains,
                                       spec, src, allDomains,
                                       canDoCollectiveCommunication);
@@ -831,6 +875,8 @@ avtGenericDatabase::GetOutput(avtDataRequest_p spec,
 
     ManageMemoryForNonCachableVar(NULL);
     ManageMemoryForNonCachableMesh(NULL);
+
+    DebugDumpDatasetCollection(datasetCollection, nDomains, "output.GetOutput");
 
     return rv;
 }
@@ -7962,6 +8008,8 @@ avtGenericDatabase::ApplyGhostForDomainNesting(avtDatasetCollection &ds,
 //    Added ForceConstructMaterialLabels argument to 
 //    MaterialSelect. 
 //
+//    Mark C. Miller, Wed Dec 12 04:59:12 PST 2018
+//    Add a call to DebugDumpDatasetCollection
 // ****************************************************************************
 
 void
@@ -7987,6 +8035,7 @@ avtGenericDatabase::MaterialSelect(avtDatasetCollection &ds,
                                            "select data");
         return;
     }
+    DebugDumpDatasetCollection(ds, ds.GetNDomains(), "input.MaterialSelect");
 
     bool subdivisionOccurred   = false;
     bool notAllCellsSubdivided = false;

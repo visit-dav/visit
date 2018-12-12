@@ -692,6 +692,9 @@ avtOnionPeelFilter::UpdateDataObjectInfo(void)
 //    whether or not the category is 'group' type.  Also request structured
 //    indices.
 //
+//    Mark C. Miller, Wed Dec 12 04:55:59 PST 2018
+//    Simplify logic that keeps certain kinds of sets on after the TurnOffAll
+//    and include enumerations too.
 // ****************************************************************************
 
 avtContract_p
@@ -739,6 +742,7 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
     string subset = atts.GetSubsetName();
     avtSILRestriction_p silr = spec->GetDataRequest()->GetRestriction();
     int collectionID = silr->GetCollectionIndex(category, silr->GetTopSet());
+    int collectionSize = silr->GetSILCollection(collectionID)->GetNumberOfSubsets();
     avtSILRestrictionTraverser trav(silr);
     int setID = silr->GetSetIndex(subset, collectionID);
     if (trav.UsesSetData(setID) == NoneUsed) 
@@ -749,38 +753,33 @@ avtOnionPeelFilter::ModifyContract(avtContract_p spec)
     {
         silr = rv->GetDataRequest()->GetRestriction();
 
-        // If we've got species info, we need to maintain that.
-        // So see which species are on.
-        std::vector<int>  species;
-        std::vector<bool> setState;
+        // If we've got species or enums, we need to maintain that.
+        std::vector<int>  setsToKeepOn;
 
         int topset = silr->GetTopSet();
         avtSILSet_p pTopset = silr->GetSILSet(topset);
         const std::vector<int> &mapsOut = pTopset->GetRealMapsOut();
-
-        avtSILCollection_p speciesColl = NULL;
         for (size_t i = 0 ; i < mapsOut.size() ; i++)
         {
             avtSILCollection_p coll = silr->GetSILCollection(mapsOut[i]);
-            if (coll->GetRole() == SIL_SPECIES)
+            if (coll->GetRole() == SIL_SPECIES ||
+                coll->GetRole() == SIL_ENUMERATION)
             {
-                speciesColl = coll;
+                for (int i = 0 ; i < coll->GetNumberOfSubsets() ; i++)
+                {
+                    if (trav.UsesData(coll->GetSubset(i)))
+                        setsToKeepOn.push_back(coll->GetSubset(i));
+                }
             }
-        }
-        if (*speciesColl != NULL)
-        {
-            for (int i = 0 ; i < speciesColl->GetNumberOfSubsets() ; i++)
-                setState.push_back(trav.UsesData(speciesColl->GetSubset(i)));
         }
         // End logic for seeing which species is on.
 
         silr->TurnOffAll();
         silr->TurnOnSet(setID);
 
-        // Turn sets back on if species are on.
-        for (size_t i = 0 ; i < species.size() ; i++)
-            if (setState[i])
-                silr->TurnOnSet(species[i]);
+        // Turn sets to keep on back on
+        for (size_t i = 0 ; i < setsToKeepOn.size() ; i++)
+                silr->TurnOnSet(setsToKeepOn[i]);
 
     }
     CATCH(InvalidVariableException)
