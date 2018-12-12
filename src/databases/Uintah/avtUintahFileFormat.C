@@ -390,6 +390,14 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
     EXCEPTION1(InvalidDBTypeException, "The function variableExists could not be located in the library!!!");
   }
 #endif
+  
+#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+  getNumberParticles = (unsigned int (*)(DataArchive*, GridP*, int, int, int, int)) dlsym(libHandle, "getNumberParticles");
+  if((error = dlerror()) != NULL)
+  {
+    EXCEPTION1(InvalidDBTypeException, "The function getNumberParticles could not be located in the library!!!");
+  }
+#endif
 
   getParticleData = (ParticleDataRaw* (*)(DataArchive*, GridP*, int, int, std::string, int, int)) dlsym(libHandle, "getParticleData");
   if((error = dlerror()) != NULL)
@@ -789,13 +797,14 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         meshes_added.insert(mesh_for_this_var);
 
         // Add a SIL for subsettng via the nodes and ranks.
+        const unsigned int nRanksPerGroup = nProcs / 10;
         const unsigned int nRanks = nProcs;
-        const unsigned int nNodes = nProcs > 50 ? nProcs/10 : 1;
+        const unsigned int nNodes = nRanksPerGroup > 5 ? nProcs/nRanksPerGroup : 1;
 
         int rank_enum_id[nRanks];
         int node_enum_id[nNodes];
         
-        std::string enum_name = std::string("Nodes_Ranks/") + mesh_for_this_var;
+        std::string enum_name = std::string("Ranks/") + mesh_for_this_var;
         
         avtScalarMetaData *smd = new avtScalarMetaData(enum_name,
                                                        mesh_for_this_var,
@@ -804,7 +813,6 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
         smd->SetEnumerationType(avtScalarMetaData::ByValue);
         smd->hideFromGUI = true;
 
-        // smd->AddEnumNameRange("Rank_%04d", 0, nRanks-1);
         for( unsigned int i=0; i<nRanks; ++i ) {
           char msg[12];
           sprintf( msg, "Rank_%04d", i );
@@ -813,15 +821,14 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
         if( nNodes > 1 ) {
 
-          // smd->AddEnumNameRange("Node_%04d", 0, nNodes-1);
-          for( unsigned int i=0; i<nNodes; ++i ) {
+          for( unsigned int i=0, j=1; i<nNodes; ++i, ++j ) {
             char msg[12];
-            sprintf( msg, "Node_%04d", i );
+            sprintf( msg, "Ranks_%04d_%04d", i*nRanksPerGroup, j*nRanksPerGroup-1 );
             node_enum_id[i] = smd->AddEnumNameValue( msg, nRanks+i);
           }
           
           for( unsigned int i=0; i<nRanks; ++i ) {
-            smd->AddEnumGraphEdge(node_enum_id[i/10], rank_enum_id[i], "Ranks" );
+            smd->AddEnumGraphEdge(node_enum_id[i/25], rank_enum_id[i], "Ranks" );
           }
         }
         
@@ -920,45 +927,86 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
   // Add the patch data
   if (addPatchData)
   {
-    int low[3], high[3];
-    levelInfo.getBounds(low, high, "CC_Mesh");
-    int logical[3];
-    for (int i=0; i<3; ++i)
-      logical[i] = high[i]-low[i];
-      
-    avtMeshMetaData *mesh = new avtMeshMetaData;
-
-    mesh->name = "Patch_Mesh";
-    mesh->meshType = AVT_AMR_MESH;
-    mesh->topologicalDimension = 3;
-    mesh->spatialDimension = 3;
-
-    mesh->numBlocks = totalPatches;
-    mesh->blockTitle = "patches";
-    mesh->blockPieceName = "patch";
-    mesh->numGroups = numLevels;
-    mesh->groupTitle = "levels";
-    mesh->groupPieceName = "level";
-    mesh->blockNames = pieceNames;
-    mesh->containsExteriorBoundaryGhosts = false;
-
-    mesh->hasSpatialExtents = true; 
-    mesh->minSpatialExtents[0] = box_min[0];
-    mesh->maxSpatialExtents[0] = box_max[0];
-    mesh->minSpatialExtents[1] = box_min[1];
-    mesh->maxSpatialExtents[1] = box_max[1];
-    mesh->minSpatialExtents[2] = box_min[2];
-    mesh->maxSpatialExtents[2] = box_max[2];
-
-    mesh->hasLogicalBounds = true;
-    mesh->logicalBounds[0] = logical[0];
-    mesh->logicalBounds[1] = logical[1];
-    mesh->logicalBounds[2] = logical[2];
-
-    md->Add(mesh);
-
-    
     std::string mesh_for_this_var = "Patch_Mesh";
+
+    if (meshes_added.find(mesh_for_this_var) == meshes_added.end()) {
+      
+      int low[3], high[3];
+      levelInfo.getBounds(low, high, "CC_Mesh");
+      int logical[3];
+      for (int i=0; i<3; ++i)
+        logical[i] = high[i]-low[i];
+      
+      avtMeshMetaData *mesh = new avtMeshMetaData;
+      
+      mesh->name = "Patch_Mesh";
+      mesh->meshType = AVT_AMR_MESH;
+      mesh->topologicalDimension = 3;
+      mesh->spatialDimension = 3;
+      
+      mesh->numBlocks = totalPatches;
+      mesh->blockTitle = "patches";
+      mesh->blockPieceName = "patch";
+      mesh->numGroups = numLevels;
+      mesh->groupTitle = "levels";
+      mesh->groupPieceName = "level";
+      mesh->blockNames = pieceNames;
+      mesh->containsExteriorBoundaryGhosts = false;
+      
+      mesh->hasSpatialExtents = true; 
+      mesh->minSpatialExtents[0] = box_min[0];
+      mesh->maxSpatialExtents[0] = box_max[0];
+      mesh->minSpatialExtents[1] = box_min[1];
+      mesh->maxSpatialExtents[1] = box_max[1];
+      mesh->minSpatialExtents[2] = box_min[2];
+      mesh->maxSpatialExtents[2] = box_max[2];
+      
+      mesh->hasLogicalBounds = true;
+      mesh->logicalBounds[0] = logical[0];
+      mesh->logicalBounds[1] = logical[1];
+      mesh->logicalBounds[2] = logical[2];
+      
+      md->Add(mesh);
+      
+      // Add a SIL for subsettng via the nodes and ranks.
+      const unsigned int nRanksPerGroup = nProcs / 10;
+      const unsigned int nRanks = nProcs;
+      const unsigned int nNodes = nRanksPerGroup > 5 ? nProcs/nRanksPerGroup : 1;
+
+      int rank_enum_id[nRanks];
+      int node_enum_id[nNodes];
+        
+      std::string enum_name = std::string("Ranks/") + mesh_for_this_var;
+        
+      avtScalarMetaData *smd = new avtScalarMetaData(enum_name,
+                                                     mesh_for_this_var,
+                                                     AVT_ZONECENT );
+
+      smd->SetEnumerationType(avtScalarMetaData::ByValue);
+      smd->hideFromGUI = true;
+
+      for( unsigned int i=0; i<nRanks; ++i ) {
+        char msg[12];
+        sprintf( msg, "Rank_%04d", i );
+        rank_enum_id[i] = smd->AddEnumNameValue( msg, i);
+      }
+
+      if( nNodes > 1 ) {
+
+        for( unsigned int i=0, j=1; i<nNodes; ++i, ++j ) {
+          char msg[12];
+          sprintf( msg, "Ranks_%04d_%04d", i*nRanksPerGroup, j*nRanksPerGroup-1 );
+          node_enum_id[i] = smd->AddEnumNameValue( msg, nRanks+i);
+        }
+          
+        for( unsigned int i=0; i<nRanks; ++i ) {
+          smd->AddEnumGraphEdge(node_enum_id[i/25], rank_enum_id[i], "Ranks" );
+        }
+      }
+        
+      md->Add(smd);
+    }
+    
     avtCentering cent = AVT_ZONECENT;
 
     avtScalarMetaData *scalar;
@@ -1072,6 +1120,44 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
 
           md->Add(mesh); 
           meshes_added.insert(mesh_for_this_var);
+          
+          // Add a SIL for subsettng via the nodes and ranks.
+          const unsigned int nRanksPerGroup = nProcs / 10;
+          const unsigned int nRanks = nProcs;
+          const unsigned int nNodes = nRanksPerGroup > 5 ? nProcs/nRanksPerGroup : 1;
+
+          int rank_enum_id[nRanks];
+          int node_enum_id[nNodes];
+        
+          std::string enum_name = std::string("Ranks/") + mesh_for_this_var;
+        
+          avtScalarMetaData *smd = new avtScalarMetaData(enum_name,
+                                                         mesh_for_this_var,
+                                                         AVT_ZONECENT );
+
+          smd->SetEnumerationType(avtScalarMetaData::ByValue);
+          smd->hideFromGUI = true;
+
+          for( unsigned int i=0; i<nRanks; ++i ) {
+            char msg[12];
+            sprintf( msg, "Rank_%04d", i );
+            rank_enum_id[i] = smd->AddEnumNameValue( msg, i);
+          }
+
+          if( nNodes > 1 ) {
+
+            for( unsigned int i=0, j=1; i<nNodes; ++i, ++j ) {
+              char msg[12];
+              sprintf( msg, "Ranks_%04d_%04d", i*nRanksPerGroup, j*nRanksPerGroup-1 );
+              node_enum_id[i] = smd->AddEnumNameValue( msg, nRanks+i);
+            }
+          
+            for( unsigned int i=0; i<nRanks; ++i ) {
+              smd->AddEnumGraphEdge(node_enum_id[i/25], rank_enum_id[i], "Ranks" );
+            }
+          }
+        
+          md->Add(smd);
         }
 
         if (mesh_vars_added.find(mesh_for_this_var+newVarname) ==
@@ -1587,128 +1673,130 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     int t2 = visitTimer->StartTimer();
 
     // Get the particle position name typically p.x
-    std::string vars = (*getParticlePositionName)(archive);
+    std::string posName((*getParticlePositionName)(archive));
 
     ParticleDataRaw *pd = (*getParticleData)(archive, grid, level, local_patch,
-                                             vars, matlNo, timestate);
-
+                                             posName, matlNo, timestate);
+    
     visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getParticleData");
 
-    // Create the vtkPoints object and copy points into it.
-    vtkDoubleArray *doubleArray = vtkDoubleArray::New();
-    doubleArray->SetNumberOfComponents(3);
-    doubleArray->SetArray(pd->data, pd->num*pd->components, 0);
-
-    vtkPoints *points = vtkPoints::New();
-    points->SetData(doubleArray);
-    doubleArray->Delete();
-
-    // Create a vtkUnstructuredGrid to contain the point cells. 
-    vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New(); 
-    ugrid->SetPoints(points); 
-    points->Delete(); 
-    ugrid->Allocate(pd->num); 
-    vtkIdType onevertex; 
-
-    for(int i = 0; i < pd->num; ++i)
+    if( pd )
     {
-      onevertex = i; 
-      ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex); 
-    } 
-
-    // Don't delete pd->data - vtk owns it now!
-    delete pd;
-
-    // Try to retrieve existing cache ref
-    void_ref_ptr vrTmp =
-      cache->GetVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS,
-                        timestate, domain);
-    vtkDataArray *pID = NULL;
+      // Create the vtkPoints object and copy points into it.
+      vtkDoubleArray *doubleArray = vtkDoubleArray::New();
+      doubleArray->SetNumberOfComponents(3);
+      doubleArray->SetArray(pd->data, pd->num*pd->components, 0);
+      
+      vtkPoints *points = vtkPoints::New();
+      points->SetData(doubleArray);
+      doubleArray->Delete();
+      
+      // Create a vtkUnstructuredGrid to contain the point cells. 
+      vtkUnstructuredGrid *ugrid = vtkUnstructuredGrid::New(); 
+      ugrid->SetPoints(points); 
+      points->Delete(); 
+      ugrid->Allocate(pd->num); 
+      vtkIdType onevertex; 
     
-    if (*vrTmp == NULL)
-    {
-      // Add global node ids to facilitate point cloud usage basically
-      // same as GetVar(timestate, domain, "particleID");
-      int matlNo = -1;
-      if (matl.compare("*") != 0)
-        matlNo = atoi(matl.c_str());
-
-      ParticleDataRaw *pd = NULL;
-
-      //debug5<<"\t(*getParticleData)...\n";
-
-      //todo: this returns an array of doubles. Need to return
-      //expected datatype to avoid unnecessary conversion.
-#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
-      if( variableExists(archive, "p.particleID") )
-#endif
+      for(int i = 0; i < pd->num; ++i)
       {
-        int t2 = visitTimer->StartTimer();
+        onevertex = i; 
+        ugrid->InsertNextCell(VTK_VERTEX, 1, &onevertex); 
+      } 
+      
+      // Don't delete pd->data - vtk owns it now!
+      delete pd;
 
-        debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+      // Try to retrieve existing cache ref
+      void_ref_ptr vrTmp =
+        cache->GetVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS,
+                          timestate, domain);
+      vtkDataArray *pID = NULL;
+    
+      if (*vrTmp == NULL)
+      {
+        // Add global node ids to facilitate point cloud usage basically
+        // same as GetVar(timestate, domain, "particleID");
+        int matlNo = -1;
+        if (matl.compare("*") != 0)
+          matlNo = atoi(matl.c_str());
 
-        pd = (*getParticleData)(archive, grid, level, local_patch,
-                                "p.particleID", matlNo, timestate);
+        ParticleDataRaw *pd = NULL;
 
-        debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+        //debug5<<"\t(*getParticleData)...\n";
 
-        visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getParticleData");
+        //todo: this returns an array of doubles. Need to return
+        //expected datatype to avoid unnecessary conversion.
+#if (VISIT_APP_VERSION_CHECK(2, 0, 0) <= UINTAH_VERSION_HEX )
+        if( variableExists(archive, "p.particleID") )
+#endif
+        {
+          int t2 = visitTimer->StartTimer();
+
+          debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+          pd = (*getParticleData)(archive, grid, level, local_patch,
+                                  "p.particleID", matlNo, timestate);
+
+          debug5<<__FILE__<<"  "<<__FUNCTION__<<"  "<< __LINE__<< std::endl;
+
+          visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getParticleData");
+        }
+      
+        //debug5 << "got particle data: "<<pd<<"\n";
+        if (pd)
+        {
+          vtkDoubleArray *rv = vtkDoubleArray::New();
+          //vtkLongArray *rv = vtkLongArray::New();
+          //debug5<<"\tSetNumberOfComponents("<<pd->components<<")...\n";
+          rv->SetNumberOfComponents(pd->components);
+
+          //debug5<<"\tSetArray...\n";
+          rv->SetArray(pd->data, pd->num*pd->components, 0);
+
+          // don't delete pd->data - vtk owns it now!
+          delete pd;
+        
+          //todo: this is the unnecesary conversion, from long
+          //int->double->int, to say nothing of the implicit curtailing
+          //that might occur (note also: this is a VisIt bug that uses
+          //ints to store particle ids rather than long ints)
+          vtkIntArray *iv=ConvertToInt(rv);
+          //vtkLongArray *iv=ConvertToLong(rv);
+          rv->Delete(); // this should now delete pd->data
+
+          pID=iv;
+        }
+
+        //debug5<<"read particleID ("<<pID<<")\n";
+        if(pID != NULL)
+        {
+          //debug5<<"adding global node ids from particleID\n";
+          pID->SetName("avtGlobalNodeId");
+          void_ref_ptr vr = void_ref_ptr( pID , avtVariableCache::DestructVTKObject );
+          cache->CacheVoidRef( meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS,
+                               timestate, domain, vr);
+          
+          //make sure it worked
+          void_ref_ptr vrTmp =
+            cache->GetVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS,
+                              timestate, domain);
+          
+          if (*vrTmp == NULL || *vrTmp != *vr)
+            throw InvalidFilesException("failed to register uda particle global node");
+        }
       }
       
-      //debug5 << "got particle data: "<<pd<<"\n";
-      if (pd)
-      {
-        vtkDoubleArray *rv = vtkDoubleArray::New();
-        //vtkLongArray *rv = vtkLongArray::New();
-        //debug5<<"\tSetNumberOfComponents("<<pd->components<<")...\n";
-        rv->SetNumberOfComponents(pd->components);
-
-        //debug5<<"\tSetArray...\n";
-        rv->SetArray(pd->data, pd->num*pd->components, 0);
-
-        // don't delete pd->data - vtk owns it now!
-        delete pd;
-        
-        //todo: this is the unnecesary conversion, from long
-        //int->double->int, to say nothing of the implicit curtailing
-        //that might occur (note also: this is a VisIt bug that uses
-        //ints to store particle ids rather than long ints)
-        vtkIntArray *iv=ConvertToInt(rv);
-        //vtkLongArray *iv=ConvertToLong(rv);
-        rv->Delete(); // this should now delete pd->data
-
-        pID=iv;
-      }
-
-      //debug5<<"read particleID ("<<pID<<")\n";
-      if(pID != NULL)
-      {
-        //debug5<<"adding global node ids from particleID\n";
-        pID->SetName("avtGlobalNodeId");
-        void_ref_ptr vr = void_ref_ptr( pID , avtVariableCache::DestructVTKObject );
-        cache->CacheVoidRef( meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS,
-                             timestate, domain, vr);
-
-        //make sure it worked
-        void_ref_ptr vrTmp =
-          cache->GetVoidRef(meshname, AUXILIARY_DATA_GLOBAL_NODE_IDS,
-                            timestate, domain);
-        
-        if (*vrTmp == NULL || *vrTmp != *vr)
-          throw InvalidFilesException("failed to register uda particle global node");
-      }
+      visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh() Particle Grid");
+      
+      return ugrid;
     }
-
-    visitTimer->StopTimer(t1, "avtUintahFileFormat::GetMesh() Particle Grid");
-
-    return ugrid;
+    else
+      return nullptr;
   }
-
   // Volume data
   else if (meshName.find("Patch_Mesh") != std::string::npos)
   {
-    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
-
     //debug5<<"Calculating vtkRectilinearGrid mesh for "<<meshName<<" mesh ("<<rgrid<<").\n";
 
     // Make sure we have ghosting info for this mesh
@@ -1723,6 +1811,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
     int plow[3], phigh[3];
     patchInfo.getBounds(plow, phigh, "CC_MESH");
 
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(dims);    
 
     // Set the coordinates of the grid points in each direction.
@@ -1761,8 +1850,6 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
   // Volume data
   else
   {
-    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
-
     //debug5<<"Calculating vtkRectilinearGrid mesh for "<<meshName<<" mesh ("<<rgrid<<").\n";
 
     // Make sure we have ghosting info for this mesh
@@ -1798,6 +1885,7 @@ avtUintahFileFormat::GetMesh(int timestate, int domain, const char *meshname)
       }
     }
     
+    vtkRectilinearGrid *rgrid = vtkRectilinearGrid::New();
     rgrid->SetDimensions(dims);    
 
     // These are needed to offset grid points in order to preserve
@@ -1932,15 +2020,34 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     isInternalVar = true;
     varType = "NC_Mesh";
   }
-  else if( strncmp(varname, "Nodes_Ranks/", 12) == 0 ||
-           strcmp(varname, "Patch/Id") == 0 ||
-           strcmp(varname, "Patch/ProcId") == 0 ||
-
+  else if( strncmp(varname, "Patch/Id", 8) == 0 ||
+           strncmp(varname, "Patch/ProcId", 13) == 0 ||
            strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
            strncmp(varname, "Patch/Bounds/High", 17) == 0 )
   {
     isInternalVar = true;
     varType = "CC_Mesh";
+  }
+  else if( strncmp(varname, "Nodes/", 6) == 0 ||
+           strncmp(varname, "Ranks/", 6) == 0 )
+  {
+    isInternalVar = true;
+
+    if(strncmp(&(varname[6]), "Particle_Mesh", 13) == 0)
+    {
+      isParticleVar = true;
+
+      varType = "Particle_Mesh";
+
+      // Get the material sans "Particle_Mesh".
+      varName = std::string(varname);
+      found = varName.find_last_of("/");
+      matl = varName.substr(found + 1);
+    }
+    else
+    {
+      varType = "CC_Mesh";
+    }
   }
   else
   {
@@ -1978,7 +2085,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     }
   }
 
-  vtkDoubleArray *rv = vtkDoubleArray::New();
+  vtkDoubleArray *rv = nullptr;
 
   int level, local_patch;
   GetLevelAndLocalPatchNumber(domain, level, local_patch);
@@ -1986,63 +2093,96 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
   // particle data
   if (isParticleVar)
   {
+    LevelInfo &levelInfo = stepInfo->levelInfo[level];
+    PatchInfo &patchInfo = levelInfo.patchInfo[local_patch];
+
     int matlNo = -1;
     if (matl.compare("*") != 0)
       matlNo = atoi(matl.c_str());
 
     ParticleDataRaw *pd = NULL;
 
+    if( isInternalVar )
+    {
+      unsigned int numParticles =
+        getNumberParticles(archive, grid, level, local_patch, matlNo, timestate);
+      if( numParticles )
+      {
+        pd = new ParticleDataRaw;
+        pd->num = numParticles;
+        pd->components = 1;
+        pd->data = new double[pd->num * pd->components];
+
+#if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
+        double value = patchInfo.getProcId();
+#elif (VISIT_APP_VERSION_CHECK(2, 2, 0) <= UINTAH_VERSION_HEX )
+        double value = patchInfo.getProcRankId();
+#else
+        double value = patchInfo.getProcId();
+#endif      
+        for (int i=0; i<pd->num*pd->components; ++i)
+          pd->data[i] = value;
+      }
+    }
+    else
+    {
 #ifdef SERIALIZED_READS
-    int numProcs, rank;
-    int msg = 128, tag = 256;
-    MPI_Status status;
+      int numProcs, rank;
+      int msg = 128, tag = 256;
+      MPI_Status status;
 
-    MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
-    MPI_Comm_rank(VISIT_MPI_COMM, &rank);
+      MPI_Comm_size(VISIT_MPI_COMM, &numProcs);
+      MPI_Comm_rank(VISIT_MPI_COMM, &rank);
 
-    int totalPatches = 0;
-    for (int i = 0; i < stepInfo->levelInfo.size(); i++)
-      totalPatches += stepInfo->levelInfo[i].patchInfo.size();
+      int totalPatches = 0;
+      for (int i = 0; i < stepInfo->levelInfo.size(); i++)
+        totalPatches += stepInfo->levelInfo[i].patchInfo.size();
 
-    // Calculate which process we should wait for a message from
-    // if we're processing doiman 0 don't wait for anyone else
-    int prev = (rank+numProcs-1)%numProcs;
-    int next = (rank+1)%numProcs;
+      // Calculate which process we should wait for a message from
+      // if we're processing doiman 0 don't wait for anyone else
+      int prev = (rank+numProcs-1)%numProcs;
+      int next = (rank+1)%numProcs;
 
-    // Domain 0 will always reads right away
-    if (domain == 0)
-      prev = -1;
-    //debug5 << "Proc: " << rank << " sent to GetVar" << endl;
+      // Domain 0 will always reads right away
+      if (domain == 0)
+        prev = -1;
+      //debug5 << "Proc: " << rank << " sent to GetVar" << endl;
 
-    // Wait for the previous read to finish
-    if (prev>=0)
-      MPI_Recv(&msg, 1, MPI_INT, prev, tag, VISIT_MPI_COMM, &status);
+      // Wait for the previous read to finish
+      if (prev>=0)
+        MPI_Recv(&msg, 1, MPI_INT, prev, tag, VISIT_MPI_COMM, &status);
 
-    int t2 = visitTimer->StartTimer();
+      int t2 = visitTimer->StartTimer();
 
-    pd = (*getParticleData)(archive, grid, level, local_patch, varName, matlNo, timestate);
+      pd = (*getParticleData)(archive, grid, level, local_patch, varName, matlNo, timestate);
 
-    visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getParticleData");
+      visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getParticleData");
 
-    // Let the next read go
-    if (next>=0)
-      MPI_Send(&msg, 1, MPI_INT, next, tag, VISIT_MPI_COMM);
+      // Let the next read go
+      if (next>=0)
+        MPI_Send(&msg, 1, MPI_INT, next, tag, VISIT_MPI_COMM);
 
 #else
-    int t2 = visitTimer->StartTimer();
+      int t2 = visitTimer->StartTimer();
+   
+      pd = (*getParticleData)(archive, grid, level, local_patch, varName, matlNo, timestate);
 
-    pd = (*getParticleData)(archive, grid, level, local_patch, varName, matlNo, timestate);
-
-    visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getParticleData");
+      visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getParticleData");
 #endif
 
-    CheckNaNs(pd->data,pd->num*pd->components,varname,level,local_patch);
+      if( pd )
+        CheckNaNs(pd->data, pd->num*pd->components, varname, level, local_patch);
+    }
 
-    rv->SetNumberOfComponents(pd->components);
-    rv->SetArray(pd->data, pd->num*pd->components, 0);
-
-    // don't delete pd->data - vtk owns it now!
-    delete pd;
+    if( pd )
+    {
+      rv = vtkDoubleArray::New();
+      rv->SetNumberOfComponents(pd->components);
+      rv->SetArray(pd->data, pd->num*pd->components, 0);
+    
+      // don't delete pd->data - vtk owns it now!
+      delete pd;
+    }
   }
 
   // Volume data
@@ -2075,28 +2215,45 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
     {
       gd = new GridDataRaw;
 
-      // Using the cell mesh for Nodes and Ranks and the node mesh for
-      // node coordinates.
-      if (strcmp(varname, "Nodes_Ranks/CC_Mesh") == 0 ||
-          strcmp(varname, "Nodes_Ranks/NC_Mesh") == 0 ||
-          strncmp(varname, "Patch/Nodes", 11) == 0 )
+      // The runtime processor data and patch id and processor are
+      // scalar values while the bounds are vector values.
+      if (strcmp(varname, "Patch/Id") == 0 ||
+          strcmp(varname, "Patch/ProcId") == 0 ) {
+        gd->num = 1;
+        gd->components = 1;
+      }
+      else if( strncmp(varname, "Patch/Nodes",  11) == 0 ) {
+        // Using the node mesh on the simulation
         gd->num = ((phigh[0] - plow[0]) *
                    (phigh[1] - plow[1]) *
                    (phigh[2] - plow[2]));
-      // Using the patch mesh
-      else //if (strncmp(varname, "Nodes_Ranks/Patch", 17) == 0 ||
-        gd->num = 1;
-
-      // The runtime processor data and patch id and processor are
-      // scalar values while the bounds are vector values.
-      if (strncmp(varname, "Nodes_Ranks/", 12) == 0 ||
-          strcmp(varname, "Patch/Id") == 0 ||
-          strcmp(varname, "Patch/ProcId") == 0 )
-        gd->components = 1;
-      else // if( strncmp(varname, "Patch/Nodes",  11) == 0 ||
-           //     strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
-           //     strncmp(varname, "Patch/Bounds/High", 17) == 0)
+        // Using the node mesh on the simulation
         gd->components = 3;
+      }
+      else if( strncmp(varname, "Patch/Bounds/Low",  16) == 0 ||
+               strncmp(varname, "Patch/Bounds/High", 17) == 0) {
+        // Using the patch mesh on the simulation
+        gd->num = 1;
+        // Bounds are vectors
+        gd->components = 3;
+      }
+      else if( strncmp(varname, "Nodes/", 6) == 0 ||
+               strncmp(varname, "Ranks/", 6) == 0 ) {
+        // Using the patch mesh
+        if (strcmp(&(varname[6]), "Patch_Mesh") == 0 )
+          gd->num = 1;
+        // Using the cell mesh for Nodes and Ranks.
+        else /* if (strcmp(&(varname[6]), "CC_Mesh") == 0 ||
+                    strcmp(&(varname[6]), "NC_Mesh") == 0 ||
+                    strcmp(&(varname[6]), "SFCX_Mesh") == 0 ||
+                    strcmp(&(varname[6]), "SFCY_Mesh") == 0 ||
+                    strcmp(&(varname[6]), "SFCZ_Mesh") == 0 ) */
+          gd->num = ((phigh[0] - plow[0]) *
+                     (phigh[1] - plow[1]) *
+                     (phigh[2] - plow[2]));
+        
+        gd->components = 1;
+      }
 
       gd->data = new double[gd->num * gd->components];
 
@@ -2111,7 +2268,8 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
 #endif      
       }
       // Patch processor rank
-      else if( strncmp(varname, "Nodes_Ranks/", 12) == 0 ||
+      else if( strncmp(varname, "Nodes/", 6) == 0 ||
+               strncmp(varname, "Ranks/", 6) == 0 ||
                strcmp(varname, "Patch/ProcId") == 0 )
       {
 #if (VISIT_APP_VERSION_CHECK(2, 5, 1) <= UINTAH_VERSION_HEX )
@@ -2287,6 +2445,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
         gd->data[i] = 0;
     }
 
+    rv = vtkDoubleArray::New();
     rv->SetNumberOfComponents(gd->components);
     rv->SetArray(gd->data, gd->num*gd->components, 0);
 

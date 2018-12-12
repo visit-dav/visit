@@ -74,6 +74,7 @@
 // functions from uintah libs to allocate, free, and perform operations on them.
 class DataArchive;
 class GridP;
+class Patch;
 class DBOptionsAttributes;
 
 class avtUintahFileFormat : public avtMTMDFileFormat
@@ -151,6 +152,9 @@ protected:
                                   std::string, int, int, int[3], int[3], int);
 
   bool             (*variableExists)(DataArchive*, std::string);
+
+  unsigned int     (*getNumberParticles)(DataArchive*, GridP*, int, int,
+                                         int, int);
 
   ParticleDataRaw* (*getParticleData)(DataArchive*, GridP*, int, int,
                                       std::string, int, int);
