@@ -116,6 +116,8 @@ protected:
                              const char* varname,
                              const int level, const int patch);
 
+  void             addMeshNodeRankSIL( avtDatabaseMetaData *md,
+                                       std::string mesh );
   // Data members
   int  loadExtraElements;
   bool dataVariesOverTime;
