@@ -60,7 +60,7 @@ def visit_svn_path(path,svn_opts,branch=None,tag=None):
         res = "http://portal.nersc.gov/svn/visit/"
     else:
         nersc_uname = svn_opts["nersc_uname"]
-        res = "svn+ssh://%s@edison.nersc.gov/project/projectdirs/visit/svn/visit/"
+        res = "svn+ssh://%s@cori.nersc.gov/project/projectdirs/visit/svn/visit/"
         res = res % nersc_uname
     if not branch is None:
         res = res + "branches/" + branch + "/" + path
@@ -84,7 +84,7 @@ def cmake_bin(opts):
 
 def steps_bv(opts,ctx):
     bv_working = pjoin(opts["build_dir"],"thirdparty_shared")
-    ctx.actions["bv_checkout"] = svn(svn_url=visit_svn_path("src/svn_bin",
+    ctx.actions["bv_checkout"] = svn(svn_url=visit_svn_path("src/tools/dev/scripts",
                                                             branch=opts["branch"],
                                                             tag=opts["tag"],
                                                             svn_opts=opts["svn"]),
@@ -109,7 +109,7 @@ def steps_bv(opts,ctx):
         bv_args += " " + opts["build_visit"]["args"]
     if opts["build_visit"].has_key("libs"):
         bv_args +=  " " + " ".join(["--%s" % l for l in opts["build_visit"]["libs"]])
-    bv_cmd   = "echo yes | svn_bin/build_visit %s" % bv_args
+    bv_cmd   = "echo yes | scripts/build_visit %s" % bv_args
     ctx.actions["bv_run"] = shell(cmd=bv_cmd,
                                   description="building dependencies",
                                   working_dir=bv_working,
@@ -125,23 +125,23 @@ def steps_checkout(opts,ctx):
                                       description="checkout visit src",
                                       svn_cmd="co",
                                       working_dir=opts["build_dir"])
-    ctx.actions["data_checkout"] = svn(svn_url=visit_svn_path("data",
-                                                            branch=opts["branch"],
-                                                            tag=opts["tag"],
-                                                            svn_opts=opts["svn"]),
-                                       description="checkout visit src",
-                                       svn_cmd="co",
-                                       working_dir=opts["build_dir"])
-    ctx.actions["test_checkout"] = svn(svn_url=visit_svn_path("test",
-                                                            branch=opts["branch"],
-                                                            tag=opts["tag"],
-                                                            svn_opts=opts["svn"]),
-                                       description="checkout visit src",
-                                       svn_cmd="co",
-                                       working_dir=opts["build_dir"])
-    ctx.triggers["build"].extend(["src_checkout",
-                                  "data_checkout",
-                                  "test_checkout"])
+    #ctx.actions["data_checkout"] = svn(svn_url=visit_svn_path("src/tools/data/datagen",
+     #                                                       branch=opts["branch"],
+      #                                                      tag=opts["tag"],
+       #                                                     svn_opts=opts["svn"]),
+        #                               description="checkout visit src",
+         #                              svn_cmd="co",
+          #                             working_dir=opts["build_dir"])
+    #ctx.actions["test_checkout"] = svn(svn_url=visit_svn_path("test",
+     #                                                       branch=opts["branch"],
+      #                                                      tag=opts["tag"],
+      #                                                      svn_opts=opts["svn"]),
+       #                                description="checkout visit src",
+        #                               svn_cmd="co",
+         #                              working_dir=opts["build_dir"])
+    ctx.triggers["build"].extend(["src_checkout"])
+                                  #"data_checkout",
+                                  #"test_checkout"])
 
 def steps_untar(opts,ctx):
     tar_base = os.path.basename(opts["tarball"])
