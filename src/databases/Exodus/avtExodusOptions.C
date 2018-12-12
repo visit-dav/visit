@@ -101,7 +101,7 @@ GetExodusReadOptions(void)
         "holding material-specific values given the name of a non-material-specific variable. "
         "For more information on nameschemes, please consult the description of DBMakeNamescheme "
         "in the <a href=\"https://wci.llnl.gov/content/assets/docs/simulation/computer-codes/"
-        "silo/LLNL-SM-654357.pdf\">Silo user's manual</a>. The nameschemes used here are identical "
+        "silo/LLNL-SM-654357.pdf#page=226\">Silo user's manual</a>. The nameschemes used here are identical "
         "to those described in the Silo user's manual with one extension. The conversion specifier %%V "
         "is used to denote the basename (non-material-specific) name of a set of scalar variables "
         "holding material specific values."
