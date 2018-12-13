@@ -440,6 +440,9 @@
 #    Kathleen Biagas, Mon Dec 10 14:41:27 MST 2018
 #    Have CMake find the MSVC runtime libraries needed for Windows distro.
 #
+#    Kevin Griffin, Wed Dec 12 18:00:27 PST 2018
+#    Added back osxfixup logic.
+#
 #****************************************************************************/
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.8 FATAL_ERROR)
@@ -2355,6 +2358,18 @@ ELSE (NOT WIN32)
       ENDIF(${MAKENSIS_FOUND})
     ENDIF(VISIT_MAKE_NSIS_INSTALLER)
 ENDIF (NOT WIN32)
+
+#CMake add subdirectory forces this action to go last
+#todo: find way for this function to execute as last
+#step of make install process
+#ADD_CUSTOM_TARGET(osxfixup ALL
+#     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/osxfixup/osxfixup.py \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${VISIT_INSTALLED_VERSION} @executable_path/.. 3)
+#ADD_DEPENDENCIES(osxfixup install)
+
+#todo: replace add_subdirectory with the lines above
+IF(APPLE)
+    ADD_SUBDIRECTORY(osxfixup)
+ENDIF(APPLE)
 
 IF (NOT WIN32)
     MESSAGE(STATUS "\n\nUse recmake_visit.sh or search for `CMAKE_INVOKE' in CMakeCache.txt to re-run CMake with the same arguments\n\n")
