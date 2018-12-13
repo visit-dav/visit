@@ -65,6 +65,11 @@ class QVBoxLayout;
 // Creation:   Thu Sep 14 13:57:01 PDT 2017
 //
 // Modifications:
+//   Kathleen Biagas, Thursday December 13, 2018
+//   Changed signature for page0_processFileName, so the lineedit can connect
+//   to 'returnPressed' and 'editingFinished' signals. The textChanged signal
+//   is processed every time a character is entered, which is excessive for
+//   this use case.
 //
 // ****************************************************************************
 
@@ -88,7 +93,7 @@ protected:
     virtual void initializePage(int id);
 private slots:
     void page0_specificationChanged(int);
-    void page0_processFileName(const QString &);
+    void page0_processFileName();
     void page0_selectFileName();
     void page0_formatActivated(int);
     void page0_compositeStateChanged(int);

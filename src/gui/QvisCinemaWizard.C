@@ -115,6 +115,8 @@ CameraToMenuIndex(const std::string &fmt)
 // Creation:   Thu Sep 14 14:52:46 PDT 2017
 //
 // Modifications:
+//   Kathleen Biagas, Thursday December 13, 2018
+//   Disable default button feature of this wizard.
 //
 // ****************************************************************************
 
@@ -134,6 +136,13 @@ QvisCinemaWizard::QvisCinemaWizard(AttributeSubject *atts, QWidget *parent) :
 
     // Make a side widget.
     setWizardStyle(QWizard::ModernStyle);
+
+    // Disable the default button feature.
+    // This wizard has line edits, and if there is a 'default' button, when
+    // the user presses 'enter' in the line edit, the wizard will advance to
+    // the next page, which isn't always desirable.
+    setOption(QWizard::NoDefaultButton, true);
+
     QWidget *sideW = new QWidget(0);
     QVBoxLayout *sLayout = new QVBoxLayout(sideW);
     sLayout->setMargin(0);
@@ -280,6 +289,11 @@ QvisCinemaWizard::GetDefaultNumFrames()
 // Creation:   Thu Sep 14 14:52:46 PDT 2017
 //
 // Modifications:
+//   Kathleen Biagas, Thursday December 13, 2018
+//   Changed page0_fileNameLineEdit signal connections from 'textChanged'
+//   which is called with every character entered, to 'editingFinished'
+//   and 'returnPressed' which are called when the user is finished with the
+//   widget.
 //
 // ****************************************************************************
 QWidget *
@@ -294,8 +308,10 @@ QvisCinemaWizard::CreateFilenameControl(QWidget *parent)
     page0_fileNameLineEdit->setMinimumWidth(300);
     oLayout->addWidget(page0_fileNameLineEdit);
     oLayout->setStretchFactor(page0_fileNameLineEdit, 100);
-    connect(page0_fileNameLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page0_processFileName(const QString &)));
+    connect(page0_fileNameLineEdit, SIGNAL(returnPressed()),
+            this, SLOT(page0_processFileName()));
+    connect(page0_fileNameLineEdit, SIGNAL(editingFinished()),
+            this, SLOT(page0_processFileName()));
 
     QPushButton *outputSelectButton = new QPushButton("...", filenameParent);
     oLayout->addWidget(outputSelectButton);
@@ -566,7 +582,9 @@ QvisCinemaWizard::nextId() const
 // Creation:   Thu Sep 14 15:02:43 PDT 2017
 //
 // Modifications:
-//   
+//   Kathleen Biagas, Thursday December 13, 2018
+//   Check if file can be written.
+// 
 // ****************************************************************************
 
 bool
@@ -580,6 +598,14 @@ QvisCinemaWizard::validateCurrentPage()
         valid = !cinemaAtts->GetFileName().empty() &&
                  cinemaAtts->GetWidth() > 1 &&
                  cinemaAtts->GetHeight() > 1;
+        if(valid) // now check if filename is writeable
+        {
+            if(!QFileInfo(cinemaAtts->GetFileName().c_str()).isWritable())
+            {
+                Error(tr("File location is not writable."));
+                valid = false;
+            }
+        }
         break;
     default:
         valid = page(currentId())->validatePage();
@@ -708,6 +734,10 @@ QvisCinemaWizard::initializePage(int pageId)
 // Creation:   Fri Sep 15 15:52:48 PDT 2017
 //
 // Modifications:
+//   Kathleen Biagas, Thursday December 13, 2018
+//   Allow both style file-separators on Windows. Convert to linux-style
+//   in final string, as it eases the burden of ensuring the correct escapes
+//   when passing the strings around.
 //
 // ****************************************************************************
 
@@ -716,13 +746,17 @@ QvisCinemaWizard::FullyQualified(const QString &filename) const
 {
     QString path;
 
-    // If the filename does not contain a slash then prepend a path.
+    // If the filename does not contain a path, then prepend one.
+#if defined Q_OS_WIN
+    if(filename.contains("/") || filename.contains("\\"))
+#else
     if(filename.contains(VISIT_SLASH_STRING))
+#endif
         path = filename;
     else
     {
-#if defined(_WIN32)
-        QString path(GetUserVisItDirectory().c_str());
+#if defined(Q_OS_WIN)
+        path = QString(GetUserVisItDirectory().c_str());
 #else
         QDir d(QDir::currentPath());
         d.makeAbsolute();
@@ -734,6 +768,10 @@ QvisCinemaWizard::FullyQualified(const QString &filename) const
             path = path + QString(VISIT_SLASH_STRING) + filename;
     }
 
+#if defined(Q_OS_WIN)
+    // using linux style makes it easier
+    path.replace("\\", "/");
+#endif
     return path;
 }
 
@@ -766,10 +804,22 @@ QvisCinemaWizard::page0_specificationChanged(int val)
     }
 }
 
+// ****************************************************************************
+// Modifications:
+//   Kathleen Biagas, Thursday December 13, 2018
+//   Check for 'cdb' extension. Get fully qualified name.
+// ****************************************************************************
 void
-QvisCinemaWizard::page0_processFileName(const QString &s)
+QvisCinemaWizard::page0_processFileName()
 {
-    cinemaAtts->SetFileName(s.toStdString());
+    QString fname = page0_fileNameLineEdit->text();
+    if(!fname.endsWith(".cdb"))
+        fname += ".cdb";
+    QString full_name(FullyQualified(fname));
+    page0_fileNameLineEdit->blockSignals(true);
+    page0_fileNameLineEdit->setText(full_name);
+    page0_fileNameLineEdit->blockSignals(false);
+    cinemaAtts->SetFileName(full_name.toStdString());
 }
 
 // ****************************************************************************

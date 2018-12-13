@@ -318,6 +318,7 @@ int
 VisItLauncherMain(int argc, char *argv[])
 {
     bool addMovieArguments = false; 
+    bool addCinemaArguments = false; 
     bool addVISITARGS = true; 
     bool useShortFileName = false;
     bool addPluginVars = false;
@@ -396,6 +397,12 @@ VisItLauncherMain(int argc, char *argv[])
         {
             component = "cli";
             addMovieArguments = true;
+            useShortFileName = true;
+        }
+        else if(ARG("-cinema"))
+        {
+            component = "cli";
+            addCinemaArguments = true;
             useShortFileName = true;
         }
         else if(ARG("-mpeg2encode"))
@@ -727,6 +734,12 @@ VisItLauncherMain(int argc, char *argv[])
     {
         command.push_back("-s");
         command.push_back(quote + visitpath + string("\\makemoviemain.py") + quote);
+        command.push_back("-nowin");
+    }
+    else if(addCinemaArguments)
+    {
+        command.push_back("-s");
+        command.push_back(quote + visitpath + string("\\visitcinemamain.py") + quote);
         command.push_back("-nowin");
     }
 
