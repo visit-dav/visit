@@ -450,9 +450,13 @@ def log_test_result(result_dir,result):
 #    Changed the definition of tests_dir_def to the new location of the
 #    test directory.
 #
+#    Kathleen Biagas, Thu Dec 13 10:51:54 PST 2018
+#    Changed definition of data_dir to new location.  Assumes in-src build,
+#    which is used for nightly regression tests.
+#
 # ----------------------------------------------------------------------------
 def default_suite_options():
-    data_dir_def    = abs_path(visit_root(),"data")
+    data_dir_def    = abs_path(visit_root(),"src","testdata")
     base_dir_def    = abs_path(visit_root(),"test","baseline")
     tests_dir_def   = abs_path(visit_root(),"src","test","tests")
     visit_exe_def   = abs_path(visit_root(),"src","bin","visit")
