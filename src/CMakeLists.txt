@@ -2234,12 +2234,12 @@ ADD_SUBDIRECTORY(resources)
 #-----------------------------------------------------------------------------
 # Add the "data" directory on WINDOWS if it exists
 #-----------------------------------------------------------------------------
-if(WIN32 AND IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
+if(IS_DIRECTORY ${VISIT_SOURCE_DIR}/../data)
     # Don't want the data dir files to be added to the main VISIT
     # solution file, so 'EXCLUDE_FROM_ALL' here, and create a new
     # PROJECT in data/CMakeLists.txt
     add_subdirectory(${VISIT_SOURCE_DIR}/../data
-                     ${CMAKE_CURRENT_BINARY_DIR}/data
+                     ${CMAKE_CURRENT_BINARY_DIR}/testdata
                      EXCLUDE_FROM_ALL)
 endif()
 
@@ -2366,8 +2366,6 @@ ELSE (NOT WIN32)
 ENDIF (NOT WIN32)
 
 if(VISIT_INSTALL_THIRD_PARTY)
-
     include(${VISIT_SOURCE_DIR}/CMake/PluginVsInstallHelpers.cmake)
-
 endif()
 

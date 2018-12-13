@@ -46,6 +46,7 @@
             <lib name="osmesa"/>
             <lib name="ospray"/>
             <lib name="pidx"/>
+            <lib name="p7zip"/>
             <lib name="pyside"/>
             <lib name="silo"/>
             <lib name="szip"/>

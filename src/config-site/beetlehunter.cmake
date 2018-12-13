@@ -22,6 +22,12 @@ VISIT_OPTION_DEFAULT(VISIT_PARADIS OFF TYPE BOOL)
 ##
 VISIT_OPTION_DEFAULT(VISIT_THREAD OFF TYPE BOOL)
 
+##
+## 7-zip
+##
+VISIT_OPTION_DEFAULT(VISIT_SEVEN_ZIP_DIR ${VISITHOME}/p7zip)
+VISIT_OPTION_DEFAULT(VISIT_DATA_ARCHIVER_NAME "7za" TYPE STRING)
+
 ##############################################################
 ##
 ## Database reader plugin support libraries

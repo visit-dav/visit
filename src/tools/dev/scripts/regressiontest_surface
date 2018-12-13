@@ -326,8 +326,7 @@ cat ../make.err >> ../buildlog
 echo "Source build completed at: \`date\`"
 
 # Build the test data
-cd ../data
-$cmakeCmd . >> ../buildlog 2>&1
+cd testdata
 make -j 8 data >> ../buildlog 2>&1
 if test "$debug" = "true" ; then
     echo "Data build completed at: \`date\`" | mail -s "Data build completed" $userEmail
@@ -342,7 +341,7 @@ fi
 echo "Starting install:\`date\`"
 
 # Install the package
-cd ../src
+cd ../
 version=`cat $testDir/$user/$workingDir/src/VERSION`
 
 ./tools/dev/scripts/visit-install -c llnl_open \$version linux-x86_64 ./_install >> ../installLog 2>&1
