@@ -101,6 +101,10 @@
 #   .tar in file name extensions. Added `help` target for info on using 7z.
 #   Added convenience targets so deep knowledge of using 7z isn't necessary.
 #
+#   Kathleen Biagas, Thu Dec 13 09:54:33 PST 2018
+#   Add 'PATHS' and 'PATH_SUFFIXES' when finding 7zip on non-windows.
+#   Beefed up error message if 7-zip not found.
+#
 #****************************************************************************/
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 CMAKE_POLICY(PUSH)
@@ -118,7 +122,7 @@ MESSAGE(STATUS "Configuring VisIt Binary Tarball Data Targets")
 # Set up archiver executable name (7z, 7za and p7zip are common ones)
 #-----------------------------------------------------------------------------
 IF(NOT VISIT_DATA_ARCHIVER_NAME)
-    SET(VISIT_DATA_ARCHIVER_NAME 7z)
+    SET(VISIT_DATA_ARCHIVER_NAME "7z")
 ENDIF(NOT VISIT_DATA_ARCHIVER_NAME)
 
 #-----------------------------------------------------------------------------
@@ -127,20 +131,22 @@ ENDIF(NOT VISIT_DATA_ARCHIVER_NAME)
 IF(WIN32)
     SET(PF1 "PROGRAMFILES")
     SET(PF2 "PROGRAMFILES(X86)")
-    FIND_PROGRAM(ARCHIVER_EXE "${VISIT_DATA_ARCHIVER_NAME}" "${VISIT_SEVEN_ZIP_DIR}" 
+    FIND_PROGRAM(ARCHIVER_EXE "${VISIT_DATA_ARCHIVER_NAME}" "${VISIT_SEVEN_ZIP_DIR}"
         "$ENV{${PF1}}/7-Zip" 
         "$ENV{${PF2}}/7-Zip")
     UNSET(PF2)
     UNSET(PF1)
 ELSE(WIN32)
-    FIND_PROGRAM(ARCHIVER_EXE "${VISIT_DATA_ARCHIVER_NAME}" "${VISIT_SEVEN_ZIP_DIR}")
+    FIND_PROGRAM(ARCHIVER_EXE "${VISIT_DATA_ARCHIVER_NAME}"
+                              PATHS "${VISIT_SEVEN_ZIP_DIR}"
+                              PATH_SUFFIXES bin)
 ENDIF(WIN32)
 
 #-----------------------------------------------------------------------------
 # Set arguments for archiver creation, extraction and list convenience targets
 #-----------------------------------------------------------------------------
 IF("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
-    MESSAGE(WARNING "Archiver \"${VISIT_DATA_ARCHIVER}\" not found, data files cannot be extracted.")
+    MESSAGE(WARNING "Archiver \"${VISIT_DATA_ARCHIVER_NAME}\" not found, data files cannot be extracted. Try setting VISIT_SEVEN_ZIP_DIR to location of 7-zip package, and VISIT_DATA_ARCHIVER_NAME to correct 7-zip executable name (eg, 7za, p7zip, 7z).")
 ELSE("${ARCHIVER_EXE}" STREQUAL "ARCHIVER_EXE-NOTFOUND")
     SET(ARCHIVER_CMD ${ARCHIVER_EXE})
     SET(ARCHIVER_XARGS x -y)                 # Expand archive args
