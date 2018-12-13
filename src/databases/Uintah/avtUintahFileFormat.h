@@ -56,6 +56,7 @@
 #include <avtMTMDFileFormat.h>
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -76,6 +77,8 @@ class DataArchive;
 class GridP;
 class Patch;
 class DBOptionsAttributes;
+
+class TimeStepInfo;
 
 class avtUintahFileFormat : public avtMTMDFileFormat
 {
@@ -116,8 +119,24 @@ protected:
                              const char* varname,
                              const int level, const int patch);
 
+  void             addRectilinearMesh( avtDatabaseMetaData *md,
+                                       std::set<std::string> &meshes_added,
+                                       std::string meshName,
+                                       TimeStepInfo* stepInfo );
+  
+  void             addParticleMesh( avtDatabaseMetaData *md,
+                                    std::set<std::string> &meshes_added,
+                                    std::string meshName,
+                                    TimeStepInfo* stepInfo );
+  
   void             addMeshNodeRankSIL( avtDatabaseMetaData *md,
                                        std::string mesh );
+
+  void             addMeshVariable( avtDatabaseMetaData *md,
+                                    std::set<std::string> &mesh_vars_added,
+                                    std::string varName, std::string varType,
+                                    std::string meshName, avtCentering cent );
+  
   // Data members
   int  loadExtraElements;
   bool dataVariesOverTime;
