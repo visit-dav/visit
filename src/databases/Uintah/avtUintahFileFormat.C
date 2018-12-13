@@ -663,6 +663,11 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
       std::string varname = stepInfo->varInfo[i].name;
       std::string vartype = stepInfo->varInfo[i].type;
 
+      if (vartype.find("filePointer") != std::string::npos)
+      {
+        continue;
+      }
+      
       // j=-1 -> all materials (*)
       for (int j=-1; j<(int)stepInfo->varInfo[i].materials.size(); ++j)
       {
@@ -727,14 +732,32 @@ avtUintahFileFormat::ReadMetaData(avtDatabaseMetaData *md, int timeState)
       }  
       else if (vartype.find("PerPatch") != std::string::npos)
       { 
+        if (varname.find("FileInfo") == 0 ||
+            varname.find("CellInformation") == 0 ||
+            varname.find("CutCellInfo") == 0)
+          continue;
+
         mesh_for_this_var = "Patch_Mesh";
         cent = AVT_ZONECENT;
         
         isPerPatchVar = true;
       }
+      else if (vartype.find("ReductionVariable") != std::string::npos ||
+               vartype.find("SoleVariable")      != std::string::npos)
+      {
+        continue;
+      }
       else
       {
-        debug5<< varname<<" has an unknown vartype: "<<vartype<<endl;
+        std::stringstream msg;
+        msg << "Visit - "
+            << "Uintah variable \"" << varname << "\"  "
+            << "has an unknown variable type \""
+            << vartype << "\"";
+        
+        avtCallback::IssueWarning(msg.str().c_str());
+        debug5 << msg.str() << std::endl;
+        
         continue;
       }
 
@@ -2495,26 +2518,21 @@ avtUintahFileFormat::addMeshVariable( avtDatabaseMetaData *md,
       AddVectorVarToMetaData(md, varName, meshName, cent, 4);
     }
     // 1 -> scalar
-    else if (varType.find("CCVariable")   != std::string::npos ||
-             varType.find("NCVariable")   != std::string::npos ||
-             varType.find("SFCXVariable") != std::string::npos ||
-             varType.find("SFCYVariable") != std::string::npos ||
-             varType.find("SFCZVariable") != std::string::npos ||
-             varType.find("PerPatch")     != std::string::npos )
+    else
     {
       AddScalarVarToMetaData(md, varName, meshName, cent);
     }
-    else
-    {
-      std::stringstream msg;
-      msg << "Visit - "
-          << "Uintah variable \"" << varName << "\"  "
-          << "has an unknown variable type \""
-          << varType << "\"";
+    // else
+    // {
+    //   std::stringstream msg;
+    //   msg << "Visit - "
+    //       << "Uintah variable \"" << varName << "\"  "
+    //       << "has an unknown variable type \""
+    //       << varType << "\"";
       
-      avtCallback::IssueWarning(msg.str().c_str());
+    //   avtCallback::IssueWarning(msg.str().c_str());
 
-      return;
-    }
+    //   return;
+    // }
   }
 }
