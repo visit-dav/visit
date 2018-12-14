@@ -11,6 +11,10 @@
 #  Date:       Thu Feb 15 16:37:20 PST 2018
 #
 #  Modifications:
+#    Kathleen Biagas, Friday December 14, 2018
+#    Fixes for running on Windows: Use abs_path for short_wave.visit, and cdb,
+#    use 'repr(db)' when writing script file to preserve '\' escapes.
+#    Replace forward-slash with back-slash in pattern.
 #
 # ----------------------------------------------------------------------------
 import os, string, subprocess
@@ -60,7 +64,7 @@ def ReadTextFile(filename):
 def test0(db):
     TestSection("Cinema spec A static camera")
     f = open("test0.py", "wt")
-    f.write('OpenDatabase("%s")\n' % db)
+    f.write("OpenDatabase(%s)\n" % repr(db))
     f.write('AddPlot("Pseudocolor", "pressure")\n')
     f.write('DrawPlots()\n')
     f.write('v = GetView3D()\n')
@@ -92,7 +96,7 @@ def test0(db):
     f.write('SetAnnotationAttributes(a)\n')
     f.close()
 
-    cdb = "test0.cdb"
+    cdb = abs_path(TestEnv.params["run_dir"], "test0.cdb")
     sz = "%dx%d" % (TestEnv.params["width"], TestEnv.params["height"])
     args = ["-specification", "A", "-scriptfile", "test0.py", "-output", cdb, "-format", "png", "-geometry", sz, "-camera", "static"]
     TestText("cinema_0_00", ListToString(args))
@@ -119,7 +123,7 @@ def test0(db):
 def test1(db):
     TestSection("Cinema spec A phi-theta camera")
     f = open("test1.py", "wt")
-    f.write('OpenDatabase("%s")\n' % db)
+    f.write("OpenDatabase(%s)\n" % repr(db))
     f.write('AddPlot("Pseudocolor", "pressure")\n')
     f.write('DrawPlots()\n')
     f.write('a = GetAnnotationAttributes()\n')
@@ -132,7 +136,8 @@ def test1(db):
     f.write('SetAnnotationAttributes(a)\n')
     f.close()
 
-    cdb = "test1.cdb"
+    cdb = abs_path(TestEnv.params["run_dir"], "test1.cdb")
+
     sz = "%dx%d" % (TestEnv.params["width"], TestEnv.params["height"])
     args = ["-specification", "A", "-scriptfile", "test1.py", "-output", cdb, "-format", "png", "-geometry", sz, "-camera", "phi-theta", "-phi", "6", "-theta", "5", "-stride", "3"]
     TestText("cinema_1_00", ListToString(args))
@@ -156,6 +161,8 @@ def test1(db):
     i = 3
     for phi in phi_values:
         pattern = params["name_pattern"]
+        if sys.platform.startswith("win"):
+            pattern = string.replace(pattern, "/", "\\")
         name = string.replace(pattern, "{phi}", phi)
         name = string.replace(name, "{theta}", theta)
         name = string.replace(name, "{time}", time)
@@ -173,7 +180,7 @@ def test1(db):
         i = i + 1
 
 def MakeShortWave():
-    db = "short_wave.visit"
+    db = abs_path("short_wave.visit")
     f = open(db, "wt")
     for i in xrange(0, 700, 100):
         f.write(silo_data_path("wave%04d.silo" % i) + "\n")
