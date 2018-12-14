@@ -157,7 +157,10 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   I added rzalastor and zin to the list of toss3 machines.
 #
 #   Eric Brugger, Fri Nov 30 14:15:23 PST 2018
-#   I modified the launcher to use a custom launcher on lassen and seirra.
+#   I modified the launcher to use a custom launcher on lassen and sierra.
+#
+#   Eric Brugger, Wed Dec 12 11:54:00 PST 2018
+#   I added pinot, rzansel and rzslic to the list of toss3 machines.
 #
 ###############################################################################
 
@@ -228,10 +231,13 @@ class LLNLLauncher(MainLauncher):
             self.sectorname() == "max" or \
             self.sectorname() == "mica" or \
             self.sectorname() == "pascal" or \
+            self.sectorname() == "pinot" or \
             self.sectorname() == "quartz" or \
             self.sectorname() == "rzalastor" or \
+            self.sectorname() == "rzansel" or \
             self.sectorname() == "rzgenie" or \
             self.sectorname() == "rzhasgpu" or \
+            self.sectorname() == "rzslic" or \
             self.sectorname() == "rztopaz" or \
             self.sectorname() == "rztrona" or \
             self.sectorname() == "surface" or \
