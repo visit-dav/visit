@@ -2497,7 +2497,7 @@
                 <Field name="useGlobalId" type="bool">false</Field>
                 <Field name="categoryName" type="string">Whole</Field>
                 <Field name="subsetName" type="string">Whole</Field>
-                <Field name="index" type="intVector">1 </Field>
+                <Field name="index" type="intVector">0 </Field>
                 <Field name="logical" type="bool">false</Field>
                 <Field name="requestedLayer" type="int">0</Field>
                 <Field name="seedType" type="string">SeedCell</Field>

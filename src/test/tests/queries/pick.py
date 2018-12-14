@@ -1160,6 +1160,7 @@ def PickOnionPeel2():
     op = OnionPeelAttributes()
     op.adjacencyType = op.Face
     op.requestedLayer = 1
+    op.index = 1
     SetOperatorOptions(op)
 
     Pick(52, 105, vars)
