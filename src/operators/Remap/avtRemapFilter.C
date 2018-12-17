@@ -161,7 +161,7 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 //                 (-) How to determine intrinsic and extrinsic arrays?
 //                 (-) How to handle avtOriginalCellNumbers?
 //                 (-) How to handle ghost zones?
-//                 (-) Make it work for some vector data.
+//                 (-) Make it work to support vector data.
 //                 (-) Apply remapping to PointData as well.
 //                 (-) Make it work for 3D
 //                 (-) Make it run for multiple domains in parallel.
@@ -175,15 +175,17 @@ avtDataRepresentation *
 avtRemapFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
 
-
-    
-    //
-    // Get the VTK data set, the domain number, and the label.
-    //
+    // ----------------------------------------------------------- //
+    // --- Convert the avtDataRepresentation into a vtkDataSet --- //
+    // ----------------------------------------------------------- //
     vtkDataSet *in_ds = in_dr->GetDataVTK();
     int domain = in_dr->GetDomain();
     std::string label = in_dr->GetLabel();
     
+    // If there are no cells, then return null. This check is okay for now because
+    // we only support cell-centered operations for the time being. Soon, we will support
+    // node-centered operations, and we will need to revise this.
+    // TODO: revise this when we support node operations.
     double nCellsIn = in_ds->GetNumberOfCells();
     if (in_ds == NULL || in_ds->GetNumberOfPoints() == 0 || nCellsIn == 0)
     {
@@ -199,20 +201,23 @@ PrintData(in_ds);
     // --- Generate the rectilinear grid --- //
     // ------------------------------------- //
     
-    double bounds1[4] = {0.0, 0.0, 0.0, 0.0};
-    GetBounds(bounds1);
+    double bounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    GetBounds(bounds);
 
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
+    int depth = atts.GetCellsZ();
     int nCellsOut = width*height;
-    double rCellVolume = ((bounds1[1] - bounds1[0]) * (bounds1[3] - bounds1[2]))
+    double rCellVolume = ((bounds[1] - bounds[0]) * (bounds[3] - bounds[2]))
         / (nCellsOut);
     
-    vtkRectilinearGrid *rg = CreateGrid(bounds1, width, height, 0, width, 0, height);
+    vtkRectilinearGrid *rg =
+        CreateGrid(bounds, width, height, depth, 0, width, 0, height, 0, depth);
 
 std::cout << "Just generated rectilinear grid. Here it is:" << std::endl;
-PrintData(rg);
+rg->Print(std::cout);
     
+return new avtDataRepresentation(rg, 0, "", false);
     
     
     // --------------------------- //
@@ -245,7 +250,7 @@ PrintData(rg);
     }
     
     // Determine the variable type from the attributes
-    /*enum*/ RemapAttributes::VariableTypes varType =
+    RemapAttributes::VariableTypes varType =
         atts.GetVariableType();
 std::cout << "Variable type: ";
 std::cout << varType << std::endl;
@@ -287,8 +292,6 @@ PrintData(in_ds);
 #include <cstdlib>
 double DEBUG_maxDiff = DBL_MIN;
 // --- DEBUG --- DEBUG -------- //
-
-    double bounds[6] = {0., 0., 0., 0., 0., 0.};
     
     // + ----- +
     // |   3   |
@@ -394,8 +397,8 @@ double DEBUG_maxDiff = DBL_MIN;
         for (int vdx = 0; vdx < nVariables; vdx++)
         {
             double value = 0.0;
-            vtkDoubleArray* myVariable =
-                vtkDoubleArray::SafeDownCast(ug->GetCellData()->GetArray(vdx));
+            vtkDataArray* myVariable = ug->GetCellData()->GetArray(vdx);
+                // vtkDoubleArray::SafeDownCast(ug->GetCellData()->GetArray(vdx));
             if (varType == RemapAttributes::intrinsic) // like density
             {
                 for (vtkIdType tuple = 0;
@@ -589,7 +592,7 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
                 // Should run tests and see if there is a change in the output
                 break;
             case VTK_PIXEL:
-std::cout << "PIXEL" << std::endl;
+std::cout << "VTK_PIXEL" << std::endl;
                 Swap3(coordinates, 2, 3);
                 volume = v_quad_area(4, coordinates);
                 break;
@@ -670,15 +673,16 @@ std::cout << "PIXEL" << std::endl;
 //    Remove const qualification.
 //
 // ****************************************************************************
-void avtRemapFilter::GetBounds(double bounds[4])
+void avtRemapFilter::GetBounds(double bounds[6])
 {
-    bool is3D = true;
     if (!atts.GetUseExtents())
     {
         bounds[0] = atts.GetStartX();
         bounds[1] = atts.GetEndX();
         bounds[2] = atts.GetStartY();
         bounds[3] = atts.GetEndY();
+        bounds[4] = atts.GetStartZ();
+        bounds[5] = atts.GetEndZ();
     }
     else
     {
@@ -734,22 +738,39 @@ void avtRemapFilter::GetBounds(double bounds[4])
 // ****************************************************************************
 
 vtkRectilinearGrid *
-avtRemapFilter::CreateGrid(const double *bounds, int numX, int numY, int minX,
-           int maxX, int minY, int maxY)
+avtRemapFilter::CreateGrid(const double *bounds, int numX, int numY, int numZ,
+        int minX, int maxX, int minY, int maxY, int minZ, int maxZ)
 {
+std::cout << "numX: " << numX << std::endl;
+std::cout << "minX: " << minX << std::endl;
+std::cout << "maxX: " << maxX << std::endl;
+std::cout << "numY: " << numY << std::endl;
+std::cout << "minY: " << minY << std::endl;
+std::cout << "maxY: " << maxY << std::endl;
+std::cout << "numZ: " << numZ << std::endl;
+std::cout << "minZ: " << minZ << std::endl;
+std::cout << "maxZ: " << maxZ << std::endl;
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
     vtkDataArray *zc = NULL;
 
     double width  = bounds[1] - bounds[0];
     double height = bounds[3] - bounds[2];
+    double depth  = bounds[5] - bounds[4];
+    
+std::cout << "width: " << width << std::endl;
+std::cout << "height: " << height << std::endl;
+std::cout << "depth: " << depth << std::endl;
 
     xc = GetCoordinates(bounds[0], width, numX+1, minX, maxX+1);
     yc = GetCoordinates(bounds[2], height, numY+1, minY, maxY+1);
-    zc = GetCoordinates(0.0, 0.0, 1, 0, 1);
+    //zc = GetCoordinates(0.0, 0.0, 1, 0, 1);
+    zc = GetCoordinates(bounds[4], depth, numZ+1, minZ, maxZ+1);
+PrintData(zc);
 
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
-    rv->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
+    //rv->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
+    rv->SetDimensions(maxX-minX+1, maxY-minY+1, maxZ-minZ+1);
     rv->SetXCoordinates(xc);
     xc->Delete();
     rv->SetYCoordinates(yc);
@@ -867,8 +888,10 @@ void avtRemapFilter::PrintData(vtkDataSet* in_ds)
 
 void avtRemapFilter::PrintData(vtkDataArray* myArray)
 {
-    std::cout << "Array name: " << myArray->GetName()
-              << std::endl;
+    if (myArray->GetName()) {
+        std::cout << "Array name: " << myArray->GetName()
+                  << std::endl;
+    }
     std::cout << "Values: ";
     for (int j = 0; j < myArray->GetNumberOfTuples(); j++)
     {

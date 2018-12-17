@@ -87,6 +87,10 @@ class QvisRemapWindow : public QvisOperatorWindow
     void startYProcessText();
     void endYProcessText();
     void cellsYProcessText();
+    void is3DChanged(bool val);
+    void startZProcessText();
+    void endZProcessText();
+    void cellsZProcessText();
     void defaultValueProcessText();
     void variableTypeChanged(int val);
   private:
@@ -97,6 +101,10 @@ class QvisRemapWindow : public QvisOperatorWindow
     QLineEdit *startY;
     QLineEdit *endY;
     QLineEdit *cellsY;
+    QCheckBox *is3D;
+    QLineEdit *startZ;
+    QLineEdit *endZ;
+    QLineEdit *cellsZ;
     QLineEdit *defaultValue;
     QWidget      *variableType;
     QButtonGroup *variableTypeButtonGroup;
@@ -106,6 +114,9 @@ class QvisRemapWindow : public QvisOperatorWindow
     QLabel *startYLabel;
     QLabel *endYLabel;
     QLabel *cellsYLabel;
+    QLabel *startZLabel;
+    QLabel *endZLabel;
+    QLabel *cellsZLabel;
     QLabel *defaultValueLabel;
     QLabel *variableTypeLabel;
 

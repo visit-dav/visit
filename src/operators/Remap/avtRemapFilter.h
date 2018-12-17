@@ -87,8 +87,8 @@ class avtRemapFilter : public avtPluginDataTreeIterator
     
   private:
     vtkDoubleArray      *CalculateCellVolumes(vtkDataSet*, const char* name = "");
-    void                GetBounds(double bounds[4]);
-    vtkRectilinearGrid  *CreateGrid(const double *, int, int, int, int ,int ,int);
+    void                GetBounds(double bounds[6]);
+    vtkRectilinearGrid  *CreateGrid(const double*, int, int, int, int, int, int, int, int, int);
     vtkDataArray        *GetCoordinates(double, double, int, int, int);
     
     

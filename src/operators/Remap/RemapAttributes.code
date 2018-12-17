@@ -1,0 +1,30 @@
+Code: SetEndX
+Prefix:
+    SetUseExtents(false);
+Postfix:
+
+Code: SetEndY
+Prefix:
+    SetUseExtents(false);
+Postfix:
+
+Code: SetEndZ
+Prefix:
+    SetUseExtents(false);
+Postfix:
+
+Code: SetStartX
+Prefix:
+    SetUseExtents(false);
+Postfix:
+
+Code: SetStartY
+Prefix:
+    SetUseExtents(false);
+Postfix:
+
+Code: SetStartZ
+Prefix:
+    SetUseExtents(false);
+Postfix:
+

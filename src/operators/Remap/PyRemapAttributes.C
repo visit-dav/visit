@@ -93,6 +93,17 @@ PyRemapAttributes_ToString(const RemapAttributes *atts, const char *prefix)
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%scellsY = %d\n", prefix, atts->GetCellsY());
     str += tmpStr;
+    if(atts->GetIs3D())
+        SNPRINTF(tmpStr, 1000, "%sis3D = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%sis3D = 0\n", prefix);
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sstartZ = %g\n", prefix, atts->GetStartZ());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%sendZ = %g\n", prefix, atts->GetEndZ());
+    str += tmpStr;
+    SNPRINTF(tmpStr, 1000, "%scellsZ = %d\n", prefix, atts->GetCellsZ());
+    str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%sdefaultValue = %g\n", prefix, atts->GetDefaultValue());
     str += tmpStr;
     const char *variableType_names = "intrinsic, extrinsic";
@@ -291,6 +302,102 @@ RemapAttributes_GetCellsY(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+RemapAttributes_SetIs3D(PyObject *self, PyObject *args)
+{
+    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the is3D in the object.
+    obj->data->SetIs3D(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RemapAttributes_GetIs3D(PyObject *self, PyObject *args)
+{
+    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetIs3D()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+RemapAttributes_SetStartZ(PyObject *self, PyObject *args)
+{
+    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the startZ in the object.
+    obj->data->SetStartZ(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RemapAttributes_GetStartZ(PyObject *self, PyObject *args)
+{
+    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetStartZ());
+    return retval;
+}
+
+/*static*/ PyObject *
+RemapAttributes_SetEndZ(PyObject *self, PyObject *args)
+{
+    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+
+    double dval;
+    if(!PyArg_ParseTuple(args, "d", &dval))
+        return NULL;
+
+    // Set the endZ in the object.
+    obj->data->SetEndZ(dval);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RemapAttributes_GetEndZ(PyObject *self, PyObject *args)
+{
+    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyObject *retval = PyFloat_FromDouble(obj->data->GetEndZ());
+    return retval;
+}
+
+/*static*/ PyObject *
+RemapAttributes_SetCellsZ(PyObject *self, PyObject *args)
+{
+    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the cellsZ in the object.
+    obj->data->SetCellsZ((int)ival);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+RemapAttributes_GetCellsZ(PyObject *self, PyObject *args)
+{
+    RemapAttributesObject *obj = (RemapAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(long(obj->data->GetCellsZ()));
+    return retval;
+}
+
+/*static*/ PyObject *
 RemapAttributes_SetDefaultValue(PyObject *self, PyObject *args)
 {
     RemapAttributesObject *obj = (RemapAttributesObject *)self;
@@ -365,6 +472,14 @@ PyMethodDef PyRemapAttributes_methods[REMAPATTRIBUTES_NMETH] = {
     {"GetEndY", RemapAttributes_GetEndY, METH_VARARGS},
     {"SetCellsY", RemapAttributes_SetCellsY, METH_VARARGS},
     {"GetCellsY", RemapAttributes_GetCellsY, METH_VARARGS},
+    {"SetIs3D", RemapAttributes_SetIs3D, METH_VARARGS},
+    {"GetIs3D", RemapAttributes_GetIs3D, METH_VARARGS},
+    {"SetStartZ", RemapAttributes_SetStartZ, METH_VARARGS},
+    {"GetStartZ", RemapAttributes_GetStartZ, METH_VARARGS},
+    {"SetEndZ", RemapAttributes_SetEndZ, METH_VARARGS},
+    {"GetEndZ", RemapAttributes_GetEndZ, METH_VARARGS},
+    {"SetCellsZ", RemapAttributes_SetCellsZ, METH_VARARGS},
+    {"GetCellsZ", RemapAttributes_GetCellsZ, METH_VARARGS},
     {"SetDefaultValue", RemapAttributes_SetDefaultValue, METH_VARARGS},
     {"GetDefaultValue", RemapAttributes_GetDefaultValue, METH_VARARGS},
     {"SetVariableType", RemapAttributes_SetVariableType, METH_VARARGS},
@@ -411,6 +526,14 @@ PyRemapAttributes_getattr(PyObject *self, char *name)
         return RemapAttributes_GetEndY(self, NULL);
     if(strcmp(name, "cellsY") == 0)
         return RemapAttributes_GetCellsY(self, NULL);
+    if(strcmp(name, "is3D") == 0)
+        return RemapAttributes_GetIs3D(self, NULL);
+    if(strcmp(name, "startZ") == 0)
+        return RemapAttributes_GetStartZ(self, NULL);
+    if(strcmp(name, "endZ") == 0)
+        return RemapAttributes_GetEndZ(self, NULL);
+    if(strcmp(name, "cellsZ") == 0)
+        return RemapAttributes_GetCellsZ(self, NULL);
     if(strcmp(name, "defaultValue") == 0)
         return RemapAttributes_GetDefaultValue(self, NULL);
     if(strcmp(name, "variableType") == 0)
@@ -448,6 +571,14 @@ PyRemapAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = RemapAttributes_SetEndY(self, tuple);
     else if(strcmp(name, "cellsY") == 0)
         obj = RemapAttributes_SetCellsY(self, tuple);
+    else if(strcmp(name, "is3D") == 0)
+        obj = RemapAttributes_SetIs3D(self, tuple);
+    else if(strcmp(name, "startZ") == 0)
+        obj = RemapAttributes_SetStartZ(self, tuple);
+    else if(strcmp(name, "endZ") == 0)
+        obj = RemapAttributes_SetEndZ(self, tuple);
+    else if(strcmp(name, "cellsZ") == 0)
+        obj = RemapAttributes_SetCellsZ(self, tuple);
     else if(strcmp(name, "defaultValue") == 0)
         obj = RemapAttributes_SetDefaultValue(self, tuple);
     else if(strcmp(name, "variableType") == 0)

@@ -59,7 +59,7 @@ import llnl.visit.Plugin;
 
 public class RemapAttributes extends AttributeSubject implements Plugin
 {
-    private static int RemapAttributes_numAdditionalAtts = 9;
+    private static int RemapAttributes_numAdditionalAtts = 13;
 
     // Enum values
     public final static int VARIABLETYPES_INTRINSIC = 0;
@@ -77,6 +77,10 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         startY = 0;
         endY = 1;
         cellsY = 10;
+        is3D = true;
+        startZ = 0;
+        endZ = 1;
+        cellsZ = 10;
         defaultValue = 0;
         variableType = VARIABLETYPES_INTRINSIC;
     }
@@ -92,6 +96,10 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         startY = 0;
         endY = 1;
         cellsY = 10;
+        is3D = true;
+        startZ = 0;
+        endZ = 1;
+        cellsZ = 10;
         defaultValue = 0;
         variableType = VARIABLETYPES_INTRINSIC;
     }
@@ -107,6 +115,10 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         startY = obj.startY;
         endY = obj.endY;
         cellsY = obj.cellsY;
+        is3D = obj.is3D;
+        startZ = obj.startZ;
+        endZ = obj.endZ;
+        cellsZ = obj.cellsZ;
         defaultValue = obj.defaultValue;
         variableType = obj.variableType;
 
@@ -133,6 +145,10 @@ public class RemapAttributes extends AttributeSubject implements Plugin
                 (startY == obj.startY) &&
                 (endY == obj.endY) &&
                 (cellsY == obj.cellsY) &&
+                (is3D == obj.is3D) &&
+                (startZ == obj.startZ) &&
+                (endZ == obj.endZ) &&
+                (cellsZ == obj.cellsZ) &&
                 (defaultValue == obj.defaultValue) &&
                 (variableType == obj.variableType));
     }
@@ -183,16 +199,40 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         Select(6);
     }
 
+    public void SetIs3D(boolean is3D_)
+    {
+        is3D = is3D_;
+        Select(7);
+    }
+
+    public void SetStartZ(double startZ_)
+    {
+        startZ = startZ_;
+        Select(8);
+    }
+
+    public void SetEndZ(double endZ_)
+    {
+        endZ = endZ_;
+        Select(9);
+    }
+
+    public void SetCellsZ(int cellsZ_)
+    {
+        cellsZ = cellsZ_;
+        Select(10);
+    }
+
     public void SetDefaultValue(double defaultValue_)
     {
         defaultValue = defaultValue_;
-        Select(7);
+        Select(11);
     }
 
     public void SetVariableType(int variableType_)
     {
         variableType = variableType_;
-        Select(8);
+        Select(12);
     }
 
     // Property getting methods
@@ -203,6 +243,10 @@ public class RemapAttributes extends AttributeSubject implements Plugin
     public double  GetStartY() { return startY; }
     public double  GetEndY() { return endY; }
     public int     GetCellsY() { return cellsY; }
+    public boolean GetIs3D() { return is3D; }
+    public double  GetStartZ() { return startZ; }
+    public double  GetEndZ() { return endZ; }
+    public int     GetCellsZ() { return cellsZ; }
     public double  GetDefaultValue() { return defaultValue; }
     public int     GetVariableType() { return variableType; }
 
@@ -224,8 +268,16 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(6, buf))
             buf.WriteInt(cellsY);
         if(WriteSelect(7, buf))
-            buf.WriteDouble(defaultValue);
+            buf.WriteBool(is3D);
         if(WriteSelect(8, buf))
+            buf.WriteDouble(startZ);
+        if(WriteSelect(9, buf))
+            buf.WriteDouble(endZ);
+        if(WriteSelect(10, buf))
+            buf.WriteInt(cellsZ);
+        if(WriteSelect(11, buf))
+            buf.WriteDouble(defaultValue);
+        if(WriteSelect(12, buf))
             buf.WriteInt(variableType);
     }
 
@@ -255,9 +307,21 @@ public class RemapAttributes extends AttributeSubject implements Plugin
             SetCellsY(buf.ReadInt());
             break;
         case 7:
-            SetDefaultValue(buf.ReadDouble());
+            SetIs3D(buf.ReadBool());
             break;
         case 8:
+            SetStartZ(buf.ReadDouble());
+            break;
+        case 9:
+            SetEndZ(buf.ReadDouble());
+            break;
+        case 10:
+            SetCellsZ(buf.ReadInt());
+            break;
+        case 11:
+            SetDefaultValue(buf.ReadDouble());
+            break;
+        case 12:
             SetVariableType(buf.ReadInt());
             break;
         }
@@ -273,6 +337,10 @@ public class RemapAttributes extends AttributeSubject implements Plugin
         str = str + doubleToString("startY", startY, indent) + "\n";
         str = str + doubleToString("endY", endY, indent) + "\n";
         str = str + intToString("cellsY", cellsY, indent) + "\n";
+        str = str + boolToString("is3D", is3D, indent) + "\n";
+        str = str + doubleToString("startZ", startZ, indent) + "\n";
+        str = str + doubleToString("endZ", endZ, indent) + "\n";
+        str = str + intToString("cellsZ", cellsZ, indent) + "\n";
         str = str + doubleToString("defaultValue", defaultValue, indent) + "\n";
         str = str + indent + "variableType = ";
         if(variableType == VARIABLETYPES_INTRINSIC)
@@ -292,6 +360,10 @@ public class RemapAttributes extends AttributeSubject implements Plugin
     private double  startY;
     private double  endY;
     private int     cellsY;
+    private boolean is3D;
+    private double  startZ;
+    private double  endZ;
+    private int     cellsZ;
     private double  defaultValue;
     private int     variableType;
 }

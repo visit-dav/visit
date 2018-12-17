@@ -100,6 +100,10 @@ void RemapAttributes::Init()
     startY = 0;
     endY = 1;
     cellsY = 10;
+    is3D = true;
+    startZ = 0;
+    endZ = 1;
+    cellsZ = 10;
     defaultValue = 0;
     variableType = intrinsic;
 
@@ -130,6 +134,10 @@ void RemapAttributes::Copy(const RemapAttributes &obj)
     startY = obj.startY;
     endY = obj.endY;
     cellsY = obj.cellsY;
+    is3D = obj.is3D;
+    startZ = obj.startZ;
+    endZ = obj.endZ;
+    cellsZ = obj.cellsZ;
     defaultValue = obj.defaultValue;
     variableType = obj.variableType;
 
@@ -296,6 +304,10 @@ RemapAttributes::operator == (const RemapAttributes &obj) const
             (startY == obj.startY) &&
             (endY == obj.endY) &&
             (cellsY == obj.cellsY) &&
+            (is3D == obj.is3D) &&
+            (startZ == obj.startZ) &&
+            (endZ == obj.endZ) &&
+            (cellsZ == obj.cellsZ) &&
             (defaultValue == obj.defaultValue) &&
             (variableType == obj.variableType));
 }
@@ -448,6 +460,10 @@ RemapAttributes::SelectAll()
     Select(ID_startY,       (void *)&startY);
     Select(ID_endY,         (void *)&endY);
     Select(ID_cellsY,       (void *)&cellsY);
+    Select(ID_is3D,         (void *)&is3D);
+    Select(ID_startZ,       (void *)&startZ);
+    Select(ID_endZ,         (void *)&endZ);
+    Select(ID_cellsZ,       (void *)&cellsZ);
     Select(ID_defaultValue, (void *)&defaultValue);
     Select(ID_variableType, (void *)&variableType);
 }
@@ -524,6 +540,30 @@ RemapAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool forceA
         node->AddNode(new DataNode("cellsY", cellsY));
     }
 
+    if(completeSave || !FieldsEqual(ID_is3D, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("is3D", is3D));
+    }
+
+    if(completeSave || !FieldsEqual(ID_startZ, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("startZ", startZ));
+    }
+
+    if(completeSave || !FieldsEqual(ID_endZ, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("endZ", endZ));
+    }
+
+    if(completeSave || !FieldsEqual(ID_cellsZ, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("cellsZ", cellsZ));
+    }
+
     if(completeSave || !FieldsEqual(ID_defaultValue, &defaultObject))
     {
         addToParent = true;
@@ -586,6 +626,14 @@ RemapAttributes::SetFromNode(DataNode *parentNode)
         SetEndY(node->AsDouble());
     if((node = searchNode->GetNode("cellsY")) != 0)
         SetCellsY(node->AsInt());
+    if((node = searchNode->GetNode("is3D")) != 0)
+        SetIs3D(node->AsBool());
+    if((node = searchNode->GetNode("startZ")) != 0)
+        SetStartZ(node->AsDouble());
+    if((node = searchNode->GetNode("endZ")) != 0)
+        SetEndZ(node->AsDouble());
+    if((node = searchNode->GetNode("cellsZ")) != 0)
+        SetCellsZ(node->AsInt());
     if((node = searchNode->GetNode("defaultValue")) != 0)
         SetDefaultValue(node->AsDouble());
     if((node = searchNode->GetNode("variableType")) != 0)
@@ -620,6 +668,8 @@ RemapAttributes::SetUseExtents(bool useExtents_)
 void
 RemapAttributes::SetStartX(double startX_)
 {
+    SetUseExtents(false);
+
     startX = startX_;
     Select(ID_startX, (void *)&startX);
 }
@@ -627,6 +677,8 @@ RemapAttributes::SetStartX(double startX_)
 void
 RemapAttributes::SetEndX(double endX_)
 {
+    SetUseExtents(false);
+
     endX = endX_;
     Select(ID_endX, (void *)&endX);
 }
@@ -641,6 +693,8 @@ RemapAttributes::SetCellsX(int cellsX_)
 void
 RemapAttributes::SetStartY(double startY_)
 {
+    SetUseExtents(false);
+
     startY = startY_;
     Select(ID_startY, (void *)&startY);
 }
@@ -648,6 +702,8 @@ RemapAttributes::SetStartY(double startY_)
 void
 RemapAttributes::SetEndY(double endY_)
 {
+    SetUseExtents(false);
+
     endY = endY_;
     Select(ID_endY, (void *)&endY);
 }
@@ -657,6 +713,38 @@ RemapAttributes::SetCellsY(int cellsY_)
 {
     cellsY = cellsY_;
     Select(ID_cellsY, (void *)&cellsY);
+}
+
+void
+RemapAttributes::SetIs3D(bool is3D_)
+{
+    is3D = is3D_;
+    Select(ID_is3D, (void *)&is3D);
+}
+
+void
+RemapAttributes::SetStartZ(double startZ_)
+{
+    SetUseExtents(false);
+
+    startZ = startZ_;
+    Select(ID_startZ, (void *)&startZ);
+}
+
+void
+RemapAttributes::SetEndZ(double endZ_)
+{
+    SetUseExtents(false);
+
+    endZ = endZ_;
+    Select(ID_endZ, (void *)&endZ);
+}
+
+void
+RemapAttributes::SetCellsZ(int cellsZ_)
+{
+    cellsZ = cellsZ_;
+    Select(ID_cellsZ, (void *)&cellsZ);
 }
 
 void
@@ -719,6 +807,30 @@ RemapAttributes::GetCellsY() const
     return cellsY;
 }
 
+bool
+RemapAttributes::GetIs3D() const
+{
+    return is3D;
+}
+
+double
+RemapAttributes::GetStartZ() const
+{
+    return startZ;
+}
+
+double
+RemapAttributes::GetEndZ() const
+{
+    return endZ;
+}
+
+int
+RemapAttributes::GetCellsZ() const
+{
+    return cellsZ;
+}
+
 double
 RemapAttributes::GetDefaultValue() const
 {
@@ -762,6 +874,10 @@ RemapAttributes::GetFieldName(int index) const
     case ID_startY:       return "startY";
     case ID_endY:         return "endY";
     case ID_cellsY:       return "cellsY";
+    case ID_is3D:         return "is3D";
+    case ID_startZ:       return "startZ";
+    case ID_endZ:         return "endZ";
+    case ID_cellsZ:       return "cellsZ";
     case ID_defaultValue: return "defaultValue";
     case ID_variableType: return "variableType";
     default:  return "invalid index";
@@ -795,6 +911,10 @@ RemapAttributes::GetFieldType(int index) const
     case ID_startY:       return FieldType_double;
     case ID_endY:         return FieldType_double;
     case ID_cellsY:       return FieldType_int;
+    case ID_is3D:         return FieldType_bool;
+    case ID_startZ:       return FieldType_double;
+    case ID_endZ:         return FieldType_double;
+    case ID_cellsZ:       return FieldType_int;
     case ID_defaultValue: return FieldType_double;
     case ID_variableType: return FieldType_enum;
     default:  return FieldType_unknown;
@@ -828,6 +948,10 @@ RemapAttributes::GetFieldTypeName(int index) const
     case ID_startY:       return "double";
     case ID_endY:         return "double";
     case ID_cellsY:       return "int";
+    case ID_is3D:         return "bool";
+    case ID_startZ:       return "double";
+    case ID_endZ:         return "double";
+    case ID_cellsZ:       return "int";
     case ID_defaultValue: return "double";
     case ID_variableType: return "enum";
     default:  return "invalid index";
@@ -889,6 +1013,26 @@ RemapAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_cellsY:
         {  // new scope
         retval = (cellsY == obj.cellsY);
+        }
+        break;
+    case ID_is3D:
+        {  // new scope
+        retval = (is3D == obj.is3D);
+        }
+        break;
+    case ID_startZ:
+        {  // new scope
+        retval = (startZ == obj.startZ);
+        }
+        break;
+    case ID_endZ:
+        {  // new scope
+        retval = (endZ == obj.endZ);
+        }
+        break;
+    case ID_cellsZ:
+        {  // new scope
+        retval = (cellsZ == obj.cellsZ);
         }
         break;
     case ID_defaultValue:

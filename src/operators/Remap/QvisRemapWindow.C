@@ -164,15 +164,41 @@ QvisRemapWindow::CreateWindowContents()
             this, SLOT(cellsYProcessText()));
     mainLayout->addWidget(cellsY, 6,1);
 
+    is3D = new QCheckBox(tr("3D remapping"), central);
+    connect(is3D, SIGNAL(toggled(bool)),
+            this, SLOT(is3DChanged(bool)));
+    mainLayout->addWidget(is3D, 7,0);
+
+    startZLabel = new QLabel(tr("Start Z"), central);
+    mainLayout->addWidget(startZLabel,8,0);
+    startZ = new QLineEdit(central);
+    connect(startZ, SIGNAL(returnPressed()),
+            this, SLOT(startZProcessText()));
+    mainLayout->addWidget(startZ, 8,1);
+
+    endZLabel = new QLabel(tr("End Z"), central);
+    mainLayout->addWidget(endZLabel,9,0);
+    endZ = new QLineEdit(central);
+    connect(endZ, SIGNAL(returnPressed()),
+            this, SLOT(endZProcessText()));
+    mainLayout->addWidget(endZ, 9,1);
+
+    cellsZLabel = new QLabel(tr("Cells in Z"), central);
+    mainLayout->addWidget(cellsZLabel,10,0);
+    cellsZ = new QLineEdit(central);
+    connect(cellsZ, SIGNAL(returnPressed()),
+            this, SLOT(cellsZProcessText()));
+    mainLayout->addWidget(cellsZ, 10,1);
+
     defaultValueLabel = new QLabel(tr("Value for uncovered regions"), central);
-    mainLayout->addWidget(defaultValueLabel,7,0);
+    mainLayout->addWidget(defaultValueLabel,11,0);
     defaultValue = new QLineEdit(central);
     connect(defaultValue, SIGNAL(returnPressed()),
             this, SLOT(defaultValueProcessText()));
-    mainLayout->addWidget(defaultValue, 7,1);
+    mainLayout->addWidget(defaultValue, 11,1);
 
     variableTypeLabel = new QLabel(tr("Variable type"), central);
-    mainLayout->addWidget(variableTypeLabel,8,0);
+    mainLayout->addWidget(variableTypeLabel,12,0);
     variableType = new QWidget(central);
     variableTypeButtonGroup= new QButtonGroup(variableType);
     QHBoxLayout *variableTypeLayout = new QHBoxLayout(variableType);
@@ -186,7 +212,7 @@ QvisRemapWindow::CreateWindowContents()
     variableTypeLayout->addWidget(variableTypeVariableTypesextrinsic);
     connect(variableTypeButtonGroup, SIGNAL(buttonClicked(int)),
             this, SLOT(variableTypeChanged(int)));
-    mainLayout->addWidget(variableType, 8,1);
+    mainLayout->addWidget(variableType, 12,1);
 
 }
 
@@ -292,6 +318,56 @@ QvisRemapWindow::UpdateWindow(bool doAll)
             break;
           case RemapAttributes::ID_cellsY:
             cellsY->setText(IntToQString(atts->GetCellsY()));
+            break;
+          case RemapAttributes::ID_is3D:
+            if (atts->GetIs3D() == true)
+            {
+                startZ->setEnabled(true);
+                if(startZLabel)
+                    startZLabel->setEnabled(true);
+            }
+            else
+            {
+                startZ->setEnabled(false);
+                if(startZLabel)
+                    startZLabel->setEnabled(false);
+            }
+            if (atts->GetIs3D() == true)
+            {
+                endZ->setEnabled(true);
+                if(endZLabel)
+                    endZLabel->setEnabled(true);
+            }
+            else
+            {
+                endZ->setEnabled(false);
+                if(endZLabel)
+                    endZLabel->setEnabled(false);
+            }
+            if (atts->GetIs3D() == true)
+            {
+                cellsZ->setEnabled(true);
+                if(cellsZLabel)
+                    cellsZLabel->setEnabled(true);
+            }
+            else
+            {
+                cellsZ->setEnabled(false);
+                if(cellsZLabel)
+                    cellsZLabel->setEnabled(false);
+            }
+            is3D->blockSignals(true);
+            is3D->setChecked(atts->GetIs3D());
+            is3D->blockSignals(false);
+            break;
+          case RemapAttributes::ID_startZ:
+            startZ->setText(DoubleToQString(atts->GetStartZ()));
+            break;
+          case RemapAttributes::ID_endZ:
+            endZ->setText(DoubleToQString(atts->GetEndZ()));
+            break;
+          case RemapAttributes::ID_cellsZ:
+            cellsZ->setText(IntToQString(atts->GetCellsZ()));
             break;
           case RemapAttributes::ID_defaultValue:
             defaultValue->setText(DoubleToQString(atts->GetDefaultValue()));
@@ -411,6 +487,48 @@ QvisRemapWindow::GetCurrentValues(int which_widget)
         }
     }
 
+    // Do startZ
+    if(which_widget == RemapAttributes::ID_startZ || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(startZ, val))
+            atts->SetStartZ(val);
+        else
+        {
+            ResettingError(tr("Start Z"),
+                DoubleToQString(atts->GetStartZ()));
+            atts->SetStartZ(atts->GetStartZ());
+        }
+    }
+
+    // Do endZ
+    if(which_widget == RemapAttributes::ID_endZ || doAll)
+    {
+        double val;
+        if(LineEditGetDouble(endZ, val))
+            atts->SetEndZ(val);
+        else
+        {
+            ResettingError(tr("End Z"),
+                DoubleToQString(atts->GetEndZ()));
+            atts->SetEndZ(atts->GetEndZ());
+        }
+    }
+
+    // Do cellsZ
+    if(which_widget == RemapAttributes::ID_cellsZ || doAll)
+    {
+        int val;
+        if(LineEditGetInt(cellsZ, val))
+            atts->SetCellsZ(val);
+        else
+        {
+            ResettingError(tr("Cells in Z"),
+                IntToQString(atts->GetCellsZ()));
+            atts->SetCellsZ(atts->GetCellsZ());
+        }
+    }
+
     // Do defaultValue
     if(which_widget == RemapAttributes::ID_defaultValue || doAll)
     {
@@ -485,6 +603,38 @@ void
 QvisRemapWindow::cellsYProcessText()
 {
     GetCurrentValues(RemapAttributes::ID_cellsY);
+    Apply();
+}
+
+
+void
+QvisRemapWindow::is3DChanged(bool val)
+{
+    atts->SetIs3D(val);
+    Apply();
+}
+
+
+void
+QvisRemapWindow::startZProcessText()
+{
+    GetCurrentValues(RemapAttributes::ID_startZ);
+    Apply();
+}
+
+
+void
+QvisRemapWindow::endZProcessText()
+{
+    GetCurrentValues(RemapAttributes::ID_endZ);
+    Apply();
+}
+
+
+void
+QvisRemapWindow::cellsZProcessText()
+{
+    GetCurrentValues(RemapAttributes::ID_cellsZ);
     Apply();
 }
 

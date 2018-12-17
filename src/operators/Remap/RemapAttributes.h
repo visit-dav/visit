@@ -100,6 +100,10 @@ public:
     void SetStartY(double startY_);
     void SetEndY(double endY_);
     void SetCellsY(int cellsY_);
+    void SetIs3D(bool is3D_);
+    void SetStartZ(double startZ_);
+    void SetEndZ(double endZ_);
+    void SetCellsZ(int cellsZ_);
     void SetDefaultValue(double defaultValue_);
     void SetVariableType(VariableTypes variableType_);
 
@@ -111,6 +115,10 @@ public:
     double GetStartY() const;
     double GetEndY() const;
     int    GetCellsY() const;
+    bool   GetIs3D() const;
+    double GetStartZ() const;
+    double GetEndZ() const;
+    int    GetCellsZ() const;
     double GetDefaultValue() const;
     VariableTypes GetVariableType() const;
 
@@ -141,6 +149,10 @@ public:
         ID_startY,
         ID_endY,
         ID_cellsY,
+        ID_is3D,
+        ID_startZ,
+        ID_endZ,
+        ID_cellsZ,
         ID_defaultValue,
         ID_variableType,
         ID__LAST
@@ -154,6 +166,10 @@ private:
     double startY;
     double endY;
     int    cellsY;
+    bool   is3D;
+    double startZ;
+    double endZ;
+    int    cellsZ;
     double defaultValue;
     int    variableType;
 
@@ -161,6 +177,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define REMAPATTRIBUTES_TMFS "bddiddidi"
+#define REMAPATTRIBUTES_TMFS "bddiddibddidi"
 
 #endif
