@@ -3,7 +3,7 @@ A
 -scriptfile
 test0.py
 -output
-test0.cdb
+VISIT_TOP_DIR/test/test0.cdb
 -format
 png
 -geometry
