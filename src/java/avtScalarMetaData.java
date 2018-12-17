@@ -59,7 +59,7 @@ import java.lang.Integer;
 
 public class avtScalarMetaData extends avtVarMetaData
 {
-    private static int avtScalarMetaData_numAdditionalAtts = 12;
+    private static int avtScalarMetaData_numAdditionalAtts = 14;
 
     // Enum values
     public final static int PARTIALCELLMODES_INCLUDE = 0;
@@ -95,6 +95,8 @@ public class avtScalarMetaData extends avtVarMetaData
         enumAlwaysInclude[1] = 0;
         enumPartialCellMode = PARTIALCELLMODES_EXCLUDE;
         enumGraphEdges = new Vector();
+        enumGraphEdgeNames = new Vector();
+        enumGraphEdgeNameIndexs = new Vector();
         enumNChooseRN = 0;
         enumNChooseRMaxR = 0;
         missingDataType = MISSINGDATA_MISSINGDATA_NONE;
@@ -119,6 +121,8 @@ public class avtScalarMetaData extends avtVarMetaData
         enumAlwaysInclude[1] = 0;
         enumPartialCellMode = PARTIALCELLMODES_EXCLUDE;
         enumGraphEdges = new Vector();
+        enumGraphEdgeNames = new Vector();
+        enumGraphEdgeNameIndexs = new Vector();
         enumNChooseRN = 0;
         enumNChooseRMaxR = 0;
         missingDataType = MISSINGDATA_MISSINGDATA_NONE;
@@ -160,6 +164,16 @@ public class avtScalarMetaData extends avtVarMetaData
         {
             Integer iv = (Integer)obj.enumGraphEdges.elementAt(i);
             enumGraphEdges.addElement(new Integer(iv.intValue()));
+        }
+        enumGraphEdgeNames = new Vector(obj.enumGraphEdgeNames.size());
+        for(i = 0; i < obj.enumGraphEdgeNames.size(); ++i)
+            enumGraphEdgeNames.addElement(new String((String)obj.enumGraphEdgeNames.elementAt(i)));
+
+        enumGraphEdgeNameIndexs = new Vector();
+        for(i = 0; i < obj.enumGraphEdgeNameIndexs.size(); ++i)
+        {
+            Integer iv = (Integer)obj.enumGraphEdgeNameIndexs.elementAt(i);
+            enumGraphEdgeNameIndexs.addElement(new Integer(iv.intValue()));
         }
         enumNChooseRN = obj.enumNChooseRN;
         enumNChooseRMaxR = obj.enumNChooseRMaxR;
@@ -223,6 +237,24 @@ public class avtScalarMetaData extends avtVarMetaData
             Integer enumGraphEdges2 = (Integer)obj.enumGraphEdges.elementAt(i);
             enumGraphEdges_equal = enumGraphEdges1.equals(enumGraphEdges2);
         }
+        // Compare the elements in the enumGraphEdgeNames vector.
+        boolean enumGraphEdgeNames_equal = (obj.enumGraphEdgeNames.size() == enumGraphEdgeNames.size());
+        for(i = 0; (i < enumGraphEdgeNames.size()) && enumGraphEdgeNames_equal; ++i)
+        {
+            // Make references to String from Object.
+            String enumGraphEdgeNames1 = (String)enumGraphEdgeNames.elementAt(i);
+            String enumGraphEdgeNames2 = (String)obj.enumGraphEdgeNames.elementAt(i);
+            enumGraphEdgeNames_equal = enumGraphEdgeNames1.equals(enumGraphEdgeNames2);
+        }
+        // Compare the elements in the enumGraphEdgeNameIndexs vector.
+        boolean enumGraphEdgeNameIndexs_equal = (obj.enumGraphEdgeNameIndexs.size() == enumGraphEdgeNameIndexs.size());
+        for(i = 0; (i < enumGraphEdgeNameIndexs.size()) && enumGraphEdgeNameIndexs_equal; ++i)
+        {
+            // Make references to Integer from Object.
+            Integer enumGraphEdgeNameIndexs1 = (Integer)enumGraphEdgeNameIndexs.elementAt(i);
+            Integer enumGraphEdgeNameIndexs2 = (Integer)obj.enumGraphEdgeNameIndexs.elementAt(i);
+            enumGraphEdgeNameIndexs_equal = enumGraphEdgeNameIndexs1.equals(enumGraphEdgeNameIndexs2);
+        }
         // Compare the missingData arrays.
         boolean missingData_equal = true;
         for(i = 0; i < 2 && missingData_equal; ++i)
@@ -237,6 +269,8 @@ public class avtScalarMetaData extends avtVarMetaData
                 enumAlwaysInclude_equal &&
                 (enumPartialCellMode == obj.enumPartialCellMode) &&
                 enumGraphEdges_equal &&
+                enumGraphEdgeNames_equal &&
+                enumGraphEdgeNameIndexs_equal &&
                 (enumNChooseRN == obj.enumNChooseRN) &&
                 (enumNChooseRMaxR == obj.enumNChooseRMaxR) &&
                 (missingDataType == obj.missingDataType) &&
@@ -308,36 +342,48 @@ public class avtScalarMetaData extends avtVarMetaData
         Select((new avtScalarMetaData()).Offset() + 7);
     }
 
+    public void SetEnumGraphEdgeNames(Vector enumGraphEdgeNames_)
+    {
+        enumGraphEdgeNames = enumGraphEdgeNames_;
+        Select((new avtScalarMetaData()).Offset() + 8);
+    }
+
+    public void SetEnumGraphEdgeNameIndexs(Vector enumGraphEdgeNameIndexs_)
+    {
+        enumGraphEdgeNameIndexs = enumGraphEdgeNameIndexs_;
+        Select((new avtScalarMetaData()).Offset() + 9);
+    }
+
     public void SetEnumNChooseRN(int enumNChooseRN_)
     {
         enumNChooseRN = enumNChooseRN_;
-        Select((new avtScalarMetaData()).Offset() + 8);
+        Select((new avtScalarMetaData()).Offset() + 10);
     }
 
     public void SetEnumNChooseRMaxR(int enumNChooseRMaxR_)
     {
         enumNChooseRMaxR = enumNChooseRMaxR_;
-        Select((new avtScalarMetaData()).Offset() + 9);
+        Select((new avtScalarMetaData()).Offset() + 11);
     }
 
     public void SetMissingDataType(int missingDataType_)
     {
         missingDataType = missingDataType_;
-        Select((new avtScalarMetaData()).Offset() + 10);
+        Select((new avtScalarMetaData()).Offset() + 12);
     }
 
     public void SetMissingData(double[] missingData_)
     {
         missingData[0] = missingData_[0];
         missingData[1] = missingData_[1];
-        Select((new avtScalarMetaData()).Offset() + 11);
+        Select((new avtScalarMetaData()).Offset() + 13);
     }
 
     public void SetMissingData(double e0, double e1)
     {
         missingData[0] = e0;
         missingData[1] = e1;
-        Select((new avtScalarMetaData()).Offset() + 11);
+        Select((new avtScalarMetaData()).Offset() + 13);
     }
 
     // Property getting methods
@@ -349,6 +395,8 @@ public class avtScalarMetaData extends avtVarMetaData
     public double[] GetEnumAlwaysInclude() { return enumAlwaysInclude; }
     public int      GetEnumPartialCellMode() { return enumPartialCellMode; }
     public Vector   GetEnumGraphEdges() { return enumGraphEdges; }
+    public Vector   GetEnumGraphEdgeNames() { return enumGraphEdgeNames; }
+    public Vector   GetEnumGraphEdgeNameIndexs() { return enumGraphEdgeNameIndexs; }
     public int      GetEnumNChooseRN() { return enumNChooseRN; }
     public int      GetEnumNChooseRMaxR() { return enumNChooseRMaxR; }
     public int      GetMissingDataType() { return missingDataType; }
@@ -377,12 +425,16 @@ public class avtScalarMetaData extends avtVarMetaData
         if(WriteSelect(offset + 7, buf))
             buf.WriteIntVector(enumGraphEdges);
         if(WriteSelect(offset + 8, buf))
-            buf.WriteInt(enumNChooseRN);
+            buf.WriteStringVector(enumGraphEdgeNames);
         if(WriteSelect(offset + 9, buf))
-            buf.WriteInt(enumNChooseRMaxR);
+            buf.WriteIntVector(enumGraphEdgeNameIndexs);
         if(WriteSelect(offset + 10, buf))
-            buf.WriteInt(missingDataType);
+            buf.WriteInt(enumNChooseRN);
         if(WriteSelect(offset + 11, buf))
+            buf.WriteInt(enumNChooseRMaxR);
+        if(WriteSelect(offset + 12, buf))
+            buf.WriteInt(missingDataType);
+        if(WriteSelect(offset + 13, buf))
             buf.WriteDoubleArray(missingData);
     }
 
@@ -417,15 +469,21 @@ public class avtScalarMetaData extends avtVarMetaData
             SetEnumGraphEdges(buf.ReadIntVector());
             break;
         case 8:
-            SetEnumNChooseRN(buf.ReadInt());
+            SetEnumGraphEdgeNames(buf.ReadStringVector());
             break;
         case 9:
-            SetEnumNChooseRMaxR(buf.ReadInt());
+            SetEnumGraphEdgeNameIndexs(buf.ReadIntVector());
             break;
         case 10:
-            SetMissingDataType(buf.ReadInt());
+            SetEnumNChooseRN(buf.ReadInt());
             break;
         case 11:
+            SetEnumNChooseRMaxR(buf.ReadInt());
+            break;
+        case 12:
+            SetMissingDataType(buf.ReadInt());
+            break;
+        case 13:
             SetMissingData(buf.ReadDoubleArray());
             break;
         default:
@@ -463,6 +521,8 @@ public class avtScalarMetaData extends avtVarMetaData
             str = str + "PARTIALCELLMODES_DISSECT";
         str = str + "\n";
         str = str + intVectorToString("enumGraphEdges", enumGraphEdges, indent) + "\n";
+        str = str + stringVectorToString("enumGraphEdgeNames", enumGraphEdgeNames, indent) + "\n";
+        str = str + intVectorToString("enumGraphEdgeNameIndexs", enumGraphEdgeNameIndexs, indent) + "\n";
         str = str + intToString("enumNChooseRN", enumNChooseRN, indent) + "\n";
         str = str + intToString("enumNChooseRMaxR", enumNChooseRMaxR, indent) + "\n";
         str = str + indent + "missingDataType = ";
@@ -491,6 +551,8 @@ public class avtScalarMetaData extends avtVarMetaData
     private double[] enumAlwaysInclude;
     private int      enumPartialCellMode;
     private Vector   enumGraphEdges; // vector of Integer objects
+    private Vector   enumGraphEdgeNames; // vector of String objects
+    private Vector   enumGraphEdgeNameIndexs; // vector of Integer objects
     private int      enumNChooseRN;
     private int      enumNChooseRMaxR;
     private int      missingDataType;

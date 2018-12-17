@@ -209,6 +209,38 @@ PyavtScalarMetaData_ToString(const avtScalarMetaData *atts, const char *prefix)
         SNPRINTF(tmpStr, 1000, ")\n");
         str += tmpStr;
     }
+    {   const stringVector &enumGraphEdgeNames = atts->enumGraphEdgeNames;
+        SNPRINTF(tmpStr, 1000, "%senumGraphEdgeNames = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < enumGraphEdgeNames.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "\"%s\"", enumGraphEdgeNames[i].c_str());
+            str += tmpStr;
+            if(i < enumGraphEdgeNames.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
+    {   const intVector &enumGraphEdgeNameIndexs = atts->enumGraphEdgeNameIndexs;
+        SNPRINTF(tmpStr, 1000, "%senumGraphEdgeNameIndexs = (", prefix);
+        str += tmpStr;
+        for(size_t i = 0; i < enumGraphEdgeNameIndexs.size(); ++i)
+        {
+            SNPRINTF(tmpStr, 1000, "%d", enumGraphEdgeNameIndexs[i]);
+            str += tmpStr;
+            if(i < enumGraphEdgeNameIndexs.size() - 1)
+            {
+                SNPRINTF(tmpStr, 1000, ", ");
+                str += tmpStr;
+            }
+        }
+        SNPRINTF(tmpStr, 1000, ")\n");
+        str += tmpStr;
+    }
     SNPRINTF(tmpStr, 1000, "%senumNChooseRN = %d\n", prefix, atts->GetEnumNChooseRN());
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%senumNChooseRMaxR = %d\n", prefix, atts->GetEnumNChooseRMaxR());
@@ -643,6 +675,118 @@ avtScalarMetaData_GetEnumGraphEdges(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+avtScalarMetaData_SetEnumGraphEdgeNames(PyObject *self, PyObject *args)
+{
+    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+
+    stringVector  &vec = obj->data->enumGraphEdgeNames;
+    PyObject     *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyString_Check(item))
+                vec[i] = std::string(PyString_AS_STRING(item));
+            else
+                vec[i] = std::string("");
+        }
+    }
+    else if(PyString_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = std::string(PyString_AS_STRING(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the enumGraphEdgeNames in the object as modified.
+    obj->data->SelectAll();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtScalarMetaData_GetEnumGraphEdgeNames(PyObject *self, PyObject *args)
+{
+    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    // Allocate a tuple the with enough entries to hold the enumGraphEdgeNames.
+    const stringVector &enumGraphEdgeNames = obj->data->enumGraphEdgeNames;
+    PyObject *retval = PyTuple_New(enumGraphEdgeNames.size());
+    for(size_t i = 0; i < enumGraphEdgeNames.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyString_FromString(enumGraphEdgeNames[i].c_str()));
+    return retval;
+}
+
+/*static*/ PyObject *
+avtScalarMetaData_SetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
+{
+    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+
+    intVector  &vec = obj->data->enumGraphEdgeNameIndexs;
+    PyObject   *tuple;
+    if(!PyArg_ParseTuple(args, "O", &tuple))
+        return NULL;
+
+    if(PyTuple_Check(tuple))
+    {
+        vec.resize(PyTuple_Size(tuple));
+        for(int i = 0; i < PyTuple_Size(tuple); ++i)
+        {
+            PyObject *item = PyTuple_GET_ITEM(tuple, i);
+            if(PyFloat_Check(item))
+                vec[i] = int(PyFloat_AS_DOUBLE(item));
+            else if(PyInt_Check(item))
+                vec[i] = int(PyInt_AS_LONG(item));
+            else if(PyLong_Check(item))
+                vec[i] = int(PyLong_AsLong(item));
+            else
+                vec[i] = 0;
+        }
+    }
+    else if(PyFloat_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyFloat_AS_DOUBLE(tuple));
+    }
+    else if(PyInt_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyInt_AS_LONG(tuple));
+    }
+    else if(PyLong_Check(tuple))
+    {
+        vec.resize(1);
+        vec[0] = int(PyLong_AsLong(tuple));
+    }
+    else
+        return NULL;
+
+    // Mark the enumGraphEdgeNameIndexs in the object as modified.
+    obj->data->SelectAll();
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+avtScalarMetaData_GetEnumGraphEdgeNameIndexs(PyObject *self, PyObject *args)
+{
+    avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
+    // Allocate a tuple the with enough entries to hold the enumGraphEdgeNameIndexs.
+    const intVector &enumGraphEdgeNameIndexs = obj->data->enumGraphEdgeNameIndexs;
+    PyObject *retval = PyTuple_New(enumGraphEdgeNameIndexs.size());
+    for(size_t i = 0; i < enumGraphEdgeNameIndexs.size(); ++i)
+        PyTuple_SET_ITEM(retval, i, PyInt_FromLong(long(enumGraphEdgeNameIndexs[i])));
+    return retval;
+}
+
+/*static*/ PyObject *
 avtScalarMetaData_SetEnumNChooseRN(PyObject *self, PyObject *args)
 {
     avtScalarMetaDataObject *obj = (avtScalarMetaDataObject *)self;
@@ -798,6 +942,10 @@ PyMethodDef PyavtScalarMetaData_methods[AVTSCALARMETADATA_NMETH] = {
     {"GetEnumPartialCellMode", avtScalarMetaData_GetEnumPartialCellMode, METH_VARARGS},
     {"SetEnumGraphEdges", avtScalarMetaData_SetEnumGraphEdges, METH_VARARGS},
     {"GetEnumGraphEdges", avtScalarMetaData_GetEnumGraphEdges, METH_VARARGS},
+    {"SetEnumGraphEdgeNames", avtScalarMetaData_SetEnumGraphEdgeNames, METH_VARARGS},
+    {"GetEnumGraphEdgeNames", avtScalarMetaData_GetEnumGraphEdgeNames, METH_VARARGS},
+    {"SetEnumGraphEdgeNameIndexs", avtScalarMetaData_SetEnumGraphEdgeNameIndexs, METH_VARARGS},
+    {"GetEnumGraphEdgeNameIndexs", avtScalarMetaData_GetEnumGraphEdgeNameIndexs, METH_VARARGS},
     {"SetEnumNChooseRN", avtScalarMetaData_SetEnumNChooseRN, METH_VARARGS},
     {"GetEnumNChooseRN", avtScalarMetaData_GetEnumNChooseRN, METH_VARARGS},
     {"SetEnumNChooseRMaxR", avtScalarMetaData_SetEnumNChooseRMaxR, METH_VARARGS},
@@ -888,6 +1036,10 @@ PyavtScalarMetaData_getattr(PyObject *self, char *name)
 
     if(strcmp(name, "enumGraphEdges") == 0)
         return avtScalarMetaData_GetEnumGraphEdges(self, NULL);
+    if(strcmp(name, "enumGraphEdgeNames") == 0)
+        return avtScalarMetaData_GetEnumGraphEdgeNames(self, NULL);
+    if(strcmp(name, "enumGraphEdgeNameIndexs") == 0)
+        return avtScalarMetaData_GetEnumGraphEdgeNameIndexs(self, NULL);
     if(strcmp(name, "enumNChooseRN") == 0)
         return avtScalarMetaData_GetEnumNChooseRN(self, NULL);
     if(strcmp(name, "enumNChooseRMaxR") == 0)
@@ -950,6 +1102,10 @@ PyavtScalarMetaData_setattr(PyObject *self, char *name, PyObject *args)
         obj = avtScalarMetaData_SetEnumPartialCellMode(self, tuple);
     else if(strcmp(name, "enumGraphEdges") == 0)
         obj = avtScalarMetaData_SetEnumGraphEdges(self, tuple);
+    else if(strcmp(name, "enumGraphEdgeNames") == 0)
+        obj = avtScalarMetaData_SetEnumGraphEdgeNames(self, tuple);
+    else if(strcmp(name, "enumGraphEdgeNameIndexs") == 0)
+        obj = avtScalarMetaData_SetEnumGraphEdgeNameIndexs(self, tuple);
     else if(strcmp(name, "enumNChooseRN") == 0)
         obj = avtScalarMetaData_SetEnumNChooseRN(self, tuple);
     else if(strcmp(name, "enumNChooseRMaxR") == 0)
