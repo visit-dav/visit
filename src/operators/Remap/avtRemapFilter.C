@@ -202,17 +202,26 @@ PrintData(in_ds);
     // ------------------------------------- //
     
     double bounds[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    GetBounds(bounds);
+    is3D = GetBounds(bounds);
+std::cout << "is3D: " << is3D << std::endl;
 
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
-    int depth = atts.GetCellsZ();
-    int nCellsOut = width*height;
-    double rCellVolume = ((bounds[1] - bounds[0]) * (bounds[3] - bounds[2]))
-        / (nCellsOut);
     
-    vtkRectilinearGrid *rg =
-        CreateGrid(bounds, width, height, depth, 0, width, 0, height, 0, depth);
+    int nCellsOut = width*height;
+    double rCellVolume = (bounds[1] - bounds[0]) * (bounds[3] - bounds[2]) / (nCellsOut);
+    vtkRectilinearGrid* rg;
+    if (is3D)
+    {
+        int depth = atts.GetCellsZ();
+        nCellsOut *= depth;
+        rCellVolume *= (bounds[5] - bounds[4]);
+        rg = CreateGrid(bounds, width, height, depth, 0, width, 0, height, 0, depth);
+    }
+    else
+    {
+        rg = CreateGrid(bounds, width, height, 0, width, 0, height);
+    }
 
 std::cout << "Just generated rectilinear grid. Here it is:" << std::endl;
 rg->Print(std::cout);
@@ -673,7 +682,7 @@ std::cout << "VTK_PIXEL" << std::endl;
 //    Remove const qualification.
 //
 // ****************************************************************************
-void avtRemapFilter::GetBounds(double bounds[6])
+bool avtRemapFilter::GetBounds(double bounds[6])
 {
     if (!atts.GetUseExtents())
     {
@@ -696,6 +705,13 @@ void avtRemapFilter::GetBounds(double bounds[6])
         {
             GetSpatialExtents(bounds);
         }
+    }
+    if (fabs(bounds[4]) < 1e-100 && fabs(bounds[5]) < 1e-100)
+    {
+        return false;
+    }
+    else {
+        return atts.GetIs3D();
     }
 }
 
@@ -741,15 +757,6 @@ vtkRectilinearGrid *
 avtRemapFilter::CreateGrid(const double *bounds, int numX, int numY, int numZ,
         int minX, int maxX, int minY, int maxY, int minZ, int maxZ)
 {
-std::cout << "numX: " << numX << std::endl;
-std::cout << "minX: " << minX << std::endl;
-std::cout << "maxX: " << maxX << std::endl;
-std::cout << "numY: " << numY << std::endl;
-std::cout << "minY: " << minY << std::endl;
-std::cout << "maxY: " << maxY << std::endl;
-std::cout << "numZ: " << numZ << std::endl;
-std::cout << "minZ: " << minZ << std::endl;
-std::cout << "maxZ: " << maxZ << std::endl;
     vtkDataArray *xc = NULL;
     vtkDataArray *yc = NULL;
     vtkDataArray *zc = NULL;
@@ -757,20 +764,40 @@ std::cout << "maxZ: " << maxZ << std::endl;
     double width  = bounds[1] - bounds[0];
     double height = bounds[3] - bounds[2];
     double depth  = bounds[5] - bounds[4];
-    
-std::cout << "width: " << width << std::endl;
-std::cout << "height: " << height << std::endl;
-std::cout << "depth: " << depth << std::endl;
 
     xc = GetCoordinates(bounds[0], width, numX+1, minX, maxX+1);
     yc = GetCoordinates(bounds[2], height, numY+1, minY, maxY+1);
-    //zc = GetCoordinates(0.0, 0.0, 1, 0, 1);
     zc = GetCoordinates(bounds[4], depth, numZ+1, minZ, maxZ+1);
-PrintData(zc);
 
     vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
-    //rv->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
     rv->SetDimensions(maxX-minX+1, maxY-minY+1, maxZ-minZ+1);
+    rv->SetXCoordinates(xc);
+    xc->Delete();
+    rv->SetYCoordinates(yc);
+    yc->Delete();
+    rv->SetZCoordinates(zc);
+    zc->Delete();
+
+    return rv;
+}
+
+vtkRectilinearGrid *
+avtRemapFilter::CreateGrid(const double *bounds,
+        int numX, int numY, int minX, int maxX, int minY, int maxY)
+{
+    vtkDataArray *xc = NULL;
+    vtkDataArray *yc = NULL;
+    vtkDataArray *zc = NULL;
+
+    double width  = bounds[1] - bounds[0];
+    double height = bounds[3] - bounds[2];
+
+    xc = GetCoordinates(bounds[0], width, numX+1, minX, maxX+1);
+    yc = GetCoordinates(bounds[2], height, numY+1, minY, maxY+1);
+    zc = GetCoordinates(bounds[4], 0, 1, 0, 1);
+
+    vtkRectilinearGrid *rv = vtkRectilinearGrid::New();
+    rv->SetDimensions(maxX-minX+1, maxY-minY+1, 1);
     rv->SetXCoordinates(xc);
     xc->Delete();
     rv->SetYCoordinates(yc);
