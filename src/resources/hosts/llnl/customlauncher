@@ -162,6 +162,9 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Eric Brugger, Wed Dec 12 11:54:00 PST 2018
 #   I added pinot, rzansel and rzslic to the list of toss3 machines.
 #
+#   Eric Brugger, Tue Dec 18 14:32:09 PST 2018
+#   I added czvnc and rzvnc to the list of toss3 machines.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -227,6 +230,7 @@ class LLNLLauncher(MainLauncher):
         #
         if self.sectorname() == "borax" or \
             self.sectorname() == "catalyst" or \
+            self.sectorname() == "czvnc" or \
             self.sectorname() == "jade" or \
             self.sectorname() == "max" or \
             self.sectorname() == "mica" or \
@@ -240,6 +244,7 @@ class LLNLLauncher(MainLauncher):
             self.sectorname() == "rzslic" or \
             self.sectorname() == "rztopaz" or \
             self.sectorname() == "rztrona" or \
+            self.sectorname() == "rzvnc" or \
             self.sectorname() == "surface" or \
             self.sectorname() == "syrah" or \
             self.sectorname() == "zin" or \
