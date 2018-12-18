@@ -147,6 +147,7 @@ public class TryAnnotations extends RunViewer
                 2, true, true, true, true);
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
+            SaveImage("text2Dannot.png", 300, 300);
             System.out.println("After 2D text: " + viewer.GetViewerState().GetAnnotationObjectList().toString());
 
             //
@@ -163,9 +164,9 @@ public class TryAnnotations extends RunViewer
                 true);
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
+            SaveImage("text3D.png", 300, 300);
             System.out.println("After 3D text: " + viewer.GetViewerState().GetAnnotationObjectList().toString());
 
-            //
             // Create a line 2D/arrow annotation
             //
             viewer.GetViewerMethods().AddAnnotationObject(AnnotationObject.ANNOTATIONTYPE_LINE2D, "line");
@@ -178,7 +179,34 @@ public class TryAnnotations extends RunViewer
                 true);
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
+            SaveImage("line2Dannot.png", 300, 300);
             System.out.println("After line: " + viewer.GetViewerState().GetAnnotationObjectList().toString());
+
+            //
+            // Create a 3D line/arrow annotation
+            //
+            viewer.GetViewerMethods().AddAnnotationObject(AnnotationObject.ANNOTATIONTYPE_LINE3D, "line3d");
+            aol.SetLine3DOptions("line3d",
+                6.0, 0.0, 0.0, // startpoint
+                6.0, 3.0, 0.0, // endpoint
+                1,        // lineWidth
+                1,        // lineType 1=tube
+                1,        //tubeQuality,
+                0.04,     //tubeRadius,
+                false,    // arrow1
+                16,       // arrow1Resolution
+                0.120831, // arrow1Radius
+                0.338327, // arrow1Height
+                true,    // arrow2
+                16,       // arrow2Resolution
+                0.120831, // arrow2Radius
+                0.338327, // arrow2Height
+                new ColorAttribute(255,153,0,255), false, 
+                true);
+            aol.Notify();
+            viewer.GetViewerMethods().SetAnnotationObjectOptions();
+            System.out.println("After 3D line: " + viewer.GetViewerState().GetAnnotationObjectList().toString());
+            SaveImage("line3Dannot.png", 300, 300);
 
             //
             // Save a small image to use for an annotation.
@@ -206,6 +234,7 @@ public class TryAnnotations extends RunViewer
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
             System.out.println("After image: " + viewer.GetViewerState().GetAnnotationObjectList().toString());
 
+
             // Set some legend attributes. You'd get the name from the PlotList object
             // but here we're just hard-coding the plot name since the Pseudocolor is
             // called Plot0000.
@@ -230,6 +259,7 @@ public class TryAnnotations extends RunViewer
                 true);
             aol.Notify();
             viewer.GetViewerMethods().SetAnnotationObjectOptions();
+            SaveImage("legendChange.png", 300, 300);
         }
         else
             System.out.println("Could not open the database!");

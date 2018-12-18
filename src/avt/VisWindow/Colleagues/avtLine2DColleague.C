@@ -495,7 +495,11 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
     lineData->GetPoints()->SetPoint(0, p0[0], p0[1], 0.);
     lineData->GetPoints()->SetPoint(1, p1[0], p1[1], 0.);
 
-    actor->GetProperty()->SetLineWidth(annot.GetOptions().GetEntry("width")->AsInt()+1);
+    if (annot.GetOptions().HasEntry("width"))
+    {
+        actor->GetProperty()->SetLineWidth(annot.GetOptions().GetEntry("width")->AsInt()+1);
+    }
+
 
     //
     // The line color has changed or the useForegroundForTextColor flag
@@ -533,8 +537,10 @@ avtLine2DColleague::SetOptions(const AnnotationObject &annot)
         actor->GetProperty()->SetOpacity(double(lc[3]));
     }
 
-    beginArrowStyle = annot.GetOptions().GetEntry("beginArrow")->AsInt();
-    endArrowStyle = annot.GetOptions().GetEntry("endArrow")->AsInt();
+    if (annot.GetOptions().HasEntry("beginArrow"))
+        beginArrowStyle = annot.GetOptions().GetEntry("beginArrow")->AsInt();
+    if (annot.GetOptions().HasEntry("endArrow"))
+        endArrowStyle = annot.GetOptions().GetEntry("endArrow")->AsInt();
 
     updateArrows(beginArrowLine, endArrowLine, p0, p1);
     updateArrows(beginArrowSolid, endArrowSolid, p0, p1);

@@ -419,7 +419,9 @@ avtLine3DColleague::SetOptions(const AnnotationObject &annot)
         arrow2Source->SetCenter(p2[0], p2[1], p2[2]);
     }
 
-    if (! (curOpts == newOpts))
+    // strange, but the 'new' annotation object may not have 'Options' set, happens
+    // with java
+    if (newOpts.GetNumEntries() == curOpts.GetNumEntries() && ! (curOpts == newOpts))
     {
         lineActor->GetProperty()->SetLineWidth(newOpts.GetEntry("width")->AsInt()+1);
         lineType = newOpts.GetEntry("lineType")->AsInt();

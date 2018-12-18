@@ -61,18 +61,22 @@
 
 // Macros that let us access the AnnotationObject and store the fields
 // we care about into the available fields.
+#define HasPreserveOrientation GetOptions().HasEntry("preserveOrientation")
 #define GetPreserveOrientation GetOptions().GetEntry("preserveOrientation")->AsBool
 
 #define GetRotations GetPosition2
 #define SetRotations SetPosition2
 
 // The flag that lets us switch between relative and fixed heights.
+#define HasRelativeHeightMode GetOptions().HasEntry("useRelativeHeight")
 #define GetRelativeHeightMode GetOptions().GetEntry("useRelativeHeight")->AsBool
 
 // Relative scale will scale the text as a percentage of the bbox diagonal
+#define HasRelativeHeight GetOptions().HasEntry("relativeHeight")
 #define GetRelativeHeight GetOptions().GetEntry("relativeHeight")->AsInt
 
 // Fixed height in world coordinates.
+#define HasFixedHeight   GetOptions().HasEntry("fixedHeight")
 #define GetFixedHeight   GetOptions().GetEntry("fixedHeight")->AsDouble
 
 double avtText3DColleague::initialTime = 0.;
@@ -444,9 +448,10 @@ avtText3DColleague::SetOptions(const AnnotationObject &annot)
     //
     // Set the actor's scale
     //
-    if(currentOptions.GetRelativeHeightMode() != annot.GetRelativeHeightMode() ||
+    if((annot.HasRelativeHeightMode &&  annot.HasRelativeHeight && annot.HasFixedHeight) &&
+      (currentOptions.GetRelativeHeightMode() != annot.GetRelativeHeightMode() ||
        currentOptions.GetRelativeHeight() != annot.GetRelativeHeight() ||
-       currentOptions.GetFixedHeight() != annot.GetFixedHeight())
+       currentOptions.GetFixedHeight() != annot.GetFixedHeight()))
     {
         info->useRelativeHeight = annot.GetRelativeHeightMode();
         info->relativeHeight = annot.GetRelativeHeight();
@@ -466,12 +471,15 @@ avtText3DColleague::SetOptions(const AnnotationObject &annot)
     // The flag indicating whether the annotation faces the camera is stored
     // inside the GetFontBold flag in the annotation object.
     //
-    if(currentOptions.GetPreserveOrientation() != annot.GetPreserveOrientation())
+    if (annot.HasPreserveOrientation)
     {
-        if(annot.GetPreserveOrientation())
-            info->textActor->SetCamera(mediator.GetCanvas()->GetActiveCamera());
-        else
-            info->textActor->SetCamera(NULL);
+        if(currentOptions.GetPreserveOrientation() != annot.GetPreserveOrientation())
+        {
+            if(annot.GetPreserveOrientation())
+                info->textActor->SetCamera(mediator.GetCanvas()->GetActiveCamera());
+            else
+                info->textActor->SetCamera(NULL);
+        }
     }
 
     //

@@ -199,7 +199,7 @@ Definition:
     /**
      * Sets the options for the named 2D text annotation object.
      *
-     * @param annotName Name of the text annotation that we want to modify.
+     * @param annotName Name of the 2D text annotation that we want to modify.
      * @param x X location of the lower left corner in the visualization window [0.,1.]
      * @param y Y location of the lower left corner in the visualization window [0.,1.]
      * @param height Height of the annotation [0.,1.]
@@ -243,12 +243,12 @@ Definition:
     /**
      * Sets the options for the named 3D text annotation object.
      *
-     * @param annotName Name of the text annotation that we want to modify.
+     * @param annotName Name of the 3D text annotation that we want to modify.
      * @param x X location of the text
      * @param y Y location of the text
      * @param z Z location of the text
      * @param text Text to be displayed
-     * @param heightMode 0=relative, 1=fixed
+     * @param heightMode 0=fixed, 1=relative
      * @param fixedHeight Height to use when heightMode==0
      * @param relativeHeight Height to use when heightMode==1. Percent of original height [1,100]
      * @param facesCamera Whether the text should face the camera.
@@ -278,10 +278,12 @@ Definition:
             annot.SetText(sArgs);
             annot.SetTextColor(textColor);
             annot.SetUseForegroundForTextColor(useForegroundColor);
-            annot.SetIntAttribute1(relativeHeight);
-            annot.SetDoubleAttribute1(fixedHeight);
-            annot.SetFontItalic(heightMode);
-            annot.SetFontBold(facesCamera);
+            MapNode t3dOpt = new MapNode();
+            t3dOpt.SetValue("relativeHeight", new MapNode(relativeHeight));
+            t3dOpt.SetValue("fixedHeight", new MapNode(fixedHeight));
+            t3dOpt.SetValue("useRelativeHeight", new MapNode(heightMode));
+            t3dOpt.SetValue("preserveOrientation", new MapNode(facesCamera));
+            annot.SetOptions(t3dOpt);
             annot.SetVisible(visible);
         }
     }
@@ -292,7 +294,7 @@ Definition:
     /**
      * Sets the options for the named 2D line annotation object.
      *
-     * @param annotName Name of the text annotation that we want to modify.
+     * @param annotName Name of the 2D line annotation that we want to modify.
      * @param x0 X location of the start point in the visualization window [0.,1.]
      * @param y0 Y location of the start point in the visualization window [0.,1.]
      * @param x1 X location of the end point in the visualization window [0.,1.]
@@ -317,7 +319,73 @@ Definition:
             annot.SetPosition(x0, y0, 0.);
             annot.SetPosition2(x1, y1, 0.);
             annot.SetColor1(color);
-            annot.SetColor2(new ColorAttribute(lineWidth, startArrow, endArrow, 255));
+            MapNode l2dopt = new MapNode();
+            l2dopt.SetValue("width", new MapNode(lineWidth));
+            l2dopt.SetValue("beginArrow", new MapNode(startArrow));
+            l2dopt.SetValue("endArrow", new MapNode(endArrow));
+            annot.SetOptions(l2dopt);
+            annot.SetUseForegroundForTextColor(useForegroundColor);
+            annot.SetVisible(visible);
+        }
+    }
+
+Function: SetLine3DOptions
+Declaration: SetLine3DOptions
+Definition:
+    /**
+     * Sets the options for the named 3D line annotation object.
+     *
+     * @param annotName Name of the 3D line annotation that we want to modify.
+     * @param x0 X location of the start point
+     * @param y0 Y location of the start point
+     * @param z0 Z location of the start point
+     * @param x1 X location of the end point 
+     * @param y1 Y location of the end point
+     * @param z1 Z location of the end point
+     * @param lineWidth Width of the line.
+     * @param lineType  0=Line, 1=Tube
+     * @param tubeQuality  0=Low, 1=Medium, 2=High
+     * @param tubeRadius radius for tube
+     * @param arrow1 True to draw an arrow at the start point
+     * @param arrow1Resolution number of sides for arrow1 [1..20]
+     * @param arrow1Radius radius for arrow1
+     * @param arrow1Height height for arrow1
+     * @param arrow2 True to draw an arrow at the end point
+     * @param arrow2Resolution number of sides for arrow2 [1..20]
+     * @param arrow2Radius radius for arrow2
+     * @param arrow2Height height for arrow2
+     * @param color Color used for the line if we're not using the fg color.
+     * @param useForegroundColor True to use the foreground color as the text color
+     * @param visible Whether the annotation is visible.
+     */
+    public void SetLine3DOptions(String annotName, 
+        double x0, double y0, double z0, double x1, double y1, double z1,
+        int lineWidth, int lineType, int tubeQuality, double tubeRadius,
+        boolean arrow1, int arrow1Resolution, double arrow1Radius, double arrow1Height,
+        boolean arrow2, int arrow2Resolution, double arrow2Radius, double arrow2Height,
+        ColorAttribute color, boolean useForegroundColor, 
+        boolean visible)
+    {
+        AnnotationObject annot = GetAnnotation(annotName);
+        if(annot != null)
+        {
+            annot.SetPosition(x0, y0, 0.);
+            annot.SetPosition2(x1, y1, 0.);
+            MapNode l3dopt = new MapNode();
+            l3dopt.SetValue("width", new MapNode(lineWidth));
+            l3dopt.SetValue("lineType", new MapNode(lineType));
+            l3dopt.SetValue("tubeQuality", new MapNode(tubeQuality));
+            l3dopt.SetValue("tubeRadius", new MapNode(tubeRadius));
+            l3dopt.SetValue("arrow1", new MapNode(arrow1));
+            l3dopt.SetValue("arrow1Resolution", new MapNode(arrow1Resolution));
+            l3dopt.SetValue("arrow1Radius", new MapNode(arrow1Radius));
+            l3dopt.SetValue("arrow1Height", new MapNode(arrow1Height));
+            l3dopt.SetValue("arrow2", new MapNode(arrow2));
+            l3dopt.SetValue("arrow2Resolution", new MapNode(arrow2Resolution));
+            l3dopt.SetValue("arrow2Radius", new MapNode(arrow2Radius));
+            l3dopt.SetValue("arrow2Height", new MapNode(arrow2Height));
+            annot.SetOptions(l3dopt);
+            annot.SetColor1(color);
             annot.SetUseForegroundForTextColor(useForegroundColor);
             annot.SetVisible(visible);
         }
@@ -427,8 +495,9 @@ Definition:
 
             annot.SetPosition(x, y, 0.);
             annot.SetPosition2(scaleX, scaleY, 0.);
-
-            annot.SetIntAttribute2(numTicks);
+            MapNode legOpt = new MapNode();
+            legOpt.SetValue("numTicks", new MapNode(numTicks));
+            annot.SetOptions(legOpt);
 
             annot.SetDoubleAttribute1(fontHeight);
             annot.SetTextColor(textColor);

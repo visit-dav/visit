@@ -20,6 +20,8 @@
     </Function>
     <Function name="SetLine2DOptions" user="true" member="true">
     </Function>
+    <Function name="SetLine3DOptions" user="true" member="true">
+    </Function>
     <Function name="SetImageOptions" user="true" member="true">
     </Function>
     <Function name="SetLegendOptions" user="true" member="true">
