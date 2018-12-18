@@ -1,3 +1,4 @@
+
 /*****************************************************************************
 *
 * Copyright (c) 2000 - 2018, Lawrence Livermore National Security, LLC
@@ -192,9 +193,6 @@ avtRemapFilter::ExecuteData(avtDataRepresentation *in_dr)
         return NULL;
     }
     
-std::cout << "Printing the input grid" << std::endl;   
-PrintData(in_ds);
-    
     
     
     // ------------------------------------- //
@@ -208,6 +206,11 @@ std::cout << "is3D: " << is3D << std::endl;
     int width = atts.GetCellsX();
     int height = atts.GetCellsY();
     
+    //
+    // Setup whatever variables I can assuming the grid is 2D. Then, check if it
+    // is actually 3D. If so, modify parameters and build rg. Otherwise, build
+    // rg with 2D variable values.
+    //
     int nCellsOut = width*height;
     double rCellVolume = (bounds[1] - bounds[0]) * (bounds[3] - bounds[2]) / (nCellsOut);
     vtkRectilinearGrid* rg;
@@ -226,9 +229,6 @@ std::cout << "is3D: " << is3D << std::endl;
 std::cout << "Just generated rectilinear grid. Here it is:" << std::endl;
 rg->Print(std::cout);
     
-return new avtDataRepresentation(rg, 0, "", false);
-    
-    
     // --------------------------- //
     // --- Setup the variables --- //
     // --------------------------- //
@@ -238,11 +238,15 @@ return new avtDataRepresentation(rg, 0, "", false);
     // I will just remove them.
     // TODO: Figure out how to better handle avtOriginalCellNumbers
     in_ds->GetCellData()->RemoveArray("avtOriginalCellNumbers");
+    
+    //
+    // If there are no variables, then just output the mesh.
+    //
     int nVariables = in_ds->GetCellData()->GetNumberOfArrays();
     
     if (nVariables <= 0)
     {
-    return new avtDataRepresentation(rg, 0, "", false);
+        return new avtDataRepresentation(rg, 0, "", false);
     }
     
     vtkDataArray** vars;
@@ -261,13 +265,10 @@ return new avtDataRepresentation(rg, 0, "", false);
     // Determine the variable type from the attributes
     RemapAttributes::VariableTypes varType =
         atts.GetVariableType();
-std::cout << "Variable type: ";
-std::cout << varType << std::endl;
     
-std::cout << "Added blank vars to rg:" << std::endl;
-PrintData(rg);
+//std::cout << "Added blank vars to rg:" << std::endl;
+//PrintData(rg);
      
-
        
     // ------------------------------------------------------- //
     // --- Calculate volumes of each cell in Original Grid --- //
@@ -283,7 +284,7 @@ PrintData(rg);
     
 std::cout << "In_ds after adding volumes" << std::endl;   
 PrintData(in_ds);
-    
+//in_ds->Print(std::cout);
     
     
     // -------------------------------------------------------- //
@@ -291,8 +292,8 @@ PrintData(in_ds);
     // -------------------------------------------------------- //
     
     // CURRENT CODE NEEDS REFACTOR.
-    // We calculate all 4 planes each time, which costs xDim*yDim*4, but we can
-    // precompute and setup a mapping between cells and planes to cost xDim+yDim+2
+    // We calculate all 4 planes each time, which costs xDim*yDim*zDim*6, but we can
+    // precompute and setup a mapping between cells and planes to cost xDim+yDim+zDim+2
     // vtkUnstructuredGrid* allGrids = vtkUnstructuredGrid::New(); 
     //vtkAppendFilter* appender = vtkAppendFilter::New();
 
@@ -317,7 +318,8 @@ double DEBUG_maxDiff = DBL_MIN;
         std::vector<vtkVisItClipper*> clipperArray;      
         std::vector<vtkImplicitBoolean*> funcsArray;
         std::vector<vtkPlane*> planeArray;
-        for (int cdx = 0; cdx < 4; cdx++) { // future will be cdx < 6 for 3D
+        //for (int cdx = 0; cdx < 4; cdx++) { // future will be cdx < 6 for 3D
+        for (int cdx = 0; cdx < 6; cdx++) { // future will be cdx < 6 for 3D
             double origin[3] = {0., 0., 0.}; // future change for 3D
             double normal[3] = {0., 0., 0.}; // future change for 3D
             if (cdx == 0) {
@@ -332,6 +334,12 @@ double DEBUG_maxDiff = DBL_MIN;
             } else if (cdx == 3) {
                 origin[1] = bounds[cdx];
                 normal[1] = 1.0;
+            } else if (cdx == 4) {
+                origin[2] = bounds[cdx];
+                normal[2] = -1.0;
+            } else if (cdx == 5) {
+                origin[2] = bounds[cdx];
+                normal[2] = 1.0;
             }
             vtkPlane* plane = vtkPlane::New();
             plane->SetOrigin(origin);
@@ -361,8 +369,9 @@ double DEBUG_maxDiff = DBL_MIN;
         vtkUnstructuredGrid* ug = vtkUnstructuredGrid::New();
         ug->DeepCopy(last->GetOutput());
         
-//std::cout << "Just finished making the unstructured grid. Here it is:" << std::endl;
-//PrintData(ug);
+std::cout << "Just finished making the unstructured grid. Here it is:" << std::endl;
+PrintData(ug);
+//ug->Print(std::cout);
         
         
         
@@ -592,9 +601,11 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
         switch(cell->GetCellType()) // right now only support Triangle and Quad
         {
             case VTK_TRIANGLE:
+std::cout << "VTK_TRIANGLE" << std::endl;
                 volume = v_tri_area(3, coordinates);
                 break;
             case VTK_QUAD:
+std::cout << "VTK_QUAD" << std::endl;
                 //volume = v_quad_area(3, coordinates);
                 volume = v_quad_area(4, coordinates);
                 // Based on V_QuadMetric, I believe this should be 4.
@@ -606,17 +617,21 @@ std::cout << "VTK_PIXEL" << std::endl;
                 volume = v_quad_area(4, coordinates);
                 break;
             case VTK_VOXEL:
+std::cout << "VTK_VOXEL" << std::endl;
                 Swap3(coordinates, 2, 3);
                 Swap3(coordinates, 6, 7);
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_HEXAHEDRON:
+std::cout << "VTK_HEXAHEDRON" << std::endl;
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_TETRA:
+std::cout << "VTK_TETRA" << std::endl;
                 volume = v_tet_volume(4, coordinates);
                 break;
             case VTK_WEDGE:
+std::cout << "VTK_WEDGE" << std::endl;
                 double tet_coordinates[4][3];
                 volume = 0;
                 for (int i = 0 ; i < 3 ; i++)
@@ -628,6 +643,7 @@ std::cout << "VTK_PIXEL" << std::endl;
                 }
                 break;
             case VTK_PYRAMID:
+std::cout << "VTK_PYRAMID" << std::endl;
                 double one[4][3];
                 double two[4][3];
                 Copy3(coordinates,one[0], 0);
