@@ -261,6 +261,10 @@ avtImageColleague::ShouldBeAddedToRenderer() const
 //    Dave Bremer, Fri Mar  9 16:09:36 PST 2007
 //    Slight change to error reporting message, for files that aren't readable
 //
+//    Kathleen Biagas, Tue Dec 18 10:59:09 PST 2018
+//    Use AllocateScalars instead of SetNumberOfScalarComponents (hasn't worked
+//    since update to vtk-6).
+//
 // ****************************************************************************
 void
 avtImageColleague::SetOptions(const AnnotationObject &annot)
@@ -294,8 +298,8 @@ avtImageColleague::SetOptions(const AnnotationObject &annot)
         if(iData->GetNumberOfScalarComponents() < 4)
         {
                vtkImageData *tmpdata = vtkImageData::New();
-               tmpdata->SetNumberOfScalarComponents(4, tmpdata->GetInformation());
                tmpdata->SetExtent(iData->GetExtent());
+               tmpdata->AllocateScalars(iData->GetScalarType(), 4);
 
                for(int i = 0; i < iData->GetDimensions()[0]; ++i)
                    for(int j = 0; j < iData->GetDimensions()[1]; ++j)
