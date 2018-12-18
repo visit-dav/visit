@@ -2001,7 +2001,10 @@ private:
         }
 
         for (size_t i = 0; i < fields.size(); ++i)
-            fields[i]->AddImports(sysincludes);
+        {
+            if (!(fields[i]->type == "attVector" && fields[i]->GetSubtype() == name))
+                fields[i]->AddImports(sysincludes);
+        }
 
         // Add some includes based on the includes from the XML file
         for(size_t i = 0; i < includes.size(); ++i)
