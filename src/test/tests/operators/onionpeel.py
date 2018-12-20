@@ -109,9 +109,6 @@ def TestUCD():
     ResetView()
     SetViewExtentsType("actual")
     AddOperator("OnionPeel")
-    op = OnionPeelAttributes()
-    op.index = 1
-    SetOperatorOptions(op)
     DrawPlots()
     Test("ops_onionpeel_04")
 
