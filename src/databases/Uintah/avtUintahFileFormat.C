@@ -99,12 +99,7 @@ const double NAN_REPLACE_VAL = 1.0E9;
 // ****************************************************************************
 avtUintahFileFormat::avtUintahFileFormat(const char *filename,
                                          DBOptionsAttributes* attrs) :
-  avtMTMDFileFormat(filename),
-  loadExtraElements(1),
-  dataVariesOverTime(true),
-  forceMeshReload(true),
-  archive(NULL),
-  grid(NULL)
+  avtMTMDFileFormat(filename)
 {
   // int t1 = visitTimer->StartTimer();
 

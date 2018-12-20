@@ -58,7 +58,7 @@ GetUintahReadOptions(void)
     extraOpts.push_back(UINTAH_LOAD_EXTRA_CELLS);   // 1
     extraOpts.push_back(UINTAH_LOAD_EXTRA_PATCHES); // 2
 
-    rv->SetEnum(       UINTAH_LOAD_EXTRA, 1);
+    rv->SetEnum(       UINTAH_LOAD_EXTRA, 0);
     rv->SetEnumStrings(UINTAH_LOAD_EXTRA, extraOpts);
 
     rv->SetBool(UINTAH_DATA_VARIES_OVER_TIME, true);

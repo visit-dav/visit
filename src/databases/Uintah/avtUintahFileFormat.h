@@ -138,48 +138,52 @@ protected:
                                     std::string meshName, avtCentering cent );
   
   // Data members
-  int  loadExtraElements;
-  bool dataVariesOverTime;
-  int currTimeStep;
-  bool forceMeshReload;
+  int  loadExtraElements  {0};
+  bool dataVariesOverTime {true};
+  bool forceMeshReload    {true};
+
+  int currTimeStep        {0};
 
   // VisIt meshes (see https://visitbugs.ornl.gov/issues/52)
   std::map<std::string, void_ref_ptr> mesh_domains;
   std::map<std::string, void_ref_ptr> mesh_boundaries;
 
   // Data that is not dependent on time
-  DataArchive *archive;
-  unsigned int nProcs;
+  DataArchive *archive {nullptr};
+
+  unsigned int nProcs {0};
   std::vector<double> cycleTimes;
 
   // Data that is dependent on time
-  GridP *grid;
-  TimeStepInfo *stepInfo;
+  GridP *grid            {nullptr};
+  TimeStepInfo *stepInfo {nullptr};
         
-  // Interface to the uda2vis library
-  void  * libHandle;
+  // Symbols in the archive interface library
+  void * libHandle {nullptr};
 
-  DataArchive*     (*openDataArchive)(const std::string&);
-  void             (*closeDataArchive)(DataArchive*);
+  DataArchive*        (*openDataArchive)(const std::string&) {nullptr};
+  void                (*closeDataArchive)(DataArchive*);
 
-  GridP*           (*getGrid)(DataArchive*, int);
-  void             (*releaseGrid)(GridP*);
+  GridP*              (*getGrid)(DataArchive*, int) {nullptr};
+  void                (*releaseGrid)(GridP*) {nullptr};
 
-  unsigned int     (*queryProcessors)(DataArchive*);
-  std::vector<double>   (*getCycleTimes)(DataArchive*);
-  TimeStepInfo*    (*getTimeStepInfo)(DataArchive*, GridP*, int, int);
+  unsigned int        (*queryProcessors)(DataArchive*) {nullptr};
+  std::vector<double> (*getCycleTimes)(DataArchive*) {nullptr};
+  TimeStepInfo*       (*getTimeStepInfo)(DataArchive*, GridP*,
+                                         int, int) {nullptr};
 
-  GridDataRaw*     (*getGridData)(DataArchive*, GridP*, int, int,
-                                  std::string, int, int, int[3], int[3], int);
+  bool                (*variableExists)(DataArchive*, std::string) {nullptr};
 
-  bool             (*variableExists)(DataArchive*, std::string);
+  GridDataRaw*        (*getGridData)(DataArchive*, GridP*, int, int,
+                                     std::string, int, int,
+                                     int[3], int[3], int) {nullptr};
 
-  unsigned int     (*getNumberParticles)(DataArchive*, GridP*, int, int,
-                                         int, int);
+  unsigned int        (*getNumberParticles)(DataArchive*, GridP*, int, int,
+                                            int, int) {nullptr};
 
-  ParticleDataRaw* (*getParticleData)(DataArchive*, GridP*, int, int,
-                                      std::string, int, int);
+  ParticleDataRaw*    (*getParticleData)(DataArchive*, GridP*, int, int,
+                                         std::string, int, int) {nullptr};
 
-  std::string      (*getParticlePositionName)(DataArchive*);
+  std::string         (*getParticlePositionName)(DataArchive*) {nullptr};
 };
 #endif
