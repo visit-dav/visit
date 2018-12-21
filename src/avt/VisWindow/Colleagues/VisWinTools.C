@@ -96,10 +96,10 @@ public:
 
     // Description:
     // Draw the actor as per the vtkProp superclass' API.
-    virtual int RenderOpaqueGeometry(vtkViewport *) { return 0; }
-    virtual int RenderTranslucentPolygonalGeometry(vtkViewport *) { return 0; }
-    virtual int HasTranslucentPolygonalGeometry() { return 0; }
-    virtual int RenderOverlay(vtkViewport *); 
+    virtual int RenderOpaqueGeometry(vtkViewport *) override { return 0; }
+    virtual int RenderTranslucentPolygonalGeometry(vtkViewport *) override { return 0; }
+    virtual int HasTranslucentPolygonalGeometry() override { return 0; }
+    virtual int RenderOverlay(vtkViewport *) override;
 
     void SetToolPointer(VisitInteractiveTool **t);
     void SetNumTools(int n);

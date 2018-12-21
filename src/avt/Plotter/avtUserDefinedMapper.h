@@ -143,7 +143,7 @@ class PLOTTER_API vtkUserDefinedMapperBridge : public vtkDataSetMapper
   
     void                     SetRenderer(avtCustomRenderer_p);
   
-    virtual void             Render(vtkRenderer *ren, vtkActor *a);
+    virtual void             Render(vtkRenderer *ren, vtkActor *a) override;
 
   protected:
                              vtkUserDefinedMapperBridge();
@@ -157,5 +157,3 @@ class PLOTTER_API vtkUserDefinedMapperBridge : public vtkDataSetMapper
 
 
 #endif
-
-

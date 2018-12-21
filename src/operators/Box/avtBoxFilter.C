@@ -72,7 +72,7 @@ class vtkBoxFilter : public vtkUnstructuredGridAlgorithm
 {
 public:
   vtkTypeMacro(vtkBoxFilter,vtkUnstructuredGridAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkBoxFilter *New();
 
@@ -108,8 +108,8 @@ protected:
   // Usual data generation method
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
-  virtual int FillInputPortInformation(int port, vtkInformation *info);
+                          vtkInformationVector *) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   float MinX, MaxX, MinY, MaxY, MinZ, MaxZ;
   int   AllOfCell;

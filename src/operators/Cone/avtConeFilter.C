@@ -94,7 +94,7 @@ class vtkPolarTransformFilter : public vtkPolyDataAlgorithm
 {
 public:
   vtkTypeMacro(vtkPolarTransformFilter,vtkPolyDataAlgorithm);
-  void PrintSelf(ostream& os, vtkIndent indent);
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
   static vtkPolarTransformFilter *New();
 
@@ -104,7 +104,7 @@ protected:
 
   virtual int RequestData(vtkInformation *,
                           vtkInformationVector **,
-                          vtkInformationVector *);
+                          vtkInformationVector *) override;
 
 private:
   vtkPolarTransformFilter(const vtkPolarTransformFilter&);  //Not implemented.

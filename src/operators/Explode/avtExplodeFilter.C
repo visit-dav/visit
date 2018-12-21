@@ -1386,7 +1386,7 @@ avtExplodeFilter::Execute(void)
         sprintf(expected, "number of labels to be >= "
             "number of leaves");
         sprintf(recieved, "Num labels: %d  Num leaves: %d  ", 
-            matLabels.size(), nLeaves);
+                (int) matLabels.size(), nLeaves);
         EXCEPTION2(UnexpectedValueException, expected, recieved);
         SetOutputDataTree(materialTree); 
         return;

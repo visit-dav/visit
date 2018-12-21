@@ -95,7 +95,7 @@ T getCellMin(vtkIdType *pids, vtkIdType nPids, const T *px)
 template <typename T>
 T getCellMax(vtkIdType *pids, vtkIdType nPids, const T *px)
 {
-  T mx = -std::numeric_limits<T>::max();
+  T mx = (T) -std::numeric_limits<T>::max();
   for (vtkIdType i = 0; i < nPids; ++i)
     {
     vtkIdType ii = pids[i];
