@@ -165,6 +165,10 @@ class JobSubmitter_bsub_LLNL(JobSubmitter):
 #   Eric Brugger, Tue Dec 18 14:32:09 PST 2018
 #   I added czvnc and rzvnc to the list of toss3 machines.
 #
+#   Eric Brugger, Fri Dec 21 09:04:20 PST 2018
+#   I preloaded the appropriate mesa libraries on toss3 systems for the
+#   viewer running with a window so that VisIt would work with VNC displays.
+#
 ###############################################################################
 
 class LLNLLauncher(MainLauncher):
@@ -252,6 +256,24 @@ class LLNLLauncher(MainLauncher):
             mpi_ld_library_paths = ["/usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.3/lib", "/usr/tce/packages/intel/intel-16.0.3/lib/intel64"]
             SETENV("LD_LIBRARY_PATH", self.joinpaths(mpi_ld_library_paths))
             self.visitarch = "linux-x86_64-toss3"
+            # Preload the mesa libraries so that it works with VNC.
+            # We are detecting running on a VNC display by looking for
+            # a blank OpenGL vendor string from glxinfo.
+            vnc = 0
+            glxinfo = subprocess.Popen(('glxinfo'), stdout=subprocess.PIPE)
+            output = glxinfo.communicate()[0]
+            for line in output.split('\n'):
+                if "OpenGL vendor string:" in line:
+                    if line.split(':')[1] == " ":
+                        vnc = 1
+            if self.generalArgs.exe_name == "viewer" and \
+                self.generalArgs.nowin == 0 and vnc == 1:
+                mesa_libs = ["/opt/mesa/17.3/lib/libGL.so",
+                             "/opt/mesa/17.3/lib/libGLESv1_CM.so",
+                             "/opt/mesa/17.3/lib/libGLESv2.so",
+                             "/opt/mesa/17.3/lib/libOSMesa.so",
+                             "/opt/mesa/17.3/lib/libglapi.so"]
+                SETENV("LD_PRELOAD", self.joinpaths(mesa_libs))
 
     #
     # Override the JobSubmitterFactory method so the custom job submitter can
