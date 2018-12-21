@@ -161,6 +161,7 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 //                     rectilinear grid are only generated once.
 //                 (-) How to determine intrinsic and extrinsic arrays?
 //                 (-) How to handle avtOriginalCellNumbers?
+//                         Resample might already have this.
 //                 (-) How to handle ghost zones?
 //                 (-) Make it work to support vector data.
 //                 (-) Apply remapping to PointData as well.
@@ -175,6 +176,19 @@ avtRemapFilter::Equivalent(const AttributeGroup *a)
 avtDataRepresentation *
 avtRemapFilter::ExecuteData(avtDataRepresentation *in_dr)
 {
+
+
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TRIANGLE",   0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_QUAD",       0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PIXEL",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_VOXEL",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_HEXAHEDRON", 0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_TETRA",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_WEDGE",      0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("VTK_PYRAMID",    0));
+DEBUG_CellTypeList.insert(std::pair<std::string, int>("unknown",        0));
+// --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
 
     // ----------------------------------------------------------- //
     // --- Convert the avtDataRepresentation into a vtkDataSet --- //
@@ -218,14 +232,14 @@ std::cout << "is3D: " << is3D << std::endl;
     {
         int depth = atts.GetCellsZ();
         nCellsOut *= depth;
-        rCellVolume *= (bounds[5] - bounds[4]);
+        rCellVolume *= (bounds[5] - bounds[4])/depth;
         rg = CreateGrid(bounds, width, height, depth, 0, width, 0, height, 0, depth);
     }
     else
     {
         rg = CreateGrid(bounds, width, height, 0, width, 0, height);
     }
-
+std::cout << "rCellVolume: " << rCellVolume << std::endl;
 std::cout << "Just generated rectilinear grid. Here it is:" << std::endl;
 rg->Print(std::cout);
     
@@ -246,6 +260,7 @@ rg->Print(std::cout);
     
     if (nVariables <= 0)
     {
+std::cout << "Number of variables is 0, so just outputting mesh " << std::endl;
         return new avtDataRepresentation(rg, 0, "", false);
     }
     
@@ -318,8 +333,13 @@ double DEBUG_maxDiff = DBL_MIN;
         std::vector<vtkVisItClipper*> clipperArray;      
         std::vector<vtkImplicitBoolean*> funcsArray;
         std::vector<vtkPlane*> planeArray;
-        //for (int cdx = 0; cdx < 4; cdx++) { // future will be cdx < 6 for 3D
         for (int cdx = 0; cdx < 6; cdx++) { // future will be cdx < 6 for 3D
+
+            if (cdx == 4 && !is3D) // Stop if only 2D
+            {
+                break;
+            }
+        
             double origin[3] = {0., 0., 0.}; // future change for 3D
             double normal[3] = {0., 0., 0.}; // future change for 3D
             if (cdx == 0) {
@@ -369,8 +389,8 @@ double DEBUG_maxDiff = DBL_MIN;
         vtkUnstructuredGrid* ug = vtkUnstructuredGrid::New();
         ug->DeepCopy(last->GetOutput());
         
-std::cout << "Just finished making the unstructured grid. Here it is:" << std::endl;
-PrintData(ug);
+//std::cout << "Just finished making the unstructured grid. Here it is:" << std::endl;
+//PrintData(ug);
 //ug->Print(std::cout);
         
         
@@ -393,6 +413,7 @@ PrintData(ug);
         {
             double diff = std::abs(DEBUG_rCellVolumeTEST - rCellVolume);
             DEBUG_maxDiff = diff > DEBUG_maxDiff ? diff : DEBUG_maxDiff;
+            std::cout << "Volume from subcells: " << DEBUG_rCellVolumeTEST << std::endl;
         }
 // --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG --- DEBUG ---- //
         
@@ -510,6 +531,16 @@ PrintData(rg);
             
 std::cout << "Created out_dr:" << std::endl;
 PrintData(out_dr);
+
+std::cout << "Types and numbers of cells in sub meshes" << std::endl;
+for (std::map<std::string,int>::const_iterator iter = DEBUG_CellTypeList.begin();
+        iter != DEBUG_CellTypeList.end(); ++iter)
+{
+    if (iter->second > 0)
+    {
+        std::cout << iter->first << ": " << iter->second << std::endl;
+    }
+}
             
     // --- Clean up --- //
     avtRemapOriginalVolume->Delete();
@@ -601,37 +632,37 @@ avtRemapFilter::CalculateCellVolumes(vtkDataSet* in_ds, const char* name)
         switch(cell->GetCellType()) // right now only support Triangle and Quad
         {
             case VTK_TRIANGLE:
-std::cout << "VTK_TRIANGLE" << std::endl;
+DEBUG_CellTypeList["VTK_TRIANGLE"]++;
                 volume = v_tri_area(3, coordinates);
                 break;
             case VTK_QUAD:
-std::cout << "VTK_QUAD" << std::endl;
+DEBUG_CellTypeList["VTK_QUAD"]++;
                 //volume = v_quad_area(3, coordinates);
                 volume = v_quad_area(4, coordinates);
                 // Based on V_QuadMetric, I believe this should be 4.
                 // Should run tests and see if there is a change in the output
                 break;
             case VTK_PIXEL:
-std::cout << "VTK_PIXEL" << std::endl;
+DEBUG_CellTypeList["VTK_PIXEL"]++;
                 Swap3(coordinates, 2, 3);
                 volume = v_quad_area(4, coordinates);
                 break;
             case VTK_VOXEL:
-std::cout << "VTK_VOXEL" << std::endl;
+DEBUG_CellTypeList["VTK_VOXEL"]++;
                 Swap3(coordinates, 2, 3);
                 Swap3(coordinates, 6, 7);
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_HEXAHEDRON:
-std::cout << "VTK_HEXAHEDRON" << std::endl;
+DEBUG_CellTypeList["VTK_HEXAHEDRON"]++;
                 volume = v_hex_volume(8, coordinates);
                 break;
             case VTK_TETRA:
-std::cout << "VTK_TETRA" << std::endl;
+DEBUG_CellTypeList["VTK_TETRA"]++;
                 volume = v_tet_volume(4, coordinates);
                 break;
             case VTK_WEDGE:
-std::cout << "VTK_WEDGE" << std::endl;
+DEBUG_CellTypeList["VTK_WEDGE"]++;
                 double tet_coordinates[4][3];
                 volume = 0;
                 for (int i = 0 ; i < 3 ; i++)
@@ -643,7 +674,7 @@ std::cout << "VTK_WEDGE" << std::endl;
                 }
                 break;
             case VTK_PYRAMID:
-std::cout << "VTK_PYRAMID" << std::endl;
+DEBUG_CellTypeList["VTK_PYRAMID"]++;
                 double one[4][3];
                 double two[4][3];
                 Copy3(coordinates,one[0], 0);
@@ -657,6 +688,7 @@ std::cout << "VTK_PYRAMID" << std::endl;
                 volume = v_tet_volume(4,one) + v_tet_volume(4, two);
                 break;
             default:
+DEBUG_CellTypeList["unknown"]++;
                 std::cout << "Cannot calculate volume for cell of type: "
                           << cell->GetCellType() << std::endl
                           << "Scalars won't be remapped." << std::endl;

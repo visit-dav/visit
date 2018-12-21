@@ -668,8 +668,6 @@ RemapAttributes::SetUseExtents(bool useExtents_)
 void
 RemapAttributes::SetStartX(double startX_)
 {
-    SetUseExtents(false);
-
     startX = startX_;
     Select(ID_startX, (void *)&startX);
 }
@@ -677,8 +675,6 @@ RemapAttributes::SetStartX(double startX_)
 void
 RemapAttributes::SetEndX(double endX_)
 {
-    SetUseExtents(false);
-
     endX = endX_;
     Select(ID_endX, (void *)&endX);
 }
@@ -693,8 +689,6 @@ RemapAttributes::SetCellsX(int cellsX_)
 void
 RemapAttributes::SetStartY(double startY_)
 {
-    SetUseExtents(false);
-
     startY = startY_;
     Select(ID_startY, (void *)&startY);
 }
@@ -702,8 +696,6 @@ RemapAttributes::SetStartY(double startY_)
 void
 RemapAttributes::SetEndY(double endY_)
 {
-    SetUseExtents(false);
-
     endY = endY_;
     Select(ID_endY, (void *)&endY);
 }
@@ -725,8 +717,6 @@ RemapAttributes::SetIs3D(bool is3D_)
 void
 RemapAttributes::SetStartZ(double startZ_)
 {
-    SetUseExtents(false);
-
     startZ = startZ_;
     Select(ID_startZ, (void *)&startZ);
 }
@@ -734,8 +724,6 @@ RemapAttributes::SetStartZ(double startZ_)
 void
 RemapAttributes::SetEndZ(double endZ_)
 {
-    SetUseExtents(false);
-
     endZ = endZ_;
     Select(ID_endZ, (void *)&endZ);
 }

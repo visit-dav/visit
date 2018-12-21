@@ -99,6 +99,7 @@ class avtRemapFilter : public avtPluginDataTreeIterator
     void PrintData(avtDataRepresentation*);
     void PrintData(vtkDataSet*);
     void PrintData(vtkDataArray*);
+    std::map<std::string, int> DEBUG_CellTypeList;
   
 };
 
