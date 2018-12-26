@@ -5,7 +5,7 @@ Installing and Starting VisIt_
 
 VisIt_ runs on the following platforms:
 
-* Linux (including Ubuntu, RedHat, SUSE, CHAOS)
+* Linux (including Ubuntu, RedHat, SUSE, TOSS)
 * Mac OSX
 * Microsoft Windows
 
@@ -54,16 +54,16 @@ for. The platform argument can be one of the following: linux, linux-x86_64,
 darwin. The **directory** argument specifies the directory to install VisIt_
 into. If the specified directory does not exist then VisIt_ will create it.
 
-For example, to install an x86_64 version of VisIt_ 2.13.0, use:
+For example, to install an x86_64 version of VisIt_ 3.0.0, use:
 
 .. code:: bash
   
-  visit-install 2.13.0 linux-x86_64 /usr/local/visit
+  visit-install 3.0.0 linux-x86_64 /usr/local/visit
   
 
-This command will install the 2.13.0 version of VisIt_ into the 
+This command will install the 3.0.0 version of VisIt_ into the 
 ``/usr/local/visit`` directory. Note that when you enter the above command,
-the file ``visit2_13_0_linux-x86_64.tar.gz`` must be present in the current
+the file ``visit3_0_0.linux-x86_64.tar.gz`` must be present in the current
 working directory.
 
 The ``visit-install`` script will prompt you to choose a network configuration.

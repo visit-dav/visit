@@ -3,7 +3,7 @@
 The Main Window
 ---------------
 
-VisIt_'s **Main Window**, shown in :numref:`Figure %s <Intro-MainWindow>`,
+VisIt_'s **Main** window, shown in :numref:`Figure %s <Intro-MainWindow>`,
 contains three main areas: the file area, the plot area and the notepad area.
 The file area contains controls for working with sources and selecting the
 current time state. The plot area contains controls for creating and modifying
@@ -45,7 +45,7 @@ posted to the notepad area.
 Using the main menu
 ~~~~~~~~~~~~~~~~~~~
 
-VisIt_'s **Main** Menu contains seven menu options that allow you to access
+VisIt_'s **Main** menu contains seven menu options that allow you to access
 many of VisIt_'s most useful features. Each menu option displays a submenu
 when you click it. The options in the submenus perform an action such as
 saving an image. Menu options that contain a name followed by ellipsis open
@@ -80,12 +80,12 @@ Viewing status messages
 
 VisIt_ informs the user of its progress as it creates a visualization. As
 work is completed, status messages are displayed in the bottom of the
-**Main Window** in the status bar. In addition to status messages, VisIt_
+**Main** window in the status bar. In addition to status messages, VisIt_
 sometimes displays error or warning messages. These messages are displayed
-in the **Output Window**, shown in :numref:`Figure %s <Intro-OutputIndicator>`.
-To open the **Output Window**, click the **Output Indicator** in the
-lower, right hand corner of the **Main Window**. When the **Output Window**
-contains an unread message, the **Output Indicator** changes colors from
+in the **Output** window, shown in :numref:`Figure %s <Intro-OutputIndicator>`.
+To open the **Output** window, click the **Output** indicator in the
+lower, right hand corner of the **Main** window. When the **Output** window
+contains an unread message, the **Output** indicator changes colors from
 blue to red.
 
 .. image:: images/Intro-OutputWindow.png
@@ -110,7 +110,7 @@ plots to be regenerated each time settings change and for the database sizes
 for which VisIt_ is designed, auto apply may not always make sense. If you
 prefer to have new settings apply immediately, you can enable auto apply by
 clicking on the **Auto apply** check box in the upper, right hand corner of
-the **Main Window**. If **Auto apply** is enabled, you do not have to
+the **Main** window. If **Auto apply** is enabled, you do not have to
 click the **Apply** button to apply changes.
 
 .. image:: images/Intro-ApplyButton.png

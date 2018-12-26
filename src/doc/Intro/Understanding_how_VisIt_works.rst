@@ -51,7 +51,7 @@ Plots
 """""
 
 Plots take variables and generate a visual representation of the variable.
-Some examples include the Mesh plot, which displays the mesh lines of
+Some examples include the Mesh plot, which displays the mesh lines of the
 mesh, the Pseudocolor plot, which maps scalar variables to color, and
 the Vector plot, which displays vector glyphs indicating the direction
 and magnitude of a vector field. Plots work on specific types of variables
@@ -146,8 +146,8 @@ computer or cluster where the data files are generated.
 
 The viewer supports up to 16 visualization windows. Each window is independent
 of the others. VisIt_ uses an active window concept; all changes made in
-**Main Window** or one of its popup windows apply to the currently active
-visualization window. The **Main Window** and visualization window are shown
+**Main** window or one of its popup windows apply to the currently active
+visualization window. The **Main** window and visualization window are shown
 in :numref:`Figure %s <Intro-VisItGUI>`.
 
 .. _Intro-VisItGUI:
@@ -160,7 +160,7 @@ Servers are launched on each machine where data to be visualized is located.
 Servers are launched on demand, typically when a database is opened. If there
 is more than one host profile on a system, VisIt_ will pop up a window asking
 which profile to use and additional properties such as the number of processors
-and nodes to use. The **Host Profiles Window** is used to specify properties
+and nodes to use. The **Host Profiles** window is used to specify properties
 about the servers for different machines, such as the number of processors to
 use by default when running the server. The status of a compute engine is
-displayed in the **Compute Engines Window**.
+displayed in the **Compute Engines** window.
