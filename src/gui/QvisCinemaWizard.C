@@ -600,7 +600,7 @@ QvisCinemaWizard::validateCurrentPage()
                  cinemaAtts->GetHeight() > 1;
         if(valid) // now check if filename is writeable
         {
-            if(!QFileInfo(cinemaAtts->GetFileName().c_str()).isWritable())
+            if(!QFileInfo(QFileInfo(cinemaAtts->GetFileName().c_str()).absolutePath()).isWritable())
             {
                 Error(tr("File location is not writable."));
                 valid = false;
