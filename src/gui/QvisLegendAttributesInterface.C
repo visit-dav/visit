@@ -145,7 +145,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     connect(widthSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(widthChanged(int)));
     pLayout->addWidget(widthSpinBox, row, 1);
-    pLayout->addWidget(new QLabel(tr("X-scale"), this), row, 0);
+    pLayout->addWidget(new QLabel(tr("X scale"), this), row, 0);
 
     heightSpinBox = new QSpinBox(this);
     heightSpinBox->setKeyboardTracking(false);
@@ -156,7 +156,7 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
     connect(heightSpinBox, SIGNAL(valueChanged(int)),
             this, SLOT(heightChanged(int)));
     pLayout->addWidget(heightSpinBox, row, 3);
-    pLayout->addWidget(new QLabel(tr("Y-scale"), this), row, 2);
+    pLayout->addWidget(new QLabel(tr("Y scale"), this), row, 2);
     ++row;
 
     // Add controls to set the orientation
@@ -252,10 +252,10 @@ QvisLegendAttributesInterface::QvisLegendAttributesInterface(QWidget *parent) :
         SLOT(deleteSelectedRow()));
     suppliedLabelsLayout->addWidget(deleteRowButton, 1, 2);
 
-    tabs->addTab(tickMarks, tr("Tick Marks"));
+    tabs->addTab(tickMarks, tr("Tick marks"));
 
     row = 0;   
-    // Tick Marks tab
+    // Tick marks tab
     QWidget *appearance = new QWidget(tabs);
     QVBoxLayout *vLayout2 = new QVBoxLayout(appearance);
     vLayout2->setMargin(10);

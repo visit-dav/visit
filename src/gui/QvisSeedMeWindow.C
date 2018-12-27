@@ -208,11 +208,11 @@ QvisSeedMeWindow::CreateWindowContents()
     topLayout->addWidget(submitButton);
     connect(submitButton, SIGNAL (clicked()), this, SLOT (apply()));
 
-    resetFormButton = new QPushButton("Reset Form");
+    resetFormButton = new QPushButton("Reset form");
     topLayout->addWidget(resetFormButton);
     connect(resetFormButton, SIGNAL (clicked()), this, SLOT (ResetForm()));
 
-    clearLogButton = new QPushButton("Clear Log");
+    clearLogButton = new QPushButton("Clear log");
     topLayout->addWidget(clearLogButton);
     connect(clearLogButton, SIGNAL (clicked()), this, SLOT (ClearLog()));
 }

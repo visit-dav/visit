@@ -75,7 +75,7 @@ public:
     QvisText3DInterface(QWidget *parent);
     virtual ~QvisText3DInterface();
 
-    virtual QString GetName() const { return "3D Text"; }
+    virtual QString GetName() const { return "3D text"; }
     virtual QString GetMenuText(const AnnotationObject &) const;
 
     virtual void GetCurrentValues(int which);

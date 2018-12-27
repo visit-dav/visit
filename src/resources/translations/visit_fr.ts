@@ -1136,7 +1136,7 @@ La valeur précédente a été rétablie.</translation>
         <translation>Répertoire intelligent</translation>
     </message>
     <message>
-        <source>Path Expansion</source>
+        <source>Path expansion</source>
         <translation>Nom</translation>
     </message>
     <message>
@@ -1152,15 +1152,11 @@ La valeur précédente a été rétablie.</translation>
         <translation>Afficher les axes</translation>
     </message>
     <message>
-        <source>General 2D</source>
-        <translation>Général 2D</translation>
-    </message>
-    <message>
-        <source>X-Axis</source>
+        <source>X axis</source>
         <translation>Abscisses</translation>
     </message>
     <message>
-        <source>Y-Axis</source>
+        <source>Y axis</source>
         <translation>Ordonnées</translation>
     </message>
     <message>
@@ -1224,11 +1220,7 @@ La valeur précédente a été rétablie.</translation>
         <translation>Afficher la boîte</translation>
     </message>
     <message>
-        <source>General 3D</source>
-        <translation>Général 3D</translation>
-    </message>
-    <message>
-        <source>Z-Axis</source>
+        <source>Z axis</source>
         <translation>Profondeur</translation>
     </message>
     <message>
@@ -1377,10 +1369,6 @@ La valeur précédente a été rétablie.</translation>
         <translation>Tableaux</translation>
     </message>
     <message>
-        <source>General Array</source>
-        <translation>Général</translation>
-    </message>
-    <message>
         <source>Axes</source>
         <translation>Axes</translation>
     </message>
@@ -1447,7 +1435,7 @@ La valeur précédente a été rétablie.</translation>
         <translation>Titre personnalisé</translation>
     </message>
     <message>
-        <source>Custom Units</source>
+        <source>Custom units</source>
         <translation>Unité personnalisée</translation>
     </message>
     <message>
@@ -1678,11 +1666,11 @@ La valeur précédente a été rétablie.</translation>
 <context>
     <name>QvisCMFEWizard</name>
     <message>
-        <source>Data-Level Comparison Setup</source>
+        <source>Data level comparison setup</source>
         <translation>Configuration de la comparaison des données de niveau</translation>
     </message>
     <message>
-        <source>Target Database:</source>
+        <source>Target database:</source>
         <translation>Base de données destinataire :</translation>
     </message>
     <message>
@@ -1690,7 +1678,7 @@ La valeur précédente a été rétablie.</translation>
         <translation>Base de données :</translation>
     </message>
     <message>
-        <source>Data-Level Comparisons</source>
+        <source>Data level comparisons</source>
         <translation>Comparaisons des niveau de données</translation>
     </message>
     <message>
@@ -1710,19 +1698,19 @@ La valeur précédente a été rétablie.</translation>
         <translation>Quel maillage utiliser comme évaluation de destination ? Quel est le champ de source désiré ?</translation>
     </message>
     <message>
-        <source>Target Mesh:</source>
+        <source>Target mesh:</source>
         <translation>Maillage cible :</translation>
     </message>
     <message>
-        <source>Donor Database:</source>
+        <source>Donor database:</source>
         <translation>Base de données sources :</translation>
     </message>
     <message>
-        <source>Donor Field:</source>
+        <source>Donor field:</source>
         <translation>Champ source :</translation>
     </message>
     <message>
-        <source>Specify Donor Time Slice</source>
+        <source>Specify donor time slice</source>
         <translation>Spécifier l&apos;intervalle de temps </translation>
     </message>
     <message>
@@ -1730,7 +1718,7 @@ La valeur précédente a été rétablie.</translation>
         <translation>Quel intervalle de temps pour extracter les données ?</translation>
     </message>
     <message>
-        <source>&lt;u&gt;Absolute Versus Relative Time&lt;/u&gt;</source>
+        <source>&lt;u&gt;Absolute versus relative time&lt;/u&gt;</source>
         <translation>&lt;u&gt;Absolu Versus temps Relatif&lt;/u&gt;</translation>
     </message>
     <message>
@@ -1748,7 +1736,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
 </translation>
     </message>
     <message>
-        <source>&lt;u&gt;Time Type and Value&lt;/u&gt;</source>
+        <source>&lt;u&gt;Time type and value&lt;/u&gt;</source>
         <translation>&lt;u&gt;Valeur et type de temps&lt;/u&gt;</translation>
     </message>
     <message>
@@ -1784,7 +1772,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>#2: &quot;L&apos;indice de temps&quot; avec &quot;10.5&quot; et temps relatif retournera l&apos;intervalle de temps immédiatement avant le temps actuel.</translation>
     </message>
     <message>
-        <source>Specify Evaluation Scheme</source>
+        <source>Specify evaluation scheme</source>
         <translation>Spécifier la grille d&apos;évaluation</translation>
     </message>
     <message>
@@ -1792,7 +1780,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Voulez vous utiliser l&apos;indexation ou l&apos;interpolation ? Comment allez vous gérer les régions de non chevauchement ? </translation>
     </message>
     <message>
-        <source>&lt;u&gt;Evaluation Scheme&lt;/u&gt;</source>
+        <source>&lt;u&gt;Evaluation scheme&lt;/u&gt;</source>
         <translation>&lt;u&gt;Grille d&apos;évaluation&lt;/u&gt;</translation>
     </message>
     <message>
@@ -1832,7 +1820,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>efficace, mais c&apos;est robuste et ça fonctionne sur les mailles non-congruentes.</translation>
     </message>
     <message>
-        <source>&lt;u&gt;Handling For Non-Overlapping Regions&lt;/u&gt;</source>
+        <source>&lt;u&gt;Handling for non-overlapping regions&lt;/u&gt;</source>
         <translation>&lt;u&gt;Gestion des régions non chevauchantes&lt;/u&gt;</translation>
     </message>
     <message>
@@ -1844,7 +1832,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Utiliser une variable</translation>
     </message>
     <message>
-        <source>Setting Up The Expression</source>
+        <source>Setting up the expression</source>
         <translation>Configurer l&apos;expression</translation>
     </message>
     <message>
@@ -1852,7 +1840,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Comment voulez-vous utiliser votre expression CMFE ? Quelle est son nom ?</translation>
     </message>
     <message>
-        <source>Name of Expression</source>
+        <source>Name of expression</source>
         <translation>Nom de l&apos;expression </translation>
     </message>
     <message>
@@ -1880,7 +1868,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>&lt;Sélectionner&gt;</translation>
     </message>
     <message>
-        <source>Select Target Database</source>
+        <source>Select target database</source>
         <translation>Sélectionner la base de données cible</translation>
     </message>
     <message>
@@ -1896,15 +1884,15 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Entre mailles dans deux base de données séparées ou plus </translation>
     </message>
     <message>
-        <source>Add Donor</source>
+        <source>Add donor</source>
         <translation>Ajouter une source</translation>
     </message>
     <message>
-        <source>Delete Donor</source>
+        <source>Delete donor</source>
         <translation>Effacer la source</translation>
     </message>
     <message>
-        <source>Delete All Donors</source>
+        <source>Delete all donors</source>
         <translation>Effacer toutes les sources</translation>
     </message>
     <message>
@@ -3391,7 +3379,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Moteur :</translation>
     </message>
     <message>
-        <source>Engine Information</source>
+        <source>Engine information</source>
         <translation>Information motrice</translation>
     </message>
     <message>
@@ -3565,7 +3553,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Maillage</translation>
     </message>
     <message>
-        <source>Mesh Quality</source>
+        <source>Mesh quality</source>
         <translation>Qualité du maillage</translation>
     </message>
     <message>
@@ -3573,7 +3561,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Comparaison</translation>
     </message>
     <message>
-        <source>Image Processing</source>
+        <source>Image processing</source>
         <translation>Traitement d&apos;image</translation>
     </message>
     <message>
@@ -3597,7 +3585,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Logique</translation>
     </message>
     <message>
-        <source>Expression List</source>
+        <source>Expression list</source>
         <translation>Liste d&apos;expressions</translation>
     </message>
     <message>
@@ -3625,27 +3613,27 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Type</translation>
     </message>
     <message>
-        <source>Scalar Mesh Variable</source>
+        <source>Scalar mesh variable</source>
         <translation>Variable scalaire</translation>
     </message>
     <message>
-        <source>Vector Mesh Variable</source>
+        <source>Vector mesh variable</source>
         <translation>Variable scalaire</translation>
     </message>
     <message>
-        <source>Tensor Mesh Variable</source>
+        <source>Tensor mesh variable</source>
         <translation>Variable de tenseur</translation>
     </message>
     <message>
-        <source>Symmetric Tensor Mesh Variable</source>
+        <source>Symmetric tensor mesh variable</source>
         <translation>Variable de tenseur symmétrique</translation>
     </message>
     <message>
-        <source>Array Mesh Variable</source>
+        <source>Array mesh variable</source>
         <translation>Variable de tableau</translation>
     </message>
     <message>
-        <source>Curve Mesh Variable</source>
+        <source>Curve mesh variable</source>
         <translation>Variable de courbe</translation>
     </message>
     <message>
@@ -3653,15 +3641,15 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Afficher dans le menu des tracés</translation>
     </message>
     <message>
-        <source>Insert Function...</source>
+        <source>Insert function...</source>
         <translation>Ajouter une fonction...</translation>
     </message>
     <message>
-        <source>Insert Variable...</source>
+        <source>Insert variable...</source>
         <translation>Ajouter une variable...</translation>
     </message>
     <message>
-        <source>Time Iteration</source>
+        <source>Time iteration</source>
         <translation>Temporelle</translation>
     </message>
     <message>
@@ -3669,15 +3657,15 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Arguments</translation>
     </message>
     <message>
-        <source>Python Expression Script</source>
+        <source>Python expression script</source>
         <translation>Script d&apos;expression Python</translation>
     </message>
     <message>
-        <source>Open Attribute XML</source>
+        <source>Open attribute XML</source>
         <translation>Ouvrir l&apos;attribut XML</translation>
     </message>
     <message>
-        <source>XML Files (*.xml);;All files (*)</source>
+        <source>XML files (*.xml);;All files (*)</source>
         <translation>Fichiers XML (*.xml);;Tous les fichiers (*)</translation>
     </message>
     <message>
@@ -3685,11 +3673,11 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Certaines des expressions chargées à partir de %1 ont le même nom que celles déjà dans votre liste. Il est conseillé de les renommer pour assurer l&apos;unicité.</translation>
     </message>
     <message>
-        <source>Standard Editor</source>
+        <source>Standard editor</source>
         <translation>Editeur standard</translation>
     </message>
     <message>
-        <source>Python Expression Editor</source>
+        <source>Python expression editor</source>
         <translation>Editeur d&apos;expression Python</translation>
     </message>
     <message>
@@ -5111,11 +5099,11 @@ Parce-que le serveur de méta données n&apos;a pas pu être démarré de cet h�
         <translation>Sélections</translation>
     </message>
     <message>
-        <source>Save Session File</source>
+        <source>Save session file</source>
         <translation>Enregistrer le fichier de session</translation>
     </message>
     <message>
-        <source>Open VisIt Session File</source>
+        <source>Open session file</source>
         <translation>Ouvrir le fichier de session</translation>
     </message>
     <message>
@@ -7429,11 +7417,11 @@ par opérateur d&apos;alignement</translation>
         <translation>Position de la légende</translation>
     </message>
     <message>
-        <source>X-scale</source>
+        <source>X scale</source>
         <translation>Échelle X</translation>
     </message>
     <message>
-        <source>Y-scale</source>
+        <source>Y scale</source>
         <translation>Échelle Y</translation>
     </message>
     <message>
@@ -7557,7 +7545,7 @@ par opérateur d&apos;alignement</translation>
         <translation>Effacer la valeur sélectionnée</translation>
     </message>
     <message>
-        <source>Tick Marks</source>
+        <source>Tick marks</source>
         <translation>Marques</translation>
     </message>
     <message>
@@ -8360,7 +8348,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>&amp;Capture de la fenêtre courante</translation>
     </message>
     <message>
-        <source>Set Save &amp;options . . .</source>
+        <source>Set save &amp;options . . .</source>
         <translation>&amp;Options de capture . . .</translation>
     </message>
     <message>
@@ -8664,7 +8652,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>Enregistrer la session sous . . .</translation>
     </message>
     <message>
-        <source>&amp;Data-Level Comparisons . . .</source>
+        <source>&amp;Data level comparisons . . .</source>
         <translation>&amp;Données comparaisons des niveaux .</translation>
     </message>
     <message>
@@ -12501,7 +12489,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
 <context>
     <name>QvisPythonFilterEditor</name>
     <message>
-        <source>Load Script</source>
+        <source>Load script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12513,31 +12501,31 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
         <translation type="unfinished">&amp;Fichier</translation>
     </message>
     <message>
-        <source>&amp;Simple Filter</source>
+        <source>&amp;Simple filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Advanced Filter</source>
+        <source>&amp;Advanced filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save Script</source>
+        <source>Save script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Python Script File</source>
+        <source>Python script file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>All Files</source>
+        <source>All files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save Python Filter Script</source>
+        <source>Save Python filter script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Load Python Filter</source>
+        <source>Load Python filter</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13799,7 +13787,7 @@ atoms at unit cell boundaries.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use Screen Capture</source>
+        <source>Use screen capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

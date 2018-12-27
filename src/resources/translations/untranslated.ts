@@ -1376,7 +1376,7 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="429"/>
-        <source>Path Expansion</source>
+        <source>Path expansion</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1412,20 +1412,15 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisAnnotationWindow.C" line="544"/>
-        <source>General 2D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="550"/>
         <location filename="../../gui/QvisAnnotationWindow.C" line="732"/>
-        <source>X-Axis</source>
+        <source>X axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="556"/>
         <location filename="../../gui/QvisAnnotationWindow.C" line="738"/>
-        <source>Y-Axis</source>
+        <source>Y axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1514,13 +1509,8 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../gui/QvisAnnotationWindow.C" line="726"/>
-        <source>General 3D</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="744"/>
-        <source>Z-Axis</source>
+        <source>Z axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1561,11 +1551,6 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     <message>
         <location filename="../../gui/QvisAnnotationWindow.C" line="896"/>
         <source>Array</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../gui/QvisAnnotationWindow.C" line="911"/>
-        <source>General Array</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1776,7 +1761,7 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <location filename="../../gui/QvisAxisAttributesWidget.C" line="127"/>
-        <source>Custom Units</source>
+        <source>Custom units</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2069,13 +2054,13 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     <name>QvisCMFEWizard</name>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="170"/>
-        <source>Data-Level Comparison Setup</source>
+        <source>Data level comparison setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="480"/>
         <location filename="../../gui/QvisCMFEWizard.C" line="739"/>
-        <source>Target Database:</source>
+        <source>Target database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2086,7 +2071,7 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="661"/>
-        <source>Data-Level Comparisons</source>
+        <source>Data level comparisons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2121,37 +2106,37 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="761"/>
-        <source>Target Mesh:</source>
+        <source>Target mesh:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="779"/>
-        <source>Donor Database:</source>
+        <source>Donor database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="803"/>
-        <source>Donor Field:</source>
+        <source>Donor field:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="826"/>
-        <source>Add Donor</source>
+        <source>Add donor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="827"/>
-        <source>Delete Donor</source>
+        <source>Delete donor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="828"/>
-        <source>Delete All Donors</source>
+        <source>Delete all donors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="866"/>
-        <source>Specify Donor Time Slice</source>
+        <source>Specify donor time slice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2161,7 +2146,7 @@ VisIt will attempt to continue processing, but it may behave unreliably.  Please
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="874"/>
-        <source>&lt;u&gt;Absolute Versus Relative Time&lt;/u&gt;</source>
+        <source>&lt;u&gt;Absolute versus relative time&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2178,7 +2163,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="895"/>
-        <source>&lt;u&gt;Time Type and Value&lt;/u&gt;</source>
+        <source>&lt;u&gt;Time type and value&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2226,7 +2211,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="976"/>
-        <source>Specify Evaluation Scheme</source>
+        <source>Specify evaluation scheme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2236,7 +2221,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="983"/>
-        <source>&lt;u&gt;Evaluation Scheme&lt;/u&gt;</source>
+        <source>&lt;u&gt;evaluation scheme&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2286,7 +2271,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="1033"/>
-        <source>&lt;u&gt;Handling For Non-Overlapping Regions&lt;/u&gt;</source>
+        <source>&lt;u&gt;Handling for non-overlapping regions&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2301,7 +2286,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="1093"/>
-        <source>Setting Up The Expression</source>
+        <source>Setting up the expression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2311,7 +2296,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="1102"/>
-        <source>Name of Expression</source>
+        <source>Name of expression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -2380,7 +2365,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisCMFEWizard.C" line="2340"/>
-        <source>Select Target Database</source>
+        <source>Select target database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4262,7 +4247,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisEngineWindow.C" line="169"/>
-        <source>Engine Information</source>
+        <source>Engine information</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4480,7 +4465,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="488"/>
-        <source>Mesh Quality</source>
+        <source>Mesh quality</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4490,7 +4475,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="492"/>
-        <source>Image Processing</source>
+        <source>Image processing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4520,12 +4505,12 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="504"/>
-        <source>Time Iteration</source>
+        <source>Time iteration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="580"/>
-        <source>Expression List</source>
+        <source>Expression list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4561,32 +4546,32 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="611"/>
-        <source>Scalar Mesh Variable</source>
+        <source>Scalar mesh variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="612"/>
-        <source>Vector Mesh Variable</source>
+        <source>Vector mesh variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="613"/>
-        <source>Tensor Mesh Variable</source>
+        <source>Tensor mesh variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="614"/>
-        <source>Symmetric Tensor Mesh Variable</source>
+        <source>Symmetric Tensor mesh variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="615"/>
-        <source>Array Mesh Variable</source>
+        <source>Array mesh variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="616"/>
-        <source>Curve Mesh Variable</source>
+        <source>Curve mesh variable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4596,24 +4581,24 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="630"/>
-        <source>Standard Editor</source>
+        <source>Standard editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="633"/>
-        <source>Python Expression Editor</source>
+        <source>Python expression editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="694"/>
         <location filename="../../gui/QvisExpressionsWindow.C" line="762"/>
-        <source>Insert Function...</source>
+        <source>Insert function...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="716"/>
         <location filename="../../gui/QvisExpressionsWindow.C" line="784"/>
-        <source>Insert Variable...</source>
+        <source>Insert variable...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4623,7 +4608,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="795"/>
-        <source>Python Expression Script</source>
+        <source>Python expression script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -4634,12 +4619,12 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="2135"/>
-        <source>Open Attribute XML</source>
+        <source>Open attribute XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisExpressionsWindow.C" line="2137"/>
-        <source>XML Files (*.xml);;All files (*)</source>
+        <source>XML files (*.xml);;All files (*)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6331,13 +6316,13 @@ Answering No will just detach the GUI and leave the viewer and its remaining cli
     </message>
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="4511"/>
-        <source>Save Session File</source>
+        <source>Save session file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="4791"/>
         <location filename="../../gui/QvisGUIApplication.C" line="4847"/>
-        <source>Open VisIt Session File</source>
+        <source>Open session file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9371,12 +9356,12 @@ by Lineout Operator</source>
     </message>
     <message>
         <location filename="../../gui/QvisLegendAttributesInterface.C" line="150"/>
-        <source>X-scale</source>
+        <source>X scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisLegendAttributesInterface.C" line="160"/>
-        <source>Y-scale</source>
+        <source>Y scale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9469,7 +9454,7 @@ by Lineout Operator</source>
     </message>
     <message>
         <location filename="../../gui/QvisLegendAttributesInterface.C" line="255"/>
-        <source>Tick Marks</source>
+        <source>Tick marks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10596,7 +10581,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="524"/>
-        <source>Set Save &amp;options . . .</source>
+        <source>Set save &amp;options . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10661,7 +10646,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="574"/>
-        <source>&amp;Data-Level Comparisons . . .</source>
+        <source>&amp;Data level comparisons . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15817,7 +15802,7 @@ Do you want to apply the %2 operator?
     <name>QvisPythonFilterEditor</name>
     <message>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="87"/>
-        <source>Load Script</source>
+        <source>Load script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15832,39 +15817,39 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="94"/>
-        <source>&amp;Simple Filter</source>
+        <source>&amp;Simple filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="95"/>
-        <source>&amp;Advanced Filter</source>
+        <source>&amp;Advanced filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="99"/>
-        <source>Save Script</source>
+        <source>Save script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="303"/>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="341"/>
-        <source>Python Script File</source>
+        <source>Python script file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="304"/>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="342"/>
-        <source>All Files</source>
+        <source>All files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="307"/>
-        <source>Save Python Filter Script</source>
+        <source>Save Python filter script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPythonFilterEditor.C" line="344"/>
-        <source>Load Python Filter</source>
+        <source>Load Python filter</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -17292,7 +17277,7 @@ atoms at unit cell boundaries.</source>
     <message>
         <location filename="../../gui/QvisSaveMovieWizard.C" line="1497"/>
         <location filename="../../gui/QvisSaveMovieWizard.C" line="2969"/>
-        <source>Use Screen Capture</source>
+        <source>Use screen capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

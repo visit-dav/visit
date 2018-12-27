@@ -124,7 +124,7 @@ QvisAxisAttributesWidget::QvisAxisAttributesWidget(QWidget *parent,
         customTitle->hide();
     }
 
-    customUnitsToggle = new QCheckBox(tr("Custom Units"), titleGroup);
+    customUnitsToggle = new QCheckBox(tr("Custom units"), titleGroup);
     connect(customUnitsToggle, SIGNAL(toggled(bool)),
             this, SLOT(customUnitsToggled(bool)));
     tLayout->addWidget(customUnitsToggle, row, 0);

@@ -500,11 +500,11 @@ QvisExpressionsWindow::QvisExpressionsWindow(
     exprlist[4].list = expr_materials;
     exprlist[5].name = tr("Mesh");
     exprlist[5].list = expr_mesh;
-    exprlist[6].name = tr("Mesh Quality");
+    exprlist[6].name = tr("Mesh quality");
     exprlist[6].list = expr_meshquality;
     exprlist[7].name = tr("Comparison");
     exprlist[7].list = expr_comparison;
-    exprlist[8].name = tr("Image Processing");
+    exprlist[8].name = tr("Image processing");
     exprlist[8].list = expr_imageprocessing;
     exprlist[9].name = tr("Miscellaneous");
     exprlist[9].list = expr_misc;
@@ -516,7 +516,7 @@ QvisExpressionsWindow::QvisExpressionsWindow(
     exprlist[12].list = expr_conditional;
     exprlist[13].name = tr("Logical");
     exprlist[13].list = expr_logical;
-    exprlist[14].name = tr("Time Iteration");
+    exprlist[14].name = tr("Time iteration");
     exprlist[14].list = expr_time_iteration;
 
     exprList = exprList_;
@@ -592,7 +592,7 @@ QvisExpressionsWindow::CreateWindowContents()
     topLayout->addWidget(mainSplitter);
     topLayout->setStretchFactor(mainSplitter, 100);
 
-    QGroupBox *f1 = new QGroupBox(tr("Expression List"));
+    QGroupBox *f1 = new QGroupBox(tr("Expression list"));
     QGridLayout *listLayout = new QGridLayout(f1);
 
     exprListBox = new QListWidget(f1);
@@ -623,12 +623,12 @@ QvisExpressionsWindow::CreateWindowContents()
     typeLabel = new QLabel(tr("Type"), f2);
     typeList = new QComboBox(f2);
     // Extracted from Expression::GetTypeString so we can internationalize.
-    typeList->addItem(tr("Scalar Mesh Variable"));
-    typeList->addItem(tr("Vector Mesh Variable"));
-    typeList->addItem(tr("Tensor Mesh Variable"));
-    typeList->addItem(tr("Symmetric Tensor Mesh Variable"));
-    typeList->addItem(tr("Array Mesh Variable"));
-    typeList->addItem(tr("Curve Mesh Variable"));
+    typeList->addItem(tr("Scalar mesh variable"));
+    typeList->addItem(tr("Vector mesh variable"));
+    typeList->addItem(tr("Tensor mesh variable"));
+    typeList->addItem(tr("Symmetric tensor mesh variable"));
+    typeList->addItem(tr("Array mesh variable"));
+    typeList->addItem(tr("Curve mesh variable"));
 
     definitionLayout->addWidget(typeLabel, row,0);
     definitionLayout->addWidget(typeList, row,1);
@@ -642,10 +642,10 @@ QvisExpressionsWindow::CreateWindowContents()
 
     // tab 1 -> standard editor
     CreateStandardEditor();
-    editorTabs->addTab(stdEditorWidget, tr("Standard Editor"));
+    editorTabs->addTab(stdEditorWidget, tr("Standard editor"));
     // tab 2 -> python filter editor
     CreatePythonFilterEditor();
-    editorTabs->addTab(pyEditorWidget, tr("Python Expression Editor"));
+    editorTabs->addTab(pyEditorWidget, tr("Python expression editor"));
 
 
     definitionLayout->addWidget(editorTabs,row,0,1,2);
@@ -706,7 +706,7 @@ QvisExpressionsWindow::CreateStandardEditor()
     row++;
 
 
-    stdInsertFunctionButton = new QPushButton(tr("Insert Function..."));
+    stdInsertFunctionButton = new QPushButton(tr("Insert function..."));
     stdInsertFunctionMenu = new QMenu(stdEditorWidget);
     for (int i=0; i < NUM_EXPRESSION_CATEGORIES; i++)
     {
@@ -728,7 +728,7 @@ QvisExpressionsWindow::CreateStandardEditor()
     // active source.
     stdInsertVariableButton = new QvisVariableButton(false, false, false, -1,stdEditorWidget);
     stdInsertVariableButton->setChangeTextOnVariableChange(false);
-    stdInsertVariableButton->setText(tr("Insert Variable..."));
+    stdInsertVariableButton->setText(tr("Insert variable..."));
     connect(stdInsertVariableButton, SIGNAL(activated(const QString &)),
             this, SLOT(stdInsertVariable(const QString &)));
     layout->addWidget(stdInsertVariableButton, row, 3);
@@ -774,7 +774,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
             this, SLOT(pyArgsTextChanged()));
 
 
-    pyInsertFunctionButton = new QPushButton(tr("Insert Function..."));
+    pyInsertFunctionButton = new QPushButton(tr("Insert function..."));
     pyInsertFunctionMenu = new QMenu(pyEditorWidget);
 
     for (int i=0; i < NUM_EXPRESSION_CATEGORIES; i++)
@@ -796,7 +796,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
     // active source.
     pyInsertVariableButton = new QvisVariableButton(false, false, false, -1,pyEditorWidget);
     pyInsertVariableButton->setChangeTextOnVariableChange(false);
-    pyInsertVariableButton->setText(tr("Insert Variable..."));
+    pyInsertVariableButton->setText(tr("Insert variable..."));
 
     connect(pyInsertVariableButton, SIGNAL(activated(const QString &)),
             this, SLOT(pyInsertVariable(const QString &)));
@@ -807,7 +807,7 @@ QvisExpressionsWindow::CreatePythonFilterEditor()
     layout->addWidget(pyInsertFunctionButton, row, 2);
     row++;
 
-    pyFilterEditLabel = new QLabel(tr("Python Expression Script"), pyEditorWidget);
+    pyFilterEditLabel = new QLabel(tr("Python expression script"), pyEditorWidget);
 
     pyFilterEdit = new QvisPythonFilterEditor();
     layout->addWidget(pyFilterEditLabel, row, 0);
@@ -2155,9 +2155,9 @@ QvisExpressionsWindow::loadSubject()
         return;
 
     QString filename = QFileDialog::getOpenFileName(this,
-                                                    tr("Open Attribute XML"),
+                                                    tr("Open attribute XML"),
                                                     NULL,
-                                                    tr("XML Files (*.xml);;"
+                                                    tr("XML files (*.xml);;"
                                                        "All files (*)"));
     if (filename.isNull())
         return;

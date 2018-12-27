@@ -84,19 +84,19 @@ QvisPythonFilterEditor::QvisPythonFilterEditor(QWidget *parent)
     highlighter = new QvisPythonSyntaxHighlighter(editor->document());
 
     QHBoxLayout *button_layout = new QHBoxLayout();
-    cmdLoad = new QPushButton(tr("Load Script"),this);
+    cmdLoad = new QPushButton(tr("Load script"),this);
 
     cmdLoadMenu = new QMenu(this);
 
     QMenu *loadTempsMenu    = cmdLoadMenu->addMenu(tr("&Template"));
 
     loadFile       = cmdLoadMenu->addAction(tr("&File"));
-    loadTempSimple = loadTempsMenu->addAction(tr("&Simple Filter"));
-    loadTempAdv    = loadTempsMenu->addAction(tr("&Advanced Filter"));
+    loadTempSimple = loadTempsMenu->addAction(tr("&Simple filter"));
+    loadTempAdv    = loadTempsMenu->addAction(tr("&Advanced filter"));
 
     cmdLoad->setMenu(cmdLoadMenu);
 
-    cmdSave = new QPushButton(tr("Save Script"),this);
+    cmdSave = new QPushButton(tr("Save script"),this);
 
 
     button_layout->addWidget(cmdLoad);
@@ -300,11 +300,11 @@ QvisPythonFilterEditor::cmdSaveClick()
     QString default_file = useDir + "/" + QString("visit_filter.py");
 
     // Get the name of the file that the user saved.
-    QString filter(tr("Python Script File") +  QString("  (*.py *vpe *vpq);;")
-                   + tr("All Files") + QString(" (*)"));
+    QString filter(tr("Python script file") +  QString("  (*.py *vpe *vpq);;")
+                   + tr("All files") + QString(" (*)"));
 
     QString res = QFileDialog::getSaveFileName(this,
-                                               tr("Save Python Filter Script"),
+                                               tr("Save Python filter script"),
                                                default_file,
                                                filter);
     if(!res.isNull())
@@ -338,10 +338,10 @@ QvisPythonFilterEditor::loadMenuEvent(QAction *action)
 {
     if(action == loadFile)
     {
-        QString filter(tr("Python Script File") + QString(" (*.py *vpe *vpq);;")
-                       + tr("All Files") + QString(" (*)"));
+        QString filter(tr("Python script file") + QString(" (*.py *vpe *vpq);;")
+                       + tr("All files") + QString(" (*)"));
         QString res = QFileDialog::getOpenFileName(this,
-                                                   tr("Load Python Filter"),
+                                                   tr("Load Python filter"),
                                                    QDir::current().path(),
                                                    filter);
         if(!res.isNull())

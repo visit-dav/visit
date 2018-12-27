@@ -368,7 +368,7 @@ QvisExportDBWindow::CreateWindowContents()
             this, SLOT(delimiterChanged(int)));
 
     varsButton = new QvisVariableButton(true, false, true, -1,varGroup);
-    varsButton->setText(tr("Add Variable"));
+    varsButton->setText(tr("Add variable"));
     varsButton->setChangeTextOnVariableChange(false);
     connect(varsButton, SIGNAL(activated(const QString &)),
             this, SLOT(addVariable(const QString &)));
@@ -381,7 +381,7 @@ QvisExportDBWindow::CreateWindowContents()
     varLayout->addWidget(varsLineEdit, 1, 1, 1, 2);
 
     // I/O group box.
-    QGroupBox *ioGroup = new QGroupBox(tr("I/O Options"), central);
+    QGroupBox *ioGroup = new QGroupBox(tr("I/O options"), central);
     topLayout->addWidget(ioGroup);
     QGridLayout *ioLayout = new QGridLayout(ioGroup);
     ioLayout->setMargin(5);

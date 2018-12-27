@@ -166,7 +166,7 @@ QvisEngineWindow::CreateWindowContents()
 
     // Create the widgets needed to show the engine information.
     engineInfo = new QGroupBox(central);
-    engineInfo->setTitle(tr("Engine Information"));
+    engineInfo->setTitle(tr("Engine information"));
     topLayout->addWidget(engineInfo);
     QVBoxLayout *infoTopLayout = new QVBoxLayout(engineInfo);
 

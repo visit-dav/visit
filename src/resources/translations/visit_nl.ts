@@ -1173,7 +1173,7 @@ De metadataserver gaf het volgende bericht door:
         <translation>Slimme Map</translation>
     </message>
     <message>
-        <source>Path Expansion</source>
+        <source>Path expansion</source>
         <translation>Pad Uitbreiding</translation>
     </message>
     <message>
@@ -1197,16 +1197,12 @@ De metadataserver gaf het volgende bericht door:
         <translation>Toon assen</translation>
     </message>
     <message>
-        <source>General 2D</source>
-        <translation>Algemeen 2D</translation>
+        <source>X axis</source>
+        <translation>X as</translation>
     </message>
     <message>
-        <source>X-Axis</source>
-        <translation>X-as</translation>
-    </message>
-    <message>
-        <source>Y-Axis</source>
-        <translation>Y-as</translation>
+        <source>Y axis</source>
+        <translation>Y as</translation>
     </message>
     <message>
         <source>Auto scale label values</source>
@@ -1269,12 +1265,8 @@ De metadataserver gaf het volgende bericht door:
         <translation>Toon begrenzing</translation>
     </message>
     <message>
-        <source>General 3D</source>
-        <translation>Algemeen 3D</translation>
-    </message>
-    <message>
-        <source>Z-Axis</source>
-        <translation>Z-as</translation>
+        <source>Z axis</source>
+        <translation>Z as</translation>
     </message>
     <message>
         <source>Closest triad</source>
@@ -1413,10 +1405,6 @@ De metadataserver gaf het volgende bericht door:
         <translation>Reeks</translation>
     </message>
     <message>
-        <source>General Array</source>
-        <translation>Algemene reeks</translation>
-    </message>
-    <message>
         <source>Axes</source>
         <translation>Assen</translation>
     </message>
@@ -1484,7 +1472,7 @@ De metadataserver gaf het volgende bericht door:
         <translation>Eigen titel</translation>
     </message>
     <message>
-        <source>Custom Units</source>
+        <source>Custom units</source>
         <translation>Eigen eenheden</translation>
     </message>
     <message>
@@ -1743,11 +1731,11 @@ De metadataserver gaf het volgende bericht door:
 <context>
     <name>QvisCMFEWizard</name>
     <message>
-        <source>Data-Level Comparison Setup</source>
+        <source>Data level comparison setup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Target Database:</source>
+        <source>Target database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1755,7 +1743,7 @@ De metadataserver gaf het volgende bericht door:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Data-Level Comparisons</source>
+        <source>Data level comparisons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1775,19 +1763,19 @@ De metadataserver gaf het volgende bericht door:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Target Mesh:</source>
+        <source>Target mesh:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Donor Database:</source>
+        <source>Donor database:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Donor Field:</source>
+        <source>Donor field:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Specify Donor Time Slice</source>
+        <source>Specify donor time slice</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1795,7 +1783,7 @@ De metadataserver gaf het volgende bericht door:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;u&gt;Absolute Versus Relative Time&lt;/u&gt;</source>
+        <source>&lt;u&gt;Absolute versus relative time&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1809,7 +1797,7 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;u&gt;Time Type and Value&lt;/u&gt;</source>
+        <source>&lt;u&gt;Time type and value&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1845,7 +1833,7 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Specify Evaluation Scheme</source>
+        <source>Specify evaluation scheme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1853,7 +1841,7 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;u&gt;Evaluation Scheme&lt;/u&gt;</source>
+        <source>&lt;u&gt;Evaluation scheme&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1893,7 +1881,7 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;u&gt;Handling For Non-Overlapping Regions&lt;/u&gt;</source>
+        <source>&lt;u&gt;Handling for non-overlapping regions&lt;/u&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1905,7 +1893,7 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Setting Up The Expression</source>
+        <source>Setting up the expression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1913,7 +1901,7 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Name of Expression</source>
+        <source>Name of expression</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1941,7 +1929,7 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Select Target Database</source>
+        <source>Select target database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1957,15 +1945,15 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add Donor</source>
+        <source>Add donor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete Donor</source>
+        <source>Delete donor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete All Donors</source>
+        <source>Delete all donors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -3688,7 +3676,7 @@ The time slice I want will change as I change the time slider</source>
         <translation>Machine:</translation>
     </message>
     <message>
-        <source>Engine Information</source>
+        <source>Engine information</source>
         <translation>Machineinformatie</translation>
     </message>
     <message>
@@ -3878,7 +3866,7 @@ The time slice I want will change as I change the time slider</source>
         <translation>Rekenrooster</translation>
     </message>
     <message>
-        <source>Mesh Quality</source>
+        <source>Mesh quality</source>
         <translation>Kwaliteit rekenrooster</translation>
     </message>
     <message>
@@ -3886,7 +3874,7 @@ The time slice I want will change as I change the time slider</source>
         <translation>Vergelijking</translation>
     </message>
     <message>
-        <source>Image Processing</source>
+        <source>Image processing</source>
         <translation>Afbeelding wordt bewerkt</translation>
     </message>
     <message>
@@ -3910,7 +3898,7 @@ The time slice I want will change as I change the time slider</source>
         <translation>Logisch</translation>
     </message>
     <message>
-        <source>Expression List</source>
+        <source>Expression list</source>
         <translation>Expression List</translation>
     </message>
     <message>
@@ -3938,27 +3926,27 @@ The time slice I want will change as I change the time slider</source>
         <translation>Type</translation>
     </message>
     <message>
-        <source>Scalar Mesh Variable</source>
+        <source>Scalar mesh variable</source>
         <translation>Scalaire rekenroostervariabele</translation>
     </message>
     <message>
-        <source>Vector Mesh Variable</source>
+        <source>Vector mesh variable</source>
         <translation>Vectoriële rekenroostervariabele</translation>
     </message>
     <message>
-        <source>Tensor Mesh Variable</source>
+        <source>Tensor mesh variable</source>
         <translation>Tensoriële rekenroostervariabele</translation>
     </message>
     <message>
-        <source>Symmetric Tensor Mesh Variable</source>
+        <source>Symmetric Tensor mesh variable</source>
         <translation>Symmetrische tensoriële rekenroostervariabele</translation>
     </message>
     <message>
-        <source>Array Mesh Variable</source>
+        <source>Array mesh variable</source>
         <translation>Reeks rekenroostervariabele</translation>
     </message>
     <message>
-        <source>Curve Mesh Variable</source>
+        <source>Curve mesh variable</source>
         <translation>Kromme rekenroostervariabele</translation>
     </message>
     <message>
@@ -3966,15 +3954,15 @@ The time slice I want will change as I change the time slider</source>
         <translation>Toon variabele in plot menus</translation>
     </message>
     <message>
-        <source>Insert Function...</source>
+        <source>Insert function...</source>
         <translation>Voeg functie in ...</translation>
     </message>
     <message>
-        <source>Insert Variable...</source>
+        <source>Insert variable...</source>
         <translation>Voeg variabele in ...</translation>
     </message>
     <message>
-        <source>Time Iteration</source>
+        <source>Time iteration</source>
         <translation>Tijditeratie</translation>
     </message>
     <message>
@@ -3982,15 +3970,15 @@ The time slice I want will change as I change the time slider</source>
         <translation>Argumenten</translation>
     </message>
     <message>
-        <source>Python Expression Script</source>
+        <source>Python expression script</source>
         <translation>Python Expression Script</translation>
     </message>
     <message>
-        <source>Open Attribute XML</source>
+        <source>Open attribute XML</source>
         <translation type="unfinished">Open Attribuut XML</translation>
     </message>
     <message>
-        <source>XML Files (*.xml);;All files (*)</source>
+        <source>XML files (*.xml);;All files (*)</source>
         <translation type="unfinished">XML bestanden (*.xml);;Alle bestanden (*)</translation>
     </message>
     <message>
@@ -3998,11 +3986,11 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Standard Editor</source>
+        <source>Standard editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Python Expression Editor</source>
+        <source>Python expression editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5609,12 +5597,12 @@ versie van VisIt? </translation>
         <translation>VisIt vond een sessievalherstelbestand. Wilt u de laatst opgeslagen toestand herstellen?</translation>
     </message>
     <message>
-        <source>Save Session File</source>
+        <source>Save session file</source>
         <translation>Bewaar sessiebestand</translation>
     </message>
     <message>
-        <source>Open VisIt Session File</source>
-        <translation>Open een VisIt-sessiebestand</translation>
+        <source>Open session file</source>
+        <translation>Open sessiebestand</translation>
     </message>
     <message>
         <source>VisIt</source>
@@ -8182,12 +8170,12 @@ door de Lineout Operator</translation>
         <translation>Legendapositie</translation>
     </message>
     <message>
-        <source>X-scale</source>
-        <translation>X-schaal</translation>
+        <source>X scale</source>
+        <translation>X schaal</translation>
     </message>
     <message>
-        <source>Y-scale</source>
-        <translation>Y-schaal</translation>
+        <source>Y scale</source>
+        <translation>Y schaal</translation>
     </message>
     <message>
         <source>Orientation</source>
@@ -8314,7 +8302,7 @@ door de Lineout Operator</translation>
         <translation>Verwijder geselecteerde waarde</translation>
     </message>
     <message>
-        <source>Tick Marks</source>
+        <source>Tick marks</source>
         <translation>Tickstreepjes</translation>
     </message>
     <message>
@@ -9159,7 +9147,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>&amp;Sla venster op</translation>
     </message>
     <message>
-        <source>Set Save &amp;options . . .</source>
+        <source>Set save &amp;options . . .</source>
         <translation>Zet &amp;opslaanopties . . .</translation>
     </message>
     <message>
@@ -9543,7 +9531,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Data-Level Comparisons . . .</source>
+        <source>&amp;Data level comparisons . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14370,7 +14358,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
 <context>
     <name>QvisPythonFilterEditor</name>
     <message>
-        <source>Load Script</source>
+        <source>Load script</source>
         <translation>Laad script</translation>
     </message>
     <message>
@@ -14382,31 +14370,31 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation>&amp;Bestand</translation>
     </message>
     <message>
-        <source>&amp;Simple Filter</source>
+        <source>&amp;Simple filter</source>
         <translation>&amp;Simpele filter</translation>
     </message>
     <message>
-        <source>&amp;Advanced Filter</source>
+        <source>&amp;Advanced filter</source>
         <translation>&amp;A gevorderde filter</translation>
     </message>
     <message>
-        <source>Save Script</source>
+        <source>Save script</source>
         <translation>Bewaar script</translation>
     </message>
     <message>
-        <source>Python Script File</source>
+        <source>Python script file</source>
         <translation>Python scriptbestand</translation>
     </message>
     <message>
-        <source>Save Python Filter Script</source>
+        <source>Save Python filter script</source>
         <translation>Bewaar Python filterscript</translation>
     </message>
     <message>
-        <source>Load Python Filter</source>
+        <source>Load Python filter</source>
         <translation>Laad Python-filter</translation>
     </message>
     <message>
-        <source>All Files</source>
+        <source>All files</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -15907,7 +15895,7 @@ over alle processoren
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use Screen Capture</source>
+        <source>Use screen capture</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

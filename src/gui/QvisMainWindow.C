@@ -362,7 +362,7 @@
 //    posting the main window.
 //
 //    Hank Childs, Wed Aug  4 13:27:57 PDT 2010
-//    Add Data-Level Comparisons.
+//    Add Data level Comparisons.
 //
 //    Brad Whitlock, Fri Aug  6 16:58:31 PDT 2010
 //    Add Selections window.
@@ -527,7 +527,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     filePopup->addAction(saveIcon, tr("&Save window"),
                          this, SIGNAL(saveWindow()),
                          QKeySequence(Qt::CTRL + Qt::Key_S));
-    filePopup->addAction(tr("Set Save &options . . ."),
+    filePopup->addAction(tr("Set save &options . . ."),
                          this, SIGNAL(activateSaveWindow()), 
                          QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_O));
     filePopup->addAction(saveMovieIcon, tr("Save movie . . ."),
@@ -579,7 +579,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     ctrls->addAction(commandIcon, tr("Command . . ."),
                      this, SIGNAL(activateCommandWindow()), 
                      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
-    ctrls->addAction(tr("&Data-Level Comparisons . . ."),
+    ctrls->addAction(tr("&Data level Comparisons . . ."),
                      this, SIGNAL(setupCMFE()), 
                      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
     ctrls->addAction(correlationIcon, tr("&Database correlations . . ."),

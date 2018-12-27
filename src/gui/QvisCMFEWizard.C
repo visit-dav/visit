@@ -154,7 +154,7 @@ QvisCMFEWizard::QvisCMFEWizard(AttributeSubject *atts, QWidget *parent) :
     exprList = NULL;
 
     // Set the wizard's title.
-    setWindowTitle(tr("Data-Level Comparison Setup"));
+    setWindowTitle(tr("Data level comparison setup"));
 
     // Create the wizard pages.
     CreateDonorTypePage();          // page0
@@ -464,7 +464,7 @@ QvisCMFEWizard::initializePage(int pageId)
         }
         else if(decision_donorType == DONOR_MULTIPLE_DATABASES)
         {
-            targetDatabaseLabel->setText(tr("Target Database:"));
+            targetDatabaseLabel->setText(tr("Target database:"));
             donorDatabaseLabel->setVisible(true);
             donorDatabase->setVisible(true);
             donorDatabaseOpen->setVisible(true);
@@ -645,7 +645,7 @@ void
 QvisCMFEWizard::CreateDonorTypePage(void)
 {
     page0 = new QWizardPage(this);
-    page0->setTitle(tr("Data-Level Comparisons"));
+    page0->setTitle(tr("Data level comparisons"));
     page0->setSubTitle(tr("Cross-mesh field evaluations (CMFEs) take a field "
                 "from a donor mesh and place that field on a target mesh.  "
                 "To begin select the type of evaluation to setup:"));
@@ -723,7 +723,7 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
     hCenterLayout->addStretch(5);
     main_layout->setSpacing(5);
 
-    targetDatabaseLabel = new QLabel(tr("Target Database:"), main_widget);
+    targetDatabaseLabel = new QLabel(tr("Target database:"), main_widget);
     targetDatabase = new QComboBox(main_widget);
 
     targetDatabaseOpen = new QPushButton("...", this);
@@ -745,7 +745,7 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
     main_layout->addWidget(targetDatabase,0,1);
     main_layout->addWidget(targetDatabaseOpen,0,2);
 
-    QLabel *lbl_tmesh = new QLabel(tr("Target Mesh:"), main_widget);
+    QLabel *lbl_tmesh = new QLabel(tr("Target mesh:"), main_widget);
     targetMeshVar = new QvisCustomSourceVariableButton(false, false, NULL,
                                                        QvisBaseVariableButton::Meshes,
                                                        main_widget);
@@ -763,7 +763,7 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
     main_layout->addWidget(hline,2,0,1,3);
 
 
-    donorDatabaseLabel = new QLabel(tr("Donor Database:"), main_widget);
+    donorDatabaseLabel = new QLabel(tr("Donor database:"), main_widget);
     donorDatabase = new QComboBox(main_widget);
     donorDatabaseOpen = new QPushButton("...", this);
 #if !defined(Q_OS_MAC)
@@ -787,7 +787,7 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
     donorDatabaseOpen->setVisible(false);
 
 
-    QLabel *lbl_dvar = new QLabel(tr("Donor Field:"), main_widget);
+    QLabel *lbl_dvar = new QLabel(tr("Donor field:"), main_widget);
 
     donorFieldVar = new QvisCustomSourceVariableButton(false, false, NULL,
                                                        QvisBaseVariableButton::Scalars |
@@ -810,9 +810,9 @@ QvisCMFEWizard::CreateDonorAndTargetPage(void)
     connect(donorList, SIGNAL(itemClicked(QListWidgetItem*)), this,
             SLOT(donorListClicked(QListWidgetItem*)));
 
-    donorListAddDonor = new QPushButton(tr("Add Donor"), main_widget);
-    donorListDeleteDonor = new QPushButton(tr("Delete Donor"), main_widget);
-    donorListDeleteAllDonors = new QPushButton(tr("Delete All Donors"), main_widget);
+    donorListAddDonor = new QPushButton(tr("Add donor"), main_widget);
+    donorListDeleteDonor = new QPushButton(tr("Delete donor"), main_widget);
+    donorListDeleteAllDonors = new QPushButton(tr("Delete all donors"), main_widget);
     connect(donorListAddDonor, SIGNAL(clicked()), this, SLOT(addDonor()));
     connect(donorListDeleteDonor, SIGNAL(clicked()), this, SLOT(deleteDonor()));
     connect(donorListDeleteAllDonors, SIGNAL(clicked()), this, SLOT(deleteDonors()));
@@ -850,7 +850,7 @@ void
 QvisCMFEWizard::CreateTimeSpecificationPage(void)
 {
     page2 = new QWizardPage(this);
-    page2->setTitle(tr("Specify Donor Time Slice"));
+    page2->setTitle(tr("Specify donor time slice"));
     page2->setSubTitle(tr("Which time slice do you want to extract data from?"));
 
     QWidget *main_widget= new QWidget(page2);
@@ -858,7 +858,7 @@ QvisCMFEWizard::CreateTimeSpecificationPage(void)
     QVBoxLayout *pageLayout = new QVBoxLayout(page2);
     //pageLayout->setSpacing(10);
 
-    QLabel *arLabel = new QLabel(tr("<u>Absolute Versus Relative Time</u>"), main_widget);
+    QLabel *arLabel = new QLabel(tr("<u>Absolute versus relative time</u>"), main_widget);
     //arLabel->setAlignment(Qt::AlignLeft|Qt::AlignCenter);
     pageLayout->addWidget(arLabel);
 
@@ -879,7 +879,7 @@ QvisCMFEWizard::CreateTimeSpecificationPage(void)
     hline2->setFrameStyle(QFrame::HLine | QFrame::Sunken);
     pageLayout->addWidget(hline2);
 
-    QLabel *timeLabel = new QLabel(tr("<u>Time Type and Value</u>"), main_widget);
+    QLabel *timeLabel = new QLabel(tr("<u>Time type and value</u>"), main_widget);
     pageLayout->addWidget(timeLabel);
 
     QGridLayout *glayout = new QGridLayout(0);
@@ -960,14 +960,14 @@ void
 QvisCMFEWizard::CreateInterpSelectionPage(void)
 {
     page3 = new QWizardPage(this);
-    page3->setTitle(tr("Specify Evaluation Scheme"));
+    page3->setTitle(tr("Specify evaluation scheme"));
     page3->setSubTitle(tr("Do you want to use indexing or interpolation?  How will you handle regions of non-overlap?"));
 
     QVBoxLayout *pageLayout = new QVBoxLayout(page3);
 
     QWidget *main_widget= new QWidget(page3);
 
-    QLabel *evalLabel = new QLabel(tr("<u>Evaluation Scheme</u>"), main_widget);
+    QLabel *evalLabel = new QLabel(tr("<u>Evaluation scheme</u>"), main_widget);
     pageLayout->addWidget(evalLabel);
 
     QGridLayout *glayout = new QGridLayout(0);
@@ -1017,7 +1017,7 @@ QvisCMFEWizard::CreateInterpSelectionPage(void)
     hline1->setFrameStyle(QFrame::HLine | QFrame::Sunken);
     pageLayout->addWidget(hline1);
 
-    QLabel *olLabel = new QLabel(tr("<u>Handling For Non-Overlapping Regions</u>"), main_widget);
+    QLabel *olLabel = new QLabel(tr("<u>Handling for non-overlapping regions</u>"), main_widget);
     pageLayout->addWidget(olLabel);
 
     QGridLayout *glayout2 = new QGridLayout(0);
@@ -1077,7 +1077,7 @@ void
 QvisCMFEWizard::CreateActivityPage(void)
 {
     page4 = new QWizardPage(this);
-    page4->setTitle(tr("Setting Up The Expression"));
+    page4->setTitle(tr("Setting up the expression"));
     page4->setSubTitle(tr("How do you want to use your new CMFE expression?  What is its name?"));
 
     QVBoxLayout *pageLayout = new QVBoxLayout(page4);
@@ -1086,7 +1086,7 @@ QvisCMFEWizard::CreateActivityPage(void)
 
     QGridLayout *glayout1 = new QGridLayout(0);
     pageLayout->addLayout(glayout1);
-    QLabel *expLabel = new QLabel(tr("Name of Expression"), main_widget);
+    QLabel *expLabel = new QLabel(tr("Name of expression"), main_widget);
     glayout1->addWidget(expLabel, 0, 0);
 
     exprNameTxt = new QLineEdit(main_widget);
@@ -2339,7 +2339,7 @@ QvisCMFEWizard::targetDatabaseOpenClicked()
 {
     selectedTargetDatabase = "";
     const std::string &active_src = windowInfo->GetActiveSource();
-    QString name = QvisFileOpenDialog::getOpenFileName("", tr("Select Target Database"));
+    QString name = QvisFileOpenDialog::getOpenFileName("", tr("Select target database"));
 
     if(name != QString(""))
     {

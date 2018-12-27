@@ -76,7 +76,7 @@ public:
     QvisLine3DInterface(QWidget *parent);
     virtual ~QvisLine3DInterface();
 
-    virtual QString GetName() const { return "3D Line"; }
+    virtual QString GetName() const { return "3D line"; }
     virtual QString GetMenuText(const AnnotationObject &) const;
 
     virtual void GetCurrentValues(int which);

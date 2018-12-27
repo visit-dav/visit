@@ -1365,7 +1365,7 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 //   we can a config file of some sort to point to img2sm if it exists.
 //
 //   Cameron Christensen, Friday, September 28, 2012
-//   Added Screen Capture
+//   Added screen capture.
 //
 // ****************************************************************************
 
@@ -1498,7 +1498,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     f2layout->addWidget(hline3, 10, 0, 1, 3);
     f2layout->setRowMinimumHeight(10, 15);
 
-    page9_screenCaptureCheckBox = new QCheckBox(tr("Use Screen Capture"), formatAndResolution);
+    page9_screenCaptureCheckBox = new QCheckBox(tr("Use screen capture"), formatAndResolution);
     connect(page9_screenCaptureCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(page9_screenCaptureChanged(bool)));
     f2layout->addWidget(page9_screenCaptureCheckBox, 11, 0, 1, 3);

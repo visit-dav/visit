@@ -74,7 +74,7 @@ public:
     QvisLine2DInterface(QWidget *parent);
     virtual ~QvisLine2DInterface();
 
-    virtual QString GetName() const { return "2D Line"; }
+    virtual QString GetName() const { return "2D line"; }
     virtual QString GetMenuText(const AnnotationObject &) const;
 
     virtual void GetCurrentValues(int which);

@@ -427,7 +427,7 @@ QvisAnnotationWindow::CreateGeneralTab()
 
     connect(databasePathExpansionMode, SIGNAL(activated(int)),
             this, SLOT(databasePathExpansionModeChanged(int)));
-    databasePathExpansionModeLabel = new QLabel(tr("Path Expansion"), 
+    databasePathExpansionModeLabel = new QLabel(tr("Path expansion"), 
         databaseInfo);
     databasePathExpansionModeLabel->setBuddy(databasePathExpansionMode);
     dLayout->addWidget(databasePathExpansionModeLabel, 0, 0);
@@ -505,7 +505,7 @@ QvisAnnotationWindow::CreateGeneralTab()
 //   I made it create a "Grid and Ticks" tab and a "Title and Labels" tab.
 //
 //   Brad Whitlock, Thu Feb 7 17:01:36 PST 2008
-//   I changed the method so it creates "General 2D", "X-Axis", and "Y-Axis"
+//   I changed the method so it creates "General", "X axis", and "Y axis"
 //   tabs instead of the previous organization.
 //
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
@@ -542,19 +542,19 @@ QvisAnnotationWindow::Create2DTab()
     page2DLayout->addWidget(page2DTabs);
 
     // Create the general options page.
-    page2DTabs->addTab(CreateGeneralTab2D(page2DTabs), tr("General 2D"));
+    page2DTabs->addTab(CreateGeneralTab2D(page2DTabs), tr("General"));
 
     // Add the X-axis page.
     axes2D[0] = new QvisAxisAttributesWidget(page2DTabs, false);
     connect(axes2D[0], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(xAxisChanged2D(const AxisAttributes &)));
-    page2DTabs->addTab(axes2D[0], tr("X-Axis"));
+    page2DTabs->addTab(axes2D[0], tr("X axis"));
 
     // Add the Y-axis page.
     axes2D[1] = new QvisAxisAttributesWidget(page2DTabs, false);
     connect(axes2D[1], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(yAxisChanged2D(const AxisAttributes &)));
-    page2DTabs->addTab(axes2D[1], tr("Y-Axis"));
+    page2DTabs->addTab(axes2D[1], tr("Y axis"));
 }
 
 // ****************************************************************************
@@ -672,7 +672,7 @@ QvisAnnotationWindow::CreateGeneralTab2D(QWidget *parentWidget)
 //   and units.
 //
 //   Brad Whitlock, Thu Feb 7 17:03:30 PST 2008
-//   I split the tabs into "General 3D", "X-Axis", "Y-Axis", and "Z-Axis".
+//   I split the tabs into "General", "X axis", "Y axis", and "Z axis".
 //
 //   Brad Whitlock, Tue Apr  8 09:27:26 PDT 2008
 //   Support for internationalization.
@@ -724,25 +724,25 @@ QvisAnnotationWindow::Create3DTab()
 
     // Create the general 3D options page.
     page3DTabs->addTab(CreateGeneralTab3D(page3DTabs),
-        tr("General 3D"));
+        tr("General"));
 
     // Add the X-axis page.
     axes3D[0] = new QvisAxisAttributesWidget(page3DTabs, true);
     connect(axes3D[0], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(xAxisChanged(const AxisAttributes &)));
-    page3DTabs->addTab(axes3D[0], tr("X-Axis"));
+    page3DTabs->addTab(axes3D[0], tr("X axis"));
 
     // Add the Y-axis page.
     axes3D[1] = new QvisAxisAttributesWidget(page3DTabs, true);
     connect(axes3D[1], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(yAxisChanged(const AxisAttributes &)));
-    page3DTabs->addTab(axes3D[1], tr("Y-Axis"));
+    page3DTabs->addTab(axes3D[1], tr("Y axis"));
 
     // Add the Z-axis page.
     axes3D[2] = new QvisAxisAttributesWidget(page3DTabs, true);
     connect(axes3D[2], SIGNAL(axisChanged(const AxisAttributes &)),
             this, SLOT(zAxisChanged(const AxisAttributes &)));
-    page3DTabs->addTab(axes3D[2], tr("Z-Axis"));
+    page3DTabs->addTab(axes3D[2], tr("Z axis"));
 }
 
 // ****************************************************************************
@@ -867,7 +867,7 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
 
     // Create the bounding box group
     bboxGroup = new QGroupBox(top);
-    bboxGroup->setTitle(tr("Bounding Box"));
+    bboxGroup->setTitle(tr("Bounding box"));
     rLayout->addWidget(bboxGroup, row, 0, 1, 2);
     row++;
 
@@ -884,12 +884,12 @@ QvisAnnotationWindow::CreateGeneralTab3D(QWidget *parentWidget)
     ++bboxRow;
     
     std::vector<std::string> labels;
-    labels.push_back("X-Minimum");
-    labels.push_back("X-Maximum");
-    labels.push_back("Y-Minimum");
-    labels.push_back("Y-Maximum");
-    labels.push_back("Z-Minimum");
-    labels.push_back("Z-Maximum");
+    labels.push_back("X minimum");
+    labels.push_back("X maximum");
+    labels.push_back("Y minimum");
+    labels.push_back("Y maximum");
+    labels.push_back("Z minimum");
+    labels.push_back("Z maximum");
 
     for (int i = 0 ; i < 6 ; i++)
     {
@@ -1029,7 +1029,7 @@ QvisAnnotationWindow::CreateArrayTab()
     lLayout->addWidget(pageArrayTabs);
 
     // Create the general options page.
-    pageArrayTabs->addTab(CreateGeneralTabArray(pageArrayTabs), tr("General Array"));
+    pageArrayTabs->addTab(CreateGeneralTabArray(pageArrayTabs), tr("General"));
 
     // Add the X-axis page.
     axesArray[0] = new QvisAxisAttributesWidget(pageArrayTabs, false, true,

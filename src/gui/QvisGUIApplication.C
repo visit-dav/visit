@@ -4584,7 +4584,7 @@ QvisGUIApplication::SaveSessionAs()
 
     // Get the name of the file that the user saved.
     QualifiedFilename qfilename;
-    QvisSessionFileDialog dlg("Save Session");
+    QvisSessionFileDialog dlg("Save session");
     dlg.getFileName(QvisSessionFileDialog::SAVE_DLG, defaultFile, qfilename);
 
     std::string filename = qfilename.PathAndFile();
@@ -4887,7 +4887,7 @@ QvisGUIApplication::RestoreSession()
     QualifiedFilename qfilename;
 
     // Get the name of the session to load.
-    QvisSessionFileDialog dlg(tr("Open VisIt Session File"));
+    QvisSessionFileDialog dlg(tr("Open session file"));
     dlg.getFileName(QvisSessionFileDialog::OPEN_DLG, sessionDir.c_str(), qfilename);
 
     QString s = qfilename.PathAndFile().c_str();
@@ -4946,7 +4946,7 @@ QvisGUIApplication::RestoreSessionWithDifferentSources()
     QualifiedFilename qfilename;
 
     // Get the name of the session to load.
-    QvisSessionFileDialog dlg(tr("Open VisIt Session File"));
+    QvisSessionFileDialog dlg(tr("Open session file"));
     dlg.getFileName(QvisSessionFileDialog::OPEN_DLG, "", qfilename);
 
     QString s = qfilename.PathAndFile().c_str();
@@ -8313,7 +8313,7 @@ MakeCodeSlashes(const QString &s)
 // Method: QvisGUIApplication::SetupCMFE
 //
 // Purpose:
-//   This is a Qt slot function that initiates the Data-Level comparison
+//   This is a Qt slot function that initiates the Data level comparison
 //   wizard.
 //
 // Programmer: Hank Childs
