@@ -775,29 +775,31 @@ avtPseudocolorPlot::SetAtts(const AttributeGroup *a)
     // This functionality was possible with the deprecated Streamline
     // plot but it is currently not possible using the vtkMapper and
     // avtActor.
+#if 0
     if( atts.GetOpacityType() == PseudocolorAttributes::VariableRange &&
         atts.GetOpacityVariable() != "" &&
         atts.GetOpacityVariable() != "\0")
     {
-      // glyphMapper->SetVariableOpacity(atts.GetOpacity());
-      // if( atts.GetOpacityVarMinFlag() )
-      //     glyphMapper->SetVariableMinOpacity(atts.GetOpacityVarMin());
-      // if( atts.GetOpacityVarMaxFlag() )
-      //     glyphMapper->SetVariableMaxOpacity(atts.GetOpacityVarMax());
+       glyphMapper->SetVariableOpacity(atts.GetOpacity());
+       if( atts.GetOpacityVarMinFlag() )
+           glyphMapper->SetVariableMinOpacity(atts.GetOpacityVarMin());
+       if( atts.GetOpacityVarMaxFlag() )
+           glyphMapper->SetVariableMaxOpacity(atts.GetOpacityVarMax());
         if (atts.GetOpacityVariable() == "default")
         {
-//            if (varname != NULL)
-//                glyphMapper->ScaleOpacityByVar(varname);
+            if (varname != NULL)
+                glyphMapper->ScaleOpacityByVar(varname);
         }
         else
         {
-//            glyphMapper->ScaleOpacityByVar(atts.GetOpacityVariable());
+            glyphMapper->ScaleOpacityByVar(atts.GetOpacityVariable());
         }
     }
     else
     {
-//        glyphMapper->OpacityScalingOff();
+        glyphMapper->OpacityScalingOff();
     }
+#endif
 
     if( //(topoDim == 0 || (topoDim > 0 && atts.GetRenderPoints())) &&
         atts.GetPointType() != Point &&
@@ -1305,6 +1307,9 @@ avtPseudocolorPlot::SetOpacityFromAtts()
 //    Kathleen Bonnell, Thu Aug 19 15:29:46 PDT 2004
 //    Replaced varMapper with glyphMapper.
 //
+//    Kathleen Biagas, Wed Dec 26 13:11:27 PST 2018
+//    Set colors for belowRange and aboveRange, as well as toggles for them.
+//
 // ****************************************************************************
 
 void
@@ -1352,6 +1357,15 @@ avtPseudocolorPlot::SetLegendRanges()
     else
         glyphMapper->GetVarRange(min, max);
     varLegend->SetVarRange(min, max);
+
+    varLegend->UseBelowRangeColor(atts.GetUseBelowMinColor());
+    varLegend->UseAboveRangeColor(atts.GetUseAboveMaxColor());
+
+    double c[4];
+    atts.GetBelowMinColor().GetRgba(c);
+    varLegend->SetBelowRangeColor(c[0], c[1], c[2], c[3]);
+    atts.GetAboveMaxColor().GetRgba(c);
+    varLegend->SetAboveRangeColor(c[0], c[1], c[2], c[3]);
 }
 
 // ****************************************************************************

@@ -325,8 +325,10 @@ void PseudocolorAttributes::Init()
     limitsMode = OriginalData;
     minFlag = false;
     min = 0;
+    useBelowMinColor = false;
     maxFlag = false;
     max = 1;
+    useAboveMaxColor = false;
     centering = Natural;
     invertColorTable = false;
     opacityType = FullyOpaque;
@@ -388,8 +390,12 @@ void PseudocolorAttributes::Copy(const PseudocolorAttributes &obj)
     limitsMode = obj.limitsMode;
     minFlag = obj.minFlag;
     min = obj.min;
+    useBelowMinColor = obj.useBelowMinColor;
+    belowMinColor = obj.belowMinColor;
     maxFlag = obj.maxFlag;
     max = obj.max;
+    useAboveMaxColor = obj.useAboveMaxColor;
+    aboveMaxColor = obj.aboveMaxColor;
     centering = obj.centering;
     colorTableName = obj.colorTableName;
     invertColorTable = obj.invertColorTable;
@@ -458,6 +464,7 @@ const AttributeGroup::private_tmfs_t PseudocolorAttributes::TmfsStruct = {PSEUDO
 
 PseudocolorAttributes::PseudocolorAttributes() : 
     AttributeSubject(PseudocolorAttributes::TypeMapFormatString),
+    belowMinColor(), aboveMaxColor(), 
     colorTableName("hot"), pointSizeVar("default"), 
     wireframeColor(0, 0, 0, 0), pointColor(0, 0, 0, 0)
 {
@@ -481,6 +488,7 @@ PseudocolorAttributes::PseudocolorAttributes() :
 
 PseudocolorAttributes::PseudocolorAttributes(private_tmfs_t tmfs) : 
     AttributeSubject(tmfs.tmfs),
+    belowMinColor(), aboveMaxColor(), 
     colorTableName("hot"), pointSizeVar("default"), 
     wireframeColor(0, 0, 0, 0), pointColor(0, 0, 0, 0)
 {
@@ -598,8 +606,12 @@ PseudocolorAttributes::operator == (const PseudocolorAttributes &obj) const
             (limitsMode == obj.limitsMode) &&
             (minFlag == obj.minFlag) &&
             (min == obj.min) &&
+            (useBelowMinColor == obj.useBelowMinColor) &&
+            (belowMinColor == obj.belowMinColor) &&
             (maxFlag == obj.maxFlag) &&
             (max == obj.max) &&
+            (useAboveMaxColor == obj.useAboveMaxColor) &&
+            (aboveMaxColor == obj.aboveMaxColor) &&
             (centering == obj.centering) &&
             (colorTableName == obj.colorTableName) &&
             (invertColorTable == obj.invertColorTable) &&
@@ -790,8 +802,12 @@ PseudocolorAttributes::SelectAll()
     Select(ID_limitsMode,               (void *)&limitsMode);
     Select(ID_minFlag,                  (void *)&minFlag);
     Select(ID_min,                      (void *)&min);
+    Select(ID_useBelowMinColor,         (void *)&useBelowMinColor);
+    Select(ID_belowMinColor,            (void *)&belowMinColor);
     Select(ID_maxFlag,                  (void *)&maxFlag);
     Select(ID_max,                      (void *)&max);
+    Select(ID_useAboveMaxColor,         (void *)&useAboveMaxColor);
+    Select(ID_aboveMaxColor,            (void *)&aboveMaxColor);
     Select(ID_centering,                (void *)&centering);
     Select(ID_colorTableName,           (void *)&colorTableName);
     Select(ID_invertColorTable,         (void *)&invertColorTable);
@@ -896,6 +912,20 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("min", min));
     }
 
+    if(completeSave || !FieldsEqual(ID_useBelowMinColor, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useBelowMinColor", useBelowMinColor));
+    }
+
+        DataNode *belowMinColorNode = new DataNode("belowMinColor");
+        if(belowMinColor.CreateNode(belowMinColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(belowMinColorNode);
+        }
+        else
+            delete belowMinColorNode;
     if(completeSave || !FieldsEqual(ID_maxFlag, &defaultObject))
     {
         addToParent = true;
@@ -908,6 +938,20 @@ PseudocolorAttributes::CreateNode(DataNode *parentNode, bool completeSave, bool 
         node->AddNode(new DataNode("max", max));
     }
 
+    if(completeSave || !FieldsEqual(ID_useAboveMaxColor, &defaultObject))
+    {
+        addToParent = true;
+        node->AddNode(new DataNode("useAboveMaxColor", useAboveMaxColor));
+    }
+
+        DataNode *aboveMaxColorNode = new DataNode("aboveMaxColor");
+        if(aboveMaxColor.CreateNode(aboveMaxColorNode, completeSave, true))
+        {
+            addToParent = true;
+            node->AddNode(aboveMaxColorNode);
+        }
+        else
+            delete aboveMaxColorNode;
     if(completeSave || !FieldsEqual(ID_centering, &defaultObject))
     {
         addToParent = true;
@@ -1238,10 +1282,18 @@ PseudocolorAttributes::SetFromNode(DataNode *parentNode)
         SetMinFlag(node->AsBool());
     if((node = searchNode->GetNode("min")) != 0)
         SetMin(node->AsDouble());
+    if((node = searchNode->GetNode("useBelowMinColor")) != 0)
+        SetUseBelowMinColor(node->AsBool());
+    if((node = searchNode->GetNode("belowMinColor")) != 0)
+        belowMinColor.SetFromNode(node);
     if((node = searchNode->GetNode("maxFlag")) != 0)
         SetMaxFlag(node->AsBool());
     if((node = searchNode->GetNode("max")) != 0)
         SetMax(node->AsDouble());
+    if((node = searchNode->GetNode("useAboveMaxColor")) != 0)
+        SetUseAboveMaxColor(node->AsBool());
+    if((node = searchNode->GetNode("aboveMaxColor")) != 0)
+        aboveMaxColor.SetFromNode(node);
     if((node = searchNode->GetNode("centering")) != 0)
     {
         // Allow enums to be int or string in the config file
@@ -1480,6 +1532,20 @@ PseudocolorAttributes::SetMin(double min_)
 }
 
 void
+PseudocolorAttributes::SetUseBelowMinColor(bool useBelowMinColor_)
+{
+    useBelowMinColor = useBelowMinColor_;
+    Select(ID_useBelowMinColor, (void *)&useBelowMinColor);
+}
+
+void
+PseudocolorAttributes::SetBelowMinColor(const ColorAttribute &belowMinColor_)
+{
+    belowMinColor = belowMinColor_;
+    Select(ID_belowMinColor, (void *)&belowMinColor);
+}
+
+void
 PseudocolorAttributes::SetMaxFlag(bool maxFlag_)
 {
     maxFlag = maxFlag_;
@@ -1491,6 +1557,20 @@ PseudocolorAttributes::SetMax(double max_)
 {
     max = max_;
     Select(ID_max, (void *)&max);
+}
+
+void
+PseudocolorAttributes::SetUseAboveMaxColor(bool useAboveMaxColor_)
+{
+    useAboveMaxColor = useAboveMaxColor_;
+    Select(ID_useAboveMaxColor, (void *)&useAboveMaxColor);
+}
+
+void
+PseudocolorAttributes::SetAboveMaxColor(const ColorAttribute &aboveMaxColor_)
+{
+    aboveMaxColor = aboveMaxColor_;
+    Select(ID_aboveMaxColor, (void *)&aboveMaxColor);
 }
 
 void
@@ -1822,6 +1902,24 @@ PseudocolorAttributes::GetMin() const
 }
 
 bool
+PseudocolorAttributes::GetUseBelowMinColor() const
+{
+    return useBelowMinColor;
+}
+
+const ColorAttribute &
+PseudocolorAttributes::GetBelowMinColor() const
+{
+    return belowMinColor;
+}
+
+ColorAttribute &
+PseudocolorAttributes::GetBelowMinColor()
+{
+    return belowMinColor;
+}
+
+bool
 PseudocolorAttributes::GetMaxFlag() const
 {
     return maxFlag;
@@ -1831,6 +1929,24 @@ double
 PseudocolorAttributes::GetMax() const
 {
     return max;
+}
+
+bool
+PseudocolorAttributes::GetUseAboveMaxColor() const
+{
+    return useAboveMaxColor;
+}
+
+const ColorAttribute &
+PseudocolorAttributes::GetAboveMaxColor() const
+{
+    return aboveMaxColor;
+}
+
+ColorAttribute &
+PseudocolorAttributes::GetAboveMaxColor()
+{
+    return aboveMaxColor;
 }
 
 PseudocolorAttributes::Centering
@@ -2132,6 +2248,18 @@ PseudocolorAttributes::GetPointColor()
 ///////////////////////////////////////////////////////////////////////////////
 
 void
+PseudocolorAttributes::SelectBelowMinColor()
+{
+    Select(ID_belowMinColor, (void *)&belowMinColor);
+}
+
+void
+PseudocolorAttributes::SelectAboveMaxColor()
+{
+    Select(ID_aboveMaxColor, (void *)&aboveMaxColor);
+}
+
+void
 PseudocolorAttributes::SelectColorTableName()
 {
     Select(ID_colorTableName, (void *)&colorTableName);
@@ -2202,8 +2330,12 @@ PseudocolorAttributes::GetFieldName(int index) const
     case ID_limitsMode:               return "limitsMode";
     case ID_minFlag:                  return "minFlag";
     case ID_min:                      return "min";
+    case ID_useBelowMinColor:         return "useBelowMinColor";
+    case ID_belowMinColor:            return "belowMinColor";
     case ID_maxFlag:                  return "maxFlag";
     case ID_max:                      return "max";
+    case ID_useAboveMaxColor:         return "useAboveMaxColor";
+    case ID_aboveMaxColor:            return "aboveMaxColor";
     case ID_centering:                return "centering";
     case ID_colorTableName:           return "colorTableName";
     case ID_invertColorTable:         return "invertColorTable";
@@ -2275,8 +2407,12 @@ PseudocolorAttributes::GetFieldType(int index) const
     case ID_limitsMode:               return FieldType_enum;
     case ID_minFlag:                  return FieldType_bool;
     case ID_min:                      return FieldType_double;
+    case ID_useBelowMinColor:         return FieldType_bool;
+    case ID_belowMinColor:            return FieldType_color;
     case ID_maxFlag:                  return FieldType_bool;
     case ID_max:                      return FieldType_double;
+    case ID_useAboveMaxColor:         return FieldType_bool;
+    case ID_aboveMaxColor:            return FieldType_color;
     case ID_centering:                return FieldType_enum;
     case ID_colorTableName:           return FieldType_colortable;
     case ID_invertColorTable:         return FieldType_bool;
@@ -2348,8 +2484,12 @@ PseudocolorAttributes::GetFieldTypeName(int index) const
     case ID_limitsMode:               return "enum";
     case ID_minFlag:                  return "bool";
     case ID_min:                      return "double";
+    case ID_useBelowMinColor:         return "bool";
+    case ID_belowMinColor:            return "color";
     case ID_maxFlag:                  return "bool";
     case ID_max:                      return "double";
+    case ID_useAboveMaxColor:         return "bool";
+    case ID_aboveMaxColor:            return "color";
     case ID_centering:                return "enum";
     case ID_colorTableName:           return "colortable";
     case ID_invertColorTable:         return "bool";
@@ -2443,6 +2583,16 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
         retval = (min == obj.min);
         }
         break;
+    case ID_useBelowMinColor:
+        {  // new scope
+        retval = (useBelowMinColor == obj.useBelowMinColor);
+        }
+        break;
+    case ID_belowMinColor:
+        {  // new scope
+        retval = (belowMinColor == obj.belowMinColor);
+        }
+        break;
     case ID_maxFlag:
         {  // new scope
         retval = (maxFlag == obj.maxFlag);
@@ -2451,6 +2601,16 @@ PseudocolorAttributes::FieldsEqual(int index_, const AttributeGroup *rhs) const
     case ID_max:
         {  // new scope
         retval = (max == obj.max);
+        }
+        break;
+    case ID_useAboveMaxColor:
+        {  // new scope
+        retval = (useAboveMaxColor == obj.useAboveMaxColor);
+        }
+        break;
+    case ID_aboveMaxColor:
+        {  // new scope
+        retval = (aboveMaxColor == obj.aboveMaxColor);
         }
         break;
     case ID_centering:

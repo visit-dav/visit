@@ -112,6 +112,9 @@ class  vtkLookupTable;
 //    Added methods and ivars that allow more user control of tick marks
 //    and tick labels.
 //
+//    Kathleen Biagas, Wed Dec 26 13:15:24 PST 2018
+//    Add functions for below and above range colors.
+//
 // ****************************************************************************
 
 class PLOTTER_API avtVariableLegend : public avtLegend
@@ -154,6 +157,10 @@ class PLOTTER_API avtVariableLegend : public avtLegend
     virtual void               GetCalculatedLabels(doubleVector &);
     virtual int                GetType(void) { return 0;}
 
+    void                       SetBelowRangeColor(double, double, double, double);
+    void                       SetAboveRangeColor(double, double, double, double);
+    void                       UseBelowRangeColor(bool);
+    void                       UseAboveRangeColor(bool);
 
   protected:
     double                     min, max;

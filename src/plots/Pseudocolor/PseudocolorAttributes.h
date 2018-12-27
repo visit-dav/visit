@@ -131,6 +131,8 @@ public:
 
     // Property selection methods
     virtual void SelectAll();
+    void SelectBelowMinColor();
+    void SelectAboveMaxColor();
     void SelectColorTableName();
     void SelectOpacityVariable();
     void SelectPointSizeVar();
@@ -145,8 +147,12 @@ public:
     void SetLimitsMode(LimitsMode limitsMode_);
     void SetMinFlag(bool minFlag_);
     void SetMin(double min_);
+    void SetUseBelowMinColor(bool useBelowMinColor_);
+    void SetBelowMinColor(const ColorAttribute &belowMinColor_);
     void SetMaxFlag(bool maxFlag_);
     void SetMax(double max_);
+    void SetUseAboveMaxColor(bool useAboveMaxColor_);
+    void SetAboveMaxColor(const ColorAttribute &aboveMaxColor_);
     void SetCentering(Centering centering_);
     void SetColorTableName(const std::string &colorTableName_);
     void SetInvertColorTable(bool invertColorTable_);
@@ -196,8 +202,14 @@ public:
     LimitsMode           GetLimitsMode() const;
     bool                 GetMinFlag() const;
     double               GetMin() const;
+    bool                 GetUseBelowMinColor() const;
+    const ColorAttribute &GetBelowMinColor() const;
+          ColorAttribute &GetBelowMinColor();
     bool                 GetMaxFlag() const;
     double               GetMax() const;
+    bool                 GetUseAboveMaxColor() const;
+    const ColorAttribute &GetAboveMaxColor() const;
+          ColorAttribute &GetAboveMaxColor();
     Centering            GetCentering() const;
     const std::string    &GetColorTableName() const;
           std::string    &GetColorTableName();
@@ -307,8 +319,12 @@ public:
         ID_limitsMode,
         ID_minFlag,
         ID_min,
+        ID_useBelowMinColor,
+        ID_belowMinColor,
         ID_maxFlag,
         ID_max,
+        ID_useAboveMaxColor,
+        ID_aboveMaxColor,
         ID_centering,
         ID_colorTableName,
         ID_invertColorTable,
@@ -360,8 +376,12 @@ private:
     int            limitsMode;
     bool           minFlag;
     double         min;
+    bool           useBelowMinColor;
+    ColorAttribute belowMinColor;
     bool           maxFlag;
     double         max;
+    bool           useAboveMaxColor;
+    ColorAttribute aboveMaxColor;
     int            centering;
     std::string    colorTableName;
     bool           invertColorTable;
@@ -409,6 +429,6 @@ private:
     static const char *TypeMapFormatString;
     static const private_tmfs_t TmfsStruct;
 };
-#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbdisbisdddbbdibsiiiiiddbsdiiiddidbsdiiiibbaa"
+#define PSEUDOCOLORATTRIBUTES_TMFS "idibdbabdbaisbisdddbbdibsiiiiiddbsdiiiddidbsdiiiibbaa"
 
 #endif

@@ -1033,3 +1033,71 @@ avtVariableLegend::GetCalculatedLabels(doubleVector &v)
 {
     sBar->GetCalculatedValues(v);
 }
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetBelowRangeColor
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 26, 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetBelowRangeColor(double r, double g, double b, double a)
+{
+    lut->SetBelowRangeColor(r,g,b,a);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::SetAboveRangeColor
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 26, 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::SetAboveRangeColor(double r, double g, double b, double a)
+{
+    lut->SetAboveRangeColor(r,g,b,a);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::UseBelowRangeColor
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 26, 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::UseBelowRangeColor(bool v)
+{
+    lut->SetUseBelowRangeColor(v);
+}
+
+
+// ****************************************************************************
+// Method: avtVariableLegend::UseAboveRangeColor
+//
+// Programmer: Kathleen Biagas
+// Creation:   December 26, 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+avtVariableLegend::UseAboveRangeColor(bool v)
+{
+    lut->SetUseAboveRangeColor(v);
+}

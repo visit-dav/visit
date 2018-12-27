@@ -60,7 +60,7 @@ import llnl.visit.ColorAttribute;
 
 public class PseudocolorAttributes extends AttributeSubject implements Plugin
 {
-    private static int PseudocolorAttributes_numAdditionalAtts = 49;
+    private static int PseudocolorAttributes_numAdditionalAtts = 53;
 
     // Enum values
     public final static int SCALING_LINEAR = 0;
@@ -101,8 +101,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         limitsMode = LIMITSMODE_ORIGINALDATA;
         minFlag = false;
         min = 0;
+        useBelowMinColor = false;
+        belowMinColor = new ColorAttribute();
         maxFlag = false;
         max = 1;
+        useAboveMaxColor = false;
+        aboveMaxColor = new ColorAttribute();
         centering = CENTERING_NATURAL;
         colorTableName = new String("hot");
         invertColorTable = false;
@@ -156,8 +160,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         limitsMode = LIMITSMODE_ORIGINALDATA;
         minFlag = false;
         min = 0;
+        useBelowMinColor = false;
+        belowMinColor = new ColorAttribute();
         maxFlag = false;
         max = 1;
+        useAboveMaxColor = false;
+        aboveMaxColor = new ColorAttribute();
         centering = CENTERING_NATURAL;
         colorTableName = new String("hot");
         invertColorTable = false;
@@ -211,8 +219,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         limitsMode = obj.limitsMode;
         minFlag = obj.minFlag;
         min = obj.min;
+        useBelowMinColor = obj.useBelowMinColor;
+        belowMinColor = new ColorAttribute(obj.belowMinColor);
         maxFlag = obj.maxFlag;
         max = obj.max;
+        useAboveMaxColor = obj.useAboveMaxColor;
+        aboveMaxColor = new ColorAttribute(obj.aboveMaxColor);
         centering = obj.centering;
         colorTableName = new String(obj.colorTableName);
         invertColorTable = obj.invertColorTable;
@@ -277,8 +289,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
                 (limitsMode == obj.limitsMode) &&
                 (minFlag == obj.minFlag) &&
                 (min == obj.min) &&
+                (useBelowMinColor == obj.useBelowMinColor) &&
+                (belowMinColor == obj.belowMinColor) &&
                 (maxFlag == obj.maxFlag) &&
                 (max == obj.max) &&
+                (useAboveMaxColor == obj.useAboveMaxColor) &&
+                (aboveMaxColor == obj.aboveMaxColor) &&
                 (centering == obj.centering) &&
                 (colorTableName.equals(obj.colorTableName)) &&
                 (invertColorTable == obj.invertColorTable) &&
@@ -357,268 +373,292 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         Select(4);
     }
 
+    public void SetUseBelowMinColor(boolean useBelowMinColor_)
+    {
+        useBelowMinColor = useBelowMinColor_;
+        Select(5);
+    }
+
+    public void SetBelowMinColor(ColorAttribute belowMinColor_)
+    {
+        belowMinColor = belowMinColor_;
+        Select(6);
+    }
+
     public void SetMaxFlag(boolean maxFlag_)
     {
         maxFlag = maxFlag_;
-        Select(5);
+        Select(7);
     }
 
     public void SetMax(double max_)
     {
         max = max_;
-        Select(6);
+        Select(8);
+    }
+
+    public void SetUseAboveMaxColor(boolean useAboveMaxColor_)
+    {
+        useAboveMaxColor = useAboveMaxColor_;
+        Select(9);
+    }
+
+    public void SetAboveMaxColor(ColorAttribute aboveMaxColor_)
+    {
+        aboveMaxColor = aboveMaxColor_;
+        Select(10);
     }
 
     public void SetCentering(int centering_)
     {
         centering = centering_;
-        Select(7);
+        Select(11);
     }
 
     public void SetColorTableName(String colorTableName_)
     {
         colorTableName = colorTableName_;
-        Select(8);
+        Select(12);
     }
 
     public void SetInvertColorTable(boolean invertColorTable_)
     {
         invertColorTable = invertColorTable_;
-        Select(9);
+        Select(13);
     }
 
     public void SetOpacityType(int opacityType_)
     {
         opacityType = opacityType_;
-        Select(10);
+        Select(14);
     }
 
     public void SetOpacityVariable(String opacityVariable_)
     {
         opacityVariable = opacityVariable_;
-        Select(11);
+        Select(15);
     }
 
     public void SetOpacity(double opacity_)
     {
         opacity = opacity_;
-        Select(12);
+        Select(16);
     }
 
     public void SetOpacityVarMin(double opacityVarMin_)
     {
         opacityVarMin = opacityVarMin_;
-        Select(13);
+        Select(17);
     }
 
     public void SetOpacityVarMax(double opacityVarMax_)
     {
         opacityVarMax = opacityVarMax_;
-        Select(14);
+        Select(18);
     }
 
     public void SetOpacityVarMinFlag(boolean opacityVarMinFlag_)
     {
         opacityVarMinFlag = opacityVarMinFlag_;
-        Select(15);
+        Select(19);
     }
 
     public void SetOpacityVarMaxFlag(boolean opacityVarMaxFlag_)
     {
         opacityVarMaxFlag = opacityVarMaxFlag_;
-        Select(16);
+        Select(20);
     }
 
     public void SetPointSize(double pointSize_)
     {
         pointSize = pointSize_;
-        Select(17);
+        Select(21);
     }
 
     public void SetPointType(int pointType_)
     {
         pointType = pointType_;
-        Select(18);
+        Select(22);
     }
 
     public void SetPointSizeVarEnabled(boolean pointSizeVarEnabled_)
     {
         pointSizeVarEnabled = pointSizeVarEnabled_;
-        Select(19);
+        Select(23);
     }
 
     public void SetPointSizeVar(String pointSizeVar_)
     {
         pointSizeVar = pointSizeVar_;
-        Select(20);
+        Select(24);
     }
 
     public void SetPointSizePixels(int pointSizePixels_)
     {
         pointSizePixels = pointSizePixels_;
-        Select(21);
+        Select(25);
     }
 
     public void SetLineType(int lineType_)
     {
         lineType = lineType_;
-        Select(22);
+        Select(26);
     }
 
     public void SetLineWidth(int lineWidth_)
     {
         lineWidth = lineWidth_;
-        Select(23);
+        Select(27);
     }
 
     public void SetTubeResolution(int tubeResolution_)
     {
         tubeResolution = tubeResolution_;
-        Select(24);
+        Select(28);
     }
 
     public void SetTubeRadiusSizeType(int tubeRadiusSizeType_)
     {
         tubeRadiusSizeType = tubeRadiusSizeType_;
-        Select(25);
+        Select(29);
     }
 
     public void SetTubeRadiusAbsolute(double tubeRadiusAbsolute_)
     {
         tubeRadiusAbsolute = tubeRadiusAbsolute_;
-        Select(26);
+        Select(30);
     }
 
     public void SetTubeRadiusBBox(double tubeRadiusBBox_)
     {
         tubeRadiusBBox = tubeRadiusBBox_;
-        Select(27);
+        Select(31);
     }
 
     public void SetTubeRadiusVarEnabled(boolean tubeRadiusVarEnabled_)
     {
         tubeRadiusVarEnabled = tubeRadiusVarEnabled_;
-        Select(28);
+        Select(32);
     }
 
     public void SetTubeRadiusVar(String tubeRadiusVar_)
     {
         tubeRadiusVar = tubeRadiusVar_;
-        Select(29);
+        Select(33);
     }
 
     public void SetTubeRadiusVarRatio(double tubeRadiusVarRatio_)
     {
         tubeRadiusVarRatio = tubeRadiusVarRatio_;
-        Select(30);
+        Select(34);
     }
 
     public void SetTailStyle(int tailStyle_)
     {
         tailStyle = tailStyle_;
-        Select(31);
+        Select(35);
     }
 
     public void SetHeadStyle(int headStyle_)
     {
         headStyle = headStyle_;
-        Select(32);
+        Select(36);
     }
 
     public void SetEndPointRadiusSizeType(int endPointRadiusSizeType_)
     {
         endPointRadiusSizeType = endPointRadiusSizeType_;
-        Select(33);
+        Select(37);
     }
 
     public void SetEndPointRadiusAbsolute(double endPointRadiusAbsolute_)
     {
         endPointRadiusAbsolute = endPointRadiusAbsolute_;
-        Select(34);
+        Select(38);
     }
 
     public void SetEndPointRadiusBBox(double endPointRadiusBBox_)
     {
         endPointRadiusBBox = endPointRadiusBBox_;
-        Select(35);
+        Select(39);
     }
 
     public void SetEndPointResolution(int endPointResolution_)
     {
         endPointResolution = endPointResolution_;
-        Select(36);
+        Select(40);
     }
 
     public void SetEndPointRatio(double endPointRatio_)
     {
         endPointRatio = endPointRatio_;
-        Select(37);
+        Select(41);
     }
 
     public void SetEndPointRadiusVarEnabled(boolean endPointRadiusVarEnabled_)
     {
         endPointRadiusVarEnabled = endPointRadiusVarEnabled_;
-        Select(38);
+        Select(42);
     }
 
     public void SetEndPointRadiusVar(String endPointRadiusVar_)
     {
         endPointRadiusVar = endPointRadiusVar_;
-        Select(39);
+        Select(43);
     }
 
     public void SetEndPointRadiusVarRatio(double endPointRadiusVarRatio_)
     {
         endPointRadiusVarRatio = endPointRadiusVarRatio_;
-        Select(40);
+        Select(44);
     }
 
     public void SetRenderSurfaces(int renderSurfaces_)
     {
         renderSurfaces = renderSurfaces_;
-        Select(41);
+        Select(45);
     }
 
     public void SetRenderWireframe(int renderWireframe_)
     {
         renderWireframe = renderWireframe_;
-        Select(42);
+        Select(46);
     }
 
     public void SetRenderPoints(int renderPoints_)
     {
         renderPoints = renderPoints_;
-        Select(43);
+        Select(47);
     }
 
     public void SetSmoothingLevel(int smoothingLevel_)
     {
         smoothingLevel = smoothingLevel_;
-        Select(44);
+        Select(48);
     }
 
     public void SetLegendFlag(boolean legendFlag_)
     {
         legendFlag = legendFlag_;
-        Select(45);
+        Select(49);
     }
 
     public void SetLightingFlag(boolean lightingFlag_)
     {
         lightingFlag = lightingFlag_;
-        Select(46);
+        Select(50);
     }
 
     public void SetWireframeColor(ColorAttribute wireframeColor_)
     {
         wireframeColor = wireframeColor_;
-        Select(47);
+        Select(51);
     }
 
     public void SetPointColor(ColorAttribute pointColor_)
     {
         pointColor = pointColor_;
-        Select(48);
+        Select(52);
     }
 
     // Property getting methods
@@ -627,8 +667,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     public int            GetLimitsMode() { return limitsMode; }
     public boolean        GetMinFlag() { return minFlag; }
     public double         GetMin() { return min; }
+    public boolean        GetUseBelowMinColor() { return useBelowMinColor; }
+    public ColorAttribute GetBelowMinColor() { return belowMinColor; }
     public boolean        GetMaxFlag() { return maxFlag; }
     public double         GetMax() { return max; }
+    public boolean        GetUseAboveMaxColor() { return useAboveMaxColor; }
+    public ColorAttribute GetAboveMaxColor() { return aboveMaxColor; }
     public int            GetCentering() { return centering; }
     public String         GetColorTableName() { return colorTableName; }
     public boolean        GetInvertColorTable() { return invertColorTable; }
@@ -686,92 +730,100 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         if(WriteSelect(4, buf))
             buf.WriteDouble(min);
         if(WriteSelect(5, buf))
-            buf.WriteBool(maxFlag);
+            buf.WriteBool(useBelowMinColor);
         if(WriteSelect(6, buf))
-            buf.WriteDouble(max);
+            belowMinColor.Write(buf);
         if(WriteSelect(7, buf))
-            buf.WriteInt(centering);
+            buf.WriteBool(maxFlag);
         if(WriteSelect(8, buf))
-            buf.WriteString(colorTableName);
+            buf.WriteDouble(max);
         if(WriteSelect(9, buf))
-            buf.WriteBool(invertColorTable);
+            buf.WriteBool(useAboveMaxColor);
         if(WriteSelect(10, buf))
-            buf.WriteInt(opacityType);
+            aboveMaxColor.Write(buf);
         if(WriteSelect(11, buf))
-            buf.WriteString(opacityVariable);
+            buf.WriteInt(centering);
         if(WriteSelect(12, buf))
-            buf.WriteDouble(opacity);
+            buf.WriteString(colorTableName);
         if(WriteSelect(13, buf))
-            buf.WriteDouble(opacityVarMin);
+            buf.WriteBool(invertColorTable);
         if(WriteSelect(14, buf))
-            buf.WriteDouble(opacityVarMax);
+            buf.WriteInt(opacityType);
         if(WriteSelect(15, buf))
-            buf.WriteBool(opacityVarMinFlag);
+            buf.WriteString(opacityVariable);
         if(WriteSelect(16, buf))
-            buf.WriteBool(opacityVarMaxFlag);
+            buf.WriteDouble(opacity);
         if(WriteSelect(17, buf))
-            buf.WriteDouble(pointSize);
+            buf.WriteDouble(opacityVarMin);
         if(WriteSelect(18, buf))
-            buf.WriteInt(pointType);
+            buf.WriteDouble(opacityVarMax);
         if(WriteSelect(19, buf))
-            buf.WriteBool(pointSizeVarEnabled);
+            buf.WriteBool(opacityVarMinFlag);
         if(WriteSelect(20, buf))
-            buf.WriteString(pointSizeVar);
+            buf.WriteBool(opacityVarMaxFlag);
         if(WriteSelect(21, buf))
-            buf.WriteInt(pointSizePixels);
+            buf.WriteDouble(pointSize);
         if(WriteSelect(22, buf))
-            buf.WriteInt(lineType);
+            buf.WriteInt(pointType);
         if(WriteSelect(23, buf))
-            buf.WriteInt(lineWidth);
+            buf.WriteBool(pointSizeVarEnabled);
         if(WriteSelect(24, buf))
-            buf.WriteInt(tubeResolution);
+            buf.WriteString(pointSizeVar);
         if(WriteSelect(25, buf))
-            buf.WriteInt(tubeRadiusSizeType);
+            buf.WriteInt(pointSizePixels);
         if(WriteSelect(26, buf))
-            buf.WriteDouble(tubeRadiusAbsolute);
+            buf.WriteInt(lineType);
         if(WriteSelect(27, buf))
-            buf.WriteDouble(tubeRadiusBBox);
+            buf.WriteInt(lineWidth);
         if(WriteSelect(28, buf))
-            buf.WriteBool(tubeRadiusVarEnabled);
+            buf.WriteInt(tubeResolution);
         if(WriteSelect(29, buf))
-            buf.WriteString(tubeRadiusVar);
+            buf.WriteInt(tubeRadiusSizeType);
         if(WriteSelect(30, buf))
-            buf.WriteDouble(tubeRadiusVarRatio);
+            buf.WriteDouble(tubeRadiusAbsolute);
         if(WriteSelect(31, buf))
-            buf.WriteInt(tailStyle);
+            buf.WriteDouble(tubeRadiusBBox);
         if(WriteSelect(32, buf))
-            buf.WriteInt(headStyle);
+            buf.WriteBool(tubeRadiusVarEnabled);
         if(WriteSelect(33, buf))
-            buf.WriteInt(endPointRadiusSizeType);
+            buf.WriteString(tubeRadiusVar);
         if(WriteSelect(34, buf))
-            buf.WriteDouble(endPointRadiusAbsolute);
+            buf.WriteDouble(tubeRadiusVarRatio);
         if(WriteSelect(35, buf))
-            buf.WriteDouble(endPointRadiusBBox);
+            buf.WriteInt(tailStyle);
         if(WriteSelect(36, buf))
-            buf.WriteInt(endPointResolution);
+            buf.WriteInt(headStyle);
         if(WriteSelect(37, buf))
-            buf.WriteDouble(endPointRatio);
+            buf.WriteInt(endPointRadiusSizeType);
         if(WriteSelect(38, buf))
-            buf.WriteBool(endPointRadiusVarEnabled);
+            buf.WriteDouble(endPointRadiusAbsolute);
         if(WriteSelect(39, buf))
-            buf.WriteString(endPointRadiusVar);
+            buf.WriteDouble(endPointRadiusBBox);
         if(WriteSelect(40, buf))
-            buf.WriteDouble(endPointRadiusVarRatio);
+            buf.WriteInt(endPointResolution);
         if(WriteSelect(41, buf))
-            buf.WriteInt(renderSurfaces);
+            buf.WriteDouble(endPointRatio);
         if(WriteSelect(42, buf))
-            buf.WriteInt(renderWireframe);
+            buf.WriteBool(endPointRadiusVarEnabled);
         if(WriteSelect(43, buf))
-            buf.WriteInt(renderPoints);
+            buf.WriteString(endPointRadiusVar);
         if(WriteSelect(44, buf))
-            buf.WriteInt(smoothingLevel);
+            buf.WriteDouble(endPointRadiusVarRatio);
         if(WriteSelect(45, buf))
-            buf.WriteBool(legendFlag);
+            buf.WriteInt(renderSurfaces);
         if(WriteSelect(46, buf))
-            buf.WriteBool(lightingFlag);
+            buf.WriteInt(renderWireframe);
         if(WriteSelect(47, buf))
-            wireframeColor.Write(buf);
+            buf.WriteInt(renderPoints);
         if(WriteSelect(48, buf))
+            buf.WriteInt(smoothingLevel);
+        if(WriteSelect(49, buf))
+            buf.WriteBool(legendFlag);
+        if(WriteSelect(50, buf))
+            buf.WriteBool(lightingFlag);
+        if(WriteSelect(51, buf))
+            wireframeColor.Write(buf);
+        if(WriteSelect(52, buf))
             pointColor.Write(buf);
     }
 
@@ -795,138 +847,152 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
             SetMin(buf.ReadDouble());
             break;
         case 5:
-            SetMaxFlag(buf.ReadBool());
+            SetUseBelowMinColor(buf.ReadBool());
             break;
         case 6:
-            SetMax(buf.ReadDouble());
+            belowMinColor.Read(buf);
+            Select(6);
             break;
         case 7:
-            SetCentering(buf.ReadInt());
+            SetMaxFlag(buf.ReadBool());
             break;
         case 8:
-            SetColorTableName(buf.ReadString());
+            SetMax(buf.ReadDouble());
             break;
         case 9:
-            SetInvertColorTable(buf.ReadBool());
+            SetUseAboveMaxColor(buf.ReadBool());
             break;
         case 10:
-            SetOpacityType(buf.ReadInt());
+            aboveMaxColor.Read(buf);
+            Select(10);
             break;
         case 11:
-            SetOpacityVariable(buf.ReadString());
+            SetCentering(buf.ReadInt());
             break;
         case 12:
-            SetOpacity(buf.ReadDouble());
+            SetColorTableName(buf.ReadString());
             break;
         case 13:
-            SetOpacityVarMin(buf.ReadDouble());
+            SetInvertColorTable(buf.ReadBool());
             break;
         case 14:
-            SetOpacityVarMax(buf.ReadDouble());
+            SetOpacityType(buf.ReadInt());
             break;
         case 15:
-            SetOpacityVarMinFlag(buf.ReadBool());
+            SetOpacityVariable(buf.ReadString());
             break;
         case 16:
-            SetOpacityVarMaxFlag(buf.ReadBool());
+            SetOpacity(buf.ReadDouble());
             break;
         case 17:
-            SetPointSize(buf.ReadDouble());
+            SetOpacityVarMin(buf.ReadDouble());
             break;
         case 18:
-            SetPointType(buf.ReadInt());
+            SetOpacityVarMax(buf.ReadDouble());
             break;
         case 19:
-            SetPointSizeVarEnabled(buf.ReadBool());
+            SetOpacityVarMinFlag(buf.ReadBool());
             break;
         case 20:
-            SetPointSizeVar(buf.ReadString());
+            SetOpacityVarMaxFlag(buf.ReadBool());
             break;
         case 21:
-            SetPointSizePixels(buf.ReadInt());
+            SetPointSize(buf.ReadDouble());
             break;
         case 22:
-            SetLineType(buf.ReadInt());
+            SetPointType(buf.ReadInt());
             break;
         case 23:
-            SetLineWidth(buf.ReadInt());
+            SetPointSizeVarEnabled(buf.ReadBool());
             break;
         case 24:
-            SetTubeResolution(buf.ReadInt());
+            SetPointSizeVar(buf.ReadString());
             break;
         case 25:
-            SetTubeRadiusSizeType(buf.ReadInt());
+            SetPointSizePixels(buf.ReadInt());
             break;
         case 26:
-            SetTubeRadiusAbsolute(buf.ReadDouble());
+            SetLineType(buf.ReadInt());
             break;
         case 27:
-            SetTubeRadiusBBox(buf.ReadDouble());
+            SetLineWidth(buf.ReadInt());
             break;
         case 28:
-            SetTubeRadiusVarEnabled(buf.ReadBool());
+            SetTubeResolution(buf.ReadInt());
             break;
         case 29:
-            SetTubeRadiusVar(buf.ReadString());
+            SetTubeRadiusSizeType(buf.ReadInt());
             break;
         case 30:
-            SetTubeRadiusVarRatio(buf.ReadDouble());
+            SetTubeRadiusAbsolute(buf.ReadDouble());
             break;
         case 31:
-            SetTailStyle(buf.ReadInt());
+            SetTubeRadiusBBox(buf.ReadDouble());
             break;
         case 32:
-            SetHeadStyle(buf.ReadInt());
+            SetTubeRadiusVarEnabled(buf.ReadBool());
             break;
         case 33:
-            SetEndPointRadiusSizeType(buf.ReadInt());
+            SetTubeRadiusVar(buf.ReadString());
             break;
         case 34:
-            SetEndPointRadiusAbsolute(buf.ReadDouble());
+            SetTubeRadiusVarRatio(buf.ReadDouble());
             break;
         case 35:
-            SetEndPointRadiusBBox(buf.ReadDouble());
+            SetTailStyle(buf.ReadInt());
             break;
         case 36:
-            SetEndPointResolution(buf.ReadInt());
+            SetHeadStyle(buf.ReadInt());
             break;
         case 37:
-            SetEndPointRatio(buf.ReadDouble());
+            SetEndPointRadiusSizeType(buf.ReadInt());
             break;
         case 38:
-            SetEndPointRadiusVarEnabled(buf.ReadBool());
+            SetEndPointRadiusAbsolute(buf.ReadDouble());
             break;
         case 39:
-            SetEndPointRadiusVar(buf.ReadString());
+            SetEndPointRadiusBBox(buf.ReadDouble());
             break;
         case 40:
-            SetEndPointRadiusVarRatio(buf.ReadDouble());
+            SetEndPointResolution(buf.ReadInt());
             break;
         case 41:
-            SetRenderSurfaces(buf.ReadInt());
+            SetEndPointRatio(buf.ReadDouble());
             break;
         case 42:
-            SetRenderWireframe(buf.ReadInt());
+            SetEndPointRadiusVarEnabled(buf.ReadBool());
             break;
         case 43:
-            SetRenderPoints(buf.ReadInt());
+            SetEndPointRadiusVar(buf.ReadString());
             break;
         case 44:
-            SetSmoothingLevel(buf.ReadInt());
+            SetEndPointRadiusVarRatio(buf.ReadDouble());
             break;
         case 45:
-            SetLegendFlag(buf.ReadBool());
+            SetRenderSurfaces(buf.ReadInt());
             break;
         case 46:
-            SetLightingFlag(buf.ReadBool());
+            SetRenderWireframe(buf.ReadInt());
             break;
         case 47:
-            wireframeColor.Read(buf);
-            Select(47);
+            SetRenderPoints(buf.ReadInt());
             break;
         case 48:
+            SetSmoothingLevel(buf.ReadInt());
+            break;
+        case 49:
+            SetLegendFlag(buf.ReadBool());
+            break;
+        case 50:
+            SetLightingFlag(buf.ReadBool());
+            break;
+        case 51:
+            wireframeColor.Read(buf);
+            Select(51);
+            break;
+        case 52:
             pointColor.Read(buf);
-            Select(48);
+            Select(52);
             break;
         }
     }
@@ -951,8 +1017,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
         str = str + "\n";
         str = str + boolToString("minFlag", minFlag, indent) + "\n";
         str = str + doubleToString("min", min, indent) + "\n";
+        str = str + boolToString("useBelowMinColor", useBelowMinColor, indent) + "\n";
+        str = str + indent + "belowMinColor = {" + belowMinColor.Red() + ", " + belowMinColor.Green() + ", " + belowMinColor.Blue() + ", " + belowMinColor.Alpha() + "}\n";
         str = str + boolToString("maxFlag", maxFlag, indent) + "\n";
         str = str + doubleToString("max", max, indent) + "\n";
+        str = str + boolToString("useAboveMaxColor", useAboveMaxColor, indent) + "\n";
+        str = str + indent + "aboveMaxColor = {" + aboveMaxColor.Red() + ", " + aboveMaxColor.Green() + ", " + aboveMaxColor.Blue() + ", " + aboveMaxColor.Alpha() + "}\n";
         str = str + indent + "centering = ";
         if(centering == CENTERING_NATURAL)
             str = str + "CENTERING_NATURAL";
@@ -1054,8 +1124,12 @@ public class PseudocolorAttributes extends AttributeSubject implements Plugin
     private int            limitsMode;
     private boolean        minFlag;
     private double         min;
+    private boolean        useBelowMinColor;
+    private ColorAttribute belowMinColor;
     private boolean        maxFlag;
     private double         max;
+    private boolean        useAboveMaxColor;
+    private ColorAttribute aboveMaxColor;
     private int            centering;
     private String         colorTableName;
     private boolean        invertColorTable;

@@ -260,6 +260,8 @@ QvisPseudocolorPlotWindow::CreateWindowContents()
 // Creation:   Tue Dec 29 14:37:53 EST 2009
 //
 // Modifications:
+//    Kathleen Biagas, Wed Dec 26 13:07:02 PST 2018
+//    Add color buttons for values < min and > max.
 //
 // ****************************************************************************
 
@@ -330,7 +332,7 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
             this, SLOT(limitsSelectChanged(int))); 
     limitsLayout->addWidget(limitsSelect, 0, 1, 1, 2, Qt::AlignLeft);
 
-    // Create the min toggle and line edit
+    // Create the min toggle and line edit, and color for values < min
     minToggle = new QCheckBox(tr("Minimum"), central);
     limitsLayout->addWidget(minToggle, 1, 0);
     connect(minToggle, SIGNAL(toggled(bool)),
@@ -338,19 +340,39 @@ QvisPseudocolorPlotWindow::CreateDataTab(QWidget *pageData)
     minLineEdit = new QLineEdit(central);
     connect(minLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMinLimitText())); 
-    limitsLayout->addWidget(minLineEdit, 1, 1);
+    limitsLayout->addWidget(minLineEdit, 1, 1, 1, 1);
 
-    // Create the max toggle and line edit
+    belowMinToggle = new QCheckBox(tr("Color for values < min"), central);
+    limitsLayout->addWidget(belowMinToggle, 1, 2, 1, 2, Qt::AlignRight);
+    connect(belowMinToggle, SIGNAL(toggled(bool)),
+            this, SLOT(belowMinToggled(bool)));
+
+    belowMinColor = new QvisColorButton(central);
+    belowMinColor->setButtonColor(QColor(255, 255, 255));
+    connect(belowMinColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(belowMinColorChanged(const QColor &)));
+    limitsLayout->addWidget(belowMinColor, 1, 4);
+
+    // Create the max toggle and line edit and color for values > max
     maxToggle = new QCheckBox(tr("Maximum"), central);
-    limitsLayout->addWidget(maxToggle, 1, 2);
+    limitsLayout->addWidget(maxToggle, 2, 0);
     connect(maxToggle, SIGNAL(toggled(bool)),
             this, SLOT(maxToggled(bool)));
     maxLineEdit = new QLineEdit(central);
     connect(maxLineEdit, SIGNAL(returnPressed()),
             this, SLOT(processMaxLimitText())); 
-    limitsLayout->addWidget(maxLineEdit, 1, 3);
+    limitsLayout->addWidget(maxLineEdit, 2, 1);
 
+    aboveMaxToggle = new QCheckBox(tr("Color for values > max"), central);
+    limitsLayout->addWidget(aboveMaxToggle, 2, 2, 1, 2);
+    connect(aboveMaxToggle, SIGNAL(toggled(bool)),
+            this, SLOT(aboveMaxToggled(bool)));
 
+    aboveMaxColor = new QvisColorButton(central);
+    aboveMaxColor->setButtonColor(QColor(255, 255, 255));
+    connect(aboveMaxColor, SIGNAL(selectedColor(const QColor &)),
+            this, SLOT(aboveMaxColorChanged(const QColor &)));
+    limitsLayout->addWidget(aboveMaxColor, 2, 4);
 
     //
     // Create the mesh group
@@ -929,6 +951,9 @@ QvisPseudocolorPlotWindow::CreateExtrasTab(QWidget *pageExtras)
 //   Cyrus Harrison, Wed Nov  2 19:09:51 PDT 2016
 //   Remove tubeRadiusVarLabel, the check box used for this includes a label.
 //
+//   Kathleen Biagas, Wed Dec 26 13:08:45 PST 2018
+//   Add logic for belowMinColor, aboveMaxColor.
+//
 // ****************************************************************************
 
 void
@@ -986,8 +1011,28 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
                        this, SLOT(minToggled(bool)));
             minToggle->setChecked(pcAtts->GetMinFlag());
             minLineEdit->setEnabled(pcAtts->GetMinFlag());
+            belowMinToggle->setEnabled(pcAtts->GetMinFlag());
+            belowMinColor->setEnabled(pcAtts->GetUseBelowMinColor());
             connect(minToggle, SIGNAL(toggled(bool)),
                     this, SLOT(minToggled(bool)));
+            break;
+        case PseudocolorAttributes::ID_useBelowMinColor:
+            disconnect(belowMinToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(belowMinToggled(bool)));
+            belowMinToggle->setChecked(pcAtts->GetUseBelowMinColor());
+            belowMinColor->setEnabled(pcAtts->GetUseBelowMinColor());
+            connect(belowMinToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(belowMinToggled(bool)));
+            break;
+        case PseudocolorAttributes::ID_belowMinColor:
+            { // new scope
+            QColor temp(pcAtts->GetBelowMinColor().Red(),
+                        pcAtts->GetBelowMinColor().Green(),
+                        pcAtts->GetBelowMinColor().Blue());
+            belowMinColor->blockSignals(true);
+            belowMinColor->setButtonColor(temp);
+            belowMinColor->blockSignals(false);
+            } 
             break;
         case PseudocolorAttributes::ID_maxFlag:
             // Disconnect the slot before setting the toggle and
@@ -996,8 +1041,28 @@ QvisPseudocolorPlotWindow::UpdateWindow(bool doAll)
                        this, SLOT(maxToggled(bool)));
             maxToggle->setChecked(pcAtts->GetMaxFlag());
             maxLineEdit->setEnabled(pcAtts->GetMaxFlag());
+            aboveMaxToggle->setEnabled(pcAtts->GetMaxFlag());
+            aboveMaxColor->setEnabled(pcAtts->GetUseAboveMaxColor());
             connect(maxToggle, SIGNAL(toggled(bool)),
                     this, SLOT(maxToggled(bool)));
+            break;
+        case PseudocolorAttributes::ID_useAboveMaxColor:
+            disconnect(aboveMaxToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(aboveMaxToggled(bool)));
+            aboveMaxToggle->setChecked(pcAtts->GetUseAboveMaxColor());
+            aboveMaxColor->setEnabled(pcAtts->GetUseAboveMaxColor());
+            connect(aboveMaxToggle, SIGNAL(toggled(bool)),
+                       this, SLOT(aboveMaxToggled(bool)));
+            break;
+        case PseudocolorAttributes::ID_aboveMaxColor:
+            { // new scope
+            QColor temp(pcAtts->GetAboveMaxColor().Red(),
+                        pcAtts->GetAboveMaxColor().Green(),
+                        pcAtts->GetAboveMaxColor().Blue());
+            aboveMaxColor->blockSignals(true);
+            aboveMaxColor->setButtonColor(temp);
+            aboveMaxColor->blockSignals(false);
+            } 
             break;
 
             // centering
@@ -1850,6 +1915,73 @@ QvisPseudocolorPlotWindow::maxToggled(bool val)
     pcAtts->SetMaxFlag(val);
     Apply();
 }
+
+void
+QvisPseudocolorPlotWindow::belowMinToggled(bool val)
+{
+    pcAtts->SetUseBelowMinColor(val);
+    Apply();
+}
+
+void
+QvisPseudocolorPlotWindow::aboveMaxToggled(bool val)
+{
+    pcAtts->SetUseAboveMaxColor(val);
+    Apply();
+}
+
+
+
+// ****************************************************************************
+// Method: QvisPseudocolorPlotWindow::belowMinColorChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the belowMin color button's
+//   color changes.
+//
+// Arguments:
+//   color : The new color for values below minimum.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   December 26, 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::belowMinColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    pcAtts->SetBelowMinColor(temp);
+    Apply();
+}
+
+// ****************************************************************************
+// Method: QvisPseudocolorPlotWindow::aboveMaxColorChanged
+//
+// Purpose: 
+//   This is a Qt slot function that is called when the aboveMax color button's
+//   color changes.
+//
+// Arguments:
+//   color : The new color for values above maximum.
+//
+// Programmer: Kathleen Biagas 
+// Creation:   December 26, 2018
+//
+// Modifications:
+//   
+// ****************************************************************************
+
+void
+QvisPseudocolorPlotWindow::aboveMaxColorChanged(const QColor &color)
+{
+    ColorAttribute temp(color.red(), color.green(), color.blue());
+    pcAtts->SetAboveMaxColor(temp);
+    Apply();
+}
+
 
 void
 QvisPseudocolorPlotWindow::centeringClicked(int button)

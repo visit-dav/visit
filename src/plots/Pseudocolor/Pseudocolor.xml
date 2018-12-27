@@ -61,11 +61,21 @@
       <Field name="min" label="Minimum" type="double" enabler="minFlag:true">
         0.000000
       </Field>
+      <Field name="useBelowMinColor" label="useBelowMinColor" type="bool" enabler="minFlag:true">
+        false
+      </Field>
+      <Field name="belowMinColor" label="belowMinColor" type="color" length="4" enabler="useBelowMinColor:true">
+      </Field>
       <Field name="maxFlag" label="Use max" type="bool">
         false
       </Field>
       <Field name="max" label="Maximum" type="double" enabler="maxFlag:true">
         1.000000
+      </Field>
+      <Field name="useAboveMaxColor" label="useAboveMaxColor" type="bool" enabler="maxFlag:true">
+        false
+      </Field>
+      <Field name="aboveMaxColor" label="aboveMaxColor" type="color" length="4" enabler="useAboveMaxColor:true">
       </Field>
       <Field name="centering" label="Centering" type="enum" subtype="Centering">
         Natural

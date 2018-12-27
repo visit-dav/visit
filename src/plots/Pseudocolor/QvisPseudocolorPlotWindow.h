@@ -121,6 +121,9 @@ class PseudocolorAttributes;
 //   Cyrus Harrison, Wed Nov  2 19:09:51 PDT 2016
 //   Remove tubeRadiusVarLabel, the check box used for this includes a label.
 //
+//   Kathleen Biagas, Wed Dec 26 13:08:45 PST 2018
+//   Add belowMinColor, aboveMaxColor, belowMinToggle, aboveMaxToggle.
+//
 // ****************************************************************************
 
 class QvisPseudocolorPlotWindow : public QvisPostableWindowObserver
@@ -156,6 +159,10 @@ private slots:
     void maxToggled(bool on);
     void processMaxLimitText();
     void processMinLimitText();
+    void belowMinToggled(bool);
+    void aboveMaxToggled(bool);
+    void belowMinColorChanged(const QColor &);
+    void aboveMaxColorChanged(const QColor &);
 
     void centeringClicked(int button);
 
@@ -222,6 +229,10 @@ private:
     QCheckBox             *maxToggle;
     QLineEdit             *maxLineEdit;
     QLineEdit             *minLineEdit;
+    QCheckBox             *belowMinToggle;
+    QvisColorButton       *belowMinColor;
+    QCheckBox             *aboveMaxToggle;
+    QvisColorButton       *aboveMaxColor;
 
     QButtonGroup          *centeringButtons;
 

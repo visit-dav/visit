@@ -40,6 +40,8 @@
 #include <ObserverToCallback.h>
 #include <stdio.h>
 #include <snprintf.h>
+#include <ColorAttribute.h>
+#include <ColorAttribute.h>
 #include <GlyphTypes.h>
 #include <ColorAttribute.h>
 #include <ColorAttribute.h>
@@ -122,12 +124,28 @@ PyPseudocolorAttributes_ToString(const PseudocolorAttributes *atts, const char *
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smin = %g\n", prefix, atts->GetMin());
     str += tmpStr;
+    if(atts->GetUseBelowMinColor())
+        SNPRINTF(tmpStr, 1000, "%suseBelowMinColor = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suseBelowMinColor = 0\n", prefix);
+    str += tmpStr;
+    const unsigned char *belowMinColor = atts->GetBelowMinColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "%sbelowMinColor = (%d, %d, %d, %d)\n", prefix, int(belowMinColor[0]), int(belowMinColor[1]), int(belowMinColor[2]), int(belowMinColor[3]));
+    str += tmpStr;
     if(atts->GetMaxFlag())
         SNPRINTF(tmpStr, 1000, "%smaxFlag = 1\n", prefix);
     else
         SNPRINTF(tmpStr, 1000, "%smaxFlag = 0\n", prefix);
     str += tmpStr;
     SNPRINTF(tmpStr, 1000, "%smax = %g\n", prefix, atts->GetMax());
+    str += tmpStr;
+    if(atts->GetUseAboveMaxColor())
+        SNPRINTF(tmpStr, 1000, "%suseAboveMaxColor = 1\n", prefix);
+    else
+        SNPRINTF(tmpStr, 1000, "%suseAboveMaxColor = 0\n", prefix);
+    str += tmpStr;
+    const unsigned char *aboveMaxColor = atts->GetAboveMaxColor().GetColor();
+    SNPRINTF(tmpStr, 1000, "%saboveMaxColor = (%d, %d, %d, %d)\n", prefix, int(aboveMaxColor[0]), int(aboveMaxColor[1]), int(aboveMaxColor[2]), int(aboveMaxColor[3]));
     str += tmpStr;
     const char *centering_names = "Natural, Nodal, Zonal";
     switch (atts->GetCentering())
@@ -547,6 +565,107 @@ PseudocolorAttributes_GetMin(PyObject *self, PyObject *args)
 }
 
 /*static*/ PyObject *
+PseudocolorAttributes_SetUseBelowMinColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the useBelowMinColor in the object.
+    obj->data->SetUseBelowMinColor(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetUseBelowMinColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseBelowMinColor()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetBelowMinColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    {
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
+        {
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Set the belowMinColor in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetBelowMinColor(ca);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetBelowMinColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the belowMinColor.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *belowMinColor = obj->data->GetBelowMinColor().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(belowMinColor[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(belowMinColor[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(belowMinColor[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(belowMinColor[3])));
+    return retval;
+}
+
+/*static*/ PyObject *
 PseudocolorAttributes_SetMaxFlag(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
@@ -591,6 +710,107 @@ PseudocolorAttributes_GetMax(PyObject *self, PyObject *args)
 {
     PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
     PyObject *retval = PyFloat_FromDouble(obj->data->GetMax());
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetUseAboveMaxColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int ival;
+    if(!PyArg_ParseTuple(args, "i", &ival))
+        return NULL;
+
+    // Set the useAboveMaxColor in the object.
+    obj->data->SetUseAboveMaxColor(ival != 0);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetUseAboveMaxColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    PyObject *retval = PyInt_FromLong(obj->data->GetUseAboveMaxColor()?1L:0L);
+    return retval;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_SetAboveMaxColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+
+    int c[4];
+    if(!PyArg_ParseTuple(args, "iiii", &c[0], &c[1], &c[2], &c[3]))
+    {
+        c[3] = 255;
+        if(!PyArg_ParseTuple(args, "iii", &c[0], &c[1], &c[2]))
+        {
+            double dr, dg, db, da;
+            if(PyArg_ParseTuple(args, "dddd", &dr, &dg, &db, &da))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = int(da);
+            }
+            else if(PyArg_ParseTuple(args, "ddd", &dr, &dg, &db))
+            {
+                c[0] = int(dr);
+                c[1] = int(dg);
+                c[2] = int(db);
+                c[3] = 255;
+            }
+            else
+            {
+                PyObject *tuple = NULL;
+                if(!PyArg_ParseTuple(args, "O", &tuple))
+                    return NULL;
+
+                if(!PyTuple_Check(tuple))
+                    return NULL;
+
+                // Make sure that the tuple is the right size.
+                if(PyTuple_Size(tuple) < 3 || PyTuple_Size(tuple) > 4)
+                    return NULL;
+
+                // Make sure that all elements in the tuple are ints.
+                for(int i = 0; i < PyTuple_Size(tuple); ++i)
+                {
+                    PyObject *item = PyTuple_GET_ITEM(tuple, i);
+                    if(PyInt_Check(item))
+                        c[i] = int(PyInt_AS_LONG(PyTuple_GET_ITEM(tuple, i)));
+                    else if(PyFloat_Check(item))
+                        c[i] = int(PyFloat_AS_DOUBLE(PyTuple_GET_ITEM(tuple, i)));
+                    else
+                        return NULL;
+                }
+            }
+        }
+        PyErr_Clear();
+    }
+
+    // Set the aboveMaxColor in the object.
+    ColorAttribute ca(c[0], c[1], c[2], c[3]);
+    obj->data->SetAboveMaxColor(ca);
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
+/*static*/ PyObject *
+PseudocolorAttributes_GetAboveMaxColor(PyObject *self, PyObject *args)
+{
+    PseudocolorAttributesObject *obj = (PseudocolorAttributesObject *)self;
+    // Allocate a tuple the with enough entries to hold the aboveMaxColor.
+    PyObject *retval = PyTuple_New(4);
+    const unsigned char *aboveMaxColor = obj->data->GetAboveMaxColor().GetColor();
+    PyTuple_SET_ITEM(retval, 0, PyInt_FromLong(long(aboveMaxColor[0])));
+    PyTuple_SET_ITEM(retval, 1, PyInt_FromLong(long(aboveMaxColor[1])));
+    PyTuple_SET_ITEM(retval, 2, PyInt_FromLong(long(aboveMaxColor[2])));
+    PyTuple_SET_ITEM(retval, 3, PyInt_FromLong(long(aboveMaxColor[3])));
     return retval;
 }
 
@@ -1797,10 +2017,18 @@ PyMethodDef PyPseudocolorAttributes_methods[PSEUDOCOLORATTRIBUTES_NMETH] = {
     {"GetMinFlag", PseudocolorAttributes_GetMinFlag, METH_VARARGS},
     {"SetMin", PseudocolorAttributes_SetMin, METH_VARARGS},
     {"GetMin", PseudocolorAttributes_GetMin, METH_VARARGS},
+    {"SetUseBelowMinColor", PseudocolorAttributes_SetUseBelowMinColor, METH_VARARGS},
+    {"GetUseBelowMinColor", PseudocolorAttributes_GetUseBelowMinColor, METH_VARARGS},
+    {"SetBelowMinColor", PseudocolorAttributes_SetBelowMinColor, METH_VARARGS},
+    {"GetBelowMinColor", PseudocolorAttributes_GetBelowMinColor, METH_VARARGS},
     {"SetMaxFlag", PseudocolorAttributes_SetMaxFlag, METH_VARARGS},
     {"GetMaxFlag", PseudocolorAttributes_GetMaxFlag, METH_VARARGS},
     {"SetMax", PseudocolorAttributes_SetMax, METH_VARARGS},
     {"GetMax", PseudocolorAttributes_GetMax, METH_VARARGS},
+    {"SetUseAboveMaxColor", PseudocolorAttributes_SetUseAboveMaxColor, METH_VARARGS},
+    {"GetUseAboveMaxColor", PseudocolorAttributes_GetUseAboveMaxColor, METH_VARARGS},
+    {"SetAboveMaxColor", PseudocolorAttributes_SetAboveMaxColor, METH_VARARGS},
+    {"GetAboveMaxColor", PseudocolorAttributes_GetAboveMaxColor, METH_VARARGS},
     {"SetCentering", PseudocolorAttributes_SetCentering, METH_VARARGS},
     {"GetCentering", PseudocolorAttributes_GetCentering, METH_VARARGS},
     {"SetColorTableName", PseudocolorAttributes_SetColorTableName, METH_VARARGS},
@@ -1935,10 +2163,18 @@ PyPseudocolorAttributes_getattr(PyObject *self, char *name)
         return PseudocolorAttributes_GetMinFlag(self, NULL);
     if(strcmp(name, "min") == 0)
         return PseudocolorAttributes_GetMin(self, NULL);
+    if(strcmp(name, "useBelowMinColor") == 0)
+        return PseudocolorAttributes_GetUseBelowMinColor(self, NULL);
+    if(strcmp(name, "belowMinColor") == 0)
+        return PseudocolorAttributes_GetBelowMinColor(self, NULL);
     if(strcmp(name, "maxFlag") == 0)
         return PseudocolorAttributes_GetMaxFlag(self, NULL);
     if(strcmp(name, "max") == 0)
         return PseudocolorAttributes_GetMax(self, NULL);
+    if(strcmp(name, "useAboveMaxColor") == 0)
+        return PseudocolorAttributes_GetUseAboveMaxColor(self, NULL);
+    if(strcmp(name, "aboveMaxColor") == 0)
+        return PseudocolorAttributes_GetAboveMaxColor(self, NULL);
     if(strcmp(name, "centering") == 0)
         return PseudocolorAttributes_GetCentering(self, NULL);
     if(strcmp(name, "Natural") == 0)
@@ -2150,10 +2386,18 @@ PyPseudocolorAttributes_setattr(PyObject *self, char *name, PyObject *args)
         obj = PseudocolorAttributes_SetMinFlag(self, tuple);
     else if(strcmp(name, "min") == 0)
         obj = PseudocolorAttributes_SetMin(self, tuple);
+    else if(strcmp(name, "useBelowMinColor") == 0)
+        obj = PseudocolorAttributes_SetUseBelowMinColor(self, tuple);
+    else if(strcmp(name, "belowMinColor") == 0)
+        obj = PseudocolorAttributes_SetBelowMinColor(self, tuple);
     else if(strcmp(name, "maxFlag") == 0)
         obj = PseudocolorAttributes_SetMaxFlag(self, tuple);
     else if(strcmp(name, "max") == 0)
         obj = PseudocolorAttributes_SetMax(self, tuple);
+    else if(strcmp(name, "useAboveMaxColor") == 0)
+        obj = PseudocolorAttributes_SetUseAboveMaxColor(self, tuple);
+    else if(strcmp(name, "aboveMaxColor") == 0)
+        obj = PseudocolorAttributes_SetAboveMaxColor(self, tuple);
     else if(strcmp(name, "centering") == 0)
         obj = PseudocolorAttributes_SetCentering(self, tuple);
     else if(strcmp(name, "colorTableName") == 0)
