@@ -66,13 +66,13 @@ vtkStandardNewMacro( vtkCurveMapper )
 
 //----------------------------------------------------------------------------
 vtkCurveMapper::vtkCurveMapper()
-  : DrawCurve(true), 
-    DrawPoints(false), 
-    SymbolType(0), 
-    PointStride(1), 
-    StaticPoints(true), 
-    PointDensity(50), 
-    PointSize(5.0), 
+  : DrawCurve(true),
+    DrawPoints(false),
+    SymbolType(0),
+    PointStride(1),
+    StaticPoints(true),
+    PointDensity(50),
+    PointSize(5.0),
     ViewScale(1.0),
     TimeForTimeCue(0.0),
     DoBallTimeCue(false),
@@ -105,10 +105,10 @@ vtkCurveMapper::vtkCurveMapper()
   this->LineCueMapper->ScalarVisibilityOff();
   this->LineCueMapper->SetInterpolateScalarsBeforeMapping(0);
 
-  this->FFScale[0] = this->FFScale[1] = this->FFScale[2] = 1.; 
-  this->TimeCueBallColor[0] = 
+  this->FFScale[0] = this->FFScale[1] = this->FFScale[2] = 1.;
+  this->TimeCueBallColor[0] =
     this->TimeCueBallColor[1] = this->TimeCueBallColor[2] = 1.;
-  this->TimeCueLineColor[0] = 
+  this->TimeCueLineColor[0] =
     this->TimeCueLineColor[1] = this->TimeCueLineColor[2] = 1.;
 }
 
@@ -150,7 +150,7 @@ void vtkCurveMapper::Render(vtkRenderer *ren, vtkActor *act)
 
     //
     // We need to temporarily change the actor color for
-    // the ball cue. 
+    // the ball cue.
     //
     double prevColor[3];
     act->GetProperty()->GetColor(prevColor);
@@ -165,8 +165,8 @@ void vtkCurveMapper::Render(vtkRenderer *ren, vtkActor *act)
     this->UpdateLineCueData(ren);
 
     //
-    // We need to temporarily change the actor color and 
-    // line width for the line cue. 
+    // We need to temporarily change the actor color and
+    // line width for the line cue.
     //
     double prevColor[3];
     double prevWidth;
@@ -231,7 +231,7 @@ void vtkCurveMapper::ReleaseGraphicsResources(vtkWindow *w)
 // from avtOpenGLCurveRenderer.h
 //----------------------------------------------------------------------------
 bool
-vtkCurveMapper::GetAspect(vtkRenderer *ren, 
+vtkCurveMapper::GetAspect(vtkRenderer *ren,
     int &bin_x_n, double &bin_x_size, double &bin_x_offset,
     int &bin_y_n, double &bin_y_size, double &bin_y_offset)
 {
@@ -246,7 +246,7 @@ vtkCurveMapper::GetAspect(vtkRenderer *ren,
 
     double m0 = m[0][0] * FFScale[0];
     double m5 = m[1][1] * FFScale[1] * ViewScale;
-    double lowerleft[3] = {-1., -1., 0.}; 
+    double lowerleft[3] = {-1., -1., 0.};
     ren->ViewToWorld(lowerleft[0], lowerleft[1], lowerleft[2]);
     double upperright[3] = {1., 1., 0.};
     ren->ViewToWorld(upperright[0], upperright[1], upperright[2]);
@@ -275,9 +275,9 @@ vtkCurveMapper::GetAspect(vtkRenderer *ren,
     bin_y_size = bin_size / m5;
     bin_y_offset = lowerleft[1];
     success = true;
-  } 
+  }
   return success;
-} 
+}
 
 
 // from avtOpenGLCurveRenderer
@@ -451,7 +451,7 @@ vtkCurveMapper::SetUpPoints(vtkRenderer *ren)
       // add the last point.
       inPts->GetPoint(nPts-1, pts);
 
-      if (!DoCropTimeCue || 
+      if (!DoCropTimeCue ||
        (DoCropTimeCue && TimeForTimeCue >= pts[0]))
       {
         FILL_PTS_AND_CELLS
@@ -510,7 +510,7 @@ vtkCurveMapper::SetUpPoints(vtkRenderer *ren)
         }
 
         // Use the number of cells along the way between the line
-        // end points to calculate intermediate points at which to 
+        // end points to calculate intermediate points at which to
         // put symbols.
         double pts[2];
         for(int pindex = 0; pindex < cells_in_line; ++pindex)
@@ -535,6 +535,12 @@ vtkCurveMapper::SetUpPoints(vtkRenderer *ren)
 
 // from avtOpenGLCurveRenderer
 //----------------------------------------------------------------------------
+//  Modifications:
+//
+//    Kathleen Biagas, Thu Dec 27 08:14:09 PST 2018
+//    Don't display the ball if TimeForTimeCue is out of range.
+//----------------------------------------------------------------------------
+
 void
 vtkCurveMapper::SetUpBallCue(vtkRenderer *ren)
 {
@@ -546,20 +552,27 @@ vtkCurveMapper::SetUpBallCue(vtkRenderer *ren)
 
   if (haveAspect)
   {
-    vtkPolyData *input = this->GetInput();
+    vtkPoints *inPts = this->GetInput()->GetPoints();
+    vtkIdType nPts   = inPts->GetNumberOfPoints();
+    if (this->TimeForTimeCue < inPts->GetPoint(0)[0] ||
+        this->TimeForTimeCue > inPts->GetPoint(nPts-1)[0])
+    {
+        return;
+    }
+
     vtkCellArray *ca = vtkCellArray::New();
     vtkPoints *newPts = this->BallCuePolyData->GetPoints()->NewInstance();
 
     double ix = 0.;
     double iy = 0.;
-    vtkIdType nPts = input->GetPoints()->GetNumberOfPoints();
+
     for(vtkIdType i = 0; i < nPts-1 ; i++)
-    {   
+    {
       double ptr[6];
-      input->GetPoints()->GetPoint(i, ptr);
-      input->GetPoints()->GetPoint(i+1, ptr+3); 
+      inPts->GetPoint(i, ptr);
+      inPts->GetPoint(i+1, ptr+3);
       if (ptr[0] <= this->TimeForTimeCue && this->TimeForTimeCue <= ptr[3])
-      {   
+      {
         double lastX = ptr[0];
         double curX = ptr[3];
         double lastY = ptr[1];
@@ -569,14 +582,14 @@ vtkCurveMapper::SetUpBallCue(vtkRenderer *ren)
         break;
       }
     }
-   
-    std::vector<vtkIdType> ids; 
+
+    std::vector<vtkIdType> ids;
     double pt[3];
     pt[0] = ix;
     pt[1] = iy;
     pt[2] = 0.;
-    vtkIdType id = newPts->InsertNextPoint(pt); 
-    ids.push_back(id); 
+    vtkIdType id = newPts->InsertNextPoint(pt);
+    ids.push_back(id);
     for(int i = 0; i < BALL_CUE_VERTS-1; ++i)
     {
       double t = double(i) / double(BALL_CUE_VERTS-1-1);
@@ -585,25 +598,25 @@ vtkCurveMapper::SetUpBallCue(vtkRenderer *ren)
       pt[1] = iy + sin(angle) * this->TimeCueBallSize * bin_y_size / 2.;
       pt[2] = 0.;
 
-      vtkIdType id = newPts->InsertNextPoint(pt); 
-      ids.push_back(id); 
-    } 
+      vtkIdType id = newPts->InsertNextPoint(pt);
+      ids.push_back(id);
+    }
 
-    for (size_t k = 1; k < ids.size()-1; ++k) 
-    { 
-      ca->InsertNextCell(3); 
-      ca->InsertCellPoint(ids[0]); 
-      ca->InsertCellPoint(ids[k]); 
-      ca->InsertCellPoint(ids[k+1]); 
-    } 
-    ca->InsertNextCell(3); 
-    ca->InsertCellPoint(ids[0]); 
-    ca->InsertCellPoint(ids[ids.size()-1]); 
-    ca->InsertCellPoint(ids[1]); 
+    for (size_t k = 1; k < ids.size()-1; ++k)
+    {
+      ca->InsertNextCell(3);
+      ca->InsertCellPoint(ids[0]);
+      ca->InsertCellPoint(ids[k]);
+      ca->InsertCellPoint(ids[k+1]);
+    }
+    ca->InsertNextCell(3);
+    ca->InsertCellPoint(ids[0]);
+    ca->InsertCellPoint(ids[ids.size()-1]);
+    ca->InsertCellPoint(ids[1]);
 
     this->BallCuePolyData->SetPoints(newPts);
     this->BallCuePolyData->SetPolys(ca);
-  } 
+  }
 }
 
 // from avtOpenGLCurveRenderer
@@ -616,7 +629,7 @@ vtkCurveMapper::SetUpLineCue(vtkRenderer *ren)
   double min = +1e+30;
   vtkIdType nPts = input->GetPoints()->GetNumberOfPoints();
   for(vtkIdType i = 0; i < nPts ; i++)
-  {   
+  {
       double pt[3];
       input->GetPoints()->GetPoint(i, pt);
       max = (max > pt[1] ? max : pt[1]);
@@ -627,12 +640,19 @@ vtkCurveMapper::SetUpLineCue(vtkRenderer *ren)
   min -= diff;
   double pt1[3] = { this->TimeForTimeCue, min, 0. };
   double pt2[3] = { this->TimeForTimeCue, max, 0. };
-  
-  LineCueData->SetPoint1(pt1); 
-  LineCueData->SetPoint2(pt2); 
+
+  LineCueData->SetPoint1(pt1);
+  LineCueData->SetPoint2(pt2);
 }
 
 //----------------------------------------------------------------------------
+//  Modifications:
+//    Kathleen Biagas, Thu Dec 27 08:40:48 PST 2018
+//    Update cell count for polyLines, may be less than allocated due to crop.
+//    Compare TimeForTimeCue with point(i)'s x value, not i.
+//
+//----------------------------------------------------------------------------
+
 void vtkCurveMapper::UpdateLinesData(vtkRenderer *ren)
 {
   vtkPolyData *input = this->GetInput();
@@ -644,12 +664,18 @@ void vtkCurveMapper::UpdateLinesData(vtkRenderer *ren)
     this->LinesPolyData->SetPoints(input->GetPoints());
     vtkCellArray *polyLines = vtkCellArray::New();
     polyLines->InsertNextCell(input->GetNumberOfPoints());
+    int nCellPtsAdded = 0;
     for (int i = 0; i < input->GetNumberOfPoints(); ++i)
     {
-        if (DoCropTimeCue && TimeForTimeCue < i)
+        if (this->DoCropTimeCue &&
+            this->TimeForTimeCue < input->GetPoints()->GetPoint(i)[0])
+        {
             break;
+        }
         polyLines->InsertCellPoint(i);
+        ++nCellPtsAdded;
     }
+    polyLines->UpdateCellCount(nCellPtsAdded);
 
     this->LinesPolyData->SetLines(polyLines);
     polyLines->Delete();
@@ -667,7 +693,7 @@ void vtkCurveMapper::UpdateLinesData(vtkRenderer *ren)
 void vtkCurveMapper::UpdatePointsData(vtkRenderer *ren)
 {
   vtkPolyData *input = this->GetInput();
-  if (!this->PointsDataInitialized || 
+  if (!this->PointsDataInitialized ||
       ( (input->GetMTime() > this->PointsPolyData->GetMTime() ||
          this->GetMTime()  > this->PointsPolyData->GetMTime()) ) ||
       ( ren->GetActiveCamera()->GetMTime() > this->PointsPolyData->GetMTime()))
@@ -692,7 +718,7 @@ void vtkCurveMapper::UpdatePointsData(vtkRenderer *ren)
 void vtkCurveMapper::UpdateBallCueData(vtkRenderer *ren)
 {
   vtkPolyData *input = this->GetInput();
-  if (!this->BallCueDataInitialized || 
+  if (!this->BallCueDataInitialized ||
       ( (input->GetMTime() > this->BallCuePolyData->GetMTime() ||
          this->GetMTime()  > this->BallCuePolyData->GetMTime()) ) ||
       ( ren->GetActiveCamera()->GetMTime() > this->BallCuePolyData->GetMTime()))
@@ -716,7 +742,7 @@ void vtkCurveMapper::UpdateBallCueData(vtkRenderer *ren)
 void vtkCurveMapper::UpdateLineCueData(vtkRenderer *ren)
 {
   vtkPolyData *input = this->GetInput();
-  if (!this->LineCueDataInitialized || 
+  if (!this->LineCueDataInitialized ||
       ( (input->GetMTime() > this->LineCueData->GetMTime() ||
          this->GetMTime()  > this->LineCueData->GetMTime()) ) ||
       ( ren->GetActiveCamera()->GetMTime() > this->LineCueData->GetMTime()))

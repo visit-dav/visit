@@ -338,6 +338,7 @@ def TestTimeCue():
     CloseDatabase(data_path("curve_test_data/ol_curveC.curve"))
 
 def TestPolar():
+    TestSection("Polar")
     OpenDatabase(data_path("curve_test_data/rose_theta_r_rads.ultra"))
     AddPlot("Curve", "rose")
     c = CurveAttributes()

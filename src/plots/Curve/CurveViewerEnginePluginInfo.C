@@ -222,7 +222,6 @@ CurveViewerEnginePluginInfo::InitializePlotAtts(AttributeSubject *atts,
 bool
 CurveViewerEnginePluginInfo::SupportsAnimation() const
 {
-cout << "CurveViewerEnginePluginInfo::SupportsAnimation" << endl;
     return true;
 }
 
