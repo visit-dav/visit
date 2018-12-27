@@ -97,11 +97,11 @@ QvisLineoutQueryWidget::QvisLineoutQueryWidget(QWidget *parent,
     cLayout->addWidget(endPoint, 1, 1);
 
     // SamplingOn
-    samplingOn = new QCheckBox(tr("Use Sampling"));
+    samplingOn = new QCheckBox(tr("Use sampling"));
     samplingOn->setChecked(0);
     cLayout->addWidget(samplingOn, 2, 1);
 
-    numSamplesLabel = new QLabel(tr("Sample Points "));
+    numSamplesLabel = new QLabel(tr("Sample points"));
     numSamplesLabel->setAlignment(Qt::AlignCenter);
     cLayout->addWidget(numSamplesLabel, 3, 0);
 

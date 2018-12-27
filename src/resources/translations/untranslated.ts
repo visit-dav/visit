@@ -6466,7 +6466,7 @@ will use this same window.</source>
     </message>
     <message>
         <location filename="../../gui/QvisGlobalLineoutWindow.C" line="154"/>
-        <source>Freeze In Time</source>
+        <source>Freeze in time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -6507,17 +6507,17 @@ will use this same window.</source>
     <message>
         <location filename="../../gui/QvisGlobalLineoutWindow.C" line="216"/>
         <source>These items can be overridden
-by Lineout Operator</source>
+by the Lineout operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisGlobalLineoutWindow.C" line="224"/>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisGlobalLineoutWindow.C" line="232"/>
-        <source>Sample Points </source>
+        <source>Sample points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10433,12 +10433,12 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisLineoutQueryWidget.C" line="100"/>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisLineoutQueryWidget.C" line="104"/>
-        <source>Sample Points </source>
+        <source>Sample points</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -10468,7 +10468,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../operators/Lineout/QvisLineoutWindow.C" line="169"/>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11066,7 +11066,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMaterialWindow.C" line="217"/>
-        <source>Volume Fraction for Isovolume</source>
+        <source>Volume fraction for isovolume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11158,7 +11158,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMeshManagementWindow.C" line="181"/>
-        <source>Discretization Mode</source>
+        <source>Discretization mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11178,12 +11178,12 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMeshManagementWindow.C" line="200"/>
-        <source>Smallest Zone (% bbox diag)</source>
+        <source>Smallest zone (% bbox diag)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisMeshManagementWindow.C" line="209"/>
-        <source>Flat Enough (recip. curvature)</source>
+        <source>Flat enough (recip. curvature)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13013,12 +13013,12 @@ Do you want to apply the %2 operator?
     <name>QvisPickWindow</name>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="354"/>
-        <source>Max Tabs</source>
+        <source>Max tabs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="358"/>
-        <source>Save Picks as</source>
+        <source>Save picks as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13028,7 +13028,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="377"/>
-        <source>Float Format</source>
+        <source>Float format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13048,22 +13048,22 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="404"/>
-        <source>Clear Picks</source>
+        <source>Clear picks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="445"/>
-        <source>Output Display</source>
+        <source>Output display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="449"/>
-        <source>Concise Output</source>
+        <source>Concise output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="455"/>
-        <source>Mesh Name</source>
+        <source>Mesh name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13088,7 +13088,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="484"/>
-        <source>For Nodes</source>
+        <source>For nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13099,34 +13099,34 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="494"/>
-        <source>Physical Coords</source>
+        <source>Physical coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="498"/>
         <location filename="../../gui/QvisPickWindow.C" line="519"/>
-        <source>Domain-Logical Coords</source>
+        <source>Domain-logical coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="502"/>
         <location filename="../../gui/QvisPickWindow.C" line="523"/>
-        <source>Block-Logical Coords</source>
+        <source>Block-logical coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="509"/>
-        <source>For Zones</source>
+        <source>For zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="549"/>
-        <source>Time Pick</source>
+        <source>Time pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="553"/>
-        <source>Do Time Curve with next pick</source>
+        <source>Do time curve with next pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13151,7 +13151,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="574"/>
-        <source>Repeat Pick</source>
+        <source>Repeat pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13166,7 +13166,7 @@ Do you want to apply the %2 operator?
     </message>
     <message>
         <location filename="../../gui/QvisPickWindow.C" line="610"/>
-        <source>Display in Spreadsheet</source>
+        <source>Display in spreadsheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15857,7 +15857,7 @@ Do you want to apply the %2 operator?
     <name>QvisQueryOverTimeWindow</name>
     <message>
         <location filename="../../gui/QvisQueryOverTimeWindow.C" line="143"/>
-        <source>X-Axis:</source>
+        <source>X-axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15985,7 +15985,7 @@ same window.</source>
     </message>
     <message>
         <location filename="../../gui/QvisQueryWindow.C" line="526"/>
-        <source>Float Format:</source>
+        <source>Float format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -21223,12 +21223,12 @@ Coordinates plot.</source>
     <name>QvisTimeQueryOptionsWidget</name>
     <message>
         <location filename="../../gui/QvisTimeQueryOptionsWidget.C" line="75"/>
-        <source>Do Time Curve</source>
+        <source>Do time curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisTimeQueryOptionsWidget.C" line="127"/>
-        <source>Start and End are Time steps,
+        <source>Start and end are time steps,
 not cycles or times.</source>
         <translation type="unfinished"></translation>
     </message>

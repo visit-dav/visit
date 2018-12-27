@@ -5596,8 +5596,8 @@ will use this same window.</source>
         <translation type="unfinished">Veendoo #</translation>
     </message>
     <message>
-        <source>Freeze In Time</source>
-        <translation type="unfinished">Freeze-a In Teeme-a</translation>
+        <source>Freeze in time</source>
+        <translation type="unfinished">Freeze-a in teeme-a</translation>
     </message>
     <message>
         <source>Synchronize with originating plot</source>
@@ -5633,16 +5633,16 @@ will use this same window.</source>
     </message>
     <message>
         <source>These items can be overridden
-by Lineout Operator</source>
+by the Lineout operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use Sampling</source>
-        <translation type="unfinished">Use-a Sempleeng</translation>
+        <source>Use sampling</source>
+        <translation type="unfinished">Use-a sempleeng</translation>
     </message>
     <message>
-        <source>Sample Points </source>
-        <translation type="unfinished">Semple-a Pueents </translation>
+        <source>Sample points</source>
+        <translation type="unfinished">Semple-a pueents</translation>
     </message>
     <message>
         <source>Create refline labels</source>
@@ -8975,12 +8975,12 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Ind pueent</translation>
     </message>
     <message>
-        <source>Use Sampling</source>
-        <translation type="unfinished">Use-a Sempleeng</translation>
+        <source>Use sampling</source>
+        <translation type="unfinished">Use-a sempleeng</translation>
     </message>
     <message>
-        <source>Sample Points </source>
-        <translation type="unfinished">Semple-a Pueents </translation>
+        <source>Sample points</source>
+        <translation type="unfinished">Semple-a pueents</translation>
     </message>
 </context>
 <context>
@@ -9006,8 +9006,8 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="obsolete">Glubel Leeneuoot Ooferreedes</translation>
     </message>
     <message>
-        <source>Use Sampling</source>
-        <translation type="unfinished">Use-a Sempleeng</translation>
+        <source>Use sampling</source>
+        <translation type="unfinished">Use-a sempleeng</translation>
     </message>
     <message>
         <source>Samples</source>
@@ -9527,8 +9527,8 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Mexeemoom metereeels per zune-a</translation>
     </message>
     <message>
-        <source>Volume Fraction for Isovolume</source>
-        <translation type="unfinished">Fuloome-a Frecshun fur Isufuloome-a</translation>
+        <source>Volume fraction for isovolume</source>
+        <translation type="unfinished">Fuloome-a frecshun fur isufuloome-a</translation>
     </message>
     <message>
         <source>Max mats per zone must be at least 1.Resetting to the last good value of %1.</source>
@@ -9629,8 +9629,8 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Deescretize-a buoondery oonly</translation>
     </message>
     <message>
-        <source>Discretization Mode</source>
-        <translation type="unfinished">Deescretizeshun Mude-a</translation>
+        <source>Discretization mode</source>
+        <translation type="unfinished">Deescretizeshun mude-a</translation>
     </message>
     <message>
         <source>Uniform</source>
@@ -9641,12 +9641,12 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Edepteefe-a</translation>
     </message>
     <message>
-        <source>Smallest Zone (% bbox diag)</source>
-        <translation type="unfinished">Smellest Zune-a (% bbux deeeg)</translation>
+        <source>Smallest zone (% bbox diag)</source>
+        <translation type="unfinished">Smellest zune-a (% bbux deeeg)</translation>
     </message>
     <message>
-        <source>Flat Enough (recip. curvature)</source>
-        <translation type="unfinished">Flet Inuoogh (receep. coorfetoore-a)</translation>
+        <source>Flat enough (recip. curvature)</source>
+        <translation type="unfinished">Flet inuoogh (receep. coorfetoore-a)</translation>
     </message>
     <message>
         <source>Adaptive not available. Missing boost interval template library. Overriding to Uniform.</source>
@@ -11372,28 +11372,16 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPickWindow</name>
     <message>
-        <source>Max Tabs</source>
-        <translation type="unfinished">Mex Tebs</translation>
+        <source>Max tabs</source>
+        <translation type="unfinished">Mex tebs</translation>
     </message>
     <message>
-        <source>Save Picks as</source>
-        <translation type="unfinished">Sefe-a Peecks es</translation>
+        <source>Save picks as</source>
+        <translation type="unfinished">Sefe-a peecks es</translation>
     </message>
     <message>
         <source>Variables</source>
         <translation type="unfinished">Fereeebles</translation>
-    </message>
-    <message>
-        <source>Float Format:</source>
-        <translation type="obsolete">Fluet Furmet:</translation>
-    </message>
-    <message>
-        <source>Concise Output.</source>
-        <translation type="obsolete">Cunceese-a Ooootpoot.</translation>
-    </message>
-    <message>
-        <source>Show Mesh Name</source>
-        <translation type="obsolete">Shoo Mesh Neme-a</translation>
     </message>
     <message>
         <source>Show Timestep</source>
@@ -11420,16 +11408,16 @@ Do you want to apply the %2 operator?
         <translation type="unfinished">Id</translation>
     </message>
     <message>
-        <source>Physical Coords</source>
-        <translation type="unfinished">Physeecel Cuurds</translation>
+        <source>Physical coords</source>
+        <translation type="unfinished">Physeecel cuurds</translation>
     </message>
     <message>
-        <source>Domain-Logical Coords</source>
-        <translation type="unfinished">Dumeeen-Lugeecel Cuurds</translation>
+        <source>Domain-logical coords</source>
+        <translation type="unfinished">Dumeeen-lugeecel cuurds</translation>
     </message>
     <message>
-        <source>Block-Logical Coords</source>
-        <translation type="unfinished">Bluck-Lugeecel Cuurds</translation>
+        <source>Block-logical coords</source>
+        <translation type="unfinished">Bluck-lugeecel cuurds</translation>
     </message>
     <message>
         <source>Display for Zones:</source>
@@ -11468,20 +11456,20 @@ Do you want to apply the %2 operator?
         <translation type="unfinished">VisIt cuoold nut sefe-a zee peeck resooltstu zee selected feele-a</translation>
     </message>
     <message>
-        <source>Float Format</source>
+        <source>Float format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Clear Picks</source>
+        <source>Clear picks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Concise Output</source>
-        <translation type="unfinished"></translation>
+        <source>Concise output</source>
+        <translation type="unfinished">Cunceese-a ooootpoot</translation>
     </message>
     <message>
-        <source>Mesh Name</source>
-        <translation type="unfinished"></translation>
+        <source>Mesh name</source>
+        <translation type="unfinished">Mesh neme-a</translation>
     </message>
     <message>
         <source>Timestep</source>
@@ -11500,15 +11488,15 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>For Nodes</source>
+        <source>For nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>For Zones</source>
+        <source>For zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Do Time Curve with next pick</source>
+        <source>Do time curve with next pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11520,7 +11508,7 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Repeat Pick</source>
+        <source>Repeat pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11528,7 +11516,7 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Display in Spreadsheet</source>
+        <source>Display in spreadsheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11536,11 +11524,11 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Output Display</source>
+        <source>Output display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Time Pick</source>
+        <source>Time pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -13811,8 +13799,8 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisQueryOverTimeWindow</name>
     <message>
-        <source>X-Axis:</source>
-        <translation type="unfinished">X-Exees:</translation>
+        <source>X-axis</source>
+        <translation type="unfinished">X-exees</translation>
     </message>
     <message>
         <source>Cycle</source>
@@ -13916,8 +13904,8 @@ same window.</source>
         <translation type="unfinished">Qooery resoolts</translation>
     </message>
     <message>
-        <source>Float Format:</source>
-        <translation type="unfinished">Fluet Furmet:</translation>
+        <source>Float format</source>
+        <translation type="unfinished">Fluet furmet</translation>
     </message>
     <message>
         <source>Clear results</source>
@@ -18691,11 +18679,11 @@ Coordinates plot.</source>
 <context>
     <name>QvisTimeQueryOptionsWidget</name>
     <message>
-        <source>Do Time Curve</source>
+        <source>Do time curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start and End are Time steps,
+        <source>Start and end are time steps,
 not cycles or times.</source>
         <translation type="unfinished"></translation>
     </message>

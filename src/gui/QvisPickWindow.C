@@ -291,7 +291,7 @@ QvisPickWindow::~QvisPickWindow()
 //   Added 'userMaxPickTabs' spinbox. 
 //
 //   Ellen Tarwater, Fri May 18, 2007
-//   Added "Save Picks as..." button
+//   Added "Save picks as" button
 //
 //   Hank Childs, Thu Aug 30 14:13:43 PDT 2007
 //   Added spreadsheetCheckBox.
@@ -313,7 +313,7 @@ QvisPickWindow::~QvisPickWindow()
 //
 //   Gunther H. Weber, Fri Aug 15 10:50:10 PDT 2008
 //   Add buttons for redoing pick with and without opening a Spreadsheet plot.
-//   Added a missing tr() for "Clear Picks".
+//   Added a missing tr() for "Clear picks".
 //
 //   Kathleen Bonnell, Thu Mar  3 08:07:31 PST 2011
 //   Added timeCurveType combo box.
@@ -369,11 +369,11 @@ QvisPickWindow::CreateWindowContents()
     userMaxPickTabs->setMaximum(MAX_PICK_TABS);
     userMaxPickTabs->setButtonSymbols(QAbstractSpinBox::PlusMinus);
     gLayout->addWidget(userMaxPickTabs, 0, 1);
-    QLabel *userMaxPickTabsLabel = new QLabel(tr("Max Tabs"), central);
+    QLabel *userMaxPickTabsLabel = new QLabel(tr("Max tabs"), central);
     userMaxPickTabsLabel->setBuddy(userMaxPickTabs);
     gLayout->addWidget(userMaxPickTabsLabel, 0,0);
 
-    QPushButton *savePicksButton = new QPushButton(tr("Save Picks as") + QString("..."), central);
+    QPushButton *savePicksButton = new QPushButton(tr("Save picks as") + QString("..."), central);
     connect(savePicksButton, SIGNAL(clicked()),
             this, SLOT(savePickText()));
     gLayout->addWidget(savePicksButton, 0, 2, 1, 2);
@@ -392,7 +392,7 @@ QvisPickWindow::CreateWindowContents()
     gLayout->addWidget(varsLineEdit, 1, 1, 1, 3);
 
     
-    QLabel *floatFormatLabel = new QLabel(tr("Float Format"),central);
+    QLabel *floatFormatLabel = new QLabel(tr("Float format"),central);
     gLayout->addWidget(floatFormatLabel, 2, 0);
     
     floatFormatLineEdit= new QLineEdit(central);
@@ -419,18 +419,18 @@ QvisPickWindow::CreateWindowContents()
             this, SLOT(savePicksToggled(bool)));
     gLayout->addWidget(savePicksCheckBox, 4, 0, 1, 2);
 
-    QPushButton *clearPicksButton = new QPushButton(tr("Clear Picks"), central);
+    QPushButton *clearPicksButton = new QPushButton(tr("Clear picks"), central);
     connect(clearPicksButton, SIGNAL(clicked()),
             this, SLOT(clearPicks()));
     gLayout->addWidget(clearPicksButton, 4, 2, 1, 2);
 
-    QPushButton *resetLetterButton = new QPushButton(tr("Reset Pick Letter"), 
+    QPushButton *resetLetterButton = new QPushButton(tr("Reset pick letter"), 
                                                     central);
     connect(resetLetterButton, SIGNAL(clicked()),
             this, SLOT(resetPickLetter()));
     gLayout->addWidget(resetLetterButton, 5, 2, 1, 2);
 
-    setHighlightColorButton = new QPushButton(tr("Set Highlight Color"), 
+    setHighlightColorButton = new QPushButton(tr("Set highlight color"), 
                                              central);
     connect(setHighlightColorButton, SIGNAL(clicked()),
             this, SLOT(setHighlightColor()));
@@ -475,22 +475,22 @@ void
 QvisPickWindow::CreateDisplayOptionsTab()
 {
     pageDisplay = new QWidget(central);
-    optionsTabWidget->addTab(pageDisplay, tr("Output Display"));
+    optionsTabWidget->addTab(pageDisplay, tr("Output display"));
 
     QGridLayout *dLayout = new QGridLayout(pageDisplay);
 
-    conciseOutputCheckBox = new QCheckBox(tr("Concise Output"), pageDisplay);
+    conciseOutputCheckBox = new QCheckBox(tr("Concise output"), pageDisplay);
     connect(conciseOutputCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(conciseOutputToggled(bool)));
     dLayout->addWidget(conciseOutputCheckBox, 0, 0);
 
-    swivelFocusToPick = new QCheckBox(tr("Swivel Focus"), 
+    swivelFocusToPick = new QCheckBox(tr("Swivel focus"), 
                                       pageDisplay);
     connect(swivelFocusToPick, SIGNAL(toggled(bool)),
             this, SLOT(swivelFocusToPickToggled(bool)));
     dLayout->addWidget(swivelFocusToPick, 0, 2, 1, 2);
 
-    showMeshNameCheckBox = new QCheckBox(tr("Mesh Name"), pageDisplay);
+    showMeshNameCheckBox = new QCheckBox(tr("Mesh name"), pageDisplay);
     connect(showMeshNameCheckBox, SIGNAL(toggled(bool)),
             this, SLOT(showMeshNameToggled(bool)));
     dLayout->addWidget(showMeshNameCheckBox, 1, 0, 1, 2);
@@ -516,7 +516,7 @@ QvisPickWindow::CreateDisplayOptionsTab()
             this, SLOT(displayPickLetterToggled(bool)));
     dLayout->addWidget(displayPickLetter, 4, 0, 1, 4);
 
-    displayPickHighlight = new QCheckBox(tr("Pick Highlights"), 
+    displayPickHighlight = new QCheckBox(tr("Pick highlights"), 
                                       pageDisplay);
     connect(displayPickHighlight, SIGNAL(toggled(bool)),
             this, SLOT(displayPickHighlightToggled(bool)));
@@ -524,7 +524,7 @@ QvisPickWindow::CreateDisplayOptionsTab()
 
     // Node settings
     QGroupBox *nodeGroupBox = new QGroupBox(pageDisplay);
-    nodeGroupBox->setTitle(tr("For Nodes"));
+    nodeGroupBox->setTitle(tr("For nodes"));
     dLayout->addWidget(nodeGroupBox, 5, 0, 1, 4);
     QGridLayout *nLayout = new QGridLayout(nodeGroupBox);
     nLayout->setMargin(10);
@@ -534,22 +534,22 @@ QvisPickWindow::CreateDisplayOptionsTab()
     connect(nodeId, SIGNAL(toggled(bool)),
             this, SLOT(nodeIdToggled(bool)));
     nLayout->addWidget(nodeId, 0, 0);
-    nodePhysical = new QCheckBox(tr("Physical Coords"), nodeGroupBox);
+    nodePhysical = new QCheckBox(tr("Physical coords"), nodeGroupBox);
     connect(nodePhysical, SIGNAL(toggled(bool)),
             this, SLOT(nodePhysicalToggled(bool)));
     nLayout->addWidget(nodePhysical, 1, 0);
-    nodeDomLog = new QCheckBox(tr("Domain-Logical Coords"), nodeGroupBox);
+    nodeDomLog = new QCheckBox(tr("Domain-logical coords"), nodeGroupBox);
     connect(nodeDomLog, SIGNAL(toggled(bool)),
             this, SLOT(nodeDomLogToggled(bool)));
     nLayout->addWidget(nodeDomLog, 0, 1);
-    nodeBlockLog = new QCheckBox(tr("Block-Logical Coords"), nodeGroupBox);
+    nodeBlockLog = new QCheckBox(tr("Block-logical coords"), nodeGroupBox);
     connect(nodeBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(nodeBlockLogToggled(bool)));
     nLayout->addWidget(nodeBlockLog, 1, 1);
 
     // Zone settings
     QGroupBox *zoneGroupBox = new QGroupBox(pageDisplay);
-    zoneGroupBox->setTitle(tr("For Zones"));
+    zoneGroupBox->setTitle(tr("For zones"));
     dLayout->addWidget(zoneGroupBox, 6, 0, 1, 4);
     QGridLayout *zLayout = new QGridLayout(zoneGroupBox);
     zLayout->setMargin(10);
@@ -559,11 +559,11 @@ QvisPickWindow::CreateDisplayOptionsTab()
     connect(zoneId, SIGNAL(toggled(bool)),
             this, SLOT(zoneIdToggled(bool)));
     zLayout->addWidget(zoneId, 0, 0);
-    zoneDomLog = new QCheckBox(tr("Domain-Logical Coords"), zoneGroupBox);
+    zoneDomLog = new QCheckBox(tr("Domain-logical coords"), zoneGroupBox);
     connect(zoneDomLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneDomLogToggled(bool)));
     zLayout->addWidget(zoneDomLog, 0, 1);
-    zoneBlockLog = new QCheckBox(tr("Block-Logical Coords"), zoneGroupBox);
+    zoneBlockLog = new QCheckBox(tr("Block-logical coords"), zoneGroupBox);
     connect(zoneBlockLog, SIGNAL(toggled(bool)),
             this, SLOT(zoneBlockLogToggled(bool)));
     zLayout->addWidget(zoneBlockLog, 1, 1);
@@ -589,11 +589,11 @@ void
 QvisPickWindow::CreateTimeOptionsTab()
 {
     pageTime = new QWidget(central);
-    timeOptsTabIndex = optionsTabWidget->addTab(pageTime, tr("Time Pick"));
+    timeOptsTabIndex = optionsTabWidget->addTab(pageTime, tr("Time pick"));
 
     QVBoxLayout *tLayout = new QVBoxLayout(pageTime);
 
-    timeOpts = new QvisTimeQueryOptionsWidget(tr("Do Time Curve with next pick"), pageTime);
+    timeOpts = new QvisTimeQueryOptionsWidget(tr("Do time curve with next pick"), pageTime);
     connect(timeOpts, SIGNAL(toggled(bool)),
             this, SLOT(timeCurveToggled(bool)));
     tLayout->addWidget(timeOpts);
@@ -614,7 +614,7 @@ QvisPickWindow::CreateTimeOptionsTab()
             this, SLOT(timeCurveTypeActivated(int)));
     tLayout->addWidget(timeCurveType);
 
-    redoPickButton = new QPushButton(tr("Repeat Pick"), pageTime);
+    redoPickButton = new QPushButton(tr("Repeat pick"), pageTime);
     connect(redoPickButton, SIGNAL(clicked()),
             this, SLOT(redoPickClicked()));
     tLayout->addWidget(redoPickButton);
@@ -650,7 +650,7 @@ QvisPickWindow::CreateSpreadsheetOptionsTab()
     sLayout->addWidget(spreadsheetCheckBox);
 
     QPushButton *redoPickWithSpreadsheetButton =
-        new QPushButton(tr("Display in Spreadsheet"), pageSpreadsheet);
+        new QPushButton(tr("Display in spreadsheet"), pageSpreadsheet);
     connect(redoPickWithSpreadsheetButton, SIGNAL(clicked()),
             this, SLOT(redoPickWithSpreadsheetClicked()));
     sLayout->addWidget(redoPickWithSpreadsheetButton);
@@ -840,7 +840,7 @@ QvisPickWindow::UpdateAll(bool doAll)
         nodeBlockLog->blockSignals(false);
     }
 
-    // showNodePhysical Coords
+    // showNodePhysical coords
     if (pickAtts->IsSelected(PickAttributes::ID_showNodePhysicalCoords) || doAll)
     {
         nodePhysical->blockSignals(true);

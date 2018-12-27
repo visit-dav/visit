@@ -534,7 +534,7 @@ QvisQueryWindow::CreateResultsWidget()
 
     QLabel *resultLabel = new QLabel(tr("Query results"), resultsWidget);
 
-    QLabel *floatFormatLabel = new QLabel(tr("Float Format:"), resultsWidget);
+    QLabel *floatFormatLabel = new QLabel(tr("Float format"), resultsWidget);
     floatFormatText = new QLineEdit("%g",resultsWidget);
 
     title_layout->addWidget(resultLabel);

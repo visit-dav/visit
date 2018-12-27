@@ -204,7 +204,7 @@ QvisMaterialWindow::CreateWindowContents()
             SLOT(maxMatsPerZoneProcessText()));
     mainLayout->addWidget(maxMatsPerZone, 6, 1);
 
-    isoVolumeFractionLabel = new QLabel(tr("Volume Fraction for Isovolume"), 
+    isoVolumeFractionLabel = new QLabel(tr("Volume fraction for isovolume"), 
                                         central);
     mainLayout->addWidget(isoVolumeFractionLabel,7,0);
     isoVolumeFraction = new QNarrowLineEdit(central);

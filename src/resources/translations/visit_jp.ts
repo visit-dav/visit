@@ -5111,7 +5111,7 @@ will use this same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Freeze In Time</source>
+        <source>Freeze in time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5144,15 +5144,15 @@ will use this same window.</source>
     </message>
     <message>
         <source>These items can be overridden
-by Lineout Operator</source>
+by the Lineout operator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Sample Points </source>
+        <source>Sample points</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8211,11 +8211,11 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Sample Points </source>
+        <source>Sample points</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8238,7 +8238,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8731,7 +8731,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Volume Fraction for Isovolume</source>
+        <source>Volume fraction for isovolume</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8829,7 +8829,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Discretization Mode</source>
+        <source>Discretization mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8841,11 +8841,11 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Smallest Zone (% bbox diag)</source>
+        <source>Smallest zone (% bbox diag)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Flat Enough (recip. curvature)</source>
+        <source>Flat enough (recip. curvature)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10264,11 +10264,11 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisPickWindow</name>
     <message>
-        <source>Max Tabs</source>
+        <source>Max tabs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Save Picks as</source>
+        <source>Save picks as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10280,15 +10280,15 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Physical Coords</source>
+        <source>Physical coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Domain-Logical Coords</source>
+        <source>Domain-logical coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Block-Logical Coords</source>
+        <source>Block-logical coords</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10300,11 +10300,11 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Clear Picks</source>
+        <source>Clear picks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Repeat Pick</source>
+        <source>Repeat pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10316,7 +10316,7 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Display in Spreadsheet</source>
+        <source>Display in spreadsheet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10328,11 +10328,11 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Float Format</source>
+        <source>Float format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Concise Output</source>
+        <source>Concise output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10344,7 +10344,7 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Mesh Name</source>
+        <source>Mesh name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10364,15 +10364,15 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>For Nodes</source>
+        <source>For nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>For Zones</source>
+        <source>For zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Do Time Curve with next pick</source>
+        <source>Do time curve with next pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10384,11 +10384,11 @@ Do you want to apply the %2 operator?
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Output Display</source>
+        <source>Output display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Time Pick</source>
+        <source>Time pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12519,7 +12519,7 @@ Do you want to apply the %2 operator?
 <context>
     <name>QvisQueryOverTimeWindow</name>
     <message>
-        <source>X-Axis:</source>
+        <source>X-axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12600,7 +12600,7 @@ same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Float Format:</source>
+        <source>Float format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16656,11 +16656,11 @@ Coordinates plot.</source>
 <context>
     <name>QvisTimeQueryOptionsWidget</name>
     <message>
-        <source>Do Time Curve</source>
+        <source>Do time curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start and End are Time steps,
+        <source>Start and end are time steps,
 not cycles or times.</source>
         <translation type="unfinished"></translation>
     </message>

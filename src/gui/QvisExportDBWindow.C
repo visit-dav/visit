@@ -323,7 +323,7 @@ QvisExportDBWindow::CreateWindowContents()
     allTimesLayout->addWidget(allTimes);
 
     // All time states format
-    timeStateFormatLabel = new QLabel(tr("Format:"), fileBox);
+    timeStateFormatLabel = new QLabel(tr("Format"), fileBox);
     allTimesLayout->addWidget(timeStateFormatLabel, Qt::AlignRight);
 
     timeStateFormatEdit = new QLineEdit("_%04d", fileBox);

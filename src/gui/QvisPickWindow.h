@@ -297,7 +297,7 @@ private:
   
     QPushButton        *setHighlightColorButton;
 
-    // Display Options Tab widgets
+    // Display options tab widgets
     QWidget            *pageDisplay;
     QCheckBox          *conciseOutputCheckBox;
     QCheckBox          *showMeshNameCheckBox;
@@ -317,14 +317,14 @@ private:
     QCheckBox          *zoneDomLog;
     QCheckBox          *zoneBlockLog;
 
-    // Time Pick Tab widgets
+    // Time pick tab widgets
     QWidget            *pageTime;
     QComboBox          *preserveCoord;
     QComboBox          *timeCurveType;
     QvisTimeQueryOptionsWidget *timeOpts;
     QPushButton        *redoPickButton;
 
-    // Spreadsheet Tab widgets
+    // Spreadsheet tab widgets
     QWidget            *pageSpreadsheet;
     QCheckBox          *spreadsheetCheckBox;
 

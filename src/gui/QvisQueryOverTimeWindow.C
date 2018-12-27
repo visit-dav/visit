@@ -140,7 +140,7 @@ QvisQueryOverTimeWindow::CreateWindowContents()
     // TimeType
     //
     QGroupBox *timeTypeBox = new QGroupBox(central);
-    timeTypeBox->setTitle(tr("X-Axis:"));
+    timeTypeBox->setTitle(tr("X-axis"));
     topLayout->addWidget(timeTypeBox);
    
     QGridLayout *timeTypeBoxLayout = new QGridLayout(timeTypeBox);    

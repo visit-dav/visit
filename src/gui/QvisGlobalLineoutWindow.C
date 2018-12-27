@@ -150,8 +150,8 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     mainLayout->addWidget(windowId, 1,1);
 
 
-    // Freeze In Time
-    freezeInTime = new QCheckBox(tr("Freeze In Time"), central);
+    // Freeze in time
+    freezeInTime = new QCheckBox(tr("Freeze in time"), central);
     connect(freezeInTime, SIGNAL(toggled(bool)),
             this, SLOT(freezeInTimeChanged(bool)));
     mainLayout->addWidget(freezeInTime,2,0,1,2);
@@ -213,7 +213,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     qgrid->setMargin(5);
     
     QLabel *msg = new QLabel(gbox); 
-    msg->setText(tr("These items can be overridden\nby Lineout Operator"));
+    msg->setText(tr("These items can be overridden\nby the Lineout operator"));
     msg->setAlignment(Qt::AlignCenter);
     qgrid->addWidget(msg, 0,0,1,2);
     qgrid->setRowMinimumHeight(1,10);
@@ -221,7 +221,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // SamplingOn
     //
-    samplingOn = new QCheckBox(tr("Use Sampling"), gbox);
+    samplingOn = new QCheckBox(tr("Use sampling"), gbox);
     connect(samplingOn, SIGNAL(toggled(bool)),
             this, SLOT(samplingOnChanged(bool)));
     qgrid->addWidget(samplingOn, 2,0);
@@ -229,7 +229,7 @@ QvisGlobalLineoutWindow::CreateWindowContents()
     //
     // NumSamples
     //
-    numSamplesLabel = new QLabel(tr("Sample Points "),gbox);
+    numSamplesLabel = new QLabel(tr("Sample points"),gbox);
     numSamplesLabel->setAlignment(Qt::AlignCenter);
     qgrid->addWidget(numSamplesLabel,3,0);
 

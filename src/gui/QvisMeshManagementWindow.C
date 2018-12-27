@@ -182,7 +182,7 @@ QvisMeshManagementWindow::CreateWindowContents()
             this, SLOT(discretizeBoundaryOnlyChanged(bool)));
     layoutCSGGroup->addWidget(discretizeBoundaryOnly, 1, 0, 1, 4);
 
-    discretizeModeLabel = new QLabel(tr("Discretization Mode"), pageCSGGroup);
+    discretizeModeLabel = new QLabel(tr("Discretization mode"), pageCSGGroup);
     layoutCSGGroup->addWidget(discretizeModeLabel, 2, 0);
     discretizationMode = new QButtonGroup(pageCSGGroup);
     connect(discretizationMode, SIGNAL(buttonClicked(int)),
@@ -201,7 +201,7 @@ QvisMeshManagementWindow::CreateWindowContents()
     discretizationMode->addButton(discretizeMultiPass,2);
     layoutCSGGroup->addWidget(discretizeMultiPass, 2, 3);
 
-    smallestZoneLabel = new QLabel(tr("Smallest Zone (% bbox diag)"), pageCSGGroup);
+    smallestZoneLabel = new QLabel(tr("Smallest zone (% bbox diag)"), pageCSGGroup);
     layoutCSGGroup->addWidget(smallestZoneLabel, 3, 0);
     smallestZoneLineEdit = new QLineEdit(pageCSGGroup);
     connect(smallestZoneLineEdit, SIGNAL(returnPressed()),
@@ -210,7 +210,7 @@ QvisMeshManagementWindow::CreateWindowContents()
             this, SLOT(processSmallestZoneText(const QString &)));
     layoutCSGGroup->addWidget(smallestZoneLineEdit, 3, 1, 1, 3);
 
-    flatEnoughLabel = new QLabel(tr("Flat Enough (recip. curvature)"), pageCSGGroup);
+    flatEnoughLabel = new QLabel(tr("Flat enough (recip. curvature)"), pageCSGGroup);
     layoutCSGGroup->addWidget(flatEnoughLabel, 4, 0);
     flatEnoughLineEdit = new QLineEdit(pageCSGGroup);
     connect(flatEnoughLineEdit, SIGNAL(returnPressed()),

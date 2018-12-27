@@ -5134,7 +5134,7 @@ utiliseront cette même fenêtre.</translation>
         <translation>Fenêtre # </translation>
     </message>
     <message>
-        <source>Freeze In Time</source>
+        <source>Freeze in time</source>
         <translation>Geler le temps</translation>
     </message>
     <message>
@@ -5167,17 +5167,17 @@ utiliseront cette même fenêtre.</translation>
     </message>
     <message>
         <source>These items can be overridden
-by Lineout Operator</source>
+by the Lineout operator</source>
         <translation>Ces éléments peuvent être remplacées
-par opérateur d&apos;alignement</translation>
+par le opérateur d&apos;alignement</translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation>Exemple d&apos;utilisation</translation>
     </message>
     <message>
-        <source>Sample Points </source>
-        <translation>Points d&apos;example</translation>
+        <source>Sample points</source>
+        <translation>Points d&apos;échantillon</translation>
     </message>
     <message>
         <source>Create refline labels</source>
@@ -8251,11 +8251,11 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>Fin</translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation>Echantillon</translation>
     </message>
     <message>
-        <source>Sample Points </source>
+        <source>Sample points</source>
         <translation>Points d&apos;échantillon</translation>
     </message>
 </context>
@@ -8278,7 +8278,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>Annuler la configuration globale</translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation>Echantillon</translation>
     </message>
     <message>
@@ -8731,7 +8731,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>Maximum matériau par zone</translation>
     </message>
     <message>
-        <source>Volume Fraction for Isovolume</source>
+        <source>Volume fraction for isovolume</source>
         <translation>Fraction du volume pour volumes-iso</translation>
     </message>
     <message>
@@ -8829,7 +8829,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>Discrétiser les limites uniquement</translation>
     </message>
     <message>
-        <source>Discretization Mode</source>
+        <source>Discretization mode</source>
         <translation>Mode de discrétisation</translation>
     </message>
     <message>
@@ -8841,12 +8841,12 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>Adaptif</translation>
     </message>
     <message>
-        <source>Smallest Zone (% bbox diag)</source>
+        <source>Smallest zone (% bbox diag)</source>
         <translation>Plus petite zone (% bbox diag)</translation>
     </message>
     <message>
-        <source>Flat Enough (recip. curvature)</source>
-        <translation>Assez plat (recip. Courbure)</translation>
+        <source>Flat enough (recip. curvature)</source>
+        <translation>Assez plat (recip. courbure)</translation>
     </message>
     <message>
         <source>Adaptive not available. Missing boost interval template library. Overriding to Uniform.</source>
@@ -10266,11 +10266,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
 <context>
     <name>QvisPickWindow</name>
     <message>
-        <source>Max Tabs</source>
+        <source>Max tabs</source>
         <translation>Nombre maximum d&apos;onglets</translation>
     </message>
     <message>
-        <source>Save Picks as</source>
+        <source>Save picks as</source>
         <translation>Enregistrer la cible sous</translation>
     </message>
     <message>
@@ -10282,15 +10282,15 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
         <translation>Id</translation>
     </message>
     <message>
-        <source>Physical Coords</source>
+        <source>Physical coords</source>
         <translation>Coordonnées physiques</translation>
     </message>
     <message>
-        <source>Domain-Logical Coords</source>
+        <source>Domain-logical coords</source>
         <translation>Coordonnées du domaine</translation>
     </message>
     <message>
-        <source>Block-Logical Coords</source>
+        <source>Block-logical coords</source>
         <translation>Coordonnées du bloc</translation>
     </message>
     <message>
@@ -10318,19 +10318,19 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
         <translation>Impossible de sauvegarder la cible</translation>
     </message>
     <message>
-        <source>Float Format</source>
+        <source>Float format</source>
         <translation>Format de flottant</translation>
     </message>
     <message>
-        <source>Concise Output</source>
+        <source>Concise output</source>
         <translation>Sortie brève</translation>
     </message>
     <message>
-        <source>Clear Picks</source>
+        <source>Clear picks</source>
         <translation>Effacer les cibles</translation>
     </message>
     <message>
-        <source>Repeat Pick</source>
+        <source>Repeat pick</source>
         <translation>Refaire</translation>
     </message>
     <message>
@@ -10338,7 +10338,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
         <translation>Créer une feuille de calcul avec la prochaine cible</translation>
     </message>
     <message>
-        <source>Display in Spreadsheet</source>
+        <source>Display in spreadsheet</source>
         <translation>Afficher dans une feuille de calcul</translation>
     </message>
     <message>
@@ -10346,7 +10346,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
         <translation>Choisir le nom du fichier</translation>
     </message>
     <message>
-        <source>Mesh Name</source>
+        <source>Mesh name</source>
         <translation>Nom du maillage</translation>
     </message>
     <message>
@@ -10366,15 +10366,15 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
         <translation>Afficher la cible</translation>
     </message>
     <message>
-        <source>For Nodes</source>
+        <source>For nodes</source>
         <translation>Pour les noeuds</translation>
     </message>
     <message>
-        <source>For Zones</source>
+        <source>For zones</source>
         <translation>Pour les zones</translation>
     </message>
     <message>
-        <source>Do Time Curve with next pick</source>
+        <source>Do time curve with next pick</source>
         <translation>Tracer une courbe temporelle avec la prochaine cible</translation>
     </message>
     <message>
@@ -10386,11 +10386,11 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
         <translation>Utiliser plusieurs axes des ordonnées pour la courbe temporelle</translation>
     </message>
     <message>
-        <source>Output Display</source>
+        <source>Output display</source>
         <translation>Affichage de sortie</translation>
     </message>
     <message>
-        <source>Time Pick</source>
+        <source>Time pick</source>
         <translation>Cible temporelle</translation>
     </message>
     <message>
@@ -12532,7 +12532,7 @@ Voulez-vous appliquer l&apos;opérateur% 2 ?
 <context>
     <name>QvisQueryOverTimeWindow</name>
     <message>
-        <source>X-Axis:</source>
+        <source>X-axis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12609,7 +12609,7 @@ same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Float Format:</source>
+        <source>Float format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -16669,11 +16669,11 @@ Coordinates plot.</source>
 <context>
     <name>QvisTimeQueryOptionsWidget</name>
     <message>
-        <source>Do Time Curve</source>
+        <source>Do time curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start and End are Time steps,
+        <source>Start and end are time steps,
 not cycles or times.</source>
         <translation type="unfinished"></translation>
     </message>

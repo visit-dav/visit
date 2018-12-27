@@ -5637,8 +5637,8 @@ zullen dit venster ook gebruiken.
         <translation>Venster #</translation>
     </message>
     <message>
-        <source>Freeze In Time</source>
-        <translation>Bevries de Tijd</translation>
+        <source>Freeze in time</source>
+        <translation>Bevries de tijd</translation>
     </message>
     <message>
         <source>Synchronize with originating plot</source>
@@ -5674,17 +5674,17 @@ zullen dit venster ook gebruiken.
     </message>
     <message>
         <source>These items can be overridden
-by Lineout Operator</source>
+by the Lineout operator</source>
         <translation>Deze items kunnen overschreven worden
-door de Lineout Operator</translation>
+door de Lineout operator</translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation>Gebruik bemonstering</translation>
     </message>
     <message>
-        <source>Sample Points </source>
-        <translation>Bemonsterpunten </translation>
+        <source>Sample points</source>
+        <translation>Bemonsterpunten</translation>
     </message>
     <message>
         <source>Create refline labels</source>
@@ -9034,12 +9034,12 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Eindpunt</translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation type="unfinished">Gebruik bemonstering</translation>
     </message>
     <message>
-        <source>Sample Points </source>
-        <translation type="unfinished">Bemonsterpunten </translation>
+        <source>Sample points</source>
+        <translation type="unfinished">Bemonsterpunten</translation>
     </message>
 </context>
 <context>
@@ -9065,7 +9065,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="obsolete">Globale LineOut overstemmingen</translation>
     </message>
     <message>
-        <source>Use Sampling</source>
+        <source>Use sampling</source>
         <translation>Gebruik bemonstering</translation>
     </message>
     <message>
@@ -9602,7 +9602,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>Maximum materialen per zone</translation>
     </message>
     <message>
-        <source>Volume Fraction for Isovolume</source>
+        <source>Volume fraction for isovolume</source>
         <translation>Volumefractie voor isovolume</translation>
     </message>
     <message>
@@ -9724,7 +9724,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>Discretiseer alleen de grens</translation>
     </message>
     <message>
-        <source>Discretization Mode</source>
+        <source>Discretization mode</source>
         <translation>Dicretisatiemethode</translation>
     </message>
     <message>
@@ -9736,11 +9736,11 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>Aanpassend</translation>
     </message>
     <message>
-        <source>Smallest Zone (% bbox diag)</source>
+        <source>Smallest zone (% bbox diag)</source>
         <translation>Kleinste cel (% bbox diag)</translation>
     </message>
     <message>
-        <source>Flat Enough (recip. curvature)</source>
+        <source>Flat enough (recip. curvature)</source>
         <translation>Vlak genoeg (recip. kromming)</translation>
     </message>
     <message>
@@ -11538,28 +11538,16 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
 <context>
     <name>QvisPickWindow</name>
     <message>
-        <source>Max Tabs</source>
-        <translation>Max Tabs</translation>
+        <source>Max tabs</source>
+        <translation>Max tabs</translation>
     </message>
     <message>
-        <source>Save Picks as</source>
+        <source>Save picks as</source>
         <translation>Bewaar keuzes als</translation>
     </message>
     <message>
         <source>Variables</source>
         <translation>Variabelen</translation>
-    </message>
-    <message>
-        <source>Float Format:</source>
-        <translation type="obsolete">Glijdende komma formaat:</translation>
-    </message>
-    <message>
-        <source>Concise Output.</source>
-        <translation type="obsolete">Beknopte uitvoer.</translation>
-    </message>
-    <message>
-        <source>Show Mesh Name</source>
-        <translation type="obsolete">Toon roosternaam</translation>
     </message>
     <message>
         <source>Show Timestep</source>
@@ -11586,15 +11574,15 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation>Id</translation>
     </message>
     <message>
-        <source>Physical Coords</source>
+        <source>Physical coords</source>
         <translation>Fysische coördinaten</translation>
     </message>
     <message>
-        <source>Domain-Logical Coords</source>
+        <source>Domain-logical coords</source>
         <translation>Domeingebonden coördinaten</translation>
     </message>
     <message>
-        <source>Block-Logical Coords</source>
+        <source>Block-logical coords</source>
         <translation>Bloklogische coördinaten</translation>
     </message>
     <message>
@@ -11610,7 +11598,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation>Venter niet wissen</translation>
     </message>
     <message>
-        <source>Clear Picks</source>
+        <source>Clear picks</source>
         <translation>Wis keuzes</translation>
     </message>
     <message>
@@ -11618,7 +11606,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Maak een tijdscurve aan met de volgende keuze.</translation>
     </message>
     <message>
-        <source>Repeat Pick</source>
+        <source>Repeat pick</source>
         <translation>Herhaal keuze</translation>
     </message>
     <message>
@@ -11634,7 +11622,7 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="obsolete">Maak een spreadsheet met de volgende keuze.</translation>
     </message>
     <message>
-        <source>Display in Spreadsheet</source>
+        <source>Display in spreadsheet</source>
         <translation>Toon in spreadsheet</translation>
     </message>
     <message>
@@ -11646,11 +11634,11 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation>VisIt kon de gekozen keuzeresutaten in het geselecteerde bestand niet opslaan</translation>
     </message>
     <message>
-        <source>Float Format</source>
+        <source>Float format</source>
         <translation>Glijdende komma formaat</translation>
     </message>
     <message>
-        <source>Concise Output</source>
+        <source>Concise output</source>
         <translation>Beknopte uitvoer</translation>
     </message>
     <message>
@@ -11686,8 +11674,8 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation>Kies bestandsnaam om in te bewaren</translation>
     </message>
     <message>
-        <source>Mesh Name</source>
-        <translation type="unfinished"></translation>
+        <source>Mesh name</source>
+        <translation type="unfinished">Roosternaam</translation>
     </message>
     <message>
         <source>Timestep</source>
@@ -11706,15 +11694,15 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>For Nodes</source>
+        <source>For nodes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>For Zones</source>
+        <source>For zones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Do Time Curve with next pick</source>
+        <source>Do time curve with next pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11726,11 +11714,11 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Output Display</source>
+        <source>Output display</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Time Pick</source>
+        <source>Time pick</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14401,8 +14389,8 @@ Kies een unieke scalar variabele voor de nieuwe as.</translation>
 <context>
     <name>QvisQueryOverTimeWindow</name>
     <message>
-        <source>X-Axis:</source>
-        <translation>X-as:</translation>
+        <source>X-axis</source>
+        <translation>X-as</translation>
     </message>
     <message>
         <source>Cycle</source>
@@ -14520,8 +14508,8 @@ same window.</source>
         <translation>Vraagresultaten</translation>
     </message>
     <message>
-        <source>Float Format:</source>
-        <translation>Glijdende komma formaat:</translation>
+        <source>Float format</source>
+        <translation>Glijdende komma formaat</translation>
     </message>
     <message>
         <source>Clear results</source>
@@ -19458,11 +19446,11 @@ Coordinates plot.</source>
 <context>
     <name>QvisTimeQueryOptionsWidget</name>
     <message>
-        <source>Do Time Curve</source>
+        <source>Do time curve</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Start and End are Time steps,
+        <source>Start and end are time steps,
 not cycles or times.</source>
         <translation type="unfinished"></translation>
     </message>

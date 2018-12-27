@@ -72,7 +72,7 @@ QvisTimeQueryOptionsWidget::QvisTimeQueryOptionsWidget(QWidget *parent)
 
     setCheckable(true);
     setChecked(false);
-    setTitle(tr("Do Time Curve"));
+    setTitle(tr("Do time curve"));
     CreateWindowContents();
 }
 
@@ -124,7 +124,7 @@ QvisTimeQueryOptionsWidget::CreateWindowContents()
     // Message
     //
     QHBoxLayout *msgLayout = new QHBoxLayout();
-    msgLabel = new QLabel(tr("Start and End are Time steps,\nnot cycles or times."));
+    msgLabel = new QLabel(tr("Start and end are time steps,\nnot cycles or times."));
     msgLabel->setWordWrap(true);
     msgLabel->setAlignment(Qt::AlignHCenter);
     msgLayout->addWidget(msgLabel);

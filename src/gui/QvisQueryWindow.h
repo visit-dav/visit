@@ -132,7 +132,7 @@ class QvisXRayImageQueryWidget;
 //   Increased the number of text fields to support the x ray image query.
 //
 //   Kathleen Bonnell, Tue Mar  1 11:06:35 PST 2011
-//   Add widget for plotOpts, which controls the type of plot for Time Picks.
+//   Add widget for plotOpts, which controls the type of plot for time picks.
 //
 //   Kathleen Biagas, Fri Jun 10 08:58:12 PDT 2011
 //   Added QvisPickQueryWidget, QvisHohlraumFluxQueryWidget, 
