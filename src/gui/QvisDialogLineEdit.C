@@ -50,7 +50,7 @@
 // ****************************************************************************
 // Method: QvisDialogLineEdit::QvisDialogLineEdit
 //
-// Purpose: 
+// Purpose:
 //   Constructor.
 //
 // Arguments:
@@ -102,14 +102,14 @@ QvisDialogLineEdit::QvisDialogLineEdit(QWidget *parent)
 // ****************************************************************************
 // Method: QvisDialogLineEdit::~QvisDialogLineEdit
 //
-// Purpose: 
+// Purpose:
 //   Destructor.
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 14 16:24:46 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 QvisDialogLineEdit::~QvisDialogLineEdit()
@@ -160,15 +160,15 @@ QvisDialogLineEdit::setDialogMode(QvisDialogLineEdit::DialogMode m)
 // ****************************************************************************
 // Method: QvisDialogLineEdit::setFallbackPath
 //
-// Purpose: 
+// Purpose:
 //   Sets a fallback path to use if the default path in the File Open Dialog
 //   does not exist.
 //
-// Programmer: Kathleen Bonnell 
+// Programmer: Kathleen Bonnell
 // Creation:   Fri May 13 14:07:12 PDT 2011
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -180,7 +180,7 @@ QvisDialogLineEdit::setFallbackPath(const QString &p)
 // ****************************************************************************
 // Method: QvisDialogLineEdit::changeEvent
 //
-// Purpose: 
+// Purpose:
 //   Update the width of the font button when the font changes.
 //
 // Arguments:
@@ -217,7 +217,7 @@ QvisDialogLineEdit::changeEvent(QEvent *e)
 // ****************************************************************************
 // Method: QvisDialogLineEdit::pushButtonClicked
 //
-// Purpose: 
+// Purpose:
 //   This method is called when the "..." button is clicked and it lets the
 //   user select a directory or a filename and that string gets put into
 //   the text line edit.
@@ -231,9 +231,12 @@ QvisDialogLineEdit::changeEvent(QEvent *e)
 //
 //   Brad Whitlock, Thu Jun 19 11:27:32 PDT 2008
 //   Qt 4.
-// 
+//
 //   Kathleen Bonnell, Fri May 13 14:08:08 PDT 2011
 //   Use new getOpenFileNameWithFallbackPath for ChooseFile option.
+//
+//   Kathleen Biagas, Thu Dec 27 16:26:03 PST 2018
+//   Added ChooseSaveFile dialog mode.
 //
 // ****************************************************************************
 
@@ -254,9 +257,14 @@ QvisDialogLineEdit::pushButtonClicked()
 #endif
     }
     else if(dialogMode == ChooseLocalFile)
-    { 
-        // Choose a new filename.
+    {
+        // Choose an existing filename.
         name = QFileDialog::getOpenFileName (this, dialogCaption, name, dialogFilter);
+    }
+    else if(dialogMode == ChooseSaveFile)
+    {
+        // Choose a new filename.
+        name = QFileDialog::getSaveFileName (this, dialogCaption, name, dialogFilter);
     }
     else if(dialogMode == ChooseDirectory)
     {

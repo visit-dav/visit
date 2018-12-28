@@ -49,7 +49,7 @@ class QPushButton;
 // Purpose:
 //   Incorporates a line edit with a file dialog.
 //
-// Notes:      
+// Notes:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 10 15:13:00 PST 2006
@@ -64,6 +64,9 @@ class QPushButton;
 //   Kathleen Bonnell, Fri May 13 14:18:37 PDT 2011
 //   Added fallbackPath.
 //
+//   Kathleen Biagas, Thu Dec 27 16:24:51 PST 2018
+//   Added ChooseSaveFile dialog mode.
+//
 // ****************************************************************************
 
 class GUI_API QvisDialogLineEdit : public QWidget
@@ -71,9 +74,10 @@ class GUI_API QvisDialogLineEdit : public QWidget
     Q_OBJECT
 public:
     typedef enum {
-        ChooseFile, 
-        ChooseLocalFile, 
-        ChooseDirectory, 
+        ChooseFile,
+        ChooseLocalFile,
+        ChooseSaveFile,
+        ChooseDirectory,
         ChooseFont
     } DialogMode;
 

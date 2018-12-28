@@ -131,14 +131,14 @@ movie_format_info movieFormatInfo[] = {
 // ****************************************************************************
 // Function: FormatToMenuName
 //
-// Purpose: 
+// Purpose:
 //   Converts a movie format name to its menu name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 23 11:15:35 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const char *
@@ -156,14 +156,14 @@ FormatToMenuName(const char *format)
 // ****************************************************************************
 // Function: MenuNameToFormat
 //
-// Purpose: 
+// Purpose:
 //   Converts a menu name to its movie format name.
 //
 // Programmer: Brad Whitlock
 // Creation:   Thu Jun 23 11:15:35 PDT 2005
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 const char *
@@ -172,7 +172,7 @@ MenuNameToFormat(const char *menu_name)
     for(size_t i = 0; i < N_MOVIE_FORMATS; ++i)
     {
         if(strcmp(menu_name, movieFormatInfo[i].menu_name) == 0)
-            return movieFormatInfo[i].format;      
+            return movieFormatInfo[i].format;
     }
 
     return "";
@@ -181,7 +181,7 @@ MenuNameToFormat(const char *menu_name)
 // ****************************************************************************
 // Method: EnsureDirectoryExists
 //
-// Purpose: 
+// Purpose:
 //   Makes sure that a directory exists.
 //
 // Arguments:
@@ -191,13 +191,13 @@ MenuNameToFormat(const char *menu_name)
 //
 // Returns:    True if the directory exists or was created.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Nov 21 14:05:35 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 static bool
@@ -245,7 +245,7 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::QvisSaveMovieWizard
 //
-// Purpose: 
+// Purpose:
 //   This is the constructor for the QvisSaveMovieWizard class.
 //
 // Arguments:
@@ -272,14 +272,18 @@ EnsureDirectoryExists(std::string &name, bool nameIsFile)
 //   Brad Whitlock, Tue Oct  7 13:13:33 PDT 2008
 //   Qt 4.
 //
+//   Kathleen Biagas, Thu Dec 27 16:30:21 PST 2018
+//   Disable default button feature of this wizard.
+//
 // ****************************************************************************
 
-QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent) : 
+QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent) :
     QvisWizard(atts, parent), templateTitleToInfo(), sequencePages()
 {
     setOption(QWizard::NoCancelButton, false);
     setOption(QWizard::HaveHelpButton, false);
     setOption(QWizard::HaveNextButtonOnLastPage, false);
+    setOption(QWizard::NoDefaultButton, true);
 
     default_movie_size[0] = 400;
     default_movie_size[1] = 400;
@@ -329,7 +333,7 @@ QvisSaveMovieWizard::QvisSaveMovieWizard(AttributeSubject *atts, QWidget *parent
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::~QvisSaveMovieWizard
 //
-// Purpose: 
+// Purpose:
 //   Destructor for the QvisSaveMovieWizard class.
 //
 // Programmer: Brad Whitlock
@@ -355,7 +359,7 @@ QvisSaveMovieWizard::~QvisSaveMovieWizard()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::Exec
 //
-// Purpose: 
+// Purpose:
 //   This method executes the wizard.
 //
 // Returns:    A return value for the wizard, which will be used to tell the
@@ -416,7 +420,7 @@ QvisSaveMovieWizard::Exec()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::WriteTemplateSpecification
 //
-// Purpose: 
+// Purpose:
 //   Writes out a movie template specification if one is required.
 //
 // Programmer: Brad Whitlock
@@ -442,7 +446,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
     // If we have template options to store and we're not using our
     // previous settings then write out the template options file.
     bool addSources = false;
-    if(templateSpec != 0 && 
+    if(templateSpec != 0 &&
        decision_movieType == MOVIE_TYPE_TEMPLATE)
     {
         std::string templateFile, specificationFile;
@@ -474,7 +478,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             // If we're saving the "pre-existing" template as a different template
             // then we should handle that here. We'll need to do a lot of the same
             // things as in the case below but the new PY file will have to
-            // derive from the class name in the pre-existing template file in 
+            // derive from the class name in the pre-existing template file in
             // order to preserve the HandleScriptingSequence method. We need to
             // override the SetupVisualization method like below also.
             //
@@ -503,7 +507,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             std::string sessionFile;
             if(specExt == ".mt")
             {
-                std::string base(specificationFile.substr(0, 
+                std::string base(specificationFile.substr(0,
                     specificationFile.size() - 3));
 
                 templateFile = base + ".py";
@@ -511,7 +515,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             }
             else if(specExt == ".py")
             {
-                std::string base(specificationFile.substr(0, 
+                std::string base(specificationFile.substr(0,
                     specificationFile.size() - 3));
 
                 specificationFile = base + ".mt";
@@ -530,7 +534,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
             EnsureDirectoryExists(templateFile, true);
 
             //
-            // If we are saving this template for the first time, rather than 
+            // If we are saving this template for the first time, rather than
             // editing, the session file will be empty. If the session file is
             // empty then tell the viewer to save a session file.
             //
@@ -633,7 +637,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
                << specificationFile.c_str() << endl;
         templateSpec->WriteConfigFile(specificationFile.c_str());
 
-        // Save the name of the template specification file in the movie 
+        // Save the name of the template specification file in the movie
         // so we can tell the interpreter in the CLI the name of the template
         // specification file that it should use for this movie.
         movieAtts->SetTemplateFile(specificationFile);
@@ -643,7 +647,7 @@ QvisSaveMovieWizard::WriteTemplateSpecification()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::SetDefaultMovieSize
 //
-// Purpose: 
+// Purpose:
 //   Sets the default movie size.
 //
 // Arguments:
@@ -677,7 +681,7 @@ QvisSaveMovieWizard::SetDefaultMovieSize(int w, int h)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::SetDefaultNumFrames
 //
-// Purpose: 
+// Purpose:
 //   Sets the default number of movie frames
 //
 // Programmer: Dave Bremer
@@ -693,14 +697,14 @@ QvisSaveMovieWizard::SetDefaultNumFrames(int nFrames)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::GetDefaultNumFrames
 //
-// Purpose: 
+// Purpose:
 //   Gets the default number of movie frames
 //
 // Programmer: Dave Bremer
 // Creation:   Fri Oct  5 15:41:01 PDT 2007
 // ****************************************************************************
 
-int  
+int
 QvisSaveMovieWizard::GetDefaultNumFrames()
 {
     return default_num_frames;
@@ -709,7 +713,7 @@ QvisSaveMovieWizard::GetDefaultNumFrames()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateMovieTypePage
 //
-// Purpose: 
+// Purpose:
 //   Creates page0.
 //
 // Programmer: Brad Whitlock
@@ -766,7 +770,7 @@ QvisSaveMovieWizard::CreateMovieTypePage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateNewTemplatePromptPage
 //
-// Purpose: 
+// Purpose:
 //   Creates page1.
 //
 // Programmer: Brad Whitlock
@@ -823,7 +827,7 @@ QvisSaveMovieWizard::CreateNewTemplatePromptPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateChooseTemplatePage
 //
-// Purpose: 
+// Purpose:
 //   Lets the user choose from the available movie templates.
 //
 // Programmer: Brad Whitlock
@@ -885,7 +889,7 @@ QvisSaveMovieWizard::CreateChooseTemplatePage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateChooseNewSourcesPage
 //
-// Purpose: 
+// Purpose:
 //   Create the wizard page that lets the user choose new sources for
 //   a template that was based on a session file.
 //
@@ -905,7 +909,7 @@ QvisSaveMovieWizard::CreateChooseNewSourcesPage()
     page3->setTitle(tr("Update sources"));
     page3->setSubTitle(tr("Make sure that the sources used in this template "
         "are up to date. You can change the sources here to make a movie "
-        "using a template that was created with other data.")); 
+        "using a template that was created with other data."));
 
     QVBoxLayout *pageLayout = new QVBoxLayout(page3);
     pageLayout->setSpacing(10);
@@ -920,7 +924,7 @@ QvisSaveMovieWizard::CreateChooseNewSourcesPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateViewportPage
 //
-// Purpose: 
+// Purpose:
 //   Creates the viewport page.
 //
 // Programmer: Brad Whitlock
@@ -958,7 +962,7 @@ QvisSaveMovieWizard::CreateViewportPage()
     QGridLayout *leftLayout = new QGridLayout(0);
     hCenterLayout->addLayout(leftLayout);
     leftLayout->setSpacing(10);
- 
+
     // The viewport list.
     page4_viewportList = new QListWidget(page4);
     page4_viewportList->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -1036,7 +1040,7 @@ QvisSaveMovieWizard::CreateViewportPage()
     connect(page4_dropShadow, SIGNAL(toggled(bool)),
             this, SLOT(page4_dropShadowChanged(bool)));
     viewportLayout->addWidget(page4_dropShadow, 7, 0, 1, 2);
-    
+
 
     // Add the viewport widget on the right.
     page4_viewportDisplay = new QvisViewportWidget(1., 320, 320, page4);
@@ -1051,13 +1055,13 @@ QvisSaveMovieWizard::CreateViewportPage()
     hCenterLayout->addWidget(page4_viewportDisplay);
 
     // Add the page.
-    setPage(Page_Viewports, page4);    
+    setPage(Page_Viewports, page4);
 }
 
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateSequencesPage
 //
-// Purpose: 
+// Purpose:
 //   Creates the sequences page.
 //
 // Programmer: Brad Whitlock
@@ -1066,7 +1070,7 @@ QvisSaveMovieWizard::CreateViewportPage()
 // Modifications:
 //   Brad Whitlock, Tue Apr  8 16:08:04 PDT 2008
 //   Support for internationalization.
-// 
+//
 ///  Brad Whitlock, Mon Oct 13 17:11:03 PDT 2008
 //   Qt 4.
 //
@@ -1105,7 +1109,7 @@ QvisSaveMovieWizard::CreateSequencesPage()
     page5_sequenceProperties = new QGroupBox(tr("Sequence properties"), page5);
     gridLayout->addWidget(page5_sequenceProperties, 0, 2, 2, 2);
     gridLayout->setRowStretch(0, 5);
-    QGridLayout *seqPropLayout = new QGridLayout(page5_sequenceProperties);    
+    QGridLayout *seqPropLayout = new QGridLayout(page5_sequenceProperties);
     seqPropLayout->setSpacing(5);
 
     // Create the sequence name controls.
@@ -1161,7 +1165,7 @@ QvisSaveMovieWizard::CreateSequencesPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateSaveTemplatePage
 //
-// Purpose: 
+// Purpose:
 //   Creates page 6, which is currently unused.
 //
 // Programmer: Brad Whitlock
@@ -1185,14 +1189,14 @@ QvisSaveMovieWizard::CreateSaveTemplatePage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateSaveTemplateAsPage
 //
-// Purpose: 
+// Purpose:
 //   Creates the "save template as" wizard page.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 10 15:39:24 PST 2006
@@ -1203,6 +1207,10 @@ QvisSaveMovieWizard::CreateSaveTemplatePage()
 //
 //   Brad Whitlock, Mon Oct 13 16:31:10 PDT 2008
 //   Qt 4.
+//
+//   Kathleen Biagas, Thu Dec 27 16:28:03 PST 2018
+//   Use ChooseSaveFile instead of ChooseLocalFile in order to allow user
+//   to actually choose a new file to save, not an existing one.
 //
 // ****************************************************************************
 
@@ -1227,7 +1235,7 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     gLayout->addWidget(titleLabel, 0, 0);
     page7_templateName = new QLineEdit(page7);
     connect(page7_templateName, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page7_templateNameChanged(const QString &)));    
+            this, SLOT(page7_templateNameChanged(const QString &)));
     gLayout->addWidget(page7_templateName, 0, 1);
 
     //
@@ -1237,7 +1245,7 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     gLayout->addWidget(descriptionLabel, 1, 0);
     page7_templateDescription = new QTextEdit(page7);
     connect(page7_templateDescription, SIGNAL(textChanged()),
-            this, SLOT(page7_templateDescriptionChanged()));    
+            this, SLOT(page7_templateDescriptionChanged()));
     gLayout->addWidget(page7_templateDescription, 1, 1, Qt::AlignTop);
 
     //
@@ -1246,11 +1254,11 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     QLabel *filenameLabel = new QLabel(tr("Template filename"), page7);
     gLayout->addWidget(filenameLabel, 2, 0);
     page7_templateFile = new QvisDialogLineEdit(page7);
-    page7_templateFile->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
+    page7_templateFile->setDialogMode(QvisDialogLineEdit::ChooseSaveFile);
     page7_templateFile->setDialogCaption(tr("Choose template filename"));
     page7_templateFile->setDialogFilter("*");
     connect(page7_templateFile, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page7_templateFileChanged(const QString &)));    
+            this, SLOT(page7_templateFileChanged(const QString &)));
     gLayout->addWidget(page7_templateFile, 2, 1);
 
     //
@@ -1259,11 +1267,11 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
     QLabel *previewImageLabel = new QLabel("Preview image filename", page7);
     gLayout->addWidget(previewImageLabel, 3, 0);
     page7_previewImageFile = new QvisDialogLineEdit(page7);
-    page7_previewImageFile->setDialogMode(QvisDialogLineEdit::ChooseLocalFile);
+    page7_previewImageFile->setDialogMode(QvisDialogLineEdit::ChooseSaveFile);
     page7_previewImageFile->setDialogCaption(tr("Choose preview image filename"));
     page7_previewImageFile->setDialogFilter("XPM image (*.xpm)");
     connect(page7_previewImageFile, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page7_previewImageFileChanged(const QString &)));    
+            this, SLOT(page7_previewImageFileChanged(const QString &)));
     gLayout->addWidget(page7_previewImageFile, 3, 1);
 
     // Add the page.
@@ -1273,7 +1281,7 @@ QvisSaveMovieWizard::CreateSaveTemplateAsPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateSettingsOkayPage
 //
-// Purpose: 
+// Purpose:
 //   Creates page 8.
 //
 // Programmer: Brad Whitlock
@@ -1337,7 +1345,7 @@ QvisSaveMovieWizard::CreateSettingsOkayPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateFormatPage
 //
-// Purpose: 
+// Purpose:
 //   Creates page 9.
 //
 // Programmer: Brad Whitlock
@@ -1432,7 +1440,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_scaleLabel->setBuddy(page9_scaleSpinBox);
     f2layout->addWidget(page9_scaleLabel, 3, 0);
     f2layout->addWidget(page9_scaleSpinBox, 3, 1);
-    
+
     rb = new QRadioButton(tr("Specify movie size"), formatAndResolution);
     page9_sizeTypeButtonGroup->addButton(rb, 1);
     f2layout->addWidget(rb, 4, 0, 1, 3);
@@ -1450,7 +1458,7 @@ QvisSaveMovieWizard::CreateFormatPage()
     page9_widthLabel->setEnabled(false);
     f2layout->addWidget(page9_widthLabel, 5, 0);
     f2layout->addWidget(page9_widthSpinBox, 5, 1);
-    
+
     page9_heightSpinBox = new QSpinBox(formatAndResolution);
     page9_heightSpinBox->setKeyboardTracking(false);
     page9_heightSpinBox->setMinimum(32);
@@ -1544,7 +1552,7 @@ QvisSaveMovieWizard::CreateFormatPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateNumFramesPage
 //
-// Purpose: 
+// Purpose:
 //   Creates page 10.
 //
 // Programmer: Dave Bremer
@@ -1584,7 +1592,7 @@ QvisSaveMovieWizard::CreateNumFramesPage()
     page10_fpsLineEdit = new QLineEdit(page10);
     gLayout->addWidget(page10_fpsLineEdit, 0, 1);
     connect(page10_fpsLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page10_fpsChanged(const QString &)));    
+            this, SLOT(page10_fpsChanged(const QString &)));
 
     page10_startIndexLabel = new QLabel(tr("First frame"), page10);
     gLayout->addWidget(page10_startIndexLabel, 1, 0);
@@ -1592,7 +1600,7 @@ QvisSaveMovieWizard::CreateNumFramesPage()
     page10_startIndexLineEdit = new QLineEdit(page10);
     gLayout->addWidget(page10_startIndexLineEdit, 1, 1);
     connect(page10_startIndexLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page10_startIndexChanged(const QString &)));    
+            this, SLOT(page10_startIndexChanged(const QString &)));
 
     page10_endIndexLabel = new QLabel(tr("Last frame"), page10);
     gLayout->addWidget(page10_endIndexLabel, 2, 0);
@@ -1627,8 +1635,8 @@ QvisSaveMovieWizard::CreateNumFramesPage()
 
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateFilenamePage
-//     
-// Purpose: 
+//
+// Purpose:
 //   Creates page 11.
 //
 // Programmer: Brad Whitlock
@@ -1699,7 +1707,7 @@ QvisSaveMovieWizard::CreateFilenamePage()
     gLayout->addWidget(filebaseLabel, 1, 0);
     page11_filebaseLineEdit = new QLineEdit(page11);
     connect(page11_filebaseLineEdit, SIGNAL(textChanged(const QString &)),
-            this, SLOT(page11_processFilebaseText(const QString &)));    
+            this, SLOT(page11_processFilebaseText(const QString &)));
     gLayout->addWidget(page11_filebaseLineEdit, 1, 1);
 
     // Add the page.
@@ -1709,7 +1717,7 @@ QvisSaveMovieWizard::CreateFilenamePage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateEmailPage
 //
-// Purpose: 
+// Purpose:
 //   Creates a wizard page that prompts for e-mail address, etc.
 //
 // Programmer: Brad Whitlock
@@ -1776,7 +1784,7 @@ QvisSaveMovieWizard::CreateEmailPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateGenerationMethodPage
 //
-// Purpose: 
+// Purpose:
 //   Creates page 11.
 //
 // Programmer: Brad Whitlock
@@ -1841,7 +1849,7 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::CreateYesNoPage
 //
-// Purpose: 
+// Purpose:
 //   Creates a page with a prompt and Yes/No radio buttons.
 //
 // Arguments:
@@ -1863,7 +1871,7 @@ QvisSaveMovieWizard::CreateGenerationMethodPage()
 // ****************************************************************************
 
 void
-QvisSaveMovieWizard::CreateYesNoPage(QWizardPage **page, QButtonGroup **bg, 
+QvisSaveMovieWizard::CreateYesNoPage(QWizardPage **page, QButtonGroup **bg,
     const char *slot)
 {
     *page = new QWizardPage(this);
@@ -1895,18 +1903,18 @@ QvisSaveMovieWizard::CreateYesNoPage(QWizardPage **page, QButtonGroup **bg,
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::NumSequencePages
 //
-// Purpose: 
+// Purpose:
 //   Counts the number of real sequence pages that we have.
 //
 // Returns:    The number of sequence pages that we have.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Tue Oct 14 17:03:51 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 int
@@ -1921,7 +1929,7 @@ QvisSaveMovieWizard::NumSequencePages() const
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::nextId
 //
-// Purpose: 
+// Purpose:
 //   This method is called when we want to know the id of the next wizard page.
 //
 // Arguments:
@@ -1935,7 +1943,7 @@ QvisSaveMovieWizard::NumSequencePages() const
 //
 // Modifications:
 //  Cyrus Harrison, Wed Dec  1 15:38:19 PST 2010
-//  Proper state transition into custom pages for create/edit template cases. 
+//  Proper state transition into custom pages for create/edit template cases.
 //
 // ****************************************************************************
 
@@ -1962,7 +1970,7 @@ QvisSaveMovieWizard::nextId() const
         break;
     case Page_PickTemplate:
         { // New scope
-        StringMovieTemplateDataMap::const_iterator it = 
+        StringMovieTemplateDataMap::const_iterator it =
             templateTitleToInfo.find(currentMovieTemplate);
         if(it == templateTitleToInfo.end())
         {
@@ -1976,7 +1984,7 @@ QvisSaveMovieWizard::nextId() const
                 // the page that lets us pick different sources.
                 id = Page_TemplateSources;
             }
-            // The movie template does not use a session file or the 
+            // The movie template does not use a session file or the
             // session file was not provided in the template specification.
             else if(decision_templateUsage == Template_Use)
             {
@@ -2069,7 +2077,7 @@ QvisSaveMovieWizard::nextId() const
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::validateCurrentPage
 //
-// Purpose: 
+// Purpose:
 //   This method is called before we go to the next page. If this method
 //   returns false then the wizard won't go to the next page.
 //
@@ -2077,13 +2085,13 @@ QvisSaveMovieWizard::nextId() const
 //
 // Returns:    True if the wizard can go to the next page.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Wed Oct 15 08:49:58 PDT 2008
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 bool
@@ -2137,7 +2145,7 @@ QvisSaveMovieWizard::validateCurrentPage()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::initializePage
 //
-// Purpose: 
+// Purpose:
 //   This method is called when a page is shown and we call it so the page
 //   gets updated with the right values from the movieAtts.
 //
@@ -2161,9 +2169,9 @@ QvisSaveMovieWizard::validateCurrentPage()
 //   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
 //   Move expansion of '.' outputDir to new method 'GetMovieAttsOutputDir'.
 //   Use new method to get the outputdirectory from movie atts.
-//   
+//
 //   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
-//   Added an update for the new num frames page, and 
+//   Added an update for the new num frames page, and
 //   moved pages 10-12 to 11-13.
 //
 //   Brad Whitlock, Tue Oct 14 09:17:59 PDT 2008
@@ -2311,7 +2319,7 @@ QvisSaveMovieWizard::initializePage(int pageId)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page2_PopulateTemplates
 //
-// Purpose: 
+// Purpose:
 //   Populates the list of movie templates.
 //
 // Programmer: Brad Whitlock
@@ -2331,7 +2339,7 @@ QvisSaveMovieWizard::page2_PopulateTemplates()
 {
     if(!page2_templatesPopulated)
     {
-        // Read the movie template directory and get the list of available movie 
+        // Read the movie template directory and get the list of available movie
         // templates.
         debug1 << "Getting movie template files" << endl;
         MovieTemplateFileList templateFiles(GetVisItMovieTemplates());
@@ -2399,7 +2407,7 @@ QvisSaveMovieWizard::page2_PopulateTemplates()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page3_PopulateSources
 //
-// Purpose: 
+// Purpose:
 //   Reads the session file for the movie template and populates the list
 //   of movie sources so the user can replace them with new sources.
 //
@@ -2407,7 +2415,7 @@ QvisSaveMovieWizard::page2_PopulateTemplates()
 // Creation:   Fri Nov 17 17:15:02 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2420,7 +2428,7 @@ QvisSaveMovieWizard::page3_PopulateSources()
 
     // Get the name of the template's session file from the template
     // specification
-    // 
+    //
     if(!templateSpec->GetSessionFile(sessionFile))
     {
         debug1 << mName << "Could not get session file from template "
@@ -2465,7 +2473,7 @@ QvisSaveMovieWizard::page3_PopulateSources()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page4_UpdateViews
 //
-// Purpose: 
+// Purpose:
 //   This method updates the controls on page 4.
 //
 // Arguments:
@@ -2534,7 +2542,7 @@ QvisSaveMovieWizard::page4_UpdateViews(int flags)
         page4_lowerLeft->setPosition(llx, lly);
         page4_upperRight->setPosition(urx, ury);
         page4_lowerLeft->blockSignals(false);
-        page4_upperRight->blockSignals(false); 
+        page4_upperRight->blockSignals(false);
 
         int compositing = 0;
         if(!templateSpec->ViewportGetCompositing(compositing))
@@ -2619,7 +2627,7 @@ QvisSaveMovieWizard::page4_UpdateViews(int flags)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page5_Update
 //
-// Purpose: 
+// Purpose:
 //   This method updates the widgets in the sequences page.
 //
 // Arguments:
@@ -2837,14 +2845,14 @@ QvisSaveMovieWizard::page5_Update(int flags)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page7_Update
 //
-// Purpose: 
+// Purpose:
 //   Updates the controls on the save template page.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 17:16:58 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -2878,7 +2886,7 @@ QvisSaveMovieWizard::page7_Update()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page8_UpdateMovieSettings
 //
-// Purpose: 
+// Purpose:
 //   This method updates the movie settings shown on page 7.
 //
 // Programmer: Brad Whitlock
@@ -2952,13 +2960,13 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
         if(useCurrent[i] > 0)
         {
             QString scale; scale.sprintf("%dx",  int(scales[i]));
-            tmp = QString(FormatToMenuName(formats[i].c_str())) + 
+            tmp = QString(FormatToMenuName(formats[i].c_str())) +
                   QString(" ") + tr("Current") + QString(" ") +
                   scale;
         }
         else
         {
-            tmp.sprintf("%s %dx%d", 
+            tmp.sprintf("%s %dx%d",
                 FormatToMenuName(formats[i].c_str()), w[i], h[i]);
         }
         s += tmp;
@@ -2993,7 +3001,7 @@ QvisSaveMovieWizard::page8_UpdateMovieSettings()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page9_UpdateOutputs
 //
-// Purpose: 
+// Purpose:
 //   This method populates the list of movie output formats on page 8.
 //
 // Programmer: Brad Whitlock
@@ -3067,7 +3075,7 @@ QvisSaveMovieWizard::page9_UpdateOutputs()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page9_UpdateFormat
 //
-// Purpose: 
+// Purpose:
 //   This method sets the movie format combobox on page 8.
 //
 // Programmer: Brad Whitlock
@@ -3086,7 +3094,7 @@ QvisSaveMovieWizard::page9_UpdateFormat(const QString &format)
     for(int i = 0; i < page9_formatComboBox->count(); ++i)
     {
         if(page9_formatComboBox->itemText(i) == format)
-        {  
+        {
             page9_formatComboBox->blockSignals(true);
             page9_formatComboBox->setCurrentIndex(i);
             page9_formatComboBox->blockSignals(false);
@@ -3101,7 +3109,7 @@ QvisSaveMovieWizard::page9_UpdateFormat(const QString &format)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page9_UpdateResolution
 //
-// Purpose: 
+// Purpose:
 //   This method sets the resolution widgets on page 8.
 //
 // Programmer: Brad Whitlock
@@ -3171,7 +3179,7 @@ QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page10_UpdateStartEndIndex
 //
-// Purpose: 
+// Purpose:
 //   This method sets the text in the start/end frame widgets.
 //   For templated movies, the number of frames is set by the template.
 //   So, if a template is used, I want to disable the start/end index,
@@ -3190,7 +3198,8 @@ QvisSaveMovieWizard::page9_UpdateResolution(bool useCurrent, double scale, int w
 void
 QvisSaveMovieWizard::page10_UpdateStartEndIndex()
 {
-    if (movieAtts->GetMovieType() == MovieAttributes::UsingTemplate)
+    if (movieAtts->GetMovieType() == MovieAttributes::UsingTemplate &&
+        decision_templateUsage != Template_Create)
     {
         page10_startIndexLineEdit->blockSignals(true);
         page10_startIndexLineEdit->setText(tr("set in template"));
@@ -3224,7 +3233,7 @@ QvisSaveMovieWizard::page10_UpdateStartEndIndex()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page11_UpdateButtons
 //
-// Purpose: 
+// Purpose:
 //   This method sets the enabled state for the next button when we're on
 //   page 11.
 //
@@ -3234,7 +3243,7 @@ QvisSaveMovieWizard::page10_UpdateStartEndIndex()
 // Modifications:
 //   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
 //   Use new method to get the outputdirectory from movie atts.
-//   
+//
 // ****************************************************************************
 
 void
@@ -3248,7 +3257,7 @@ QvisSaveMovieWizard::page11_UpdateButtons()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page12_UpdateButtons
 //
-// Purpose: 
+// Purpose:
 //   This method sets the enabled state for the next button when we're on
 //   page 12.
 //
@@ -3274,8 +3283,8 @@ QvisSaveMovieWizard::page12_UpdateButtons()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::LoadTemplateSpecification
 //
-// Purpose: 
-//   This method loads a movie template specification file so the wizard 
+// Purpose:
+//   This method loads a movie template specification file so the wizard
 //   can use it.
 //
 // Arguments:
@@ -3283,13 +3292,13 @@ QvisSaveMovieWizard::page12_UpdateButtons()
 //
 // Returns:    True on success; False otherwise.
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 17:17:57 PST 2006
 //
 // Modifications:
-//   
+//
 //   Mark C. Miller, Wed Jun 17 14:27:08 PDT 2009
 //   Replaced CATCHALL(...) with CATCHALL.
 // ****************************************************************************
@@ -3335,7 +3344,7 @@ QvisSaveMovieWizard::LoadTemplateSpecification(const std::string &spec)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::UpdateCustomPagesWithDefaultValues
 //
-// Purpose: 
+// Purpose:
 //   This method updates the custom pages with default values from the
 //   template specification.
 //
@@ -3343,7 +3352,7 @@ QvisSaveMovieWizard::LoadTemplateSpecification(const std::string &spec)
 // Creation:   Fri Nov 17 17:19:07 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3380,14 +3389,14 @@ QvisSaveMovieWizard::UpdateCustomPagesWithDefaultValues()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::UpdateDefaultValuesFromCustomPages
 //
-// Purpose: 
+// Purpose:
 //   This method updates the template specification from the custom UI pages.
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 17:19:31 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3450,13 +3459,13 @@ QvisSaveMovieWizard::UpdateDefaultValuesFromCustomPages()
             // data node.
             s->WriteUIValues(sequencePages[i].ui, pageValues);
         }
-    }        
+    }
 }
 
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::AddSequencePages
 //
-// Purpose: 
+// Purpose:
 //   This method adds the template specification's custom pages to the wizard.
 //
 // Programmer: Brad Whitlock
@@ -3570,7 +3579,7 @@ QvisSaveMovieWizard::AddSequencePages()
                     debug3 << "Sequence " << s->GetName().c_str()
                            << " does not provide a user interface."
                            << endl;
-                }                        
+                }
             }
         }
     }
@@ -3625,16 +3634,16 @@ QvisSaveMovieWizard::AddSequencePages()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::GetMovieAttsOutputDir
 //
-// Purpose: 
+// Purpose:
 //   This retrieves the OutputDirectory from movieAtts, expanding '.' to
-//   full path if necessary. 
+//   full path if necessary.
 //
-// Programmer: Kathleen Bonnell 
-// Creation:   July 20, 2007 
+// Programmer: Kathleen Bonnell
+// Creation:   July 20, 2007
 //
 // Modifications:
 //   Brad Whitlock, Tue Oct  7 13:30:37 PDT 2008
-//   
+//
 // ****************************************************************************
 
 std::string
@@ -3665,7 +3674,7 @@ QvisSaveMovieWizard::GetMovieAttsOutputDir()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page0_movieTypeChanged
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot is called when the user changes the type of movie.
 //
 // Arguments:
@@ -3676,7 +3685,7 @@ QvisSaveMovieWizard::GetMovieAttsOutputDir()
 //
 // Modifications:
 //   Dave Bremer, Wed Oct 10 15:50:03 PDT 2007
-//   Added code to disable the start/end index fields if a template is 
+//   Added code to disable the start/end index fields if a template is
 //   used to make the movie.
 // ****************************************************************************
 
@@ -3706,8 +3715,8 @@ QvisSaveMovieWizard::page0_movieTypeChanged(int val)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page1_newTemplateChanged
 //
-// Purpose: 
-//   This Qt slot function is called when the user picks a template 
+// Purpose:
+//   This Qt slot function is called when the user picks a template
 //   generation method.
 //
 // Arguments:
@@ -3717,7 +3726,7 @@ QvisSaveMovieWizard::page0_movieTypeChanged(int val)
 // Creation:   Fri Nov 17 17:22:39 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3729,7 +3738,7 @@ QvisSaveMovieWizard::page1_newTemplateChanged(int val)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page2_selectedTemplateChanged
 //
-// Purpose: 
+// Purpose:
 //   This Qt slot is called when the user picks a predefined movie template.
 //
 // Programmer: Brad Whitlock
@@ -3785,10 +3794,10 @@ QvisSaveMovieWizard::page2_selectedTemplateChanged()
             if(haveImage)
             {
                 page2_template_image->setPixmap(pixmap);
-                page2_template_image->show(); 
+                page2_template_image->show();
             }
             else
-                page2_template_image->hide(); 
+                page2_template_image->hide();
 
             page2_template_description->setText(it->second.info.description.c_str());
             page2_template_description->show();
@@ -3824,7 +3833,7 @@ QvisSaveMovieWizard::page4_viewportSelected()
     }
 }
 
-void 
+void
 QvisSaveMovieWizard::page4_addViewport()
 {
     // Use the display to add a viewport. This will cause it to emit a
@@ -3833,7 +3842,7 @@ QvisSaveMovieWizard::page4_addViewport()
 }
 
 
-void 
+void
 QvisSaveMovieWizard::page4_deleteViewport()
 {
     QList<QListWidgetItem *> sel = page4_viewportList->selectedItems();
@@ -3842,7 +3851,7 @@ QvisSaveMovieWizard::page4_deleteViewport()
 }
 
 void
-QvisSaveMovieWizard::page4_viewportAdded(const QString &name, 
+QvisSaveMovieWizard::page4_viewportAdded(const QString &name,
     float llx, float lly, float urx, float ury)
 {
     // Add the viewport directly to the movie template configs.
@@ -3873,10 +3882,10 @@ QvisSaveMovieWizard::page4_viewportActivated(const QString &name)
 {
     // set current item
     QList<QListWidgetItem *> items= page4_viewportList->findItems(name,Qt::MatchExactly);
-    
+
     if(items.count() > 0)
         page4_viewportList->setCurrentItem(items[0]);
-    
+
     if(templateSpec->ViewportActivate(name.toStdString()))
         page4_UpdateViews(PAGE4_LIST | PAGE4_PROPERTIES);
 }
@@ -3887,20 +3896,20 @@ QvisSaveMovieWizard::page4_viewportActivated(const QString &name)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page4_lowerLeftChanged
 //
-// Purpose: 
+// Purpose:
 //   Called when the active viewport's lower left coordinate changes.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 17:27:22 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -3934,20 +3943,20 @@ QvisSaveMovieWizard::page4_lowerLeftChanged(double x, double y)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page4_upperRightChanged
 //
-// Purpose: 
+// Purpose:
 //   Called when the active viewport's upper right coordinate changes.
 //
 // Arguments:
 //
-// Returns:    
+// Returns:
 //
-// Note:       
+// Note:
 //
 // Programmer: Brad Whitlock
 // Creation:   Fri Nov 17 17:26:56 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4013,7 +4022,7 @@ QvisSaveMovieWizard::page4_dropShadowChanged(bool val)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page4_usePredefinedViewports
 //
-// Purpose: 
+// Purpose:
 //   Qt slot called when we pick a predefined viewport layout.
 //
 // Arguments:
@@ -4026,9 +4035,9 @@ QvisSaveMovieWizard::page4_dropShadowChanged(bool val)
 //   Brad Whitlock, Tue Apr  8 16:29:55 PDT 2008
 //   Support for internationalization.
 //
-//   Kathleen Bonnell, Wed Apr 30 11:05:45 PDT 2008 
+//   Kathleen Bonnell, Wed Apr 30 11:05:45 PDT 2008
 //   Use char* for 'n' instead of QString, to prevent conversion between
-//   QString and std::string, which cannot be done with Windows compiler.  
+//   QString and std::string, which cannot be done with Windows compiler.
 //
 //   Cyrus Harrison, Fri Nov  7 16:14:21 PST 2008
 //   Qt4 Refactor.
@@ -4041,9 +4050,9 @@ QvisSaveMovieWizard::page4_usePredefinedViewports(int index)
     // Remove all of the existing viewports.
     templateSpec->ViewportRemoveAll();
 
-    const char *n[4] = {"Viewport 1", 
-                        "Viewport 2", 
-                        "Viewport 3", 
+    const char *n[4] = {"Viewport 1",
+                        "Viewport 2",
+                        "Viewport 3",
                         "Viewport 4"};
     if(index == 0)
     {
@@ -4122,11 +4131,11 @@ void
 QvisSaveMovieWizard::page5_deleteSequenceClicked()
 {
     MovieSequence *s = templateSpec->GetActiveSequence();
-    if(s != 0 && 
+    if(s != 0 &&
        !s->ReadOnly() &&
        templateSpec->SequenceRemove(s->GetName()))
     {
-        page5_Update(PAGE5_UPDATE_SEQUENCE_LIST | 
+        page5_Update(PAGE5_UPDATE_SEQUENCE_LIST |
                      PAGE5_UPDATE_SEQUENCE_PROPS |
                      PAGE5_UPDATE_SEQVIEW_MAPPING);
     }
@@ -4135,7 +4144,7 @@ QvisSaveMovieWizard::page5_deleteSequenceClicked()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page5_typedNewSequenceName
 //
-// Purpose: 
+// Purpose:
 //   Qt slot called when we rename a sequence.
 //
 // Arguments:
@@ -4145,7 +4154,7 @@ QvisSaveMovieWizard::page5_deleteSequenceClicked()
 // Creation:   Fri Nov 17 17:25:36 PST 2006
 //
 // Modifications:
-//   
+//
 // ****************************************************************************
 
 void
@@ -4156,7 +4165,7 @@ QvisSaveMovieWizard::page5_typedNewSequenceName(const QString &newName)
     if(newName.isNull())
     {
         // Don't allow NULL names
-        flags = PAGE5_UPDATE_SEQUENCE_LIST | 
+        flags = PAGE5_UPDATE_SEQUENCE_LIST |
                 PAGE5_UPDATE_SEQUENCE_PROPS |
                 PAGE5_UPDATE_SEQVIEW_MAPPING;
     }
@@ -4167,9 +4176,9 @@ QvisSaveMovieWizard::page5_typedNewSequenceName(const QString &newName)
         {
             if(templateSpec->SequenceRename(s->GetName(), newName.toStdString()))
             {
-                flags = PAGE5_UPDATE_SEQUENCE_LIST | 
+                flags = PAGE5_UPDATE_SEQUENCE_LIST |
                         PAGE5_UPDATE_SEQVIEW_MAPPING;
-            }            
+            }
         }
         else
             flags = PAGE5_UPDATE_SEQUENCE_PROPS;
@@ -4181,7 +4190,7 @@ QvisSaveMovieWizard::page5_typedNewSequenceName(const QString &newName)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page5_destinationViewportChanged
 //
-// Purpose: 
+// Purpose:
 //   Qt slot called when we map a sequence to a viewport.
 //
 // Arguments:
@@ -4402,7 +4411,7 @@ QvisSaveMovieWizard::page9_aspectLockChanged(bool val)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page9_addOutput
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "->" button is clicked.
 //
 // Programmer: Brad Whitlock
@@ -4435,7 +4444,7 @@ QvisSaveMovieWizard::page9_addOutput()
     bool screenCapture = page9_screenCaptureCheckBox->isChecked();
 
     bool useCurrent = id == 0;
-    
+
     //
     // Add the format and resolution to the movie attributes.
     //
@@ -4469,7 +4478,7 @@ QvisSaveMovieWizard::page9_addOutput()
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page9_removeOutput
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when the "<-" button is clicked.
 //
 // Programmer: Brad Whitlock
@@ -4513,7 +4522,7 @@ QvisSaveMovieWizard::page9_removeOutput()
         {
             QString fmt(FormatToMenuName(formats[i].c_str()));
             QString res;  res.sprintf("%dx%d", widths[i], heights[i]);
-            QString res2; 
+            QString res2;
             res2.sprintf(" %dx", int(scales[i]));
             res2 = tr("Current") + res2;
             QString stereo(tr("off"));
@@ -4523,7 +4532,7 @@ QvisSaveMovieWizard::page9_removeOutput()
                 stereo = tr("Red/Blue");
             else if(stereoFlags[i] == 3)
                 stereo = tr("Red/Green");
-            if(fmt == item->text(0) && 
+            if(fmt == item->text(0) &&
                (res == item->text(1) || res2 == item->text(1)) &&
                stereo == item->text(2))
             {
@@ -4596,7 +4605,7 @@ QvisSaveMovieWizard::page9_stereoTypeChanged(int val)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page10_fpsChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function invoked when any change occurs in the FPS field
 //
 // Programmer: Dave Bremer
@@ -4619,8 +4628,8 @@ QvisSaveMovieWizard::page10_fpsChanged(const QString &s)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page10_startIndexChanged
 //
-// Purpose: 
-//   This is a Qt slot function invoked when any change occurs in the 
+// Purpose:
+//   This is a Qt slot function invoked when any change occurs in the
 //   start index field.
 //
 // Programmer: Dave Bremer
@@ -4644,8 +4653,8 @@ QvisSaveMovieWizard::page10_startIndexChanged(const QString &s)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page10_endIndexChanged
 //
-// Purpose: 
-//   This is a Qt slot function invoked when any change occurs in the 
+// Purpose:
+//   This is a Qt slot function invoked when any change occurs in the
 //   end index field.
 //
 // Programmer: Dave Bremer
@@ -4668,7 +4677,7 @@ QvisSaveMovieWizard::page10_endIndexChanged(const QString &s)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page10_strideChanged
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function invoked when any change occurs in the stride field
 //
 // Programmer: Brad Whitlock
@@ -4699,8 +4708,8 @@ QvisSaveMovieWizard::page11_processOutputDirectoryText(const QString &s)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page10_initialFrameValueChanged
 //
-// Purpose: 
-//   This is a Qt slot function invoked when any change occurs in the 
+// Purpose:
+//   This is a Qt slot function invoked when any change occurs in the
 //   start index field.
 //
 // Programmer: Dave Bremer
@@ -4724,7 +4733,7 @@ QvisSaveMovieWizard::page10_initialFrameValueChanged(const QString &s)
 // ****************************************************************************
 // Method: QvisSaveMovieWizard::page11_selectOutputDirectory
 //
-// Purpose: 
+// Purpose:
 //   This is a Qt slot function that is called when we want to select a new
 //   destination directory for our movie.
 //
@@ -4734,7 +4743,7 @@ QvisSaveMovieWizard::page10_initialFrameValueChanged(const QString &s)
 // Modifications:
 //   Kathleen Bonnell, Fri Jul 20 11:07:11 PDT 2007
 //   Use new method to get the outputdirectory from movie atts.
-//   
+//
 //   Dave Bremer, Wed Oct 10 17:11:51 PDT 2007
 //   Moved pages 10-12 to 11-13.
 //
@@ -4753,7 +4762,7 @@ QvisSaveMovieWizard::page11_selectOutputDirectory()
     // Try and get a directory using a file dialog.
     //
     QString initialDir(GetMovieAttsOutputDir().c_str());
-    QString dirName = QFileDialog::getExistingDirectory(this, 
+    QString dirName = QFileDialog::getExistingDirectory(this,
         tr("Select output directory"), initialDir);
 
     //
@@ -4811,7 +4820,7 @@ QvisSaveMovieWizard::page13_generationMethodChanged(int val)
 // Other classes
 //
 
-QvisSaveMovieWizard::QvisCustomWizardPage::QvisCustomWizardPage(QWidget *parent) : 
+QvisSaveMovieWizard::QvisCustomWizardPage::QvisCustomWizardPage(QWidget *parent) :
     QWizardPage(parent)
 {
     nid = -1;
