@@ -86,18 +86,7 @@ fi
 lastpass=0
 if test -e src/tools/dev/scripts/lastpass_$host ; then
    lastpass=`cat src/tools/dev/scripts/lastpass_$host`
-   lastpass=`expr $lastpass + 1` 
 fi
-
-#
-# Create the awk script to determine the users that modified visit
-# since the last pass.
-#
-rm -f parse_users
-cat <<EOF > parse_users
-BEGIN { FS = " " }
-      { if (\$1 > $lastpass) print \$2 }
-EOF
 
 #
 # Determine the list of users who modified the source since the last pass.
@@ -105,9 +94,8 @@ EOF
 rm -f modifiers
 touch modifiers
 if test "$lastpass" != "0" ; then
-   svn status -v -u src data test | tr -d '\*' | tr -s ' ' | cut -d' ' -f3-4 | grep '^[0-9]' | gawk -f parse_users | sort | uniq >> modifiers
+   git log $lastpass..HEAD | grep '^Author: ' | sed 's/>//' | cut -d'<' -f2 | sort | uniq >> modifiers
 fi
-rm -f parse_users
 
 #
 # Build the email list of modifiers.
