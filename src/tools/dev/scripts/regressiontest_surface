@@ -80,6 +80,9 @@
 #   I modified the script to handle the new structure of the src, data and
 #   test directories.
 #
+#   Eric Brugger, Fri Jan  4 09:34:59 PST 2019
+#   I modified the script to work with the GitHub repository.
+#
 
 
 #
@@ -383,7 +386,7 @@ echo "Starting tests:\`date\`"
 
 # Run the tests, consolidating the results in one directory
 cd ../src/test
-rm -rf \$dateTag output
+rm -rf 2019-??-??-??:?? py_src output *.pyc
 mkdir \$dateTag output
 for m in \$modes; do
     theMode=\`echo \$m | tr ',' '_'\`
@@ -496,14 +499,14 @@ if test "$post" = "true" ; then
         ssh $userNersc@$nerscHost "./purge_old_test_results.sh"
     fi
 
-    # Set the permissions so that others may access the test directory.
-    cd ..
-    chgrp -R visit $workingDir
-    chmod -R g+rwX,o+rX $workingDir
-
     # Copy the update script to nersc and execute it.
     scp src/tools/dev/scripts/visit-update-test-website $userNersc@$nerscHost:
     ssh $userNersc@$nerscHost "./visit-update-test-website"
+
+    # Set the permissions so that others may access the test directory.
+    cd ../..
+    chgrp -R visit $workingDir
+    chmod -R g+rwX,o+rX $workingDir
 fi
 
 EOF
