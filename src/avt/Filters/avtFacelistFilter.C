@@ -537,6 +537,9 @@ avtFacelistFilter::FindFaces(avtDataRepresentation *in_dr,
 //    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
 //    Disabled rectilinear grid optimization for OSPRay builds
 //
+//    Eric Brugger, Fri Dec 28 17:12:07 PST 2018
+//    Enabled rectilinear grid optimization.
+//
 // ****************************************************************************
 
 avtDataTree_p
@@ -544,11 +547,6 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
                                bool forceFaceConsolidation, bool mustCreatePolyData,
                                avtDataObjectInformation &info, avtFacelist *fl)
 {
-#ifdef VISIT_OSPRAY 
-    // OSPRay can't handle this optimization so we disable it for now
-    mustCreatePolyData = true;
-#endif
-
     vtkDataSet    *out_ds = NULL;
     avtDataTree_p  out_dt;
     vtkPolyData   *pd = vtkPolyData::New();
@@ -883,17 +881,15 @@ avtFacelistFilter::Take3DFaces(vtkDataSet *in_ds, int domain,std::string label,
 //    Garrett Morrison, Fri May 11 17:57:47 PDT 2018
 //    Disabled rectilinear grid optimization for OSPRay builds
 //
+//    Eric Brugger, Fri Dec 28 17:12:07 PST 2018
+//    Enabled rectilinear grid optimization.
+//
 // ****************************************************************************
 
 vtkDataSet *
 avtFacelistFilter::Take2DFaces(vtkDataSet *in_ds, bool forceFaceConsolidation,
                                bool mustCreatePolyData)
 {
-#ifdef VISIT_OSPRAY 
-    // OSPRay can't handle this optimization so we disable it for now
-    mustCreatePolyData = true;
-#endif
-
     int dstype = in_ds->GetDataObjectType();
 
     //

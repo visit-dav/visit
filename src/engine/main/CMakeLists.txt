@@ -121,7 +121,6 @@ ${VISIT_SOURCE_DIR}/avt/Expressions/MeshQuality
 ${VISIT_SOURCE_DIR}/avt/FileWriter
 ${VISIT_SOURCE_DIR}/avt/Filters
 ${VISIT_SOURCE_DIR}/avt/Math
-${VISIT_SOURCE_DIR}/avt/VisWindow/VisWindow
 ${VISIT_SOURCE_DIR}/avt/Pipeline/AbstractFilters
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Data
 ${VISIT_SOURCE_DIR}/avt/Pipeline/Pipeline

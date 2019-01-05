@@ -547,6 +547,117 @@ EOF
     fi
 }
 
+function apply_vtkospraypolydatamappernode_patch
+{
+    # patch vtk's vtkOSPRayPolyDataMapperNode to handle vtkDataSets in
+    # addition to vtkPolyData.
+
+    patch -p0 << \EOF
+diff -c Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h.original Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h
+*** Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h.original     Fri Dec 22 08:33:25 2017
+--- Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.h      Fri Dec 28 15:56:33 2018
+***************
+*** 25,30 ****
+--- 25,31 ----
+  #include "vtkRenderingOSPRayModule.h" // For export macro
+  #include "vtkPolyDataMapperNode.h"
+  
++ class vtkDataSetSurfaceFilter;
+  class vtkOSPRayActorNode;
+  class vtkPolyData;
+  
+***************
+*** 61,66 ****
+--- 62,69 ----
+    void CreateNewMeshes();
+    void AddMeshesToModel(void *arg);
+  
++   vtkDataSetSurfaceFilter *GeometryExtractor;
++ 
+  private:
+    vtkOSPRayPolyDataMapperNode(const vtkOSPRayPolyDataMapperNode&) = delete;
+    void operator=(const vtkOSPRayPolyDataMapperNode&) = delete;
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOSPRayPolyDataMapperNode failed."
+      return 1
+    fi
+
+    patch -p0 << \EOF
+diff -c Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx.original Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx
+*** Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx.original   Fri Dec 22 08:33:25 2017
+--- Rendering/OSPRay/vtkOSPRayPolyDataMapperNode.cxx    Fri Dec 28 16:32:06 2018
+***************
+*** 19,24 ****
+--- 19,25 ----
+  #include "vtkOSPRayMaterialHelpers.h"
+  #include "vtkOSPRayRendererNode.h"
+  #include "vtkDataArray.h"
++ #include "vtkDataSetSurfaceFilter.h"
+  #include "vtkFloatArray.h"
+  #include "vtkImageData.h"
+  #include "vtkInformation.h"
+***************
+*** 738,749 ****
+--- 739,755 ----
+  vtkOSPRayPolyDataMapperNode::vtkOSPRayPolyDataMapperNode()
+  {
+    this->OSPMeshes = nullptr;
++   this->GeometryExtractor = nullptr;
+  }
+  
+  //----------------------------------------------------------------------------
+  vtkOSPRayPolyDataMapperNode::~vtkOSPRayPolyDataMapperNode()
+  {
+    delete (vtkosp::MyGeom*)this->OSPMeshes;
++   if ( this->GeometryExtractor )
++   {
++     this->GeometryExtractor->Delete();
++   }
+  }
+  
+  //----------------------------------------------------------------------------
+***************
+*** 1318,1324 ****
+      vtkMapper *mapper = act->GetMapper();
+      if (mapper)
+      {
+!       poly = (vtkPolyData*)(mapper->GetInput());
+      }
+      if (poly)
+      {
+--- 1324,1343 ----
+      vtkMapper *mapper = act->GetMapper();
+      if (mapper)
+      {
+!       if (mapper->GetInput()->GetDataObjectType() == VTK_POLY_DATA)
+!       {
+!         poly = (vtkPolyData*)(mapper->GetInput());
+!       }
+!       else
+!       {
+!         if (! this->GeometryExtractor)
+!         {
+!           this->GeometryExtractor = vtkDataSetSurfaceFilter::New();
+!         }
+!         this->GeometryExtractor->SetInputData(mapper->GetInput());
+!         this->GeometryExtractor->Update();
+!         poly = (vtkPolyData*)this->GeometryExtractor->GetOutput();
+!       }
+      }
+      if (poly)
+      {
+EOF
+
+    if [[ $? != 0 ]] ; then
+      warn "vtk patch for vtkOSPRayPolyDataMapperNode failed."
+      return 1
+    fi
+
+    return 0;
+}
+
 function apply_vtk_patch
 {
     apply_vtkdatawriter_patch
@@ -560,6 +671,11 @@ function apply_vtk_patch
     fi
 
     apply_vtkxopenglrenderwindow_patch
+    if [[ $? != 0 ]] ; then
+        return 1
+    fi
+
+    apply_vtkospraypolydatamappernode_patch
     if [[ $? != 0 ]] ; then
         return 1
     fi

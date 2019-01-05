@@ -2002,6 +2002,10 @@ avtDataRepresentation::GetDataEAVL(void)
 //    Eric Brugger, Wed Sep 12 16:41:55 PDT 2018
 //    I replaced support for vtkm with vtkh.
 //
+//    Eric Brugger, Fri Jan  4 15:26:21 PST 2019
+//    I corrected the logic getting a VTK dataset when the object only had
+//    a character representation of the data.
+//
 // ****************************************************************************
 
 vtkDataSet *
@@ -2016,20 +2020,19 @@ avtDataRepresentation::GetDataVTK(void)
             asVTK = nullVTKDataset;
             asVTK->Register(NULL);
         }
-#ifdef HAVE_LIBEAVL
         else
         {
+#ifdef HAVE_LIBEAVL
             //try to convert from EAVL dataset
-            asVTK = EAVLToVTK(asEAVL);
-        }
+            if (asEAVL != NULL)
+                asVTK = EAVLToVTK(asEAVL);
 #endif
 #ifdef HAVE_LIBVTKH
-        else
-        {
             //try to convert from VTKm dataset
-            asVTK = VTKmToVTK(asVTKm);
-        }
+            if (asVTKm != NULL)
+                asVTK = VTKmToVTK(asVTKm);
 #endif
+        }
 
         //try to convert from char dataset
         if (asVTK == NULL)
