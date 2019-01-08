@@ -133,6 +133,9 @@ while read fline; do
         */releases/*)
             continue
             ;;
+        */data/*)
+            continue
+            ;;
         */sim/V2/swig/python/simV2_wrap.cxx)
             continue
             ;;
