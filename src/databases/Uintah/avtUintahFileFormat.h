@@ -138,7 +138,7 @@ protected:
                                     std::string meshName, avtCentering cent );
   
   // Data members
-  int  loadExtraElements  {0};
+  int  loadExtraGeometry  {0};
   bool dataVariesOverTime {true};
   bool forceMeshReload    {true};
 

@@ -107,7 +107,7 @@ avtUintahFileFormat::avtUintahFileFormat(const char *filename,
   {
     if (attrs->GetName(i) == UINTAH_LOAD_EXTRA)
     {
-      loadExtraElements = attrs->GetEnum(UINTAH_LOAD_EXTRA);
+      loadExtraGeometry = attrs->GetEnum(UINTAH_LOAD_EXTRA);
     }
     else if (attrs->GetName(i) == UINTAH_DATA_VARIES_OVER_TIME)
     {
@@ -513,7 +513,7 @@ avtUintahFileFormat::ActivateTimestep(int ts)
   if (stepInfo)
     delete stepInfo;
 
-  stepInfo = (*getTimeStepInfo)(archive, grid, ts, loadExtraElements);
+  stepInfo = (*getTimeStepInfo)(archive, grid, ts, loadExtraGeometry);
 
   currTimeStep = ts; 
   forceMeshReload = true;
@@ -2046,7 +2046,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       gd = (*getGridData)(archive, grid, level, local_patch,
                           varName, matlNo, timestate,
                           plow, phigh,
-                          (nodeCentered ? 0 : loadExtraElements));
+                          (nodeCentered ? 0 : loadExtraGeometry));
 
       // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetMesh() getGridData");
       
@@ -2059,7 +2059,7 @@ avtUintahFileFormat::GetVar(int timestate, int domain, const char *varname)
       gd = (*getGridData)(archive, grid, level, local_patch,
                           varName, matlNo, timestate,
                           plow, phigh,
-                          (nodeCentered ? 0 : loadExtraElements));
+                          (nodeCentered ? 0 : loadExtraGeometry));
 
       // visitTimer->StopTimer(t2, "avtUintahFileFormat::GetVar getGridData");
 #endif
