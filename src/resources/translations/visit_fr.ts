@@ -4776,7 +4776,7 @@ L&apos;intervalle de temps précisé ne devrait pas changer en changeant le curs
         <translation>Sous ensemble</translation>
     </message>
     <message>
-        <source>Plugin Manager</source>
+        <source>Plugin manager</source>
         <translation>Gestionnaire de plugin</translation>
     </message>
     <message>
@@ -8417,15 +8417,15 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>&amp;Lineout . . .</source>
-        <translation>A&amp;Lignement .</translation>
+        <translation>A&amp;Lignement . . .</translation>
     </message>
     <message>
         <source>Macros . . .</source>
         <translation>Macros . . .</translation>
     </message>
     <message>
-        <source>&amp;Material Options . . .</source>
-        <translation>&amp;Matériel Options.</translation>
+        <source>&amp;Material options . . .</source>
+        <translation>&amp;Matériel options . . .</translation>
     </message>
     <message>
         <source>&amp;Mesh management . . .</source>
@@ -8473,10 +8473,10 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
     </message>
     <message>
         <source>&amp;Interactors . . .</source>
-        <translation>&amp;Interacteurs.</translation>
+        <translation>&amp;Interacteurs . . .</translation>
     </message>
     <message>
-        <source>&amp;Plugin Manager . . .</source>
+        <source>&amp;Plugin manager . . .</source>
         <translation>&amp;Plugins . . .</translation>
     </message>
     <message>
@@ -8488,7 +8488,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>Rendu . . .</translation>
     </message>
     <message>
-        <source>Save Settings</source>
+        <source>Save settings</source>
         <translation>Enregistrer les paramètres</translation>
     </message>
     <message>
@@ -8692,7 +8692,7 @@ utilise l&apos;option &quot;Appliquer à toutes les fenêtres&quot;.</translatio
         <translation>Interface en ligne de commande python . . .</translation>
     </message>
     <message>
-        <source>Host profiles and Configuration Setup . . .</source>
+        <source>Host profiles and configuration setup . . .</source>
         <translation>Configuration automatique d&apos;hôtes distants . . .</translation>
     </message>
     <message>
@@ -12709,11 +12709,11 @@ same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Python Query Script</source>
+        <source>Python query script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Execute Query</source>
+        <source>Execute query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

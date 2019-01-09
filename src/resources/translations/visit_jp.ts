@@ -4758,7 +4758,7 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Plugin Manager</source>
+        <source>Plugin manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8392,7 +8392,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>マクロ . . .</translation>
     </message>
     <message>
-        <source>&amp;Material Options . . .</source>
+        <source>&amp;Material options . . .</source>
         <translation>材料オプション(&amp;M) . . .</translation>
     </message>
     <message>
@@ -8444,7 +8444,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>インタラクタ(&amp;I) . . .</translation>
     </message>
     <message>
-        <source>&amp;Plugin Manager . . .</source>
+        <source>&amp;Plugin manager . . .</source>
         <translation>プラグイン管理(&amp;P) . . .</translation>
     </message>
     <message>
@@ -8456,7 +8456,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>レンダリング . . .</translation>
     </message>
     <message>
-        <source>Save Settings</source>
+        <source>Save settings</source>
         <translation>設定を保存</translation>
     </message>
     <message>
@@ -8692,7 +8692,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Host profiles and Configuration Setup . . .</source>
+        <source>Host profiles and configuration setup . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12696,11 +12696,11 @@ same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Python Query Script</source>
+        <source>Python query script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Execute Query</source>
+        <source>Execute query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

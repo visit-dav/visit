@@ -246,8 +246,8 @@ QvisQueryWindow::CreateWindowContents()
     CreatePythonQueryWidget();
     CreateResultsWidget();
 
-    queryTabs->addTab(stdQueryWidget, "Standard Queries");
-    queryTabs->addTab(pyQueryWidget, "Python Query Editor");
+    queryTabs->addTab(stdQueryWidget, "Standard queries");
+    queryTabs->addTab(pyQueryWidget, "Python query editor");
 
     splitter->addWidget(queryTabs);
     splitter->addWidget(resultsWidget);
@@ -491,7 +491,7 @@ QvisQueryWindow::CreatePythonQueryWidget()
 
     row++;
 
-    pyFilterEditLabel = new QLabel(tr("Python Query Script"), pyQueryWidget);
+    pyFilterEditLabel = new QLabel(tr("Python query script"), pyQueryWidget);
     pyFilterEdit = new QvisPythonFilterEditor();
     layout->addWidget(pyFilterEditLabel, row, 0);
     row++;
@@ -501,7 +501,7 @@ QvisQueryWindow::CreatePythonQueryWidget()
     connect(pyFilterEdit, SIGNAL(templateSelected(const QString &)),
             this, SLOT(pyTemplateSelected(const QString &)));
 
-    pyQueryButton = new QPushButton(tr("Execute Query"), pyQueryWidget);
+    pyQueryButton = new QPushButton(tr("Execute query"), pyQueryWidget);
     layout->addWidget(pyQueryButton,row,2);
 
     connect(pyQueryButton, SIGNAL(clicked()),

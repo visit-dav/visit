@@ -248,7 +248,7 @@
 //    I passed a pointer to the menu bar to the plot manager widget.
 //
 //    Kathleen Bonnell, Tue Aug 26 13:47:34 PDT 2003 
-//    Changed 'Material' to 'Material Options'.
+//    Changed 'Material' to 'Material options'.
 //
 //    Brad Whitlock, Sat Jan 24 23:51:40 PST 2004
 //    I added support for next generation file handling, including close
@@ -362,7 +362,7 @@
 //    posting the main window.
 //
 //    Hank Childs, Wed Aug  4 13:27:57 PDT 2010
-//    Add Data level Comparisons.
+//    Add data level comparisons.
 //
 //    Brad Whitlock, Fri Aug  6 16:58:31 PDT 2010
 //    Add Selections window.
@@ -579,7 +579,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     ctrls->addAction(commandIcon, tr("Command . . ."),
                      this, SIGNAL(activateCommandWindow()), 
                      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
-    ctrls->addAction(tr("&Data level Comparisons . . ."),
+    ctrls->addAction(tr("&Data level comparisons . . ."),
                      this, SIGNAL(setupCMFE()), 
                      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_D));
     ctrls->addAction(correlationIcon, tr("&Database correlations . . ."),
@@ -599,7 +599,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
                      QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L));
     ctrls->addAction(tr("Macros . . ."), 
                      this, SIGNAL(activateMacroWindow()));
-    ctrls->addAction(materialIcon, tr("&Material Options . . ."),
+    ctrls->addAction(materialIcon, tr("&Material options . . ."),
                      this, SIGNAL(activateMaterialWindow()),
                      QKeySequence(Qt::CTRL + Qt::Key_M));
     ctrls->addAction(tr("&Mesh management . . ."),
@@ -645,13 +645,13 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
     pref->addAction(computerIcon, tr("&Host profiles . . ."),
                     this, SIGNAL(activateHostWindow()), 
                     QKeySequence(Qt::CTRL + Qt::Key_H));
-    pref->addAction(tr("Host profiles and Configuration Setup . . ."),
+    pref->addAction(tr("Host profiles and configuration setup . . ."),
                     this, SIGNAL(activateSetupHostProfilesAndConfig()));
     pref->addSeparator();
     pref->addAction(tr("&Interactors . . ."),
                     this, SIGNAL(activateInteractorWindow()),
                     QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I));
-    pref->addAction(pluginIcon, tr("&Plugin Manager . . ."),
+    pref->addAction(pluginIcon, tr("&Plugin manager . . ."),
                     this, SIGNAL(activatePluginWindow()));
     pref->addAction(tr("Preferences . . ."),
                     this, SIGNAL(activatePreferencesWindow()));
@@ -660,7 +660,7 @@ QvisMainWindow::QvisMainWindow(int orientation, const char *captionString)
 
     pref->addSeparator();
 
-    pref->addAction(tr("Save Settings"),
+    pref->addAction(tr("Save settings"),
                     this, SIGNAL(saveSettings()));
 
     //

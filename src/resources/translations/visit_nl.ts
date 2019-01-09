@@ -5273,7 +5273,7 @@ The time slice I want will change as I change the time slider</source>
         <translation>Subset</translation>
     </message>
     <message>
-        <source>Plugin Manager</source>
+        <source>Plugin manager</source>
         <translation>Pluginbeheerder</translation>
     </message>
     <message>
@@ -9231,8 +9231,8 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>Macro&apos;s . . .</translation>
     </message>
     <message>
-        <source>&amp;Material Options . . .</source>
-        <translation>&amp;Materiaal Opties . . .</translation>
+        <source>&amp;Material options . . .</source>
+        <translation>&amp;Materiaal opties . . .</translation>
     </message>
     <message>
         <source>&amp;Mesh management . . .</source>
@@ -9283,7 +9283,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>&amp;Interactors . . .</translation>
     </message>
     <message>
-        <source>&amp;Plugin Manager . . .</source>
+        <source>&amp;Plugin manager . . .</source>
         <translation>&amp;Pluginbeheerder . . .</translation>
     </message>
     <message>
@@ -9295,7 +9295,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation>Weergave . . .</translation>
     </message>
     <message>
-        <source>Save Settings</source>
+        <source>Save settings</source>
         <translation>Sla instellingen op</translation>
     </message>
     <message>
@@ -9547,7 +9547,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Host profiles and Configuration Setup . . .</source>
+        <source>Host profiles and configuration setup . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14648,11 +14648,11 @@ same window.</source>
         <translation type="obsolete">VisIt kon de gekozen keuzeresutaten in het geselecteerde bestand niet opslaan</translation>
     </message>
     <message>
-        <source>Python Query Script</source>
-        <translation>Python Afvraagscript</translation>
+        <source>Python query script</source>
+        <translation>Python afvraagscript</translation>
     </message>
     <message>
-        <source>Execute Query</source>
+        <source>Execute query</source>
         <translation>Voer ondervraging uit</translation>
     </message>
     <message>

@@ -5243,8 +5243,8 @@ The time slice I want will change as I change the time slider</source>
         <translation type="unfinished">Soobset</translation>
     </message>
     <message>
-        <source>Plugin Manager</source>
-        <translation type="unfinished">Ploogeen Muneger</translation>
+        <source>Plugin manager</source>
+        <translation type="unfinished">Ploogeen muneger</translation>
     </message>
     <message>
         <source>View</source>
@@ -9172,8 +9172,8 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Mecrus . . .</translation>
     </message>
     <message>
-        <source>&amp;Material Options . . .</source>
-        <translation type="unfinished">Metereeel Oopshuns . . .</translation>
+        <source>&amp;Material options . . .</source>
+        <translation type="unfinished">Metereeel oopshuns . . .</translation>
     </message>
     <message>
         <source>&amp;Mesh management . . .</source>
@@ -9224,8 +9224,8 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Interecturs . . .</translation>
     </message>
     <message>
-        <source>&amp;Plugin Manager . . .</source>
-        <translation type="unfinished">Ploogeen Muneger . . .</translation>
+        <source>&amp;Plugin manager . . .</source>
+        <translation type="unfinished">Ploogeen muneger . . .</translation>
     </message>
     <message>
         <source>Preferences . . .</source>
@@ -9236,8 +9236,8 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished">Rendereeng . . .</translation>
     </message>
     <message>
-        <source>Save Settings</source>
-        <translation type="unfinished">Sefe-a Setteengs</translation>
+        <source>Save settings</source>
+        <translation type="unfinished">Sefe-a setteengs</translation>
     </message>
     <message>
         <source>&amp;Windows</source>
@@ -9472,7 +9472,7 @@ using the &quot;Apply to all windows&quot; option.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Host profiles and Configuration Setup . . .</source>
+        <source>Host profiles and configuration setup . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14052,11 +14052,11 @@ same window.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Python Query Script</source>
+        <source>Python query script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Execute Query</source>
+        <source>Execute query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

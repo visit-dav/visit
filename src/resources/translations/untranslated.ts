@@ -6012,7 +6012,7 @@ The time slice I want will change as I change the time slider</source>
     </message>
     <message>
         <location filename="../../gui/QvisGUIApplication.C" line="817"/>
-        <source>Plugin Manager</source>
+        <source>Plugin manager</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10681,7 +10681,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="594"/>
-        <source>&amp;Material Options . . .</source>
+        <source>&amp;Material options . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10746,7 +10746,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="640"/>
-        <source>Host profiles and Configuration Setup . . .</source>
+        <source>Host profiles and configuration setup . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10756,7 +10756,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="646"/>
-        <source>&amp;Plugin Manager . . .</source>
+        <source>&amp;Plugin manager . . .</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -10771,7 +10771,7 @@ using the &quot;Apply to all windows&quot; option.</source>
     </message>
     <message>
         <location filename="../../gui/QvisMainWindow.C" line="655"/>
-        <source>Save Settings</source>
+        <source>Save settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15970,12 +15970,12 @@ same window.</source>
     </message>
     <message>
         <location filename="../../gui/QvisQueryWindow.C" line="483"/>
-        <source>Python Query Script</source>
+        <source>Python query script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../gui/QvisQueryWindow.C" line="493"/>
-        <source>Execute Query</source>
+        <source>Execute query</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
