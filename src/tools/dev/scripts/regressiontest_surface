@@ -154,7 +154,7 @@ serial="false"
 testHost="pascal"
 testDir="/usr/workspace/wsa/visit"
 post="true"
-nerscHost="edison.nersc.gov"
+nerscHost="cori.nersc.gov"
 
 for abc
 do
