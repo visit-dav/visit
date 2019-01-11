@@ -890,10 +890,6 @@ class VisItCinema(object):
         def static_save(outputDir, timestep, currentTime):
             filename = "%s/time_%s.%s" % (outputDir, currentTime, self.format)
             self.SaveImage(filename,  self.width, self.height, self.format)
-            if self.specification == "D":
-                if Query("MinMax"):
-                    plotRange = GetQueryOutputValue()
-                    self.minmax = self.minmax + [plotRange]
 
         self.Debug(1, "CreateStaticDatabase")
 
@@ -902,9 +898,6 @@ class VisItCinema(object):
         if cdbDir == "":
             return False
 
-        # Record minmax.
-        self.minmax = []
-
         # Save the frames.
         timeAtts = self.IterateAndSaveFrames(imageDir, static_save)
 
@@ -912,15 +905,9 @@ class VisItCinema(object):
             # Make the CSV file
             filename = os.path.join(cdbDir, "data.csv")
             f = open(filename, "wt")
-            if len(self.minmax) == len(timeAtts):
-                f.write("time,%s,FILE\n" % self.GetActivePlotVar())
-                for i in xrange(len(timeAtts)):
-                    f.write("%s,%g,image/time_%s.%s\n" % (timeAtts[i], self.minmax[i][0], timeAtts[i], self.format))
-                    f.write("%s,%g,image/time_%s.%s\n" % (timeAtts[i], self.minmax[i][1], timeAtts[i], self.format))
-            else:
-                f.write("time,FILE\n")
-                for i in xrange(len(timeAtts)):
-                    f.write("%s,image/time_%s.%s\n" % (timeAtts[i], timeAtts[i], self.format))
+            f.write("time,FILE\n")
+            for i in xrange(len(timeAtts)):
+                f.write("%s,image/time_%s.%s\n" % (timeAtts[i], timeAtts[i], self.format))
             f.close()
         else:
             # Make the JSON file
@@ -1292,11 +1279,6 @@ class VisItCinema(object):
         def phi_theta_save(outputDir, timestep, currentTime):
             view = GetView3D()
 
-            if self.specification == "D":
-                if Query("MinMax"):
-                    plotRange = GetQueryOutputValue()
-                    self.minmax = self.minmax + [plotRange]
-
             for iphi in xrange(len(phi)):
                 phiDir="phi_%d"%ideg(phi[iphi])
                 for itheta in xrange(len(theta)):
@@ -1330,9 +1312,6 @@ class VisItCinema(object):
         # Save a back up view.
         backup_view = GetView3D()
 
-        # Record the minmax.
-        self.minmax = []
-
         # Save the frames.
         timeAtts = self.IterateAndSaveFrames(imageDir, phi_theta_save)
 
@@ -1343,19 +1322,12 @@ class VisItCinema(object):
             # Make the CSV file
             filename = os.path.join(cdbDir, "data.csv")
             f = open(filename, "wt")
-            if len(self.minmax) == len(timeAtts):
-                f.write("time,phi,theta,%s,FILE\n" % self.GetActivePlotVar())
-            else:
-                f.write("time,phi,theta,FILE\n")
+            f.write("time,phi,theta,FILE\n")
             for i in xrange(len(timeAtts)):
                 for iphi in xrange(self.phi):
                     for itheta in xrange(self.theta):
                         fn = "image/phi_%d/theta_%d/time_%s.%s" % (ideg(phi[iphi]), ideg(theta[itheta]), timeAtts[i], self.format)
-                        if len(self.minmax) == len(timeAtts):
-                            f.write("%s,%g,%g,%g,%s\n" % (timeAtts[i], ideg(phi[iphi]), ideg(theta[itheta]), self.minmax[i][0], fn))
-                            f.write("%s,%g,%g,%g,%s\n" % (timeAtts[i], ideg(phi[iphi]), ideg(theta[itheta]), self.minmax[i][1], fn))
-                        else:
-                            f.write("%s,%g,%g,%s\n" % (timeAtts[i], ideg(phi[iphi]), ideg(theta[itheta]), fn))
+                        f.write("%s,%g,%g,%s\n" % (timeAtts[i], ideg(phi[iphi]), ideg(theta[itheta]), fn))
             f.close()
         else:
             # Make the JSON file
